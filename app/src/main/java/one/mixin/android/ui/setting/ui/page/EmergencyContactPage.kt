@@ -27,7 +27,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -40,12 +40,14 @@ import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.setting.EmergencyViewModel
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.PinEmergencyBottomSheetDialog
 import one.mixin.android.vo.Account
+import one.mixin.android.vo.User
 import timber.log.Timber
 
 @Composable
@@ -54,8 +56,9 @@ fun EmergencyContactPage() {
         title = stringResource(id = R.string.Emergency_Contact),
         titleBarActions = {
             val context = LocalContext.current
+            val emergencyUrl = stringResource(R.string.emergency_url)
             IconButton(onClick = {
-                context.openUrl(context.getString(R.string.emergency_url))
+                context.openUrl(emergencyUrl)
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_help_outline),
@@ -218,6 +221,7 @@ private fun RemoveEmergencyButton(
                             val a = response.data as Account
                             Session.storeAccount(a)
                             Session.setHasEmergencyContact(a.hasEmergencyContact)
+                            AnalyticsTracker.setHasRecoveryContact(a)
                             Timber.d("delete emergency contact success: ${a.hasEmergencyContact}")
                             onEmergencyAccountRemoved()
                         },
@@ -259,7 +263,7 @@ private fun ShowEmergencyButton() {
                     handleMixinResponse(
                         invokeNetwork = { viewModel.showEmergency(pinCode) },
                         successBlock = { response ->
-                            val user = response.data as one.mixin.android.vo.User
+                            val user = response.data as User
                             navigator.viewEmergencyContact(user)
                         },
                         exceptionBlock = {

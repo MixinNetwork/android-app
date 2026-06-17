@@ -54,7 +54,7 @@ internal fun readAllEncryptedSalts(context: Context): List<ByteArray> {
     }
     return historicalSalts.mapNotNull {
         if (it.isBlank()) return@mapNotNull null
-        decryptSalt(it.hexStringToByteArray())
+        decryptSalt(it.trim().hexStringToByteArray())
     }
 }
 

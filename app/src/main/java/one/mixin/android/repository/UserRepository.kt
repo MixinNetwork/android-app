@@ -6,16 +6,19 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.Account.PREF_WEB3_BOT_PK
+import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.request.BindInviteRequest
 import one.mixin.android.api.request.CircleConversationRequest
+import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.CircleService
+import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.CircleConversationDao
@@ -25,7 +28,6 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.provider.DataProvider
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.oneWeekAgo
 import one.mixin.android.extension.putString
@@ -44,9 +46,7 @@ import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class UserRepository
     @Inject
     constructor(
@@ -59,6 +59,8 @@ class UserRepository
         private val participantSessionDao: ParticipantSessionDao,
         private val userDao: UserDao,
         private val userService: UserService,
+        private val accountService: AccountService,
+        private val routeService: RouteService,
     ) {
         fun findFriends(): LiveData<List<User>> = userDao.findFriends()
 
@@ -265,7 +267,7 @@ class UserRepository
 
         suspend fun deleteCircle(circleId: String) = circleService.deleteCircle(circleId)
 
-        suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleByIdSuspend(circleId)
+        suspend fun deleteCircleById(circleId: String) = circleDao.deleteCircleById(circleId)
 
         suspend fun findConversationItemByCircleId(circleId: String) =
             circleDao.findConversationItemByCircleId(circleId)
@@ -278,11 +280,7 @@ class UserRepository
 
         suspend fun sortCircleConversations(list: List<CircleOrder>?) =
             withContext(Dispatchers.IO) {
-                runInTransaction {
-                    list?.forEach {
-                        circleDao.updateOrderAt(it)
-                    }
-                }
+                circleDao.updateAll(list)
             }
 
         suspend fun deleteCircleConversation(
@@ -290,9 +288,6 @@ class UserRepository
             circleId: String,
         ) =
             circleConversationDao.deleteByIdsSuspend(conversationId, circleId)
-
-        suspend fun deleteByCircleId(circleId: String) =
-            circleConversationDao.deleteByCircleIdSuspend(circleId)
 
         suspend fun insertCircleConversation(circleConversation: CircleConversation) =
             circleConversationDao.insertSuspend(circleConversation)
@@ -366,9 +361,13 @@ class UserRepository
             )
         }
 
-        @Suppress("KotlinConstantConditions")
         suspend fun getBotPublicKey(botId: String, force: Boolean) {
-            if (botId != ROUTE_BOT_USER_ID && botId != WEB3_BOT_USER_ID) return
+            val prefKey =
+                when (botId) {
+                    ROUTE_BOT_USER_ID -> PREF_ROUTE_BOT_PK
+                    REFERRAL_BOT_USER_ID -> PREF_REFERRAL_BOT_PK
+                    else -> return
+                }
 
             val key =
                 findBotPublicKey(
@@ -379,11 +378,7 @@ class UserRepository
                     botId,
                 )
             if (key != null && !force) {
-                if (botId == ROUTE_BOT_USER_ID) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
-                } else if (botId == WEB3_BOT_USER_ID) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, key)
-                }
+                MixinApplication.appContext.defaultSharedPreferences.putString(prefKey, key)
             } else {
                 val sessionResponse = fetchSessionsSuspend(listOf(botId))
                 if (sessionResponse.isSuccess) {
@@ -399,11 +394,7 @@ class UserRepository
                             publicKey = sessionData.publicKey,
                         ),
                     )
-                    if (botId == ROUTE_BOT_USER_ID) {
-                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-                    } else if (botId == WEB3_BOT_USER_ID) {
-                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_WEB3_BOT_PK, sessionData.publicKey)
-                    }
+                    MixinApplication.appContext.defaultSharedPreferences.putString(prefKey, sessionData.publicKey)
                 } else {
                     throw MixinResponseException(
                         sessionResponse.errorCode,
@@ -412,4 +403,8 @@ class UserRepository
                 }
             }
         }
+
+        suspend fun bindReferral(code: String) = accountService.bindReferral(BindInviteRequest(code))
+
+        suspend fun getReferralCodeInfo(code: String) = accountService.getReferralCodeInfo(code)
     }

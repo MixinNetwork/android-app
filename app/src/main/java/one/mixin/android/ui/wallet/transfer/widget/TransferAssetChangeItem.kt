@@ -6,13 +6,13 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.annotation.StringRes
-import one.mixin.android.R
 import one.mixin.android.databinding.ItemAssetChangeBinding
 import one.mixin.android.databinding.ItemTransferAssetChangeBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.forEachWithIndex
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.util.getChainName
+import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 
 class TransferAssetChangeItem : LinearLayout {
     private val _binding: ItemTransferAssetChangeBinding
@@ -38,7 +38,7 @@ class TransferAssetChangeItem : LinearLayout {
             title.text = context.getString(titleRes).uppercase()
             assetContainer.removeAllViews()
             amounts.forEachWithIndex { index, amount ->
-                val token = tokens[index]
+                val token = tokens.getOrNull(index) ?: return
                 val item = AssetChangeItem(context)
                 item.setContent(amount, token)
                 assetContainer.addView(item, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT).apply {
@@ -60,7 +60,7 @@ class TransferAssetChangeItem : LinearLayout {
         fun setContent(amount: String, token: TokenItem) {
             binding.apply {
                 avatar.loadUrl(token.iconUrl)
-                this.amount.text = "- $amount ${token.symbol}"
+                this.amount.text = "- ${(amount.toBigDecimalOrNull() ?: BigDecimal.ZERO).stripTrailingZeros().toPlainString()} ${token.symbol}"
                 network.text = getChainName(token.chainId, token.chainName, token.assetKey) ?: ""
             }
         }

@@ -57,7 +57,7 @@ data class SafeSnapshot(
     @SerializedName("confirmations")
     @SerialName("confirmations")
     @ColumnInfo(name = "confirmations")
-    val confirmations: Int?,
+    val confirmations: Long?,
     @SerializedName("opening_balance")
     @SerialName("opening_balance")
     @ColumnInfo(name = "opening_balance")

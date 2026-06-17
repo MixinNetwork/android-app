@@ -8,6 +8,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
@@ -29,10 +31,13 @@ import one.mixin.android.tip.exception.TipException
 import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
+import one.mixin.android.ui.logs.LogViewerBottomSheet
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 import javax.inject.Inject
@@ -62,12 +67,18 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
         style: Int,
     ) {
         super.setupDialog(dialog, style)
+        AnalyticsTracker.trackLoginPinVerify("pin_verify")
+        Timber.e("$TAG setupDialog")
         contentView = binding.root
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
             dismissClickOutside = false
         }
         setBiometricLayout()
+        binding.titleView.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
+        }
         binding.titleView.rightIv.isVisible = false
         binding.biometricLayout.measureAllChildren = false
         binding.biometricLayout.pin.isEnabled = false
@@ -89,6 +100,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                         updateAccount(account)
                     }
                     if (account.hasSafe) {
+                        AnalyticsTracker.trackLoginEnd()
                         dismiss()
                         return@handleMixinResponse
                     }
@@ -154,6 +166,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                 Session.storeAccount(account)
                 if (account.hasSafe) {
                     dismiss()
+                    AnalyticsTracker.trackLoginEnd()
                     toast(R.string.Successful)
                     return
                 }
@@ -188,11 +201,15 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                         ),
                 )
             if (resp.isSuccess) {
-                resp.data?.let { account ->
-                    Session.storeAccount(account)
-                    dismiss()
-                    toast(R.string.Successful)
-                }
+                val account = requireNotNull(resp.data) { "required account can not be null" }
+                Session.storeAccount(account)
+                val solAddress = bottomViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
+                Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
+                val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
+                Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
+                dismiss()
+                AnalyticsTracker.trackLoginEnd()
+                toast(R.string.Successful)
             } else {
                 val error = requireNotNull(resp.error)
                 val errorCode = error.code

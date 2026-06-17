@@ -1,13 +1,14 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.content.ClipData
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.os.Bundle
-import android.text.SpannableStringBuilder
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -22,53 +23,46 @@ import one.mixin.android.Constants.AssetId.BYTOM_CLASSIC_ASSET_ID
 import one.mixin.android.Constants.AssetId.MGD_ASSET_ID
 import one.mixin.android.Constants.AssetId.OMNI_USDT_ASSET_ID
 import one.mixin.android.R
+import one.mixin.android.compose.InputAmountBottomSheetDialogFragment
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.verifyCurve25519Signature
 import one.mixin.android.databinding.FragmentDepositBinding
 import one.mixin.android.extension.alertDialogBuilder
-import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getTipsByAsset
+import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.hexStringToByteArray
-import one.mixin.android.extension.highLight
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.isNullOrEmpty
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.BlockConfirmationsBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
+import one.mixin.android.ui.web.refreshScreenshot
 import one.mixin.android.util.ErrorHandler.Companion.ADDRESS_GENERATING
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 
 @AndroidEntryPoint
 class DepositFragment : BaseFragment() {
     companion object {
         const val TAG = "DepositFragment"
-        val usdcAssets =
-            mapOf(
-                "9b180ab6-6abe-3dc0-a13f-04169eb34bfa" to "ERC-20",
-                "de6fa523-c596-398e-b12f-6d6980544b59" to "Solana",
-                "2f845564-3898-3d17-8c24-3275e96235b5" to "Base",
-                "5fec1691-561d-339f-8819-63d54bf50b52" to "Polygon",
-                "3d3d69f1-6742-34cf-95fe-3f8964e6d307" to "BEP-20"
-            )
+        private const val ARGS_HIDE_NETWORK_SWITCH = "args_hide_network_switch"
 
-        val usdtAssets =
-            mapOf(
-                "4d8c508b-91c5-375b-92b0-ee702ed2dac5" to "ERC-20",
-                "b91e18ff-a9ae-3dc7-8679-e935d9a4b34b" to "TRC-20",
-                "cb54aed4-1893-3977-b739-ec7b2e04f0c5" to "Solana",
-                "218bc6f4-7927-3f8e-8568-3a3725b74361" to "Polygon",
-                "94213408-4ee7-3150-a9c4-9c5cce421c78" to "BEP-20",
-            )
-
-        fun newInstance(token: TokenItem) = DepositFragment().withArgs {
+        fun newInstance(token: TokenItem, hideNetworkSwitch: Boolean = false) = DepositFragment().withArgs {
             putParcelable(ARGS_ASSET, token)
+            putBoolean(ARGS_HIDE_NETWORK_SWITCH, hideNetworkSwitch)
         }
     }
 
@@ -97,22 +91,26 @@ class DepositFragment : BaseFragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
         val asset = requireNotNull(requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
-        initView(asset)
+        val hideNetworkSwitch = requireArguments().getBoolean(ARGS_HIDE_NETWORK_SWITCH, false)
+        initView(asset, hideNetworkSwitch)
     }
 
     override fun onDestroyView() {
+        AnalyticsTracker.trackAssetReceiveEnd()
         super.onDestroyView()
         _binding = null
     }
 
-    private fun initView(asset: TokenItem) {
+    private fun initView(asset: TokenItem, hideNetworkSwitch: Boolean = false) {
         val notSupport = notSupportDepositAssets.any { it == asset.assetId }
         binding.apply {
             title.apply {
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
                 rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.deposit_url)) }
             }
-            title.setSubTitle(getString(R.string.Deposit), asset.symbol)
+            title.setSubTitle(getString(R.string.Deposit_Token, asset.symbol), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
+            title.setWalletNameSubTitleStyle()
+            addressDesc.text = getTipsByAsset(asset)
             if (notSupport) {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
@@ -121,42 +119,24 @@ class DepositFragment : BaseFragment() {
                 val url = getString(R.string.not_supported_deposit_url)
                 notSupportTv.highlightStarTag(info, arrayOf(url))
             } else {
-                if (usdtAssets.contains(asset.assetId)) {
-                    networkTitle.isVisible = true
-                    networkChipGroup.isVisible = true
-                    initUsdtChips(asset)
-                } else if (usdcAssets.contains(asset.assetId)){
-                    networkTitle.isVisible = true
-                    networkChipGroup.isVisible = true
-                    initUsdcChips(asset)
-                } else {
-                    networkTitle.isVisible = false
-                    networkChipGroup.isVisible = false
+                if (!hideNetworkSwitch) {
+                    if (Constants.AssetId.usdtAssets.contains(asset.assetId)) {
+                        initChips(asset, Constants.AssetId.usdtAssets)
+                    } else if (Constants.AssetId.usdcAssets.contains(asset.assetId)) {
+                        initChips(asset, Constants.AssetId.usdcAssets)
+                    } else if (Constants.AssetId.ethAssets.contains(asset.assetId)) {
+                        initChips(asset, Constants.AssetId.ethAssets)
+                    } else if (Constants.AssetId.btcAssets.contains(asset.assetId)) {
+                        initChips(asset, Constants.AssetId.btcAssets)
+                    }
                 }
 
                 notSupportLl.isVisible = false
                 sv.isVisible = true
-                val dustTip =
-                    if (asset.hasDust()) {
-                        getString(R.string.deposit_dust, asset.dust, asset.symbol)
-                            .highLight(requireContext(), "${asset.dust} ${asset.symbol}")
-                    } else {
-                        SpannableStringBuilder()
-                    }
-                val confirmation =
-                    requireContext().resources.getQuantityString(
-                        R.plurals.deposit_confirmation,
-                        asset.confirmations,
-                        asset.confirmations,
-                    )
-                        .highLight(requireContext(), asset.confirmations.toString())
-                tipTv.text =
-                    buildBulletLines(
-                        requireContext(),
-                        SpannableStringBuilder(getTipsByAsset(asset)),
-                        confirmation,
-                        dustTip,
-                    )
+                binding.assetName.text = "${asset.name} (${asset.symbol})"
+                binding.networkName.text = getChainName(asset.chainId, asset.chainName, asset.assetKey)
+                binding.minimumDepositValue.text = "${asset.dust} ${asset.symbol}"
+                binding.blockConfirmationsValue.text = asset.confirmations.toString()
             }
         }
 
@@ -167,34 +147,36 @@ class DepositFragment : BaseFragment() {
 
     private val localMap = mutableMapOf<String, DepositEntry>()
 
-    private fun initUsdtChips(asset: TokenItem) {
-        initChips(asset, usdtAssets)
-    }
-
-    private fun initUsdcChips(asset: TokenItem) {
-        initChips(asset, usdcAssets)
-    }
-
     private fun initChips(asset: TokenItem, uAssets: Map<String, String>) {
         binding.apply {
+            networkChipGroup.isVisible = true
             networkChipGroup.isSingleSelection = true
             networkChipGroup.removeAllViews()
             uAssets.entries.forEach { entry ->
                 val chip =
                     Chip(requireContext()).apply {
+                        val c = this
                         text = entry.value
                         isClickable = true
+                        c.tag = entry.key
                         val same = entry.key == asset.assetId
                         if (same) {
                             isChecked = true
-                            setTextColor(Color.WHITE)
-                            chipBackgroundColor = ColorStateList.valueOf(Color.BLACK)
+                            val accentColor = requireContext().colorFromAttribute(R.attr.color_accent)
+                            setTextColor(accentColor)
+                            chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
+                            chipStrokeColor = ColorStateList.valueOf(accentColor)
+                            chipStrokeWidth = 1.dp.toFloat()
                         } else {
+                            isChecked = false
                             setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
-                            chipBackgroundColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray_light))
+                            chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
+                            chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray))
+                            chipStrokeWidth = 1.dp.toFloat()
                         }
                         setOnClickListener {
                             if (same) return@setOnClickListener
+                            AnalyticsTracker.trackAssetReceiveTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.CHAIN_ITEM_CLICK)
                             syncJob?.cancel()
                             syncJob =
                                 lifecycleScope.launch {
@@ -203,7 +185,7 @@ class DepositFragment : BaseFragment() {
                                     if (newAsset == null) {
                                         toast(R.string.Not_found)
                                     } else {
-                                        initChips(newAsset, usdcAssets)
+                                        initChips(newAsset, uAssets)
                                         val localDepositEntry = localMap[newAsset.assetId]
                                         if (localDepositEntry == null) {
                                             refreshDeposit(newAsset)
@@ -266,7 +248,7 @@ class DepositFragment : BaseFragment() {
     private fun refreshDeposit(asset: TokenItem) {
         showLoading()
         lifecycleScope.launch {
-            val (depositEntry, different, code) = walletViewModel.findAndSyncDepositEntry(asset.chainId)
+            val (depositEntry, different, code) = walletViewModel.findAndCheckDepositEntry(asset.chainId, asset.assetId)
             if (depositEntry == null) {
                 if (code == ADDRESS_GENERATING) {
                     binding.apply {
@@ -294,7 +276,7 @@ class DepositFragment : BaseFragment() {
             } else {
                 localMap[asset.assetId] = depositEntry
                 showDepositChooseNetworkBottomSheetDialog(asset, depositEntry)
-                if (different) {
+                if (different && asset.assetId != Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) {
                     AddressChangedBottomSheet.newInstance(asset).showNow(parentFragmentManager, AddressChangedBottomSheet.TAG)
                 }
                 updateUI(asset, depositEntry)
@@ -306,9 +288,11 @@ class DepositFragment : BaseFragment() {
     private fun showLoading() {
         binding.apply {
             loading.isVisible = true
+            bottom.isVisible = false
             addressView.isVisible = false
             addressTitle.isVisible = false
-            tipTv.isVisible = false
+            addressDesc.isVisible = false
+            tipLl.isVisible = false
             memoTitle.isVisible = false
             memoView.isVisible = false
         }
@@ -319,7 +303,8 @@ class DepositFragment : BaseFragment() {
             loading.isVisible = false
             addressView.isVisible = true
             addressTitle.isVisible = true
-            tipTv.isVisible = true
+            addressDesc.isVisible = true
+            tipLl.isVisible = true
         }
     }
 
@@ -334,16 +319,39 @@ class DepositFragment : BaseFragment() {
         val signature = depositEntry.signature.hexStringToByteArray()
 
         if (destination.isBlank() || signature.isNullOrEmpty()) return
-        val pub = Constants.SAFE_PUBLIC_KEY.hexStringToByteArray()
+        val pubs = Constants.SAFE_PUBLIC_KEY.map { it.hexStringToByteArray() }
         val message =
             if (tag.isNullOrBlank()) {
                 destination
             } else {
                 "$destination:$tag"
             }.toByteArray().sha3Sum256()
-        val verify = verifyCurve25519Signature(message, signature, pub)
+        val verify = pubs.any { pub -> verifyCurve25519Signature(message, signature, pub) }
         if (verify) {
             val noTag = tag.isNullOrBlank()
+
+            // Check if asset supports amount input (QR code generation)
+            val supportsAmountInput = when (asset.chainId) {
+                Constants.ChainId.BITCOIN_CHAIN_ID,
+                Constants.ChainId.ETHEREUM_CHAIN_ID,
+                Constants.ChainId.Base,
+                Constants.ChainId.Arbitrum,
+                Constants.ChainId.Optimism,
+                Constants.ChainId.BinanceSmartChain,
+                Constants.ChainId.Polygon,
+                Constants.ChainId.Litecoin,
+                Constants.ChainId.Dogecoin,
+                Constants.ChainId.Dash,
+                Constants.ChainId.Monero,
+                Constants.ChainId.Solana,
+                Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID,
+                Constants.ChainId.Avalanche,
+                Constants.ChainId.HyperEVM,
+                Constants.ChainId.TON_CHAIN_ID -> true
+
+                else -> false
+            }
+
             binding.apply {
                 if (noTag) {
                     memoView.isVisible = false
@@ -373,6 +381,7 @@ class DepositFragment : BaseFragment() {
                         } else {
                             getString(R.string.deposit_memo_notice)
                         },
+                        hideCopy = noTag
                     )
                 }
                 addressView.setAsset(
@@ -389,14 +398,142 @@ class DepositFragment : BaseFragment() {
                     } else {
                         getString(R.string.deposit_notice, asset.symbol)
                     },
+                    hideCopy = noTag
                 )
+
+                // Set minimum and maximum using server-provided values
+                minimumDepositValue.text = "${depositEntry.minimum} ${asset.symbol}"
+
+                // Set maximum and maximum using server-provided values
+                if ((depositEntry.maximum.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) {
+                    maximumDepositValue.isVisible = false
+                    maximumDepositTitle.isVisible = false
+                } else {
+                    maximumDepositValue.text = "${depositEntry.maximum} ${asset.symbol}"
+                    maximumDepositTitle.isVisible = true
+                    maximumDepositValue.isVisible = true
+                }
+
+                binding.copy.setOnClickListener {
+                    context?.heavyClickVibrate()
+                    context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, depositEntry.destination))
+                    toast(R.string.copied_to_clipboard)
+                }
+
+                // Only show amount button for supported chains
+                if (supportsAmountInput) {
+                    binding.amount.isVisible = true
+                    binding.bottom.weightSum = 3f
+                    binding.amount.setOnClickListener {
+                        InputAmountBottomSheetDialogFragment.newInstance(
+                            asset,
+                            if (asset.assetId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) null else depositEntry.destination,
+                            minimum = depositEntry.minimum,
+                            maximum = depositEntry.maximum,
+                        ).apply {
+                            this.onCopyClick = { address ->
+                                this@DepositFragment.lifecycleScope.launch {
+                                    context?.heavyClickVibrate()
+                                    context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
+                                    toast(R.string.copied_to_clipboard)
+                                }
+                            }
+                            this.onShareClick = { amount, address ->
+                                this@DepositFragment.lifecycleScope.launch {
+                                    DepositShareActivity.show(
+                                        requireContext(),
+                                        asset,
+                                        depositEntry.destination,
+                                        address,
+                                        amount
+                                    )
+                                }
+                            }
+                        }.showNow(parentFragmentManager, InputAmountBottomSheetDialogFragment.TAG)
+                    }
+                } else {
+                    binding.amount.isVisible = false
+                    binding.bottom.weightSum = 2f
+                }
+
+                binding.share.setOnClickListener {
+                    refreshScreenshot(requireContext(), 0x66FF0000)
+                    DepositShareActivity.show(
+                        requireContext(),
+                        asset,
+                        depositEntry.destination,
+                    )
+                }
+                bottom.isVisible = noTag
             }
         } else {
             binding.apply {
                 notSupportLl.isVisible = true
                 sv.isVisible = false
                 notSupportTv.setText(R.string.verification_failed)
+                bottom.isVisible = false
             }
+
+        }
+        binding.networkChipGroup.children.forEach { clip ->
+            (clip as? Chip)?.apply {
+                val same = clip.tag == asset.assetId
+                if (same) {
+                    isChecked = true
+                    val accentColor = requireContext().colorFromAttribute(R.attr.color_accent)
+                    setTextColor(accentColor)
+                    chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
+                    chipStrokeColor = ColorStateList.valueOf(accentColor)
+                    chipStrokeWidth = 1.dp.toFloat()
+                } else {
+                    isChecked = false
+                    setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
+                    chipBackgroundColor = ColorStateList.valueOf(Color.TRANSPARENT)
+                    chipStrokeColor = ColorStateList.valueOf(requireContext().colorFromAttribute(R.attr.bg_gray))
+                    chipStrokeWidth = 1.dp.toFloat()
+                }
+            }
+        }
+        binding.assetName.text = "${asset.name} (${asset.symbol})"
+        binding.networkName.text = getChainName(asset.chainId, asset.chainName, asset.assetKey)
+        binding.minimumDepositValue.text = "${asset.dust} ${asset.symbol}"
+        binding.blockConfirmationsValue.text = asset.confirmations.toString()
+        binding.blockConfirmationsTitle.setOnClickListener {
+            BlockConfirmationsBottomSheetDialogFragment.newInstance(asset.confirmations).showNow(parentFragmentManager, BlockConfirmationsBottomSheetDialogFragment.TAG)
+        }
+        binding.blockConfirmations.setOnClickListener {
+            BlockConfirmationsBottomSheetDialogFragment.newInstance(asset.confirmations).showNow(parentFragmentManager, BlockConfirmationsBottomSheetDialogFragment.TAG)
+        }
+        binding.addressDesc.text = getTipsByAsset(asset)
+        if (asset.assetId == Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) {
+            binding.addressTitle.setText(R.string.Invoice)
+            binding.lightningRl.isVisible = true
+            val address = "${Session.getAccount()?.identityNumber}@mixin.id"
+            binding.lightningAddressTv.text = address
+            binding.lightningAddressCopy.setOnClickListener {
+                context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
+                toast(R.string.copied_to_clipboard)
+            }
+
+            binding.lightningAddressTitle.setOnClickListener {
+                LightningAddressBottomSheetDialogFragment.newInstance(address).apply {
+                    copyCallback = {
+                        context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, it))
+                        toast(R.string.copied_to_clipboard)
+                    }
+                }.showNow(parentFragmentManager, LightningAddressBottomSheetDialogFragment.TAG)
+            }
+            binding.lightningAddressTip.setOnClickListener {
+                LightningAddressBottomSheetDialogFragment.newInstance(address).apply {
+                    copyCallback = {
+                        context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, it))
+                        toast(R.string.copied_to_clipboard)
+                    }
+                }.showNow(parentFragmentManager, LightningAddressBottomSheetDialogFragment.TAG)
+            }
+        } else {
+            binding.addressTitle.setText(R.string.Address)
+            binding.lightningRl.isVisible = false
         }
     }
 }

@@ -9,6 +9,7 @@ import android.app.NotificationManager.BUBBLE_PREFERENCE_NONE
 import android.app.PendingIntent
 import android.app.UiModeManager
 import android.content.ActivityNotFoundException
+import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.ComponentName
 import android.content.ContentResolver
@@ -27,6 +28,7 @@ import android.graphics.Point
 import android.graphics.Rect
 import android.media.MediaMetadataRetriever
 import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -39,6 +41,7 @@ import android.os.VibrationEffect.EFFECT_HEAVY_CLICK
 import android.os.VibrationEffect.EFFECT_TICK
 import android.os.Vibrator
 import android.os.VibratorManager
+import android.os.PersistableBundle
 import android.os.storage.StorageManager
 import android.os.storage.StorageVolume
 import android.provider.Browser
@@ -47,6 +50,7 @@ import android.provider.OpenableColumns
 import android.provider.Settings
 import android.util.DisplayMetrics
 import android.util.TypedValue
+import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import android.view.inputmethod.InputMethodManager
@@ -60,10 +64,15 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.content.getSystemService
 import androidx.core.database.getStringOrNull
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailabilityLight
 import com.google.android.gms.common.GooglePlayServicesUtil
@@ -72,12 +81,16 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.db.web3.vo.Web3Chain
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.receiver.ShareBroadcastReceiver
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.RomUtil
+import one.mixin.android.util.RomPermissionUtil
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
+import one.mixin.android.util.getChainName
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.ChatHistoryMessageItem
@@ -95,6 +108,7 @@ import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Future
+import kotlin.compareTo
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -204,21 +218,30 @@ fun async(
 ): Future<out Any?> =
     executor.submit(runnable)
 
-fun Context.statusBarHeight(): Int {
-    val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
-    if (resourceId > 0) {
-        return resources.getDimensionPixelSize(resourceId)
-    }
-    return dpToPx(24f)
+fun Context.getSystemBarHeight(resourceName: String, defaultDp: Float = 24f): Int {
+    val resourceId = resources.getIdentifier(resourceName, "dimen", "android")
+    return if (resourceId > 0) resources.getDimensionPixelSize(resourceId) else dpToPx(defaultDp)
 }
 
-fun Context.navigationBarHeight(): Int {
-    val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
-    if (resourceId > 0) {
-        return resources.getDimensionPixelSize(resourceId)
-    }
-    return dpToPx(24f)
+fun View.getSafeAreaInsetsTop(): Int {
+    val insets = ViewCompat.getRootWindowInsets(this) ?: return 0
+
+    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+    val displayCutout = insets.getInsets(WindowInsetsCompat.Type.displayCutout())
+
+    return maxOf(systemBars.top, displayCutout.top)
 }
+
+fun View.getSafeAreaInsetsBottom(): Int {
+    val insets = ViewCompat.getRootWindowInsets(this) ?: return 0
+
+    val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+    val navigationBarsInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
+    return maxOf(systemBars.bottom, navigationBarsInsets.bottom)
+}
+
+fun Context.statusBarHeight(): Int = getSystemBarHeight("status_bar_height")
+fun Context.navigationBarHeight(): Int = getSystemBarHeight("navigation_bar_height")
 
 @SuppressLint("PrivateApi")
 fun Context.hasNavigationBar(): Boolean {
@@ -413,12 +436,21 @@ fun Context.appCompatActionBarHeight(): Int {
     theme.resolveAttribute(android.R.attr.actionBarSize, tv, true)
     return resources.getDimensionPixelSize(tv.resourceId)
 }
-
-@Suppress("DEPRECATION")
 fun Context.networkConnected(): Boolean {
     val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-    val activeNetwork = connectivityManager.activeNetworkInfo ?: return false
-    return activeNetwork.isConnectedOrConnecting
+    return isInternetConnectivityValidated(connectivityManager)
+}
+
+private fun isInternetConnectivityValidated(connectivityManager: ConnectivityManager): Boolean {
+    val activeNetwork = connectivityManager.activeNetwork ?: return false
+    return try {
+        val networkCapabilities = connectivityManager.getNetworkCapabilities(activeNetwork)
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) == true ||
+        networkCapabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED) == true
+    } catch (e: SecurityException) {
+        // Workaround for https://issuetracker.google.com/issues/175055271.
+        true
+    }
 }
 
 fun Context.realSize(): Point {
@@ -536,7 +568,7 @@ fun Fragment.openImage(output: Uri) {
     galleryIntent.type = "image/*"
     galleryIntent.action = Intent.ACTION_PICK
 
-    val chooserIntent = Intent.createChooser(galleryIntent, "Select Picture")
+    val chooserIntent = Intent.createChooser(galleryIntent, getString(R.string.select_picture))
     chooserIntent.putExtra(Intent.EXTRA_INITIAL_INTENTS, cameraIntents.toTypedArray())
     try {
         this.startActivityForResult(chooserIntent, REQUEST_IMAGE)
@@ -829,7 +861,14 @@ fun Fragment.openGalleryFromSticker() {
         .forResult(REQUEST_GALLERY)
 }
 
-fun Context.openUrl(url: String) {
+fun Context.openUrl(
+    url: String,
+    source: String? = null,
+    wallet: String = one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet.MAIN,
+) {
+    if (openCustomerServiceIfMatched(url, source, wallet)) {
+        return
+    }
     var uri = url.toUri()
     if (uri.scheme.isNullOrBlank()) {
         uri = Uri.parse("http://$url")
@@ -865,6 +904,45 @@ fun Context.openUrl(url: String) {
     }
 }
 
+fun Context.openInBrowser(
+    url: String,
+    extraHeaders: Bundle? = null,
+): Boolean {
+    val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
+    val uri = browserUrl.toUri()
+
+    try {
+        val customTabsIntent =
+            CustomTabsIntent.Builder()
+                .setDefaultColorSchemeParams(
+                    CustomTabColorSchemeParams.Builder()
+                        .setToolbarColor(ContextCompat.getColor(this, android.R.color.white))
+                        .build(),
+                )
+                .setShowTitle(true)
+                .build()
+        extraHeaders?.let {
+            customTabsIntent.intent.putExtra(Browser.EXTRA_HEADERS, it)
+        }
+        customTabsIntent.launchUrl(this, uri)
+        return true
+    } catch (e: Exception) {
+        Timber.e(e, "OpenInBrowser")
+        try {
+            val intent = Intent(Intent.ACTION_VIEW, uri)
+                .putExtra(Browser.EXTRA_APPLICATION_ID, packageName)
+            extraHeaders?.let {
+                intent.putExtra(Browser.EXTRA_HEADERS, it)
+            }
+            startActivity(intent)
+            return true
+        } catch (e: Exception) {
+            Timber.e(e, "OpenInBrowser")
+        }
+    }
+    return false
+}
+
 fun Context.openExternalUrl(url: String) {
     try {
         var uri = Uri.parse(url)
@@ -879,6 +957,29 @@ fun Context.openExternalUrl(url: String) {
 }
 
 fun Context.getClipboardManager(): ClipboardManager = requireNotNull(getSystemService())
+
+fun Context.copySensitiveTextToClipboard(content: String, scope: CoroutineScope) {
+    val clipboard = getClipboardManager()
+    val clip = ClipData.newPlainText("", content)
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        @Suppress("NewApi")
+        clip.description.extras = PersistableBundle().apply {
+            putBoolean("android.content.extra.IS_SENSITIVE", true)
+        }
+    }
+    clipboard.setPrimaryClip(clip)
+    scope.launch {
+        delay(60_000L)
+        val current = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
+        if (current == content) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                clipboard.clearPrimaryClip()
+            } else {
+                clipboard.setPrimaryClip(ClipData.newPlainText("", ""))
+            }
+        }
+    }
+}
 
 fun Window.isNotchScreen(): Boolean {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
@@ -1015,6 +1116,17 @@ fun supportsOreo(
     }
 }
 
+fun supportsVanillaIceCream(
+    code: () -> Unit,
+    elseAction: (() -> Unit),
+) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        code()
+    } else {
+        elseAction.invoke()
+    }
+}
+
 @SuppressLint("ObsoleteSdkInt")
 inline fun supportsNougat(code: () -> Unit) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
@@ -1041,9 +1153,27 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
     when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
-        Constants.ChainId.EOS_CHAIN_ID -> getString(R.string.deposit_tip_eos)
-        Constants.ChainId.TRON_CHAIN_ID -> getString(R.string.deposit_tip_trx)
+        Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID -> getString(R.string.deposit_tip_lightning)
+        Constants.ChainId.EOS_CHAIN_ID,
+        Constants.ChainId.SOLANA_CHAIN_ID,
+        Constants.ChainId.TRON_CHAIN_ID,
+        Constants.ChainId.Base,
+        Constants.ChainId.BinanceSmartChain,
+        Constants.ChainId.Arbitrum,
+        Constants.ChainId.Optimism,
+        Constants.ChainId.Polygon,
+        Constants.ChainId.BitShares,
+        Constants.ChainId.Avalanche,
+        Constants.ChainId.HyperEVM
+            -> getString(R.string.deposit_tip_chain, asset.symbol, asset.chainName ?: getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
         else -> getString(R.string.deposit_tip_common, asset.symbol)
+    }
+
+fun Fragment.getTipsByAsset(asset: Web3TokenItem, chain: Web3Chain?) =
+    when (asset.assetId) {
+        Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
+        Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
+        else -> getString(R.string.deposit_tip_chain, asset.symbol, chain?.name ?: getChainName(asset.chainId, asset.chainName, asset.assetKey))
     }
 
 fun Context.showConfirmDialog(
@@ -1123,7 +1253,7 @@ val defaultThemeId =
     }
 
 fun Context.checkInlinePermissions(): Boolean {
-    if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
+    if (!RomPermissionUtil.checkBackgroundStartPermission(this)) {
         return false
     }
     if (Settings.canDrawOverlays(this)) {
@@ -1133,23 +1263,12 @@ fun Context.checkInlinePermissions(): Boolean {
 }
 
 fun Context.checkInlinePermissions(showAlert: () -> Unit): Boolean {
-    if (RomUtil.isMiui && !XiaomiUtilities.isCustomPermissionGranted(XiaomiUtilities.OP_BACKGROUND_START_ACTIVITY)) {
-        var intent = XiaomiUtilities.getPermissionManagerIntent()
-        if (intent != null) {
-            try {
-                startActivity(intent)
-            } catch (x: Exception) {
-                try {
-                    intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
-                    intent.data =
-                        Uri.parse("package:" + MixinApplication.appContext.packageName)
-                    startActivity(intent)
-                } catch (xx: Exception) {
-                    Timber.e(xx)
-                }
-            }
+    if (!RomPermissionUtil.checkBackgroundStartPermission(this)) {
+        if (RomPermissionUtil.openBackgroundPermissionSetting(this)) {
+            toast(R.string.need_background_permission)
+        } else {
+            toast(R.string.need_background_permission)
         }
-        toast(R.string.need_background_permission)
         return false
     }
     if (Settings.canDrawOverlays(this)) {
@@ -1181,18 +1300,7 @@ fun PackageManager.getPackageInfoCompat(
     }
 
 fun Context.openMarket() {
-    if (isPlayStoreInstalled()) {
-        try {
-            val intent = Intent(Intent.ACTION_VIEW)
-            intent.data = Uri.parse("market://details?id=${BuildConfig.APPLICATION_ID}")
-            intent.setPackage(GooglePlayServicesUtil.GOOGLE_PLAY_STORE_PACKAGE)
-            startActivity(intent)
-        } catch (e: Exception) {
-            openExternalUrl(getString(R.string.website))
-        }
-    } else {
-        openExternalUrl(getString(R.string.website))
-    }
+    openExternalUrl(getString(R.string.website))
 }
 
 @Suppress("DEPRECATION") // Deprecated for third party Services.

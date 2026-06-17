@@ -24,6 +24,7 @@ class InitializeActivity : BaseActivity() {
         val wrongTime = intent.getBooleanExtra(WRONG_TIME, false)
         val oldVersion = intent.getBooleanExtra(OLD_VERSION, false)
         val dbUpgrade = intent.getBooleanExtra(DB_UPGRADE, false)
+        val loadingSource = intent.getStringExtra(LOADING_SOURCE)
         when {
             setName -> replaceFragment(SetupNameFragment.newInstance(), R.id.container)
             setPin -> replaceFragment(SetupPinFragment.newInstance(), R.id.container)
@@ -32,7 +33,7 @@ class InitializeActivity : BaseActivity() {
             dbUpgrade -> replaceFragment(UpgradeFragment.newInstance(TYPE_DB), R.id.container)
             else ->
                 replaceFragment(
-                    LoadingFragment.newInstance(),
+                    LoadingFragment.newInstance(loadingSource),
                     R.id.container,
                     LoadingFragment.TAG,
                 )
@@ -48,6 +49,9 @@ class InitializeActivity : BaseActivity() {
         const val WRONG_TIME = "wrong_time"
         const val OLD_VERSION = "old_version"
         const val DB_UPGRADE = "db_upgrade"
+        const val LOADING_SOURCE = "loading_source"
+        const val SOURCE_SIGN_UP = "sign_up"
+        const val SOURCE_LOGIN = "login"
 
         private fun getIntent(
             context: Context,
@@ -56,6 +60,7 @@ class InitializeActivity : BaseActivity() {
             wrongTime: Boolean = false,
             oldVersion: Boolean = false,
             dbUpgrade: Boolean = false,
+            loadingSource: String? = null,
         ): Intent {
             return Intent(context, InitializeActivity::class.java).apply {
                 this.putExtra(SET_NAME, setName)
@@ -63,6 +68,7 @@ class InitializeActivity : BaseActivity() {
                 this.putExtra(WRONG_TIME, wrongTime)
                 this.putExtra(OLD_VERSION, oldVersion)
                 this.putExtra(DB_UPGRADE, dbUpgrade)
+                loadingSource?.let { putExtra(LOADING_SOURCE, it) }
             }
         }
 
@@ -92,12 +98,13 @@ class InitializeActivity : BaseActivity() {
             context: Context,
             load: Boolean = true,
             clear: Boolean = false,
+            source: String? = null,
         ) {
             if (load) {
                 putIsLoaded(context, false)
             }
             context.startActivity(
-                getIntent(context).apply {
+                getIntent(context, loadingSource = source).apply {
                     if (clear) {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)

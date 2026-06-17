@@ -8,6 +8,7 @@ import android.widget.FrameLayout
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewBadgeCircleImageBinding
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.loadImage
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
@@ -78,6 +79,14 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
         binding.bg.borderColor = color
     }
 
+    fun setBadgeBorder(
+        width: Float = 1f,
+        color: Int = Color.WHITE,
+    ) {
+        binding.badge.borderWidth = context.dpToPx(width)
+        binding.badge.borderColor = color
+    }
+
     fun loadToken(tokenItem: TokenItem) {
         loadToken(tokenItem.iconUrl, tokenItem.chainIconUrl, tokenItem.collectionHash)
     }
@@ -90,6 +99,12 @@ open class BadgeCircleImageView(context: Context, attrs: AttributeSet?) :
     fun loadCoin(coinItem: CoinItem) {
         binding.badge.isVisible = false
         binding.bg.loadImage(coinItem.iconUrl, R.drawable.ic_avatar_place_holder)
+    }
+
+    fun loadToken(web3Token: Web3TokenItem) {
+        binding.bg.loadImage(web3Token.iconUrl, R.drawable.ic_avatar_place_holder)
+        binding.badge.isVisible = true
+        binding.badge.loadImage(web3Token.chainIcon, R.drawable.ic_avatar_place_holder)
     }
 
     fun loadToken(

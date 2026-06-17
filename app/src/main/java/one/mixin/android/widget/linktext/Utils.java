@@ -1,10 +1,10 @@
 package one.mixin.android.widget.linktext;
 
-import timber.log.Timber;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import timber.log.Timber;
 
 class Utils {
 

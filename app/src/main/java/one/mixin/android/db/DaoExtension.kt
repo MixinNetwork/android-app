@@ -9,8 +9,6 @@ import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.isKraken
 import one.mixin.android.vo.isMine
-import one.mixin.android.vo.safe.Output
-import timber.log.Timber
 
 fun MixinDatabase.clearParticipant(
     conversationId: String,

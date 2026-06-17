@@ -13,10 +13,13 @@ import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.toast
 import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
+import one.mixin.android.ui.common.biometric.UtxoException
+import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import org.chromium.net.CronetException
 import retrofit2.HttpException
 import java.io.IOException
 import java.net.ConnectException
+import java.net.SocketException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.util.concurrent.ExecutionException
@@ -30,9 +33,13 @@ open class ErrorHandler {
                     is HttpException -> {
                         handleErrorCode(throwable.code(), ctx)
                     }
+                    is UtxoException -> {
+                        toast(R.string.no_available_utxo)
+                    }
                     is IOException ->
                         when (throwable) {
                             is SocketTimeoutException -> toast(R.string.error_connection_timeout)
+                            is SocketException -> ctx.getString(R.string.error_connection_error)
                             is UnknownHostException -> toast(R.string.No_network_connection)
                             is ServerErrorException -> toast(getString(R.string.error_server_5xx_code, throwable.code))
                             is ClientErrorException -> {
@@ -46,7 +53,7 @@ open class ErrorHandler {
                             is CronetException -> {
                                 handleCronetException(throwable)
                             }
-                            else -> toast(getString(R.string.error_unknown_with_message, throwable.msg()))
+                            else -> toast(getString(R.string.Network_error))
                         }
                     is CancellationException -> {
                         // ignore kotlin coroutine job cancellation exception
@@ -63,6 +70,59 @@ open class ErrorHandler {
                     }
                     else -> toast(getString(R.string.error_unknown_with_message, throwable.msg()))
                 }
+            }
+        }
+
+        fun getErrorMessage(throwable: Throwable): String {
+            val ctx = MixinApplication.appContext
+            return when (throwable) {
+                is IOException ->
+                    when (throwable) {
+                        is SocketTimeoutException -> ctx.getString(R.string.error_connection_timeout)
+                        is SocketException -> ctx.getString(R.string.error_connection_error)
+                        is UnknownHostException -> ctx.getString(R.string.No_network_connection)
+                        is NetworkException -> ctx.getString(R.string.No_network_connection)
+                        is DataErrorException -> ctx.getString(R.string.Data_error)
+                        is CronetException -> {
+                            val extra =
+                                if (throwable is org.chromium.net.NetworkException) {
+                                    val e = throwable
+                                    "${e.errorCode}, ${e.cronetInternalErrorCode}"
+                                } else {
+                                    ""
+                                }
+                            "${ctx.getString(R.string.error_connection_error)} $extra"
+                        }
+
+                        is ServerErrorException -> ctx.getString(R.string.error_server_5xx_code, throwable.code)
+
+                        else -> ctx.getString(R.string.Network_error)
+                    }
+
+                is UtxoException -> {
+                    throwable.getUtxoExceptionMsg(ctx)
+                }
+
+                is TipNodeException -> {
+                    throwable.getTipExceptionMsg(ctx)
+                }
+
+                is ExecutionException -> {
+                    if (throwable.cause is CronetException) {
+                        val extra =
+                            if (throwable.cause is org.chromium.net.NetworkException) {
+                                val e = throwable.cause as org.chromium.net.NetworkException
+                                "${e.errorCode}, ${e.cronetInternalErrorCode}"
+                            } else {
+                                ""
+                            }
+                        "${ctx.getString(R.string.error_connection_error)} $extra"
+                    } else {
+                        ctx.getString(R.string.error_connection_error)
+                    }
+                }
+
+                else -> ctx.getString(R.string.error_unknown_with_message, throwable.msg())
             }
         }
 
@@ -162,6 +222,16 @@ open class ErrorHandler {
         const val INVALID_SWAP = 10611
         const val INVALID_QUOTE_AMOUNT = 10614
         const val NO_AVAILABLE_QUOTE = 10615
+        const val SIMULATE_TRANSACTION_FAILED = 10631
+        const val MAX_WALLET_REACHED = 10632
+        const val PERPS_ORDER_VALUE_TOO_SMALL = 10650
+        const val PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION = 10651
+
+        const val UNSUPPORTED_WATCH_ADDRESS = 10633
+        const val INVALID_REFERRAL_CODE = 10730
+        const val ALREADY_BONDED_REFERRAL_CODE = 10731
+        const val CANNOT_APPLY_YOUR_OWN_REFERRAL_CODE = 10732
+        const val INVITER_PLAN_EXPIRED = 10737
 
         const val PHONE_INVALID_FORMAT = 20110
         const val INSUFFICIENT_IDENTITY_NUMBER = 20111
@@ -176,6 +246,7 @@ open class ErrorHandler {
         const val TOO_SMALL = 20120
         const val EXPIRED_AUTHORIZATION_CODE = 20121
         const val USED_PHONE = 20122
+        const val TRANSFER_TO_DELETED_ACCOUNT = 20160
         const val INSUFFICIENT_TRANSACTION_FEE = 20124
         const val TRANSFER_IS_ALREADY_PAID = 20125
         const val TOO_MANY_STICKERS = 20126
@@ -256,6 +327,30 @@ fun Context.getMixinErrorStringByCode(
         ErrorHandler.NO_AVAILABLE_QUOTE -> {
             getString(R.string.error_no_available_quote)
         }
+        ErrorHandler.MAX_WALLET_REACHED -> {
+            getString(R.string.error_too_many_wallets)
+        }
+        ErrorHandler.PERPS_ORDER_VALUE_TOO_SMALL -> {
+            getString(R.string.error_perps_order_value_too_small)
+        }
+        ErrorHandler.PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION -> {
+            getString(R.string.error_already_had_open_position)
+        }
+        ErrorHandler.UNSUPPORTED_WATCH_ADDRESS -> {
+            getString(R.string.error_watch_address_not_supported)
+        }
+        ErrorHandler.INVALID_REFERRAL_CODE -> {
+            getString(R.string.error_invalid_referral_code)
+        }
+        ErrorHandler.ALREADY_BONDED_REFERRAL_CODE -> {
+            getString(R.string.error_already_bonded_referral_code)
+        }
+        ErrorHandler.CANNOT_APPLY_YOUR_OWN_REFERRAL_CODE -> {
+            getString(R.string.error_cannot_apply_your_own_referral_code)
+        }
+        ErrorHandler.INVITER_PLAN_EXPIRED -> {
+            getString(R.string.error_inviter_plan_expired)
+        }
         ErrorHandler.PHONE_INVALID_FORMAT -> {
             getString(R.string.error_phone_invalid_format)
         }
@@ -294,6 +389,9 @@ fun Context.getMixinErrorStringByCode(
         }
         ErrorHandler.USED_PHONE -> {
             getString(R.string.error_used_phone)
+        }
+        ErrorHandler.TRANSFER_TO_DELETED_ACCOUNT -> {
+            getString(R.string.error_transfer_to_deleted_account)
         }
         ErrorHandler.TRANSFER_IS_ALREADY_PAID -> {
             getString(R.string.error_transfer_is_already_paid)

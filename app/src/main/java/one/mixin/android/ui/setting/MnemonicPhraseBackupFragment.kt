@@ -14,9 +14,8 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.crypto.toCompleteMnemonic
+import one.mixin.android.crypto.toMnemonicWithChecksum
 import one.mixin.android.databinding.FragmentComposeBinding
-import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
@@ -58,9 +57,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.isVisible = false
         binding.compose.setContent {
-            MixinAppTheme(
-                darkTheme = requireContext().isNightMode(),
-            ) {
+            MixinAppTheme {
                 val navController = rememberNavController()
                 NavHost(
                     navController = navController,
@@ -122,7 +119,7 @@ class MnemonicPhraseBackupFragment : BaseFragment(R.layout.fragment_compose) {
                                     requireActivity().finish()
                                     return@launch
                                 }
-                                mnemonic = toCompleteMnemonic(list)
+                                mnemonic = toMnemonicWithChecksum(list)
                                 navController.navigate(MnemonicPhraseBackupStep.MnemonicPhrase.name)
                             }
                         })

@@ -14,6 +14,7 @@
         <item name="android:windowContentTransitions">true</item>
         <item name="android:textColorHighlight">@color/blue_highlight</item>
         <item name="android:textViewStyle">@style/NoneHFTextViewStyle</item>
+        <item name="enableEdgeToEdge">true</item>
 
         <item name="android:windowSplashScreenAnimatedIcon">@drawable/mixin_splash</item>
         <item name="android:windowSplashScreenAnimationDuration">@integer/splash_screen_duration</item>
@@ -72,9 +73,6 @@
         <item name="bg_tip_warning">@color/bgTipWarning</item>
         <item name="bg_tip_warning_border">@color/bgTipWarningBorder</item>
 
-        <item name="ic_wallet_receive">#0FB321</item>
-        <item name="ic_wallet_send">#3D75E3</item>
-        <item name="ic_wallet_swap">#8A6BFF</item>
         <item name="music_played">@color/musicPlayed</item>
         <item name="music_unplayed">@color/musicUnPlayed</item>
         <item name="music_buffered">@color/musicBuffered</item>
@@ -89,6 +87,7 @@
         <item name="icon_chain">@color/iconChain</item>
         <item name="bg_market_card">@drawable/bg_market_card</item>
         <item name="ic_logo">@drawable/ic_logo_mixin</item>
+        <item name="market_logo">@drawable/market_logo_light</item>
         <item name="badge_red">@color/badgeRed</item>
 
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>

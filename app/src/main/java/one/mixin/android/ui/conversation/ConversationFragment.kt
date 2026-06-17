@@ -136,6 +136,7 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.safeActivate
 import one.mixin.android.extension.safeStop
@@ -165,11 +166,9 @@ import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.G
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.common.message.ChatRoomHelper
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
-import one.mixin.android.ui.conversation.adapter.GalleryCallback
 import one.mixin.android.ui.conversation.adapter.MentionAdapter
 import one.mixin.android.ui.conversation.adapter.MentionAdapter.OnUserClickListener
 import one.mixin.android.ui.conversation.adapter.Menu
@@ -197,11 +196,16 @@ import one.mixin.android.ui.player.MusicService
 import one.mixin.android.ui.player.collapse
 import one.mixin.android.ui.preview.TextPreviewActivity
 import one.mixin.android.ui.setting.WallpaperManager
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.sticker.StickerActivity
 import one.mixin.android.ui.sticker.StickerPreviewBottomSheetFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
 import one.mixin.android.ui.wallet.TransactionFragment
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.AudioPlayer
@@ -210,6 +214,7 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.markdown.MarkwonUtil.Companion.getMiniMarkwon
 import one.mixin.android.util.mention.mentionDisplay
@@ -273,11 +278,9 @@ import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
-import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
 import one.mixin.android.widget.LinearSmoothScrollerCustom
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.buildBottomSheetView
-import one.mixin.android.widget.gallery.internal.entity.Item
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardShownListener
@@ -815,8 +818,9 @@ class ConversationFragment() :
                 if (openInputAction(action)) return
 
                 lifecycleScope.launch {
+                    val context = context ?: return@launch
                     val app = chatViewModel.findAppById(appId ?: userId)
-                    action.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope, app)
+                    action.openAsUrlOrWeb(context, conversationId, parentFragmentManager, lifecycleScope, app)
                 }
             }
 
@@ -872,6 +876,7 @@ class ConversationFragment() :
                                 } else {
                                     null
                                 },
+                                botEntrySource = AnalyticsTracker.BotSource.CHAT_MESSAGE_CONTACT,
                             )
                         }
                     },
@@ -945,6 +950,7 @@ class ConversationFragment() :
             override fun onTextDoubleClick(messageItem: MessageItem) {
                 TextPreviewActivity.show(requireContext(), messageItem)
             }
+
         }
     }
 
@@ -971,11 +977,17 @@ class ConversationFragment() :
 
     private fun createImageUri() = Uri.fromFile(context?.getOtherPath()?.createImageTemp())
 
-    private val conversationId: String by lazy<String> {
+    private val conversationId: String by lazy {
         var cid = requireArguments().getString(CONVERSATION_ID)
         if (cid.isNullOrBlank()) {
             isFirstMessage = true
-            cid = generateConversationId(sender.userId, recipient!!.userId)
+            val recipientId = recipient?.userId
+            if (recipientId == null) {
+                reportException(IllegalStateException("no conversationId and no recipient"))
+                requireActivity().finish()
+                return@lazy ""
+            }
+            cid = generateConversationId(sender.userId, recipientId)
         }
         cid
     }
@@ -1211,8 +1223,8 @@ class ConversationFragment() :
     private var lastReadMessage: String? = null
 
     override fun onPause() {
-        // don't stop audio player if triggered by screen off
-        if (powerManager.isInteractive) {
+        // don't stop audio player if triggered by screen off or app lock overlay
+        if (powerManager.isInteractive && !MixinApplication.get().isAppAuthShown()) {
             AudioPlayer.pause()
         }
         sensorManager.unregisterListener(this)
@@ -2445,6 +2457,7 @@ class ConversationFragment() :
                 } else {
                     null
                 },
+                botEntrySource = AnalyticsTracker.BotSource.CHAT_AVATAR_DIALOG,
             )
         }
         binding.bottomUnblock.setOnClickListener {
@@ -2466,8 +2479,8 @@ class ConversationFragment() :
     private fun renderBot(user: User) =
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
-
-            app = chatViewModel.findAppById(user.appId!!)
+            val appId = user.appId ?: return@launch
+            app = chatViewModel.findAppById(appId)
             binding.chatControl.hintEncrypt(encryptCategory())
             if (app != null && app!!.creatorId == Session.getAccountId()) {
                 val menuFragment = parentFragmentManager.findFragmentByTag(MenuFragment.TAG)
@@ -2478,7 +2491,12 @@ class ConversationFragment() :
         }
 
     private fun renderUserInfo(user: User) {
-        binding.actionBar.setUser(user)
+        binding.actionBar.setUser(user) {
+            user.membership?.plan?.let { plan ->
+                MixinMemberUpgradeBottomSheetDialogFragment.newInstance(plan)
+                    .showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
+            }
+        }
         binding.actionBar.avatarIv.visibility = VISIBLE
         binding.actionBar.avatarIv.setTextSize(16f)
         binding.actionBar.avatarIv.setInfo(user.fullName, user.avatarUrl, user.userId)
@@ -2597,11 +2615,14 @@ class ConversationFragment() :
                         MenuType.Transfer -> {
                             binding.chatControl.reset()
                             if (Session.getAccount()?.hasPin == true) {
-                                recipient?.let {
-                                    TransferFragment.newInstance(buildEmptyTransferBiometricItem(it))
-                                        .showNow(parentFragmentManager, TransferFragment.TAG)
-                                    // FIXME sync
-                                    // jobManager.addJobInBackground(SyncOutputJob())
+                                recipient?.let { recipient ->
+                                    TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                                        .setOnAssetClick { asset ->
+                                            activity?.defaultSharedPreferences!!.putString(ASSET_PREFERENCE, asset.assetId)
+                                            activity?.let {
+                                                WalletActivity.showInputForUser(it,asset, recipient)
+                                            }
+                                        }.showNow(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                                 }
                             } else {
                                 TipActivity.show(requireActivity(), TipType.Create, true)
@@ -2670,6 +2691,8 @@ class ConversationFragment() :
                         MenuType.App -> {
                             menu.app?.let { app ->
                                 binding.chatControl.chatEt.hideKeyboard()
+                                AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.CHAT_BOTTOM_MENU, app.appNumber)
+                                AnalyticsTracker.trackOpenBotConversation(AnalyticsTracker.BotSource.CHAT_MORE_MENU, app.appNumber)
                                 WebActivity.show(
                                     requireActivity(),
                                     app.homeUri,
@@ -2992,12 +3015,13 @@ class ConversationFragment() :
         audioSwitch.selectSpeakerphone()
     }
 
-    private fun openBotHome() {
+    private fun openBotHome(source: String = AnalyticsTracker.BotSource.CHAT_MORE_MENU) {
         hideIfShowBottomSheet()
         recipient?.userId?.let { id ->
             chatViewModel.refreshUser(id, true)
         }
         app?.let {
+            AnalyticsTracker.trackOpenBotHomePage(source, it.appNumber)
             open(it.homeUri, it, null)
         }
     }
@@ -3083,7 +3107,7 @@ class ConversationFragment() :
             }
 
             override fun onBotClick() {
-                openBotHome()
+                openBotHome(AnalyticsTracker.BotSource.CHAT_BOTTOM_MENU)
             }
 
             override fun onGalleryClick() {

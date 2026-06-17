@@ -11,11 +11,6 @@
         android:layout_height="1dp"
         android:layout_centerInParent="true" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height=".5dp"
-        android:background="?attr/bg_window" />
-
     <ImageView
         android:id="@+id/bottom_iv"
         android:layout_width="wrap_content"
@@ -34,4 +29,15 @@
         android:layout_marginTop="@dimen/margin16"
         android:text="@string/No_transactions"
         android:textColor="?attr/text_assist" />
+
+    <TextView
+        android:id="@+id/help_action"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/wallet_transactions_empty"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="@dimen/margin16"
+        android:text="@string/how_perps_works"
+        android:textColor="@color/colorAccent"
+        android:visibility="gone" />
 </RelativeLayout>

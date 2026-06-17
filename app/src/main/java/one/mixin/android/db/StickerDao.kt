@@ -20,7 +20,6 @@ interface StickerDao : BaseDao<Sticker> {
         insert(s)
     }
 
-
     @Query("SELECT * FROM stickers WHERE last_use_at > 0 ORDER BY last_use_at DESC LIMIT 20")
     fun recentUsedStickers(): LiveData<List<Sticker>>
 

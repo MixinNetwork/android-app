@@ -33,6 +33,7 @@ import one.mixin.android.api.service.AuthorizationService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.EmergencyService
 import one.mixin.android.api.service.GiphyService
+import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.AppDao
@@ -41,7 +42,6 @@ import one.mixin.android.db.StickerAlbumDao
 import one.mixin.android.db.StickerDao
 import one.mixin.android.db.StickerRelationshipDao
 import one.mixin.android.db.UserDao
-import one.mixin.android.db.withTransaction
 import one.mixin.android.extension.nowInUtcNano
 import one.mixin.android.extension.within24Hours
 import one.mixin.android.session.Session
@@ -56,9 +56,7 @@ import one.mixin.android.vo.StickerAlbumOrder
 import one.mixin.android.vo.StickerRelationship
 import one.mixin.android.vo.User
 import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
 class AccountRepository
     @Inject
     constructor(
@@ -107,8 +105,6 @@ class AccountRepository
             accountService.update(request)
 
         suspend fun insertUserSuspend(user: User) = userDao.insertSuspend(user)
-
-        fun updateSession(request: SessionRequest) = accountService.updateSession(request)
 
         fun deviceCheck() = accountService.deviceCheck()
 
@@ -251,9 +247,7 @@ class AccountRepository
         fun observeSystemAlbumById(albumId: String) = stickerAlbumDao.observeSystemAlbumById(albumId)
 
         suspend fun updateAlbumOrders(stickerAlbumOrders: List<StickerAlbumOrder>) {
-            withTransaction {
-                stickerAlbumOrders.forEach { o -> stickerAlbumDao.updateOrderedAt(o) }
-            }
+            stickerAlbumDao.updateOrderedAt(stickerAlbumOrders)
         }
 
         suspend fun updateAlbumAdded(stickerAlbumAdded: StickerAlbumAdded) = stickerAlbumDao.updateAdded(stickerAlbumAdded)
@@ -439,10 +433,11 @@ class AccountRepository
 
         suspend fun validateExternalAddress(
             assetId: String,
+            chain: String,
             destination: String,
             tag: String?,
         ) =
-            accountService.validateExternalAddress(assetId, destination, tag)
+            accountService.validateExternalAddress(assetId, chain, destination, if (tag.isNullOrBlank()) true else null, tag)
 
         suspend fun refreshSticker(id: String): Sticker? {
             val sticker = stickerDao.findStickerById(id)
@@ -460,4 +455,8 @@ class AccountRepository
                 },
             )
         }
+
+        suspend fun updateSession(request: SessionRequest) = accountService.updateSession(request)
+
+        suspend fun getUserAccounts() = accountService.getUserAccounts()
     }

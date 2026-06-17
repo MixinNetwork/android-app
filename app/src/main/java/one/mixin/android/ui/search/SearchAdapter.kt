@@ -3,7 +3,6 @@ package one.mixin.android.ui.search
 import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter

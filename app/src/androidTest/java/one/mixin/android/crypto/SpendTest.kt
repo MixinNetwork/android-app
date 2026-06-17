@@ -7,7 +7,6 @@ import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.web3j.crypto.Bip32ECKeyPair
 
 @RunWith(AndroidJUnit4::class)
 class SpendTest {
@@ -18,7 +17,7 @@ class SpendTest {
         assertEquals(legacyMn, "reason bubble doctor wolf ocean victory visual final employ lizard junior cancel benefit copper observe spider labor service odor dragon coconut twin hard sail")
         val legacySeed = toSeed(legacyMn.split(" "), "")
         val legacyKey = newMasterPrivateKeyFromMnemonic(legacyMn)
-        assertEquals(legacyKey.privateKey.toByteArray().hexString(), "140d51ebe0eecba895236984b59144c0c98f60cd21d470ff55910985611031f6")
+        assertEquals(legacyKey.privateKeyAsHex, "140d51ebe0eecba895236984b59144c0c98f60cd21d470ff55910985611031f6")
         val tipSeed = "35c7b06243a170bf9cfe68df3bb3082d50a35dc16ddb6f5ce1eb37cf2caeecc3".hexStringToByteArray()
         val argon2Kt = Argon2Kt()
         val spendSeed = argon2Kt.argon2IHash(tipSeed, legacyKey.privKeyBytes).rawHashAsByteArray()

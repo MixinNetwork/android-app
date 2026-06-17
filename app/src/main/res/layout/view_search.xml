@@ -28,7 +28,7 @@
         android:layout_marginStart="4dp"
         android:layout_marginEnd="4dp"
         android:background="@drawable/mixin_ripple"
-        android:padding="8dp"
+        android:padding="12dp"
         android:visibility="gone"
         tools:ignore="ContentDescription" />
 </merge>

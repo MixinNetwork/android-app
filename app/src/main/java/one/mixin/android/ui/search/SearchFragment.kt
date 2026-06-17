@@ -38,6 +38,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
@@ -181,7 +182,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                                             )
                                         } else {
                                             searchViewModel.insertUser(user = data)
-                                            showUserBottom(parentFragmentManager, data)
+                                            showUserBottom(parentFragmentManager, data, botEntrySource = AnalyticsTracker.BotSource.SEARCH_MAO_NAME)
                                         }
                                     }
                                 r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.User_not_found)
@@ -219,6 +220,9 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
                 override fun onChatClick(chatMinimal: ChatMinimal) {
                     binding.searchRv.hideKeyboard()
+                    if (chatMinimal.isBot()) {
+                        AnalyticsTracker.trackOpenBotConversation(AnalyticsTracker.BotSource.SEARCH_KEY_CONVERSATION, chatMinimal.ownerIdentityNumber)
+                    }
                     context?.let { ctx -> ConversationActivity.show(ctx, chatMinimal.conversationId) }
                 }
 
@@ -251,6 +255,8 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                     lifecycleScope.launch {
                         val app = searchViewModel.findOrSyncApp(appId)
                         if (app != null) {
+                            searchViewModel.updateRecentUsedBots(this@SearchFragment.defaultSharedPreferences, app.appId)
+                            AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SEARCH_MAO_NAME, app.appNumber)
                             WebActivity.show(requireContext(), url = app.homeUri, null, app = app)
                         } else {
                             toast(R.string.Bot_not_found)

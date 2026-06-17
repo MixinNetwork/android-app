@@ -58,14 +58,12 @@ class RefreshStickerAndRelatedAlbumJob(private val stickerId: String) : BaseJob(
                     } else {
                         null
                     }
-                mixinDatabase.runInTransaction {
-                    for (s in stickers) {
-                        stickerDao.insertUpdate(s)
-                        relationships?.add(StickerRelationship(albumId, s.stickerId))
-                    }
-                    relationships?.let { rs ->
-                        stickerRelationshipDao.insertList(rs)
-                    }
+                relationships?.addAll(stickers.map { StickerRelationship(albumId, it.stickerId) })
+                stickers.forEach {
+                    stickerDao.insertUpdate(it)
+                }
+                relationships?.let { rs ->
+                    stickerRelationshipDao.insertList(rs)
                 }
             }
         }

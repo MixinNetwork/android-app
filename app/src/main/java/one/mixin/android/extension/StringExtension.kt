@@ -31,6 +31,7 @@ import okio.GzipSource
 import okio.Source
 import okio.buffer
 import one.mixin.android.util.GzipException
+import org.sol4k.Base58
 import org.threeten.bp.Instant
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
@@ -54,13 +55,15 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import kotlin.math.abs
 import kotlin.math.roundToInt
-
 private const val QUIET_ZONE_SIZE = 4
 private val radii = FloatArray(8)
 
 fun String.generateQRCode(
     qrSize: Int,
     padding: Int = 32.dp,
+    innerPadding: Int = 0.dp,
+    foregroundColor: Int = Color.BLACK,
+    outputSize: Int? = null,
 ): Pair<Bitmap, Int> {
     require(isNotEmpty()) { "Found empty contents" }
     require(qrSize >= 0) { "Requested dimensions are too small: $qrSize" }
@@ -100,17 +103,23 @@ fun String.generateQRCode(
     blackPaint.style = Paint.Style.FILL
     canvas.drawRoundRect(
         RectF(padding / 2f, padding / 2f, size.toFloat() - padding / 2f, size.toFloat() - padding / 2f),
-        padding / 2f,
-        padding / 2f,
+        innerPadding / 2f,
+        innerPadding / 2f,
         blackPaint,
     )
-    blackPaint.color = Color.BLACK
+    blackPaint.color = foregroundColor
     val rect = GradientDrawable()
     rect.shape = GradientDrawable.RECTANGLE
     rect.cornerRadii = radii
-    var imageIgnore = ((size - padding * 2) / 4.65f / multiple).roundToInt()
-    if (imageIgnore % 2 != inputWidth % 2) {
-        imageIgnore++
+
+    val imageIgnore = if (innerPadding == 0) {
+        0
+    } else {
+        var ignore = (innerPadding / multiple).coerceAtLeast(1)
+        if (ignore % 2 != inputWidth % 2) {
+            ignore++
+        }
+        ignore
     }
     val imageBlockX = (inputWidth - imageIgnore) / 2
     for (a in 0..2) {
@@ -134,7 +143,7 @@ fun String.generateQRCode(
         }
         var r = sideQuadSize * multiple / 3.0f
         Arrays.fill(radii, r)
-        rect.setColor(-0x1000000)
+        rect.setColor(foregroundColor)
         rect.setBounds(x, y, x + sideQuadSize * multiple, y + sideQuadSize * multiple)
         rect.draw(canvas)
         canvas.drawRect(
@@ -151,7 +160,7 @@ fun String.generateQRCode(
         rect.draw(canvas)
         r = (sideQuadSize - 2) * multiple / 4.0f
         Arrays.fill(radii, r)
-        rect.setColor(-0x1000000)
+        rect.setColor(foregroundColor)
         rect.setBounds(x + multiple * 2, y + multiple * 2, x + (sideQuadSize - 2) * multiple, y + (sideQuadSize - 2) * multiple)
         rect.draw(canvas)
     }
@@ -171,7 +180,14 @@ fun String.generateQRCode(
         outputY += multiple
     }
     canvas.setBitmap(null)
-    return Pair(bitmap, imageIgnore * multiple - 2.dp)
+    val outputBitmap = outputSize?.let { size ->
+        if (bitmap.width == size && bitmap.height == size) {
+            bitmap
+        } else {
+            Bitmap.createScaledBitmap(bitmap, size, size, false)
+        }
+    } ?: bitmap
+    return Pair(outputBitmap, imageIgnore * multiple - 2.dp)
 }
 
 private fun has(
@@ -246,6 +262,18 @@ inline fun ByteArray.hmacSha256(key: ByteArray): ByteArray {
 
 inline fun String.isWebUrl(): Boolean {
     return startsWith("http://", true) || startsWith("https://", true)
+}
+
+fun String.toOpenInBrowserUrlOrNull(): String? {
+    val url = trim()
+    if (url.isBlank() || url.equals("undefined", true) || url.equals("null", true)) {
+        return null
+    }
+    val uri = Uri.parse(url)
+    return url.takeIf {
+        (uri.scheme.equals("http", true) || uri.scheme.equals("https", true)) &&
+            !uri.host.isNullOrBlank()
+    }
 }
 
 inline fun String.isAppUrl(): Boolean {
@@ -325,10 +353,25 @@ fun UUID.toByteArray(): ByteArray {
     return bb.array()
 }
 
-fun String.formatPublicKey(limit: Int = 50): String {
+fun String.formatPublicKey( limit: Int = 50, prefixLen: Int = 8, suffixLen: Int = 6): String {
     if (this.length <= limit) return this
-    return substring(0, 8) + "..." + substring(length - 6, length)
+    val prefix = substring(0, prefixLen.coerceAtMost(length))
+    val suffix = substring(length - suffixLen.coerceAtLeast(0), length)
+    return "$prefix...$suffix"
 }
+
+fun String.formatTransactionHash(): String =
+    formatPublicKey(limit = 14, prefixLen = 8, suffixLen = 6)
+
+fun String.isTransactionHashLike(): Boolean {
+    val normalized = removePrefix("0x").removePrefix("0X")
+    val isHex = normalized.length >= 40 && normalized.all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }
+    val isBase58 = length >= 32 && all { it in "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz" }
+    return isHex || isBase58
+}
+
+fun String.formatTransactionHashIfNeeded(): String =
+    if (isTransactionHashLike()) formatTransactionHash() else formatPublicKey()
 
 fun String.numberFormat(): String {
     if (this.isEmpty()) return this
@@ -414,6 +457,10 @@ fun BigDecimal.numberFormat12(): String {
     } catch (e: IllegalArgumentException) {
         this.toPlainString()
     }
+}
+
+fun String.numberFormat12(): String {
+    return runCatching { BigDecimal(this).numberFormat12() }.getOrNull() ?: this
 }
 
 fun BigDecimal.priceFormat2(): String {
@@ -704,16 +751,30 @@ inline fun SpannableStringBuilder.backgroundColor(color: Int): BackgroundColorSp
     BackgroundColorSpan(color)
 
 fun String.matchResourcePattern(resourcePatterns: Collection<String>?): Boolean {
-    fun toSchemeHostOrNull(url: String) =
-        try {
-            url.toUri().run { "$scheme://$host" }
+    val url: Uri = try {
+        this.toUri()
+    } catch (ignored: Exception) {
+        Uri.EMPTY
+    }
+    if (url == Uri.EMPTY) return false
+    val urlScheme: String = url.scheme?.lowercase(Locale.getDefault()) ?: return false
+    val urlHost: String = url.host?.lowercase(Locale.getDefault()) ?: return false
+    val urlPath: String = url.path ?: ""
+    return resourcePatterns?.any { pattern: String ->
+        val rule: Uri = try {
+            pattern.toUri()
         } catch (ignored: Exception) {
-            null
+            Uri.EMPTY
         }
-
-    val uri = toSchemeHostOrNull(this)
-    return resourcePatterns?.mapNotNull { pattern -> toSchemeHostOrNull(pattern) }
-        ?.find { pattern -> uri.equals(pattern, true) } != null
+        if (rule == Uri.EMPTY) return@any false
+        val ruleScheme: String = rule.scheme?.lowercase(Locale.getDefault()) ?: return@any false
+        val ruleHost: String = rule.host?.lowercase(Locale.getDefault()) ?: return@any false
+        val rulePath: String = rule.path ?: ""
+        val isSchemeMatches: Boolean = ruleScheme == urlScheme
+        val isHostMatches: Boolean = ruleHost == urlHost
+        val isPathMatches: Boolean = urlPath.startsWith(rulePath)
+        isSchemeMatches && isHostMatches && isPathMatches
+    } == true
 }
 
 // Copy from hidden API android.os.FileUtils.buildValidExtFilename
@@ -787,13 +848,19 @@ fun BigDecimal.currencyFormat(): String {
 
 fun String?.isValidMao(): Boolean {
     if (this.isNullOrBlank()) return false
-    val text = this.trimEnd('.').lowercase()
-    if (text.all { it.isDigit() }) return false
-    val regex = Regex("^[^\\sA-Z]{1,128}$")
-    return regex.matches(text)
+    val text = this.lowercase()
+    val regex = Regex("^[^\\sA-Z]{1,128}\\.mao$")
+    if (!regex.matches(text)) return false
+    val name = text.removeSuffix(".mao")
+    if (name.isBlank() || name.all { it.isDigit() }) return false
+    return true
 }
 
 fun String.isMao(): Boolean {
     val regex = Regex("^[^\\sA-Z]{1,128}\\.mao$")
     return regex.matches(this)
 }
+
+fun String.isValidBase58(): Boolean = runCatching {
+    Base58.decode(this)
+}.getOrNull() != null

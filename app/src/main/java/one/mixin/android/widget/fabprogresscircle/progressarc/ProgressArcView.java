@@ -15,6 +15,8 @@
  */
 package one.mixin.android.widget.fabprogresscircle.progressarc;
 
+import static one.mixin.android.widget.fabprogresscircle.utils.AnimationUtils.SHOW_SCALE_ANIM_DELAY;
+
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.ObjectAnimator;
@@ -23,8 +25,6 @@ import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.ProgressBar;
-
-import static one.mixin.android.widget.fabprogresscircle.utils.AnimationUtils.SHOW_SCALE_ANIM_DELAY;
 
 /**
  * This view contains the animated arc and depends totally on {@link ProgressArcDrawable} to get

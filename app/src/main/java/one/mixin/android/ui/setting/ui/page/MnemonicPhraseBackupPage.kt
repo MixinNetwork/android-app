@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting.ui.page
 
-import PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,6 +27,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 
 @Composable
@@ -66,7 +66,7 @@ fun MnemonicPhraseBackupPage(pop: () -> Unit, next: () -> Unit) {
                     Text(
                         stringResource(
                             if (Session.saltExported()) {
-                                R.string.Show_Mnemonic_Phrase
+                                R.string.show_mnemonic_phrase
                             } else {
                                 R.string.Backup_Mnemonic_Phrase
                             }

@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
@@ -20,10 +21,10 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDeviceBinding
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.sharedPreferences
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -98,8 +99,10 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight()
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.root.getSafeAreaInsetsTop()
+            }
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

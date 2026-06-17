@@ -25,10 +25,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.landing.MobileViewModel
+import one.mixin.android.ui.landing.LandingViewModel
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
 
 @Composable
@@ -37,31 +37,23 @@ fun MnemonicPhrasePage(
     errorInfo: String?,
     requestCaptcha: () -> Unit
 ) {
-    val viewModel = hiltViewModel<MobileViewModel>()
-    val mnemonicPhraseState by viewModel.mnemonicPhraseState.observeAsState(MnemonicPhraseState.Initial)
+    val viewModel = hiltViewModel<LandingViewModel>()
+    val mnemonicPhraseState by viewModel.mnemonicPhraseState.observeAsState(MnemonicPhraseState.Creating)
     MixinAppTheme {
-        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+        Column(modifier = Modifier.padding(horizontal = 20.dp).fillMaxWidth()) {
             Spacer(modifier = Modifier.height(120.dp))
             Icon(
                 modifier = Modifier.align(Alignment.CenterHorizontally),
-                painter = painterResource(
-                    if (mnemonicPhraseState == MnemonicPhraseState.Initial) {
-                        R.drawable.ic_mnemonic_phrase
-                    } else {
-                        R.drawable.ic_mnemonic_phrase_creaeting
-                    }
-                ),
+                painter = painterResource(R.drawable.ic_mnemonic_phrase_creaeting),
                 contentDescription = null,
                 tint = Color.Unspecified
             )
             Spacer(modifier = Modifier.height(24.dp))
             Text(
                 stringResource(
-                    if (mnemonicPhraseState == MnemonicPhraseState.Initial) {
-                        R.string.Create_Mnemonic_Phrase
-                    } else if (isSign){
+                    if (isSign){
                         R.string.Signing_in_to_your_account
-                    }else{
+                    } else {
                         R.string.Creating_your_account
                     }
                 ),
@@ -70,20 +62,6 @@ fun MnemonicPhrasePage(
             )
             Spacer(modifier = Modifier.height(16.dp))
             when (mnemonicPhraseState) {
-                MnemonicPhraseState.Initial -> {
-                    NumberedText(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .fillMaxWidth(), numberStr = "1", instructionStr = stringResource(R.string.mnemonic_phrase_instruction_1)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    NumberedText(
-                        modifier = Modifier
-                            .padding(horizontal = 16.dp)
-                            .fillMaxWidth(), numberStr = "2", instructionStr = stringResource(R.string.mnemonic_phrase_instruction_2)
-                    )
-                }
-
                 MnemonicPhraseState.Creating -> {
                     Text(
                         stringResource(R.string.mnemonic_phrase_take_long),
@@ -119,7 +97,7 @@ fun MnemonicPhrasePage(
                         color = Color(0xFFE8E5EE),
                     )
                 }
-            } else if (mnemonicPhraseState == MnemonicPhraseState.Failure || mnemonicPhraseState == MnemonicPhraseState.Initial) {
+            } else if (mnemonicPhraseState == MnemonicPhraseState.Failure) {
                 Button(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -139,13 +117,7 @@ fun MnemonicPhrasePage(
                     ),
                 ) {
                     Text(
-                        stringResource(
-                            if (mnemonicPhraseState == MnemonicPhraseState.Initial) {
-                                R.string.Create
-                            } else {
-                                R.string.Retry
-                            }
-                        ),
+                        stringResource(R.string.Retry),
                         color = Color.White
                     )
                 }
@@ -154,4 +126,3 @@ fun MnemonicPhrasePage(
         }
     }
 }
-

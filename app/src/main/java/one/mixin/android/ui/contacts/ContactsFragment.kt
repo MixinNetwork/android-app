@@ -15,9 +15,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import one.mixin.android.Constants.Account.PREF_DELETE_MOBILE_CONTACTS
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentContactsBinding
 import one.mixin.android.databinding.ViewContactHeaderBinding
 import one.mixin.android.databinding.ViewContactListEmptyBinding
+import one.mixin.android.event.MembershipEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openPermissionSetting
@@ -27,7 +29,7 @@ import one.mixin.android.job.UploadContactsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_MY_QR
-import one.mixin.android.ui.common.QrBottomSheetDialogFragment.Companion.TYPE_RECEIVE_QR
+import one.mixin.android.ui.common.ReceiveQrActivity
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
@@ -128,6 +130,14 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
                 contactAdapter.notifyDataSetChanged()
             }
         }
+        RxBus.listen(MembershipEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(pauseScope)
+            .subscribe { _ ->
+                if (isAdded) {
+                    contactAdapter.notifyDataSetChanged()
+                }
+            }
     }
 
     private fun hasContactPermission() =
@@ -218,8 +228,7 @@ class ContactsFragment : BaseFragment(R.layout.fragment_contacts) {
 
             override fun onReceiveQr(self: User?) {
                 self?.let {
-                    QrBottomSheetDialogFragment.newInstance(it.userId, TYPE_RECEIVE_QR)
-                        .showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+                    ReceiveQrActivity.show(requireContext(), it.userId)
                 }
             }
         }

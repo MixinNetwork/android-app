@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_upper_round"
+        android:foreground="?android:attr/selectableItemBackground">
+
+        <ImageView
+            android:id="@+id/close_iv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="8dp"
+            android:contentDescription="@string/Cancel"
+            android:foreground="@drawable/mixin_ripple"
+            android:padding="10dp"
+            android:src="@drawable/ic_close_black" />
+    </RelativeLayout>
+
+    <TextView
+        android:id="@+id/forget_pin_tv"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/Forget_Pin"
+        android:textColor="?attr/text_primary" />
+
+    <TextView
+        android:id="@+id/switch_account_tv"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/Switch_Account"
+        android:textColor="?attr/text_primary" />
+
+    <TextView
+        android:id="@+id/logs_tv"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/Logs"
+        android:textColor="?attr/text_primary" />
+
+</LinearLayout>

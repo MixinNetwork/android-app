@@ -11,6 +11,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
+import timber.log.Timber
 
 class RefreshPriceJob(private val assetId: String) : BaseJob(
     Params(PRIORITY_UI_HIGH)
@@ -22,19 +23,23 @@ class RefreshPriceJob(private val assetId: String) : BaseJob(
     }
 
     override fun onRun(): Unit = runBlocking {
-        val response = routeService.priceHistory(assetId, "1D")
-        if (response.isSuccess && response.data != null) {
-            response.data?.let {
-                if (it.data.isEmpty()) return@let
-                historyPriceDao.insert(it)
+        try {
+            val response = routeService.priceHistory(assetId, "1D")
+            if (response.isSuccess && response.data != null) {
+                response.data?.let {
+                    if (it.data.isEmpty()) return@let
+                    historyPriceDao.insert(it)
+                }
+            } else if (response.errorCode == ErrorHandler.AUTHENTICATION) {
+                val resp = userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
+                if (resp.isSuccess) {
+                    val sessionData = requireNotNull(resp.data)[0]
+                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
+                    participantSessionDao.insertSuspend(ParticipantSession(generateConversationId(sessionData.userId, Session.getAccountId()!!), sessionData.userId, sessionData.sessionId, publicKey = sessionData.publicKey))
+                }
             }
-        } else if (response.errorCode == ErrorHandler.AUTHENTICATION) {
-            val resp = userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
-            if (resp.isSuccess) {
-                val sessionData = requireNotNull(resp.data)[0]
-                MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-                participantSessionDao.insertSuspend(ParticipantSession(generateConversationId(sessionData.userId, Session.getAccountId()!!), sessionData.userId, sessionData.sessionId, publicKey = sessionData.publicKey))
-            }
+        } catch (e: Exception) {
+            Timber.e(e)
         }
     }
 }

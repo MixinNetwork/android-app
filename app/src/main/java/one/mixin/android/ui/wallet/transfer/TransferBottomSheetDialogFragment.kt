@@ -2,9 +2,10 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
-import android.view.View
 import androidx.activity.OnBackPressedCallback
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -14,11 +15,10 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.ChainAddress.EVM_ADDRESS
-import one.mixin.android.Constants.Account.ChainAddress.SOLANA_ADDRESS
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -33,7 +33,9 @@ import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.event.BotCloseEvent
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getRelativeTimeSpan
@@ -43,6 +45,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
@@ -66,11 +69,13 @@ import one.mixin.android.ui.common.biometric.displayAddress
 import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WithdrawalSuspendedBottomSheet
 import one.mixin.android.ui.wallet.transfer.data.TransferStatus
 import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.msg
 import one.mixin.android.util.viewBinding
@@ -117,8 +122,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         outState.putString("error_message", transferViewModel.errorMessage)
     }
 
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        super.onViewCreated(view, savedInstanceState)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         savedInstanceState?.let { bundle ->
             canRetry = bundle.getBoolean("can_retry", true)
             isSuccess = bundle.getBoolean("is_success", false)
@@ -145,17 +150,25 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             setCustomViewHeight(requireActivity().visibleDisplayHeight())
         }
         initType()
-        if (t is SafeMultisigsBiometricItem){
+        if (t is SafeMultisigsBiometricItem) {
             val item = t as SafeMultisigsBiometricItem
             if (item.safe != null) {
-                binding.bottom.setText(if(item.action == "sign") R.string.Approve else R.string.Reject)
+                binding.bottom.setText(if (item.action == SignatureAction.sign.name) R.string.Approve else R.string.Reject)
             }
-            if (t.state == PaymentStatus.paid.name || t.state == SignatureState.signed.name) {
-                transferViewModel.updateStatus(TransferStatus.SIGNED)
-                binding.transferAlert.isVisible = false
+        }
+        if (t is AddressManageBiometricItem) {
+            binding.walletLabel.setBackgroundColor(requireContext().colorFromAttribute(R.attr.bg_white))
+        }
+
+        if (!isSuccess) {
+            if (t is SafeMultisigsBiometricItem) {
+                if (t.state == PaymentStatus.paid.name || t.state == SignatureState.signed.name) {
+                    transferViewModel.updateStatus(TransferStatus.SIGNED)
+                    binding.transferAlert.isVisible = false
+                }
+            } else {
+                transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
             }
-        } else {
-            transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
         }
         when (t) {
             is SafeMultisigsBiometricItem -> {
@@ -164,7 +177,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     lifecycleScope.launch {
                         withContext(Dispatchers.IO) {
                             item.safe.operation.transaction.recipients.forEach { item ->
-                                item.label = bottomViewModel.findAddressByReceiver(item.address, "")
+                                item.label = bottomViewModel.findAddressByDestination(item.address, "", t.asset?.chainId)
                             }
                         }
                         binding.content.render(item, emptyList(), emptyList()) {}
@@ -199,12 +212,31 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             }
         }
+        (t as? WithdrawBiometricItem)?.let { withdraw ->
+            val isFeeWaived = withdraw.isFeeWaived
+            if (isFeeWaived) {
+                binding.content.renderWithdrawFeeFree(withdraw) {
+                    CrossWalletFeeFreeBottomSheetDialogFragment
+                        .newInstance()
+                        .show(parentFragmentManager, CrossWalletFeeFreeBottomSheetDialogFragment.TAG)
+                }
+            }
+        }
+        binding.root.roundTopOrBottom(12.dp.toFloat(), true, false)
+        val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_wallet_privacy_white)
+        drawable?.setBounds(0, 0, 22.dp, 22.dp)
+        binding.walletTv.compoundDrawablePadding = 4.dp
+        binding.walletTv.setCompoundDrawablesRelative(null, null, drawable, null)
 
         binding.bottom.setOnClickListener({
+            callback?.onDismiss(isSuccess)
+            callback = null
             dismiss()
         }, {
             showPin()
         }, {
+            callback?.onDismiss(isSuccess)
+            callback = null
             dismiss()
         })
 
@@ -216,7 +248,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
 
         lifecycleScope.launch {
-            transferViewModel.status.collect { status ->
+            transferViewModel.status.collectLatest { status ->
                 binding.bottom.updateStatus(status, canRetry)
                 when (status) {
                     TransferStatus.AWAITING_CONFIRMATION -> {
@@ -265,7 +297,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (transferViewModel.status.value == TransferStatus.IN_PROGRESS) {
-                    // do noting
+                    // do nothing
                 } else {
                     isEnabled = false
                     dismiss()
@@ -306,7 +338,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     if (multisigsBiometricItem.safe != null) {
                         if (multisigsBiometricItem.state == PaymentStatus.paid.name) {
                             TransferType.safeSigned
-                        } else if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
+                        } else if (multisigsBiometricItem.action == SignatureAction.revoke.name) {
                             TransferType.reject
                         } else {
                             TransferType.approve
@@ -314,7 +346,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     } else {
                         if (multisigsBiometricItem.state == PaymentStatus.paid.name) {
                             TransferType.signed
-                        } else if (multisigsBiometricItem.action == SignatureAction.unlock.name) {
+                        } else if (multisigsBiometricItem.action == SignatureAction.revoke.name) {
                             TransferType.unMulSign
                         } else {
                             TransferType.mutlSign
@@ -390,18 +422,14 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 // check withdraw within 30 days
                 val withdrawBiometricItem = t as WithdrawBiometricItem
                 val tips = mutableListOf<String>()
-                val ethAddress = PropertyHelper.findValueByKey(EVM_ADDRESS, "")
-                val solAddress = PropertyHelper.findValueByKey(SOLANA_ADDRESS, "")
-
-                val addressWarning = withdrawBiometricItem.address.destination !in listOf(ethAddress, solAddress) &&
-                    withContext(Dispatchers.IO) {
-                        val snapshot = transferViewModel.findLastWithdrawalSnapshotByReceiver(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag))
-                        if (snapshot != null) {
-                            !isCreatedAtWithinLast30Days(snapshot.createdAt)
-                        } else {
-                            false
-                        }
+                val addressWarning = withContext(Dispatchers.IO) {
+                    val snapshot = transferViewModel.findLastWithdrawalSnapshotByReceiver(formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag))
+                    if (snapshot != null) {
+                        !isCreatedAtWithinLast30Days(snapshot.createdAt)
+                    } else {
+                        false
                     }
+                }
 
                 if (addressWarning) {
                     tips.add(getString(R.string.address_validity_reminder, formatDestination(withdrawBiometricItem.address.destination, withdrawBiometricItem.address.tag), withdrawBiometricItem.address.label, 30))
@@ -612,6 +640,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun showPin() {
+        transferViewModel.errorMessage = null
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
             lifecycleScope.launch(
                 CoroutineExceptionHandler { _, error ->
@@ -643,7 +672,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                             is AddressTransferBiometricItem -> {
                                 trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address, null, null, nowInUtc())
-                                bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, pin, t.traceId, t.memo, t.reference)
+                                bottomViewModel.kernelAddressTransaction(asset.assetId, t.address, t.amount, t.threshold, pin, t.traceId, t.memo, t.reference)
                             }
 
                             is SafeMultisigsBiometricItem -> {
@@ -656,10 +685,11 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 trace = null
                                 if (addressManageBiometricItem.type == ADD) {
                                     val assetId = addressManageBiometricItem.asset!!.assetId
+                                    val chainId = addressManageBiometricItem.asset!!.chainId
                                     val destination = addressManageBiometricItem.destination
                                     val label = addressManageBiometricItem.label
                                     val tag = addressManageBiometricItem.tag
-                                    bottomViewModel.syncAddr(assetId, destination, label, tag, pin).apply {
+                                    bottomViewModel.syncAddr(assetId, chainId, destination, label, tag, pin).apply {
                                         if (isSuccess) {
                                             bottomViewModel.saveAddr(data as Address)
                                         }
@@ -677,7 +707,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             is WithdrawBiometricItem -> {
                                 trace = Trace(t.traceId, asset.assetId, t.amount, null, t.address.destination, t.address.tag, null, nowInUtc())
                                 val fee = requireNotNull(t.fee) { "required fee can not be null" }
-                                bottomViewModel.kernelWithdrawalTransaction(Constants.MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin)
+                                bottomViewModel.kernelWithdrawalTransaction(Constants.MIXIN_FEE_USER_ID, t.traceId, asset.assetId, fee.token.assetId, t.amount, fee.fee, t.address.destination, t.address.tag, t.memo, pin, t.toWallet, t.isFeeWaived)
                             }
 
                             else -> {
@@ -695,6 +725,16 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     )
                     context?.updatePinCheck()
                     isSuccess = true
+                    when (t) {
+                        is AddressManageBiometricItem -> {
+                            if (t.type == ADD) {
+                                AnalyticsTracker.trackAddressBookAddEnd()
+                            }
+                        }
+                        is TransferBiometricItem, is AddressTransferBiometricItem, is WithdrawBiometricItem -> {
+                            AnalyticsTracker.trackAssetSendEnd()
+                        }
+                    }
 
                     val transactionHash = runCatching {
                         val data = response.data as? List<TransactionResponse>
@@ -829,9 +869,10 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return "$pre ($post)"
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDismiss(dialog: DialogInterface) {
         callback?.onDismiss(isSuccess)
+        callback = null
+        super.onDismiss(dialog)
     }
 
     private var isSuccess = false

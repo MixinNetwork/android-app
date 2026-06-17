@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting.ui.page
 
-import PageScaffold
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -47,7 +46,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.ExportRequest
@@ -59,7 +58,10 @@ import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toHex
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.WalletViewModel
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
 
 @Composable
 fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Unit) {
@@ -70,6 +72,41 @@ fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Uni
     var errorInfo by remember { mutableStateOf("") }
     val viewModel = hiltViewModel<WalletViewModel>()
     val coroutineScope = rememberCoroutineScope()
+    val onPinSubmit: () -> Unit = submit@{
+        if (isLoading) return@submit
+        if (pinCode.length != 6) return@submit
+        isLoading = true
+        coroutineScope.launch {
+            runCatching {
+                val selfId: String = Session.getAccountId()!!
+                val seed = tip.getOrRecoverTipPriv(context, pinCode).getOrThrow()
+                val edKey = tip.getMnemonicEdKey(context, pinCode, seed)
+                viewModel
+                    .saltExport(
+                        ExportRequest(
+                            publicKey = edKey.publicKey.toHex(),
+                            signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
+                            pinBase64 = viewModel.getEncryptedTipBody(selfId, pinCode),
+                        )
+                    )
+            }.onSuccess { response ->
+                if (response.isSuccess) {
+                    response.data?.let {
+                        Session.storeAccount(it)
+                    }
+                    next(pinCode)
+                } else {
+                    isLoading = false
+                    errorInfo = context.getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+                    pinCode = ""
+                }
+            }.onFailure { t ->
+                isLoading = false
+                errorInfo = ErrorHandler.getErrorMessage(t)
+                pinCode = ""
+            }
+        }
+    }
     val list = listOf(
         "1",
         "2",
@@ -127,36 +164,7 @@ fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Uni
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(48.dp),
-                    onClick = {
-                        isLoading = true
-                        coroutineScope.launch {
-                            runCatching {
-                                val selfId = Session.getAccountId()!!
-                                val seed = tip.getOrRecoverTipPriv(context, pinCode).getOrThrow()
-                                val edKey = tip.getMnemonicEdKey(context, pinCode, seed)
-                                viewModel
-                                    .saltExport(
-                                        ExportRequest(
-                                            publicKey = edKey.publicKey.toHex(),
-                                            signature = initFromSeedAndSign(edKey.privateKey, selfId.toByteArray()).toHex(),
-                                            pinBase64 = viewModel.getEncryptedTipBody(selfId, pinCode),
-                                        )
-                                    )
-                            }.onSuccess { response ->
-                                if (response.isSuccess) {
-                                    next(pinCode)
-                                } else {
-                                    isLoading = false
-                                    errorInfo = response.errorDescription
-                                    pinCode = ""
-                                }
-                            }.onFailure { t ->
-                                isLoading = false
-                                errorInfo = t.message ?: ""
-                                pinCode = ""
-                            }
-                        }
-                    },
+                    onClick = onPinSubmit,
                     colors =
                     ButtonDefaults.outlinedButtonColors(
                         backgroundColor = if (pinCode.length < 6) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent
@@ -239,6 +247,9 @@ fun MnemonicPhraseBackupPinPage(tip: Tip, pop: () -> Unit, next: (String) -> Uni
                                                     }
                                                 } else if (pinCode.length < 6) {
                                                     pinCode += list[index]
+                                                    if (pinCode.length == 6) {
+                                                        onPinSubmit()
+                                                    }
                                                 }
                                             }
                                         },

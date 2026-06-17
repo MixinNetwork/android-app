@@ -6,6 +6,7 @@ import kotlinx.coroutines.runBlocking
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.event.MembershipEvent
 import one.mixin.android.event.TipEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putInt
@@ -33,8 +34,11 @@ class RefreshAccountJob(
             if (response != null && response.isSuccess && response.data != null) {
                 val account = response.data ?: return@runBlocking
                 updateAccount(account)
+                if (account.membership?.isMembership() == true) {
+                    RxBus.publish(MembershipEvent())
+                }
                 if (checkTip) { // from home page
-                    AnalyticsTracker.setHasEmergencyContact(account)
+                    AnalyticsTracker.setHasRecoveryContact(account)
                     AnalyticsTracker.setMembership(account)
                 }
 
@@ -56,7 +60,7 @@ class RefreshAccountJob(
 }
 
 fun updateAccount(account: Account) {
-    val db = MixinDatabase.getDatabase(MixinApplication.appContext)
+    val db = MixinDatabase.getDatabase(MixinApplication.appContext, account.identityNumber)
     val u = account.toUser()
     db.userDao().insertUpdate(u, db.appDao())
     Session.storeAccount(account)

@@ -55,6 +55,7 @@
         android:textSize="14sp"
         android:gravity="end"
         android:maxLines="1"
+        android:maxWidth="120dp"
         android:textColor="?attr/text_primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="@id/avatar"/>
@@ -79,6 +80,7 @@
         android:textSize="14sp"
         android:gravity="end"
         android:maxLines="1"
+        android:maxWidth="120dp"
         android:textColor="?attr/text_primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/avatar"/>

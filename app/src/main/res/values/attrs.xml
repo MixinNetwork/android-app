@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <declare-styleable name="AutosizeTextView">
+        <attr name="minTextSize" format="dimension" />
+        <attr name="maxTextSize" format="dimension" />
+    </declare-styleable>
     <declare-styleable name="MaterialSearchView">
         <attr name="searchCloseIcon" format="integer" />
         <attr name="searchBackIcon" format="integer" />
@@ -139,6 +143,7 @@
     </declare-styleable>
     <declare-styleable name="SearchView">
         <attr name="circle_clear_icon" format="boolean" />
+        <attr name="drawable_icon" format="reference" />
         <attr name="android:hint" format="string"/>
         <attr name="android:imeOptions" format="integer" />
     </declare-styleable>
@@ -265,6 +270,9 @@
         <attr name="minWidth" format="dimension" />
         <attr name="maxLength" format="integer" />
         <attr name="lines" format="integer" />
+    </declare-styleable>
+    <declare-styleable name="SendReceiveView">
+        <attr name="walletHomeStyle" format="boolean" />
     </declare-styleable>
     <declare-styleable name="InscriptionView">
         <attr name="iconSize" format="dimension"/>

@@ -98,7 +98,7 @@ class AlertViewModel
         }
     }
 
-    private fun addAlertBot(){
+    private fun addAlertBot() {
         viewModelScope.launch(Dispatchers.IO) {
             val bot = userRepository.getUserById(MIXIN_ALERT_USER_ID)
             if (bot == null || bot.relationship != "FRIEND") {

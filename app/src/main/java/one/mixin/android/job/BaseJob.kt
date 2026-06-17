@@ -8,6 +8,7 @@ import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.CoroutineScope
+import one.mixin.android.Constants
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.LocalJobException
@@ -27,7 +28,6 @@ import one.mixin.android.api.service.TipService
 import one.mixin.android.api.service.TokenService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.api.service.UtxoService
-import one.mixin.android.api.service.Web3Service
 import one.mixin.android.crypto.EncryptedProtocol
 import one.mixin.android.crypto.JobSenderKey
 import one.mixin.android.crypto.SignalProtocol
@@ -75,16 +75,29 @@ import one.mixin.android.db.TopAssetDao
 import one.mixin.android.db.TranscriptMessageDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.pending.PendingDatabase
+import one.mixin.android.db.web3.SafeWalletsDao
+import one.mixin.android.db.web3.WalletOutputDao
+import one.mixin.android.db.web3.Web3AddressDao
+import one.mixin.android.db.web3.Web3ChainDao
+import one.mixin.android.db.web3.Web3RawTransactionDao
+import one.mixin.android.db.web3.Web3TokenDao
+import one.mixin.android.db.web3.Web3TokensExtraDao
+import one.mixin.android.db.web3.Web3TransactionDao
+import one.mixin.android.db.web3.Web3WalletDao
+import one.mixin.android.db.web3.vo.Web3Token
+import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.session.MissingAccountScopeException
 import one.mixin.android.tip.Tip
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
 import java.io.IOException
+import java.math.BigDecimal
 import java.net.SocketTimeoutException
 import javax.inject.Inject
 
@@ -301,6 +314,10 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
+    lateinit var walletOutputDao: WalletOutputDao
+
+    @Inject
+    @Transient
     lateinit var rawTransactionDao: RawTransactionDao
 
     @Inject
@@ -345,6 +362,38 @@ abstract class BaseJob(params: Params) : Job(params) {
 
     @Inject
     @Transient
+    lateinit var web3TokenDao: Web3TokenDao
+
+    @Inject
+    @Transient
+    lateinit var web3TokensExtraDao: Web3TokensExtraDao
+
+    @Inject
+    @Transient
+    lateinit var web3TransactionDao: Web3TransactionDao
+
+    @Inject
+    @Transient
+    lateinit var web3AddressDao: Web3AddressDao
+
+    @Inject
+    @Transient
+    lateinit var web3WalletDao: Web3WalletDao
+
+    @Inject
+    @Transient
+    lateinit var safeWalletsDao: SafeWalletsDao
+
+    @Inject
+    @Transient
+    lateinit var web3ChainDao: Web3ChainDao
+
+    @Inject
+    @Transient
+    lateinit var web3RawTransactionDao: Web3RawTransactionDao
+
+    @Inject
+    @Transient
     lateinit var signalProtocol: SignalProtocol
 
     @Inject
@@ -371,10 +420,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Transient
     lateinit var tipService: TipService
 
-    @Inject
-    @Transient
-    lateinit var web3Service: Web3Service
-
     @ApplicationScope
     @Transient
     @Inject
@@ -385,6 +430,9 @@ abstract class BaseJob(params: Params) : Job(params) {
     lateinit var jobSenderKey: JobSenderKey
 
     open fun shouldRetry(throwable: Throwable): Boolean {
+        if (throwable is MissingAccountScopeException) {
+            return false
+        }
         if (throwable is SocketTimeoutException) {
             return true
         }
@@ -406,6 +454,56 @@ abstract class BaseJob(params: Params) : Job(params) {
                             )
                     )
             )
+    }
+
+    protected suspend fun refreshBitcoinTokenAmountByOutputs(walletId: String, address: String) {
+        if (walletId.isBlank() || address.isBlank()) return
+        val wallet = web3WalletDao.getWalletById(walletId) ?:return
+        if (wallet.isWatch()) return
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalAmount.stripTrailingZeros().toPlainString()
+        web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
+    }
+
+    protected suspend fun refreshBitcoinTokenAmountByWalletId(walletId: String) {
+        val address: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return
+        refreshBitcoinTokenAmountByOutputs(walletId, address)
+    }
+
+    protected suspend fun refreshBitcoinTokenAmountByDestination(destination: String) {
+        val walletId: String = web3AddressDao.getWalletByDestination(destination)?.id ?: return
+        refreshBitcoinTokenAmountByOutputs(walletId, destination)
+    }
+
+    protected suspend fun applyBitcoinTokenBalanceBeforeInsert(walletId: String, token: Web3Token): Web3Token {
+        if (token.assetId != Constants.ChainId.BITCOIN_CHAIN_ID) return token
+        val btcAddress: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return token
+        val amounts: List<String> = walletOutputDao.findPendingAndUnspentAmounts(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        if (amounts.isEmpty()) return token
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalAmount.stripTrailingZeros().toPlainString()
+        return token.copy(balance = amount)
+    }
+
+    protected suspend fun applyBitcoinTokenBalanceBeforeInsert(walletId: String, tokens: List<Web3Token>): List<Web3Token> {
+        if (tokens.none { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) return tokens
+        val wallet = web3WalletDao.getWalletById(walletId) ?:return tokens
+        if (wallet.isWatch()) return tokens
+        val btcAddress: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return tokens
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalAmount.stripTrailingZeros().toPlainString()
+        return tokens.map { token ->
+            if (token.assetId == Constants.ChainId.BITCOIN_CHAIN_ID) token.copy(balance = amount) else token
+        }
+    }
+
+    protected suspend fun applyBitcoinTokenBalanceBeforeInsertByDestination(destination: String, token: Web3Token): Web3Token {
+        if (token.assetId != Constants.ChainId.BITCOIN_CHAIN_ID) return token
+        val amounts: List<String> = walletOutputDao.findPendingAndUnspentAmounts(destination, Constants.ChainId.BITCOIN_CHAIN_ID)
+        if (amounts.isEmpty()) return token
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(destination, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val amount: String = totalAmount.stripTrailingZeros().toPlainString()
+        return token.copy(balance = amount)
     }
 
     public override fun shouldReRunOnThrowable(

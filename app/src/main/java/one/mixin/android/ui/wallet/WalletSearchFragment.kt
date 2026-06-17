@@ -34,6 +34,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.SearchDefaultAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
 import java.util.concurrent.TimeUnit
 
@@ -217,7 +218,7 @@ class WalletSearchFragment : BaseFragment() {
                 val localAssets = withContext(Dispatchers.IO) { viewModel.fuzzySearchAssets(query) }
                 searchAdapter.submitList(localAssets)
 
-                val remoteAssets = withContext(Dispatchers.IO) { viewModel.queryAsset(query) }
+                val remoteAssets = withContext(Dispatchers.IO) { viewModel.queryAsset(null, query) }
                 val result = sortQueryAsset(query, localAssets, remoteAssets)
 
                 searchAdapter.submitList(result)
@@ -235,6 +236,7 @@ class WalletSearchFragment : BaseFragment() {
                 assetId: String,
                 tokenItem: TokenItem?,
             ) {
+                AnalyticsTracker.trackSearchItemSelect(AnalyticsTracker.SearchItemType.ASSET, AnalyticsTracker.SearchSource.WALLET)
                 binding.searchEt.hideKeyboard()
                 if (tokenItem != null) {
                     view?.navigate(

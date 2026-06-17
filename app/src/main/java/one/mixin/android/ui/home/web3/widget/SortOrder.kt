@@ -1,7 +1,5 @@
 package one.mixin.android.ui.home.web3.widget
 
-import one.mixin.android.ui.home.web3.widget.MarketSort.entries
-
 enum class MarketSort(val value: Int) {
     RANK_ASCENDING(0),
     RANK_DESCENDING(1),
@@ -13,8 +11,12 @@ enum class MarketSort(val value: Int) {
     TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING(7);
 
     companion object {
+        fun fromValueOrNull(value: Int): MarketSort? {
+            return entries.firstOrNull { it.value == value }
+        }
+
         fun fromValue(value: Int): MarketSort {
-            return entries.firstOrNull { it.value == value } ?: RANK_ASCENDING
+            return fromValueOrNull(value) ?: RANK_ASCENDING
         }
     }
 }

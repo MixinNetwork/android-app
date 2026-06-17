@@ -28,7 +28,7 @@ fun NumberedText(modifier: Modifier, numberStr: String, instructionStr: String, 
                 .background(MixinAppTheme.colors.backgroundWindow)
                 .constrainAs(number) {
                     start.linkTo(parent.start)
-                    top.linkTo(parent.top, 2.dp)
+                    top.linkTo(parent.top, 3.dp)
                 },
             color = MixinAppTheme.colors.textMinor,
             fontSize = 12.sp,

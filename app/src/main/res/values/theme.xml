@@ -53,9 +53,6 @@
     <attr name="bg_tip_info" format="color|reference" />
     <attr name="bg_tip_info_border" format="color|reference" />
 
-    <attr name="ic_wallet_swap" format="color|reference" />
-    <attr name="ic_wallet_receive" format="color|reference" />
-    <attr name="ic_wallet_send" format="color|reference" />
     <attr name="music_played" format="color|reference" />
     <attr name="music_unplayed" format="color|reference" />
     <attr name="music_buffered" format="color|reference" />
@@ -85,5 +82,6 @@
     <attr name="icon_chain" format="color|reference" />
     <attr name="bg_market_card" format="reference" />
     <attr name="ic_logo" format="reference" />
+    <attr name="market_logo" format="reference" />
     <attr name="badge_red" format="color|reference" />
 </resources>

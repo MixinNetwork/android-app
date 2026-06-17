@@ -53,7 +53,6 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
-import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.media.AudioEndStatus
 import one.mixin.android.media.OpusAudioRecorder
 import one.mixin.android.util.AudioPlayer

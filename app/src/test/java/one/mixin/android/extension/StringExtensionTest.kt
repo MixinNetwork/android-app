@@ -2,8 +2,26 @@ package one.mixin.android.extension
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class StringExtensionTest {
+    @Test
+    fun formatTransactionHashIfNeeded() {
+        assertEquals(
+            "0x8863D3...94Ce19",
+            "0x8863D37FACfc0EF866893609aaF2d871bf94Ce19".formatTransactionHashIfNeeded(),
+        )
+        assertEquals(
+            "5pH6im2Q...5WXhmq",
+            "5pH6im2QHBHRFhTaGjZmPkfaCLTZUntWxZ584T5WXhmq".formatTransactionHashIfNeeded(),
+        )
+        assertEquals("ikk", "ikk".formatTransactionHashIfNeeded())
+    }
+
     @Test
     fun getPattern() {
         val s1 = "12345678901"
@@ -156,5 +174,48 @@ class StringExtensionTest {
 
         assertEquals("hello*520*你*好*", s1.joinStar())
         assertEquals("a*1*b*2*c*3*哈*4*de*哈***#* ~*6*f*", s2.joinStar())
+    }
+
+    @Test
+    fun matchResourcePattern() {
+        val inputUrlWithSubPath: String = "https://example.com/a/b"
+        assertTrue(inputUrlWithSubPath.matchResourcePattern(listOf("https://example.com/a")))
+        assertFalse(inputUrlWithSubPath.matchResourcePattern(listOf("https://example.com/abc")))
+        val inputUrl: String = "https://example.com/a"
+        assertFalse(inputUrl.matchResourcePattern(listOf("https://other.com/a")))
+        assertFalse(inputUrl.matchResourcePattern(listOf("http://example.com/a")))
+        val inputUrlWithUpperCase: String = "HTTPS://EXAMPLE.COM/a/b"
+        assertTrue(inputUrlWithUpperCase.matchResourcePattern(listOf("https://example.com/a")))
+        assertTrue(inputUrlWithSubPath.matchResourcePattern(listOf("not a url", "https://example.com/a")))
+        assertFalse(inputUrl.matchResourcePattern(null))
+        assertFalse(inputUrl.matchResourcePattern(emptyList()))
+        assertTrue(inputUrl.matchResourcePattern(listOf("https://example.com")))
+        val inputUrlWithTrailingSlash: String = "https://example.com/a"
+        assertTrue(inputUrlWithTrailingSlash.matchResourcePattern(listOf("https://example.com/a")))
+        assertFalse(inputUrl.matchResourcePattern(listOf("https://example.com/a/")))
+    }
+
+    @Test
+    fun isMixinUrlRecognizesHttpsBuy() {
+        assertTrue("https://mixin.one/buy".isMixinUrl())
+    }
+
+    @Test
+    fun isMixinUrlRecognizesMixinBuy() {
+        assertTrue("mixin://mixin.one/buy".isMixinUrl())
+    }
+
+    @Test
+    fun openInBrowserUrlRequiresExplicitWebScheme() {
+        assertEquals("https://mixin.one/pay", " https://mixin.one/pay ".toOpenInBrowserUrlOrNull())
+        assertEquals("http://mixin.one/pay", "http://mixin.one/pay".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "mixin.one/pay".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "http:foo".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "https:mixin.one".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "https://".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "undefined".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "javascript:alert(1)".toOpenInBrowserUrlOrNull())
+        assertEquals(null, "mixin://codes/test".toOpenInBrowserUrlOrNull())
     }
 }

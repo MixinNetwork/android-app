@@ -2,7 +2,9 @@ package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -12,6 +14,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -25,9 +28,10 @@ import one.mixin.android.api.ServerErrorException
 import one.mixin.android.databinding.FragmentTransferBottomSheetBinding
 import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
-import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.putLong
+import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
@@ -37,11 +41,8 @@ import one.mixin.android.tip.exception.TipNodeException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
-import one.mixin.android.ui.common.biometric.AddressTransferBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricInfo
-import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.ui.common.biometric.UtxoException
-import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.setting.SettingActivity
@@ -80,6 +81,28 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
     private val binding by viewBinding(FragmentTransferBottomSheetBinding::inflate)
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString("transfer_status", transferViewModel.status.value.name)
+        outState.putBoolean("can_retry", canRetry)
+        outState.putBoolean("is_success", isSuccess)
+        outState.putString("error_message", transferViewModel.errorMessage)
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        savedInstanceState?.let { bundle ->
+            canRetry = bundle.getBoolean("can_retry", true)
+            isSuccess = bundle.getBoolean("is_success", false)
+            bundle.getString("error_message")?.let { errorMessage ->
+                transferViewModel.errorMessage = errorMessage
+            }
+            bundle.getString("transfer_status")?.let { status ->
+                transferViewModel.updateStatus(TransferStatus.valueOf(status))
+            }
+        }
+    }
+
     @SuppressLint("RestrictedApi", "SetTextI18n")
     override fun setupDialog(
         dialog: Dialog,
@@ -87,6 +110,11 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
+        binding.root.roundTopOrBottom(12.dp.toFloat(), true, false)
+        val drawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_wallet_privacy_white)
+        drawable?.setBounds(0, 0, 22.dp, 22.dp)
+        binding.walletTv.compoundDrawablePadding = 4.dp
+        binding.walletTv.setCompoundDrawablesRelative(null, null, drawable, null)
         dialog.setCanceledOnTouchOutside(false)
         (dialog as BottomSheet).apply {
             onBackPressedDispatcher.addCallback(this, onBackPressedCallback)
@@ -94,7 +122,7 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             setCustomViewHeight(requireActivity().visibleDisplayHeight())
         }
         initType()
-        transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
+        if (!isSuccess) transferViewModel.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
 
         binding.bottom.setOnClickListener({
             dismiss()
@@ -122,13 +150,19 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 null
             }
 
-            binding.content.render(invoice, tokenItems, receivers) { user ->
+            val xin = transferViewModel.findXIN()
+            if (xin == null) {
+                dismiss()
+                return@launch
+            }
+
+            binding.content.render(invoice, tokenItems, receivers, xin) { user ->
                 if (user.userId != Session.getAccountId()) {
                     showUserBottom(parentFragmentManager, user)
                 }
             }
 
-            transferViewModel.status.collect { status ->
+            transferViewModel.status.collectLatest { status ->
                 binding.bottom.updateStatus(status, canRetry)
                 when (status) {
                     TransferStatus.AWAITING_CONFIRMATION -> {
@@ -173,7 +207,7 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 if (transferViewModel.status.value == TransferStatus.IN_PROGRESS) {
-                    // do noting
+                    // do nothing
                 } else {
                     isEnabled = false
                     dismiss()
@@ -325,6 +359,7 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     }
 
     private fun showPin() {
+        transferViewModel.errorMessage = null
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
             lifecycleScope.launch(
                 CoroutineExceptionHandler { _, error ->

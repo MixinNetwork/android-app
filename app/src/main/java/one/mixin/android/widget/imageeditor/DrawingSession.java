@@ -2,7 +2,9 @@ package one.mixin.android.widget.imageeditor;
 
 import android.graphics.Matrix;
 import android.graphics.PointF;
+
 import androidx.annotation.NonNull;
+
 import one.mixin.android.widget.imageeditor.model.EditorElement;
 import one.mixin.android.widget.imageeditor.renderers.BezierDrawingRenderer;
 

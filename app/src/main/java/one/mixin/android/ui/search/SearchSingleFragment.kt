@@ -33,6 +33,7 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
@@ -130,11 +131,11 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
         adapter.onItemClickListener =
             object : SearchFragment.OnSearchClickListener {
                 override fun onTipClick() {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onUrlClick(url: String) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onAssetClick(tokenItem: TokenItem) {
@@ -144,9 +145,12 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 override fun onMarketClick(market: Market) {
                     lifecycleScope.launch {
                         searchViewModel.findMarketItemByCoinId(market.coinId)?.let { marketItem ->
-                            searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.MARKET, iconUrl = marketItem.iconUrl, title = marketItem.symbol, primaryKey = marketItem.coinId))
-                            RxBus.publish(SearchEvent())
-                            WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                            WalletActivity.showWithMarket(
+                                requireActivity(),
+                                marketItem,
+                                Destination.Market,
+                                AnalyticsTracker.MarketSource.MORE_SEARCH,
+                            )
                         }
                     }
                 }
@@ -158,7 +162,10 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 }
 
                 override fun onBotClick(bot: SearchBot) {
-                    val f = UserBottomSheetDialogFragment.newInstance(bot.toUser())
+                    val f = UserBottomSheetDialogFragment.newInstance(
+                        bot.toUser(),
+                        botEntrySource = AnalyticsTracker.BotSource.SEARCH_KEY_CONTACT,
+                    )
                     searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, iconUrl = bot.avatarUrl, title = bot.fullName, subTitle = bot.identityNumber, primaryKey = bot.appId))
                     RxBus.publish(SearchEvent())
                     f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
@@ -172,6 +179,9 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
 
                 override fun onChatClick(chatMinimal: ChatMinimal) {
                     binding.searchRv.hideKeyboard()
+                    if (chatMinimal.isBot()) {
+                        AnalyticsTracker.trackOpenBotConversation(AnalyticsTracker.BotSource.SEARCH_KEY_CONVERSATION, chatMinimal.ownerIdentityNumber)
+                    }
                     context?.let { ctx -> ConversationActivity.show(ctx, chatMinimal.conversationId) }
                 }
 

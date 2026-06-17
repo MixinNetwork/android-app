@@ -11,8 +11,10 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerAlbumManagementBinding
+import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationViewModel
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerAlbumAdded
@@ -33,6 +35,13 @@ class StickerAlbumManagementFragment : BaseFragment(R.layout.fragment_sticker_al
     private val albumAdapter = StickerAlbumManagementAdapter()
 
     private lateinit var itemTouchHelper: ItemTouchHelper
+
+    override fun onResume() {
+        super.onResume()
+        activity?.window?.let { window ->
+            SystemUIManager.lightUI(window, !requireContext().booleanFromAttribute(R.attr.flag_night))
+        }
+    }
 
     override fun onViewCreated(
         view: View,

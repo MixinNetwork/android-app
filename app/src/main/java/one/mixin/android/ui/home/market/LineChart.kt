@@ -73,8 +73,14 @@ private fun maxRange(): Float {
 }
 
 @Composable
-fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, type: String? = null, onHighlightChange: ((Int) -> Unit)? = null) {
-    val (dataPoints, minIndex, maxIndex) = normalizeValues(dataPointsData, normalizedMaxRange = if (onHighlightChange != null) null else 1f)
+fun LineChart(
+    dataPointsData: List<Float>,
+    timePointsData: List<Long>? = null,
+    type: String? = null,
+    onHighlightChange: ((Int) -> Unit)? = null,
+    showMinMaxMarkers: Boolean = onHighlightChange != null,
+) {
+    val (dataPoints, minIndex, maxIndex) = normalizeValues(dataPointsData, normalizedMaxRange = if (showMinMaxMarkers) null else 1f)
     MixinAppTheme {
         val textPrimary = MixinAppTheme.colors.textPrimary
         val background = MixinAppTheme.colors.background
@@ -210,7 +216,7 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                         color = color, radius = 8f, center = circleCenter
                     )
                 }
-                if (onHighlightChange != null && minIndex != -1 && maxIndex != -1) {
+                if (showMinMaxMarkers && minIndex != -1 && maxIndex != -1) {
                     val minCircleCenter = Offset(
                         minIndex * spacing, size.height * dataPoints[minIndex]
                     )
@@ -238,7 +244,7 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                 }
             }
 
-            if (onHighlightChange != null && minIndex != -1 && maxIndex != -1) {
+            if (showMinMaxMarkers && minIndex != -1 && maxIndex != -1) {
                 val spacing = canvasSize.width / (dataPoints.size - 1)
                 val minXPosition = minIndex * spacing
                 val minYPosition = canvasSize.height * dataPoints[minIndex]
@@ -282,7 +288,9 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
 
                     // Adjust positions
                     val minXPositionAdjusted = if (canvasSize.width > minTextWidth) {
-                        (minXPosition - minTextWidth / 2).coerceIn(0f, canvasSize.width - minTextWidth)
+                        val minBound = 0f
+                        val maxBound = (canvasSize.width - minTextWidth).coerceAtLeast(minBound)
+                        (minXPosition - minTextWidth / 2).coerceIn(minBound, maxBound)
                     } else {
                         0f
                     }
@@ -295,7 +303,9 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                     }
 
                     val maxXPositionAdjusted = if (canvasSize.width > maxTextWidth) {
-                        (maxXPosition - maxTextWidth / 2).coerceIn(0f, canvasSize.width - maxTextWidth)
+                        val minBound = 0f
+                        val maxBound = (canvasSize.width - maxTextWidth).coerceAtLeast(minBound)
+                        (maxXPosition - maxTextWidth / 2).coerceIn(minBound, maxBound)
                     } else {
                         0f
                     }
@@ -350,7 +360,13 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                     val textWidth = textPlaceable.maxByOrNull { it.width }?.width?.toFloat() ?: 0f
 
                     // Adjust x position to ensure the Text is within bounds
-                    val xPositionAdjusted = (xPosition - textWidth / 2).coerceIn(horizontalPadding, canvasSize.width - textWidth - horizontalPadding)
+                    val xPositionAdjusted = if (canvasSize.width > textWidth + horizontalPadding * 2) {
+                        val minBound = horizontalPadding
+                        val maxBound = (canvasSize.width - textWidth - horizontalPadding).coerceAtLeast(minBound)
+                        (xPosition - textWidth / 2).coerceIn(minBound, maxBound)
+                    } else {
+                        horizontalPadding
+                    }
 
                     layout(constraints.maxWidth, constraints.maxHeight) {
                         textPlaceable.forEach { placeable ->

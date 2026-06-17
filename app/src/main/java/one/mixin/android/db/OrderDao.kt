@@ -1,26 +1,21 @@
 package one.mixin.android.db
 
-import androidx.lifecycle.LiveData
-import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
-import one.mixin.android.ui.home.web3.components.InscriptionState
-import one.mixin.android.vo.UtxoItem
-import one.mixin.android.vo.route.SwapOrder
-import one.mixin.android.vo.route.SwapOrderItem
-import one.mixin.android.vo.safe.Output
-import one.mixin.android.vo.safe.SafeCollectible
-import one.mixin.android.vo.safe.SafeCollection
-import timber.log.Timber
+import one.mixin.android.vo.route.Order
+import one.mixin.android.vo.route.OrderItem
 
 @Dao
-interface OrderDao : BaseDao<SwapOrder> {
+interface OrderDao : BaseDao<Order> {
 
     @Query(
         """
-        SELECT o.*, t.icon_url as asset_icon_url, rt.icon_url as receive_asset_icon_url, rt.symbol as receive_asset_symbol, t.symbol as asset_symbol,  pc.name AS pay_chain_name, rc.name AS receive_chain_name FROM swap_orders o
+        SELECT o.order_id, o.wallet_id, o.user_id, o.pay_asset_id, t.chain_id as pay_chain_id, t.icon_url as asset_icon_url, t.symbol as asset_symbol, 
+        o.receive_asset_id, rt.chain_id as receive_chain_id, rt.icon_url as receive_asset_icon_url, rt.symbol as receive_asset_symbol, 
+        o.pay_amount, o.receive_amount, o.state, o.order_type, pc.name AS pay_chain_name, rc.name AS receive_chain_name, o.created_at, 
+        o.expected_receive_amount, o.filled_receive_amount, o.price, o.expired_at, o.pending_amount
+        FROM orders o
         LEFT JOIN tokens t ON o.pay_asset_id = t.asset_id
         LEFT JOIN tokens rt ON o.receive_asset_id = rt.asset_id
         LEFT JOIN chains pc ON t.chain_id = pc.chain_id
@@ -28,12 +23,15 @@ interface OrderDao : BaseDao<SwapOrder> {
         ORDER BY o.created_at DESC
 """
     )
-    fun orders(): Flow<List<SwapOrderItem>>
+    fun orders(): Flow<List<OrderItem>>
 
     @Query(
         """
-        SELECT o.*, t.icon_url as asset_icon_url, rt.icon_url as receive_asset_icon_url, rt.symbol as receive_asset_symbol, t.symbol as asset_symbol, rt.chain_id as receive_chain_id, t.chain_id as pay_chain_id,  pc.name AS pay_chain_name, rc.name AS receive_chain_name
-        FROM swap_orders o
+        SELECT o.order_id, o.wallet_id, o.user_id, o.pay_asset_id, t.chain_id as pay_chain_id, t.icon_url as asset_icon_url, t.symbol as asset_symbol, 
+        o.receive_asset_id, rt.chain_id as receive_chain_id, rt.icon_url as receive_asset_icon_url, rt.symbol as receive_asset_symbol, 
+        o.pay_amount, o.receive_amount, o.state, o.order_type, pc.name AS pay_chain_name, rc.name AS receive_chain_name, o.created_at, 
+        o.expected_receive_amount, o.filled_receive_amount, o.price, o.expired_at, o.pending_amount
+        FROM orders o
         LEFT JOIN tokens t ON o.pay_asset_id = t.asset_id
         LEFT JOIN tokens rt ON o.receive_asset_id = rt.asset_id
         LEFT JOIN chains pc ON t.chain_id = pc.chain_id
@@ -41,15 +39,33 @@ interface OrderDao : BaseDao<SwapOrder> {
         WHERE o.order_id = :orderId
     """
     )
-    fun getOrderById(orderId: String): Flow<SwapOrderItem?>
+    fun getOrderById(orderId: String): Flow<OrderItem?>
 
-    @Query("SELECT * FROM swap_orders WHERE state = 'pending'")
-    suspend fun getPendingOrders(): List<SwapOrder>
+    @Query("SELECT * FROM orders WHERE order_id = :orderId LIMIT 1")
+    fun observeOrder(orderId: String): Flow<Order?>
+
+    @Query("SELECT * FROM orders WHERE state = 'pending' ORDER BY created_at ASC")
+    suspend fun getPendingOrders(): List<Order>
+
+    @Query("SELECT * FROM orders WHERE state = 'cancelling' ORDER BY created_at ASC")
+    suspend fun getCancellingOrders(): List<Order>
+
+    @Query("SELECT * FROM orders WHERE wallet_id = :walletId AND state = 'pending' ORDER BY created_at DESC")
+    suspend fun getPendingOrdersByWallet(walletId: String): List<Order>
 
     @Query(
         """
-        SELECT created_at FROM swap_orders ORDER BY created_at DESC LIMIT 1
+        SELECT created_at FROM orders ORDER BY created_at DESC LIMIT 1
     """
     )
     suspend fun lastOrderCreatedAt(): String?
+
+    @Query("SELECT COUNT(*) FROM orders WHERE wallet_id = :walletId AND state IN ('pending')")
+    fun getPendingOrderCountByWallet(walletId: String): Flow<Int>
+
+    @Query("DELETE FROM orders WHERE wallet_id = :walletId")
+    suspend fun deleteOrders(walletId: String)
+
+    @Query("DELETE FROM orders")
+    suspend fun deleteAllOrders()
 }

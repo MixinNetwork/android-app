@@ -32,6 +32,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelinePlayView
 import timber.log.Timber
@@ -107,6 +108,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
         super.setupDialog(dialog, style)
         dialog.window?.apply {
             requestFeature(Window.FEATURE_NO_TITLE)
+            SystemUIManager.fullScreen(this)
             setWindowAnimations(R.style.BottomSheet_Animation)
         }
         dialog.setOnShowListener {

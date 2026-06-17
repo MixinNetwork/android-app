@@ -9,10 +9,10 @@ import one.mixin.android.ui.wallet.NetworkFee
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
-import one.mixin.android.vo.MixinInvoice
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 import java.util.UUID
 
 @Parcelize
@@ -47,8 +47,8 @@ class TransferBiometricItem(
     override var reference: String?,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
 
-fun buildEmptyTransferBiometricItem(user: User) =
-    TransferBiometricItem(listOf(user), 1.toByte(), UUID.randomUUID().toString(), null, "", null, PaymentStatus.pending.name, null, null, null)
+fun buildEmptyTransferBiometricItem(user: User, token: TokenItem? = null) =
+    TransferBiometricItem(listOf(user), 1.toByte(), UUID.randomUUID().toString(), token, "", null, PaymentStatus.pending.name, null, null, null)
 
 fun buildTransferBiometricItem(
     user: User,
@@ -64,6 +64,7 @@ fun buildTransferBiometricItem(
 @Parcelize
 open class AddressTransferBiometricItem(
     open val address: String,
+    open val threshold: Int,
     override val traceId: String,
     override var asset: TokenItem?,
     override var amount: String,
@@ -73,6 +74,7 @@ open class AddressTransferBiometricItem(
     override var reference: String?,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
 
+@Parcelize
 class AddressManageBiometricItem(
     override var asset: TokenItem?,
     val destination: String?,
@@ -88,15 +90,16 @@ fun buildAddressBiometricItem(
     token: TokenItem?,
     amount: String,
     memo: String?,
+    threshold: Int,
     returnTo: String?,
-    from: Int,
     reference: String?,
 ) =
-    AddressTransferBiometricItem(mainnetAddress, traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, returnTo, reference)
+    AddressTransferBiometricItem(mainnetAddress, threshold, traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, returnTo, reference)
 
 @Parcelize
 class InvoiceBiometricItem(
     override val address: String,
+    override val threshold: Int,
     override val traceId: String,
     override var asset: TokenItem?,
     override var amount: String,
@@ -105,28 +108,7 @@ class InvoiceBiometricItem(
     override val returnTo: String?,
     override var reference: String?,
     val invoice: String,
-) : AddressTransferBiometricItem(address, traceId, asset, amount, memo, state, returnTo, reference)
-
-fun buildInvoiceBiometricItem(
-    invoice: MixinInvoice,
-    traceId: String,
-    token: TokenItem?,
-    amount: String,
-    memo: String?,
-    returnTo: String?,
-    from: Int,
-    reference: String?,
-) = InvoiceBiometricItem(
-    address = invoice.recipient.toString(),
-    traceId = traceId,
-    asset = token,
-    memo = memo,
-    amount = amount,
-    returnTo = returnTo,
-    reference = reference,
-    state = PaymentStatus.pending.name,
-    invoice = invoice.toString(),
-)
+) : AddressTransferBiometricItem(address, threshold, traceId, asset, amount, memo, state, returnTo, reference)
 
 @Parcelize
 class WithdrawBiometricItem(
@@ -139,7 +121,30 @@ class WithdrawBiometricItem(
     override var memo: String?,
     override var state: String,
     var trace: Trace?,
-) : AssetBiometricItem(asset, traceId, amount, memo, state, null)
+    val toWallet: Boolean = false,
+    val isFeeWaived: Boolean = false,
+    val isSafeWallet: Boolean = false,
+    val isSafeWalletOwner: Boolean? = null,
+) : AssetBiometricItem(asset, traceId, amount, memo, state, null) {
+    // Check if the asset and fee balances are sufficient for withdrawal
+    // Return 1 if sufficient, 2 if asset is insufficient, 3 if fee is insufficient
+    fun isBalanceEnough(assetBalance: String?, feeBalance: String?): Int {
+        if (asset?.assetId == fee?.token?.assetId) {
+            val totalRequired = BigDecimal(amount).add(BigDecimal(fee?.fee ?: "0"))
+            return if (assetBalance != null && BigDecimal(assetBalance) >= totalRequired) {
+                1 // Sufficient
+            } else {
+                2 // Insufficient asset + fee
+            }
+        } else {
+            val assetBalanceEnough = assetBalance != null && BigDecimal(assetBalance) >= BigDecimal(amount)
+            if (!assetBalanceEnough) return 2 // Insufficient asset
+            val feeBalanceEnough = feeBalance != null && BigDecimal(feeBalance) >= BigDecimal(fee?.fee ?: "0")
+            if (!feeBalanceEnough) return 3 // Insufficient fee
+            return 1 // Sufficient
+        }
+    }
+}
 
 fun WithdrawBiometricItem.displayAddress(): String {
     return if (!address.tag.isNullOrEmpty()) {

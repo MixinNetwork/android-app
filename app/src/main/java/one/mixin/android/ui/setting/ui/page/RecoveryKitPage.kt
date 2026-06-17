@@ -1,6 +1,5 @@
 package one.mixin.android.ui.setting.ui.page
 
-import PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +28,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 
 @Composable
@@ -63,30 +63,21 @@ fun RecoveryKitPage(pop:()->Unit, phoneClick: () -> Unit, mnemonicPhraseClick: (
                     ClickItem(
                         modifier = Modifier
                             .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp))
-                            .clickable { phoneClick.invoke() }, stringResource(R.string.Mobile_Number), if (Session.hasPhone()) stringResource(R.string.Added) else stringResource(R.string.Add)
+                            .clickable { phoneClick.invoke() }, stringResource(R.string.Mobile_Number), if (Session.hasPhone()) stringResource(R.string.Added) else stringResource(R.string.Not_Added)
                     )
-                    if (Session.hasPhone()) {
-                        ClickItem(
-                            modifier = Modifier.clickable { mnemonicPhraseClick.invoke() }, stringResource(R.string.Mnemonic_Phrase),
-                            if (Session.saltExported()) stringResource(R.string.Backed_Up) else stringResource(R.string.Backup)
-                        )
-                        ClickItem(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
-                                .clickable { recoveryClick.invoke() },
-                            stringResource(R.string.Recovery_Contact), if (Session.hasEmergencyContact()) stringResource(R.string.Added) else stringResource(R.string.Add)
-                        )
-                    } else {
-                        ClickItem(
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
-                                .clickable { mnemonicPhraseClick.invoke() }, stringResource(R.string.Mnemonic_Phrase),
-                            if (Session.saltExported()) stringResource(R.string.Backed_Up) else stringResource(R.string.Backup)
-                        )
-                    }
+                    ClickItem(
+                        modifier = Modifier.clickable { mnemonicPhraseClick.invoke() }, stringResource(R.string.Mnemonic_Phrase),
+                        if (Session.saltExported()) stringResource(R.string.Backed_Up) else stringResource(R.string.Backup)
+                    )
+                    ClickItem(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp))
+                            .clickable { recoveryClick.invoke() },
+                        stringResource(R.string.Recovery_Contact), if (Session.hasEmergencyContact()) stringResource(R.string.Added) else stringResource(R.string.Not_Added)
+                    )
                 }
                 Spacer(modifier = Modifier.weight(1f))
-                Text(stringResource(R.string.Recovery_Kit_Attention), color = MixinAppTheme.colors.red, textAlign = TextAlign.Center)
+                Text(stringResource(R.string.Recovery_Kit_Attention), color = MixinAppTheme.colors.red, textAlign = TextAlign.Center, fontSize = 14.sp)
                 Spacer(modifier = Modifier.height(20.dp))
             }
         }

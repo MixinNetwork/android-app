@@ -1,6 +1,6 @@
 package one.mixin.android.ui.landing.components
 
-import PageScaffold
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -15,6 +15,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,29 +26,91 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
-import one.mixin.android.ui.landing.MobileViewModel
+import one.mixin.android.ui.landing.SetupPinViewModel
 import one.mixin.android.ui.landing.vo.SetupState
+import one.mixin.android.ui.tip.LegacyPIN
+import one.mixin.android.ui.tip.Processing
+import one.mixin.android.ui.tip.RetryConnect
+import one.mixin.android.ui.tip.RetryProcess
+import one.mixin.android.ui.tip.RetryRegister
+import one.mixin.android.ui.tip.TryConnecting
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 @Composable
-fun SetPinLoadingPage(next: () -> Unit) {
-    val viewModel = hiltViewModel<MobileViewModel>()
+fun SetPinLoadingPage(
+    pin: String,
+    next: () -> Unit,
+    onTopBarLongClick: (() -> Unit)? = null,
+) {
+    val viewModel = hiltViewModel<SetupPinViewModel>()
     val coroutineScope = rememberCoroutineScope()
     val setupState by viewModel.setupState.observeAsState(SetupState.Loading)
+    val tipStep by viewModel.tipStep.observeAsState(TryConnecting)
     val context = LocalContext.current
+
+    LaunchedEffect(pin) {
+        if (pin.isNotBlank()) {
+            viewModel.executeCreatePin(context, pin)
+        }
+    }
+
+    LaunchedEffect(setupState) {
+        if (setupState == SetupState.Success) {
+            next()
+        }
+    }
+
+    val statusMessage =
+        when (val step = tipStep) {
+            TryConnecting -> stringResource(R.string.Trying_connect_tip_network)
+            Processing.Creating -> stringResource(R.string.Trying_connect_tip_node)
+            is Processing.SyncingNode -> {
+                val percent = if (step.total > 0) {
+                    ((step.step * 100f) / step.total.toFloat()).toInt().coerceIn(0, 100)
+                } else {
+                    0
+                }
+                stringResource(R.string.Exchanging_data, percent.toString())
+            }
+            Processing.Updating -> stringResource(R.string.Generating_keys)
+            Processing.Registering -> stringResource(R.string.Registering)
+            is RetryConnect -> buildString {
+                if (step.reason.isNotBlank()) {
+                    append(step.reason)
+                    append('\n')
+                }
+                append(stringResource(R.string.Connect_to_TIP_network_failed))
+            }
+            is RetryProcess -> step.reason
+            is RetryRegister -> step.reason
+            is LegacyPIN -> step.message
+            else -> stringResource(R.string.Set_up_pin_error_message)
+        }
+    val statusColor =
+        when (tipStep) {
+            is RetryConnect, is RetryProcess, is RetryRegister, is LegacyPIN -> MixinAppTheme.colors.red
+            else -> MixinAppTheme.colors.textAssist
+        }
+
     PageScaffold(
         title = "",
         verticalScrollable = false,
+        onTopBarLongClick = onTopBarLongClick,
         actions = {
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.TIP)
+                context.openUrl(
+                    Constants.HelpLink.CUSTOMER_SERVICE,
+                    source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_MNEMONIC_PHRASE_CREATING,
+                )
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
@@ -63,59 +126,74 @@ fun SetPinLoadingPage(next: () -> Unit) {
             Icon(painter = painterResource(R.drawable.ic_wallet_pin), tint = Color.Unspecified, contentDescription = null)
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                stringResource(
-                    R.string.Set_up_Pin
-                ),
-                fontSize = 18.sp, fontWeight = FontWeight.W600, color = MixinAppTheme.colors.textPrimary
+                stringResource(R.string.Set_up_Pin),
+                fontSize = 18.sp, 
+                fontWeight = FontWeight.W600, 
+                color = MixinAppTheme.colors.textPrimary
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                stringResource(
-                    R.string.Set_up_pin_warning
-                ),
-                color = MixinAppTheme.colors.textAssist
+                stringResource(R.string.Set_up_pin_warning),
+                color = MixinAppTheme.colors.textAssist,
+                textAlign = TextAlign.Center
             )
 
             Spacer(modifier = Modifier.weight(1f))
 
-            if (setupState == SetupState.Loading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(30.dp),
-                    color = Color(0xFFE8E5EE),
-                )
-                Text(
-                    text = stringResource(R.string.Trying_connect_tip_node),
-                    color = MixinAppTheme.colors.textAssist
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-            } else if (setupState == SetupState.Failure) {
-                Button(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(48.dp),
-                    onClick = {
-                        coroutineScope.launch {
-                            viewModel.setState(SetupState.Success)
-                            next()
-                        }
-                    },
-                    colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = MixinAppTheme.colors.accent
-                    ),
-                    shape = RoundedCornerShape(32.dp),
-                    elevation =
-                    ButtonDefaults.elevation(
-                        pressedElevation = 0.dp,
-                        defaultElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp,
-                    ),
-                ) {
-                    Text(
-                        text = stringResource(R.string.Retry),
-                        color = Color.White
+            when (setupState) {
+                SetupState.Loading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(30.dp),
+                        color = MixinAppTheme.colors.accent,
                     )
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = statusMessage,
+                        color = statusColor,
+                        textAlign = TextAlign.Center
+                    )
+                }
+                SetupState.Failure -> {
+                    Button(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp),
+                        onClick = {
+                            coroutineScope.launch {
+                                viewModel.executeCreatePin(
+                                    context = context,
+                                    pin = pin,
+                                    preserveRetryRegisterStep = tipStep is RetryRegister,
+                                )
+                            }
+                        },
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            backgroundColor = MixinAppTheme.colors.accent
+                        ),
+                        shape = RoundedCornerShape(32.dp),
+                        elevation = ButtonDefaults.elevation(
+                            pressedElevation = 0.dp,
+                            defaultElevation = 0.dp,
+                            hoveredElevation = 0.dp,
+                            focusedElevation = 0.dp,
+                        ),
+                    ) {
+                        Text(
+                            text = stringResource(R.string.Retry),
+                            color = Color.White
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text(
+                        text = statusMessage,
+                        color = statusColor,
+                        fontSize = 14.sp,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
+                }
+                else -> {
+                    // Success state is handled by LaunchedEffect above
                 }
             }
 

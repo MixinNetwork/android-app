@@ -33,9 +33,6 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.toRectF
 import one.mixin.android.R
 import one.mixin.android.extension.dp
-import one.mixin.android.widget.ViewfinderView.FrameGravity.values
-import one.mixin.android.widget.ViewfinderView.LaserStyle.values
-import one.mixin.android.widget.ViewfinderView.TextLocation.values
 
 class ViewfinderView
     @JvmOverloads
@@ -413,7 +410,7 @@ class ViewfinderView
                 FrameGravity.RIGHT -> leftOffsets = width - frameWidth + framePaddingRight
                 FrameGravity.BOTTOM -> topOffsets = height - frameHeight + framePaddingBottom
                 else -> {
-                    // do noting
+                    // do nothing
                 }
             }
             frame =
@@ -650,7 +647,7 @@ class ViewfinderView
                     LaserStyle.RADAR -> drawRadarScanner(canvas, frame)
                     LaserStyle.IMAGE -> drawImageScanner(canvas, frame)
                     else -> {
-                        // do noting
+                        // do nothing
                     }
                 }
                 paint.shader = null

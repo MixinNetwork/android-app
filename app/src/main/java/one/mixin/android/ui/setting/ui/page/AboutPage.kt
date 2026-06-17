@@ -98,8 +98,8 @@ fun AboutPage() {
         ) {
             val context = LocalContext.current
             val attrs = context.obtainStyledAttributes(intArrayOf(R.attr.ic_logo))
-            val logoResId = attrs.getResourceId(0, R.drawable.ic_logo_mixin) // 默认值为 ic_logo_mixin
-            attrs.recycle() // 记得回收
+            val logoResId = attrs.getResourceId(0, R.drawable.ic_logo_mixin)
+            attrs.recycle()
             Image(
                 modifier =
                     Modifier
@@ -128,22 +128,25 @@ fun AboutPage() {
                     context.openUrl("https://fb.com/MixinMessenger")
                 },
             )
+            val helpLink = stringResource(R.string.help_link)
             AboutTile(
                 text = stringResource(id = R.string.Help_center),
                 onClick = {
-                    context.openUrl(context.getString(R.string.help_link))
+                    context.openUrl(helpLink)
                 },
             )
+            val termsUrl = stringResource(R.string.landing_terms_url)
             AboutTile(
                 text = stringResource(id = R.string.Terms_of_Service),
                 onClick = {
-                    context.openUrl(context.getString(R.string.landing_terms_url))
+                    context.openUrl(termsUrl)
                 },
             )
+            val privacyPolicyUrl = stringResource(R.string.landing_privacy_policy_url)
             AboutTile(
                 text = stringResource(id = R.string.Privacy_Policy),
                 onClick = {
-                    context.openUrl(context.getString(R.string.landing_privacy_policy_url))
+                    context.openUrl(privacyPolicyUrl)
                 },
             )
             AboutTile(

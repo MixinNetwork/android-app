@@ -15,6 +15,7 @@ import one.mixin.android.vo.TranscriptAttachmentMigration
 import one.mixin.android.vo.TranscriptMessage
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     companion object {
         const val ATTACHMENT_CATEGORY =

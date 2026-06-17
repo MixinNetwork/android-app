@@ -1,10 +1,7 @@
 package one.mixin.android.ui.landing.components
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.material.Text
+import androidx.compose.foundation.text.ClickableText
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
@@ -35,7 +32,7 @@ fun HighlightedTextWithClick(
                 append(fullText.substring(currentIndex, startIndex))
 
                 withStyle(style = SpanStyle(color = MixinAppTheme.colors.textBlue, fontSize = fontSize)) {
-                    pushStringAnnotation(tag = highlightText, annotation = highlightText)
+                    pushStringAnnotation(tag = "CLICKABLE", annotation = highlightText)
                     append(highlightText)
                     pop()
                 }
@@ -49,22 +46,23 @@ fun HighlightedTextWithClick(
         }
     }
 
-    Text(
+    ClickableText(
         text = annotatedText,
-        modifier = modifier.clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) {
-            highlightTexts.forEach { highlightText ->
-                annotatedText.getStringAnnotations(
-                    tag = highlightText,
-                    start = 0,
-                    end = annotatedText.length
-                ).firstOrNull()?.let {
-                    onTextClick.invoke(it.item)
-                }
+        modifier = modifier,
+        style = androidx.compose.ui.text.TextStyle(
+            color = color,
+            fontSize = fontSize,
+            lineHeight = lineHeight,
+            textAlign = textAlign
+        ),
+        onClick = { offset ->
+            annotatedText.getStringAnnotations(
+                tag = "CLICKABLE",
+                start = offset,
+                end = offset
+            ).firstOrNull()?.let { annotation ->
+                onTextClick.invoke(annotation.item)
             }
-        },
-        color = color,
-        fontSize = fontSize,
-        lineHeight = lineHeight,
-        textAlign = textAlign
+        }
     )
 }

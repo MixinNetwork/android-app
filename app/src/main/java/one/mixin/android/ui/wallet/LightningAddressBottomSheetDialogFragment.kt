@@ -1,0 +1,156 @@
+package one.mixin.android.ui.wallet
+
+import android.content.ClipData
+import android.view.View
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import one.mixin.android.R
+
+import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.heavyClickVibrate
+import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.toast
+import one.mixin.android.extension.withArgs
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.landing.components.HighlightedTextWithClick
+import one.mixin.android.ui.landing.components.NumberedText
+import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.components.MixinButton
+import one.mixin.android.extension.dp as dip
+
+class LightningAddressBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    companion object {
+        const val TAG = "LightningAddressBottomSheetDialogFragment"
+
+        private const val KEY_ADDRESS = "key_address"
+
+        fun newInstance(address: String) = LightningAddressBottomSheetDialogFragment().withArgs {
+            putString(KEY_ADDRESS, address)
+        }
+    }
+
+    var copyCallback: ((String) -> Unit)? = null
+
+    override fun getTheme() = R.style.AppTheme_Dialog
+
+
+    private val address by lazy { arguments?.getString(KEY_ADDRESS).orEmpty() }
+
+    @Composable
+    override fun ComposeContent() {
+        MixinAppTheme {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 20.dp, horizontal = 28.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                            Image(
+                                modifier = Modifier.clickable {
+                                    dismiss()
+                                },
+                                painter = painterResource(R.drawable.ic_circle_close),
+                                contentDescription = null,
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(22.dp))
+                        Image(
+                            painter = painterResource(R.drawable.ic_lightning),
+                            contentDescription = null,
+                        )
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = stringResource(id = R.string.LIGHTNING_ADDRESS),
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.W600
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = stringResource(id = R.string.lightning_address_description, address),
+                            color = MixinAppTheme.colors.textMinor,
+                            fontSize = 14.sp,
+                            lineHeight = 19.6.sp
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        NumberedText(modifier = Modifier.fillMaxWidth(), numberStr = "1", instructionStr = stringResource(id = R.string.lightning_address_tip_1))
+                        Spacer(modifier = Modifier.height(12.dp))
+                        NumberedText(modifier = Modifier.fillMaxWidth(), numberStr = "2", instructionStr = stringResource(id = R.string.lightning_address_tip_2))
+                        Spacer(modifier = Modifier.height(12.dp))
+                        NumberedText(modifier = Modifier.fillMaxWidth(), numberStr = "3", instructionStr = stringResource(id = R.string.lightning_address_tip_3))
+                        Spacer(modifier = Modifier.height(16.dp))
+
+
+                        HighlightedTextWithClick(
+                            stringResource(id = R.string.lightning_address_mao_tip),
+                            modifier = Modifier.align(Alignment.Start),
+                            stringResource(R.string.Learn_More),
+                            textAlign = TextAlign.Start,
+                            color = MixinAppTheme.colors.textMinor,
+                            fontSize = 14.sp,
+                            lineHeight = 19.6.sp,
+                        ) {
+                            context?.openUrl(getString(R.string.Lightning_link))
+                        }
+                        Spacer(modifier = Modifier.height(120.dp))
+                        MixinButton(
+                            onClick = {
+                                context?.heavyClickVibrate()
+                                context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
+                                toast(R.string.copied_to_clipboard)
+                                dismiss()
+                            },
+                            shape = RoundedCornerShape(30.dp),
+                            contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
+                        ) {
+                            Text(text = stringResource(R.string.Copy_Address), fontSize = 16.sp, color = Color.White)
+                        }
+                        Spacer(modifier = Modifier.height(30.dp))
+                    }
+                }
+    }
+
+    override fun getBottomSheetHeight(view: View): Int {
+        return 690.dip
+    }
+
+    override fun showError(error: String) {
+    }
+
+
+    override fun onStart() {
+        super.onStart()
+        dialog?.window?.let { window ->
+            SystemUIManager.lightUI(
+                window,
+                !requireContext().booleanFromAttribute(R.attr.flag_night),
+            )
+        }
+    }
+
+
+}

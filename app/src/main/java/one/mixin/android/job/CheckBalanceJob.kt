@@ -30,11 +30,11 @@ class CheckBalanceJob(
                 val tokensExtra = tokensExtraDao.findByAsset(asset)
                 val token = tokenDao.findTokenByAsset(asset) ?: continue
                 mixinDatabase.withTransaction {
-                    val value = calcBalanceByAssetId(asset)
+                    val amount = calcBalanceByAssetId(asset)
                     if (tokensExtra == null) {
-                        tokensExtraDao.insertSuspend(TokensExtra(token.assetId, token.asset, false, value.toPlainString(), nowInUtc()))
+                        tokensExtraDao.insertSuspend(TokensExtra(token.assetId, token.asset, false, amount.toPlainString(), nowInUtc()))
                     } else {
-                        tokensExtraDao.updateBalanceByAssetId(token.assetId, value.toPlainString(), nowInUtc())
+                        tokensExtraDao.updateBalanceByAssetId(token.assetId, amount.toPlainString(), nowInUtc())
                     }
                 }
             }
@@ -50,24 +50,21 @@ class CheckBalanceJob(
         return
     }
 
-    private tailrec suspend fun calcBalanceByAssetId(
-        asset: String,
-        offset: Int = 0,
-        amount: BigDecimal = BigDecimal.ZERO,
-    ): BigDecimal {
-        var result = amount
-        val outputs =
-            if (offset == 0) {
-                outputDao.findUnspentOutputsByAsset(BALANCE_LIMIT, asset)
+    private suspend fun calcBalanceByAssetId(asset: String): BigDecimal {
+        var offset = 0
+        var total = BigDecimal.ZERO
+
+        while (true) {
+            val outputs = if (offset == 0) {
+                outputDao.findUnspentOutputsByAssetOrderByCreatedAt(BALANCE_LIMIT, asset)
             } else {
-                outputDao.findUnspentOutputsByAssetOffset(BALANCE_LIMIT, asset, offset)
+                outputDao.findUnspentOutputsByAssetOrderByCreatedAtOffset(BALANCE_LIMIT, asset, offset)
             }
-        if (outputs.isEmpty()) return amount
-        result += outputs.map { BigDecimal(it.amount) }.sumOf { it }
-        return if (outputs.size >= BALANCE_LIMIT) {
-            calcBalanceByAssetId(asset, offset + BALANCE_LIMIT, result)
-        } else {
-            result
+            if (outputs.isEmpty()) break
+            total += outputs.sumOf { BigDecimal(it.amount) }
+            if (outputs.size < BALANCE_LIMIT) break
+            offset += BALANCE_LIMIT
         }
+        return total
     }
 }

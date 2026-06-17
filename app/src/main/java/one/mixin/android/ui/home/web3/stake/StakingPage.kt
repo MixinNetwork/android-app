@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.stake
 
-import PageScaffold
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -36,6 +35,7 @@ import one.mixin.android.api.response.web3.StakeAccountActivation
 import one.mixin.android.api.response.web3.Validator
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -48,30 +48,37 @@ fun StakingPage(
     onAdd: () -> Unit,
     pop: () -> Unit,
 ) {
-    PageScaffold(
-        title = stringResource(id = R.string.Your_Stake),
-        verticalScrollable = true,
-        actions = {
-            IconButton(onClick = { onAdd.invoke() }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_add_black_24dp),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.icon,
-                )
-            }
-        },
-        pop = pop,
-    ) {
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxHeight()
-                .padding(horizontal = 20.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
+    MixinAppTheme {
+        PageScaffold(
+            title = stringResource(id = R.string.Your_Stake),
+            verticalScrollable = true,
+            actions = {
+                IconButton(onClick = { onAdd.invoke() }) {
+                    Icon(
+                        painter = painterResource(id = R.drawable.ic_add_black_24dp),
+                        contentDescription = null,
+                        tint = MixinAppTheme.colors.icon,
+                    )
+                }
+            },
+            pop = pop,
         ) {
-            items(stakeAccounts.size) { i ->
-                val sa = stakeAccounts[i]
-                StakeAccountItem(stakeAccount = sa, activations[sa.pubkey], validators[sa.account.data.parsed.info.stake.delegation.voter], onClick)
-                Spacer(modifier = Modifier.height(8.dp))
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .padding(horizontal = 20.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                items(stakeAccounts.size) { i ->
+                    val sa = stakeAccounts[i]
+                    StakeAccountItem(
+                        stakeAccount = sa,
+                        activations[sa.pubkey],
+                        validators[sa.account.data.parsed.info.stake.delegation.voter],
+                        onClick
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
             }
         }
     }

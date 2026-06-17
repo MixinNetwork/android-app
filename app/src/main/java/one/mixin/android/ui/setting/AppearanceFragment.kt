@@ -8,6 +8,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
+import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -50,6 +51,7 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
     }
 
     private val binding by viewBinding(FragmentAppearanceBinding::bind)
+    private val viewModel by viewModels<SettingViewModel>()
 
     override fun onViewCreated(
         view: View,

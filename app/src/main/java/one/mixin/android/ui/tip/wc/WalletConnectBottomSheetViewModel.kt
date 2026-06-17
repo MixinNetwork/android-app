@@ -6,15 +6,18 @@ import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import one.mixin.android.api.request.web3.PostTxRequest
+import one.mixin.android.api.request.web3.EstimateFeeRequest
+import one.mixin.android.api.request.web3.Web3RawTransactionRequest
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.repository.TokenRepository
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
-import org.sol4k.VersionedTransaction
+import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Hash
+import timber.log.Timber
 import java.util.Base64
 import javax.inject.Inject
 
@@ -23,8 +26,12 @@ class WalletConnectBottomSheetViewModel
     @Inject
     internal constructor(
         private val assetRepo: TokenRepository,
+        private val web3Repository: Web3Repository,
         private val tip: Tip,
     ) : ViewModel() {
+
+        suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
+
         suspend fun getV2SessionProposal(topic: String): Wallet.Model.SessionProposal? {
             return withContext(Dispatchers.IO) {
                 WalletConnectV2.getSessionProposal(topic)
@@ -51,7 +58,7 @@ class WalletConnectBottomSheetViewModel
         ): ByteArray {
             val result = tip.getOrRecoverTipPriv(context, pin)
             val spendKey = tip.getSpendPrivFromEncryptedSalt(tip.getMnemonicFromEncryptedPreferences(context), tip.getEncryptedSalt(context), pin, result.getOrThrow())
-            return tipPrivToPrivateKey(spendKey, chainId)
+            return requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(context, spendKey, chainId))
         }
 
         suspend fun refreshAsset(assetId: String) = assetRepo.refreshAsset(assetId)
@@ -60,10 +67,12 @@ class WalletConnectBottomSheetViewModel
             signedTransactionData: Any,
             chain: Chain,
             sessionRequest: Wallet.Model.SessionRequest,
+            account: String,
+            to: String?,
         ): String? {
             val signature: String
             val rawTx = if (chain == Chain.Solana) {
-                signedTransactionData as VersionedTransaction
+                signedTransactionData as VersionedTransactionCompat
                 signature = signedTransactionData.signatures.first()
                 Base64.getEncoder().encodeToString(signedTransactionData.serialize())
             } else {
@@ -72,11 +81,14 @@ class WalletConnectBottomSheetViewModel
                 signedTransactionData
             }
             try {
-                assetRepo.postRawTx(PostTxRequest(rawTx, chain.getWeb3ChainId()))
+                Timber.d("${WalletConnectV2.TAG} sendTransaction postRawTx start topic=${sessionRequest.topic} requestId=${sessionRequest.request.id} chain=${chain.chainId} account=$account to=$to txId=$signature")
+                assetRepo.postRawTx(Web3RawTransactionRequest(chain.getWeb3ChainId(), rawTx, account, to))
             } catch (e: Exception) {
+                Timber.d("${WalletConnectV2.TAG} sendTransaction postRawTx error topic=${sessionRequest.topic} requestId=${sessionRequest.request.id} chain=${chain.chainId} txId=$signature error=${e.message}")
                 WalletConnectV2.rejectRequest(e.message, sessionRequest)
                 throw e
             }
+            Timber.d("${WalletConnectV2.TAG} sendTransaction postRawTx success topic=${sessionRequest.topic} requestId=${sessionRequest.request.id} chain=${chain.chainId} txId=$signature")
             if (chain == Chain.Solana) {
                 WalletConnectV2.approveSolanaTransaction(signature, sessionRequest)
             } else {

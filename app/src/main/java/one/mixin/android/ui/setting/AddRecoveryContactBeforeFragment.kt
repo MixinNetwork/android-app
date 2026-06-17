@@ -7,7 +7,6 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.setting.ui.page.AddRecoveryContactBeforePage
@@ -36,7 +35,6 @@ class AddRecoveryContactBeforeFragment : BaseFragment(R.layout.fragment_compose)
         binding.compose.setContent {
             AddRecoveryContactBeforePage ({
                 parentFragmentManager.apply {
-                    toast(R.string.Successful)
                     requireActivity().finish()
                 }
             }, {

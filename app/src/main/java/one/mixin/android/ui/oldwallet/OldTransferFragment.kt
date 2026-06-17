@@ -21,6 +21,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.res.ResourcesCompat
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -45,6 +46,7 @@ import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.equalsIgnoreCase
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
@@ -54,7 +56,6 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.sp
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
@@ -62,7 +63,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.oldwallet.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
 import one.mixin.android.ui.oldwallet.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.biometric.BiometricItem
@@ -92,6 +92,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
         const val TAG = "OldTransferFragment"
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
         const val ARGS_SWITCH_ASSET = "args_switch_asset"
+        const val ARGS_ADDRESS = "args_address"
 
         const val POST_TEXT = 0
         const val POST_PB = 1
@@ -202,8 +203,10 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight()
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.ph.getSafeAreaInsetsTop()
+            }
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

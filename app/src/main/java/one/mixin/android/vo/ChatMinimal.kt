@@ -45,7 +45,7 @@ data class ChatMinimal(
     }
 
     fun isBot(): Boolean {
-        return isContactConversation() && appId != null
+        return isContactConversation() && ownerIdentityNumber.isBotIdentityNumber()
     }
 
     fun checkIsVerified(): Boolean {

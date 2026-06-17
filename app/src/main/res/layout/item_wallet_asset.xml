@@ -44,13 +44,25 @@
             android:layout_marginTop="22dp"
             android:layout_marginStart="20dp"/>
 
+        <ImageView
+            android:id="@+id/ic_spam"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/avatar"
+            android:src="@drawable/ic_spam_token"
+            android:layout_alignTop="@id/balance"
+            android:layout_alignBottom="@id/balance"
+            android:layout_marginStart="@dimen/margin16"
+            android:translationY="-1dp"
+            android:visibility="gone"/>
+
         <TextView
             android:id="@+id/balance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignTop="@+id/avatar"
-            android:layout_toEndOf="@id/avatar"
-            android:layout_marginStart="@dimen/margin16"
+            android:layout_toEndOf="@id/ic_spam"
+            android:layout_marginStart="16dp"
             android:layout_marginEnd="2dp"
             android:ellipsize="end"
             android:fontFamily="@font/mixin_font"
@@ -65,11 +77,13 @@
             android:layout_height="wrap_content"
             android:layout_alignBaseline="@+id/balance"
             android:layout_toEndOf="@id/balance"
-            android:maxWidth="200dp"
+            android:maxWidth="120dp"
             android:minWidth="30dp"
             android:textColor="?attr/text_primary"
             android:textSize="12sp"
-            android:translationY="-1dp" />
+            android:translationY="-1dp"
+            android:lines="1"
+            android:ellipsize="end"/>
 
         <TextView
             android:id="@+id/balance_as"
@@ -112,5 +126,19 @@
             android:maxLines="1"
             android:textSize="12sp"
             android:textColor="?attr/text_assist"/>
+
+        <TextView
+            android:id="@+id/na_tv"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="@dimen/margin20"
+            android:layout_centerVertical="true"
+            android:layout_alignParentEnd="true"
+            android:maxLines="1"
+            android:textSize="12sp"
+            android:text="@string/N_A"
+            android:visibility="gone"
+            android:textColor="?attr/text_assist"/>
+
     </one.mixin.android.widget.ConfirmationBgView>
 </FrameLayout>

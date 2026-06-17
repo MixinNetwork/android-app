@@ -14,6 +14,7 @@
         <item name="android:windowContentTransitions">true</item>
         <item name="android:textColorHighlight">@color/blue_highlight</item>
         <item name="android:textViewStyle">@style/NoneHFTextViewStyle</item>
+        <item name="enableEdgeToEdge">true</item>
 
         <item name="color_primary">@color/colorPrimaryDark</item>
         <item name="color_primary_dark">@color/colorPrimary</item>
@@ -69,9 +70,6 @@
         <item name="bg_tip_warning">@color/bgTipWarning</item>
         <item name="bg_tip_warning_border">@color/bgTipWarningBorder</item>
 
-        <item name="ic_wallet_receive">#0FB321</item>
-        <item name="ic_wallet_send">#3D75E3</item>
-        <item name="ic_wallet_swap">#8A6BFF</item>
         <item name="music_played">@color/musicPlayed</item>
         <item name="music_unplayed">@color/musicUnPlayed</item>
         <item name="music_buffered">@color/musicBuffered</item>
@@ -86,6 +84,7 @@
         <item name="icon_chain">@color/iconChain</item>
         <item name="bg_market_card">@drawable/bg_market_card</item>
         <item name="ic_logo">@drawable/ic_logo_mixin</item>
+        <item name="market_logo">@drawable/market_logo_light</item>
         <item name="badge_red">@color/badgeRed</item>
 
         <item name="icon_emergency_contact">@drawable/ic_emergency_contact</item>
@@ -237,11 +236,21 @@
         <item name="android:indeterminateTintMode">src_atop</item>
     </style>
 
-    <style name="BottomSheetModal" parent="@style/Widget.Design.BottomSheet.Modal">
-        <item name="android:background">@drawable/bg_upper_round</item>
+    <style name="BottomSheetModal" parent="@style/Widget.MaterialComponents.BottomSheet.Modal">
+        <item name="shapeAppearanceOverlay">@style/ShapeAppearanceOverlay.MixinBottomSheet.TopRounded</item>
+        <item name="backgroundTint">?attr/bg_white</item>
     </style>
 
-    <style name="MixinBottomSheet" parent="Theme.Design.Light.BottomSheetDialog">
+    <style name="ShapeAppearanceOverlay.MixinBottomSheet.TopRounded" parent="">
+        <item name="cornerFamilyTopLeft">rounded</item>
+        <item name="cornerFamilyTopRight">rounded</item>
+        <item name="cornerSizeTopLeft">12dp</item>
+        <item name="cornerSizeTopRight">12dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
+    <style name="MixinBottomSheet" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">?attr/bg_white</item>
         <item name="android:windowFrame">@null</item>
@@ -254,7 +263,7 @@
         <item name="bottomSheetStyle">@style/BottomSheetModal</item>
     </style>
 
-    <style name="AppTheme.Dialog" parent="Theme.Design.Light.BottomSheetDialog">
+    <style name="AppTheme.Dialog" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">?attr/bg_white</item>
         <item name="android:windowFrame">@null</item>
@@ -338,24 +347,32 @@
     <style name="AppTheme.MaterialWindowButton">
         <item name="android:background">@drawable/bg_round_window_btn</item>
         <item name="android:textColor">@color/colorBlue</item>
-        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
         <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
         <item name="android:stateListAnimator">@animator/selector_animator</item>
     </style>
 
     <style name="AppTheme.MaterialGrayButton">
         <item name="android:background">@drawable/bg_round_gray_btn</item>
         <item name="android:textColor">?attr/text_primary</item>
-        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
         <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
+        <item name="android:stateListAnimator">@animator/selector_animator</item>
+    </style>
+
+    <style name="AppTheme.MaterialOrangeButton">
+        <item name="android:background">@drawable/bg_round_orange_btn</item>
+        <item name="android:textColor">?attr/text_primary</item>
+        <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
         <item name="android:stateListAnimator">@animator/selector_animator</item>
     </style>
 
     <style name="AppTheme.MaterialOutlineButton">
         <item name="android:background">@drawable/bg_round_blue_outline_btn</item>
         <item name="android:textColor">@color/colorBlue</item>
-        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
         <item name="android:elevation">0dp</item>
+        <item name="android:textFontWeight" tools:ignore="NewApi">500</item>
         <item name="android:stateListAnimator">@animator/selector_animator</item>
     </style>
 
@@ -475,5 +492,25 @@
         <item name="android:maxLines">1</item>
         <item name="android:autoSizeTextType" tools:ignore="NewApi">uniform</item>
     </style>
+
+    <style name="DatabaseSpinnerStyle" parent="Widget.AppCompat.Spinner">
+        <item name="android:background">@drawable/bg_input</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:paddingTop">8dp</item>
+        <item name="android:paddingBottom">8dp</item>
+        <item name="android:layout_marginStart">8dp</item>
+        <item name="android:dropDownWidth">200dp</item>
+        <item name="android:popupBackground">?attr/bg_white</item>
+        <item name="android:dropDownVerticalOffset">4dp</item>
+        <item name="android:textColor">?attr/text_primary</item>
+    </style>
+
+    <style name="DatabaseSpinnerDropDownStyle" parent="Widget.AppCompat.DropDownItem.Spinner">
+        <item name="android:padding">12dp</item>
+        <item name="android:textColor">?attr/text_primary</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+    </style>
+
 
 </resources>

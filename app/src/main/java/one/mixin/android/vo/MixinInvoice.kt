@@ -1,9 +1,11 @@
 package one.mixin.android.vo
 
+import one.mixin.android.Constants
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.hexString
+import one.mixin.android.extension.isByteArrayValidUtf8
 import one.mixin.android.util.UUIDUtils
 import java.math.BigInteger
 import java.nio.ByteBuffer
@@ -11,14 +13,20 @@ import java.nio.ByteBuffer
 const val MixinInvoicePrefix = "MIN"
 
 const val MIXIN_INVOICE_VERSION: Byte = 0
-const val REFERENCES_COUNT_LIMIT = 2
-const val EXTRA_SIZE_STORAGE_CAPACITY = 512
+const val REFERENCES_COUNT_LIMIT = 16
+const val EXTRA_SIZE_STORAGE_CAPACITY = 1024 * 1024 * 4
+const val EXTRA_SIZE_GENERAL_LIMIT = 256
+const val EXTRA_SIZE_STORAGE_STEP = 1024
+const val EXTRA_STORAGE_PRICE_STEP = "10000"
 
 data class MixinInvoice(
     val version: Byte = MIXIN_INVOICE_VERSION,
     val recipient: MixAddress,
     val entries: MutableList<InvoiceEntry> = mutableListOf(),
 ) {
+
+    val opponentId = recipient.uuidMembers.singleOrNull() ?: recipient.xinMembers.singleOrNull()?.string() ?: ""
+
     fun addEntry(
         traceId: String,
         assetId: String,
@@ -27,6 +35,9 @@ data class MixinInvoice(
         indexReferences: ByteArray = byteArrayOf(),
         hashReferences: List<ByteArray> = emptyList(),
     ) {
+        if (extra.size >= EXTRA_SIZE_GENERAL_LIMIT) {
+            throw IllegalArgumentException("extra size too large: ${extra.size}")
+        }
         val entry = InvoiceEntry(
             traceId = traceId,
             assetId = assetId,
@@ -47,6 +58,23 @@ data class MixinInvoice(
         }
 
         entries.add(entry)
+    }
+
+    fun addStorageEntry(traceId: String, extra: ByteArray) {
+        require(extra.size <= EXTRA_SIZE_STORAGE_CAPACITY) {
+            "Extra data exceeds ${extra.size} bytes"
+        }
+        val cost = estimateStorageCost(extra)
+        entries.add(
+            InvoiceEntry(
+                traceId = traceId,
+                assetId = Constants.AssetId.XIN_ASSET_ID,
+                amount = cost,
+                extra = extra.copyOf(),
+                indexReferences = listOf(),
+                hashReferences = emptyList(),
+            )
+        )
     }
 
     fun toByteArray(): ByteArray {
@@ -113,6 +141,22 @@ data class MixinInvoice(
         return MixinInvoicePrefix + finalPayload.base64RawURLEncode()
     }
 
+    fun groupByAssetId(): Map<String, String> {
+        return entries.groupBy { it.assetId }
+            .mapValues { (_, entries) ->
+                val totalAmount = entries.fold(BigInteger.ZERO) { acc, entry ->
+                    acc + entry.amount
+                }
+                totalAmount.amountString()
+            }
+    }
+
+    fun isDuplicateInvoiceEntries(): Boolean {
+        val duplicateAssetIds = entries.groupBy { it.assetId }.filter { it.value.size > 1 }.keys
+
+        return duplicateAssetIds.isNotEmpty()
+    }
+
     companion object {
         fun fromString(s: String): MixinInvoice {
             if (!s.startsWith(MixinInvoicePrefix)) {
@@ -176,7 +220,7 @@ data class MixinInvoice(
                         if (parts.size != 2) {
                             throw IllegalArgumentException("invalid amount format: $amountStr")
                         }
-                        val intPart = if (parts[0].isEmpty()) "0" else parts[0]
+                        val intPart = parts[0].ifEmpty { "0" }
                         val decimalPart = parts[1]
                         (intPart + decimalPart).toBigInteger()
                     } else {
@@ -184,6 +228,9 @@ data class MixinInvoice(
                     }
                 } catch (_: NumberFormatException) {
                     throw IllegalArgumentException("invalid amount: $amountStr")
+                }
+                if (amount <= BigInteger.ZERO) {
+                    throw IllegalArgumentException("amount must be positive: $amount")
                 }
 
                 val extraLengthBytes = ByteArray(2)
@@ -240,42 +287,21 @@ data class MixinInvoice(
                     indexReferences = indexReferences,
                     hashReferences = hashReferences
                 )
+                
+                val existingEntryIndex = entries.indexOfFirst { it.traceId == entry.traceId }
+                if (existingEntryIndex >= 0) {
+                    throw IllegalArgumentException("Duplicate traceId found in invoice: ${entry.traceId}")
+                }
+                
                 entries.add(entry)
             }
 
             if (entries.isEmpty()) throw IllegalArgumentException("entries is empty")
-            validateInvoiceEntries(entries)
             return MixinInvoice(
                 version = version,
                 recipient = recipient,
                 entries = entries
             )
-        }
-
-        private fun validateInvoiceEntries(entries: List<InvoiceEntry>) {
-            val duplicateTraceIds = entries.groupBy { it.traceId }.filter { it.value.size > 1 }.keys
-            val duplicateAssetIds = entries.groupBy { it.assetId }.filter { it.value.size > 1 }.keys
-
-            val errors = buildList {
-                if (duplicateTraceIds.isNotEmpty()) add(
-                    "Duplicate traceIds: ${
-                        duplicateTraceIds.joinToString(
-                            ", "
-                        )
-                    }"
-                )
-                if (duplicateAssetIds.isNotEmpty()) add(
-                    "Duplicate assetIds: ${
-                        duplicateAssetIds.joinToString(
-                            ", "
-                        )
-                    }"
-                )
-            }
-
-            if (errors.isNotEmpty()) {
-                throw IllegalArgumentException(errors.joinToString("; "))
-            }
         }
     }
 }
@@ -317,6 +343,25 @@ data class InvoiceEntry(
             return indexRefs + hashRefs
         }
 
+    fun isStorage(): Boolean {
+        return assetId.toString() == Constants.AssetId.XIN_ASSET_ID &&
+            extra.isNotEmpty() &&
+            extra.size > EXTRA_SIZE_GENERAL_LIMIT &&
+            amount.compareTo(estimateStorageCost(extra)) == 0
+    }
+
+    val memo: String?
+        get() {
+            if (extra.isEmpty()) return null
+            return runCatching {
+                if (extra.isByteArrayValidUtf8()) {
+                    String(extra)
+                } else {
+                    extra.hexString()
+                }
+            }.getOrNull() ?: ""
+        }
+
     override fun hashCode(): Int {
         var result = traceId.hashCode()
         result = 31 * result + assetId.hashCode()
@@ -327,23 +372,35 @@ data class InvoiceEntry(
         return result
     }
 
-    fun amountString(): String {
-        val amountStr = amount.toString()
-        return if (amountStr.length <= 8) {
-            "0.${"0".repeat(8 - amountStr.length)}$amountStr"
-        } else {
-            val intPart = amountStr.substring(0, amountStr.length - 8)
-            val decimalPart = amountStr.substring(amountStr.length - 8)
-            "$intPart.$decimalPart"
-        }
-    }
+    fun amountString() = amount.amountString()
 
     override fun toString(): String {
         return "InvoiceEntry(traceId=$traceId, assetId=$assetId, amount=${amountString()}, extra=${extra.joinToString("") { "%02x".format(it) }}, indexReferences=$indexReferences, hashReferences=${hashReferences.joinToString { it.joinToString("") { "%02x".format(it) } }})"
     }
 }
 
+private fun BigInteger.amountString(): String {
+    val amountStr = this.toString()
+    return if (amountStr.length <= 8) {
+        "0.${"0".repeat(8 - amountStr.length)}$amountStr"
+    } else {
+        val intPart = amountStr.substring(0, amountStr.length - 8)
+        val decimalPart = amountStr.substring(amountStr.length - 8)
+        "$intPart.$decimalPart"
+    }
+}
+
 sealed class Reference {
     data class IndexValue(val value: Int) : Reference()
     data class HashValue(val value: String) : Reference()
+}
+
+fun estimateStorageCost(extra: ByteArray): BigInteger {
+    require(extra.size <= EXTRA_SIZE_STORAGE_CAPACITY) {
+        "Extra data exceeds limit: ${extra.size} > $EXTRA_SIZE_STORAGE_CAPACITY"
+    }
+
+    val step = EXTRA_STORAGE_PRICE_STEP.toBigInteger()
+    val steps = (extra.size / EXTRA_SIZE_STORAGE_STEP).toBigInteger() + BigInteger.ONE
+    return step.multiply(steps)
 }

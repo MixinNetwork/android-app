@@ -12,6 +12,7 @@ import one.mixin.android.vo.ParticipantSessionKey
 import one.mixin.android.vo.ParticipantSessionSent
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface ParticipantSessionDao : BaseDao<ParticipantSession> {
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND session_id = :sessionId")
     fun getParticipantSession(
@@ -30,20 +31,20 @@ interface ParticipantSessionDao : BaseDao<ParticipantSession> {
         userId: String,
     ): ParticipantSessionKey?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId LIMIT 1")
     fun getParticipantSessionKeyByUserId(
         conversationId: String,
         userId: String,
     ): ParticipantSessionKey?
 
-    @Query("SELECT public_key FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND public_key IS NOT NULL LIMIT 1")
+    @Query("SELECT public_key FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND public_key IS NOT NULL ORDER BY created_at DESC  LIMIT 1")
     suspend fun findBotPublicKey(
         conversationId: String,
         userId: String,
     ): String?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND session_id = :sessionId LIMIT 1")
     fun getParticipantSessionKeyBySessionId(
         conversationId: String,

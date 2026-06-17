@@ -92,6 +92,7 @@ class BottomSheetViewModel
 
         suspend fun syncAddr(
             assetId: String,
+            chainId: String,
             destination: String?,
             label: String?,
             tag: String?,
@@ -100,6 +101,7 @@ class BottomSheetViewModel
             assetRepository.syncAddr(
                 AddressRequest(
                     assetId,
+                    chainId,
                     destination,
                     tag,
                     label,
@@ -246,21 +248,13 @@ class BottomSheetViewModel
 
         suspend fun findAddressById(
             addressId: String,
-            assetId: String,
+            chainId: String,
         ): Pair<Address?, Boolean> =
             withContext(Dispatchers.IO) {
                 val address =
-                    assetRepository.findAddressById(addressId, assetId)
-                        ?: return@withContext assetRepository.refreshAndGetAddress(addressId, assetId)
+                    assetRepository.findAddressById(addressId, chainId)
+                        ?: return@withContext assetRepository.refreshAndGetAddress(addressId, chainId)
                 return@withContext Pair(address, false)
-            }
-
-        suspend fun refreshAndGetAddress(
-            addressId: String,
-            assetId: String,
-        ): Pair<Address?, Boolean> =
-            withContext(Dispatchers.IO) {
-                return@withContext assetRepository.refreshAndGetAddress(addressId, assetId)
             }
 
         suspend fun findAssetItemById(assetId: String): AssetItem? =

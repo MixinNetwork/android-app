@@ -14,7 +14,6 @@ import android.graphics.RectF
 import android.media.MediaScannerConnection
 import android.net.Uri
 import android.os.Bundle
-import android.util.Base64
 import android.view.View
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.viewModels
@@ -31,7 +30,7 @@ import androidx.core.content.FileProvider
 import androidx.core.net.toUri
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.lifecycleScope
@@ -54,6 +53,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.ActivityInscriptionBinding
 import one.mixin.android.databinding.ViewInscriptionMenuBinding
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.copy
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dpToPx
@@ -137,7 +137,8 @@ class InscriptionActivity : BaseActivity() {
                 ::callbackSend,
             )
         SystemUIManager.lightUI(window, false)
-        window.statusBarColor = Color.TRANSPARENT
+        SystemUIManager.setSafePadding(window, Color.TRANSPARENT)
+        SystemUIManager.fullScreen(window)
         binding = ActivityInscriptionBinding.inflate(layoutInflater)
         setContentView(binding.root)
         val qrcode = "$INSCRIPTION$inscriptionHash".generateQRCode(dpToPx(110f), 0).first
@@ -249,7 +250,7 @@ class InscriptionActivity : BaseActivity() {
         _bottomBinding = ViewInscriptionMenuBinding.bind(View.inflate(ContextThemeWrapper(this, R.style.Custom), R.layout.view_inscription_menu, null))
         builder.setCustomView(bottomBinding.root)
         val bottomSheet = builder.create()
-        val isOwner = inscriptionState.state == "unspent"
+        val isOwner = inscriptionState.state == "unspent" || inscriptionState.state == "pending"
         val isImage = inscriptionState.contentType?.startsWith("image", true) == true
         bottomBinding.setAvatarTv.isVisible = isOwner && isImage
         bottomBinding.saveTv.isVisible = isOwner && isImage
@@ -323,7 +324,6 @@ class InscriptionActivity : BaseActivity() {
         }
         val options = UCrop.Options()
         options.setToolbarColor(ContextCompat.getColor(this@InscriptionActivity, R.color.black))
-        options.setStatusBarColor(ContextCompat.getColor(this@InscriptionActivity, R.color.black))
         options.setToolbarWidgetColor(Color.WHITE)
         options.setHideBottomControls(true)
         UCrop.of(f.toUri(), imageUri)
@@ -371,7 +371,7 @@ class InscriptionActivity : BaseActivity() {
             if (data != null) {
                 val resultUri = UCrop.getOutput(data)
                 val bitmap = resultUri?.getCapturedImage(this.contentResolver)
-                update(Base64.encodeToString(bitmap?.toBytes(), Base64.NO_WRAP))
+                update(bitmap?.toBytes()?.base64RawURLEncode() ?: "")
             }
         } else if (resultCode == UCrop.RESULT_ERROR) {
             if (data != null) {

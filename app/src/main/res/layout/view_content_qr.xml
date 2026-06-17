@@ -9,26 +9,26 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" >
 
-        <TextView
+        <one.mixin.android.widget.AddressTextView
             android:id="@+id/content_tv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
+            android:layout_marginStart="16dp"
             android:layout_marginEnd="64dp"
             android:layout_marginTop="4dp"
-            android:textStyle="bold"
-            android:textSize="16sp"
             android:textColor="?attr/text_primary"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:maxTextSize="16sp"
+            app:minTextSize="12sp"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintVertical_bias="0" />
 
         <TextView
             android:id="@+id/warning_tv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
+            android:layout_marginStart="16dp"
             android:layout_marginEnd="64dp"
             android:layout_marginTop="4dp"
             android:textColor="@color/colorRed"
@@ -59,21 +59,21 @@
             android:layout_height="wrap_content"
             android:layout_alignParentEnd="true"
             android:layout_centerVertical="true"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="32dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@id/warning_tv">
 
             <ImageView
                 android:id="@+id/qr"
-                android:layout_width="240dp"
-                android:layout_height="240dp"
+                android:layout_width="200dp"
+                android:layout_height="200dp"
                 tools:ignore="ContentDescription" />
 
             <one.mixin.android.widget.BadgeCircleImageView
                 android:id="@+id/qr_avatar"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
+                android:layout_width="45dp"
+                android:layout_height="45dp"
                 android:layout_gravity="center" />
         </FrameLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>

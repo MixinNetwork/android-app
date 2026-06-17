@@ -18,6 +18,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.MixinApplication
@@ -339,6 +340,10 @@ internal constructor(
 
     suspend fun findMarketItemByCoinId(coinId: String) = tokenRepository.findMarketItemByCoinId(coinId)
 
+    suspend fun findOrSyncTokenItemByAssetId(assetId: String): TokenItem? {
+        return tokenRepository.findOrSyncAsset(assetId)
+    }
+
     private val _recentSearches = MutableStateFlow<List<RecentSearch>>(emptyList())
     val recentSearches = _recentSearches.asStateFlow()
 
@@ -352,7 +357,7 @@ internal constructor(
     fun saveRecentSearch(sp: SharedPreferences, recentSearch: RecentSearch) {
         viewModelScope.launch {
             val local = _recentSearches.value.toMutableList()
-            local.remove(recentSearch)
+            local.removeIf { it.title == recentSearch.title && it.subTitle == recentSearch.subTitle }
             local.add(0, recentSearch)
             sp.putString(PREF_RECENT_SEARCH, GsonHelper.customGson.toJson(local.take(4)))
             _recentSearches.value = local.take(4)
@@ -398,5 +403,36 @@ internal constructor(
     fun removeRecentTokenItems(sp: SharedPreferences, key: String) {
         sp.remove(key)
         _recentTokenItems.value = emptyList()
+    }
+
+    fun updateRecentUsedBots(
+        defaultSharedPreferences: SharedPreferences,
+        userId: String,
+    ) = viewModelScope.launch(Dispatchers.IO) {
+        val botsString =
+            defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_USED_BOTS, null)
+        if (botsString != null) {
+            var botsList = botsString.split("=")
+            if (botsList.isEmpty()) {
+                defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_USED_BOTS, userId)
+                return@launch
+            }
+
+            val arr =
+                botsList.filter { it != userId }
+                    .toMutableList()
+                    .also {
+                        if (it.size >= Constants.RECENT_USED_BOTS_MAX_COUNT) {
+                            it.dropLast(1)
+                        }
+                        it.add(0, userId)
+                    }
+            defaultSharedPreferences.putString(
+                Constants.Account.PREF_RECENT_USED_BOTS,
+                arr.joinToString("="),
+            )
+        } else {
+            defaultSharedPreferences.putString(Constants.Account.PREF_RECENT_USED_BOTS, userId)
+        }
     }
 }

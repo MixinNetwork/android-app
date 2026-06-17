@@ -19,14 +19,7 @@ fun toMnemonic(entropy: ByteArray): String {
         require(Blockchain.newMnemonic(entropy) == it)
     }
 }
-
-fun toCompleteMnemonic(mnemonic: String): List<String> {
-    val words = mnemonic.split(" ")
-    val checksum = mnemonicChecksumWord(words)
-    return words + checksum
-}
-
-fun toCompleteMnemonic(words: List<String>): List<String> {
+fun toMnemonicWithChecksum(words: List<String>): List<String> {
     val checksum = mnemonicChecksumWord(words)
     return words + checksum
 }
@@ -57,10 +50,10 @@ fun toSeed(words: List<String>, passphrase: String): ByteArray = MnemonicCode.to
 fun mnemonicChecksum(list: List<String>): Boolean {
     return when (list.size) {
         25 -> {
-            mnemonicChecksumWord(list.subList(0, 24)) == list.last()
+            mnemonicChecksumWord(list.subList(0, list.size - 1)) == list.last()
         }
         13 -> {
-            list.distinct().size == list.size && mnemonicChecksumWord(list.subList(0, 12)) == list.last()
+            mnemonicChecksumWord(list.subList(0, list.size - 1)) == list.last()
         }
         else -> {
             false
@@ -88,8 +81,5 @@ fun mnemonicChecksumWord(words: List<String>, prefixLen: Int = 3): String {
 }
 
 fun getMatchingWords(input: String): List<String>? {
-    if (MnemonicCode.INSTANCE.wordList.contains(input)) {
-        return null
-    }
     return MnemonicCode.INSTANCE.wordList.filter { it.startsWith(input) }
 }

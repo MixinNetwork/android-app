@@ -1,7 +1,7 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
@@ -21,7 +21,7 @@ interface ParticipantDao : BaseDao<Participant> {
         """
     }
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT u.user_id, u.identity_number, u.full_name, u.avatar_url, u.relationship, u.biography, u.app_id, u.membership, u.is_verified FROM participants p, users u 
@@ -30,7 +30,7 @@ interface ParticipantDao : BaseDao<Participant> {
     )
     fun getParticipants(conversationId: String): List<User>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT u.user_id, u.identity_number, u.full_name, u.avatar_url, u.relationship, u.biography, u.app_id, u.membership, u.is_verified 
@@ -43,7 +43,7 @@ interface ParticipantDao : BaseDao<Participant> {
     )
     suspend fun getParticipantsWithoutBot(conversationId: String): List<User>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
             $PREFIX_PARTICIPANT_ITEM
@@ -53,14 +53,14 @@ interface ParticipantDao : BaseDao<Participant> {
             ORDER BY p.created_at DESC
         """,
     )
-    fun observeGroupParticipants(conversationId: String): DataSource.Factory<Int, ParticipantItem>
+    fun observeGroupParticipants(conversationId: String): PagingSource<Int, ParticipantItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
             $PREFIX_PARTICIPANT_ITEM
             FROM participants p, users u
-            WHERE p.conversation_id = :conversationId 
+            WHERE p.conversation_id = :conversationId
             AND p.user_id = u.user_id
             AND (u.full_name LIKE '%' || :username || '%' ${BaseDao.ESCAPE_SUFFIX} OR u.identity_number like '%' || :identityNumber || '%' ${BaseDao.ESCAPE_SUFFIX})
             ORDER BY p.created_at DESC
@@ -70,7 +70,7 @@ interface ParticipantDao : BaseDao<Participant> {
         conversationId: String,
         username: String,
         identityNumber: String,
-    ): DataSource.Factory<Int, ParticipantItem>
+    ): PagingSource<Int, ParticipantItem>
 
     @Query("UPDATE participants SET role = :role where conversation_id = :conversationId AND user_id = :userId")
     fun updateParticipantRole(
@@ -101,14 +101,14 @@ interface ParticipantDao : BaseDao<Participant> {
         userId: String,
     )
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship FROM participants p, users u " +
             "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at LIMIT 4",
     )
     fun getParticipantsAvatar(conversationId: String): List<User>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         "SELECT u.user_id, u.identity_number, u.biography, u.full_name, u.avatar_url, u.relationship FROM participants p, users u " +
             "WHERE p.conversation_id = :conversationId AND p.user_id = u.user_id ORDER BY p.created_at DESC LIMIT :limit",

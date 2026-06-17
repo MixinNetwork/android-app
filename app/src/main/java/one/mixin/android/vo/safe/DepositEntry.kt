@@ -38,4 +38,10 @@ data class DepositEntry(
     @ColumnInfo(name = "is_primary")
     @SerializedName("is_primary")
     val isPrimary: Boolean,
+    @ColumnInfo(name = "minimum")
+    @SerializedName("minimum")
+    val minimum: String,
+    @ColumnInfo(name = "maximum")
+    @SerializedName("maximum")
+    val maximum: String,
 ) : Parcelable

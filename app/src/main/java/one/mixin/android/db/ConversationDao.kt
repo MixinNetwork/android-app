@@ -23,7 +23,7 @@ interface ConversationDao : BaseDao<Conversation> {
             c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, c.pin_time AS pinTime, c.mute_until AS muteUntil,
             ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified,
             ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil, ou.app_id AS appId,
-            m.content AS content, m.category AS contentType, m.created_at AS createdAt, m.media_url AS mediaUrl,
+            m.content AS content, m.category AS contentType, m.created_at AS createdAt, 
             m.user_id AS senderId, m.action AS actionName, m.status AS messageStatus,
             mu.full_name AS senderFullName,
             pu.full_name AS participantFullName, pu.user_id AS participantUserId,
@@ -39,7 +39,7 @@ interface ConversationDao : BaseDao<Conversation> {
     }
 
     // Read SQL
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH, RoomWarnings.QUERY_MISMATCH)
     @Query(
         """$PREFIX_CONVERSATION_ITEM
         WHERE c.category IN ('CONTACT', 'GROUP')
@@ -48,7 +48,7 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     fun conversationList(): DataSource.Factory<Int, ConversationItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH, RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
@@ -112,7 +112,7 @@ interface ConversationDao : BaseDao<Conversation> {
     @Query("SELECT c.draft FROM conversations c WHERE c.conversation_id = :conversationId")
     suspend fun getConversationDraftById(conversationId: String): String?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH, RoomWarnings.QUERY_MISMATCH)
     @Query(
         "SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category, " +
             "c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId, " +
@@ -273,6 +273,9 @@ interface ConversationDao : BaseDao<Conversation> {
     // Delete SQL
     @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
     suspend fun deleteConversationById(conversationId: String)
+
+    @Query("DELETE FROM conversations WHERE conversation_id = :conversationId")
+    fun deleteConversationByConversationId(conversationId: String)
 
     @Query(
         """

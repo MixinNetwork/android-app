@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -13,12 +12,13 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentUpgradeBinding
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.property.PropertyHelper
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.viewBinding
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
@@ -34,10 +34,12 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
             }
     }
 
-    private val viewModel by viewModels<MobileViewModel>()
     private val binding by viewBinding(FragmentUpgradeBinding::bind)
 
     private val type: Int by lazy { requireArguments().getInt(ARGS_TYPE) }
+
+    @Inject
+    lateinit var db: MixinDatabase
 
     @SuppressLint("SetTextI18n")
     override fun onViewCreated(
@@ -52,7 +54,7 @@ class UpgradeFragment : BaseFragment(R.layout.fragment_upgrade) {
             binding.pb.isIndeterminate = true
             withContext(Dispatchers.IO) {
                 PropertyHelper.checkMigrated()
-                runInTransaction { }
+                db.runInTransaction {  }
             }
             MainActivity.show(requireContext())
             activity?.finish()

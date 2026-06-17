@@ -2,34 +2,23 @@ package one.mixin.android.ui.common
 
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import android.widget.TextView
 import androidx.annotation.LayoutRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants
-import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
 import one.mixin.android.crypto.EdKeyPair
-import one.mixin.android.crypto.removeValueFromEncryptedPreferences
-import one.mixin.android.extension.base64Encode
-import one.mixin.android.extension.clear
 import one.mixin.android.extension.clickVibrate
-import one.mixin.android.extension.decodeBase64
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.getStringDeviceId
-import one.mixin.android.extension.putString
+import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.tickVibrate
-import one.mixin.android.session.Session
-import one.mixin.android.session.decryptPinToken
+import one.mixin.android.session.initializeAccountSession
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.database.clearDatabase
-import one.mixin.android.util.database.clearJobsAndRawTransaction
-import one.mixin.android.util.database.getLastUserId
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -67,18 +56,38 @@ abstract class PinCodeFragment(
         verificationNextFab.setOnClickListener { clickNextFab() }
     }
 
+    override fun onResume() {
+        super.onResume()
+        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+        requireActivity().currentFocus?.clearFocus()
+        requireActivity().hideKeyboard()
+        verificationCover.requestFocus()
+        verificationCover.hideKeyboard()
+    }
+
     protected fun handleFailure(r: MixinResponse<*>) {
         return handleFailure(requireNotNull(r.error))
     }
 
     protected fun handleFailure(error: ResponseError) {
+        hideLoading()
         pinVerificationView.error()
         pinVerificationTipTv.visibility = View.VISIBLE
-        pinVerificationTipTv.text = getString(R.string.The_code_is_incorrect)
-        if (error.code == ErrorHandler.PHONE_VERIFICATION_CODE_INVALID ||
-            error.code == ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED
-        ) {
-            verificationNextFab.visibility = View.INVISIBLE
+        
+        when (error.code) {
+            ErrorHandler.PHONE_VERIFICATION_CODE_INVALID -> {
+                pinVerificationTipTv.text = getString(R.string.error_phone_verification_code_invalid)
+                verificationNextFab.visibility = View.INVISIBLE
+                return
+            }
+            ErrorHandler.PHONE_VERIFICATION_CODE_EXPIRED -> {
+                pinVerificationTipTv.text = getString(R.string.error_phone_verification_code_expired)
+                verificationNextFab.visibility = View.INVISIBLE
+                return
+            }
+            else -> {
+                pinVerificationTipTv.text = getString(R.string.The_code_is_incorrect)
+            }
         }
         ErrorHandler.handleMixinError(error.code, error.description)
     }
@@ -96,30 +105,8 @@ abstract class PinCodeFragment(
 
         val account = response.data as Account
 
-        val lastUserId = getLastUserId(requireContext())
-        val sameUser = lastUserId != null && lastUserId == account.userId
-        if (sameUser) {
-            showLoading()
-            withContext(Dispatchers.IO) {
-                clearJobsAndRawTransaction(requireContext())
-            }
-        } else {
-            showLoading()
-            withContext(Dispatchers.IO) {
-                clearDatabase(requireContext())
-            }
-            defaultSharedPreferences.clear()
-        }
-        val privateKey = sessionKey.privateKey
-        val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
-        Session.storeEd25519Seed(privateKey.base64Encode())
-        Session.storePinToken(pinToken.base64Encode())
-        Session.storeAccount(account)
-        if (Session.hasPhone()) {
-            // Remove mnemonic if user has phone on sign in
-            removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
-        }
-        defaultSharedPreferences.putString(DEVICE_ID, requireContext().getStringDeviceId())
+        showLoading()
+        initializeAccountSession(requireContext(), account, sessionKey)
 
         verificationKeyboard.animate().translationY(300f).start()
         MixinApplication.get().isOnline.set(true)

@@ -39,14 +39,14 @@ interface AlertDao : BaseDao<Alert> {
     fun alertGroup(coinId: String): Flow<AlertGroup?>
 
     @Query("SELECT * FROM market_alerts WHERE coin_id = :coinId ORDER BY created_at ASC")
-    fun alertsByCoinId(coinId:String):Flow<List<Alert>>
+    fun alertsByCoinId(coinId: String): Flow<List<Alert>>
 
     @Query("DELETE FROM market_alerts WHERE alert_id = :alertId")
     fun deleteAlertById(alertId: String)
 
     @Query("SELECT COUNT(*) FROM market_alerts")
     fun getTotalAlertCount(): Int
-      
+
     @Query("SELECT COUNT(*) FROM market_alerts WHERE coin_id = :coinId")
     fun getAlertCountByCoinId(coinId: String): Int
 

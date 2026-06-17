@@ -4,14 +4,11 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
-import android.view.View
 import android.widget.RelativeLayout
-import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewAssetIconGroupBinding
 import one.mixin.android.extension.colorFromAttribute
-import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 
 @SuppressLint("CustomViewStyleable")

@@ -2,29 +2,24 @@ package one.mixin.android.ui.conversation.link
 
 import android.annotation.SuppressLint
 import android.app.Dialog
-import android.os.Bundle
 import android.view.Gravity
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.coordinatorlayout.widget.CoordinatorLayout
-import androidx.core.view.doOnPreDraw
+import androidx.compose.runtime.Composable
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.google.android.material.bottomsheet.BottomSheetBehavior
-import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
@@ -33,7 +28,7 @@ import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
-class CollectionBottomSheetDialogFragment : BottomSheetDialogFragment() {
+class CollectionBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "AuthBottomSheetDialogFragment"
         const val ARGS_COLLECTION_HASH = "args_collection_hash"
@@ -64,8 +59,6 @@ class CollectionBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val memo by lazy {
         requireArguments().getString(ARGS_MEMO)
     }
-
-    private var behavior: BottomSheetBehavior<*>? = null
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
@@ -115,64 +108,57 @@ class CollectionBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val bottomSheetViewModel by viewModels<BottomSheetViewModel>()
 
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View =
-        ComposeView(requireContext()).apply {
-            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
-            setContent {
-                CollectionPage(collectionHash, { inscription ->
-                    lifecycleScope.launch {
-                        val u = bottomSheetViewModel.refreshUser(receiverId)
-                        val token = checkTokenByCollectionHash(collectionHash, inscription.inscriptionHash)
-                        val inscriptionCollection = checkInscriptionCollection(collectionHash)
-                        if (inscriptionCollection == null) {
-                            toast(R.string.collectible_not_found)
-                            dismiss()
-                            return@launch
-                        }
-                        if (u == null) {
-                            toast(R.string.User_not_found)
-                            dismiss()
-                            return@launch
-                        }
-                        val output = bottomSheetViewModel.findUnspentOutputByHash(inscription.inscriptionHash)
-                        if (output == null) {
-                            toast(R.string.collectible_not_found)
-                            dismiss()
-                            return@launch
-                        }
-                        val nftBiometricItem =
-                            NftBiometricItem(
-                                asset = token,
-                                traceId = traceId,
-                                amount = output.amount,
-                                memo = memo,
-                                state = PaymentStatus.pending.name,
-                                receivers = listOf(u),
-                                reference = null,
-                                inscriptionItem = inscription,
-                                inscriptionCollection = inscriptionCollection,
-                                releaseAmount = null,
-                            )
-
-                        TransferBottomSheetDialogFragment.newInstance(nftBiometricItem).showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
-                        dismiss()
-                    }
-                }, {
+    @Composable
+    override fun ComposeContent() {
+        CollectionPage(collectionHash, { inscription ->
+            lifecycleScope.launch {
+                val u = bottomSheetViewModel.refreshUser(receiverId)
+                val token = checkTokenByCollectionHash(collectionHash, inscription.inscriptionHash)
+                val inscriptionCollection = checkInscriptionCollection(collectionHash)
+                if (inscriptionCollection == null) {
+                    toast(R.string.collectible_not_found)
                     dismiss()
-                })
+                    return@launch
+                }
+                if (u == null) {
+                    toast(R.string.User_not_found)
+                    dismiss()
+                    return@launch
+                }
+                val output = bottomSheetViewModel.findUnspentOutputByHash(inscription.inscriptionHash)
+                if (output == null) {
+                    toast(R.string.collectible_not_found)
+                    dismiss()
+                    return@launch
+                }
+                val nftBiometricItem =
+                    NftBiometricItem(
+                        asset = token,
+                        traceId = traceId,
+                        amount = output.amount,
+                        memo = memo,
+                        state = PaymentStatus.pending.name,
+                        receivers = listOf(u),
+                        reference = null,
+                        inscriptionItem = inscription,
+                        inscriptionCollection = inscriptionCollection,
+                        releaseAmount = null,
+                    )
+
+                TransferBottomSheetDialogFragment.newInstance(nftBiometricItem).showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                dismiss()
             }
-            doOnPreDraw {
-                val params = (it.parent as View).layoutParams as? CoordinatorLayout.LayoutParams
-                behavior = params?.behavior as? BottomSheetBehavior<*>
-                behavior?.peekHeight = requireContext().screenHeight()
-                behavior?.isDraggable = false
-                behavior?.addBottomSheetCallback(bottomSheetBehaviorCallback)
-            }
-        }
+        }, {
+            dismiss()
+        })
+    }
+
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+    }
+
+    override fun showError(error: String) {
+    }
 
     private suspend fun checkTokenByCollectionHash(collectionHash: String, instantiationHash: String): TokenItem? {
         var asset = bottomSheetViewModel.findAssetItemByCollectionHash(collectionHash)
@@ -194,23 +180,4 @@ class CollectionBottomSheetDialogFragment : BottomSheetDialogFragment() {
             return inscriptionCollection
         }
     }
-
-    private val bottomSheetBehaviorCallback =
-        object : BottomSheetBehavior.BottomSheetCallback() {
-            override fun onStateChanged(
-                bottomSheet: View,
-                newState: Int,
-            ) {
-                when (newState) {
-                    BottomSheetBehavior.STATE_HIDDEN -> dismissAllowingStateLoss()
-                    else -> {}
-                }
-            }
-
-            override fun onSlide(
-                bottomSheet: View,
-                slideOffset: Float,
-            ) {
-            }
-        }
 }

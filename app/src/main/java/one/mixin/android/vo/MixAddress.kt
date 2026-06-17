@@ -47,6 +47,10 @@ data class MixAddress(
                 }
             }
         }
+
+        fun newStorageRecipient(): MixAddress {
+            return requireNotNull("MIXSK624cFT3CXbbjYxU17CeYWCwj6CZgkp2VsfiRsDMXw4MzpfYKPKKYwLmfDby2z85MLAbSWZbAB1dfPetCxUf7vwwJnToaG8".toMixAddress())
+        }
     }
 
     fun members(): List<String> {
@@ -133,7 +137,7 @@ fun String.toMixAddress(): MixAddress? {
     if (version != MixAddressVersion) return null
     val threshold = payload[1]
     val total = payload[2].toInt()
-    if (threshold.toInt() == 0 || threshold > total || total > 64) return null
+    if (threshold.toInt() == 0 || total > 64) return null
     val mixAddress = MixAddress(version, threshold)
     val mb = payload.sliceArray(3..<payload.size)
     when (mb.size) {
@@ -163,7 +167,7 @@ fun ByteArray.toMixAddress(): MixAddress? {
     if (version != MixAddressVersion) return null
     val threshold = this[1]
     val total = this[2].toInt()
-    if (threshold.toInt() == 0 || threshold > total || total > 64) return null
+    if (threshold.toInt() == 0 || total > 64) return null
     val mixAddress = MixAddress(version, threshold)
     val mb = this.sliceArray(3..<this.size)
     when (mb.size) {

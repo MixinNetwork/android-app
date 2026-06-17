@@ -34,7 +34,13 @@ class MixinResponse<T>() {
         get() = if (error != null) error!!.code else 0
 
     val errorDescription: String
-        get() = if (error != null) error!!.description else ""
+        get() = if (error != null) {
+            var d = error!!.description
+            if (error!!.extra != null) {
+                d = d + "\n" + error!!.extra.toString()
+            }
+            d
+        } else ""
 }
 
 suspend fun <T, R> handleMixinResponse(

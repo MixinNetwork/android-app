@@ -4,8 +4,12 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -16,10 +20,13 @@ import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.QuizPage
+import one.mixin.android.ui.landing.components.QuizResultBottomSheetDialogFragment
 import one.mixin.android.ui.landing.components.SetPinLoadingPage
-import one.mixin.android.ui.landing.components.SetPinPage
 import one.mixin.android.ui.landing.components.SetupPinPage
+import one.mixin.android.ui.logs.LogViewerBottomSheet
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 
 @AndroidEntryPoint
 class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
@@ -32,12 +39,10 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
 
             }
     }
-
-    private val mobileViewModel by viewModels<MobileViewModel>()
     private val binding by viewBinding(FragmentComposeBinding::bind)
 
     enum class SetupPinDestination {
-        Initial, Setup, Loading, Quiz
+        Setup, Loading, Quiz
     }
 
     override fun onViewCreated(
@@ -45,18 +50,25 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("$TAG onViewCreated")
+        AnalyticsTracker.trackSignUpPinSet()
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
         binding.titleView.isVisible = false
+        val showLogViewer = {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+        }
         binding.compose.setContent {
             MixinAppTheme(
                 darkTheme = requireContext().isNightMode(),
             ) {
                 val navController = rememberNavController()
+                var pin: String by remember { mutableStateOf("") }
+                var errorMessage: String by remember { mutableStateOf("") }
                 NavHost(
                     navController = navController,
-                    startDestination = SetupPinDestination.Initial.name,
+                    startDestination = SetupPinDestination.Setup.name,
                     enterTransition = {
                         slideIntoContainer(
                             AnimatedContentTransitionScope.SlideDirection.Left,
@@ -82,28 +94,53 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                         )
                     },
                 ) {
-                    composable(SetupPinDestination.Initial.name) {
-                        SetPinPage {
-                            navController.navigate(SetupPinDestination.Setup.name)
-                        }
-                    }
                     composable(SetupPinDestination.Setup.name) {
-                        SetupPinPage({
-                            navController.navigate(SetupPinDestination.Initial.name)
-                        }, {
-                            navController.navigate(SetupPinDestination.Loading.name)
-                        })
-                    }
-                    composable(SetupPinDestination.Loading.name) {
-                        SetPinLoadingPage {
-                            navController.navigate(SetupPinDestination.Quiz.name)
-                        }
+                        SetupPinPage(
+                            next = { pinValue ->
+                                Timber.e("$TAG Setup PIN completed")
+                                pin = pinValue
+                                navController.navigate(SetupPinDestination.Quiz.name)
+                            },
+                            errorMessage = errorMessage,
+                            onRetry = {
+                                Timber.e("$TAG Retry setup PIN")
+                                errorMessage = ""
+                            },
+                            onTopBarLongClick = showLogViewer,
+                        )
                     }
                     composable(SetupPinDestination.Quiz.name) {
-                        QuizPage {
-                            // Todo
-                            navController.navigate(SetupPinDestination.Initial.name)
+                        LaunchedEffect(Unit) {
+                            AnalyticsTracker.trackSignUpPinQuiz()
                         }
+                        QuizPage(
+                            next = {
+                                Timber.e("$TAG Quiz completed")
+                                navController.navigate(SetupPinDestination.Loading.name)
+                            },
+                            pop = {
+                                Timber.e("$TAG Quiz back pressed")
+                                navController.popBackStack()
+                            },
+                            onTopBarLongClick = showLogViewer,
+                            onShowResultBottomSheet = { isCorrect, onCorrect, onWrong ->
+                                QuizResultBottomSheetDialogFragment.newInstance(isCorrect).apply {
+                                    onCorrectAction = onCorrect
+                                    onWrongAction = onWrong
+                                }.show(parentFragmentManager, QuizResultBottomSheetDialogFragment.TAG)
+                            }
+                        )
+                    }
+                    composable(SetupPinDestination.Loading.name) {
+                        SetPinLoadingPage(
+                            pin = pin,
+                            onTopBarLongClick = showLogViewer,
+                            next = {
+                                Timber.e("$TAG PIN set successfully")
+                                AnalyticsTracker.trackSignUpEnd()
+                                requireActivity().finish()
+                            }
+                        )
                     }
                 }
             }

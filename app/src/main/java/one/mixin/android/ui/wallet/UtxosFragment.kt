@@ -139,7 +139,8 @@ class UtxosFragment : BaseFragment() {
                 name.text = item.outputId
                 hash.text = item.transactionHash
                 value.text = item.amount
-                value.textColorResource = if (item.state == "unspent") R.color.wallet_green else R.color.wallet_pink
+                value.textColorResource =
+                    if (item.state == "unspent") R.color.wallet_green else if (item.state == "pending") R.color.gray_black_50 else R.color.wallet_pink
             }
             binding.root.setOnLongClickListener {
                 action(item)
