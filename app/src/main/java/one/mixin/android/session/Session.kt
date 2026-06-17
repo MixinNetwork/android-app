@@ -1,5 +1,6 @@
 package one.mixin.android.session
 
+import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import ed25519.Ed25519
@@ -21,6 +22,7 @@ import one.mixin.android.crypto.getRSAPrivateKeyFromString
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.sha3Sum256
+import one.mixin.android.crypto.signBotSignature
 import one.mixin.android.crypto.useGoEd
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
@@ -30,17 +32,19 @@ import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.hmacSha256
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
+import one.mixin.android.extension.startsWithIgnoreCase
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.storeEncryptedSalt
 import one.mixin.android.util.reportException
+import one.mixin.android.util.xinDialCode
 import one.mixin.android.vo.Account
 import one.mixin.eddsa.Ed25519Sign
+import org.threeten.bp.Instant
 import timber.log.Timber
 import java.security.Key
 import java.util.concurrent.ConcurrentHashMap
@@ -66,6 +70,7 @@ object Session {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account.copy(salt = null)))
 
+        Bugsnag.setUser(account.userId, account.identityNumber, account.fullName)
         val salt = account.salt
         if (salt.isNullOrEmpty()) {
             return
@@ -96,10 +101,28 @@ object Session {
             }
         }
 
+    fun hasPhone(): Boolean {
+        val account = getAccount()
+        val phone = account?.phone
+        return !phone.isNullOrBlank() && !phone.startsWithIgnoreCase(xinDialCode)
+    }
+
+    fun isAnonymous(): Boolean {
+        return !hasPhone()
+    }
+
+    fun saltExported(): Boolean {
+        val account = getAccount()
+        val exportedSaltAt = account?.saltExportedAt ?: return false
+        val baseInstant = Instant.parse("0001-01-01T00:00:00Z")
+        return Instant.parse(exportedSaltAt).isAfter(baseInstant)
+    }
+
     fun clearAccount() {
         self = null
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.clear()
+        Bugsnag.setUser(null, null, null)
     }
 
     fun storeEd25519Seed(token: String) {
@@ -375,22 +398,24 @@ object Session {
     }
 
     fun getBotSignature(
-        publicKey: String?,
+        botPublicKey: String,
         request: Request,
     ): Pair<Long, String> {
         val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
-        val botPk = publicKey?.base64RawURLDecode() ?: return Pair(0L, "")
-        val private = privateKeyToCurve25519(edKeyPair.privateKey)
-        val sharedKey = calculateAgreement(botPk, private)
-        val ts = currentTimeSeconds()
-        var content = "$ts${request.method}${request.url.cutOut()}"
-        request.body?.apply {
-            if (contentLength() > 0) {
-                content += bodyToString()
-            }
-        }
-        return Pair(ts, (requireNotNull(getAccountId()).toByteArray() + content.hmacSha256(sharedKey)).base64RawURLEncode())
+        val accountId = getAccountId() ?: return Pair(0L, "")
+        val body = request.body?.bodyToString()
+        return signBotSignature(accountId, botPublicKey, edKeyPair, request.method, request.url.cutOut(), body)
     }
+
+    fun getBotSignature(
+        botPublicKey: String?,
+        method: String, path: String, body: String
+    ): Pair<Long, String> {
+        val edKeyPair = getEd25519KeyPair() ?: return Pair(0L, "")
+        val accountId = getAccountId() ?: return Pair(0L, "")
+        return signBotSignature(accountId, botPublicKey!!, edKeyPair, method, path, body)
+    }
+
 
     fun getRegisterSignature(
         message: String,

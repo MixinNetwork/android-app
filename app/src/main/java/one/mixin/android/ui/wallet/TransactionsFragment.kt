@@ -9,23 +9,23 @@ import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
 import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
-import one.mixin.android.extension.buildAmountSymbol
+import one.mixin.android.extension.buildBalanceAmountSymbol
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.mainThreadDelayed
-import one.mixin.android.extension.navTo
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
@@ -34,7 +34,6 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.statusBarHeight
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.CheckBalanceJob
 import one.mixin.android.job.MixinJobManager
@@ -45,19 +44,24 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.Market
-import one.mixin.android.ui.home.web3.swap.SwapFragment
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.getChainName
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.notMessengerUser
-import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.widget.BottomSheet
@@ -71,12 +75,12 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         const val TAG = "TransactionsFragment"
         const val ARGS_ASSET = "args_asset"
         const val ARGS_FROM_MARKET = "args_from_market"
+        const val ARGS_SOURCE = "args_source"
     }
 
     private val binding by viewBinding(FragmentTransactionsBinding::bind)
     private var _bottomBinding: ViewWalletTransactionsBottomBinding? = null
     private val bottomBinding get() = requireNotNull(_bottomBinding) { "required _bottomBinding is null" }
-    private val sendBottomSheet = SendBottomSheet(this, R.id.action_transactions_to_single_friend_select, R.id.action_transactions_to_address_management)
 
     @Inject
     lateinit var tip: Tip
@@ -90,6 +94,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     private val fromMarket by lazy {
         requireArguments().getBoolean(ARGS_FROM_MARKET, false)
+    }
+    private val source by lazy {
+        requireArguments().getString(ARGS_SOURCE)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -109,6 +116,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackAssetDetail(TradeWallet.MAIN, resolveAssetDetailSource(fromMarket, source))
         jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(asset.assetId))))
         jobManager.addJobInBackground(RefreshPriceJob(asset.assetId))
 
@@ -124,16 +132,44 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
         }
         binding.apply {
-            sendReceiveView.enableSwap()
             sendReceiveView.swap.setOnClickListener {
+                if (
+                    showRecoveryReminderForRiskAction {
+                        AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.ASSET_DETAIL)
+                        lifecycleScope.launch {
+                            val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
+                                XIN_ASSET_ID
+                            } else {
+                                USDT_ASSET_ETH_ID
+                            }
+                            SwapActivity.show(
+                                requireActivity(),
+                                inMixin = true,
+                                input = asset.assetId,
+                                output = output,
+                                entrySource = TradeSource.ASSET_DETAIL,
+                                entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                            )
+                        }
+                    }
+                ) {
+                    return@setOnClickListener
+                }
+                AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.ASSET_DETAIL)
                 lifecycleScope.launch {
-                    val assets = walletViewModel.allAssetItems()
-                    val output = if (asset.assetId == USDT_ASSET_ID) {
+                    val output = if (asset.assetId == USDT_ASSET_ETH_ID) {
                         XIN_ASSET_ID
                     } else {
-                        USDT_ASSET_ID
+                        USDT_ASSET_ETH_ID
                     }
-                    navTo(SwapFragment.newInstance<TokenItem>(assets, input = asset.assetId, output = output), SwapFragment.TAG)
+                    SwapActivity.show(
+                        requireActivity(),
+                        inMixin = true,
+                        input = asset.assetId,
+                        output = output,
+                        entrySource = TradeSource.ASSET_DETAIL,
+                        entryType = AnalyticsTracker.SpotTradeType.SIMPLE,
+                    )
                 }
             }
             value.text = try {
@@ -200,7 +236,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                             "", "", "", "", "", runCatching {
                                 (BigDecimal(asset.priceUsd) * BigDecimal(asset.changeUsd)).toPlainString()
                             }.getOrNull() ?: "0", "", asset.changeUsd, "", "", "", "", "", "", "", "", "",
-                            "", "", "", "", listOf(asset.assetId), "", null
+                            "", "", "", "", listOf(asset.assetId), "", "", null
                         )
                     }
                     view.navigate(
@@ -208,6 +244,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                         Bundle().apply {
                             putParcelable(ARGS_MARKET, market)
                             putString(ARGS_ASSET_ID, asset.assetId)
+                            putString(ARGS_MARKET_SOURCE, AnalyticsTracker.MarketSource.TOKEN_DETAIL)
                         },
                     )
                 }
@@ -225,11 +262,11 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                                 val receiver = it.withdrawal!!.receiver
                                 val index: Int = receiver.indexOf(":")
                                 if (index == -1) {
-                                    it.label = walletViewModel.findAddressByReceiver(receiver, "")
+                                    it.label = walletViewModel.findAddressByReceiver(receiver, "", asset.chainId)
                                 } else {
                                     val destination: String = receiver.substring(0, index)
                                     val tag: String = receiver.substring(index + 1)
-                                    it.label = walletViewModel.findAddressByReceiver(destination, tag)
+                                    it.label = walletViewModel.findAddressByReceiver(destination, tag, asset.chainId)
                                 }
                             }
                             it
@@ -253,9 +290,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
         walletViewModel.refreshAsset(asset.assetId)
         lifecycleScope.launch {
-            val depositEntry = walletViewModel.findDepositEntry(asset.chainId)
+            val depositEntry = walletViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)
             if (depositEntry != null && depositEntry.destination.isNotBlank()) {
-                refreshPendingDeposits(asset, depositEntry)
+                refreshPendingDeposits(asset)
             }
         }
     }
@@ -264,35 +301,41 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     override fun onDestroyView() {
         _bottomBinding = null
-        sendBottomSheet.release()
         super.onDestroyView()
     }
 
     private fun refreshPendingDeposits(
         asset: TokenItem,
-        depositEntry: DepositEntry,
     ) {
         if (viewDestroyed()) return
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = {
-                    walletViewModel.refreshPendingDeposits(asset.assetId, depositEntry)
+                    walletViewModel.refreshPendingDeposits(asset.assetId)
+                },
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
                 },
                 successBlock = { list ->
                     withContext(Dispatchers.IO) {
-                        walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
-                        val pendingDeposits = list.data
-                        if (pendingDeposits.isNullOrEmpty()) {
-                            return@withContext
-                        }
-
-                        pendingDeposits.chunked(100) { chunk ->
-                            lifecycleScope.launch(Dispatchers.IO) {
-                                chunk.map {
-                                    it.toSnapshot()
-                                }.let {
-                                    walletViewModel.insertPendingDeposit(it)
+                        val pendingDeposits = list.data ?: emptyList()
+                        val destinationTags = walletViewModel.findDepositEntryDestinations()
+                        pendingDeposits.filter { pd ->
+                            destinationTags.any { dt ->
+                                dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
+                            }
+                        }.map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            // If there are no pending deposit snapshots belonging to the current user, clear token pending deposits
+                            if (snapshots.isEmpty()) {
+                                walletViewModel.clearPendingDepositsByAssetId(asset.assetId)
+                                return@let
+                            }
+                            lifecycleScope.launch {
+                                snapshots.map { it.assetId }.distinct().forEach {
+                                    walletViewModel.findOrSyncAsset(it)
                                 }
+                                walletViewModel.insertPendingDeposit(snapshots)
                             }
                         }
                     }
@@ -310,6 +353,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         bottomBinding.apply {
             hide.setText(if (asset.hidden == true) R.string.Show else R.string.Hide)
             hide.setOnClickListener {
+                AnalyticsTracker.trackAssetDetailHide()
                 lifecycleScope.launch(Dispatchers.IO) {
                     walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
                 }
@@ -323,11 +367,12 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     }
 
     override fun <T> onNormalItemClick(item: T) {
+        AnalyticsTracker.trackTransactionDetail(AnalyticsTracker.AssetSource.ASSET_DETAIL)
         view?.navigate(
             R.id.action_transactions_fragment_to_transaction_fragment,
             Bundle().apply {
                 putParcelable(TransactionFragment.ARGS_SNAPSHOT, item as SnapshotItem)
-                putParcelable(ARGS_ASSET, asset)
+                putParcelable(TransactionsFragment.ARGS_ASSET, asset)
             },
         )
     }
@@ -350,11 +395,22 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     }
 
     override fun onMoreClick() {
+        AnalyticsTracker.trackAllTransactions(AnalyticsTracker.AssetSource.ASSET_DETAIL)
         view?.navigate(
             R.id.action_transactions_fragment_to_all_transactions_fragment,
             Bundle().apply {
                 putParcelable(ARGS_TOKEN, asset)
             },
+        )
+    }
+
+    private fun navigateToTransferDestination(asset: TokenItem) {
+        AnalyticsTracker.trackAssetSendStart(TradeWallet.MAIN, AnalyticsTracker.AssetSource.ASSET_DETAIL)
+        findNavController().navigate(
+            R.id.action_transactions_to_transfer_destination,
+            Bundle().apply {
+                putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+            }
         )
     }
 
@@ -368,9 +424,22 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             }
             updateHeader(asset)
             sendReceiveView.send.setOnClickListener {
-                sendBottomSheet.show(asset)
+                if (showRecoveryReminderForRiskAction { navigateToTransferDestination(asset) }) return@setOnClickListener
+                navigateToTransferDestination(asset)
             }
             sendReceiveView.receive.setOnClickListener {
+                if (
+                    showRecoveryReminderForRiskAction {
+                        AnalyticsTracker.trackAssetReceiveStart(AnalyticsTracker.AssetSource.ASSET_DETAIL, TradeWallet.MAIN)
+                        sendReceiveView.navigate(
+                            R.id.action_transactions_to_deposit,
+                            Bundle().apply { putParcelable(ARGS_ASSET, asset) },
+                        )
+                    }
+                ) {
+                    return@setOnClickListener
+                }
+                AnalyticsTracker.trackAssetReceiveStart(AnalyticsTracker.AssetSource.ASSET_DETAIL, TradeWallet.MAIN)
                 sendReceiveView.navigate(
                     R.id.action_transactions_to_deposit,
                     Bundle().apply { putParcelable(ARGS_ASSET, asset) },
@@ -380,6 +449,10 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 Market(asset.assetId)
             }
         }
+    }
+
+    private fun showRecoveryReminderForRiskAction(onContinue: (() -> Unit)? = null): Boolean {
+        return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager, onContinue)
     }
 
     private fun updateHeader(asset: TokenItem) {
@@ -395,7 +468,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     asset.balance.numberFormat()
                 }
             val color = requireContext().colorFromAttribute(R.attr.text_primary)
-            balance.text = buildAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
+            balance.text = buildBalanceAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
             balanceAs.text =
                 try {
                     if (asset.fiat().toFloat() == 0f) {
@@ -425,3 +498,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         }
     }
 }
+
+internal fun resolveAssetDetailSource(fromMarket: Boolean, source: String?): String =
+    if (fromMarket) AnalyticsTracker.AssetSource.MARKET_DETAIL else source ?: AnalyticsTracker.AssetSource.WALLET_HOME

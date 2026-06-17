@@ -5,7 +5,7 @@
     <dimen name="photo_size">90dp</dimen>
     <dimen name="min_keyboard_size">50dp</dimen>
     <dimen name="min_custom_keyboard_size">110dp</dimen>
-    <dimen name="default_custom_keyboard_size">220dp</dimen>
+    <dimen name="default_custom_keyboard_size">420dp</dimen>
     <dimen name="min_custom_keyboard_top_margin_portrait">170dp</dimen>
     <dimen name="item_contact_height">60dp</dimen>
     <dimen name="item_contact_header_height">30dp</dimen>
@@ -46,4 +46,12 @@
     <dimen name="fab_translation_z_pressed">6dp</dimen>
     <dimen name="futuresimple_fab_shadow_offset">3dp</dimen>
 
+    <dimen name="landing_indicator_dot_size">8dp</dimen>
+    <dimen name="landing_indicator_dot_spacing">4dp</dimen>
+
+    <dimen name="cp_dialog_width">200dp</dimen>
+    <dimen name="cp_dialog_height">300dp</dimen>
+    <dimen name="list_header_height">30dp</dimen>
+    <dimen name="list_normal_height">60dp</dimen>
+    <dimen name="margin_start">16dp</dimen>
 </resources>

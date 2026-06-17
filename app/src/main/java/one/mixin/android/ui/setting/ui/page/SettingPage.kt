@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -61,6 +61,8 @@ fun SettingPage() {
                         .verticalScroll(rememberScrollState()),
             ) {
                 val context = LocalContext.current
+                val inviteContent = stringResource(R.string.chat_on_mixin_content, Session.getAccount()?.identityNumber ?: "")
+                val share = stringResource(R.string.Share)
                 SettingTile(
                     icon = R.drawable.ic_setting_privacy,
                     title = stringResource(id = R.string.Account),
@@ -127,13 +129,13 @@ fun SettingPage() {
                     sendIntent.action = Intent.ACTION_SEND
                     sendIntent.putExtra(
                         Intent.EXTRA_TEXT,
-                        context.getString(R.string.chat_on_mixin_content, Session.getAccount()?.identityNumber),
+                        inviteContent,
                     )
                     sendIntent.type = "text/plain"
                     context.startActivity(
                         Intent.createChooser(
                             sendIntent,
-                            context.resources.getText(R.string.Share),
+                            share,
                         ),
                     )
                 }

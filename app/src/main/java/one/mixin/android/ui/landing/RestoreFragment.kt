@@ -22,12 +22,19 @@ import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.showConfirmDialog
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.transfer.TransferActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.database.databaseFile
+import one.mixin.android.util.database.legacyDatabaseFile
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 
 @AndroidEntryPoint
 class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
@@ -38,8 +45,21 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        Timber.e("RestoreFragment onViewCreated")
         binding.apply {
+            titleView.setOnLongClickListener {
+                LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+                true
+            }
+            support.setOnClickListener {
+                context?.openUrl(
+                    Constants.HelpLink.CUSTOMER_SERVICE,
+                    source = AnalyticsTracker.CustomerServiceSource.RECOVERY_KIT,
+                )
+            }
             fromAnotherCl.setOnClickListener {
+                AnalyticsTracker.trackLoginRestore("another_phone")
+                Timber.e("RestoreFragment another_phone")
                 RxPermissions(requireActivity())
                     .request(
                         *mutableListOf(Manifest.permission.CAMERA).apply {
@@ -56,6 +76,8 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                     }
             }
             fromLocalCl.setOnClickListener {
+                AnalyticsTracker.trackLoginRestore("local")
+                Timber.e("RestoreFragment local")
                 lifecycleScope.launch {
                     val localData = getLocalDataInfo()
                     val count = localData?.first
@@ -73,7 +95,9 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                 }
             }
             skipTv.setOnClickListener {
-                InitializeActivity.showLoading(requireContext())
+                AnalyticsTracker.trackLoginRestore("skip")
+                Timber.e("RestoreFragment skip")
+                InitializeActivity.showLoading(requireContext(), source = InitializeActivity.SOURCE_LOGIN)
                 defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
                 requireActivity().finish()
             }
@@ -99,7 +123,16 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
 
     private suspend fun getLocalDataInfo(): Pair<Int?, String?>? =
         withContext(Dispatchers.IO) {
-            val dbFile = requireContext().getDatabasePath(Constants.DataBase.DB_NAME)
+            val dbFile =
+                Session.getAccount()?.identityNumber?.let { identityNumber ->
+                    val scopedDbFile = databaseFile(requireContext(), identityNumber)
+                    val legacyDbFile = legacyDatabaseFile(requireContext())
+                    if (scopedDbFile.exists() || !legacyDbFile.exists()) {
+                        scopedDbFile
+                    } else {
+                        legacyDbFile
+                    }
+                } ?: legacyDatabaseFile(requireContext())
             if (!dbFile.exists()) {
                 return@withContext null
             }

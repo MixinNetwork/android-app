@@ -11,7 +11,7 @@ import kotlinx.serialization.Serializable
 @Entity(
     tableName = "pin_messages",
     indices = [
-        Index(value = arrayOf("conversation_id")),
+        Index(value = arrayOf("conversation_id", "created_at")),
     ],
 )
 @Serializable

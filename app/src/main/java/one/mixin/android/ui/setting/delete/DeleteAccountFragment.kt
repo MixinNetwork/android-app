@@ -9,7 +9,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.VerificationPurpose
@@ -18,6 +17,7 @@ import one.mixin.android.databinding.FragmentDeleteAccountBinding
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alert
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.viewDestroyed
@@ -26,14 +26,19 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
+import one.mixin.android.ui.landing.GTCaptcha4Utils
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_DELETE_ACCOUNT
 import one.mixin.android.ui.landing.VerificationFragment
+import one.mixin.android.ui.setting.LogoutPinBottomSheetDialogFragment
 import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.CaptchaView
+import one.mixin.android.widget.CaptchaView.Companion.gtCAPTCHA
+import one.mixin.android.widget.CaptchaView.Companion.hCAPTCHA
 
 @AndroidEntryPoint
 class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
@@ -57,12 +62,17 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
-            titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+            titleView.rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.emergency_url)) }
             deleteRl.setOnClickListener {
                 verifyDeleteAccount()
             }
             changeRl.setOnClickListener {
                 changeNumber()
+            }
+            logOutRl.setOnClickListener{
+                if (RecoveryReminderBottomSheetDialogFragment.showForLogout(parentFragmentManager)) return@setOnClickListener
+                LogoutPinBottomSheetDialogFragment.newInstance()
+                    .showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
             }
         }
     }
@@ -76,9 +86,15 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
     }
 
     private fun verifyDeleteAccount() {
-        if (Session.getAccount()?.hasPin == true) {
-            VerifyBottomSheetDialogFragment.newInstance().setContinueCallback { dialog ->
-                showTip(dialog)
+        if (!Session.hasPhone()){
+            deleteAnonymousUser()
+        } else if (Session.getAccount()?.hasPin == true) {
+            VerifyBottomSheetDialogFragment.newInstance().apply {
+                if (Session.hasPhone()) {
+                    setContinueCallback { dialog ->
+                        showTip(dialog)
+                    }
+                }
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
         } else {
             if (Session.getAccount()?.hasPin == true) {
@@ -103,6 +119,24 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                         showDialog(phone) {
                             dialog.dismiss()
                         }
+                    }
+                    .showNow(
+                        parentFragmentManager,
+                        DeleteAccountTipBottomSheetDialogFragment.TAG,
+                    )
+            }
+        }
+    }
+
+    private fun deleteAnonymousUser() {
+        lifecycleScope.launch {
+            if (viewModel.findAllAssetIdSuspend().isEmpty()) {
+                DeleteAccountPinBottomSheetDialogFragment.newInstance(null).showNow(parentFragmentManager, DeleteAccountPinBottomSheetDialogFragment.TAG)
+            } else {
+                DeleteAccountTipBottomSheetDialogFragment.newInstance()
+                    .setContinueCallback { dialog ->
+                        dialog.dismiss()
+                        DeleteAccountPinBottomSheetDialogFragment.newInstance(null).showNow(parentFragmentManager, DeleteAccountPinBottomSheetDialogFragment.TAG)
                     }
                     .showNow(
                         parentFragmentManager,
@@ -149,8 +183,14 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         if (captchaResponse != null) {
             if (captchaResponse.first.isG()) {
                 verificationRequest.gRecaptchaResponse = captchaResponse.second
-            } else {
+            } else if (captchaResponse.first.isH()) {
                 verificationRequest.hCaptchaResponse = captchaResponse.second
+            } else if (captchaResponse.first.isGT()) {
+                val t = GTCaptcha4Utils.parseGTCaptchaResponse(captchaResponse.second)
+                verificationRequest.lotNumber = t?.lotNumber
+                verificationRequest.captchaOutput = t?.captchaOutput
+                verificationRequest.passToken = t?.passToken
+                verificationRequest.genTime = t?.genTime
             }
         }
         binding.deleteCover.isVisible = true
@@ -177,7 +217,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
             failureBlock = { r ->
                 if (viewDestroyed()) return@handleMixinResponse true
                 if (r.errorCode == ErrorHandler.NEED_CAPTCHA) {
-                    initAndLoadCaptcha()
+                    initAndLoadCaptcha(r.errorDescription)
                     return@handleMixinResponse true
                 }
                 binding.deleteCover.isVisible = false
@@ -191,7 +231,7 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         )
     }
 
-    private fun initAndLoadCaptcha() =
+    private fun initAndLoadCaptcha(errorDescription: String) =
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
 
@@ -219,13 +259,17 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                     ViewGroup.LayoutParams.MATCH_PARENT,
                 )
             }
-            captchaView?.loadCaptcha(CaptchaView.CaptchaType.GCaptcha)
+            captchaView?.loadCaptcha(
+                if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
+                else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
+                else CaptchaView.CaptchaType.GCaptcha
+            )
         }
 
     private fun changeNumber() {
-        alert(getString(R.string.profile_modify_number))
+        alert(getString(if (Session.hasPhone()) R.string.profile_modify_number else R.string.profile_add_number))
             .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.Change_Phone_Number) { dialog, _ ->
+            .setPositiveButton(if (Session.hasPhone()) R.string.Change_Phone_Number else R.string.Add_Mobile_Number) { dialog, _ ->
                 dialog.dismiss()
                 if (Session.getAccount()?.hasPin == true) {
                     activity?.supportFragmentManager?.inTransaction {

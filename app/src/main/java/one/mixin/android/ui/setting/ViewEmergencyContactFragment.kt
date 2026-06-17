@@ -3,7 +3,6 @@ package one.mixin.android.ui.setting
 import android.os.Bundle
 import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.Constants
 import one.mixin.android.Constants.ARGS_USER
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentViewEmergencyContactBinding
@@ -39,12 +38,12 @@ class ViewEmergencyContactFragment : BaseFragment(R.layout.fragment_view_emergen
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
-            titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+            titleView.rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.emergency_url)) }
             avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
             nameTv.setName(user)
             idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
 
-            val url = Constants.HelpLink.EMERGENCY
+            val url = getString(R.string.emergency_url)
             val desc = requireContext().getString(R.string.setting_emergency_desc)
             tipTv.highlightStarTag(desc, arrayOf(url))
         }

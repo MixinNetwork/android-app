@@ -18,10 +18,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -31,6 +33,8 @@ import one.mixin.android.compose.theme.MixinAppTheme
 fun SearchTextField(
     text: MutableState<String>,
     hint: String,
+    color: Color = MixinAppTheme.colors.background,
+    h: Dp? = 60.dp
 ) {
     val focusRequester =
         remember {
@@ -47,9 +51,13 @@ fun SearchTextField(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .height(60.dp)
+                .apply {
+                    if (h != null) {
+                        this.height(h)
+                    }
+                }
                 .focusRequester(focusRequester)
-                .background(MixinAppTheme.colors.background)
+                .background(color)
                 .onFocusChanged {
                     if (it.isFocused) {
                         keyboardController?.show()

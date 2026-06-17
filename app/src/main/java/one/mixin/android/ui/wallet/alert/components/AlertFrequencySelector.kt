@@ -23,7 +23,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.wallet.alert.draw9Patch
 import one.mixin.android.ui.wallet.alert.vo.AlertFrequency
 
 @Composable
@@ -34,7 +33,7 @@ fun AlertFrequencySelector(selectedFrequency: AlertFrequency, onFrequencyClick: 
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp)
-            .draw9Patch(context, MixinAppTheme.drawables.bgAlertCard)
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
             .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { onFrequencyClick.invoke() }
     ) {
         Row(

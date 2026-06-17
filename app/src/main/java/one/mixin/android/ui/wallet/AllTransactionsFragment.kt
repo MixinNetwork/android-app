@@ -8,9 +8,9 @@ import android.view.View.VISIBLE
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.util.Pair
-import androidx.lifecycle.Observer
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.datepicker.CalendarConstraints
@@ -19,6 +19,7 @@ import com.google.android.material.datepicker.MaterialDatePicker
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
@@ -39,6 +40,8 @@ import one.mixin.android.ui.wallet.TransactionFragment.Companion.ARGS_SNAPSHOT
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
@@ -50,16 +53,18 @@ import one.mixin.android.vo.safe.toSnapshot
 import timber.log.Timber
 
 @AndroidEntryPoint
-class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>>(R.layout.fragment_all_transactions), OnSnapshotListener, MultiSelectTokenListBottomSheetDialogFragment.DataProvider, MultiSelectRecipientsListBottomSheetDialogFragment.DataProvider {
+class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_transactions), OnSnapshotListener, MultiSelectTokenListBottomSheetDialogFragment.DataProvider, MultiSelectRecipientsListBottomSheetDialogFragment.DataProvider {
     companion object {
         const val TAG = "AllTransactionsFragment"
         const val ARGS_USER = "args_user"
         const val ARGS_TOKEN = "args_token"
+        const val PENDING_TYPE = "pending_type"
 
-        fun newInstance(user: UserItem? = null, tokenItem: TokenItem? = null): AllTransactionsFragment {
+        fun newInstance(user: UserItem? = null, tokenItem: TokenItem? = null, pendingType: Boolean = false): AllTransactionsFragment {
             return AllTransactionsFragment().withArgs {
                 putParcelable(ARGS_USER, user)
                 putParcelable(ARGS_TOKEN, tokenItem)
+                putBoolean(PENDING_TYPE, pendingType)
             }
         }
     }
@@ -76,8 +81,17 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
     }
 
+    private val pendingType by lazy {
+        requireArguments().getBoolean(PENDING_TYPE, false)
+    }
+
     private val filterParams by lazy {
-        FilterParams(recipients = userItem?.let { listOf(it) }, tokenItems = tokenItem?.let { listOf(it) })
+        val type = if (pendingType) SnapshotType.pending else SnapshotType.all
+        FilterParams(
+            type = type,
+            recipients = userItem?.let { listOf(it) },
+            tokenItems = tokenItem?.let { listOf(it) }
+        )
     }
 
     override fun onViewCreated(
@@ -85,6 +99,8 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackAllTransactions(AnalyticsTracker.AssetSource.WALLET_HOME)
+
         adapter.listener = this
         binding.apply {
             titleView.apply {
@@ -118,29 +134,31 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 },
             )
         }
-        dataObserver =
-            Observer { pagedList ->
-                if (pagedList.isNotEmpty()) {
-                    showEmpty(false)
-                    val opponentIds =
-                        pagedList.filter {
-                            !it?.opponentId.isNullOrBlank()
-                        }.map {
-                            it.opponentId
-                        }
-                    walletViewModel.checkAndRefreshUsers(opponentIds)
-                } else {
-                    showEmpty(true)
-                }
-                adapter.submitList(pagedList)
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            adapter.loadStateFlow.collectLatest { loadStates ->
+                val isEmpty = loadStates.refresh is LoadState.NotLoading && adapter.itemCount == 0
+                showEmpty(isEmpty)
             }
-        bindLiveData()
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            adapter.onPagesUpdatedFlow.collect {
+                val items = adapter.snapshot().items
+                if (items.isNotEmpty()) {
+                    val opponentIds = items.filter { !it.opponentId.isNullOrBlank() }.map { it.opponentId }
+                    walletViewModel.checkAndRefreshUsers(opponentIds)
+                }
+            }
+        }
+
         binding.apply {
             filterType.setOnClickListener {
                 filterType.open()
                 typeAdapter.checkPosition = filterParams.type.value
                 typeMenu.show()
             }
+            filterReputation.isVisible = false
             filterAsset.setOnClickListener {
                 selectAsset()
             }
@@ -177,6 +195,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
     }
 
     override fun <T> onNormalItemClick(item: T) {
+        AnalyticsTracker.trackTransactionDetail(AnalyticsTracker.AssetSource.ALL_TRANSACTIONS)
         lifecycleScope.launch {
             val snapshot = item as SnapshotItem
             val a =
@@ -233,13 +252,12 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         lifecycleScope.launch {
             handleMixinResponse(
                 invokeNetwork = { walletViewModel.allPendingDeposit() },
+                exceptionBlock = { e ->
+                    reportException(e)
+                    false
+                },
                 successBlock = {
-                    walletViewModel.clearAllPendingDeposits()
-
-                    val pendingDeposits = it.data
-                    if (pendingDeposits.isNullOrEmpty()) {
-                        return@handleMixinResponse
-                    }
+                    val pendingDeposits = it.data ?: emptyList()
                     val destinationTags = walletViewModel.findDepositEntryDestinations()
                     pendingDeposits
                         .filter { pd ->
@@ -247,13 +265,17 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                                 dt.destination == pd.destination && (dt.tag.isNullOrBlank() || dt.tag == pd.tag)
                             }
                         }
-                        .chunked(100) { chunk ->
+                        .map { pd -> pd.toSnapshot() }.let { snapshots ->
+                            // If there are no pending deposit snapshots belonging to the current user, clear all pending deposits
+                            if (snapshots.isEmpty()) {
+                                walletViewModel.clearAllPendingDeposits()
+                                return@let
+                            }
                             lifecycleScope.launch {
-                                chunk.map { pd ->
-                                    pd.toSnapshot()
-                                }.let { list ->
-                                    walletViewModel.insertPendingDeposit(list)
+                                snapshots.map { it.assetId }.distinct().forEach {
+                                    walletViewModel.findOrSyncAsset(it)
                                 }
+                                walletViewModel.insertPendingDeposit(snapshots)
                             }
                         }
                 },
@@ -261,7 +283,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
         }
 
     private fun bindLiveData() {
-        bindLiveData(walletViewModel.allSnapshots(initialLoadKey = initialLoadKey, filterParams))
+        bindPagingData(adapter, walletViewModel.allSnapshots(filterParams))
     }
 
     private fun showEmpty(show: Boolean) {
@@ -380,7 +402,6 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                 }
                 loadFilter()
                 dismiss()
-                dismiss()
             }
             width = requireContext().dpToPx(250f)
             height = ListPopupWindow.WRAP_CONTENT
@@ -418,10 +439,11 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
                     1 -> SnapshotType.deposit
                     2 -> SnapshotType.withdrawal
                     3 -> SnapshotType.snapshot
+                    4 -> SnapshotType.pending
                     else -> SnapshotType.all
                 }
                 if (filterParams.recipients?.isNotEmpty() == true) {
-                    if (filterParams.type == SnapshotType.deposit || filterParams.type == SnapshotType.withdrawal) {
+                    if (filterParams.type == SnapshotType.deposit || filterParams.type == SnapshotType.withdrawal || filterParams.type == SnapshotType.pending) {
                         filterParams.recipients = filterParams.recipients?.filterIsInstance<AddressItem>()
                     } else if (filterParams.type == SnapshotType.snapshot) {
                         filterParams.recipients = filterParams.recipients?.filterIsInstance<UserItem>()
@@ -449,6 +471,7 @@ class AllTransactionsFragment : BaseTransactionsFragment<PagedList<SnapshotItem>
             TypeMenuData(SnapshotType.deposit, R.drawable.ic_menu_type_deoisit, R.string.Deposit),
             TypeMenuData(SnapshotType.withdrawal, R.drawable.ic_menu_type_withdrawal, R.string.Withdrawal),
             TypeMenuData(SnapshotType.snapshot, R.drawable.ic_menu_type_transfer, R.string.Transfer),
+            TypeMenuData(SnapshotType.pending, R.drawable.ic_menu_type_pending, R.string.Pending),
         )
         TypeMenuAdapter(requireContext(), menuItems).apply {
             checkPosition = filterParams.type.value

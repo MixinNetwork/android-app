@@ -4,13 +4,9 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.sumsub.sns.core.SNSMobileSDK
-import com.sumsub.sns.core.data.listener.TokenExpirationHandler
-import com.sumsub.sns.core.data.model.SNSCompletionResult
-import com.sumsub.sns.core.data.model.SNSException
-import com.sumsub.sns.core.data.model.SNSSDKState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
@@ -19,7 +15,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -31,10 +26,10 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.openCustomerService
+import one.mixin.android.extension.openWebBottomSheet
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.shaking
 import one.mixin.android.extension.tickVibrate
@@ -42,31 +37,24 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.setting.AppearanceFragment
+import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.setting.getCurrencyData
-import one.mixin.android.ui.setting.getLanguagePos
 import one.mixin.android.ui.wallet.AssetListFixedBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.IdentityFragment.Companion.ARGS_KYC_STATE
-import one.mixin.android.ui.wallet.IdentityFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
-import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.WalletActivity
-import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_AMOUNT
-import one.mixin.android.ui.wallet.fiatmoney.OrderConfirmFragment.Companion.ARGS_CURRENCY
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.util.isFollowSystem
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
-import one.mixin.android.vo.sumsub.KycState
+import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.util.Locale
 
 @AndroidEntryPoint
 class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
@@ -75,14 +63,42 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         const val CALCULATE_STATE = "calculate_state"
         const val CURRENT_CURRENCY = "current_currency"
         const val CURRENT_ASSET_ID = "current_asset_id"
+        const val ARGS_IS_WEB3 = "args_is_web3"
+        const val ARGS_BUY_SOURCE = "args_buy_source"
+        const val ARGS_WALLET_ID_FOR_CALCULATE = "args_wallet_id_for_calculate"
 
         fun newInstance() = CalculateFragment()
     }
 
     private val binding by viewBinding(FragmentCalculateBinding::bind)
     private val fiatMoneyViewModel by viewModels<FiatMoneyViewModel>()
+    private val web3ViewModel by viewModels<Web3ViewModel>()
+
+    private val isWeb3 by lazy { requireArguments().getBoolean(ARGS_IS_WEB3, false) }
+    private val buySource by lazy {
+        requireArguments().getString(ARGS_BUY_SOURCE) ?: AnalyticsTracker.TradeSource.WALLET_HOME
+    }
+    private val walletIdForCalculate by lazy { requireArguments().getString(ARGS_WALLET_ID_FOR_CALCULATE) }
+    private fun bindingOrNull(): FragmentCalculateBinding? = view?.let(FragmentCalculateBinding::bind)
 
     private suspend fun initData() {
+        var currencyName = getDefaultCurrency(requireContext(), getCurrencyData(requireContext().resources))
+        val assetId = requireContext().defaultSharedPreferences.getString(CURRENT_ASSET_ID, null)
+
+        if (assetId != null) {
+            val currency = getCurrencyData(requireContext().resources).find { it.name == currencyName }
+            val asset = fiatMoneyViewModel.findAssetsById(assetId)
+            if (currency != null && asset != null) {
+                updateUI(currency, asset)
+            }
+        } else {
+            runCatching {
+                loadingDialog.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
+            }.onFailure {
+                Timber.e(it)
+            }
+        }
+
         val routeProfile = (requireActivity() as WalletActivity).routeProfile
         if (routeProfile == null) {
             checkData()
@@ -92,25 +108,36 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             checkData()
             return
         }
-
         if (fiatMoneyViewModel.asset != null && fiatMoneyViewModel.currency != null) {
             return
         }
         val supportCurrencies = routeProfile.supportCurrencies
-        val currencyName = getDefaultCurrency(requireContext(), supportCurrencies)
-        val assetId =
-            requireContext().defaultSharedPreferences.getString(
-                CURRENT_ASSET_ID,
-                USDT_ASSET_ID,
-            )
+        currencyName = runCatching { getDefaultCurrency(requireContext(), supportCurrencies) }.getOrDefault("")
 
         fiatMoneyViewModel.currency = supportCurrencies.find {
             it.name == currencyName
         } ?: supportCurrencies.lastOrNull()
         fiatMoneyViewModel.asset =
             fiatMoneyViewModel.findAssetsByIds(routeProfile.supportAssetIds).let { list ->
-                list.find { it.assetId == assetId } ?: list.firstOrNull()
+                val defaultAssetId = routeProfile.supportAssetIds.firstOrNull()
+                if (assetId == null && defaultAssetId != null) {
+                    requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, defaultAssetId)
+                }
+                list.find { it.assetId == assetId }
+                    ?: list.find { it.assetId == defaultAssetId }
+                    ?: list.firstOrNull()
             }
+
+        val binding = bindingOrNull()
+        fiatMoneyViewModel.asset?.let { asset ->
+            binding?.assetIv?.loadImage(asset.iconUrl)
+            binding?.assetName?.text = asset.symbol
+        }
+        fiatMoneyViewModel.currency?.let { currency ->
+            binding?.flagIv?.setImageResource(currency.flag)
+            binding?.fiatName?.text = currency.name
+        }
+
         if (fiatMoneyViewModel.calculateState == null) {
             fiatMoneyViewModel.calculateState =
                 requireArguments().getParcelableCompat(
@@ -123,10 +150,36 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         }
     }
 
+    private var isLoading = false
+    private fun setLoading(loading: Boolean) {
+        isLoading = loading
+        val binding = bindingOrNull() ?: return
+        binding.fiatLoading.isVisible = isLoading
+        binding.assetLoading.isVisible = isLoading
+        binding.fiatExpandIv.isVisible = !loading
+        binding.assetDesc.isVisible = !loading
+        binding.fiatRl.isEnabled = !loading
+        binding.assetRl.isEnabled = !loading
+        if (!loading) {
+            updateUI()
+            runCatching {
+                if (loadingDialog.isAdded) {
+                    loadingDialog.dismiss()
+                }
+            }.onFailure {
+                Timber.e(it)
+            }
+        }
+    }
+
+    private val loadingDialog by lazy {
+        LoadingProgressDialogFragment()
+    }
+
     private suspend fun refresh(errorHandler: (() -> Unit)? = null) {
         val currency = fiatMoneyViewModel.currency ?: return
         val asset = fiatMoneyViewModel.asset ?: return
-        showLoading()
+        setLoading(true)
         requestRouteAPI(
             invokeNetwork = {
                 fiatMoneyViewModel.ticker(RouteTickerRequest(currency.name, asset.assetId))
@@ -140,14 +193,13 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 errorHandler?.invoke()
             },
             endBlock = {
-                dismissLoading()
+                setLoading(false)
             },
             successBlock = {
                 if (it.isSuccess) {
                     fiatMoneyViewModel.calculateState =
                         FiatMoneyViewModel.CalculateState(
                             minimum = it.data?.minimum?.toIntOrNull() ?: 0,
-                            maximum = it.data?.maximum?.toIntOrNull() ?: 0,
                             assetPrice = it.data?.assetPrice?.toFloatOrNull() ?: 0f,
                             feePercent = it.data?.feePercent?.toFloatOrNull() ?: 0f,
                         )
@@ -163,36 +215,61 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        lifecycleScope.launch {
+        val viewLifecycleScope = viewLifecycleOwner.lifecycleScope
+        AnalyticsTracker.trackBuyStart(
+            wallet = if (isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN,
+            source = buySource
+        )
+        viewLifecycleScope.launch {
             binding.apply {
                 titleView.leftIb.setOnClickListener {
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
                 titleView.rightIb.setOnClickListener {
-                    lifecycleScope.launch {
-                        val userTeamMixin = fiatMoneyViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
-                        if (userTeamMixin == null) {
-                            toast(R.string.Data_error)
-                        } else {
-                            ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
-                        }
-                    }
+                    openCustomerService(
+                        source = AnalyticsTracker.CustomerServiceSource.DEPOSIT,
+                        wallet = if (isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN,
+                    )
                 }
-                titleView.setSubTitle(getString(R.string.Buy), "")
-                titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+                if (isWeb3) {
+                    val wallet = walletIdForCalculate?.let { web3ViewModel.findWalletById(it) }
+                    if (wallet != null) {
+                        titleView.setSubTitle(
+                            getString(R.string.Buy),
+                            wallet.name.takeIf { it.isNotEmpty() } ?: getString(R.string.Common_Wallet)
+                        )
+                    } else {
+                        titleView.setSubTitle(getString(R.string.Buy), getString(R.string.Common_Wallet))
+                    }
+                } else {
+                    titleView.setSubTitle(
+                        getString(R.string.Buy),
+                        getString(R.string.Privacy_Wallet),
+                        R.drawable.ic_wallet_privacy
+                    )
+                }
+                titleView.setWalletNameSubTitleStyle()
                 assetRl.setOnClickListener {
+                    if (isLoading) return@setOnClickListener
                     val routeProfile = (requireActivity() as WalletActivity).routeProfile
                     val supportAssetIds = routeProfile?.supportAssetIds ?: return@setOnClickListener
                     AssetListFixedBottomSheetDialogFragment.newInstance(
                         ArrayList(supportAssetIds),
                     ).setOnAssetClick { asset ->
-                        this@CalculateFragment.lifecycleScope.launch {
+                        viewLifecycleScope.launch {
+                            AnalyticsTracker.trackBuyTokenSelect()
                             val oldAsset = fiatMoneyViewModel.asset
                             fiatMoneyViewModel.asset = asset
-                            requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, asset.assetId)
+                            requireContext().defaultSharedPreferences.putString(
+                                CURRENT_ASSET_ID,
+                                asset.assetId
+                            )
                             refresh {
                                 fiatMoneyViewModel.asset = oldAsset
-                                requireContext().defaultSharedPreferences.putString(CURRENT_ASSET_ID, oldAsset!!.assetId)
+                                requireContext().defaultSharedPreferences.putString(
+                                    CURRENT_ASSET_ID,
+                                    oldAsset!!.assetId
+                                )
                                 updateUI()
                             }
                             updateUI()
@@ -200,21 +277,33 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     }.showNow(parentFragmentManager, AssetListFixedBottomSheetDialogFragment.TAG)
                 }
                 fiatRl.setOnClickListener {
+                    if (isLoading) return@setOnClickListener
                     val routeProfile = (requireActivity() as WalletActivity).routeProfile
-                    val supportCurrencies = routeProfile?.supportCurrencies ?: return@setOnClickListener
-                    FiatListBottomSheetDialogFragment.newInstance(fiatMoneyViewModel.currency!!, supportCurrencies).apply {
+                    val supportCurrencies =
+                        routeProfile?.supportCurrencies ?: return@setOnClickListener
+                    FiatListBottomSheetDialogFragment.newInstance(
+                        fiatMoneyViewModel.currency!!,
+                        supportCurrencies
+                    ).apply {
                         callback =
                             object : FiatListBottomSheetDialogFragment.Callback {
                                 override fun onCurrencyClick(currency: Currency) {
-                                    this@CalculateFragment.lifecycleScope.launch {
+                                    viewLifecycleScope.launch {
+                                        AnalyticsTracker.trackBuyFiatSelect()
                                         val oldCurrency = fiatMoneyViewModel.currency
                                         fiatMoneyViewModel.currency = currency
                                         v = "0"
-                                        requireContext().defaultSharedPreferences.putString(CURRENT_CURRENCY, currency.name)
+                                        requireContext().defaultSharedPreferences.putString(
+                                            CURRENT_CURRENCY,
+                                            currency.name
+                                        )
                                         refresh {
                                             fiatMoneyViewModel.currency = oldCurrency!!
                                             v = "0"
-                                            requireContext().defaultSharedPreferences.putString(CURRENT_CURRENCY, oldCurrency.name)
+                                            requireContext().defaultSharedPreferences.putString(
+                                                CURRENT_CURRENCY,
+                                                oldCurrency.name
+                                            )
                                             updateUI()
                                         }
                                         updateUI()
@@ -232,6 +321,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                             value: String,
                         ) {
                             context?.tickVibrate()
+                            val currencyName = fiatMoneyViewModel.currency?.name ?: return
                             if (position == 11) {
                                 v =
                                     if (v == "0") {
@@ -245,12 +335,19 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 if (v == "0" && value != ".") {
                                     v = value
                                 } else if (isTwoDecimal(v)) {
-                                    // do noting
+                                    // do nothing
                                     return
-                                } else if (value == "." && (v.contains(".") || AmountUtil.fullCurrency(fiatMoneyViewModel.currency!!.name))) {
-                                    // do noting
+                                } else if (value == "." && (v.contains(".") || AmountUtil.fullCurrency(
+                                        currencyName
+                                    ))
+                                ) {
+                                    // do nothing
                                     return
-                                } else if (AmountUtil.illegal(v, fiatMoneyViewModel.currency!!.name)) {
+                                } else if (AmountUtil.illegal(
+                                        v,
+                                        currencyName
+                                    )
+                                ) {
                                     binding.primaryTv.shaking()
                                     return
                                 } else {
@@ -275,48 +372,77 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     white = true,
                 )
                 continueVa.setOnClickListener {
-                    checkKyc {
-                        val value =
-                            if (v.endsWith(".")) {
-                                v.substring(0, v.length)
-                            } else {
-                                v
+                    AnalyticsTracker.trackBuyPreview()
+                    val proceedToBuy: () -> Unit = {
+                        viewLifecycleScope.launch {
+                            if (VerifyMobileReminderBottomSheetDialogFragment.shouldShowForBuy(requireContext()) && isFragmentVisible()) {
+                                VerifyMobileReminderBottomSheetDialogFragment.showSafely(
+                                    parentFragmentManager,
+                                    enableSnooze = false,
+                                    addPhoneSource = AnalyticsTracker.AddPhoneSource.BUY_GUIDE,
+                                )
+                                setLoading(false)
+                                return@launch
                             }
-                        val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
-                        val assetPrice = fiatMoneyViewModel.calculateState?.assetPrice ?: 1f
-                        val amount =
-                            if (fiatMoneyViewModel.isReverse) {
-                                getPayAmount(value.toFloat(), assetPrice, feePercent)
+
+                            val value =
+                                if (v.endsWith(".")) {
+                                    v.substring(0, v.length)
+                                } else {
+                                    v
+                                }
+                            val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
+                            val assetPrice = fiatMoneyViewModel.calculateState?.assetPrice ?: 1f
+                            val amount =
+                                if (fiatMoneyViewModel.isReverse) {
+                                    getPayAmount(value.toFloat(), assetPrice, feePercent)
+                                } else {
+                                    value
+                                }
+                            if (amount == null) {
+                                toast(R.string.error_invalid_number)
                             } else {
-                                value
-                            }
-                        if (amount == null) {
-                            toast("number error")
-                        } else {
-                            lifecycleScope.launch inner@{
-                                if (viewDestroyed()) return@inner
-                                try {
-                                    binding.continueVa.displayedChild = 1
-                                    initSafeBox()
-                                    binding.continueVa.displayedChild = 0
-                                    view.navigate(
-                                        R.id.action_wallet_calculate_to_payment,
-                                        Bundle().apply {
-                                            putParcelable(ARGS_ASSET, fiatMoneyViewModel.asset)
-                                            putParcelable(
-                                                ARGS_CURRENCY,
-                                                fiatMoneyViewModel.currency,
+                                viewLifecycleScope.launch inner@{
+                                    if (viewDestroyed()) throw IllegalStateException("View has been destroyed")
+                                    try {
+                                        val asset = fiatMoneyViewModel.asset ?: throw IllegalStateException("Asset is null")
+                                        val destination = if (isWeb3) {
+                                            val walletId = walletIdForCalculate ?: throw IllegalStateException("Wallet ID for calculate is null")
+                                            val address = web3ViewModel.getAddressesByChainId(walletId, asset.chainId)?.destination
+                                            if (address.isNullOrEmpty()) {
+                                                toast(R.string.Alert_Not_Support)
+                                                return@inner
+                                            }
+                                            address
+                                        } else {
+                                            fiatMoneyViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)?.destination ?: throw IllegalStateException("Destination address is null")
+                                        }
+                                        val binding = bindingOrNull() ?: return@inner
+                                        binding.continueVa.displayedChild = 1
+                                        val response = fiatMoneyViewModel.rampWebUrl(
+                                            amount,
+                                            asset.assetId,
+                                            fiatMoneyViewModel.currency?.name ?: throw IllegalStateException("Currency name is null"),
+                                            destination
+                                        )
+                                        if (response.isSuccess) {
+                                            openWebBottomSheet(
+                                                response.data?.url ?: "",
+                                                getString(R.string.Buy_asset, asset.symbol)
                                             )
-                                            // Todo
-                                            putLong(ARGS_AMOUNT, amount.toLongOrNull() ?: 0L)
-                                        },
-                                    )
-                                } catch (e: Exception) {
-                                    ErrorHandler.handleError(e)
+                                        } else {
+                                            ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
+                                        }
+                                        bindingOrNull()?.continueVa?.displayedChild = 0
+                                    } catch (e: Exception) {
+                                        bindingOrNull()?.continueVa?.displayedChild = 0
+                                        ErrorHandler.handleError(e)
+                                    }
                                 }
                             }
                         }
                     }
+                    proceedToBuy()
                 }
                 switchIv.setOnClickListener {
                     fiatMoneyViewModel.isReverse = !fiatMoneyViewModel.isReverse
@@ -333,25 +459,24 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         }
     }
 
-    private suspend fun initSafeBox() {
-        fiatMoneyViewModel.instruments().data?.let { cards ->
-            if (cards.isNotEmpty()) {
-                fiatMoneyViewModel.initSafeBox(cards)
-            }
-        }
-    }
-
     private fun isTwoDecimal(string: String): Boolean {
         return string.matches(Regex("\\d+\\.\\d{2}"))
     }
 
     private var v = "0"
 
+    private fun updateContinueEnabled(enabled: Boolean) {
+        val binding = bindingOrNull() ?: return
+        binding.continueVa.isEnabled = enabled
+        binding.continueTv.isEnabled = enabled
+    }
+
     @SuppressLint("SetTextI18n")
-    private fun updateUI() {
+    private fun updateUI(currency: Currency? = null, asset: TokenItem? = null) {
         if (viewDestroyed()) return
-        val currency = fiatMoneyViewModel.currency ?: return
-        val asset = fiatMoneyViewModel.asset ?: return
+        val binding = bindingOrNull() ?: return
+        val currency = currency ?: fiatMoneyViewModel.currency ?: return
+        val asset = asset ?: fiatMoneyViewModel.asset ?: return
         if (fiatMoneyViewModel.isReverse) {
             binding.apply {
                 primaryUnit.text = asset.symbol
@@ -366,40 +491,23 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         binding.fiatName.text = currency.name
         binding.assetName.text = asset.symbol
         binding.continueTv.text = "${getString(R.string.Buy)} ${asset.symbol}"
-        updateValue()
-    }
-
-    private val loading by lazy {
-        LoadingProgressDialogFragment()
-    }
-
-    private var loadingShown = false
-
-    private fun showLoading() {
-        if (viewDestroyed()) return
-        if (!loadingShown) {
-            loadingShown = true
-            loading.show(parentFragmentManager, LoadingProgressDialogFragment.TAG)
-        }
-    }
-
-    private fun dismissLoading() {
-        if (viewDestroyed()) return
-        if (loadingShown) {
-            loadingShown = false
-            try {
-                loading.dismiss()
-            } catch (ignored: IllegalStateException) {
-            }
-        }
+        updateValue(currency, asset)
     }
 
     @SuppressLint("SetTextI18n")
-    private fun updateValue() {
+    private fun updateValue(currency: Currency? = null, asset: TokenItem? = null) {
         if (viewDestroyed()) return
-        val currency = fiatMoneyViewModel.currency ?: return
-        val asset = fiatMoneyViewModel.asset ?: return
-        val state = fiatMoneyViewModel.calculateState ?: return
+        val binding = bindingOrNull() ?: return
+        val currency = currency ?: fiatMoneyViewModel.currency ?: return
+        val asset = asset ?: fiatMoneyViewModel.asset ?: return
+        val state = fiatMoneyViewModel.calculateState
+        if (state == null) {
+            // Default state
+            binding.primaryTv.text = "0"
+            binding.minorTv.text = "0 ${asset.symbol}"
+            updateContinueEnabled(false)
+            return
+        }
         val feePercent = fiatMoneyViewModel.calculateState?.feePercent ?: 0f
         if (!isAdded) return
         binding.apply {
@@ -419,13 +527,8 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     minorTv.text =
                         "≈ ${getNumberFormat(String.format("%.2f", currentValue))} ${currency.name}"
                 }
-                continueVa.isEnabled = currentValue >= state.minimum && currentValue <= state.maximum
-                continueTv.isEnabled = continueVa.isEnabled
-                if (currentValue > state.maximum) {
-                    info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
-                } else {
-                    info.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
-                }
+                updateContinueEnabled(currentValue >= state.minimum)
+                info.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
             } else {
                 val currentValue = value.toFloat()
                 if (value == "0") {
@@ -436,16 +539,15 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     minorTv.text =
                         "≈ ${BigDecimal((currentValue / state.assetPrice).toDouble()).numberFormat8()} ${asset.symbol}"
                 }
-                continueVa.isEnabled = currentValue >= state.minimum && currentValue <= state.maximum
-                continueTv.isEnabled = continueVa.isEnabled
-                if (currentValue > state.maximum) {
-                    info.setTextColor(requireContext().getColorStateList(R.color.colorRed))
-                } else {
-                    info.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
-                }
+                updateContinueEnabled(currentValue >= state.minimum)
+                info.setTextColor(requireContext().colorFromAttribute(R.attr.text_assist))
             }
             updatePrimarySize()
-            binding.info.text = getString(R.string.Value_info, state.minimum, currency.name, state.maximum, currency.name)
+            binding.info.text = getString(
+                R.string.Value_info,
+                state.minimum,
+                currency.name,
+            )
         }
     }
 
@@ -465,6 +567,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
 
     private fun updatePrimarySize() {
         if (viewDestroyed()) return
+        val binding = bindingOrNull() ?: return
         binding.apply {
             val length = primaryTv.text.length
             val size =
@@ -477,170 +580,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         }
     }
 
-    private fun checkKyc(onSuccess: () -> Unit) =
-        lifecycleScope.launch {
-            val kycState = (requireActivity() as WalletActivity).routeProfile?.kycState ?: return@launch
-            if (kycState == KycState.SUCCESS.value || kycState == KycState.IGNORE.value) {
-                onSuccess.invoke()
-                return@launch
-            }
-            if (viewDestroyed()) return@launch
-            binding.continueVa.displayedChild = 1
-            requestRouteAPI(
-                invokeNetwork = {
-                    fiatMoneyViewModel.token()
-                },
-                endBlock = {
-                    if (viewDestroyed()) return@requestRouteAPI
-                    binding.continueVa.displayedChild = 0
-                },
-                successBlock = { resp ->
-                    val tokenResponse = requireNotNull(resp.data)
-                    when (tokenResponse.state) {
-                        KycState.INITIAL.value -> {
-                            val token = requireNotNull(tokenResponse.token) { "required token can not be null" }
-                            presentSDK(token)
-                        }
-
-                        KycState.PENDING.value, KycState.RETRY.value, KycState.BLOCKED.value -> {
-                            val token =
-                                requireNotNull(tokenResponse.token) { "required token can not be null" }
-                            view?.navigate(
-                                R.id.action_wallet_calculate_to_identity,
-                                Bundle().apply {
-                                    putString(ARGS_TOKEN, token)
-                                    putString(ARGS_KYC_STATE, tokenResponse.state)
-                                },
-                            )
-                        }
-
-                        KycState.SUCCESS.value -> {
-                            onSuccess()
-                        }
-
-                        else -> {
-                            toast("Unknown kyc state: ${tokenResponse.state}")
-                        }
-                    }
-                },
-                requestSession = { fiatMoneyViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
-            )
-        }
-
-    private fun presentSDK(accessToken: String) {
-        val tokenExpirationHandler =
-            object : TokenExpirationHandler {
-                override fun onTokenExpired(): String? {
-                    return try {
-                        fiatMoneyViewModel.callSumsubToken().execute().body()?.data?.token
-                    } catch (e: Exception) {
-                        null
-                    }
-                }
-            }
-        val onSDKStateChangedHandler: (SNSSDKState, SNSSDKState) -> Unit = { newState, prevState ->
-            Timber.e("onSDKStateChangedHandler: $prevState -> $newState")
-
-            when (newState) {
-                is SNSSDKState.Ready -> Timber.e("SDK is ready")
-                is SNSSDKState.Failed -> {
-                    when (newState) {
-                        is SNSSDKState.Failed.ApplicantNotFound -> Timber.e(newState.message)
-                        is SNSSDKState.Failed.ApplicantMisconfigured -> Timber.e(newState.message)
-                        is SNSSDKState.Failed.InitialLoadingFailed ->
-                            Timber.e(
-                                newState.exception,
-                                "Initial loading error",
-                            )
-
-                        is SNSSDKState.Failed.InvalidParameters -> Timber.e(newState.message)
-                        is SNSSDKState.Failed.NetworkError ->
-                            Timber.e(
-                                newState.exception,
-                                newState.message,
-                            )
-
-                        is SNSSDKState.Failed.Unauthorized ->
-                            Timber.e(
-                                newState.exception,
-                                "Invalid token or a token can't be refreshed by the SDK. Please, check your token expiration handler",
-                            )
-
-                        is SNSSDKState.Failed.Unknown ->
-                            Timber.e(
-                                newState.exception,
-                                "Unknown error",
-                            )
-                    }
-                }
-
-                is SNSSDKState.Initial -> Timber.e("No verification steps are passed yet")
-                is SNSSDKState.Incomplete -> Timber.e("Some but not all verification steps are passed over")
-                is SNSSDKState.Pending -> Timber.e("Verification is in pending state")
-                is SNSSDKState.FinallyRejected -> Timber.e("Applicant has been finally rejected")
-                is SNSSDKState.TemporarilyDeclined -> Timber.e("Applicant has been declined temporarily")
-                is SNSSDKState.Approved -> Timber.e("Applicant has been approved")
-                else -> Timber.e("Unknown")
-            }
-        }
-
-        val onSDKErrorHandler: (SNSException) -> Unit = { exception ->
-            Timber.e("The SDK throws an exception. Exception: $exception")
-
-            when (exception) {
-                is SNSException.Api -> Timber.e("Api exception. ${exception.description}")
-                is SNSException.Network -> Timber.e(exception, "Network exception.")
-                is SNSException.Unknown -> Timber.e(exception, "Unknown exception.")
-            }
-        }
-
-        val onSDKCompletedHandler: (SNSCompletionResult, SNSSDKState) -> Unit = { result, _ ->
-            when (result) {
-                is SNSCompletionResult.SuccessTermination -> Timber.e("The SDK finished successfully")
-                is SNSCompletionResult.AbnormalTermination -> Timber.e(result.exception, "The SDK got closed because of errors")
-                else -> Timber.e("Unknown")
-            }
-        }
-
-        val snsSdk =
-            SNSMobileSDK.Builder(requireActivity())
-                .withHandlers(onStateChanged = onSDKStateChangedHandler, onError = onSDKErrorHandler, onCompleted = onSDKCompletedHandler)
-                .withAccessToken(accessToken, onTokenExpiration = tokenExpirationHandler)
-                .withLocale(
-                    if (isFollowSystem()) {
-                        Locale.getDefault()
-                    } else {
-                        val languagePos = getLanguagePos()
-                        val selectedLang =
-                            when (languagePos) {
-                                AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.language
-                                AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.language
-                                AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.language
-                                AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Language
-                                AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
-                                AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
-                                AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Language
-                                else -> Locale.US.language
-                            }
-                        val selectedCountry =
-                            when (languagePos) {
-                                AppearanceFragment.POS_SIMPLIFY_CHINESE -> Locale.SIMPLIFIED_CHINESE.country
-                                AppearanceFragment.POS_TRADITIONAL_CHINESE -> Locale.TRADITIONAL_CHINESE.country
-                                AppearanceFragment.POS_SIMPLIFY_JAPANESE -> Locale.JAPANESE.country
-                                AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Country
-                                AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
-                                AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
-                                AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Country
-                                else -> Locale.US.country
-                            }
-                        Locale(selectedLang, selectedCountry)
-                    },
-                )
-                .build()
-
-        snsSdk.launch()
-    }
-
     private fun getPayAmount(
         assetAmount: Float,
         assetPrice: Float,
@@ -650,14 +589,32 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
         val total = merchant / (1 - feePercent)
         val fee = total - merchant
         val roundedFee = BigDecimal(fee.toDouble()).setScale(2, RoundingMode.UP)
-        val payingAmount = roundedFee.plus(BigDecimal(merchant.toDouble())).setScale(2, RoundingMode.UP)
+        val payingAmount =
+            roundedFee.plus(BigDecimal(merchant.toDouble())).setScale(2, RoundingMode.UP)
         return payingAmount.toPlainString()
     }
 
+    private fun isFragmentVisible(): Boolean {
+        if (!isVisible || isHidden || view == null || view?.visibility != View.VISIBLE) {
+            return false
+        }
+
+        if (!isAdded || isDetached || isRemoving) {
+            return false
+        }
+
+        val fragments = parentFragmentManager.fragments
+        val visibleFragments = fragments.filter {
+            it.isVisible && !it.isHidden && it.view?.visibility == View.VISIBLE
+        }
+
+        return visibleFragments.lastOrNull() == this
+    }
+
     private fun checkData() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             if (viewDestroyed()) return@launch
-            showLoading()
+            setLoading(true)
             flow {
                 emit(ROUTE_BOT_USER_ID)
             }.map { botId ->
@@ -670,10 +627,12 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         botId,
                     )
                 if (!key.isNullOrEmpty()) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, key)
+                    MixinApplication.appContext.defaultSharedPreferences.putString(
+                        PREF_ROUTE_BOT_PK,
+                        key
+                    )
                 } else {
-                    val sessionResponse =
-                        fiatMoneyViewModel.fetchSessionsSuspend(listOf(botId))
+                    val sessionResponse = fiatMoneyViewModel.fetchSessionsSuspend(listOf(botId))
                     if (sessionResponse.isSuccess) {
                         val sessionData = requireNotNull(sessionResponse.data)[0]
                         fiatMoneyViewModel.saveSession(
@@ -698,8 +657,16 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 botId
             }.map { _ ->
                 val profileResponse =
-                    fiatMoneyViewModel.profile()
-                if (profileResponse.isSuccess) {
+                    requestRouteAPI(
+                        invokeNetwork = { fiatMoneyViewModel.profile() },
+                        defaultErrorHandle = {},
+                        defaultExceptionHandle = {},
+                        successBlock = { response ->
+                            response
+                        },
+                        requestSession = { fiatMoneyViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
+                    )
+                if (profileResponse != null && profileResponse.isSuccess) {
                     val supportCurrencies =
                         getCurrencyData(requireContext().resources).filter {
                             profileResponse.data!!.currencies.contains(it.name)
@@ -709,14 +676,17 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                     val hideGooglePay =
                         profileResponse.data!!.supportPayments.contains(Constants.RouteConfig.GOOGLE_PAY)
                             .not()
-                    val routeProfile = RouteProfile(kycState, hideGooglePay, supportCurrencies, supportAssetIds)
+                    val routeProfile =
+                        RouteProfile(kycState, hideGooglePay, supportCurrencies, supportAssetIds)
                     (requireActivity() as WalletActivity).routeProfile = routeProfile
                     routeProfile
-                } else {
+                } else if (profileResponse != null) {
                     throw MixinResponseException(
                         profileResponse.errorCode,
                         profileResponse.errorDescription,
                     )
+                } else {
+                    throw IllegalStateException()
                 }
             }.map { routeProfile ->
                 fiatMoneyViewModel.syncNoExistAsset(routeProfile.supportAssetIds)
@@ -725,7 +695,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 val assetId =
                     requireContext().defaultSharedPreferences.getString(
                         CURRENT_ASSET_ID,
-                        USDT_ASSET_ID,
+                        null
                     ) ?: routeProfile.supportAssetIds.first()
                 val currency = getDefaultCurrency(requireContext(), routeProfile.supportCurrencies)
                 val tickerResponse =
@@ -740,9 +710,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                         FiatMoneyViewModel.CalculateState(
                             minimum =
                                 tickerResponse.data!!.minimum.toIntOrNull()
-                                    ?: 0,
-                            maximum =
-                                tickerResponse.data!!.maximum.toIntOrNull()
                                     ?: 0,
                             assetPrice =
                                 tickerResponse.data!!.assetPrice.toFloatOrNull()
@@ -762,7 +729,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 activity?.finish()
             }.collectLatest { state ->
                 fiatMoneyViewModel.calculateState = state
-                dismissLoading()
+                setLoading(false)
                 initData()
                 updateUI()
             }

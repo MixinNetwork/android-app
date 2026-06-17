@@ -8,7 +8,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.db.StickerDao
-import one.mixin.android.db.insertUpdate
 import one.mixin.android.vo.Sticker
 
 @HiltWorker

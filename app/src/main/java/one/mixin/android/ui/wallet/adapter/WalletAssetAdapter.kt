@@ -3,20 +3,23 @@ package one.mixin.android.ui.wallet.adapter
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.Context
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
+import android.widget.RelativeLayout
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.setQuoteText
-import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.common.recyclerview.HeaderListUpdateCallback
 import one.mixin.android.ui.common.recyclerview.NormalHolder
@@ -25,7 +28,10 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 
-class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<TokenItem>() {
+class WalletAssetAdapter(
+    private val slideShow: Boolean,
+    private val compact: Boolean = false,
+) : HeaderAdapter<TokenItem>() {
     fun setAssetList(newAssets: List<TokenItem>) {
         if (data == null) {
             data = newAssets
@@ -94,6 +100,47 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<TokenIt
         if (holder is NormalHolder) {
             val binding = ItemWalletAssetBinding.bind(holder.itemView)
             val asset = data!![getPos(position)]
+            if (compact) {
+                holder.itemView.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                }
+                binding.backgroundRl.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = ViewGroup.LayoutParams.MATCH_PARENT
+                }
+                binding.foregroundRl.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                }
+                binding.foregroundRl.setPadding(0, 4.dp, 0, 4.dp)
+                binding.avatar.updateLayoutParams<RelativeLayout.LayoutParams> {
+                    width = 42.dp
+                    height = 42.dp
+                    marginStart = 16.dp
+                    topMargin = 0
+                    removeRule(RelativeLayout.ALIGN_TOP)
+                    addRule(RelativeLayout.CENTER_VERTICAL)
+                }
+                binding.balance.updateLayoutParams<RelativeLayout.LayoutParams> {
+                    marginStart = 14.dp
+                    topMargin = 3.dp
+                    removeRule(RelativeLayout.ALIGN_TOP)
+                    addRule(RelativeLayout.ALIGN_PARENT_TOP)
+                }
+                binding.balanceAs.updateLayoutParams<RelativeLayout.LayoutParams> {
+                    marginStart = 14.dp
+                    topMargin = 4.dp
+                }
+                binding.changeTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginEnd = 16.dp
+                }
+                binding.priceTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginEnd = 16.dp
+                }
+                binding.naTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginEnd = 16.dp
+                }
+                binding.balance.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+                binding.changeTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            }
             binding.balance.text =
                 try {
                     if (asset.balance.numberFormat().toFloat() == 0f) {
@@ -107,9 +154,12 @@ class WalletAssetAdapter(private val slideShow: Boolean) : HeaderAdapter<TokenIt
             binding.symbolTv.text = asset.symbol
             binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
             if (asset.priceUsd == "0") {
-                binding.priceTv.setText(R.string.NA)
+                binding.naTv.visibility = VISIBLE
+                binding.priceTv.visibility = GONE
                 binding.changeTv.visibility = GONE
             } else {
+                binding.naTv.visibility = GONE
+                binding.priceTv.visibility = VISIBLE
                 binding.changeTv.visibility = VISIBLE
                 binding.priceTv.text = "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
                 if (asset.changeUsd.isNotEmpty()) {

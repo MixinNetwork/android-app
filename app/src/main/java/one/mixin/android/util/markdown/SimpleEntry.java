@@ -6,16 +6,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import androidx.annotation.IdRes;
 import androidx.annotation.LayoutRes;
 import androidx.annotation.NonNull;
-import io.noties.markwon.Markwon;
-import io.noties.markwon.recycler.MarkwonAdapter;
-import io.noties.markwon.utils.NoCopySpannableFactory;
+
 import org.commonmark.node.Node;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import io.noties.markwon.Markwon;
+import io.noties.markwon.recycler.MarkwonAdapter;
+import io.noties.markwon.utils.NoCopySpannableFactory;
 
 /**
  * @since 3.0.0

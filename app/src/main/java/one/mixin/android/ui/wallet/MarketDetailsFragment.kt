@@ -6,7 +6,7 @@ import android.view.View
 import android.view.View.VISIBLE
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.view.drawToBitmap
+import androidx.core.text.HtmlCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -14,11 +14,13 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.AssetId.USDT_ASSET_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
 import one.mixin.android.extension.colorAttr
+import one.mixin.android.extension.dayTime
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -28,24 +30,31 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat2
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.setQuoteText
+import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
-import one.mixin.android.ui.home.web3.market.ChooseTokensBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_INPUT
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_OUTPUT
-import one.mixin.android.ui.home.web3.swap.SwapFragment.Companion.ARGS_TOKEN_ITEMS
+import one.mixin.android.ui.home.web3.market.DepositTokensBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.TradeFragment
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_INPUT
+import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_OUTPUT
+import one.mixin.android.ui.wallet.alert.AlertFragment
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_GO_ALERT
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.math.BigDecimal
+import java.util.Locale
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -54,6 +63,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         const val TAG = "MarketDetailsFragment"
         const val ARGS_MARKET = "args_market"
         const val ARGS_ASSET_ID = "args_asset_id"
+        const val ARGS_MARKET_SOURCE = "args_market_source"
+        private const val PREF_MARKET_CHART_TYPE = "pref_market_chart_type"
     }
 
     private val binding by viewBinding(FragmentDetailsMarketBinding::bind)
@@ -72,6 +83,15 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     }
 
     private val typeState = mutableStateOf("1D")
+    private val marketSource by lazy {
+        requireArguments().getString(ARGS_MARKET_SOURCE) ?: AnalyticsTracker.MarketSource.MORE_MARKET_CAP
+    }
+    private fun marketFavoriteSource(): String =
+        if (marketSource == AnalyticsTracker.MarketSource.MORE_MARKET_CAP) {
+            AnalyticsTracker.MarketSource.MORE_MARKET_CAP
+        } else {
+            AnalyticsTracker.MarketSource.MARKET_DETAIL
+        }
 
     @SuppressLint("SetTextI18n", "DefaultLocale")
     override fun onViewCreated(
@@ -80,6 +100,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(RefreshMarketJob(marketItem.coinId))
+        AnalyticsTracker.trackMarketDetail(marketSource)
         binding.apply {
             titleView.apply {
                 setSubTitle(marketItem.symbol, marketItem.name)
@@ -87,17 +108,25 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 rightExtraIb.isVisible = true
                 rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 rightExtraIb.setOnClickListener {
+                    val addingFavorite = marketItem.isFavored != true
                     walletViewModel.updateMarketFavored(marketItem.symbol, marketItem.coinId, marketItem.isFavored)
-                    marketItem.isFavored = !(marketItem.isFavored ?: false)
+                    marketItem.isFavored = marketItem.isFavored != true
+                    if (addingFavorite) {
+                        AnalyticsTracker.trackMarketFavoriteAdd(marketFavoriteSource())
+                    }
                     rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 }
                 rightIb.setOnClickListener {
-                    if (!isLoading || marketItem.coinId.isBlank()) MarketShareActivity.show(requireContext(), marketLl.drawToBitmap(), marketItem.symbol)
-                    else toast(R.string.Please_wait_a_bit)
+                    if (!isLoading || marketItem.coinId.isBlank()) {
+                        MarketShareBottomFragment.newInstance(
+                            marketItem,
+                            typeState.value,
+                        ).show(parentFragmentManager, MarketShareBottomFragment.TAG)
+                    } else toast(R.string.Please_wait_a_bit)
                 }
             }
             swapAlert.swap.setOnClickListener {
-                lifecycleScope.launch {
+                viewLifecycleOwner.lifecycleScope.launch {
                     val ids = walletViewModel.findTokenIdsByCoinId(marketItem.coinId)
                     val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
                     if (ids.size > tokens.size) {
@@ -116,41 +145,23 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         } ?: emptyList()
                     }
                     if (nowTokens.isEmpty()) {
-                        toast(R.string.Data_error)
+                        toast(getString(R.string.swap_not_supported, marketItem.name))
                         return@launch
                     }
-                    val assets = walletViewModel.allAssetItems()
-                    if (nowTokens.size == 1) {
-                        val output = if (nowTokens.first().assetId == USDT_ASSET_ID) {
-                            XIN_ASSET_ID
-                        } else {
-                            USDT_ASSET_ID
-                        }
-
-                        view.navigate(R.id.action_market_details_to_swap,
-                            Bundle().apply {
-                                putString(ARGS_INPUT, nowTokens.first().assetId)
-                                putString(ARGS_OUTPUT, output)
-                                putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets) })
-                            })
+                    val token = nowTokens.first()
+                    val input = if (token.assetId == USDT_ASSET_ETH_ID) {
+                        XIN_ASSET_ID
                     } else {
-                        ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) }).apply {
-                            callback = { token ->
-                                val output = if (token.assetId == USDT_ASSET_ID) {
-                                    XIN_ASSET_ID
-                                } else {
-                                    USDT_ASSET_ID
-                                }
-
-                                view.navigate(R.id.action_market_details_to_swap,
-                                    Bundle().apply {
-                                        putString(ARGS_INPUT, token.assetId)
-                                        putString(ARGS_OUTPUT, output)
-                                        putParcelableArrayList(ARGS_TOKEN_ITEMS, arrayListOf<TokenItem>().apply { addAll(assets) })
-                                    })
-                            }
-                        }.show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
+                        USDT_ASSET_ETH_ID
                     }
+                    AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.MARKET_DETAIL)
+                    view.navigate(R.id.action_market_details_to_swap,
+                        Bundle().apply {
+                            putString(ARGS_INPUT, input)
+                            putString(ARGS_OUTPUT, token.assetId)
+                            putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
+                            putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
+                        })
                 }
             }
             if (marketItem.coinId.isBlank()) {
@@ -158,10 +169,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             } else {
                 walletViewModel.anyAlertByCoinId(marketItem.coinId)
             }.observe(this@MarketDetailsFragment.viewLifecycleOwner) { exist ->
-                swapAlert.setAlertTitle(if (exist) R.string.Alert else R.string.Add_Alert)
+                swapAlert.setAlertTitle(R.string.Alert)
                 swapAlert.alertVa.setOnClickListener {
                     if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
-                        lifecycleScope.launch {
+                        viewLifecycleOwner.lifecycleScope.launch {
                             var coinItem = if (marketItem.coinId.isBlank()) {
                                 walletViewModel.simpleCoinItemByAssetId(marketItem.assetIds!!.first())
                             } else {
@@ -195,12 +206,14 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                     view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
                                         putParcelable(ARGS_COIN, coinItem)
                                         putBoolean(ARGS_GO_ALERT, !exist)
+                                        putString(AlertFragment.ARGS_SOURCE, AnalyticsTracker.MarketSource.MARKET_DETAIL)
                                     })
                                 }
                             } else {
                                 view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
                                     putParcelable(ARGS_COIN, coinItem)
                                     putBoolean(ARGS_GO_ALERT, !exist)
+                                    putString(AlertFragment.ARGS_SOURCE, AnalyticsTracker.MarketSource.MARKET_DETAIL)
                                 })
                             }
                         }
@@ -211,10 +224,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             }
 
             if (marketItem.coinId.isBlank()) {
-                rank.isVisible = false
                 assetRank.isVisible = false
                 titleView.rightExtraIb.isVisible = false
             }
+            assetSymbol.text = marketItem.symbol
             assetName.text = marketItem.name
             nameTitle.text = getString(R.string.Name).uppercase()
             symbolTitle.text = getString(R.string.Symbol).uppercase()
@@ -230,32 +243,30 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             radio1w.text = getString(R.string.weeks_count_short, 1)
             radio1m.text = getString(R.string.months_count_short, 1)
             radioYtd.text = getString(R.string.ytd)
-            radioAll.text = getString(R.string.All)
+            radioAll.text = getString(R.string.All).uppercase()
+            val savedType = defaultSharedPreferences.getString(PREF_MARKET_CHART_TYPE, "1D") ?: "1D"
+            typeState.value = savedType
+            radioGroup.check(
+                when (savedType) {
+                    "1W" -> R.id.radio_1w
+                    "1M" -> R.id.radio_1m
+                    "1Y" -> R.id.radio_ytd
+                    "ALL" -> R.id.radio_all
+                    else -> R.id.radio_1d
+                },
+            )
             radioGroup.setOnCheckedChangeListener { _, checkedId ->
                 requireActivity().heavyClickVibrate()
-                typeState.value =
+                val type =
                     when (checkedId) {
-
-                        R.id.radio_1d -> {
-                            "1D"
-                        }
-
-                        R.id.radio_1w -> {
-                            "1W"
-                        }
-
-                        R.id.radio_1m -> {
-                            "1M"
-                        }
-
-                        R.id.radio_ytd -> {
-                            "YTD"
-                        }
-
-                        else -> {
-                            "ALL"
-                        }
+                        R.id.radio_1d -> "1D"
+                        R.id.radio_1w -> "1W"
+                        R.id.radio_1m -> "1M"
+                        R.id.radio_ytd -> "1Y"
+                        else -> "ALL"
                     }
+                typeState.value = type
+                defaultSharedPreferences.putString(PREF_MARKET_CHART_TYPE, type)
             }
 
             name.text = marketItem.name
@@ -267,22 +278,25 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     marketItem.assetIds!!.first()
                 }, { percentageChange ->
                     if (percentageChange == null) {
-                        priceRise.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                        priceRise.text = getString(R.string.N_A)
+                        priceRise.setQuoteTextWithBackgroud(getString(R.string.N_A))
+                    } else if (typeState.value == "1D") {
+                        val rise = BigDecimal(marketItem.priceChangePercentage24H)
+                        currentRise = "${rise.numberFormat2()}%"
+                        priceRise.setQuoteTextWithBackgroud(currentRise, rise >= BigDecimal.ZERO)
                     } else {
                         currentRise = String.format("%.2f%%", percentageChange)
-                        priceRise.setQuoteText(currentRise, percentageChange >= 0f)
+                        priceRise.setQuoteTextWithBackgroud(currentRise, percentageChange >= 0f)
                     }
                 }, { price, percentageChange ->
                     if (price == null) {
                         priceValue.text = currentPrice
-                        priceRise.setQuoteText(currentRise, currentRise?.startsWith("-") == false)
+                        priceRise.setQuoteTextWithBackgroud(currentRise, currentRise?.startsWith("-") == false)
                     } else {
                         priceValue.text = "${Fiats.getSymbol()}${BigDecimal(price).multiply(BigDecimal(Fiats.getRate())).marketPriceFormat()}"
                         if (percentageChange == null) {
-                            priceRise.text = ""
+                            priceRise.setQuoteTextWithBackgroud(getString(R.string.N_A))
                         } else {
-                            priceRise.setQuoteText(String.format("%.2f%%", percentageChange), percentageChange >= 0f)
+                            priceRise.setQuoteTextWithBackgroud(String.format("%.2f%%", percentageChange), percentageChange >= 0f)
                         }
                     }
                 }, { loading -> isLoading = loading })
@@ -297,11 +311,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             if (info != null) {
                 loadBalance(info)
                 binding.apply {
-                    rank.isVisible = true
                     assetRank.isVisible = true
                     titleView.rightExtraIb.isVisible = true
+                    assetSymbol.text = info.symbol
                     assetName.text = info.name
-                    rank.text = "#${info.marketCapRank}"
                     assetRank.text = "#${info.marketCapRank}"
                     currentPrice = priceFormat(info.currentPrice)
                     priceValue.text = currentPrice
@@ -332,10 +345,17 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
                     highValue.text = priceFormat(info.ath)
                     highTime.isVisible = true
-                    highTime.text = info.athDate
+                    highTime.text = info.athDate.dayTime()
                     lowValue.text = priceFormat(info.atl)
                     lowTime.isVisible = true
-                    lowTime.text = info.atlDate
+                    lowTime.text = info.atlDate.dayTime()
+
+                    val desc = info.descriptions?.let { map ->
+                        val lang = Locale.getDefault().language
+                        selectLocalizedMarketDescription(map, lang)
+                    }?.let { HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim() }
+                    aboutContainer.isVisible = !desc.isNullOrBlank()
+                    aboutContent.text = desc.orEmpty()
 
                     priceValue.setTextColor(textPrimary)
                     marketCap.setTextColor(textPrimary)
@@ -371,6 +391,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     highValue.setText(R.string.N_A)
                     lowValue.setTextColor(textAssist)
                     lowValue.setText(R.string.N_A)
+                    aboutContainer.isVisible = false
                 }
             }
         }
@@ -391,7 +412,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         val changeUsd = BigDecimal(marketItem.priceChange24h)
         val isPositive = changeUsd >= BigDecimal.ZERO
         binding.apply {
-            lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+            viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
                 Timber.e(error)
                 balanceRl.isVisible = false
             }) {
@@ -413,7 +434,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         } else {
                             "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                         }
-                    } catch (ignored: NumberFormatException) {
+                    } catch (_: NumberFormatException) {
                         "≈ ${Fiats.getSymbol()}${price.numberFormat2()}"
                     }
                     priceRise.visibility = VISIBLE
@@ -427,7 +448,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         balanceChange.text = "0.00%"
                         riseTitle.isVisible = false
                     }
-                    priceRise.setQuoteText(currentRise, !marketItem.priceChangePercentage24H.startsWith("-"))
+                    priceRise.setQuoteTextWithBackgroud(currentRise, !marketItem.priceChangePercentage24H.startsWith("-"))
                     balanceRl.setOnClickListener {
                         lifecycleScope.launch {
                             if (ids.size > tokens.size) {
@@ -457,7 +478,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                     WalletActivity.showWithToken(requireActivity(), nowTokens.first(), WalletActivity.Destination.Transactions, true)
                                 }
                             } else {
-                                ChooseTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) })
+                                DepositTokensBottomSheetDialogFragment.newInstance(ArrayList<TokenItem>().apply { addAll(nowTokens) })
                                     .apply {
                                         callback = { token ->
                                             if (assetId == token.assetId) {
@@ -467,7 +488,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                             }
                                         }
                                     }
-                                    .show(parentFragmentManager, ChooseTokensBottomSheetDialogFragment.TAG)
+                                    .show(parentFragmentManager, DepositTokensBottomSheetDialogFragment.TAG)
                             }
                         }
                     }
@@ -505,4 +526,5 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
     private var currentPrice: String? = null
     private var currentRise: String? = null
+
 }

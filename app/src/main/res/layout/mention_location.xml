@@ -28,11 +28,10 @@
             app:uiMapToolbar="false" />
 
         <ViewStub
-            android:id="@+id/mapbox_stub"
+            android:id="@+id/osm_stub"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:inflatedId="@+id/mapbox_stub"
-            android:layout="@layout/view_mapbox"/>
+            android:layout="@layout/view_open_street_map" />
 
         <ImageView
             android:id="@+id/ic_marker"

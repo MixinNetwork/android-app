@@ -5,12 +5,18 @@ enum class MarketSort(val value: Int) {
     RANK_DESCENDING(1),
     PRICE_ASCENDING(2),
     PRICE_DESCENDING(3),
-    PERCENTAGE_ASCENDING(4),
-    PERCENTAGE_DESCENDING(5);
+    SEVEN_DAYS_PERCENTAGE_ASCENDING(4),
+    SEVEN_DAYS_PERCENTAGE_DESCENDING(5),
+    TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING(6),
+    TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING(7);
 
     companion object {
+        fun fromValueOrNull(value: Int): MarketSort? {
+            return entries.firstOrNull { it.value == value }
+        }
+
         fun fromValue(value: Int): MarketSort {
-            return entries.firstOrNull { it.value == value } ?: RANK_ASCENDING
+            return fromValueOrNull(value) ?: RANK_ASCENDING
         }
     }
 }

@@ -14,7 +14,6 @@ import one.mixin.android.api.ResponseError
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.tip.exception.TipCounterNotSyncedException
 import one.mixin.android.tip.exception.TipNetworkException
@@ -162,7 +161,6 @@ abstract class BiometricBottomSheetDialogFragment : MixinBottomSheetDialogFragme
 
                 if (doWhenInvokeNetworkSuccess(response, pin)) {
                     dismiss()
-                    toast(R.string.Successful)
                 }
             } else {
                 handleWithErrorCodeAndDesc(pin, requireNotNull(response.error))

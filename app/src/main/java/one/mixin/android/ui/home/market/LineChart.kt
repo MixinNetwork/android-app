@@ -5,7 +5,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
@@ -28,17 +27,15 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.mapbox.maps.extension.style.expressions.dsl.generated.max
-import com.mapbox.maps.extension.style.expressions.dsl.generated.mod
 import one.mixin.android.Constants
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.vo.Fiats
-import timber.log.Timber
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -76,8 +73,14 @@ private fun maxRange(): Float {
 }
 
 @Composable
-fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, type: String? = null, onHighlightChange: ((Int) -> Unit)? = null) {
-    val (dataPoints, minIndex, maxIndex) = normalizeValues(dataPointsData, normalizedMaxRange = if (onHighlightChange != null) null else 1f)
+fun LineChart(
+    dataPointsData: List<Float>,
+    timePointsData: List<Long>? = null,
+    type: String? = null,
+    onHighlightChange: ((Int) -> Unit)? = null,
+    showMinMaxMarkers: Boolean = onHighlightChange != null,
+) {
+    val (dataPoints, minIndex, maxIndex) = normalizeValues(dataPointsData, normalizedMaxRange = if (showMinMaxMarkers) null else 1f)
     MixinAppTheme {
         val textPrimary = MixinAppTheme.colors.textPrimary
         val background = MixinAppTheme.colors.background
@@ -88,17 +91,20 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
         val color = if (dataPointsData.last() >= dataPointsData.first()) {
             if (quoteColorPref) {
-                MixinAppTheme.colors.walletRed
+                MixinAppTheme.colors.marketRed
             } else {
-                MixinAppTheme.colors.walletGreen
+                MixinAppTheme.colors.marketGreen
             }
         } else {
             if (quoteColorPref) {
-                MixinAppTheme.colors.walletGreen
+                MixinAppTheme.colors.marketGreen
             } else {
-                MixinAppTheme.colors.walletRed
+                MixinAppTheme.colors.marketRed
             }
         }
+        val circleColor = MixinAppTheme.colors.background
+        val lineWidth = Dp(1.5f)
+
         Box(modifier = Modifier.fillMaxSize()) {
             Canvas(modifier = Modifier
                 .fillMaxSize()
@@ -174,28 +180,28 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
 
                 drawPath(
                     path = gradientPath, brush = Brush.verticalGradient(
-                        colors = listOf(color.copy(alpha = 0.4f), Color.Transparent), endY = size.height
+                        colors = listOf(color.copy(alpha = 0.7f), Color.Transparent), endY = size.height
                     )
                 )
 
                 drawPath(
-                    path = pathBefore, color = color, style = Stroke(width = 4f)
+                    path = pathBefore, color = color, style = Stroke(width = lineWidth.toPx())
                 )
 
                 if (index != -1) {
                     drawPath(
-                        path = pathAfter, color = Color(0xFFD9D9D9), style = Stroke(width = 4f)
+                        path = pathAfter, color = Color(0xFFD9D9D9), style = Stroke(width = lineWidth.toPx())
                     )
                 }
 
                 if (index != -1) {
                     val dashPathEffect = PathEffect.dashPathEffect(floatArrayOf(15f, 15f), 0f)
                     drawLine(
-                        color = textPrimary, start = Offset(index * spacing, 0f), end = Offset(index * spacing, size.height), strokeWidth = 2f, pathEffect = dashPathEffect
+                        color = textPrimary, start = Offset(index * spacing, 0f), end = Offset(index * spacing, size.height), strokeWidth = lineWidth.toPx(), pathEffect = dashPathEffect
                     )
 
                     drawLine(
-                        color = textPrimary, start = Offset(0f, size.height * dataPoints[0]), end = Offset(size.width, size.height * dataPoints[0]), strokeWidth = 2f, pathEffect = dashPathEffect
+                        color = textPrimary, start = Offset(0f, size.height * dataPoints[0]), end = Offset(size.width, size.height * dataPoints[0]), strokeWidth = lineWidth.toPx(), pathEffect = dashPathEffect
                     )
 
                     val circleCenter = Offset(
@@ -203,14 +209,14 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                     )
 
                     drawCircle(
-                        color = Color.White, radius = 10f, center = circleCenter
+                        color = circleColor, radius = 10f, center = circleCenter
                     )
 
                     drawCircle(
                         color = color, radius = 8f, center = circleCenter
                     )
                 }
-                if (onHighlightChange != null && minIndex != -1 && maxIndex != -1) {
+                if (showMinMaxMarkers && minIndex != -1 && maxIndex != -1) {
                     val minCircleCenter = Offset(
                         minIndex * spacing, size.height * dataPoints[minIndex]
                     )
@@ -221,7 +227,7 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
 
                     if (index != minIndex) {
                         drawCircle(
-                            color = Color.White, radius = 10f, center = minCircleCenter
+                            color = circleColor, radius = 10f, center = minCircleCenter
                         )
                         drawCircle(
                             color = color, radius = 8f, center = minCircleCenter
@@ -229,7 +235,7 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                     }
                     if (index != maxIndex) {
                         drawCircle(
-                            color = Color.White, radius = 10f, center = maxCircleCenter
+                            color = circleColor, radius = 10f, center = maxCircleCenter
                         )
                         drawCircle(
                             color = color, radius = 8f, center = maxCircleCenter
@@ -238,7 +244,7 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                 }
             }
 
-            if (onHighlightChange != null && minIndex != -1 && maxIndex != -1) {
+            if (showMinMaxMarkers && minIndex != -1 && maxIndex != -1) {
                 val spacing = canvasSize.width / (dataPoints.size - 1)
                 val minXPosition = minIndex * spacing
                 val minYPosition = canvasSize.height * dataPoints[minIndex]
@@ -282,7 +288,9 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
 
                     // Adjust positions
                     val minXPositionAdjusted = if (canvasSize.width > minTextWidth) {
-                        (minXPosition - minTextWidth / 2).coerceIn(0f, canvasSize.width - minTextWidth)
+                        val minBound = 0f
+                        val maxBound = (canvasSize.width - minTextWidth).coerceAtLeast(minBound)
+                        (minXPosition - minTextWidth / 2).coerceIn(minBound, maxBound)
                     } else {
                         0f
                     }
@@ -295,7 +303,9 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                     }
 
                     val maxXPositionAdjusted = if (canvasSize.width > maxTextWidth) {
-                        (maxXPosition - maxTextWidth / 2).coerceIn(0f, canvasSize.width - maxTextWidth)
+                        val minBound = 0f
+                        val maxBound = (canvasSize.width - maxTextWidth).coerceAtLeast(minBound)
+                        (maxXPosition - maxTextWidth / 2).coerceIn(minBound, maxBound)
                     } else {
                         0f
                     }
@@ -350,7 +360,13 @@ fun LineChart(dataPointsData: List<Float>, timePointsData: List<Long>? = null, t
                     val textWidth = textPlaceable.maxByOrNull { it.width }?.width?.toFloat() ?: 0f
 
                     // Adjust x position to ensure the Text is within bounds
-                    val xPositionAdjusted = (xPosition - textWidth / 2).coerceIn(horizontalPadding, canvasSize.width - textWidth - horizontalPadding)
+                    val xPositionAdjusted = if (canvasSize.width > textWidth + horizontalPadding * 2) {
+                        val minBound = horizontalPadding
+                        val maxBound = (canvasSize.width - textWidth - horizontalPadding).coerceAtLeast(minBound)
+                        (xPosition - textWidth / 2).coerceIn(minBound, maxBound)
+                    } else {
+                        horizontalPadding
+                    }
 
                     layout(constraints.maxWidth, constraints.maxHeight) {
                         textPlaceable.forEach { placeable ->
@@ -370,7 +386,7 @@ private fun formatTimestamp(unix: Long, type: String?): String {
     return when (type) {
         "1D" -> SimpleDateFormat("HH:mm", Locale.getDefault()).format(date)
         "1W", "1M" -> SimpleDateFormat("M/d, HH:mm", Locale.getDefault()).format(date)
-        "YTD", "ALL" -> SimpleDateFormat("M/d, yyyy", Locale.getDefault()).format(date)
+        "1Y", "ALL" -> SimpleDateFormat("M/d, yyyy", Locale.getDefault()).format(date)
         else -> "Invalid type"
     }
 }

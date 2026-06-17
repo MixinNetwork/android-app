@@ -1,0 +1,40 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="56dp"
+    android:height="68dp"
+    android:viewportWidth="56"
+    android:viewportHeight="68">
+  <path
+      android:pathData="M2,10C2,5.582 5.582,2 10,2H33.461C35.519,2 37.497,2.793 38.985,4.213L51.524,16.183C53.105,17.693 54,19.784 54,21.97V58C54,62.418 50.418,66 46,66H10C5.582,66 2,62.418 2,58V10Z"
+      android:strokeWidth="4"
+      android:fillColor="#00000000"
+      android:strokeColor="?attr/icon_gray"/>
+  <path
+      android:pathData="M53,19H40.778C38.139,19 36,16.818 36,14.127V2"
+      android:strokeWidth="4"
+      android:fillColor="#00000000"
+      android:strokeColor="?attr/icon_gray"/>
+  <path
+      android:pathData="M45,28L30,28A2,2 0,0 0,28 30L28,30A2,2 0,0 0,30 32L45,32A2,2 0,0 0,47 30L47,30A2,2 0,0 0,45 28z"
+      android:fillColor="?attr/icon_gray"/>
+  <path
+      android:pathData="M17,44L11,44A2,2 0,0 0,9 46L9,46A2,2 0,0 0,11 48L17,48A2,2 0,0 0,19 46L19,46A2,2 0,0 0,17 44z"
+      android:fillColor="?attr/icon_gray"/>
+  <path
+      android:pathData="M45,44L24,44A2,2 0,0 0,22 46L22,46A2,2 0,0 0,24 48L45,48A2,2 0,0 0,47 46L47,46A2,2 0,0 0,45 44z"
+      android:fillColor="?attr/icon_gray"/>
+  <path
+      android:pathData="M30,52L11,52A2,2 0,0 0,9 54L9,54A2,2 0,0 0,11 56L30,56A2,2 0,0 0,32 54L32,54A2,2 0,0 0,30 52z"
+      android:fillColor="?attr/icon_gray"/>
+  <path
+      android:pathData="M45,52L36,52A2,2 0,0 0,34 54L34,54A2,2 0,0 0,36 56L45,56A2,2 0,0 0,47 54L47,54A2,2 0,0 0,45 52z"
+      android:fillColor="?attr/icon_gray"/>
+  <path
+      android:pathData="M45,36L38,36A2,2 0,0 0,36 38L36,38A2,2 0,0 0,38 40L45,40A2,2 0,0 0,47 38L47,38A2,2 0,0 0,45 36z"
+      android:fillColor="?attr/icon_gray"/>
+  <path
+      android:pathData="M23,28L11,28A2,2 0,0 0,9 30L9,30A2,2 0,0 0,11 32L23,32A2,2 0,0 0,25 30L25,30A2,2 0,0 0,23 28z"
+      android:fillColor="?attr/icon_gray"/>
+  <path
+      android:pathData="M31,36L11,36A2,2 0,0 0,9 38L9,38A2,2 0,0 0,11 40L31,40A2,2 0,0 0,33 38L33,38A2,2 0,0 0,31 36z"
+      android:fillColor="?attr/icon_gray"/>
+</vector>

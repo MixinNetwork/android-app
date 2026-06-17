@@ -21,7 +21,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.HighlightStarLinkText
 import one.mixin.android.compose.SettingPageScaffold
@@ -37,8 +36,9 @@ fun ViewEmergencyContactPage(user: User) {
         title = stringResource(id = R.string.Emergency_Contact),
         titleBarActions = {
             val context = LocalContext.current
+            val emergencyUrl = stringResource(R.string.emergency_url)
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.EMERGENCY)
+                context.openUrl(emergencyUrl)
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_help_outline),
@@ -80,17 +80,18 @@ fun ViewEmergencyContactPage(user: User) {
         Box(modifier = Modifier.height(8.dp))
 
         val context = LocalContext.current
+        val emergencyUrl = stringResource(R.string.emergency_url)
         HighlightStarLinkText(
             modifier = Modifier.padding(horizontal = 16.dp),
             source = stringResource(id = R.string.setting_emergency_desc),
-            links = arrayOf(Constants.HelpLink.EMERGENCY),
+            links = arrayOf(emergencyUrl),
             textStyle =
                 TextStyle(
                     fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist,
                 ),
         ) {
-            context.openUrl(Constants.HelpLink.EMERGENCY)
+            context.openUrl(emergencyUrl)
         }
 
         Box(modifier = Modifier.height(16.dp))

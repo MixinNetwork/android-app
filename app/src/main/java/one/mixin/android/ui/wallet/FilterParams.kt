@@ -44,6 +44,7 @@ class FilterParams(
                 SnapshotType.withdrawal -> R.string.Withdrawal
                 SnapshotType.deposit -> R.string.Deposit
                 SnapshotType.snapshot -> R.string.Transfer
+                SnapshotType.pending -> R.string.Pending
             }
         }
 
@@ -60,6 +61,10 @@ class FilterParams(
                 SnapshotType.deposit -> {
                     filters.add("s.deposit IS NOT NULL")
                     filters.add("s.deposit != 'null'")
+                }
+
+                SnapshotType.pending -> {
+                    filters.add("s.type == 'pending'")
                 }
 
                 SnapshotType.withdrawal -> {

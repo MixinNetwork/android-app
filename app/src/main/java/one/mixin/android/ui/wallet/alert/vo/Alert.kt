@@ -17,7 +17,6 @@ import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_DECREASED
 import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_INCREASED
 import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_REACHED
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 @Entity("market_alerts")
 @TypeConverters(AlertFrequencyConverter::class, AlertTypeConverter::class, AlertStatusConverter::class)

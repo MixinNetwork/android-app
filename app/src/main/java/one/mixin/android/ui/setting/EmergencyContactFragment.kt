@@ -7,7 +7,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentEmergencyContactBinding
@@ -18,6 +17,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.VerifyFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
@@ -44,10 +44,9 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
-            titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.EMERGENCY) }
+            titleView.rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.emergency_url)) }
             enableRl.setOnClickListener {
-                EmergencyContactTipBottomSheetDialogFragment.newInstance()
-                    .showNow(parentFragmentManager, EmergencyContactTipBottomSheetDialogFragment.TAG)
+                navTo(AddRecoveryContactFragment.newInstance(), AddRecoveryContactFragment.TAG)
             }
             viewRl.setOnClickListener {
                 showEmergency = true
@@ -135,6 +134,7 @@ class EmergencyContactFragment : BaseFragment(R.layout.fragment_emergency_contac
                         val a = response.data as Account
                         Session.storeAccount(a)
                         Session.setHasEmergencyContact(a.hasEmergencyContact)
+                        AnalyticsTracker.setHasRecoveryContact(a)
                         setEmergencySet()
                     },
                     exceptionBlock = {

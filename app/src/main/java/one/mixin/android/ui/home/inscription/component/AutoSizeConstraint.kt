@@ -38,14 +38,22 @@ fun AutoSizeText(
     letterSpacing: TextUnit = TextUnit.Unspecified,
     textDecoration: TextDecoration? = null,
     textAlign: TextAlign? = null,
-    lineHeight: TextUnit = TextUnit.Unspecified,
+    lineHeight: TextUnit = (24 * 1.1).sp,
     overflow: TextOverflow = TextOverflow.Ellipsis,
     softWrap: Boolean = true,
     maxLines: Int = 12,
     style: TextStyle = LocalTextStyle.current,
-    constraint: AutoSizeConstraint = AutoSizeConstraint.Height(min = 12.sp)
+    constraint: AutoSizeConstraint = AutoSizeConstraint.Height(min = 12.sp),
 ) {
-    var textStyle by remember { mutableStateOf(style.copy(fontSize = fontSize)) }
+    val initialLineHeight: TextUnit = if (lineHeight != TextUnit.Unspecified) lineHeight else fontSize * 1.1f
+    var textStyle by remember {
+        mutableStateOf(
+            style.copy(
+                fontSize = fontSize,
+                lineHeight = initialLineHeight,
+            )
+        )
+    }
     var readyToDraw by remember { mutableStateOf(false) }
 
     Text(
@@ -61,7 +69,6 @@ fun AutoSizeText(
         letterSpacing = letterSpacing,
         textDecoration = textDecoration,
         textAlign = textAlign,
-        lineHeight = lineHeight,
         overflow = overflow,
         softWrap = softWrap,
         maxLines = maxLines,
@@ -69,11 +76,22 @@ fun AutoSizeText(
         onTextLayout = { result ->
             fun constrain() {
                 val reducedSize = textStyle.fontSize * 0.9f
+                val ratio: Float = if (lineHeight != TextUnit.Unspecified && fontSize != TextUnit.Unspecified) {
+                    (lineHeight.value / fontSize.value)
+                } else {
+                    1.1f
+                }
                 if (constraint.min != TextUnit.Unspecified && reducedSize <= constraint.min) {
-                    textStyle = textStyle.copy(fontSize = constraint.min)
+                    textStyle = textStyle.copy(
+                        fontSize = constraint.min,
+                        lineHeight = constraint.min * ratio,
+                    )
                     readyToDraw = true
                 } else if (reducedSize != TextUnit.Unspecified) {
-                    textStyle = textStyle.copy(fontSize = reducedSize)
+                    textStyle = textStyle.copy(
+                        fontSize = reducedSize,
+                        lineHeight = reducedSize * ratio,
+                    )
                 }
                 Log.d("AutoSizeText", "Text size reduced to: ${textStyle.fontSize}")
             }

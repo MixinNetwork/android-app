@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
@@ -59,7 +60,7 @@ fun PinSettingPage() {
         ) {
             Box(modifier = Modifier.height(36.dp))
             Image(
-                painter = painterResource(id = MixinAppTheme.drawables.emergencyAvatar),
+                painter = painterResource(R.drawable.ic_emergency),
                 contentDescription = null,
                 modifier =
                     Modifier
@@ -195,29 +196,19 @@ fun PinSettingPage() {
         val navController = LocalSettingNav.current
 
         if (enableBiometrics) {
+            val hour = biometricInterval / BiometricTimeFragment.X_HOUR.toFloat()
+            val intervalText =
+                if (hour < 1) {
+                    val minutes = (hour * 60).toInt()
+                    pluralStringResource(R.plurals.Minute, minutes, minutes)
+                } else {
+                    val hours = hour.toInt()
+                    pluralStringResource(R.plurals.Hour, hours, hours)
+                }
             SettingTile(
                 title = stringResource(R.string.Pay_with_PIN_interval),
                 trailing = {
-                    val hour = biometricInterval / BiometricTimeFragment.X_HOUR.toFloat()
-                    if (hour < 1) {
-                        Text(
-                            text =
-                                context.resources.getQuantityString(
-                                    R.plurals.Minute,
-                                    (hour * 60).toInt(),
-                                    (hour * 60).toInt(),
-                                ),
-                        )
-                    } else {
-                        Text(
-                            text =
-                                context.resources.getQuantityString(
-                                    R.plurals.Hour,
-                                    hour.toInt(),
-                                    hour.toInt(),
-                                ),
-                        )
-                    }
+                    Text(text = intervalText)
                 },
             ) {
                 navController.navigation(SettingDestination.BiometricTime)

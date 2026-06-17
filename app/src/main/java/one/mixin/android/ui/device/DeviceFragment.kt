@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
@@ -20,10 +21,10 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDeviceBinding
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.sharedPreferences
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -34,7 +35,7 @@ import one.mixin.android.ui.common.AvatarActivity.Companion.ARGS_URL
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_FOR_SCAN_RESULT
-import one.mixin.android.util.ErrorHandler
+import one.mixin.android.ui.setting.LogoutPinBottomSheetDialogFragment
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
@@ -98,8 +99,10 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight()
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.root.getSafeAreaInsetsTop()
+            }
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
@@ -116,26 +119,18 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
                         toast(R.string.setting_desktop_logout_failed)
                         return@launch
                     }
-                    val response =
-                        try {
-                            bottomViewModel.logout(sessionId)
-                        } catch (t: Throwable) {
-                            loadOuting.dismiss()
-                            toast(R.string.setting_desktop_logout_failed)
-                            ErrorHandler.handleError(t)
-                            return@launch
+                    LogoutPinBottomSheetDialogFragment.newInstance(sessionId)
+                        .apply {
+                            setOnSuccess { isSuccess ->
+                                if (isSuccess) {
+                                    loadOuting.dismiss()
+                                    updateUI(false)
+                                } else {
+                                    loadOuting.dismiss()
+                                }
+                            }
                         }
-                    if (response.isSuccess) {
-                        loadOuting.dismiss()
-                        updateUI(false)
-                    } else {
-                        loadOuting.dismiss()
-                        ErrorHandler.handleMixinError(
-                            response.errorCode,
-                            response.errorDescription,
-                            getString(R.string.setting_desktop_logout_failed),
-                        )
-                    }
+                        .showNow(parentFragmentManager, LogoutPinBottomSheetDialogFragment.TAG)
                 }
             } else {
                 RxPermissions(requireActivity())

@@ -6,24 +6,24 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.ClipData
 import android.content.Intent
-import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.Drawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.view.View.GONE
+import android.view.View.MeasureSpec
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.FragmentManager
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import coil.imageLoader
-import coil.request.ImageRequest
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
+import coil3.toBitmap
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.jakewharton.rxbinding3.view.clicks
 import com.uber.autodispose.autoDispose
@@ -47,8 +47,8 @@ import one.mixin.android.event.BotCloseEvent
 import one.mixin.android.event.BotEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableCompat
@@ -56,11 +56,11 @@ import one.mixin.android.extension.localTime
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.showConfirmDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
-import one.mixin.android.ui.common.biometric.buildEmptyTransferBiometricItem
 import one.mixin.android.ui.common.info.MenuStyle
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
@@ -69,13 +69,18 @@ import one.mixin.android.ui.common.info.menuGroup
 import one.mixin.android.ui.common.info.menuList
 import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.conversation.TransferFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.AllTransactionsFragment
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
+import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_TRANSFER
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.addPinShortcut
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -105,6 +110,7 @@ import javax.inject.Inject
 class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
     companion object {
         const val TAG = "UserBottomSheetDialogFragment"
+        private const val ARGS_BOT_ENTRY_SOURCE = "args_bot_entry_source"
 
         @SuppressLint("StaticFieldLeak")
         private var instant: UserBottomSheetDialogFragment? = null
@@ -112,6 +118,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         fun newInstance(
             user: User,
             conversationId: String? = null,
+            botEntrySource: String? = null,
         ): UserBottomSheetDialogFragment? {
             try {
                 instant?.dismiss()
@@ -126,6 +133,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     Bundle().apply {
                         putParcelable(ARGS_USER, user)
                         putString(ARGS_CONVERSATION_ID, conversationId)
+                        botEntrySource?.let { putString(ARGS_BOT_ENTRY_SOURCE, it) }
                     }
             }.apply {
                 instant = this
@@ -139,6 +147,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     }
 
     private lateinit var user: User
+    private var botEntrySource: String? = null
 
     // bot need conversation id
     private var botConversationId: String? = null
@@ -154,6 +163,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     lateinit var callState: CallStateLiveData
 
     private var menuListLayout: ViewGroup? = null
+    private var boundBotAppId: String? = null
 
     var sharedMediaCallback: (() -> Unit)? = null
 
@@ -163,6 +173,17 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         FragmentUserBottomSheetBinding.bind(contentView)
     }
 
+    override fun getPeekHeight(
+        contentView: View,
+        behavior: BottomSheetBehavior<*>,
+    ): Int = calculateCollapsedContentHeight()
+
+    override fun shouldApplyBottomInsetToBottomSheetContainer(): Boolean = false
+
+    override fun shouldIncludeBottomInsetInPeekHeight(): Boolean = false
+
+    override fun extraPeekOffsetWhenNavigationBarPresent(): Int = 5.dp
+
     override fun setupDialog(
         dialog: Dialog,
         style: Int,
@@ -170,7 +191,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         super.setupDialog(dialog, style)
         user = requireArguments().getParcelableCompat(ARGS_USER, User::class.java)!!
         botConversationId = requireArguments().getString(ARGS_CONVERSATION_ID)
+        botEntrySource = requireArguments().getString(ARGS_BOT_ENTRY_SOURCE)
         binding.title.rightIv.setOnClickListener { dismiss() }
+        renderCollapsedContent(user)
         binding.avatar.setOnClickListener {
             if (!isAdded) return@setOnClickListener
 
@@ -208,23 +231,19 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
 
                 user = u
                 updateUserInfo(u)
-
-                contentView.doOnPreDraw {
-                    if (!isAdded) return@doOnPreDraw
-
-                    behavior?.peekHeight =
-                        binding.title.height +
-                        binding.scrollContent.height -
-                        (menuListLayout?.height ?: 0) - if (menuListLayout != null) 38.dp else 8.dp
-                }
             },
         )
         binding.transferFl.setOnClickListener {
             if (Session.getAccount()?.hasPin == true) {
-                TransferFragment.newInstance(buildEmptyTransferBiometricItem(user))
-                    .showNow(parentFragmentManager, TransferFragment.TAG)
+                TokenListBottomSheetDialogFragment.newInstance(TYPE_FROM_TRANSFER)
+                    .apply {
+                        setOnAssetClick { selectedAsset ->
+                            requireContext().defaultSharedPreferences.putString(ASSET_PREFERENCE, selectedAsset.assetId)
+                            WalletActivity.showInputForUser(requireActivity(), selectedAsset, user)
+                        }
+                    }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+                this@UserBottomSheetDialogFragment.dismiss()
                 RxBus.publish(BotCloseEvent())
-                dismiss()
             } else {
                 toast(R.string.transfer_without_pin)
             }
@@ -235,6 +254,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 return@setOnClickListener
             }
             context?.let { ctx ->
+                botEntrySource?.takeIf { user.isBot() }?.let { source ->
+                    AnalyticsTracker.trackOpenBotConversation(source, user.identityNumber)
+                }
                 if (MixinApplication.conversationId == null || conversationId != MixinApplication.conversationId) {
                     RxBus.publish(BotCloseEvent())
                     ConversationActivity.showAndClear(ctx, conversationId = null, recipientId = user.userId)
@@ -271,15 +293,8 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             )
             apps?.let {
                 binding.avatarGroup.setApps(it)
-                contentView.doOnPreDraw {
-                    behavior?.peekHeight =
-                        binding.title.height + binding.scrollContent.height -
-                        (
-                            menuListLayout?.height
-                                ?: 0
-                        ) - if (menuListLayout != null) 38.dp else 8.dp
-                }
             }
+            updateCollapsedPeekHeight()
         }
     }
 
@@ -600,14 +615,11 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             },
         )
 
-        menuListLayout?.removeAllViews()
-        binding.scrollContent.removeView(menuListLayout)
+        binding.menuContainer.removeAllViews()
         list.createMenuLayout(requireContext()).let { layout ->
             menuListLayout = layout
-            binding.scrollContent.addView(layout)
-            layout.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                bottomMargin = requireContext().dpToPx(30f)
-            }
+            binding.menuContainer.addView(layout)
+            updateCollapsedPeekHeight()
             binding.moreFl.setOnClickListener {
                 if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
                     behavior?.state = BottomSheetBehavior.STATE_EXPANDED
@@ -635,6 +647,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             null,
                             user.fullName,
                             user.avatarUrl,
+                            user.identityNumber,
                             null,
                             false,
                             null
@@ -646,6 +659,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                             it.name,
                             0,
                             "",
+                            null,
                             null,
                             null,
                             null,
@@ -771,79 +785,133 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         )
     }
 
-    private fun updateUserInfo(user: User) =
+    private fun updateUserInfo(user: User) {
+        renderCollapsedContent(user)
         lifecycleScope.launch {
             if (!isAdded) return@launch
 
-            binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            binding.name.setName(user)
-            binding.idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
-            binding.idTv.setOnLongClickListener {
-                context?.getClipboardManager()
-                    ?.setPrimaryClip(ClipData.newPlainText(null, user.identityNumber))
-                toast(R.string.copied_to_clipboard)
-                true
+            if (user.isBot() && user.appId != null) {
+                bindBotInfo(user)
+            } else {
+                boundBotAppId = null
             }
-            if (user.biography.isNotEmpty()) {
-                binding.detailTv.originalText = user.biography
-                binding.detailTv.visibility = VISIBLE
-                binding.detailTv.heightDifferenceCallback = { heightDifference, duration ->
-                    if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
-                        behavior?.peekHeight?.let { peekHeight ->
-                            ValueAnimator.ofInt(peekHeight, peekHeight + heightDifference).apply {
-                                interpolator = FastOutSlowInInterpolator()
-                                setDuration(duration)
-                                addUpdateListener { value ->
-                                    behavior?.peekHeight = value.animatedValue as Int
-                                }
-                                start()
+        }
+    }
+
+    private fun renderCollapsedContent(user: User) {
+        if (!isAdded) return
+
+        binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
+        binding.name.setName(user)
+        binding.name.setOnIconClickListener {
+            user.membership?.plan?.let { plan ->
+                MixinMemberUpgradeBottomSheetDialogFragment.newInstance(plan).showNow(
+                    parentFragmentManager,
+                    MixinMemberUpgradeBottomSheetDialogFragment.TAG,
+                )
+            }
+        }
+        binding.idTv.text = getString(R.string.contact_mixin_id, user.identityNumber)
+        binding.idTv.setOnLongClickListener {
+            context?.getClipboardManager()
+                ?.setPrimaryClip(ClipData.newPlainText(null, user.identityNumber))
+            toast(R.string.copied_to_clipboard)
+            true
+        }
+        if (user.biography.isNotEmpty()) {
+            binding.detailTv.originalText = user.biography
+            binding.detailTv.visibility = VISIBLE
+            binding.detailTv.heightDifferenceCallback = { heightDifference, duration ->
+                if (behavior?.state == BottomSheetBehavior.STATE_COLLAPSED) {
+                    behavior?.peekHeight?.let { peekHeight ->
+                        ValueAnimator.ofInt(peekHeight, peekHeight + heightDifference).apply {
+                            interpolator = FastOutSlowInInterpolator()
+                            setDuration(duration)
+                            addUpdateListener { value ->
+                                behavior?.peekHeight = value.animatedValue as Int
                             }
-                        }
-                    } else if (behavior?.state == BottomSheetBehavior.STATE_EXPANDED) {
-                        behavior?.peekHeight?.let { peekHeight ->
-                            behavior?.peekHeight = heightDifference + peekHeight
+                            start()
                         }
                     }
+                } else if (behavior?.state == BottomSheetBehavior.STATE_EXPANDED) {
+                    behavior?.peekHeight?.let { peekHeight ->
+                        behavior?.peekHeight = heightDifference + peekHeight
+                    }
                 }
-            } else {
-                binding.detailTv.visibility = GONE
             }
-            updateUserStatus(user.relationship)
-            binding.opLl.isVisible = true
-            if (user.isBot()) {
+        } else {
+            binding.detailTv.visibility = GONE
+        }
+        updateUserStatus(user.relationship)
+        binding.opLl.isVisible = true
+        when {
+            user.isBot() && user.appId != null -> {
                 binding.openFl.visibility = VISIBLE
                 binding.transferFl.visibility = GONE
                 binding.shareFl.isVisible = false
-                bottomViewModel.findAppById(user.appId!!)?.let { app ->
-                    binding.openFl.clicks()
-                        .observeOn(AndroidSchedulers.mainThread())
-                        .throttleFirst(1, TimeUnit.SECONDS)
-                        .autoDispose(stopScope).subscribe {
-                            dismiss()
-                            RxBus.publish(BotCloseEvent())
-                            WebActivity.show(requireActivity(), app.homeUri, botConversationId, app)
-                            dismiss()
-                        }
-                    bottomViewModel.findUserById(app.creatorId)
-                        .observe(
-                            this@UserBottomSheetDialogFragment,
-                        ) { u ->
-                            creator = u
-                            if (u == null) {
-                                bottomViewModel.refreshUser(app.creatorId, true)
-                            }
-                        }
-                }
-            } else if (user.isDeactivated == true) {
+            }
+            user.isDeactivated == true -> {
                 binding.transferFl.isVisible = false
                 binding.openFl.isVisible = false
                 binding.shareFl.isVisible = true
-            } else {
+            }
+            else -> {
                 binding.openFl.visibility = GONE
                 binding.transferFl.visibility = VISIBLE
                 binding.shareFl.isVisible = false
             }
         }
+        updateCollapsedPeekHeight()
+    }
+
+    private suspend fun bindBotInfo(user: User) {
+        val appId = user.appId ?: return
+        if (boundBotAppId == appId) return
+
+        val app = bottomViewModel.findAppById(appId) ?: return
+        boundBotAppId = appId
+        binding.openFl.clicks()
+            .observeOn(AndroidSchedulers.mainThread())
+            .throttleFirst(1, TimeUnit.SECONDS)
+            .autoDispose(stopScope).subscribe {
+                botEntrySource?.takeIf { user.isBot() }?.let { source ->
+                    AnalyticsTracker.trackOpenBotHomePage(source, user.identityNumber)
+                }
+                dismiss()
+                RxBus.publish(BotCloseEvent())
+                WebActivity.show(requireActivity(), app.homeUri, botConversationId, app)
+                dismiss()
+            }
+        bottomViewModel.findUserById(app.creatorId)
+            .observe(
+                this@UserBottomSheetDialogFragment,
+            ) { u ->
+                creator = u
+                if (u == null) {
+                    bottomViewModel.refreshUser(app.creatorId, true)
+                }
+            }
+    }
+
+    private fun updateCollapsedPeekHeight() {
+        schedulePeekHeightUpdate()
+    }
+
+    private fun calculateCollapsedContentHeight(): Int {
+        val titleHeight = binding.title.height.takeIf { it > 0 } ?: measureCollapsedViewHeight(binding.title)
+        val topContentHeight = binding.topContent.height.takeIf { it > 0 } ?: measureCollapsedViewHeight(binding.topContent)
+        return titleHeight + topContentHeight
+    }
+
+    private fun measureCollapsedViewHeight(view: View): Int {
+        val width = contentView.measuredWidth.takeIf { it > 0 } ?: contentView.width
+        if (width <= 0) return 0
+
+        val widthSpec = MeasureSpec.makeMeasureSpec(width, MeasureSpec.EXACTLY)
+        val heightSpec = MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+        view.measure(widthSpec, heightSpec)
+        return view.measuredHeight
+    }
 
     private val blockDrawable: Drawable by lazy {
         val d = requireNotNull(ResourcesCompat.getDrawable(resources, R.drawable.ic_bottom_block, context?.theme))
@@ -858,6 +926,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             binding.addTv.isVisible = false
             binding.detailTv.isVisible = false
             binding.deletedTv.isVisible = true
+            updateCollapsedPeekHeight()
             return
         }
 
@@ -899,6 +968,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 }
             }
         }
+        updateCollapsedPeekHeight()
     }
 
     @SuppressLint("RestrictedApi")
@@ -1033,14 +1103,20 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         lifecycleScope.launch {
             val loader = requireContext().imageLoader
             val request = ImageRequest.Builder(requireContext()).data(user.avatarUrl).build()
-            val result = loader.execute(request).drawable as BitmapDrawable? ?: return@launch
+            val result = loader.execute(request)
+
+            val bitmap = (result as? SuccessResult)?.image?.toBitmap()
+            if (bitmap == null) {
+                toast(R.string.Data_error)
+                return@launch
+            }
             user.fullName?.let {
                 val conversationId = conversationId
                 addPinShortcut(
                     requireContext(),
                     conversationId,
                     it,
-                    result.bitmap,
+                    bitmap,
                     ConversationActivity.getShortcutIntent(
                         requireContext(),
                         conversationId,
@@ -1075,6 +1151,7 @@ fun showUserBottom(
     user: User,
     conversationId: String? = null,
     sharedMediaCallback: (() -> Unit)? = null,
+    botEntrySource: String? = null,
 ) {
     if (fragmentManager.isStateSaved) return
 
@@ -1082,7 +1159,7 @@ fun showUserBottom(
         NonMessengerUserBottomSheetDialogFragment.newInstance(user, conversationId)
             .showNow(fragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
     } else {
-        UserBottomSheetDialogFragment.newInstance(user, conversationId)?.apply {
+        UserBottomSheetDialogFragment.newInstance(user, conversationId, botEntrySource = botEntrySource)?.apply {
             sharedMediaCallback?.let {
                 this.sharedMediaCallback = sharedMediaCallback
             }

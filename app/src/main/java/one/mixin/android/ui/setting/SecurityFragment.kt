@@ -43,8 +43,8 @@ class SecurityFragment : BaseFragment(R.layout.fragment_security) {
                 navTo(AuthenticationsFragment.newInstance(), AuthenticationsFragment.TAG)
             }
 
-            emergencyRl.setOnClickListener {
-                navTo(EmergencyContactFragment.newInstance(), EmergencyContactFragment.TAG)
+            recoveryRl.setOnClickListener {
+                navTo(RecoveryFragment.newInstance(), RecoveryFragment.TAG)
             }
 
             logs.setOnClickListener {

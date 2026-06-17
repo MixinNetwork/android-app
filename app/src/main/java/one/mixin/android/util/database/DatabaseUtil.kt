@@ -5,109 +5,34 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.os.Build
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
+import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants
+import one.mixin.android.db.MixinDatabase
+import one.mixin.android.extension.moveTo
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.Account
 import timber.log.Timber
 import java.io.File
 
-suspend fun getLastUserId(context: Context): String? =
-    withContext(Dispatchers.IO) {
-        val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
-        if (!dbFile.exists()) {
-            return@withContext null
-        }
-        var c: Cursor? = null
-        var db: SQLiteDatabase? = null
-
-        try {
-            db =
-                SQLiteDatabase.openDatabase(
-                    dbFile.absolutePath,
-                    null,
-                    SQLiteDatabase.OPEN_READONLY,
-                )
-            c = db.rawQuery("SELECT user_id FROM users WHERE relationship = 'ME'", null)
-            var userId: String? = null
-            if (c.moveToFirst()) {
-                userId = c.getString(0)
-            }
-            return@withContext userId
-        } catch (e: Exception) {
-            return@withContext null
-        } finally {
-            c?.close()
-            db?.close()
-        }
-    }
-
 @SuppressLint("ObsoleteSdkInt")
-suspend fun clearDatabase(context: Context) =
-    withContext(Dispatchers.IO) {
-        try {
-            clearFts(context)
-            clearPending(context)
-            val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
-            if (!dbFile.exists()) {
-                return@withContext
-            }
-            dbFile.parent?.let {
-                File("$it${File.separator}${Constants.DataBase.DB_NAME}-shm").delete()
-                File("$it${File.separator}${Constants.DataBase.DB_NAME}-wal").delete()
-                File("$it${File.separator}${Constants.DataBase.DB_NAME}-journal").delete()
-            }
-            dbFile.delete()
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
-    }
-
-@SuppressLint("ObsoleteSdkInt")
-suspend fun clearPending(context: Context) =
-    withContext(Dispatchers.IO) {
-        val dbFile = context.getDatabasePath(Constants.DataBase.PENDING_DB_NAME)
-        if (!dbFile.exists()) {
-            return@withContext
-        }
-        dbFile.parent?.let {
-            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-shm").delete()
-            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-wal").delete()
-            File("$it${File.separator}${Constants.DataBase.PENDING_DB_NAME}-journal").delete()
-        }
-        dbFile.delete()
-    }
-
-suspend fun clearFts(context: Context) =
-    withContext(Dispatchers.IO) {
-        val dbFile = context.getDatabasePath(Constants.DataBase.FTS_DB_NAME)
-        if (!dbFile.exists()) {
-            return@withContext
-        }
-        dbFile.parent?.let {
-            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-shm").delete()
-            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-wal").delete()
-            File("$it${File.separator}${Constants.DataBase.FTS_DB_NAME}-journal").delete()
-        }
-        dbFile.delete()
-    }
-
-@SuppressLint("ObsoleteSdkInt")
-suspend fun clearJobsAndRawTransaction(context: Context) =
-    withContext(Dispatchers.IO) {
+suspend fun clearJobsAndRawTransaction(
+    context: Context,
+    identityNumber: String,
+) {
         val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-        val dbFile = context.getDatabasePath(Constants.DataBase.DB_NAME)
-        if (!dbFile.exists()) {
-            return@withContext
+        val scopedDbFile = databaseFile(context, identityNumber)
+        val legacyDbFile = legacyDatabaseFile(context)
+
+        // Check if any database exists before proceeding
+        if (!scopedDbFile.exists() && !legacyDbFile.exists()) {
+            return
         }
-        var db: SQLiteDatabase? = null
+
+        var db: SupportSQLiteDatabase? = null
         try {
-            db =
-                SQLiteDatabase.openDatabase(
-                    dbFile.absolutePath,
-                    null,
-                    SQLiteDatabase.OPEN_READWRITE,
-                )
+            // At this point, migration should have already happened via CurrentUserScopeManager.enter()
+            // So we can safely get the database which should be the migrated scoped database
+            db = MixinDatabase.getWritableDatabase() ?: return
             if (!supportsDeferForeignKeys) {
                 db.execSQL("PRAGMA foreign_keys = FALSE")
             }
@@ -119,13 +44,214 @@ suspend fun clearJobsAndRawTransaction(context: Context) =
             db.execSQL("DELETE FROM `raw_transactions`")
             db.execSQL("DELETE FROM `outputs`")
             db.setTransactionSuccessful()
+            Timber.e("Clear jobs and raw transaction")
         } catch (e: Exception) {
+            Timber.e(e)
             reportException(e)
         } finally {
             db?.endTransaction()
             if (!supportsDeferForeignKeys) {
                 db?.execSQL("PRAGMA foreign_keys = TRUE")
             }
-            db?.rawQuery("PRAGMA wal_checkpoint(FULL)", null)?.close()
         }
+}
+
+fun dbDir(
+    context: Context,
+    identityNumber: String,
+): File {
+    require(identityNumber.isNotBlank()) { "identityNumber is required for database directory." }
+    val baseDir = File(context.filesDir.parent, "databases")
+    val dir = File(baseDir, identityNumber)
+    if (!dir.exists()) {
+        dir.mkdirs()
     }
+    return dir
+}
+
+fun legacyDatabaseFile(context: Context): File {
+    return context.getDatabasePath(Constants.DataBase.DB_NAME)
+}
+
+fun databaseFile(
+    context: Context,
+    identityNumber: String,
+): File {
+    return File(dbDir(context, identityNumber), Constants.DataBase.DB_NAME)
+}
+
+fun legacyPendingDatabaseFile(context: Context): File {
+    return context.getDatabasePath(Constants.DataBase.PENDING_DB_NAME)
+}
+
+fun pendingDatabaseFile(
+    context: Context,
+    identityNumber: String,
+): File {
+    return File(dbDir(context, identityNumber), Constants.DataBase.PENDING_DB_NAME)
+}
+
+fun legacyFtsDatabaseFile(context: Context): File {
+    return context.getDatabasePath(Constants.DataBase.FTS_DB_NAME)
+}
+
+fun ftsDatabaseFile(
+    context: Context,
+    identityNumber: String,
+): File {
+    return File(dbDir(context, identityNumber), Constants.DataBase.FTS_DB_NAME)
+}
+
+private fun moveSidecarIfExists(
+    fromDir: File,
+    toDir: File,
+    databaseName: String,
+    suffix: String,
+) {
+    val fromFile = File(fromDir, databaseName + suffix)
+    if (!fromFile.exists()) {
+        return
+    }
+    if (!toDir.exists()) {
+        toDir.mkdirs()
+    }
+    val toFile = File(toDir, databaseName + suffix)
+    fromFile.moveTo(toFile)
+}
+
+private fun deleteSidecarIfExists(
+    dir: File,
+    databaseName: String,
+    suffix: String,
+) {
+    val sidecar = File(dir, databaseName + suffix)
+    if (sidecar.exists()) {
+        sidecar.delete()
+    }
+}
+
+fun moveLegacyDatabaseFile(context: Context, account: Account): Boolean {
+    val dbFile = legacyDatabaseFile(context)
+    if (!dbFile.exists() || dbFile.length() <= 0) {
+        return true
+    }
+    val targetDb = databaseFile(context, account.identityNumber)
+    if (targetDb.exists() && targetDb.length() > 0) {
+        return true
+    }
+    var c: Cursor? = null
+    var db: SQLiteDatabase? = null
+    try {
+        db =
+            SQLiteDatabase.openDatabase(
+                dbFile.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READONLY,
+            )
+        c = db.rawQuery("SELECT user_id FROM users WHERE relationship = 'ME'", null)
+        var userId: String? = null
+        if (c.moveToFirst()) {
+            userId = c.getString(0)
+        }
+        if (account.userId != userId) {
+            return false
+        }
+        val dir = dbDir(context, account.identityNumber)
+        if (!dir.exists()) dir.mkdirs()
+        c?.close()
+        c = null
+        db?.close()
+        db = null
+        dbFile.moveTo(targetDb)
+        val fromDir = dbFile.parentFile
+        if (fromDir != null) {
+            moveSidecarIfExists(fromDir, dir, Constants.DataBase.DB_NAME, "-wal")
+            moveSidecarIfExists(fromDir, dir, Constants.DataBase.DB_NAME, "-shm")
+            moveSidecarIfExists(fromDir, dir, Constants.DataBase.DB_NAME, "-journal")
+        }
+        return true
+    } catch (e: Exception) {
+        Timber.e(e)
+        return false
+    } finally {
+        c?.close()
+        db?.close()
+    }
+}
+
+fun moveLegacyPendingDatabaseFile(context: Context, account: Account) {
+    val dbFile = legacyPendingDatabaseFile(context)
+    if (!dbFile.exists() || dbFile.length() <= 0) {
+        return
+    }
+    val targetDb = pendingDatabaseFile(context, account.identityNumber)
+    if (targetDb.exists() && targetDb.length() > 0) {
+        return
+    }
+    var c: Cursor? = null
+    var db: SQLiteDatabase? = null
+    try {
+        var userId: String? = null
+        db =
+            SQLiteDatabase.openDatabase(
+                dbFile.absolutePath,
+                null,
+                SQLiteDatabase.OPEN_READONLY,
+            )
+        c = db.rawQuery("SELECT user_id FROM jobs WHERE user_id IS NOT NULL LIMIT 1", null)
+        if (c.moveToFirst()) {
+            userId = c.getString(0)
+        }
+        if (!userId.isNullOrBlank() && account.userId != userId) {
+            dbFile.delete()
+            dbFile.parentFile?.let { fromDir ->
+                deleteSidecarIfExists(fromDir, Constants.DataBase.PENDING_DB_NAME, "-wal")
+                deleteSidecarIfExists(fromDir, Constants.DataBase.PENDING_DB_NAME, "-shm")
+                deleteSidecarIfExists(fromDir, Constants.DataBase.PENDING_DB_NAME, "-journal")
+            }
+            return
+        }
+        val targetDir = targetDb.parentFile ?: return
+        if (!targetDir.exists()) {
+            targetDir.mkdirs()
+        }
+        c?.close()
+        c = null
+        db?.close()
+        db = null
+        dbFile.moveTo(targetDb)
+        val fromDir = dbFile.parentFile
+        if (fromDir != null) {
+            moveSidecarIfExists(fromDir, targetDir, Constants.DataBase.PENDING_DB_NAME, "-wal")
+            moveSidecarIfExists(fromDir, targetDir, Constants.DataBase.PENDING_DB_NAME, "-shm")
+            moveSidecarIfExists(fromDir, targetDir, Constants.DataBase.PENDING_DB_NAME, "-journal")
+        }
+    } catch (e: Exception) {
+        Timber.e(e)
+    } finally {
+        c?.close()
+        db?.close()
+    }
+}
+
+fun moveLegacyFtsDatabaseFile(context: Context, account: Account) {
+    val dbFile = legacyFtsDatabaseFile(context)
+    if (!dbFile.exists() || dbFile.length() <= 0) {
+        return
+    }
+    val targetDb = ftsDatabaseFile(context, account.identityNumber)
+    if (targetDb.exists() && targetDb.length() > 0) {
+        return
+    }
+    val targetDir = targetDb.parentFile ?: return
+    if (!targetDir.exists()) {
+        targetDir.mkdirs()
+    }
+    dbFile.moveTo(targetDb)
+    val fromDir = dbFile.parentFile
+    if (fromDir != null) {
+        moveSidecarIfExists(fromDir, targetDir, Constants.DataBase.FTS_DB_NAME, "-wal")
+        moveSidecarIfExists(fromDir, targetDir, Constants.DataBase.FTS_DB_NAME, "-shm")
+        moveSidecarIfExists(fromDir, targetDir, Constants.DataBase.FTS_DB_NAME, "-journal")
+    }
+}

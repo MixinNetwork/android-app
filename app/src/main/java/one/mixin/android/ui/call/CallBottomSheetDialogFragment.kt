@@ -14,6 +14,7 @@ import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
@@ -44,6 +45,8 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.fadeIn
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.formatMillis
+import one.mixin.android.extension.getSafeAreaInsetsBottom
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showPipPermissionNotification
 import one.mixin.android.extension.toast
@@ -74,6 +77,7 @@ import java.util.Timer
 import java.util.TimerTask
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
+import kotlin.math.roundToInt
 import kotlin.properties.Delegates
 
 @AndroidEntryPoint
@@ -122,8 +126,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun getTheme() = R.style.MixinBottomSheet
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return MixinBottomSheetDialog(requireContext(), theme).apply {
+        return MixinBottomSheetDialog(requireContext(), theme, true).apply {
             dismissWithAnimation = true
+            window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
         }
     }
 
@@ -132,6 +137,12 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private var translationOffset by Delegates.notNull<Float>()
+    private var safeAreaTopInset: Int = 0
+    private var safeAreaBottomInset: Int = 0
+    private var rootPaddingTop: Int = 0
+    private var rootPaddingBottom: Int = 0
+    private var bottomLayoutPaddingTop: Int = 0
+    private var bottomLayoutPaddingBottom: Int = 0
 
     private var groupName: String? = null
 
@@ -148,9 +159,26 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
         val behavior = params.behavior as BottomSheetBehavior<*>
         behavior.peekHeight = peekHeight
         binding.root.doOnPreDraw { root ->
-            translationOffset = (peekHeight - root.measuredHeight).toFloat()
+            val defaultPadding: Int = 16.dp
+            translationOffset =
+                (peekHeight - root.measuredHeight).toFloat()
             binding.participants.translationY = translationOffset
             binding.bottomLayout.translationY = translationOffset
+            safeAreaTopInset = root.getSafeAreaInsetsTop()
+            safeAreaBottomInset = root.getSafeAreaInsetsBottom()
+            rootPaddingTop = root.paddingTop
+            rootPaddingBottom = root.paddingBottom
+            bottomLayoutPaddingTop = binding.bottomLayout.paddingTop
+            bottomLayoutPaddingBottom = binding.bottomLayout.paddingBottom
+            if (bottomLayoutPaddingTop == 0) bottomLayoutPaddingTop = defaultPadding
+            if (bottomLayoutPaddingBottom == 0) bottomLayoutPaddingBottom = defaultPadding
+            binding.root.setPadding(0, rootPaddingTop, 0, rootPaddingBottom)
+            binding.bottomLayout.setPadding(
+                0,
+                bottomLayoutPaddingTop,
+                0,
+                bottomLayoutPaddingBottom + safeAreaBottomInset,
+            )
         }
         (binding.avatarLl.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 132.dp
         behavior.addBottomSheetCallback(
@@ -168,6 +196,12 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     bottomSheet: View,
                     slideOffset: Float,
                 ) {
+                    val normalizedSlideOffset = slideOffset.coerceIn(0f, 1f)
+                    val topPadding = (safeAreaTopInset * normalizedSlideOffset).roundToInt()
+                    val expectedRootTop = rootPaddingTop + topPadding
+                    if (binding.root.paddingTop != expectedRootTop) {
+                        binding.root.setPadding(0, expectedRootTop, 0, rootPaddingBottom)
+                    }
                     userAdapter?.let {
                         if (it.itemCount > 8) {
                             binding.participants.translationY = 0f

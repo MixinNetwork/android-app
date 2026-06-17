@@ -35,7 +35,7 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
         binding.apply {
             titleView.setSubTitle(
                 getString(R.string.app_name),
-                "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE}",
+                "${BuildConfig.VERSION_NAME}-${BuildConfig.VERSION_CODE}(Android ${android.os.Build.VERSION.RELEASE})",
             )
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             logAndDebug.isVisible = defaultSharedPreferences.getBoolean(Constants.Debug.LOG_AND_DEBUG, false)
@@ -56,10 +56,11 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             )
             twitter.setOnClickListener { context?.openUrl("https://x.com/intent/follow?screen_name=MixinMessenger") }
             facebook.setOnClickListener { context?.openUrl("https://fb.com/MixinMessenger") }
-            helpCenter.setOnClickListener { context?.openUrl(Constants.HelpLink.CENTER) }
+            helpCenter.setOnClickListener { context?.openUrl(getString(R.string.help_link)) }
             terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
             privacy.setOnClickListener { context?.openUrl(getString(R.string.landing_privacy_policy_url)) }
             checkUpdates.setOnClickListener { context?.openMarket() }
+            openSource.setOnClickListener { context?.openUrl("https://github.com/MixinNetwork/android-app") }
             logAndDebug.setOnClickListener {
                 navTo(LogAndDebugFragment.newInstance(), LogAndDebugFragment.TAG)
             }

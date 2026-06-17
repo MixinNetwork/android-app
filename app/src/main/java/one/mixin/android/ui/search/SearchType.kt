@@ -2,6 +2,10 @@ package one.mixin.android.ui.search
 
 sealed class SearchType(val index: Int)
 
+object TypeTip : SearchType(-1)
+
+object TypeMaoUser : SearchType(0)
+
 object TypeAsset : SearchType(1)
 
 object TypeChat : SearchType(2)

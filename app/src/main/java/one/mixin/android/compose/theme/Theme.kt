@@ -3,16 +3,25 @@ package one.mixin.android.compose.theme
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.LocalRippleConfiguration
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.RippleConfiguration
+import androidx.compose.material.RippleDefaults
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.colorspace.ColorSpaces
+import androidx.compose.ui.platform.LocalContext
 import one.mixin.android.MixinApplication
-import one.mixin.android.R
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.isScreenWideColorGamut
+import one.mixin.android.util.isCurrChinese
+
+val isP3Supported = MixinApplication.appContext.isScreenWideColorGamut()
 
 class AppColors(
     val primary: Color,
@@ -24,6 +33,7 @@ class AppColors(
     val textBlue: Color = Color(0xFF3D75E3),
     val icon: Color,
     val iconGray: Color,
+    val iconAction: Color,
     val backgroundWindow: Color,
     val background: Color,
     val backgroundDark: Color,
@@ -34,32 +44,50 @@ class AppColors(
     val tipError: Color = Color(0xFFF67070),
     val walletRed: Color = Color(0xFFF67070),
     val walletGreen: Color = Color(0xFF50BD5C),
+    val walletOrange: Color = Color(0xFFFFAA00),
+    val marketRed: Color = if (isP3Supported) Color(
+        colorSpace = ColorSpaces.DisplayP3,
+        red = 0.898f,
+        green = 0.471f,
+        blue = 0.455f,
+        alpha = 1f
+    ) else Color(0xFFE57874),
+    val marketGreen: Color = if (isP3Supported) Color(
+        colorSpace = ColorSpaces.DisplayP3,
+        red = 0.314f,
+        green = 0.741f,
+        blue = 0.361f,
+        alpha = 1f
+    ) else Color(0xFF50BD5C),
     val shadow: Color = Color(0x33AAAAAA),
     val unchecked: Color,
     val tipWarning: Color,
     val tipWarningBorder: Color,
-    val borderPrimary:Color,
-    val rippleColor:Color = Color(0x33000000),
+    val borderPrimary: Color,
+    val rippleColor: Color = Color(0x33000000),
+    val bgGradientStart: Color,
+    val bgGradientEnd: Color,
+    val borderColor: Color,
+    val walletBlue: Color,
+    val walletYellow: Color,
+    val walletPurple: Color,
+    val badgeRed: Color,
+    val warning: Color,
+    val bgClip: Color,
+    val borderGray: Color,
 )
 
 class AppDrawables(
     @DrawableRes
-    val emergencyAvatar: Int,
-    @DrawableRes
-    val emergencyContact: Int,
-    @DrawableRes
     val bgAlertCard: Int,
 
-)
+    )
 
 object MixinAppTheme {
     val colors: AppColors
         @Composable
         get() = LocalColors.current
 
-    val drawables: AppDrawables
-        @Composable
-        get() = LocalDrawables.current
 }
 
 private val LightColorPalette =
@@ -72,6 +100,7 @@ private val LightColorPalette =
         textRemarks = Color(0xFFB3B3B3),
         icon = Color(0xFF000000),
         iconGray = Color(0xFFD2D4DA),
+        iconAction = Color(0xFF9B9B9B),
         backgroundWindow = Color(0xFFF6F7FA),
         background = Color(0xFFFFFFFF),
         backgroundDark = Color(0xFF999999),
@@ -81,6 +110,16 @@ private val LightColorPalette =
         tipWarning = Color(0xFFFBF1F0),
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0xFFE5E8EE),
+        bgGradientStart = Color(0xFFFFFFFF),
+        bgGradientEnd = Color(0xFFE7EFFF),
+        borderColor = Color(0xFFE5E8EE),
+        walletBlue = Color(0xFF1A73E8),
+        walletYellow = Color(0xFFFFC107),
+        walletPurple = Color(0xFF9C27B0),
+        badgeRed = Color(0xFFDB454F),
+        warning = Color(0xFFF6A417),
+        bgClip = Color(0xFFF5F7FA),
+        borderGray = Color(0xFFD6D6D6),
     )
 
 private val DarkColorPalette =
@@ -93,6 +132,7 @@ private val DarkColorPalette =
         textRemarks = Color(0xFF6E7073),
         icon = Color(0xFFEAEAEB),
         iconGray = Color(0xFF808691),
+        iconAction = Color(0xFFFFFFFF),
         backgroundWindow = Color(0xFF23272B),
         background = Color(0xFF2c3136),
         backgroundDark = Color(0xFF121212),
@@ -102,23 +142,19 @@ private val DarkColorPalette =
         tipWarning = Color(0xFF3E373B),
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0x33FFFFFF),
-    )
-
-private val LightDrawablePalette =
-    AppDrawables(
-        emergencyAvatar = R.drawable.ic_emergency_avatar,
-        emergencyContact = R.drawable.ic_emergency_contact,
-        bgAlertCard = R.drawable.bg_alert_card
-    )
-private val DarkDrawablePalette =
-    AppDrawables(
-        emergencyAvatar = R.drawable.ic_emergency_avatar_night,
-        emergencyContact = R.drawable.ic_emergency_contact_night,
-        bgAlertCard = R.drawable.bg_alert_card_night
+        bgGradientStart = Color(0xFF2C3136),
+        bgGradientEnd = Color(0xFF1C2029),
+        borderColor = Color(0xFF6E7073),
+        walletBlue = Color(0xFF64B5F6),
+        walletYellow = Color(0xFFFFEE58),
+        walletPurple = Color(0xFFBA68C8),
+        badgeRed = Color(0xFFF67070),
+        warning = Color(0xFFF6A417),
+        bgClip = Color(0xFF3B3F44),
+        borderGray = Color(0xFFD6D6D6),
     )
 
 private val LocalColors = compositionLocalOf { LightColorPalette }
-private val LocalDrawables = compositionLocalOf { LightDrawablePalette }
 
 @Composable
 fun MixinAppTheme(
@@ -131,23 +167,40 @@ fun MixinAppTheme(
         } else {
             LightColorPalette
         }
-    val drawables =
-        if (darkTheme) {
-            DarkDrawablePalette
-        } else {
-            LightDrawablePalette
-        }
     val textSelectionColors =
         TextSelectionColors(
             handleColor = Color(0xFF3D75E3),
             backgroundColor = Color(0x663D75E3),
         )
-    MaterialTheme(if (darkTheme) darkColors() else lightColors()) {
+
+    @OptIn(ExperimentalMaterialApi::class)
+    val rippleConfiguration = RippleConfiguration(
+        color = if (darkTheme) Color.White else Color.LightGray,
+        rippleAlpha = RippleDefaults.rippleAlpha(if (darkTheme) Color.White else Color.LightGray, !darkTheme),
+    )
+
+    @OptIn(ExperimentalMaterialApi::class)
+    MaterialTheme(
+        if (darkTheme) darkColors() else lightColors(),
+    ) {
         CompositionLocalProvider(
             LocalColors provides colors,
-            LocalDrawables provides drawables,
             LocalTextSelectionColors provides textSelectionColors,
-            content = content,
-        )
+            LocalRippleConfiguration provides rippleConfiguration
+        ) {
+            content()
+        }
     }
+}
+
+@Composable
+@DrawableRes
+fun languageBasedImage(@DrawableRes defaultImage:Int, @DrawableRes zh:Int) : Int{
+    val context = LocalContext.current
+
+    val drawableRes = when {
+        isCurrChinese() -> zh
+        else -> defaultImage
+    }
+    return drawableRes
 }

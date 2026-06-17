@@ -129,7 +129,9 @@ data class MessageItem(
     @IgnoredOnParcel
     val appCardData: AppCardData? by lazy {
         content?.let {
-            GsonHelper.customGson.fromJson(it, AppCardData::class.java)
+            runCatching {
+                GsonHelper.customGson.fromJson(it, AppCardData::class.java)
+            }.getOrNull()
         }
     }
 
@@ -215,6 +217,11 @@ data class MessageItem(
 
     fun canNotPin() =
         this.canNotReply() || this.type == MessageCategory.MESSAGE_PIN.name || (status != MessageStatus.SENT.name && status != MessageStatus.DELIVERED.name && status != MessageStatus.READ.name)
+
+    fun isAppCardWithCover(): Boolean {
+        if (!isAppCard()) return false
+        return appCardData?.hashCover == true
+    }
 
     private fun unfinishedAttachment(): Boolean = !mediaDownloaded(this.mediaStatus) && (isData() || isImage() || isVideo() || isAudio())
 

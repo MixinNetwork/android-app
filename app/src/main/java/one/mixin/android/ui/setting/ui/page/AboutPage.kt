@@ -19,13 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.lifecycleScope
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -98,9 +96,10 @@ fun AboutPage() {
                     .padding(it)
                     .verticalScroll(rememberScrollState()),
         ) {
-            val navController = LocalSettingNav.current
             val context = LocalContext.current
-            val lifecycleScope = LocalLifecycleOwner.current.lifecycleScope
+            val attrs = context.obtainStyledAttributes(intArrayOf(R.attr.ic_logo))
+            val logoResId = attrs.getResourceId(0, R.drawable.ic_logo_mixin)
+            attrs.recycle()
             Image(
                 modifier =
                     Modifier
@@ -114,7 +113,7 @@ fun AboutPage() {
                             }
                         }
                         .align(Alignment.CenterHorizontally),
-                painter = painterResource(id = R.drawable.ic_logo),
+                painter = painterResource(id = logoResId),
                 contentDescription = null,
             )
             AboutTile(
@@ -129,22 +128,25 @@ fun AboutPage() {
                     context.openUrl("https://fb.com/MixinMessenger")
                 },
             )
+            val helpLink = stringResource(R.string.help_link)
             AboutTile(
                 text = stringResource(id = R.string.Help_center),
                 onClick = {
-                    context.openUrl(Constants.HelpLink.CENTER)
+                    context.openUrl(helpLink)
                 },
             )
+            val termsUrl = stringResource(R.string.landing_terms_url)
             AboutTile(
                 text = stringResource(id = R.string.Terms_of_Service),
                 onClick = {
-                    context.openUrl(context.getString(R.string.landing_terms_url))
+                    context.openUrl(termsUrl)
                 },
             )
+            val privacyPolicyUrl = stringResource(R.string.landing_privacy_policy_url)
             AboutTile(
                 text = stringResource(id = R.string.Privacy_Policy),
                 onClick = {
-                    context.openUrl(context.getString(R.string.landing_privacy_policy_url))
+                    context.openUrl(privacyPolicyUrl)
                 },
             )
             AboutTile(

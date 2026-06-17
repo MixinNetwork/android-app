@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.os.CancellationSignal
 import android.os.Parcelable
 import android.view.View
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,9 +15,12 @@ import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersTouchListener
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineExceptionHandler
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentSearchExploreBinding
@@ -34,10 +38,12 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.search.components.RecentSearchPage
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.Dapp
+import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
 import one.mixin.android.vo.SearchBot
@@ -45,19 +51,33 @@ import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.TokenItem
+import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
     private val searchViewModel by viewModels<SearchViewModel>()
 
-    private val searchAdapter: SearchExploreAdapter by lazy {
-        SearchExploreAdapter()
-    }
-
     companion object {
         const val TAG = "SearchExploreFragment"
         const val SEARCH_DEBOUNCE = 300L
+        private const val ARG_HIDE_RECENT = "hide_recent"
+
+        fun newInstance(hideRecent: Boolean = false): SearchExploreFragment {
+            return SearchExploreFragment().apply {
+                arguments = Bundle().apply {
+                    putBoolean(ARG_HIDE_RECENT, hideRecent)
+                }
+            }
+        }
+    }
+
+    private val hideRecent: Boolean by lazy {
+        arguments?.getBoolean(ARG_HIDE_RECENT, false) ?: false
+    }
+
+    private val searchAdapter: SearchExploreAdapter by lazy {
+        SearchExploreAdapter(marketLimit = !hideRecent)
     }
 
     private var keyword: String? = null
@@ -79,6 +99,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
 
     private val binding by viewBinding(FragmentSearchExploreBinding::bind)
 
+    @ExperimentalLayoutApi
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
@@ -129,25 +150,46 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         searchAdapter.onItemClickListener =
             object : SearchFragment.OnSearchClickListener {
                 override fun onUserClick(user: User) {
-                    // do noting
+                    // do nothing
+                }
+
+                override fun onUserClick(user: MaoUser) {
+                    // do nothing
+                }
+
+                override fun onMaoAppClick(userId: String) {
+                    // do nothing
                 }
 
                 override fun onBotClick(bot: SearchBot) {
-                    val f = UserBottomSheetDialogFragment.newInstance(bot.toUser())
+                    val f = UserBottomSheetDialogFragment.newInstance(
+                        bot.toUser(),
+                        botEntrySource = AnalyticsTracker.BotSource.SEARCH_KEY_CONTACT,
+                    )
                     searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.BOT, iconUrl = bot.avatarUrl, title = bot.fullName, subTitle = bot.identityNumber, primaryKey = bot.appId))
                     f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
                 }
 
                 override fun onChatClick(chatMinimal: ChatMinimal) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onMessageClick(message: SearchMessageItem) {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onAssetClick(tokenItem: TokenItem) {
-                    // do noting
+                    searchViewModel.saveRecentSearch(
+                        requireContext().defaultSharedPreferences,
+                        RecentSearch(
+                            RecentSearchType.ASSET,
+                            iconUrl = tokenItem.iconUrl,
+                            title = tokenItem.symbol,
+                            subTitle = tokenItem.name,
+                            primaryKey = tokenItem.assetId,
+                        ),
+                    )
+                    activity?.let { WalletActivity.showWithToken(it, tokenItem, Destination.Transactions) }
                 }
 
                 override fun onDappClick(dapp: Dapp) {
@@ -156,14 +198,19 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
 
                 override fun onTipClick() {
-                    // do noting
+                    // do nothing
                 }
 
                 override fun onMarketClick(market: Market) {
                     lifecycleScope.launch {
                         searchViewModel.findMarketItemByCoinId(market.coinId)?.let { marketItem ->
                             searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.MARKET, iconUrl = marketItem.iconUrl, title = marketItem.symbol, primaryKey = marketItem.coinId))
-                            WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
+                            WalletActivity.showWithMarket(
+                                requireActivity(),
+                                marketItem,
+                                Destination.Market,
+                                AnalyticsTracker.MarketSource.MORE_SEARCH,
+                            )
                         }
                     }
                 }
@@ -173,7 +220,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 }
 
                 override fun onChatLongClick(chatMinimal: ChatMinimal, anchor: View): Boolean {
-                    // do noting
+                    // do nothing
                     return false
                 }
             }
@@ -187,48 +234,70 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                 },
                 {},
             )
-        binding.recent.setContent {
-            RecentSearchPage ({ dapp ->
-                searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.DAPP, iconUrl = dapp.iconUrl, title = dapp.name, subTitle = dapp.homeUrl))
-                WebActivity.show(requireContext(), dapp.homeUrl, null)
-            }, {search->
-                when(search.type){
-                    RecentSearchType.BOT-> {
-                        lifecycleScope.launch {
-                            searchViewModel.findUserByAppId(search.primaryKey!!)?.let { user ->
-                                val f = UserBottomSheetDialogFragment.newInstance(user)
-                                f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+
+        if (!hideRecent) {
+            binding.recent.setContent {
+                RecentSearchPage ({ dapp ->
+                    searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.DAPP, iconUrl = dapp.iconUrl, title = dapp.name, subTitle = dapp.homeUrl))
+                    WebActivity.show(requireContext(), dapp.homeUrl, null)
+                }, {search->
+                    when(search.type){
+                        RecentSearchType.BOT-> {
+                            lifecycleScope.launch {
+                                searchViewModel.findUserByAppId(search.primaryKey!!)?.let { user ->
+                                    val f = UserBottomSheetDialogFragment.newInstance(
+                                        user,
+                                        botEntrySource = AnalyticsTracker.BotSource.SEARCH_RECENT,
+                                    )
+                                    f?.show(parentFragmentManager, UserBottomSheetDialogFragment.TAG)
+                                }
+                            }
+                        }
+                        RecentSearchType.ASSET -> {
+                            lifecycleScope.launch {
+                                val assetId: String = search.primaryKey ?: return@launch
+                                val tokenItem: TokenItem = searchViewModel.findOrSyncTokenItemByAssetId(assetId) ?: return@launch
+                                WalletActivity.showWithToken(requireActivity(), tokenItem, Destination.Transactions)
+                            }
+                        }
+                        RecentSearchType.DAPP->{
+                            WebActivity.show(requireContext(), search.subTitle?:"", null)
+                        }
+                        RecentSearchType.LINK->{
+                            search.subTitle?.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
+                        }
+                        RecentSearchType.MARKET->{
+                            lifecycleScope.launch {
+                                searchViewModel.findMarketItemByCoinId(search.primaryKey!!)?.let { marketItem ->
+                                    WalletActivity.showWithMarket(
+                                        requireActivity(),
+                                        marketItem,
+                                        Destination.Market,
+                                        AnalyticsTracker.MarketSource.MORE_SEARCH,
+                                    )
+                                }
                             }
                         }
                     }
-                    RecentSearchType.DAPP->{
-                        WebActivity.show(requireContext(), search.subTitle?:"", null)
-                    }
-                    RecentSearchType.LINK->{
-                        search.subTitle?.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
-                    }
-                    RecentSearchType.MARKET->{
-                        lifecycleScope.launch {
-                            searchViewModel.findMarketItemByCoinId(search.primaryKey!!)?.let { marketItem ->
-                                WalletActivity.showWithMarket(requireActivity(), marketItem, Destination.Market)
-                            }
-                        }
-                    }
-                }
-            })
+                })
+            }
         }
+
         binding.va.displayedChild = 2
         lifecycleScope.launch {
             fuzzySearch(null)
         }
-        RxBus.listen(SearchEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe {
-                lifecycleScope.launch {
-                    searchViewModel.getRecentSearch(requireContext().defaultSharedPreferences)
+
+        if (!hideRecent) {
+            RxBus.listen(SearchEvent::class.java)
+                .observeOn(AndroidSchedulers.mainThread())
+                .autoDispose(destroyScope)
+                .subscribe {
+                    lifecycleScope.launch {
+                        searchViewModel.getRecentSearch(requireContext().defaultSharedPreferences)
+                    }
                 }
-            }
+        }
     }
 
     private var searchJob: Job? = null
@@ -236,6 +305,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
     private var searchMarketsJob: Job? = null
     private var searchBotsJob: Job? = null
     private var searchDappsJob: Job? = null
+    private var refreshAssetsJob: Job? = null
 
     @Suppress("UNCHECKED_CAST")
     private fun bindData(keyword: String?) {
@@ -244,11 +314,35 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         searchMarketsJob?.cancel()
         searchBotsJob?.cancel()
         searchDappsJob?.cancel()
+        refreshAssetsJob?.cancel()
         searchJob = fuzzySearch(keyword)
     }
 
+    private suspend fun refreshAssetItems(tokenItems: List<TokenItem>?) {
+        if (tokenItems.isNullOrEmpty()) return
+        val newItems: List<TokenItem> = withContext(Dispatchers.IO) {
+            searchViewModel.queryAssets(tokenItems.take(3).map { it.assetId })
+        }
+        if (newItems.isEmpty()) return
+        val mergedItems: List<TokenItem> = if (newItems.size == tokenItems.size) {
+            newItems
+        } else {
+            val mutableItems: MutableList<TokenItem> = tokenItems.toMutableList()
+            mutableItems.forEachIndexed { index: Int, tokenItem: TokenItem ->
+                newItems.find { it.assetId == tokenItem.assetId }?.let { refreshedTokenItem: TokenItem ->
+                    mutableItems[index] = refreshedTokenItem
+                }
+            }
+            mutableItems
+        }
+        searchAdapter.setAssets(mergedItems)
+        decoration.invalidateHeaders()
+    }
+
     private fun fuzzySearch(keyword: String?) =
-        lifecycleScope.launch {
+        lifecycleScope.launch(CoroutineExceptionHandler { _, e ->
+            Timber.e(e)
+        }) {
             if (viewDestroyed()) return@launch
             if (keyword.isNullOrBlank()) {
                 binding.va.displayedChild = 2
@@ -259,43 +353,59 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
 
             val cancellationSignal = CancellationSignal()
 
-            searchUrlJob =
-                launch {
-                    searchViewModel.fuzzySearchUrl(keyword).let { url ->
-                        searchAdapter.setUrlData(url)
+            if (!hideRecent) {
+                searchUrlJob =
+                    launch {
+                        searchViewModel.fuzzySearchUrl(keyword).let { url ->
+                            searchAdapter.setUrlData(url)
+                        }
+                        updateRv(searchUrlJob)
                     }
-                    updateRv(searchUrlJob)
-                }
 
-            searchBotsJob =
-                launch {
-                    searchViewModel.fuzzyBots(cancellationSignal, keyword).let { bots ->
-                        searchAdapter.setBots(bots)
+                searchBotsJob =
+                    launch {
+                        searchViewModel.fuzzyBots(cancellationSignal, keyword).let { bots ->
+                            searchAdapter.setBots(bots)
+                        }
+                        updateRv(searchBotsJob)
                     }
-                    updateRv(searchBotsJob)
-                }
 
-            searchMarketsJob =
-                launch {
-                    searchViewModel.fuzzyMarkets(cancellationSignal, keyword).let { markets ->
-                        searchAdapter.setMarkets(markets)
+                searchDappsJob =
+                    launch {
+                        searchViewModel.getAllDapps().filter { dapp ->
+                            dapp.name.contains(keyword) || dapp.homeUrl.contains(keyword)
+                        }.let { dapps ->
+                            searchAdapter.setDapps(dapps)
+                        }
+                        updateRv(searchDappsJob)
                     }
-                    updateRv(searchMarketsJob)
-                }
 
-            searchDappsJob =
-                launch {
-                    searchViewModel.getAllDapps().filter { dapp ->
-                        dapp.name.contains(keyword) || dapp.homeUrl.contains(keyword)
-                    }.let { dapps ->
-                        searchAdapter.setDapps(dapps)
+                val tokenItems = searchViewModel.fuzzySearch<TokenItem>(cancellationSignal, keyword) as List<TokenItem>?
+                searchAdapter.setAssets(tokenItems)
+                refreshAssetsJob =
+                    launch {
+                        refreshAssetItems(tokenItems)
+                        updateRv(refreshAssetsJob)
                     }
-                    updateRv(searchDappsJob)
-                }
+            } else {
+                searchMarketsJob =
+                    launch {
+                        searchViewModel.fuzzyMarkets(cancellationSignal, keyword).let { markets ->
+                            searchAdapter.setMarkets(markets)
+                        }
+                        updateRv(searchMarketsJob)
+                    }
+            }
         }
 
     private fun allJobIsCompleted(job: Job?): Boolean {
-        return listOf(searchUrlJob, searchMarketsJob, searchBotsJob, searchDappsJob).filter {
+        val jobsToCheck = if (hideRecent) {
+            listOf(searchMarketsJob, refreshAssetsJob)
+        } else {
+            listOf(searchUrlJob, searchMarketsJob, searchBotsJob, searchDappsJob, refreshAssetsJob)
+        }
+
+        return jobsToCheck.filter {
             job != it
         }.all { it?.isCompleted == true }
     }

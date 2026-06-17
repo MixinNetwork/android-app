@@ -1,8 +1,8 @@
 package one.mixin.android.util
 
+import android.annotation.SuppressLint
 import android.media.AudioManager
 import androidx.media3.common.Player
-import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlaybackException
 import androidx.media3.exoplayer.source.UnrecognizedInputFormatException
 import io.reactivex.Observable
@@ -42,7 +42,7 @@ import org.threeten.bp.ZonedDateTime
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 
-@UnstableApi class AudioPlayer private constructor() {
+class AudioPlayer private constructor() {
     companion object {
         @Synchronized
         private fun get(): AudioPlayer {
@@ -167,6 +167,7 @@ import java.util.concurrent.TimeUnit
                         }
                     }
 
+                    @SuppressLint("UnsafeOptInUsageError")
                     override fun onPlayerError(error: ExoPlaybackException) {
                         if (error.cause is UnrecognizedInputFormatException) {
                             status = STATUS_ERROR
@@ -319,8 +320,9 @@ import java.util.concurrent.TimeUnit
         messageItem?.let { item ->
             if (!item.isAudio()) return
             MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
+                val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
                 val nextMessage =
-                    MixinDatabase.getDatabase(MixinApplication.appContext)
+                    MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber)
                         .messageDao()
                         .findNextAudioMessageItem(item.conversationId, item.createdAt, item.messageId)
                         ?: return@launch
@@ -344,7 +346,8 @@ import java.util.concurrent.TimeUnit
         currentMessage: MessageItem,
         whenPlayNewAction: ((Message) -> Unit)? = null,
     ) = MixinApplication.get().applicationScope.launch(Dispatchers.IO) {
-        val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext).messageDao()
+        val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
+        val messageDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber).messageDao()
         if (currentMessage.mediaStatus == MediaStatus.DONE.name) {
             messageDao.updateMediaStatus(MediaStatus.READ.name, currentMessage.messageId)
             MessageFlow.update(currentMessage.conversationId, currentMessage.messageId)

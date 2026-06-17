@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:orientation="horizontal"
     android:gravity="center_vertical"
@@ -13,10 +14,11 @@
 
     <one.mixin.android.widget.BadgeCircleImageView
         android:id="@+id/asset_icon"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="33dp"
+        android:layout_height="33dp"
         android:layout_centerVertical="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        app:badge_size="13dp"/>
 
     <TextView
         android:id="@+id/value"

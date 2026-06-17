@@ -11,32 +11,39 @@ import android.net.Uri
 import android.os.Build
 import android.provider.MediaStore
 import android.text.method.LinkMovementMethod
-import android.util.Base64
 import android.view.View
 import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentProfileBottomSheetDialogBinding
+import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_GALLERY
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alert
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dayTime
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
 import one.mixin.android.extension.openPermissionSetting
@@ -46,17 +53,24 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.AvatarActivity
 import one.mixin.android.ui.common.EditDialog
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
+import one.mixin.android.ui.common.ReceiveQrActivity
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menuList
+import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
+import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
+import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
+import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.App
+import one.mixin.android.vo.Plan
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.linktext.AutoLinkMode
 import timber.log.Timber
@@ -96,7 +110,6 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 if (uri != null) {
                     val options = UCrop.Options()
                     options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
-                    options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
                     options.setToolbarWidgetColor(Color.WHITE)
                     options.setHideBottomControls(true)
                     UCrop.of(uri, imageUri)
@@ -192,6 +205,11 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
 
             name.setName(account)
+            name.setOnIconClickListener {
+                account.membership?.plan?.let { plan ->
+                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance(plan).showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
+                }
+            }
             avatar.setInfo(account.fullName, account.avatarUrl, account.userId)
             idTv.text = getString(R.string.contact_mixin_id, account.identityNumber)
             detailTv.originalText = account.biography ?: ""
@@ -204,6 +222,35 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     ) {
         val list =
             menuList {
+                menuGroup {
+                    menu {
+                        title = getString(R.string.Mixin_One)
+                        action = {
+                            lifecycleScope.launch {
+                                if (Session.getAccount()?.membership != null && Session.getAccount()?.membership?.plan != Plan.None) {
+                                    navTo(MixinMemberInvoicesFragment.newInstance(), MixinMemberInvoicesFragment.TAG)
+                                } else {
+                                    MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(
+                                        parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG
+                                    )
+                                }
+                            }
+                            dismiss()
+                        }
+                        isMembership = Session.getAccount()?.membership?.isMembership() ?: false
+                    }
+                    menu {
+                        title = getString(R.string.Referral)
+                        action = {
+                            lifecycleScope.launch {
+                                bottomViewModel.findAndSync(INTERNAL_REFERRAL_ID)?.let { app ->
+                                    setClickedBotId()
+                                    WebActivity.show(requireActivity(), url = app.homeUri, app = app, conversationId = null)
+                                }
+                            }
+                        }
+                    }
+                }
                 menuGroup {
                     menu {
                         title = getString(R.string.My_favorite_bots)
@@ -231,10 +278,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     menu {
                         title = getString(R.string.Receive_Money)
                         action = {
-                            QrBottomSheetDialogFragment.newInstance(
-                                account.userId,
-                                QrBottomSheetDialogFragment.TYPE_RECEIVE_QR,
-                            ).showNow(parentFragmentManager, QrBottomSheetDialogFragment.TAG)
+                            ReceiveQrActivity.show(requireContext(), account.userId)
                         }
                     }
                 }
@@ -271,6 +315,8 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
         list.createMenuLayout(requireContext()).let { layout ->
             menuListLayout = layout
             binding.scrollContent.addView(layout, binding.scrollContent.childCount - 1)
+            val safeBottomHeight = layout.getSafeAreaInsetsBottom()
+            binding.scrollContent.setPadding(0,0,0,safeBottomHeight)
         }
     }
 
@@ -291,7 +337,6 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             }
             val options = UCrop.Options()
             options.setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
-            options.setStatusBarColor(ContextCompat.getColor(requireContext(), R.color.black))
             options.setToolbarWidgetColor(Color.WHITE)
             options.setHideBottomControls(true)
             UCrop.of(selectedImageUri, imageUri)
@@ -308,7 +353,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 val resultUri = UCrop.getOutput(data)
                 val bitmap = resultUri?.getCapturedImage(requireContext().contentResolver)
                 update(
-                    Base64.encodeToString(bitmap?.toBytes(), Base64.NO_WRAP),
+                    bitmap?.toBytes()?.base64RawURLEncode() ?: "",
                     TYPE_PHOTO,
                 )
             }
@@ -342,9 +387,9 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
     }
 
     private fun changeNumber() {
-        alert(getString(R.string.profile_modify_number))
+        alert(getString(if (Session.hasPhone()) R.string.profile_modify_number else R.string.profile_add_number))
             .setNegativeButton(android.R.string.cancel) { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton(R.string.Change_Phone_Number) { dialog, _ ->
+            .setPositiveButton(if (Session.hasPhone()) R.string.Change_Phone_Number else R.string.Add_Mobile_Number) { dialog, _ ->
                 dialog.dismiss()
                 if (Session.getAccount()?.hasPin == true) {
                     activity?.supportFragmentManager?.inTransaction {
@@ -430,5 +475,19 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                     ErrorHandler.handleError(t)
                 },
             )
+    }
+
+    private fun setClickedBotId() {
+        val sp = requireContext().defaultSharedPreferences
+        val old = getClickedBotIds().toMutableSet()
+        if (old.add(INTERNAL_REFERRAL_ID)) {
+            sp.edit { putString(PREF_BOT_CLICKED_IDS, old.joinToString(",")) }
+            RxBus.publish(BadgeEvent(PREF_BOT_CLICKED_IDS))
+        }
+    }
+
+    private fun getClickedBotIds(): Set<String> {
+        return requireContext().defaultSharedPreferences.getString(PREF_BOT_CLICKED_IDS, "")
+            ?.split(",")?.filter { it.isNotBlank() }?.toSet() ?: emptySet()
     }
 }

@@ -4,9 +4,6 @@ import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.R
-import one.mixin.android.ui.wallet.alert.vo.AlertFrequency.DAILY
-import one.mixin.android.ui.wallet.alert.vo.AlertFrequency.EVERY
-import one.mixin.android.ui.wallet.alert.vo.AlertFrequency.ONCE
 
 enum class AlertType(val value: String) {
     @SerializedName("price_reached")

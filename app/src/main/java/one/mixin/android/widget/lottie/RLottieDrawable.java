@@ -14,14 +14,8 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
+
 import com.google.gson.Gson;
-import one.mixin.android.MixinApplication;
-import one.mixin.android.extension.ContextExtensionKt;
-import one.mixin.android.util.DispatchQueue;
-import one.mixin.android.util.DispatchQueuePool;
-import one.mixin.android.util.DispatchQueuePoolBackground;
-import one.mixin.android.widget.AndroidUtilities;
-import timber.log.Timber;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -31,6 +25,14 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.CountDownLatch;
+
+import one.mixin.android.MixinApplication;
+import one.mixin.android.extension.ContextExtensionKt;
+import one.mixin.android.util.DispatchQueue;
+import one.mixin.android.util.DispatchQueuePool;
+import one.mixin.android.util.DispatchQueuePoolBackground;
+import one.mixin.android.widget.AndroidUtilities;
+import timber.log.Timber;
 
 public class RLottieDrawable extends BitmapDrawable implements Animatable, BitmapsCache.Cacheable {
     public boolean skipFrameUpdate;
@@ -762,7 +764,7 @@ public class RLottieDrawable extends BitmapDrawable implements Animatable, Bitma
             return;
         }
         boolean mustCancel = parentViews.isEmpty() && getCallback() == null;
-        if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.KITKAT) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
             mustCancel = mustCancel && (masterParent == null || !masterParent.isAttachedToWindow());
         } else {
             mustCancel = mustCancel && masterParent == null;

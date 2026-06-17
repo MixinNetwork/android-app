@@ -2,6 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Fiats
 
@@ -40,9 +41,9 @@ class RefreshAssetsJob(
                     }
                     assetDao.insertList(list)
                 }
-                refreshChains()
                 refreshFiats()
             }
+            AnalyticsTracker.setAssetLevel(tokenDao.findTotalUSDBalance() ?: 0)
         }
 
     private suspend fun refreshFiats() {
@@ -50,17 +51,6 @@ class RefreshAssetsJob(
         if (resp.isSuccess) {
             resp.data?.let { fiatList ->
                 Fiats.updateFiats(fiatList)
-            }
-        }
-    }
-
-    private suspend fun refreshChains() {
-        val resp = assetService.getChains()
-        if (resp.isSuccess) {
-            resp.data?.let { chains ->
-                chains.subtract(chainDao.getChains().toSet()).let {
-                    chainDao.insertList(it.toList())
-                }
             }
         }
     }

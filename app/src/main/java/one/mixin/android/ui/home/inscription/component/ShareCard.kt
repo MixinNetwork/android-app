@@ -31,7 +31,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.request.ImageRequest
+import coil3.request.ImageRequest
+import coil3.request.transformations
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.CoilImageCompat
@@ -84,7 +85,7 @@ fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value
             }
         }
         Row(modifier = Modifier.padding(20.dp)) {
-            Column(modifier = Modifier.height(110.dp)) {
+            Column(modifier = Modifier.height(110.dp).weight(1f)) {
                 Text(text = value.name ?: "", fontSize = 18.sp, color = Color.Black, maxLines = 2)
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(text = value.id, fontSize = 12.sp, color = Color(0xFFBBBEC3))
@@ -96,7 +97,7 @@ fun ShareCard(modifier: Modifier, qrcode: Bitmap, inscriptionHash: String, value
                         .height(30.dp),
                 )
             }
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(8.dp))
             Box {
                 Image(
                     bitmap = qrcode.asImageBitmap(),

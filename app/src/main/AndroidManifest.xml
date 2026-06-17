@@ -4,6 +4,7 @@
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.VIBRATE" />
@@ -33,9 +34,7 @@
     <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
-    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
-    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
     <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_REMOTE_MESSAGING" />
     <uses-permission android:name="com.google.android.gms.permission.AD_ID" tools:node="remove" />
@@ -54,7 +53,11 @@
         android:theme="@style/AppTheme"
         android:localeConfig="@xml/locales_config"
         android:largeHeap="true"
-        tools:ignore="LockedOrientationActivity,UnusedAttribute" >
+        android:allowBackup="false"
+        android:dataExtractionRules="@xml/backup_config"
+        android:fullBackupContent="false"
+        tools:ignore="LockedOrientationActivity,UnusedAttribute"
+        tools:replace="android:dataExtractionRules,android:fullBackupContent,android:allowBackup">
         <activity
             android:name=".ui.home.MainActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
@@ -99,6 +102,8 @@
                 <data android:host="device-transfer" />
                 <data android:host="tip"/>
                 <data android:host="buy"/>
+                <data android:host="wc" />
+                <data android:host="referrals" />
             </intent-filter>
 
             <intent-filter android:autoVerify="true">
@@ -119,6 +124,9 @@
                 <data android:pathPrefix="/scheme" />
                 <data android:pathPrefix="/tip" />
                 <data android:pathPrefix="/swap" />
+                <data android:pathPrefix="/wc" />
+                <data android:pathPrefix="/referrals" />
+                <data android:pathPrefix="/buy" />
             </intent-filter>
             <intent-filter>
                 <data android:scheme="wc" />
@@ -132,7 +140,7 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoAnim"
-            android:windowSoftInputMode="stateAlwaysHidden" />
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".ui.landing.InitializeActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
@@ -146,7 +154,6 @@
         <activity
             android:name=".ui.conversation.markdown.MarkdownActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.Post"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
@@ -156,6 +163,11 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
             android:name=".ui.home.inscription.CollectionActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+        <activity
+            android:name=".ui.home.web3.trade.perps.PerpsActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
@@ -182,7 +194,6 @@
 
         <activity-alias
             android:name="one.mixin.messenger.ShareActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:excludeFromRecents="true"
             android:exported="true"
             android:targetActivity=".ui.forward.ForwardActivity">
@@ -236,6 +247,11 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
+            android:name=".ui.wallet.WalletSecurityActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+        <activity
             android:name=".ui.media.pager.MediaPagerActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.Photo"
@@ -247,6 +263,11 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
             android:name=".ui.group.GroupActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+        <activity
+            android:name=".ui.common.ReceiveQrActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
@@ -309,7 +330,7 @@
             android:theme="@style/AppTheme.Blur"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
         <activity
-            android:name=".ui.wallet.MarketShareActivity"
+            android:name=".ui.wallet.DepositShareActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.Blur"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
@@ -342,19 +363,16 @@
         <activity
             android:name=".ui.tip.TipActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:screenOrientation="portrait"
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ui.tip.wc.WalletConnectActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:screenOrientation="portrait"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme.Music" />
+            android:theme="@style/AppTheme.Transparent" />
 
         <activity
             android:name=".ui.home.inscription.InscriptionActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:screenOrientation="portrait"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.Transparent" />
         <activity
@@ -364,7 +382,12 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
-            android:name=".ui.home.web3.swap.SwapActivity"
+            android:name=".ui.home.web3.trade.SwapActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+        <activity
+            android:name=".web3.receive.Web3AddressActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
@@ -390,8 +413,7 @@
             android:exported="false" />
         <service
             android:name=".fcm.FcmService"
-            android:foregroundServiceType="remoteMessaging"
-            android:exported="false">
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
@@ -497,19 +519,27 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="${GOOGLE_MAP_KEY}" />
         <meta-data
-            android:name="google_analytics_adid_collection_enabled"
-            android:value="false" />
-<!--        <meta-data-->
-<!--            android:name="com.google.android.gms.car.application"-->
-<!--            android:resource="@xml/automotive_app_desc" />-->
-        <meta-data
             android:name="com.google.android.gms.wallet.api.enabled"
             android:value="true" />
+
+        <meta-data
+            android:name="com.bugsnag.android.API_KEY"
+            android:value="${BUGSNAG_KEY}"/>
+
     </application>
 
     <queries>
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+        <intent>
+            <action android:name="org.chromium.intent.action.PAY"/>
+        </intent>
+        <intent>
+            <action android:name="org.chromium.intent.action.IS_READY_TO_PAY"/>
+        </intent>
+        <intent>
+            <action android:name="org.chromium.intent.action.UPDATE_PAYMENT_DETAILS"/>
         </intent>
     </queries>
 </manifest>

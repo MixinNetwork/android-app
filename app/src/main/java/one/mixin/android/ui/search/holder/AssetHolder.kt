@@ -3,7 +3,6 @@ package one.mixin.android.ui.search.holder
 import android.annotation.SuppressLint
 import android.view.View
 import androidx.core.view.isVisible
-import one.mixin.android.R
 import one.mixin.android.databinding.ItemSearchAssetBinding
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.numberFormat2
@@ -25,7 +24,6 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
     ) {
         binding.avatar.loadToken(asset)
         binding.root.setOnClickListener { onItemClickListener?.onAssetClick(asset) }
-
         binding.balance.text = asset.balance + " " + asset.symbol
         binding.balance.highLight(target)
         binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
@@ -35,9 +33,12 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
             binding.networkTv.text = chainNetwork
         }
         if (asset.priceUsd == "0") {
-            binding.priceTv.setText(R.string.NA)
+            binding.naTv.visibility = View.VISIBLE
+            binding.priceTv.visibility = View.GONE
             binding.changeTv.visibility = View.GONE
         } else {
+            binding.naTv.visibility = View.GONE
+            binding.priceTv.visibility = View.VISIBLE
             binding.changeTv.visibility = View.VISIBLE
             binding.priceTv.text = "${Fiats.getSymbol()}${asset.priceFiat().priceFormat()}"
             if (asset.changeUsd.isNotEmpty()) {

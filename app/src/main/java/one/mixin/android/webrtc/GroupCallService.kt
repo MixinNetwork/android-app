@@ -14,6 +14,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.response.UserSession
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.crypto.GroupCallSenderKey
+import one.mixin.android.crypto.requestResendKey as requestResendKeyCrypto
 import one.mixin.android.crypto.db.RatchetSenderKeyDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
@@ -732,7 +733,7 @@ class GroupCallService : CallService() {
             val address = SignalProtocolAddress(userId, deviceId)
             val status = ratchetSenderKeyDao.getRatchetSenderKey(cid, address.toString())?.status
             if (status == null) {
-                one.mixin.android.crypto.requestResendKey(
+                requestResendKeyCrypto(
                     gson,
                     jobManager,
                     ratchetSenderKeyDao,

@@ -3,12 +3,12 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.market.MarketCapRank
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
+import timber.log.Timber
 
 class RefreshMarketsJob(val category: String = "all") : BaseJob(
     Params(PRIORITY_UI_HIGH)
@@ -41,15 +41,12 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                     marketFavoredDao.insertList(marketExtraList)
                 }
                 if (category == "all") {
-                    runInTransaction {
-                        marketCapRankDao.deleteAll()
-                        marketCapRankDao.insertList(list.map {
-                            MarketCapRank(it.coinId, it.marketCapRank, it.updatedAt)
-                        })
-                    }
+                    marketCapRankDao.insertAll(list.map {
+                        MarketCapRank(it.coinId, it.marketCapRank, it.updatedAt)
+                    })
                 }
                 marketDao.upsertList(list)
-                val ids = list.flatMap { market ->
+                val newMarketCoins = list.flatMap { market ->
                     market.assetIds?.map { assetId ->
                         MarketCoin(
                             coinId = market.coinId,
@@ -58,7 +55,19 @@ class RefreshMarketsJob(val category: String = "all") : BaseJob(
                         )
                     } ?: emptyList()
                 }
-                marketCoinDao.insertIgnoreList(ids)
+                val remoteAssetsByCoinId = list.associate {
+                    it.coinId to (it.assetIds ?: emptyList())
+                }
+                for ((coinId, remoteAssetIds) in remoteAssetsByCoinId) {
+                    val localAssetIds = marketCoinDao.findTokenIdsByCoinId(coinId)
+                    val assetIdsToDelete = localAssetIds.filter { it !in remoteAssetIds }
+                    if (assetIdsToDelete.isNotEmpty()) {
+                        Timber.e("Deleting assets for coinId: $coinId, assetIds: $assetIdsToDelete")
+                        marketCoinDao.deleteByCoinIdAndAssetIds(coinId, assetIdsToDelete)
+                    }
+                }
+
+                marketCoinDao.insertIgnoreList(newMarketCoins)
             },
             requestSession = {
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))

@@ -17,10 +17,10 @@ data class AddressItem(
     val label: String,
     @ColumnInfo(name = "icon_url")
     @SerializedName("icon_url")
-    val iconUrl: String,
+    val iconUrl: String?,
     @ColumnInfo(name = "chain_icon_url")
     @SerializedName("chain_icon_url")
-    val chainIconUrl: String,
+    val chainUrl: String?,
     @ColumnInfo(name = "destination")
     @SerializedName("destination")
     val destination: String,
@@ -101,4 +101,3 @@ fun AddressItem.formatAddress(): String {
     val address = displayAddress()
     return address.substring(0, 3) + "..." + address.substring(address.length - 3, address.length)
 }
-

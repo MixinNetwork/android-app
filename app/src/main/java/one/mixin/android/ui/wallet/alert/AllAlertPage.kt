@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet.alert
 
-import PageScaffold
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,9 +27,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.AlertGroupItem
 import one.mixin.android.ui.wallet.alert.components.AssetFilter
 import one.mixin.android.ui.wallet.alert.vo.Alert
@@ -55,7 +55,7 @@ fun AllAlertPage(coins: Set<CoinItem>?, openFilter: () -> Unit, pop: () -> Unit,
     }
 
     PageScaffold(
-        title = stringResource(id = R.string.All_Alert),
+        title = stringResource(id = R.string.Price_Alerts),
         verticalScrollable = false,
         pop = pop,
     ) {
@@ -124,7 +124,7 @@ fun AllAlertPage(coins: Set<CoinItem>?, openFilter: () -> Unit, pop: () -> Unit,
             Spacer(modifier = Modifier.height(12.dp))
             LazyColumn(
                 modifier = Modifier
-                    .padding(horizontal = 10.dp)
+                    .padding(horizontal = 14.dp)
                     .fillMaxSize()
             ) {
                 items(alertGroups.size) { index ->

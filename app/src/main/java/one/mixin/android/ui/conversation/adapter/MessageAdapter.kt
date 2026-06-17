@@ -1136,6 +1136,7 @@ class MessageAdapter(
         open fun onTextDoubleClick(messageItem: MessageItem) {}
 
         open fun onTranscriptClick(messageItem: MessageItem) {}
+
     }
 
     companion object {

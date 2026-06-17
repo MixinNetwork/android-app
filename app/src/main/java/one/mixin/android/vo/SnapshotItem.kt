@@ -83,7 +83,7 @@ data class SnapshotItem(
     @SerializedName("inscription_hash")
     @ColumnInfo(name = "inscription_hash")
     val inscriptionHash: String?,
-    @SerializedName("label")
+    @SerializedName("collection_hash")
     @ColumnInfo(name = "collection_hash")
     val collectionHash: String?,
     @SerializedName("name")
@@ -157,6 +157,8 @@ data class SnapshotItem(
             else -> false
         }
     }
+
+    fun isPendingWithdrawal() = withdrawal != null && withdrawal.withdrawalHash.isNullOrBlank()
 }
 
 @Parcelize

@@ -20,6 +20,7 @@ class CallActivity : BaseActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        skipSystemUi = true
         showWhenLockedAndTurnScreenOn()
         super.onCreate(savedInstanceState)
         CallBottomSheetDialogFragment.newInstance(intent.getBooleanExtra(EXTRA_JOIN, false))

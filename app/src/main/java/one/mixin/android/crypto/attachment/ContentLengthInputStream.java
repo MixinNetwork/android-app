@@ -1,10 +1,10 @@
 package one.mixin.android.crypto.attachment;
 
-import one.mixin.android.crypto.Util;
-
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+
+import one.mixin.android.crypto.Util;
 
 public class ContentLengthInputStream extends FilterInputStream {
 

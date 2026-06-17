@@ -8,7 +8,6 @@ import android.content.DialogInterface
 import android.content.Intent
 import android.text.Editable
 import android.text.InputFilter
-import android.text.SpannableStringBuilder
 import android.text.TextPaint
 import android.text.TextWatcher
 import android.view.LayoutInflater
@@ -22,8 +21,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.text.bold
-import androidx.core.text.color
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
@@ -42,17 +40,13 @@ import one.mixin.android.databinding.FragmentOldTransferBinding
 import one.mixin.android.databinding.ItemTransferTypeBinding
 import one.mixin.android.databinding.ViewWalletTransferTypeBottomBinding
 import one.mixin.android.extension.appCompatActionBarHeight
-import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.checkNumber
 import one.mixin.android.extension.clearCharacterStyle
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.equalsIgnoreCase
-import one.mixin.android.extension.formatPublicKey
-import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat
@@ -62,7 +56,6 @@ import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.sp
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.toast
@@ -70,7 +63,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
 import one.mixin.android.job.RefreshUserJob
-import one.mixin.android.ui.address.AddressAddFragment.Companion.ARGS_ADDRESS
 import one.mixin.android.ui.oldwallet.PreconditionBottomSheetDialogFragment.Companion.FROM_TRANSFER
 import one.mixin.android.ui.oldwallet.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.biometric.BiometricItem
@@ -85,7 +77,6 @@ import one.mixin.android.vo.Address
 import one.mixin.android.vo.AssetItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.User
-import one.mixin.android.vo.displayAddress
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.SearchView
 import one.mixin.android.widget.getMaxCustomViewHeight
@@ -101,6 +92,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
         const val TAG = "OldTransferFragment"
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
         const val ARGS_SWITCH_ASSET = "args_switch_asset"
+        const val ARGS_ADDRESS = "args_address"
 
         const val POST_TEXT = 0
         const val POST_PB = 1
@@ -211,8 +203,10 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight()
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.ph.getSafeAreaInsetsTop()
+            }
         }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)

@@ -26,14 +26,17 @@ import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.OrderRequest
+import one.mixin.android.api.request.RampWebUrlRequest
 import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.response.RampWebUrlResponse
 import one.mixin.android.api.response.RouteCreateTokenResponse
 import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.session.Session
 import one.mixin.android.ui.setting.Currency
 import one.mixin.android.ui.wallet.PaymentsUtil
 import one.mixin.android.vo.Card
@@ -55,6 +58,8 @@ class FiatMoneyViewModel
         private val tokenRepository: TokenRepository,
     ) : ViewModel() {
         suspend fun findAssetsByIds(ids: List<String>) = tokenRepository.findAssetsByIds(ids)
+
+        suspend fun findAssetsById(id: String) = tokenRepository.findAssetItemById(id)
 
         suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
@@ -105,7 +110,6 @@ class FiatMoneyViewModel
         @Parcelize
         class CalculateState(
             var minimum: Int = 15,
-            var maximum: Int = 1000,
             var assetPrice: Float = 1f,
             var feePercent: Float = 0f,
         ) : Parcelable
@@ -205,4 +209,25 @@ class FiatMoneyViewModel
                     }
                 }
             }
+
+        suspend fun rampWebUrl(
+            amount: String,
+            assetId: String,
+            currency: String,
+            destination: String
+        ): MixinResponse<RampWebUrlResponse> =
+            tokenRepository.rampWebUrl(
+                RampWebUrlRequest(
+                    amount = amount,
+                    assetId = assetId,
+                    currency = currency,
+                    destination = destination,
+                    phone = Session.getAccount()?.phone,
+                    phoneVerifiedAt = Session.getAccount()?.phoneVerifiedAt,
+                )
+            )
+
+        suspend fun findAndSyncDepositEntry(chainId: String, assetId: String) = withContext(Dispatchers.IO) {
+            tokenRepository.findAndSyncDepositEntry(chainId, assetId)
+        }
     }

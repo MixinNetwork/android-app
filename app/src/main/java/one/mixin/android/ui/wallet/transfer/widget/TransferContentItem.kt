@@ -5,6 +5,7 @@ import android.graphics.Color
 import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.RelativeSizeSpan
+import android.text.style.StrikethroughSpan
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.RelativeLayout
@@ -56,15 +57,45 @@ class TransferContentItem : RelativeLayout {
         }
     }
 
+    fun setContentWithFree(
+        @StringRes titleResId: Int,
+        contentStr: String,
+        foot: String? = null,
+        isFree: Boolean,
+        onFreeClick: (() -> Unit)? = null,
+    ) {
+        _binding.apply {
+            title.text = context.getString(titleResId).uppercase()
+            footer.isVisible = !foot.isNullOrBlank()
+            footer.text = foot
+            val free = context.getString(R.string.FREE)
+            val fullText = "$contentStr $free"
+            val spannableString = SpannableString(fullText)
+            val start = fullText.lastIndexOf(free)
+            val end = start + free.length
+            spannableString.setSpan(StrikethroughSpan(), 0, contentStr.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            val backgroundColor = Color.parseColor("#3D75E3")
+            val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
+            spannableString.setSpan(RelativeSizeSpan(0.8f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            spannableString.setSpan(backgroundColorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            content.text = spannableString
+            if (isFree && onFreeClick != null) {
+                content.setOnClickListener { onFreeClick.invoke() }
+            } else {
+                content.setOnClickListener(null)
+            }
+        }
+    }
+
     fun setContentAndLabel(
         @StringRes titleResId: Int,
         contentStr: String,
         label: String,
+        toWallet: Boolean,
     ) {
         _binding.apply {
             title.text = context.getString(titleResId).uppercase()
             footer.isVisible = false
-
             val fullText = "$contentStr $label"
 
             val spannableString = SpannableString(fullText)
@@ -72,7 +103,7 @@ class TransferContentItem : RelativeLayout {
             val start = fullText.lastIndexOf(label)
             val end = start + label.length
 
-            val backgroundColor: Int = Color.parseColor("#8DCC99")
+            val backgroundColor: Int = if (toWallet) Color.parseColor("#B34B7CDD") else Color.parseColor("#8DCC99")
             val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
             spannableString.setSpan(RelativeSizeSpan(0.8f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             spannableString.setSpan(backgroundColorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

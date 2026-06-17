@@ -6,11 +6,13 @@ import android.animation.ValueAnimator
 import android.app.Activity
 import android.content.Context
 import android.graphics.Outline
+import android.graphics.Rect
 import android.graphics.drawable.Drawable
 import android.media.MediaScannerConnection
 import android.os.Bundle
 import android.util.Property
 import android.view.LayoutInflater
+import android.view.TouchDelegate
 import android.view.View
 import android.view.View.GONE
 import android.view.View.INVISIBLE
@@ -25,6 +27,8 @@ import android.view.animation.Interpolator
 import android.view.inputmethod.InputMethodManager
 import android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT
 import android.widget.EditText
+import android.widget.HorizontalScrollView
+import android.widget.RadioGroup
 import androidx.annotation.ColorInt
 import androidx.annotation.LayoutRes
 import androidx.appcompat.widget.PopupMenu
@@ -47,6 +51,7 @@ import timber.log.Timber
 import java.io.IOException
 import java.lang.reflect.Field
 import kotlin.math.hypot
+import kotlin.math.max
 
 const val ANIMATION_DURATION_SHORT = 260L
 const val ANIMATION_DURATION_SHORTEST = 120L
@@ -512,3 +517,33 @@ var MarginLayoutParams.margin: Int
         topMargin = v
         bottomMargin = v
     }
+
+fun View.expandTouchArea(horizontal: Int = 8.dp, vertical: Int = 8.dp) {
+    val parent = parent as? View ?: return
+    parent.post {
+        val rect = Rect()
+        getHitRect(rect)
+        rect.left -= horizontal * 2
+        rect.right += horizontal
+        rect.top -= vertical * 2
+        rect.bottom += vertical
+        parent.touchDelegate = TouchDelegate(rect, this)
+    }
+}
+
+fun HorizontalScrollView.scrollToCenter(targetView: View) {
+    post {
+        val containerView: View = getChildAt(0) ?: return@post
+        val targetCenterX: Int = targetView.left + (targetView.width / 2)
+        val scrollToX: Int = targetCenterX - (width / 2)
+        val maxScrollX: Int = max(0, containerView.width - width)
+        smoothScrollTo(scrollToX.coerceIn(0, maxScrollX), 0)
+    }
+}
+
+fun HorizontalScrollView.scrollToCenterCheckedRadio(radioGroup: RadioGroup) {
+    val checkedId: Int = radioGroup.checkedRadioButtonId
+    if (checkedId == View.NO_ID) return
+    val checkedView: View = radioGroup.findViewById(checkedId) ?: return
+    scrollToCenter(checkedView)
+}

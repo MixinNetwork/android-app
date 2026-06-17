@@ -4,13 +4,17 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.doOnPreDraw
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentChooseTokensBottomSheetBinding
 import one.mixin.android.databinding.ItemChooseTokenBinding
+import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.getParcelableArrayListCompat
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
@@ -21,13 +25,13 @@ import one.mixin.android.widget.BottomSheet
 import java.math.BigDecimal
 
 @AndroidEntryPoint
-class ChooseTokensBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+class DepositTokensBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     companion object {
-        const val TAG = "ChooseTokensBottomSheetDialogFragment"
+        const val TAG = "DepositTokensBottomSheetDialogFragment"
         private const val ASSETS = "assets"
 
         fun newInstance(assets: ArrayList<TokenItem>) =
-            ChooseTokensBottomSheetDialogFragment().withArgs {
+            DepositTokensBottomSheetDialogFragment().withArgs {
                 assets.sortByDescending { BigDecimal(it.balance) }
                 putParcelableArrayList(ASSETS, assets)
             }
@@ -49,6 +53,11 @@ class ChooseTokensBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         super.setupDialog(dialog, style)
         contentView = binding.root
         dialog.setCancelable(false)
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
+            }
+        }
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
         }

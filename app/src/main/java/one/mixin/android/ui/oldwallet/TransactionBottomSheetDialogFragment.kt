@@ -3,13 +3,14 @@ package one.mixin.android.ui.oldwallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.view.ViewGroup
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.databinding.FragmentOldTransactionBinding
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.statusBarHeight
+import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
@@ -52,8 +53,10 @@ class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), T
     ) {
         super.setupDialog(dialog, style)
         contentView = binding.root
-        binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = requireContext().statusBarHeight()
+        binding.ph.doOnPreDraw {
+            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = binding.ph.getSafeAreaInsetsTop()
+            }
         }
         binding.titleView.leftIb.setOnClickListener { dismiss() }
         initView(this, binding, lifecycleScope, walletViewModel, assetId, snapshotId, asset, snapshot)

@@ -29,7 +29,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -39,10 +39,6 @@ import one.mixin.android.ui.wallet.alert.AlertViewModel
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.AlertAction
 import one.mixin.android.ui.wallet.alert.vo.AlertStatus
-import one.mixin.android.ui.wallet.alert.vo.AlertType.PERCENTAGE_DECREASED
-import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_DECREASED
-import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_INCREASED
-import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_REACHED
 
 @Composable
 fun AlertItem(alert: Alert, onEdit: (Alert) -> Unit) {

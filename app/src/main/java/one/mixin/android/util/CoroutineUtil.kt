@@ -7,6 +7,9 @@ import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 import kotlin.time.Duration
 
+val SINGLE_SIGN_EXECUTOR: Executor =
+    Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_SIGN_EXECUTOR") }
+
 val SINGLE_DB_EXECUTOR: Executor =
     Executors.newSingleThreadExecutor { r -> Thread(r, "SINGLE_DB_EXECUTOR") }
 

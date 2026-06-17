@@ -34,6 +34,19 @@
 
     </RelativeLayout>
 
+
+    <TextView
+        android:id="@+id/hide"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:text="@string/Hide" />
+
     <TextView
         android:id="@+id/stake_sol_tv"
         android:layout_width="match_parent"
@@ -59,7 +72,7 @@
         android:textColor="?attr/text_primary" />
 
     <TextView
-        android:id="@+id/view"
+        android:id="@+id/explorer"
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:background="?attr/bg_white"

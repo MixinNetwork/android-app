@@ -3,6 +3,7 @@ package one.mixin.android.widget.PhotoView;
 import android.content.Context;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
+
 import androidx.annotation.NonNull;
 import androidx.core.view.MotionEventCompat;
 

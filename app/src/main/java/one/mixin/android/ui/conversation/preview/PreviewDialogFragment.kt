@@ -32,6 +32,7 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
+import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.video.MixinPlayer
 import one.mixin.android.widget.VideoTimelinePlayView
 import timber.log.Timber
@@ -107,6 +108,7 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
         super.setupDialog(dialog, style)
         dialog.window?.apply {
             requestFeature(Window.FEATURE_NO_TITLE)
+            SystemUIManager.fullScreen(this)
             setWindowAnimations(R.style.BottomSheet_Animation)
         }
         dialog.setOnShowListener {
@@ -212,20 +214,22 @@ class PreviewDialogFragment : DialogFragment(), VideoTimelinePlayView.VideoTimel
         okText: String? = null,
         action: (Uri, Float, Float) -> Unit,
     ) {
-        try {
-            super.showNow(
-                fragmentManager,
-                if (isVideo) {
-                    "PreviewVideoDialogFragment"
-                } else {
-                    "PreviewDialogFragment"
-                },
-            )
-        } catch (ignored: IllegalStateException) {
+        if (fragmentManager.isDestroyed) {
+            return
         }
+
         this.uri = uri
         this.okText = okText
         this.action = action
+
+        val tag = if (isVideo) "PreviewVideoDialogFragment" else "PreviewDialogFragment"
+        try {
+            if (!isAdded && !isStateSaved) {
+                show(fragmentManager, tag)
+            }
+        } catch (e: IllegalStateException) {
+            Timber.e(e)
+        }
     }
 
     private val videoListener =

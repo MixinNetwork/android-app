@@ -1,6 +1,5 @@
 package one.mixin.android.vo.market
 
-import android.os.Parcel
 import android.os.Parcelable
 import androidx.room.ColumnInfo
 import androidx.room.Entity
@@ -8,12 +7,13 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.db.converter.DescriptionsConverter
 import one.mixin.android.db.converter.OptionalListConverter
 
 @Entity(
     tableName = "markets",
 )
-@TypeConverters(OptionalListConverter::class)
+@TypeConverters(OptionalListConverter::class, DescriptionsConverter::class)
 @Parcelize
 data class Market(
     @PrimaryKey
@@ -101,7 +101,13 @@ data class Market(
     @SerializedName("sparkline_in_7d")
     @ColumnInfo(name = "sparkline_in_7d")
     val sparklineIn7d: String,
+    @SerializedName("sparkline_in_24h")
+    @ColumnInfo(name = "sparkline_in_24h")
+    val sparklineIn24h: String,
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
-    val updatedAt: String
-):Parcelable
+    val updatedAt: String,
+    @SerializedName("descriptions")
+    @ColumnInfo(name = "descriptions")
+    val descriptions: Map<String, String>? = null,
+) : Parcelable

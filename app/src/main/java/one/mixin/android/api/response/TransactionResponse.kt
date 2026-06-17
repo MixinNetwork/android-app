@@ -94,6 +94,7 @@ data class SafeAccount(
     val id: String,
     val name: String,
     val address: String,
+    val role: String?,
     val operation: SafeOperation
 ) : Parcelable
 

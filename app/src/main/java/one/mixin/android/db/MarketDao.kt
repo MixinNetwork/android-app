@@ -6,12 +6,13 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
+import androidx.room.RoomWarnings
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
-import one.mixin.android.vo.safe.TokenItem
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface MarketDao : BaseDao<Market> {
     @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id LEFT JOIN market_coins mc ON mc.coin_id = m.coin_id WHERE mc.asset_id = :assetId")
     fun marketById(assetId: String): LiveData<MarketItem?>
@@ -22,9 +23,8 @@ interface MarketDao : BaseDao<Market> {
     @Query(
         "SELECT * FROM markets WHERE symbol LIKE '%' || :query || '%'  ESCAPE '\\' OR name LIKE '%' || :query || '%'  ESCAPE '\\'"
     )
-    fun fuzzyMarkets(query: String):List<Market>
+    fun fuzzyMarkets(query: String): List<Market>
 
-    @RewriteQueriesToDropUnusedColumns
     @Query(
         """
        SELECT * FROM (
@@ -41,8 +41,10 @@ interface MarketDao : BaseDao<Market> {
             CASE WHEN :sortValue = 1 THEN CAST(limitedMarkets.market_cap_rank AS INTEGER) END DESC,
             CASE WHEN :sortValue = 2 THEN CAST(limitedMarkets.current_price AS DECIMAL) END ASC,
             CASE WHEN :sortValue = 3 THEN CAST(limitedMarkets.current_price AS DECIMAL) END DESC,
-            CASE WHEN :sortValue = 4 THEN CAST(limitedMarkets.price_change_percentage_7d AS DECIMAL) END DESC,
-            CASE WHEN :sortValue = 5 THEN CAST(limitedMarkets.price_change_percentage_7d AS DECIMAL) END ASC
+            CASE WHEN :sortValue = 4 THEN CAST(limitedMarkets.price_change_percentage_7d AS DECIMAL) END ASC,
+            CASE WHEN :sortValue = 5 THEN CAST(limitedMarkets.price_change_percentage_7d AS DECIMAL) END DESC,
+            CASE WHEN :sortValue = 6 THEN CAST(limitedMarkets.price_change_percentage_24h AS DECIMAL) END ASC,
+            CASE WHEN :sortValue = 7 THEN CAST(limitedMarkets.price_change_percentage_24h AS DECIMAL) END DESC
         """
     )
     fun getWeb3Markets(limit: Int, sortValue: Int): PagingSource<Int, MarketItem>
@@ -60,8 +62,10 @@ interface MarketDao : BaseDao<Market> {
             CASE WHEN :sortValue = 1 THEN CAST(limitedFavoredMarkets.market_cap_rank AS INTEGER) END DESC,
             CASE WHEN :sortValue = 2 THEN CAST(limitedFavoredMarkets.current_price AS DECIMAL) END ASC,
             CASE WHEN :sortValue = 3 THEN CAST(limitedFavoredMarkets.current_price AS DECIMAL) END DESC,
-            CASE WHEN :sortValue = 4 THEN CAST(limitedFavoredMarkets.price_change_percentage_7d AS DECIMAL) END DESC,
-            CASE WHEN :sortValue = 5 THEN CAST(limitedFavoredMarkets.price_change_percentage_7d AS DECIMAL) END ASC
+            CASE WHEN :sortValue = 4 THEN CAST(limitedFavoredMarkets.price_change_percentage_7d AS DECIMAL) END ASC,
+            CASE WHEN :sortValue = 5 THEN CAST(limitedFavoredMarkets.price_change_percentage_7d AS DECIMAL) END DESC,
+            CASE WHEN :sortValue = 6 THEN CAST(limitedFavoredMarkets.price_change_percentage_24h AS DECIMAL) END ASC,
+            CASE WHEN :sortValue = 7 THEN CAST(limitedFavoredMarkets.price_change_percentage_24h AS DECIMAL) END DESC
         """
     )
     fun getFavoredWeb3Markets(sortValue: Int): PagingSource<Int, MarketItem>

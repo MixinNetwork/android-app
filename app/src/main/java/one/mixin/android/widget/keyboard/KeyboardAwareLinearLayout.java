@@ -9,15 +9,17 @@ import android.os.Build.VERSION_CODES;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.WindowInsets;
+
 import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.preference.PreferenceManager;
-import one.mixin.android.R;
-import one.mixin.android.extension.ContextExtensionKt;
-import timber.log.Timber;
 
 import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Set;
+
+import one.mixin.android.R;
+import one.mixin.android.extension.ContextExtensionKt;
+import timber.log.Timber;
 
 public class KeyboardAwareLinearLayout extends LinearLayoutCompat {
     private final Rect rect = new Rect();

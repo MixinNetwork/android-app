@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
@@ -11,9 +12,9 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemContactHeaderBinding
 import one.mixin.android.databinding.ItemWalletSearchBinding
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.setQuoteText
-import one.mixin.android.extension.textColorResource
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.TopAssetItem
@@ -129,16 +130,46 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
         }
         if (priceUsd == "0") {
             binding.priceTv.setText(R.string.NA)
+            updatePriceAsCentered()
             binding.changeTv.visibility = View.GONE
         } else {
-            binding.changeTv.visibility = View.VISIBLE
+            updatePriceAsNormal()
             binding.priceTv.text = "${Fiats.getSymbol()}${priceFiat.priceFormat()}"
             if (changeUsd.isNotEmpty()) {
                 val bigChangeUsd = BigDecimal(changeUsd)
                 val isRising = bigChangeUsd >= BigDecimal.ZERO
                 binding.changeTv.setQuoteText("${(bigChangeUsd * BigDecimal(100)).numberFormat2()}%", isRising)
+                binding.changeTv.visibility = View.VISIBLE
+            } else{
+                binding.changeTv.visibility = View.GONE
             }
         }
+    }
+
+    private fun updatePriceAsCentered() {
+        val layoutParams: RelativeLayout.LayoutParams = binding.priceTv.layoutParams as? RelativeLayout.LayoutParams ?: return
+        layoutParams.removeRule(RelativeLayout.ALIGN_BASELINE)
+        layoutParams.removeRule(RelativeLayout.BELOW)
+        layoutParams.addRule(RelativeLayout.CENTER_VERTICAL)
+        layoutParams.topMargin = 0
+        binding.priceTv.layoutParams = layoutParams
+    }
+
+    private fun updatePriceAsNormal() {
+        val layoutParams: RelativeLayout.LayoutParams = binding.priceTv.layoutParams as? RelativeLayout.LayoutParams ?: return
+        layoutParams.removeRule(RelativeLayout.CENTER_VERTICAL)
+        layoutParams.addRule(RelativeLayout.ALIGN_BASELINE, R.id.balance_tv)
+        layoutParams.topMargin = getPriceTopMarginPx()
+        binding.priceTv.layoutParams = layoutParams
+    }
+
+    private fun getPriceTopMarginPx(): Int {
+        val density: Float = binding.root.resources.displayMetrics.density
+        return (PRICE_TOP_MARGIN_DP * density).toInt()
+    }
+
+    private companion object {
+        private const val PRICE_TOP_MARGIN_DP: Int = 2
     }
 }
 
@@ -155,18 +186,18 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
             asset.chainId,
             asset.name,
             asset.symbol,
-            asset.balance,
+            asset.balance.numberFormat8(),
             asset.assetKey,
             asset.priceUsd,
             asset.changeUsd,
             asset.priceFiat(),
             asset.collectionHash,
         )
-        binding.apply {
-            priceTv.isVisible = currentAssetId == null
-            changeTv.isVisible = currentAssetId == null
-            checkIv.isVisible = asset.assetId == currentAssetId
+        binding.priceTv.isVisible = currentAssetId == null
+        if (currentAssetId != null) {
+            binding.changeTv.isVisible = false
         }
+        binding.checkIv.isVisible = asset.assetId == currentAssetId
         itemView.setOnClickListener {
             callback?.onAssetClick(asset.assetId, asset)
         }

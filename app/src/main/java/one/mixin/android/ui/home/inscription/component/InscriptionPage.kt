@@ -53,10 +53,11 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
-import coil.request.ImageRequest
+import coil3.request.ImageRequest
+import coil3.request.transformations
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.inscription.compose.Barcode
@@ -156,7 +157,7 @@ private fun InscriptionPageImp(
                 Spacer(modifier = Modifier.weight(1f))
                 IconButton(onClick = { onMoreAction(inscription) }) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_home_more),
+                        painter = painterResource(id = R.drawable.ic_more),
                         contentDescription = null,
                         tint = Color.White,
                     )
@@ -215,7 +216,7 @@ private fun InscriptionPageImp(
                                         Box(modifier = Modifier.height(20.dp))
 
                                         Row(modifier = Modifier.padding(horizontal = 4.dp)) {
-                                            if (inscription.state == "unspent") {
+                                            if (inscription.state == "unspent" || inscription.state == "pending") {
                                                 Button(
                                                     onClick = onSendAction,
                                                     colors =
@@ -223,7 +224,7 @@ private fun InscriptionPageImp(
                                                             backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F),
                                                         ),
                                                     modifier = Modifier.weight(1f),
-                                                    shape = RoundedCornerShape(20.dp),
+                                                    shape = RoundedCornerShape(30.dp),
                                                     contentPadding = PaddingValues(vertical = 12.dp),
                                                     elevation =
                                                         ButtonDefaults.elevation(
@@ -252,7 +253,7 @@ private fun InscriptionPageImp(
                                                         backgroundColor = Color(0xFF, 0xFF, 0xFF, 0x1F),
                                                     ),
                                                 modifier = Modifier.weight(1f),
-                                                shape = RoundedCornerShape(20.dp),
+                                                shape = RoundedCornerShape(30.dp),
                                                 contentPadding = PaddingValues(vertical = 11.dp),
                                                 elevation =
                                                     ButtonDefaults.elevation(

@@ -1,14 +1,22 @@
 package one.mixin.android.ui.media
 
 import android.net.Uri
+import android.annotation.SuppressLint
+import androidx.annotation.OptIn
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.media3.common.util.UnstableApi
+import androidx.paging.DataSource
 import androidx.paging.LivePagedListBuilder
 import androidx.paging.PagedList
+import androidx.paging.PositionalDataSource
+import androidx.arch.core.executor.ArchTaskExecutor
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
@@ -16,6 +24,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SendAttachmentMessageJob
 import one.mixin.android.job.SendGiphyJob
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.HyperlinkItem
 import one.mixin.android.vo.MediaStatus
@@ -23,6 +32,7 @@ import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isEncrypted
 import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isVideo
 import org.threeten.bp.ZonedDateTime
@@ -35,54 +45,61 @@ class SharedMediaViewModel
         val conversationRepository: ConversationRepository,
         private val jobManager: MixinJobManager,
     ) : ViewModel() {
+
         fun getMediaMessagesExcludeLive(conversationId: String): LiveData<PagedList<MessageItem>> {
-            return LivePagedListBuilder(
-                conversationRepository.getMediaMessagesExcludeLive(conversationId),
-                PagedList.Config.Builder()
-                    .setPageSize(MediaFragment.PAGE_SIZE)
-                    .setEnablePlaceholders(true)
-                    .build(),
-            )
+            val liveData = MutableLiveData<PagedList<MessageItem>>()
+            viewModelScope.launch(Dispatchers.IO) {
+                val list = conversationRepository.getMediaMessagesExcludeLiveList(conversationId)
+                val filteredList = list.filter { !it.isAppCard() || it.isAppCardWithCover() }
+                val pagedList = createPagedList(filteredList, 0)
+                liveData.postValue(pagedList)
+            }
+            return liveData
+        }
+
+        @SuppressLint("RestrictedApi")
+        private fun createPagedList(list: List<MessageItem>, initialKey: Int): PagedList<MessageItem> {
+            val config = PagedList.Config.Builder()
+                .setPageSize(MediaFragment.PAGE_SIZE)
+                .setEnablePlaceholders(false)
+                .build()
+            return PagedList.Builder(ListDataSource(list), config)
+                .setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
+                .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
+                .setInitialKey(initialKey)
                 .build()
         }
 
         fun getAudioMessages(conversationId: String): LiveData<PagedList<MessageItem>> {
-            val dataSource = conversationRepository.getAudioMessages(conversationId)
-            val sortedDataSource =
-                dataSource.mapByPage { list ->
-                    list.toMutableList().sortWith(
-                        Comparator<MessageItem> { o1, o2 ->
-                            if (o1 == null || o2 == null) return@Comparator 0
+            val liveData = MutableLiveData<PagedList<MessageItem>>()
+            viewModelScope.launch(Dispatchers.IO) {
+                val list = conversationRepository.getAudioMessagesList(conversationId)
+                val sortedList = list.sortedWith(
+                    Comparator<MessageItem> { o1, o2 ->
+                        if (o1 == null || o2 == null) return@Comparator 0
 
-                            val time1 = ZonedDateTime.parse(o1.createdAt)
-                            val time2 = ZonedDateTime.parse(o2.createdAt)
-                            val year1 = time1.year
-                            val year2 = time2.year
-                            val day1 = time1.dayOfYear
-                            val day2 = time2.dayOfYear
-                            if (year1 == year2) {
-                                if (day1 == day2) {
-                                    return@Comparator time1.toOffsetDateTime()
-                                        .compareTo(time2.toOffsetDateTime())
-                                } else {
-                                    return@Comparator day2 - day1
-                                }
+                        val time1 = ZonedDateTime.parse(o1.createdAt)
+                        val time2 = ZonedDateTime.parse(o2.createdAt)
+                        val year1 = time1.year
+                        val year2 = time2.year
+                        val day1 = time1.dayOfYear
+                        val day2 = time2.dayOfYear
+                        if (year1 == year2) {
+                            if (day1 == day2) {
+                                return@Comparator time1.toOffsetDateTime()
+                                    .compareTo(time2.toOffsetDateTime())
                             } else {
-                                return@Comparator year2 - year1
+                                return@Comparator day2 - day1
                             }
-                        },
-                    )
-                    return@mapByPage list
-                }
-            return LivePagedListBuilder(
-                sortedDataSource,
-                PagedList.Config.Builder()
-                    .setPrefetchDistance(PAGE_SIZE * 2)
-                    .setPageSize(PAGE_SIZE)
-                    .setEnablePlaceholders(true)
-                    .build(),
-            )
-                .build()
+                        } else {
+                            return@Comparator year2 - year1
+                        }
+                    },
+                )
+                val pagedList = createPagedList(sortedList, 0)
+                liveData.postValue(pagedList)
+            }
+            return liveData
         }
 
         fun getPostMessages(conversationId: String): LiveData<PagedList<MessageItem>> {
@@ -204,22 +221,65 @@ class SharedMediaViewModel
             excludeLive: Boolean,
         ): Int = conversationRepository.indexMediaMessages(conversationId, messageId, excludeLive)
 
-        fun getMediaMessages(
+        suspend fun countIndexMediaMessages(
             conversationId: String,
-            index: Int,
             excludeLive: Boolean,
-        ) = conversationRepository.getMediaMessages(conversationId, index, excludeLive)
+        ) = conversationRepository.countIndexMediaMessages(conversationId, excludeLive)
 
-        suspend fun getMediaMessage(
-            conversationId: String,
-            messageId: String,
-        ) =
-            conversationRepository.getMediaMessage(conversationId, messageId)
-
-        fun downloadByMessageId(messageId: String) =
-            viewModelScope.launch {
-                conversationRepository.suspendFindMessageById(messageId)?.let {
-                    jobManager.addJobInBackground(AttachmentDownloadJob(it))
-                }
+    @OptIn(UnstableApi::class)
+    fun getMediaMessages(
+        conversationId: String,
+        index: Int,
+        excludeLive: Boolean,
+    ): LiveData<PagedList<MessageItem>> {
+        val liveData = MutableLiveData<PagedList<MessageItem>>()
+        viewModelScope.launch(Dispatchers.IO) {
+            val list = if (excludeLive) {
+                conversationRepository.getMediaMessagesExcludeLiveList(conversationId)
+            } else {
+                conversationRepository.getMediaMessagesList(conversationId)
             }
+            val filteredList = list.filter { !it.isAppCard() || it.isAppCardWithCover() }
+            val pagedList = createPagedList(filteredList, index)
+            liveData.postValue(pagedList)
+        }
+        return liveData
     }
+
+    suspend fun getMediaMessage(
+        conversationId: String,
+        messageId: String,
+    ) =
+        conversationRepository.getMediaMessage(conversationId, messageId)
+
+    fun downloadByMessageId(messageId: String) =
+        viewModelScope.launch {
+            conversationRepository.suspendFindMessageById(messageId)?.let {
+                jobManager.addJobInBackground(AttachmentDownloadJob(it))
+            }
+        }
+}
+
+class ListDataSource<T : Any>(private val items: List<T>) : PositionalDataSource<T>() {
+    override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<T>) {
+        val totalCount = items.size
+        if (totalCount == 0) {
+            callback.onResult(emptyList(), 0, 0)
+            return
+        }
+        val position = computeInitialLoadPosition(params, totalCount)
+        val loadSize = computeInitialLoadSize(params, position, totalCount)
+        callback.onResult(items.subList(position, minOf(position + loadSize, totalCount)), position, totalCount)
+    }
+
+    override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<T>) {
+        val start = params.startPosition
+        val end = minOf(start + params.loadSize, items.size)
+        if (start < items.size && start < end) {
+            callback.onResult(items.subList(start, end))
+        } else {
+            callback.onResult(emptyList())
+        }
+    }
+}
+

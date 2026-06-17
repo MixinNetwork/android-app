@@ -1,36 +1,32 @@
 package one.mixin.android.ui.group.adapter
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemGroupInfoBinding
-import one.mixin.android.ui.common.recyclerview.NormalHolder
-import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.ParticipantRole
 import one.mixin.android.vo.User
 
-class GroupInfoAdapter(private val self: User) : PagedHeaderAdapter<ParticipantItem>(ParticipantItem.DIFF_CALLBACK) {
+class GroupInfoAdapter(private val self: User) : PagingDataAdapter<ParticipantItem, GroupInfoAdapter.ItemHolder>(ParticipantItem.DIFF_CALLBACK) {
     private var listener: GroupInfoListener? = null
 
-    override fun getNormalViewHolder(
-        context: Context,
+    override fun onCreateViewHolder(
         parent: ViewGroup,
-    ): NormalHolder =
+        viewType: Int,
+    ): ItemHolder =
         ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_group_info, parent, false))
 
     override fun onBindViewHolder(
-        holder: RecyclerView.ViewHolder,
+        holder: ItemHolder,
         position: Int,
     ) {
-        if (holder is ItemHolder) {
-            getItem(getPos(position))?.let {
-                holder.bind(it, listener, self)
-            }
+        getItem(position)?.let {
+            holder.bind(it, listener, self)
         }
     }
 
@@ -38,7 +34,7 @@ class GroupInfoAdapter(private val self: User) : PagedHeaderAdapter<ParticipantI
         this.listener = listener
     }
 
-    class ItemHolder(itemView: View) : NormalHolder(itemView) {
+    class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         private val binding by lazy {
             ItemGroupInfoBinding.bind(itemView)
         }

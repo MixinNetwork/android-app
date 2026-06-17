@@ -10,10 +10,10 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.Web3Account
-import one.mixin.android.api.response.Web3Token
 import one.mixin.android.databinding.ItemChainCardBinding
 import one.mixin.android.databinding.ItemWeb3HeaderBinding
 import one.mixin.android.databinding.ItemWeb3TokenBinding
+import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.setQuoteText
@@ -160,7 +160,8 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
         binding.apply {
             root.setOnClickListener { onWeb3ClickListener?.invoke(token) }
             avatar.bg.loadImage(token.iconUrl, R.drawable.ic_avatar_place_holder)
-            avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
+            // todo
+            // avatar.badge.loadImage(token.chainIconUrl, R.drawable.ic_avatar_place_holder)
             balance.text =
                 try {
                     if (token.balance.toFloat() == 0f) {
@@ -172,19 +173,19 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
                     token.balance
                 }
             symbolTv.text = token.symbol
-            balanceAs.text = "≈ ${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(token.balance)).numberFormat2()}"
+            balanceAs.text = "≈ ${Fiats.getSymbol()}${BigDecimal(token.priceUsd).multiply(BigDecimal(Fiats.getRate())).multiply(BigDecimal(token.balance)).numberFormat2()}"
             val changePercent =
-                if (token.changePercent.isBlank()) {
+                if (token.changeUsd.isBlank()) {
                     BigDecimal.ZERO
                 } else {
-                    BigDecimal(token.changePercent)
+                    BigDecimal(token.changeUsd)
                 }
             changeTv.setQuoteText("${changePercent.numberFormat2()}%", changePercent >= BigDecimal.ZERO)
-            if (token.price == "0") {
+            if (token.priceUsd == "0") {
                 priceTv.setText(R.string.NA)
                 changeTv.visibility = View.GONE
             } else {
-                priceTv.text = "${Fiats.getSymbol()}${BigDecimal(token.price).multiply(BigDecimal(Fiats.getRate())).numberFormat2()}"
+                priceTv.text = "${Fiats.getSymbol()}${BigDecimal(token.priceUsd).multiply(BigDecimal(Fiats.getRate())).numberFormat2()}"
                 changeTv.visibility = View.VISIBLE
             }
         }

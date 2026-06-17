@@ -23,7 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Observer
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import one.mixin.android.R
@@ -32,6 +32,7 @@ import one.mixin.android.ui.wallet.WalletViewModel
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Price
+import java.io.IOException
 
 sealed class Result<out T> {
     data object Loading : Result<Nothing>()
@@ -65,7 +66,14 @@ fun Market(assetId: String) {
 }
 
 @Composable
-fun Market(type: String, assetId: String, dataChange: (Float?) -> Unit, onHighlightChange: (String?, Float?) -> Unit, onLoading: (Boolean) -> Unit) {
+fun Market(
+    type: String,
+    assetId: String,
+    dataChange: (Float?) -> Unit,
+    onHighlightChange: (String?, Float?) -> Unit,
+    onLoading: (Boolean) -> Unit,
+    interactive: Boolean = true,
+) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<WalletViewModel>()
     var responseState by remember { mutableStateOf<Result<List<Price>>>(Result.Loading) }
@@ -130,20 +138,25 @@ fun Market(type: String, assetId: String, dataChange: (Float?) -> Unit, onHighli
                 } else {
                     val prices = response.data.map { it.price.toFloat() }
                     val time = response.data.map { it.unix }
-                    LineChart(prices, time, type) { index ->
-                        if (index < 0 || index >= prices.size) {
-                            onHighlightChange.invoke(null, null)
-                            return@LineChart
+                    val highlightChange: ((Int) -> Unit)? = if (interactive) {
+                        { index ->
+                            if (index < 0 || index >= prices.size) {
+                                onHighlightChange.invoke(null, null)
+                            } else {
+                                val currentPrice = prices[index]
+                                val basePrice = prices.first()
+                                if (basePrice != 0f) {
+                                    val percentageChange = ((currentPrice - basePrice) / basePrice) * 100
+                                    onHighlightChange.invoke(currentPrice.toString(), percentageChange)
+                                } else {
+                                    onHighlightChange.invoke(currentPrice.toString(), null)
+                                }
+                            }
                         }
-                        val currentPrice = prices[index]
-                        val basePrice = prices.first()
-                        if (basePrice != 0f) {
-                            val percentageChange = ((currentPrice - basePrice) / basePrice) * 100
-                            onHighlightChange.invoke(currentPrice.toString(), percentageChange)
-                        } else {
-                            onHighlightChange.invoke(currentPrice.toString(), null)
-                        }
+                    } else {
+                        null
                     }
+                    LineChart(prices, time, type, highlightChange, showMinMaxMarkers = true)
                 }
             }
 
@@ -152,11 +165,16 @@ fun Market(type: String, assetId: String, dataChange: (Float?) -> Unit, onHighli
                     Box(modifier = Modifier
                         .wrapContentSize()
                         .padding(20.dp)) {
-                        Text(text = response.exception.message ?: stringResource(R.string.Unknown), color = MixinAppTheme.colors.textPrimary, fontSize = 12.sp)
+                        Text(
+                            text = if (response.exception is IOException) {
+                                stringResource(R.string.Network_error)
+                            } else {
+                                stringResource(R.string.Unknown)
+                            }, color = MixinAppTheme.colors.textPrimary, fontSize = 12.sp
+                        )
                     }
                 }
             }
         }
     }
 }
-

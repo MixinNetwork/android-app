@@ -44,9 +44,15 @@ class CustomDns(val dnsHostname: String) : Dns {
         private fun doLookup(hostname: String?): Lookup {
             return try {
                 Lookup(hostname)
+            } catch (e: NoClassDefFoundError) {
+                // workaround for java.lang.NoClassDefFoundError: Failed resolution of: Ldalvik/system/VMRuntime
+                throw UnknownHostException()
             } catch (e: TextParseException) {
                 throw UnknownHostException()
             } catch (e: RuntimeException) {
+                // workaround java.lang.RuntimeException: Failed to initialize resolver
+                throw UnknownHostException()
+            } catch (e: ExceptionInInitializerError) {
                 // workaround java.lang.RuntimeException: Failed to initialize resolver
                 throw UnknownHostException()
             }

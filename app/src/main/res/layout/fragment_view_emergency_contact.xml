@@ -25,7 +25,7 @@
             android:layout_width="92dp"
             android:layout_height="92dp"
             android:layout_marginTop="42dp"
-            android:src="@drawable/ic_emergency_avatar_night"
+            android:src="@drawable/ic_emergency"
             android:layout_gravity="center_horizontal"/>
 
         <one.mixin.android.widget.NameTextView
