@@ -99,12 +99,12 @@ import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
 import one.mixin.android.web3.SolanaRecipientAccountState
 import one.mixin.android.web3.hasSolBalanceAfterFeeAndRent
 import one.mixin.android.web3.isNativeSolAsset
-import one.mixin.android.web3.nativeSolSpendableBalance
-import one.mixin.android.web3.solanaTransferAmountRange
-import one.mixin.android.web3.solanaRecipientAccountState
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.nativeSolSpendableBalance
 import one.mixin.android.web3.send.InsufficientBtcBalanceException
+import one.mixin.android.web3.solanaRecipientAccountState
+import one.mixin.android.web3.solanaTransferAmountRange
 import one.mixin.android.widget.Keyboard
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
@@ -240,6 +240,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        AnalyticsTracker.trackAssetSendAmount()
         jobManager.addJobInBackground(SyncOutputJob())
         viewLifecycleOwner.lifecycleScope.launch {
             binding.apply {
@@ -255,7 +256,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }
                 titleView.rightIb.setOnClickListener {
-                    requireContext().openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                    requireContext().openUrl(
+                        Constants.HelpLink.CUSTOMER_SERVICE,
+                        source = AnalyticsTracker.CustomerServiceSource.SEND_AMOUNT,
+                        wallet = if (transferType == TransferType.WEB3) TradeWallet.WEB3 else TradeWallet.MAIN,
+                    )
                 }
                 binding.insufficientFeeBalance.text = getString(R.string.insufficient_gas, getString(R.string.Token))
                 binding.insufficientFunds.text =
@@ -919,14 +924,26 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         return currentSolanaTransferRange()?.minAmount ?: BigDecimal.ZERO
     }
 
+    private fun isCurrentWeb3SolanaTransfer(): Boolean {
+        return transferType == TransferType.WEB3 && web3Token?.chainId == Constants.ChainId.SOLANA_CHAIN_ID
+    }
+
     private fun isBelowCurrentSolanaMinimum(amount: String): Boolean {
         val inputAmount = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val minimumAmount = currentSolanaMinimumAmount()
         return minimumAmount > BigDecimal.ZERO && inputAmount < minimumAmount
     }
 
+    private fun hasCurrentSolanaRentIssue(amount: String): Boolean {
+        return isCurrentWeb3SolanaTransfer() && isBelowCurrentSolanaMinimum(amount)
+    }
+
     private fun updateSolanaMinimumAmountHint() {
-        val minimumAmount = currentSolanaMinimumAmount().takeIf { it > BigDecimal.ZERO } ?: SOLANA_RENT_EXEMPTION
+        val minimumAmount = if (isCurrentWeb3SolanaTransfer()) {
+            currentSolanaMinimumAmount().takeIf { it > BigDecimal.ZERO } ?: SOLANA_RENT_EXEMPTION
+        } else {
+            SOLANA_RENT_EXEMPTION
+        }
         binding.insufficientFunds.text =
             getString(
                 R.string.send_sol_for_rent,
@@ -1038,10 +1055,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun web3FeeOptions(): List<NetworkFee> {
         val options = mutableListOf<NetworkFee>()
+        options.addAll(gaslessFees)
         if (shouldOfferLegacyWeb3FeeOption()) {
             nativeWeb3FeeOption()?.let(options::add)
         }
-        options.addAll(gaslessFees)
         return options
     }
 
@@ -1054,12 +1071,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         selectedKey?.let { key ->
             options.firstOrNull { it.selectionKey == key }?.let { return it }
         }
-
-        return options.firstOrNull { option ->
-            val balance = option.token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            val feeAmount = option.fee.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            balance >= feeAmount
-        } ?: options.first()
+        return options.firstOrNull(NetworkFee::canCoverSelectionFee) ?: options.first()
     }
 
     private fun syncSelectedWeb3Fee() {
@@ -1068,8 +1080,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             currentGaslessFee = null
             return
         }
-        val nextSelection = selectPreferredFeeOption(
+        val nextSelection = selectPreferredGaslessFeeOption(
             options = options,
+            preferredAssetId = web3Token?.assetId,
             selectedKey = currentGaslessFee?.selectionKey,
         )
         if (currentGaslessFee != nextSelection) {
@@ -1151,6 +1164,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun handleSuccessfulWeb3Transfer() {
         if (!isAdded) return
+        AnalyticsTracker.trackAssetSendEnd()
         val navController = findNavController()
         val backStackEntryCount = parentFragmentManager.backStackEntryCount
         val currentDestination = navController.currentDestination?.id
@@ -1319,7 +1333,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     continueVa.isEnabled = false
                     addTv.text = "${getString(R.string.Add)} ${currentFee?.token?.symbol ?: ""}"
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                } else if (isBelowCurrentSolanaMinimum(v)) {
+                } else if (hasCurrentSolanaRentIssue(v)) {
                     insufficientFeeBalance.isVisible = false
                     insufficientBalance.isVisible = false
                     insufficientFunds.isVisible = true
@@ -1465,7 +1479,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun updateAddText() {
         val binding = bindingOrNull() ?: return
-        if (isBelowCurrentSolanaMinimum(currentInputAmount())) {
+        if (hasCurrentSolanaRentIssue(currentInputAmount())) {
             binding.addTv.text = ""
             return
         }
@@ -1870,6 +1884,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 val fee = requireNotNull(currentFee) { "withdrawal currentFee can not be null" }
                 t.fee = fee
             }
+            AnalyticsTracker.trackAssetSendPreview()
             TransferBottomSheetDialogFragment.newInstance(t).apply {
                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                     override fun onDismiss(success: Boolean) {
@@ -2049,8 +2064,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }.getOrNull() ?: return
         if (!response.isSuccess || response.data == null) return
 
+        val walletTokensByAssetId = web3ViewModel.findWeb3TokenItems(t.walletId)
+            .associateBy(Web3TokenItem::assetId)
         val feeItems = response.data!!.fees.mapNotNull { estimate ->
-            val asset = web3ViewModel.findOrSyncAsset(estimate.assetId) ?: return@mapNotNull null
+            val asset = walletTokensByAssetId[estimate.assetId]?.toTokenItem() ?: return@mapNotNull null
             NetworkFee(
                 token = asset,
                 fee = estimate.amount,

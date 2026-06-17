@@ -25,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.gson.reflect.TypeToken
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -127,8 +128,11 @@ class TradeFragment : BaseFragment() {
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_IN_MIXIN = "args_in_mixin"
         const val ARGS_REFERRAL = "args_referral"
+        const val ARGS_ENTRY_SOURCE = "args_entry_source"
+        const val ARGS_ENTRY_TYPE = "args_entry_type"
 
         const val ARGS_WALLET_ID = "args_wallet_id"
+        const val ARGS_INITIAL_TAB = "args_initial_tab"
 
         const val MaxSlippage = 5000
         const val DangerousSlippage = 500
@@ -141,6 +145,10 @@ class TradeFragment : BaseFragment() {
         const val PREF_TRADE_SPOT_GUIDE_SHOWN: String = "pref_trade_spot_guide_shown"
         const val PREF_TRADE_PERPETUAL_GUIDE_SHOWN: String = "pref_trade_perpetual_guide_shown"
 
+        const val TAB_SIMPLE = 0
+        const val TAB_ADVANCED = 1
+        const val TAB_PERPETUAL = 2
+
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
             output: String? = null,
@@ -148,6 +156,9 @@ class TradeFragment : BaseFragment() {
             inMixin: Boolean = true,
             referral: String? = null,
             walletId: String? = null,
+            entrySource: String? = null,
+            entryType: String? = null,
+            initialTab: Int? = null,
         ): TradeFragment =
             TradeFragment().withArgs {
                 input?.let { putString(ARGS_INPUT, it) }
@@ -156,6 +167,9 @@ class TradeFragment : BaseFragment() {
                 putBoolean(ARGS_IN_MIXIN, inMixin)
                 referral?.let { putString(ARGS_REFERRAL, it) }
                 walletId?.let { putString(ARGS_WALLET_ID, it) }
+                entrySource?.let { putString(ARGS_ENTRY_SOURCE, it) }
+                entryType?.let { putString(ARGS_ENTRY_TYPE, it) }
+                initialTab?.let { putInt(ARGS_INITIAL_TAB, it) }
             }
     }
 
@@ -187,6 +201,10 @@ class TradeFragment : BaseFragment() {
 
     private val swapViewModel by viewModels<SwapViewModel>()
     private val web3ViewModel by viewModels<Web3ViewModel>()
+    private val coroutineErrorHandler = CoroutineExceptionHandler { _, error ->
+        Timber.e(error)
+        ErrorHandler.handleError(error)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -214,7 +232,7 @@ class TradeFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ): View {
         initAmount()
-        lifecycleScope.launch {
+        lifecycleScope.launch(coroutineErrorHandler) {
             val chainIds = walletId?.let { it ->
                 swapViewModel.getAddresses(it).map {
                     it.chainId
@@ -291,8 +309,7 @@ class TradeFragment : BaseFragment() {
                                 perpetualOrderBadgeDismissedPrefKey(currentWalletId)
                             }
                             val initialTabIndex = remember(currentWalletId) {
-                                val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
-                                defaultSharedPreferences.getInt(preferenceKey, 0)
+                                getInitialTabIndex(currentWalletId)
                             }
                             var isLimitOrderTabBadgeDismissed by remember(currentWalletId) {
                                 mutableStateOf(defaultSharedPreferences.getBoolean(limitBadgePrefKey, false))
@@ -320,6 +337,7 @@ class TradeFragment : BaseFragment() {
                                 reviewing = reviewing,
                                 initialTabIndex = initialTabIndex,
                                 source = getSource(),
+                                entrySource = getEntrySource(),
                                 onSelectToken = { isReverse, type, isLimit ->
                                     if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
                                         selectCallback(swapTokens, isReverse, type, isLimit)
@@ -356,6 +374,12 @@ class TradeFragment : BaseFragment() {
                                 },
                                 onReview = { quote, from, to, amount ->
                                     AnalyticsTracker.trackTradePreview()
+                                    AnalyticsTracker.trackSpotPreview(
+                                        sendChain = from.chain.name,
+                                        sendAssetSymbol = from.symbol,
+                                        receiveChain = to.chain.name,
+                                        receiveAssetSymbol = to.symbol,
+                                    )
                                     this@apply.hideKeyboard()
                                     reviewing = true
                                     lifecycleScope.launch {
@@ -369,6 +393,12 @@ class TradeFragment : BaseFragment() {
                                 },
                                 onLimitReview = { from, to, order ->
                                     AnalyticsTracker.trackTradePreview()
+                                    AnalyticsTracker.trackSpotPreview(
+                                        sendChain = from.chain.name,
+                                        sendAssetSymbol = from.symbol,
+                                        receiveChain = to.chain.name,
+                                        receiveAssetSymbol = to.symbol,
+                                    )
                                     this@apply.hideKeyboard()
                                     reviewing = true
                                     lifecycleScope.launch {
@@ -385,7 +415,7 @@ class TradeFragment : BaseFragment() {
                                     if (inMixin()) {
                                         deposit(token.assetId)
                                     } else {
-                                        this@TradeFragment.lifecycleScope.launch {
+                                        this@TradeFragment.lifecycleScope.launch(coroutineErrorHandler) {
                                             val t = swapViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId, token.assetId) ?: return@launch
                                             val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, token.chain.chainId)
                                             if (address == null) {
@@ -396,9 +426,13 @@ class TradeFragment : BaseFragment() {
                                         }
                                     }
                                 },
-                                onOrderList = { currentWalletId, filterPending ->
+                                onOrderList = { currentWalletId, filterPending, spotType ->
                                     this@apply.hideKeyboard()
-                                    val target = AllOrdersFragment.newInstanceWithWalletIds(arrayListOf(currentWalletId), filterPending)
+                                    val target = AllOrdersFragment.newInstanceWithWalletIds(
+                                        walletIds = arrayListOf(currentWalletId),
+                                        filterPending = filterPending,
+                                        spotType = spotType,
+                                    )
                                     if (defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
                                         defaultSharedPreferences.putInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
                                         orderBadge = false
@@ -408,7 +442,13 @@ class TradeFragment : BaseFragment() {
                                 },
                                 onLimitOrderClick = { orderId ->
                                     this@apply.hideKeyboard()
-                                    navTo(OrderDetailFragment.newInstance(orderId), OrderDetailFragment.TAG)
+                                    navTo(
+                                        OrderDetailFragment.newInstance(
+                                            orderId = orderId,
+                                            spotType = AnalyticsTracker.SpotTradeType.ADVANCED,
+                                        ),
+                                        OrderDetailFragment.TAG
+                                    )
                                 },
                                 onShowTradingGuideIfNeeded = { tabIndex ->
                                     this@apply.hideKeyboard()
@@ -417,12 +457,17 @@ class TradeFragment : BaseFragment() {
                                             if (!defaultSharedPreferences.getBoolean(PREF_TRADE_PERPETUAL_GUIDE_SHOWN, false)) {
                                                 isPerpetualTabBadgeDismissed = true
                                                 defaultSharedPreferences.putBoolean(perpetualBadgePrefKey, true)
+                                                AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.FIRST_GUIDE)
                                                 PerpetualGuideBottomSheetDialogFragment.newInstance()
                                                     .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                                             }
                                         }
                                         tabIndex == 1 || tabIndex == 0 -> {
                                             if (!defaultSharedPreferences.getBoolean(PREF_TRADE_SPOT_GUIDE_SHOWN, false)) {
+                                                AnalyticsTracker.trackSpotGuide(
+                                                    currentSpotType(tabIndex),
+                                                    AnalyticsTracker.SpotGuideSource.FIRST_GUIDE,
+                                                )
                                                 val initialGuideTab = if (tabIndex == 1) {
                                                     SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT
                                                 } else {
@@ -438,15 +483,24 @@ class TradeFragment : BaseFragment() {
                                     this@apply.hideKeyboard()
                                     when {
                                         walletId == null && tabIndex >= SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT -> {
+                                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_HOME_MENU)
                                             PerpetualGuideBottomSheetDialogFragment.newInstance()
                                                 .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                                         }
                                         tabIndex == 1 -> {
+                                            AnalyticsTracker.trackSpotGuide(
+                                                AnalyticsTracker.SpotTradeType.ADVANCED,
+                                                AnalyticsTracker.SpotGuideSource.MENU,
+                                            )
                                             SpotTradeGuideBottomSheetDialogFragment.newInstance(
                                                 SpotTradeGuideBottomSheetDialogFragment.TAB_LIMIT
                                             ).show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
                                         }
                                         tabIndex == 0 -> {
+                                            AnalyticsTracker.trackSpotGuide(
+                                                AnalyticsTracker.SpotTradeType.SIMPLE,
+                                                AnalyticsTracker.SpotGuideSource.MENU,
+                                            )
                                             SpotTradeGuideBottomSheetDialogFragment.newInstance(
                                                 SpotTradeGuideBottomSheetDialogFragment.TAB_SWAP
                                             ).show(parentFragmentManager, SpotTradeGuideBottomSheetDialogFragment.TAG)
@@ -472,8 +526,8 @@ class TradeFragment : BaseFragment() {
                                 onShowMarketList = { isLong ->
                                     PerpsMarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
                                 },
-                                onShowAllMarkets = {
-                                    PerpsMarketListBottomSheetDialogFragment.newInstance().show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
+                                onShowAllMarkets = { initialCategory, initialSort ->
+                                    PerpsMarketListBottomSheetDialogFragment.newInstance(initialCategory, initialSort).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
                                 },
                                 onShowAllOpenPositions = {
                                     navTo(AllPositionsFragment.newOpenInstance(), AllPositionsFragment.TAG)
@@ -482,7 +536,13 @@ class TradeFragment : BaseFragment() {
                                     navTo(AllPositionsFragment.newClosedInstance(), AllPositionsFragment.TAG)
                                 },
                                 onOpenPositionClick = { position ->
-                                    navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
+                                    navTo(
+                                        PositionDetailFragment.newInstance(
+                                            position,
+                                            AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
+                                        ),
+                                        PositionDetailFragment.TAG,
+                                    )
                                 },
                                 onMarketItemClick = { market ->
                                     PerpsActivity.showDetail(
@@ -490,11 +550,18 @@ class TradeFragment : BaseFragment() {
                                         market.marketId,
                                         market.displaySymbol,
                                         market.displaySymbol,
-                                        market.tokenSymbol
+                                        market.tokenSymbol,
+                                        AnalyticsTracker.PerpsSource.MORE_EXPLORE,
                                     )
                                 },
                                 onClosedPositionClick = { position ->
-                                    navTo(PositionDetailFragment.newInstance(position), PositionDetailFragment.TAG)
+                                    navTo(
+                                        PositionDetailFragment.newInstance(
+                                            position,
+                                            AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
+                                        ),
+                                        PositionDetailFragment.TAG,
+                                    )
                                 }
                             )
                         }
@@ -546,7 +613,7 @@ class TradeFragment : BaseFragment() {
                     isFrom = true,
                 ).apply {
                     setOnDeposit {
-                        this@TradeFragment.lifecycleScope.launch {
+                        this@TradeFragment.lifecycleScope.launch(coroutineErrorHandler) {
                             val t = swapViewModel.getTokenByWalletAndAssetId(
                                 Web3Signer.currentWalletId, if (Web3Signer.evmAddress.isBlank()) {
                                     Constants.ChainId.SOLANA_CHAIN_ID
@@ -620,7 +687,7 @@ class TradeFragment : BaseFragment() {
     }
 
     private fun deposit(tokenId: String) {
-        lifecycleScope.launch {
+        lifecycleScope.launch(coroutineErrorHandler) {
             val token = swapViewModel.findToken(tokenId)
             if (token == null) {
                 dialog.show()
@@ -779,7 +846,6 @@ class TradeFragment : BaseFragment() {
         to: SwapToken,
         previewData: SwapTransferPreviewData?,
     ) {
-        AnalyticsTracker.trackTradePreview()
         SwapTransferBottomSheetDialogFragment.newInstance(swapResult, from, to, previewData).apply {
             setOnDone {
                 initialAmount = null
@@ -792,7 +858,6 @@ class TradeFragment : BaseFragment() {
     }
 
     private suspend fun openLimitTransfer(from: SwapToken, to: SwapToken, order: CreateLimitOrderResponse) {
-        AnalyticsTracker.trackTradePreview()
         val senderWalletId = if (inMixin()) Session.getAccountId()!! else Web3Signer.currentWalletId
         if (!inMixin()) {
             val address = swapViewModel.getAddressesByChainId(Web3Signer.currentWalletId, to.chain.chainId)
@@ -1188,7 +1253,7 @@ class TradeFragment : BaseFragment() {
         val lastFrom = lastSelectedPair?.getOrNull(0)
         val lastTo = lastSelectedPair?.getOrNull(1)
 
-        val tempFromToken = if (input != null) {
+        var tempFromToken = if (input != null) {
             if (inMixin()) swapViewModel.findToken(input)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, input)?.toSwapToken()
         } else if (lastFrom != null) {
             if (inMixin()) swapViewModel.findToken(lastFrom.assetId)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, lastFrom.assetId)?.toSwapToken()
@@ -1209,8 +1274,14 @@ class TradeFragment : BaseFragment() {
         } else {
             tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() && t.getUnique() in Constants.usdIds }
         }
-        if (tempToToken?.getUnique() == tempFromToken?.getUnique()) {
-            tempToToken = tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() && t.getUnique() in Constants.usdIds } ?: tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() }
+        resolveDuplicateSwapTokenPair(
+            tokens = tokens,
+            fromToken = tempFromToken,
+            toToken = tempToToken,
+            keepToToken = output != null,
+        ).let { pair ->
+            tempFromToken = pair.from
+            tempToToken = pair.to
         }
 
         if (isLimit) {
@@ -1403,6 +1474,29 @@ class TradeFragment : BaseFragment() {
     }
     private fun getSource(): String = if (inMixin()) "mixin" else "web3"
 
+    private fun getEntrySource(): String {
+        return arguments?.getString(ARGS_ENTRY_SOURCE) ?: AnalyticsTracker.TradeSource.WALLET_HOME
+    }
+
+    private fun getInitialTabIndex(currentWalletId: String): Int {
+        arguments?.takeIf { it.containsKey(ARGS_INITIAL_TAB) }?.getInt(ARGS_INITIAL_TAB)?.let { tab ->
+            return tab
+        }
+        val entryType = arguments?.getString(ARGS_ENTRY_TYPE)
+        val entrySource = arguments?.getString(ARGS_ENTRY_SOURCE)
+        if (entrySource == AnalyticsTracker.TradeSource.MARKET_DETAIL && entryType == AnalyticsTracker.SpotTradeType.SIMPLE) return TAB_SIMPLE
+        val preferenceKey = "$PREF_TRADE_SELECTED_TAB_PREFIX$currentWalletId"
+        return defaultSharedPreferences.getInt(preferenceKey, 0)
+    }
+
+    private fun currentSpotType(tabIndex: Int): String {
+        return if (tabIndex == 1) {
+            AnalyticsTracker.SpotTradeType.ADVANCED
+        } else {
+            AnalyticsTracker.SpotTradeType.SIMPLE
+        }
+    }
+
     private fun getReferral(): String? = arguments?.getString(ARGS_REFERRAL)
 
     private fun navigateUp(navController: NavHostController) {
@@ -1413,7 +1507,7 @@ class TradeFragment : BaseFragment() {
 
     private fun startOrdersPolling() {
         refreshJob?.cancel()
-        refreshJob = lifecycleScope.launch {
+        refreshJob = lifecycleScope.launch(coroutineErrorHandler) {
             while (isAdded) {
                 swapViewModel.refreshOrders(walletId ?: Session.getAccountId()!!)
                 swapViewModel.refreshPendingOrders()

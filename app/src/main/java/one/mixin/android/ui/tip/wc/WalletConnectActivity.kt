@@ -16,6 +16,7 @@ import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.ui.common.BaseActivity
 import one.mixin.android.ui.common.QrScanBottomSheetDialogFragment
+import one.mixin.android.ui.tip.wc.pay.WalletConnectPayBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import timber.log.Timber
 import javax.inject.Inject
@@ -99,28 +100,41 @@ class WalletConnectActivity : BaseActivity() {
     private fun handleWCEvent(event: WCEvent) {
         when (event.version) {
             WalletConnect.Version.V2 -> {
-                event as WCEvent.V2
                 when (event.requestType) {
-                    RequestType.Connect -> {
-                        showWalletConnectBottomSheet(
-                            RequestType.Connect,
-                            WalletConnect.Version.V2,
-                            event.topic,
-                        )
+                    RequestType.Pay -> {
+                        event as WCEvent.Pay
+                        val existing = supportFragmentManager.findFragmentByTag(WalletConnectPayBottomSheetDialogFragment.TAG)
+                        if (existing == null) {
+                            WalletConnectPayBottomSheetDialogFragment.newInstance(event.paymentLink)
+                                .showNow(supportFragmentManager, WalletConnectPayBottomSheetDialogFragment.TAG)
+                        }
                     }
-                    RequestType.SessionProposal -> {
-                        showWalletConnectBottomSheet(
-                            RequestType.SessionProposal,
-                            WalletConnect.Version.V2,
-                            event.topic,
-                        )
-                    }
-                    RequestType.SessionRequest -> {
-                        showWalletConnectBottomSheet(
-                            RequestType.SessionRequest,
-                            WalletConnect.Version.V2,
-                            event.topic,
-                        )
+                    else -> {
+                        event as WCEvent.V2
+                        when (event.requestType) {
+                            RequestType.Connect -> {
+                                showWalletConnectBottomSheet(
+                                    RequestType.Connect,
+                                    WalletConnect.Version.V2,
+                                    event.topic,
+                                )
+                            }
+                            RequestType.SessionProposal -> {
+                                showWalletConnectBottomSheet(
+                                    RequestType.SessionProposal,
+                                    WalletConnect.Version.V2,
+                                    event.topic,
+                                )
+                            }
+                            RequestType.SessionRequest -> {
+                                showWalletConnectBottomSheet(
+                                    RequestType.SessionRequest,
+                                    WalletConnect.Version.V2,
+                                    event.topic,
+                                )
+                            }
+                            else -> {}
+                        }
                     }
                 }
             }

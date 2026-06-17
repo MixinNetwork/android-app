@@ -46,8 +46,8 @@ import one.mixin.android.extension.putString
 import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.job.RefreshSafeAccountsJob
+import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
@@ -137,8 +137,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         return binding.root
     }
 
-    private val classicWalletFragment by lazy { ClassicWalletFragment.newInstance() }
-    private val privacyWalletFragment by lazy { PrivacyWalletFragment.newInstance() }
+    private val classicWalletFragment by lazy { WalletHomeClassicFragment.newInstance() }
+    private val privacyWalletFragment by lazy { WalletHomePrivacyFragment.newInstance() }
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(
@@ -158,14 +158,14 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
         if (!classicWalletFragment.isAdded) {
             childFragmentManager.beginTransaction()
-                .add(R.id.wallet_container, classicWalletFragment, ClassicWalletFragment.TAG)
+                .add(R.id.wallet_container, classicWalletFragment, WalletHomeClassicFragment.TAG)
                 .hide(classicWalletFragment)
                 .commit()
         }
 
         if (!privacyWalletFragment.isAdded) {
             childFragmentManager.beginTransaction()
-                .add(R.id.wallet_container, privacyWalletFragment, PrivacyWalletFragment.TAG)
+                .add(R.id.wallet_container, privacyWalletFragment, WalletHomePrivacyFragment.TAG)
                 .hide(privacyWalletFragment)
                 .commit()
         }

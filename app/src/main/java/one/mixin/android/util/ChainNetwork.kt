@@ -15,6 +15,7 @@ private val chainNetworks by lazy {
         Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID to "Lightning",
         Constants.ChainId.Optimism to "Optimism",
         Constants.ChainId.Arbitrum to "Arbitrum",
+        Constants.ChainId.HyperEVM to "HyperEVM",
     )
 }
 

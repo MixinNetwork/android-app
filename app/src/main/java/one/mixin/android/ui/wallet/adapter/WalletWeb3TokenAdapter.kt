@@ -3,9 +3,11 @@ package one.mixin.android.ui.wallet.adapter
 import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.Context
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.RelativeLayout
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
@@ -26,7 +28,10 @@ import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
-class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web3TokenItem>() {
+class WalletWeb3TokenAdapter(
+    private val slideShow: Boolean,
+    private val compact: Boolean = false,
+) : HeaderAdapter<Web3TokenItem>() {
     fun setAssetList(newAssets: List<Web3TokenItem>) {
         if (data == null) {
             data = newAssets
@@ -95,6 +100,46 @@ class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web
         if (holder is NormalHolder) {
             val binding = ItemWalletAssetBinding.bind(holder.itemView)
             val asset = data!![getPos(position)]
+            if (compact) {
+                holder.itemView.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                }
+                binding.backgroundRl.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = ViewGroup.LayoutParams.MATCH_PARENT
+                }
+                binding.foregroundRl.updateLayoutParams<ViewGroup.LayoutParams> {
+                    height = ViewGroup.LayoutParams.WRAP_CONTENT
+                }
+                binding.foregroundRl.setPadding(0, 4.dp, 0, 4.dp)
+                binding.avatar.updateLayoutParams<RelativeLayout.LayoutParams> {
+                    width = 42.dp
+                    height = 42.dp
+                    marginStart = 16.dp
+                    topMargin = 0
+                    removeRule(RelativeLayout.ALIGN_TOP)
+                    addRule(RelativeLayout.CENTER_VERTICAL)
+                }
+                binding.balance.updateLayoutParams<RelativeLayout.LayoutParams> {
+                    topMargin = 3.dp
+                    removeRule(RelativeLayout.ALIGN_TOP)
+                    addRule(RelativeLayout.ALIGN_PARENT_TOP)
+                }
+                binding.balanceAs.updateLayoutParams<RelativeLayout.LayoutParams> {
+                    marginStart = 14.dp
+                    topMargin = 4.dp
+                }
+                binding.changeTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginEnd = 16.dp
+                }
+                binding.priceTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginEnd = 16.dp
+                }
+                binding.naTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+                    marginEnd = 16.dp
+                }
+                binding.balance.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
+                binding.changeTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
+            }
             binding.balance.text =
                 try {
                     if (asset.balance.isBlank()) {
@@ -115,7 +160,7 @@ class WalletWeb3TokenAdapter(private val slideShow: Boolean) : HeaderAdapter<Web
                 }
             } else {
                 binding.balance.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    marginStart = 16.dp
+                    marginStart = if (compact) 14.dp else 16.dp
                 }
             }
             binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"

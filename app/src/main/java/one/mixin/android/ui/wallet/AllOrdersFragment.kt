@@ -50,12 +50,18 @@ class AllOrdersFragment : BaseTransactionsFragment(R.layout.fragment_all_orders)
         const val TAG: String = "AllOrdersFragment"
         private const val ARGS_WALLET_IDS: String = "args_wallet_ids"
         private const val ARGS_FILTER_PENDING: String = "args_filter_pending"
+        private const val ARGS_SPOT_TYPE: String = "args_spot_type"
 
-        fun newInstanceWithWalletIds(walletIds: ArrayList<String>, filterPending: Boolean = false): AllOrdersFragment {
+        fun newInstanceWithWalletIds(
+            walletIds: ArrayList<String>,
+            filterPending: Boolean = false,
+            spotType: String = AnalyticsTracker.SpotTradeType.SIMPLE,
+        ): AllOrdersFragment {
             val f = AllOrdersFragment()
             val args = Bundle()
             args.putStringArrayList(ARGS_WALLET_IDS, walletIds)
             args.putBoolean(ARGS_FILTER_PENDING, filterPending)
+            args.putString(ARGS_SPOT_TYPE, spotType)
             f.arguments = args
             return f
         }
@@ -101,6 +107,8 @@ class AllOrdersFragment : BaseTransactionsFragment(R.layout.fragment_all_orders)
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         AnalyticsTracker.trackTradeTransactions()
+        val spotType = arguments?.getString(ARGS_SPOT_TYPE) ?: AnalyticsTracker.SpotTradeType.SIMPLE
+        AnalyticsTracker.trackSpotTransactions(spotType)
         val walletIds = arguments?.getStringArrayList(ARGS_WALLET_IDS)
         walletIds?.let { ids ->
             if (ids.isNotEmpty()) {
@@ -134,7 +142,7 @@ class AllOrdersFragment : BaseTransactionsFragment(R.layout.fragment_all_orders)
             transactionsRv.addItemDecoration(SpacesItemDecoration(requireContext().dpToPx(4f), true))
 
             adapter.onItemClick = { order: OrderItem ->
-                navTo(OrderDetailFragment.newInstance(order.orderId), OrderDetailFragment.TAG)
+                navTo(OrderDetailFragment.newInstance(order.orderId, spotType = spotType), OrderDetailFragment.TAG)
             }
 
             filterUser.visibility = VISIBLE

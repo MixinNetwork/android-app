@@ -23,6 +23,7 @@ import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.HyperEVM
 import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
@@ -43,6 +44,7 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
 import one.mixin.android.ui.wallet.components.RecentTokens
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
@@ -192,6 +194,10 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         Avalanche
                     }
 
+                    R.id.radio_hyperevm -> {
+                        HyperEVM
+                    }
+
                     else -> {
                         null
                     }
@@ -233,6 +239,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     ) {
                         binding.searchEt.hideKeyboard()
                         tokenItem?.let {
+                            trackTokenSelect()
                             if (asyncOnAsset != null) {
                                 asyncClick(it)
                             } else {
@@ -296,6 +303,11 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         id = View.generateViewId()
                         setContent {
                             RecentTokens(false, key) {
+                                if (fromType == TYPE_FROM_RECEIVE) {
+                                    AnalyticsTracker.trackAssetReceiveTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
+                                } else if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
+                                    AnalyticsTracker.trackAssetSendTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
+                                }
                                 defaultSharedPreferences.addToList(key, it.assetId)
                                 if (asyncOnAsset != null) {
                                     asyncClick(it)
@@ -387,6 +399,19 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 if (!isAdded) return@launch
                 loadData()
             }
+    }
+
+    private fun trackTokenSelect() {
+        val method = when {
+            currentQuery.isNotBlank() -> AnalyticsTracker.TradeTokenSelectMethod.SEARCH_ITEM_CLICK
+            currentChain != null -> AnalyticsTracker.TradeTokenSelectMethod.CHAIN_ITEM_CLICK
+            else -> AnalyticsTracker.TradeTokenSelectMethod.ALL_ITEM_CLICK
+        }
+        if (fromType == TYPE_FROM_RECEIVE) {
+            AnalyticsTracker.trackAssetReceiveTokenSelect(method)
+        } else if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
+            AnalyticsTracker.trackAssetSendTokenSelect(method)
+        }
     }
 
     fun setOnAssetClick(callback: (TokenItem) -> Unit): TokenListBottomSheetDialogFragment {

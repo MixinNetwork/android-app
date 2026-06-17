@@ -1,0 +1,41 @@
+<!--
+  ~ Copyright (C) 2026 The Android Open Source Project
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~      http://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+  <path
+      android:pathData="M24,0L24,0A24,24 0,0 1,48 24L48,24A24,24 0,0 1,24 48L24,48A24,24 0,0 1,0 24L0,24A24,24 0,0 1,24 0z"
+      android:fillColor="#0FB321"
+      android:fillAlpha="0.2"/>
+  <path
+      android:pathData="M16,32C16.552,32 17,31.552 17,31V20.276L21.329,24.241L21.406,24.305C21.591,24.443 21.82,24.514 22.053,24.503C22.319,24.49 22.57,24.371 22.748,24.173L26.543,19.957L31.298,24.711C31.688,25.101 32.321,25.101 32.712,24.711C33.102,24.32 33.102,23.687 32.712,23.297L27.212,17.797C27.018,17.603 26.753,17.497 26.479,17.504C26.204,17.511 25.945,17.631 25.762,17.835L21.937,22.086L17,17.565V16C17,15.448 16.552,15 16,15C15.448,15 15,15.448 15,16V31C15,31.552 15.448,32 16,32Z"
+      android:fillColor="#0FB321"/>
+  <path
+      android:pathData="M20.5,32C21.052,32 21.5,31.552 21.5,31C21.5,30.448 21.052,30 20.5,30H19C18.448,30 18,30.448 18,31C18,31.552 18.448,32 19,32L20.5,32ZM26.334,32C26.886,32 27.334,31.552 27.334,31C27.334,30.448 26.886,30 26.334,30H24.834C24.282,30 23.834,30.448 23.834,31C23.834,31.552 24.282,32 24.834,32H26.334Z"
+      android:fillColor="#0FB321"/>
+  <path
+      android:pathData="M33.334,31C33.334,31.552 32.886,32 32.334,32H30.834C30.282,32 29.834,31.552 29.834,31C29.834,30.448 30.282,30 30.834,30H32.334C32.886,30 33.334,30.448 33.334,31Z"
+      android:fillColor="#0FB321"/>
+  <path
+      android:pathData="M27.005,24.004H32.005V19.004"
+      android:strokeLineJoin="round"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="#0FB321"
+      android:strokeLineCap="round"/>
+</vector>

@@ -1,7 +1,4 @@
 package one.mixin.android.ui.wallet.components
-import android.content.ClipData
-import android.os.Build
-import android.os.PersistableBundle
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -30,11 +27,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.copySensitiveTextToClipboard
 import one.mixin.android.extension.toast
 
 @Composable
@@ -104,25 +99,8 @@ fun DisplayPrivateKeyContent(
                     .align(Alignment.BottomEnd)
                     .clickable {
                         securityContent?.let { content ->
-                            val clipboard = context.getClipboardManager()
-                            val clip = ClipData.newPlainText("", content)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                                @Suppress("NewApi")
-                                clip.description.extras = PersistableBundle().apply {
-                                    putBoolean("android.content.extra.IS_SENSITIVE", true)
-                                }
-                            }
-                            clipboard.setPrimaryClip(clip)
+                            context.copySensitiveTextToClipboard(content, scope)
                             toast(R.string.copied_to_clipboard)
-                            scope.launch {
-                                delay(60_000L)
-                                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-                                    val current = clipboard.primaryClip?.getItemAt(0)?.text?.toString()
-                                    if (current == content) {
-                                        clipboard.clearPrimaryClip()
-                                    }
-                                }
-                            }
                         }
                     }
             )

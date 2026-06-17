@@ -128,11 +128,20 @@ class SwapViewModel
                         AnalyticsTracker.TradeQuoteResult.SUCCESS,
                         type
                     )
+                    AnalyticsTracker.trackSpotQuote(
+                        AnalyticsTracker.TradeQuoteResult.SUCCESS,
+                        TradeQuoteType.SWAP
+                    )
                     Result.success(requireNotNull(response.data))
                 } else if (response.errorCode == INVALID_QUOTE_AMOUNT) {
                     AnalyticsTracker.trackTradeQuote(
                         AnalyticsTracker.TradeQuoteResult.FAILURE,
                         type,
+                        TradeQuoteReason.INVALID_AMOUNT
+                    )
+                    AnalyticsTracker.trackSpotQuote(
+                        AnalyticsTracker.TradeQuoteResult.FAILURE,
+                        TradeQuoteType.SWAP,
                         TradeQuoteReason.INVALID_AMOUNT
                     )
                     val extra = response.error?.extra?.asJsonObject?.get("data")?.asJsonObject
@@ -155,6 +164,11 @@ class SwapViewModel
                     AnalyticsTracker.trackTradeQuote(
                         AnalyticsTracker.TradeQuoteResult.FAILURE,
                         type,
+                        reason
+                    )
+                    AnalyticsTracker.trackSpotQuote(
+                        AnalyticsTracker.TradeQuoteResult.FAILURE,
+                        TradeQuoteType.SWAP,
                         reason
                     )
                     if (response.errorCode == NO_AVAILABLE_QUOTE || response.errorCode == INVALID_SWAP) {

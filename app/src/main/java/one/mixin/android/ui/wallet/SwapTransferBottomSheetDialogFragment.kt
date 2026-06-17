@@ -596,8 +596,14 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                         .align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showPin() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackSpotPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackSpotPreviewConfirm()
+                                    showPin()
+                                },
                             )
                         }
 
@@ -608,8 +614,14 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                         .align(Alignment.BottomCenter),
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Continue),
-                                cancelAction = { dismiss() },
-                                confirmAction = { showPin() },
+                                cancelAction = {
+                                    AnalyticsTracker.trackSpotPreviewCancel()
+                                    dismiss()
+                                },
+                                confirmAction = {
+                                    AnalyticsTracker.trackSpotPreviewConfirm()
+                                    showPin()
+                                },
                             )
                         }
 
@@ -676,8 +688,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 )
                                 context?.updatePinCheck()
                                 step = Step.Done
-                                val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-                                AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                                trackSwapSuccess()
                             }
 
                             JsSignMessage.TYPE_RAW_TRANSACTION -> {
@@ -696,8 +707,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 )
                                 context?.updatePinCheck()
                                 step = Step.Done
-                                val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-                                AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                                trackSwapSuccess()
                             }
 
                             JsSignMessage.TYPE_TRANSACTION -> {
@@ -714,8 +724,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 )
                                 context?.updatePinCheck()
                                 step = Step.Done
-                                val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-                                AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                                trackSwapSuccess()
                             }
 
                             JsSignMessage.TYPE_BTC_TRANSACTION -> {
@@ -733,8 +742,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 )
                                 context?.updatePinCheck()
                                 step = Step.Done
-                                val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-                                AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+                                trackSwapSuccess()
                             }
 
                             else -> {
@@ -775,12 +783,17 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             )
             context?.updatePinCheck()
             step = Step.Done
-            val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
-            AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+            trackSwapSuccess()
         } else {
             errorInfo = handleError(response.error) ?: response.errorDescription
             step = Step.Error
         }
+    }
+
+    private fun trackSwapSuccess() {
+        val wallet = if (inAsset.isWeb3) AnalyticsTracker.TradeWallet.WEB3 else AnalyticsTracker.TradeWallet.MAIN
+        AnalyticsTracker.trackTradeEnd(wallet, inAmount, inAsset.price)
+        AnalyticsTracker.trackSpotEnd(wallet, inAmount, inAsset.price)
     }
 
     private suspend fun handleError(
@@ -938,7 +951,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             }
                         } catch (e: Exception) {
                             Timber.e(e, "Failed to build transaction")
-                            errorInfo = if (e is EmptyUtxoException) getString(R.string.no_available_utxo) else e.message
+                            errorInfo = if (e is EmptyUtxoException) getString(R.string.no_available_utxo) else ErrorHandler.getErrorMessage(e)
                             step = Step.Error
                         }
                     }

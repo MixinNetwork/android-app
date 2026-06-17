@@ -138,12 +138,12 @@ object Web3Signer {
         return when (hex) {
             Chain.Ethereum.hexReference -> Chain.Ethereum
             Chain.Base.hexReference -> Chain.Base
-            Chain.Blast.hexReference -> Chain.Blast
             Chain.Arbitrum.hexReference -> Chain.Arbitrum
             Chain.Optimism.hexReference -> Chain.Optimism
             Chain.Avalanche.hexReference -> Chain.Avalanche
             Chain.Polygon.hexReference -> Chain.Polygon
             Chain.BinanceSmartChain.hexReference -> Chain.BinanceSmartChain
+            Chain.HyperEVM.hexReference -> Chain.HyperEVM
             Chain.Solana.hexReference -> Chain.Solana
             else -> null
         }
@@ -242,11 +242,6 @@ object Web3Signer {
                 persist()
                 Result.success(Chain.Base.name)
             }
-            Chain.Blast.hexReference -> {
-                currentChain = Chain.Blast
-                persist()
-                Result.success(Chain.Blast.name)
-            }
             Chain.Arbitrum.hexReference -> {
                 currentChain = Chain.Arbitrum
                 persist()
@@ -271,6 +266,11 @@ object Web3Signer {
                 currentChain = Chain.BinanceSmartChain
                 persist()
                 Result.success(Chain.BinanceSmartChain.name)
+            }
+            Chain.HyperEVM.hexReference -> {
+                currentChain = Chain.HyperEVM
+                persist()
+                Result.success(Chain.HyperEVM.name)
             }
             Chain.Solana.hexReference -> {
                 currentChain = Chain.Solana

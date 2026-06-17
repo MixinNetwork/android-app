@@ -51,7 +51,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
@@ -63,6 +63,8 @@ import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualContent
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
+import one.mixin.android.ui.home.web3.widget.MarketSort
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.WalletCategory
 import java.math.BigDecimal
 
@@ -85,11 +87,12 @@ fun TradePage(
     reviewing: Boolean,
     initialTabIndex: Int,
     source: String,
+    entrySource: String,
     onSelectToken: (Boolean, SelectTokenType, Boolean) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
-    onOrderList: (String, Boolean) -> Unit,
+    onOrderList: (String, Boolean, String) -> Unit,
     onDismissLimitOrderTabBadge: () -> Unit,
     onDismissPerpetualTabBadge: () -> Unit,
     onDismissPerpetualOrderBadge: () -> Unit,
@@ -101,12 +104,12 @@ fun TradePage(
     onShowTradingGuide: (Int) -> Unit,
     onShowHelpBottomSheet: (() -> Unit, () -> Unit) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
-    onShowAllMarkets: () -> Unit,
+    onShowAllMarkets: (String?, MarketSort?) -> Unit,
     onShowAllOpenPositions: () -> Unit,
     onShowAllClosedPositions: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
     onMarketItemClick: (PerpsMarket) -> Unit,
-    onClosedPositionClick: (PerpsPositionHistoryItem) -> Unit,
+    onClosedPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val context = LocalContext.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -119,6 +122,11 @@ fun TradePage(
     val coroutineScope = rememberCoroutineScope()
 
     val currentWalletId = walletId ?: Session.getAccountId() ?: ""
+    val tradeWallet = if (walletId == null) {
+        AnalyticsTracker.TradeWallet.MAIN
+    } else {
+        AnalyticsTracker.TradeWallet.WEB3
+    }
     val pendingCount by viewModel.getPendingOrderCountByWallet(currentWalletId).collectAsStateWithLifecycle(initialValue = 0)
     val openPerpetualPositions by remember(currentWalletId, walletId) {
         if (walletId == null && currentWalletId.isNotEmpty()) {
@@ -213,6 +221,28 @@ fun TradePage(
         pageCount = { tabCount },
     )
 
+    fun spotTypeForPage(page: Int): String {
+        return if (page == 1) AnalyticsTracker.SpotTradeType.ADVANCED else AnalyticsTracker.SpotTradeType.SIMPLE
+    }
+
+    fun tradeTypeForPage(page: Int): String {
+        return if (perpetualTabIndex != null && page == perpetualTabIndex) {
+            AnalyticsTracker.SpotTradeType.PERPETUAL
+        } else {
+            spotTypeForPage(page)
+        }
+    }
+
+    LaunchedEffect(initialTabIndex, tradeWallet, entrySource) {
+        if (perpetualTabIndex == null || initialTabIndex != perpetualTabIndex) {
+            AnalyticsTracker.trackSpotStart(
+                wallet = tradeWallet,
+                type = spotTypeForPage(initialTabIndex),
+                source = entrySource,
+            )
+        }
+    }
+
     LaunchedEffect(Unit) {
         onShowTradingGuideIfNeeded(pagerState.currentPage)
     }
@@ -268,7 +298,7 @@ fun TradePage(
                         }
                         onShowAllOpenPositions()
                     } else {
-                        onOrderList(currentWalletId, false)
+                        onOrderList(currentWalletId, false, spotTypeForPage(pagerState.currentPage))
                     }
                 }) {
                     Icon(
@@ -335,7 +365,21 @@ fun TradePage(
             }
             IconButton(onClick = {
                 onShowHelpBottomSheet(
-                    { context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) },
+                    {
+                        val source = when {
+                            perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex ->
+                                AnalyticsTracker.CustomerServiceSource.TRADE_PERPS_HOME_MENU
+                            pagerState.currentPage == 1 ->
+                                AnalyticsTracker.CustomerServiceSource.TRADE_ADVANCED_HOME_MENU
+                            else ->
+                                AnalyticsTracker.CustomerServiceSource.TRADE_SIMPLE_HOME_MENU
+                        }
+                        context.openUrl(
+                            Constants.HelpLink.CUSTOMER_SERVICE,
+                            source = source,
+                            wallet = AnalyticsTracker.TradeWallet.WEB3,
+                        )
+                    },
                     { onShowTradingGuide(pagerState.currentPage) }
                 )
             }) {
@@ -375,6 +419,7 @@ fun TradePage(
                         if (isPerpetualTab && !isPerpetualTabBadgeDismissed) {
                             onDismissPerpetualTabBadge()
                         }
+                        AnalyticsTracker.trackTradeTypeSelect(tradeTypeForPage(index))
                         onShowTradingGuideIfNeeded(index)
                         onTabChanged(index)
                     },

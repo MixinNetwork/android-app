@@ -11,4 +11,11 @@ google-services.json
 .externalNativeBuild
 sentry.properties
 gemini.md
+GEMINI.md
+AGENTS.md
+CLAUDE.md
+agent.md
+.claude/
+.codex/
+.github/copilot-instructions.md
 .vscode/

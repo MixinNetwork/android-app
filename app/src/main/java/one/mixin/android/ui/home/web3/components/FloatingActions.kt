@@ -33,7 +33,8 @@ fun FloatingActions(
     toToken: SwapToken?,
     isPriceInverted: Boolean,
     onSetInput: (String) -> Unit,
-    onSetPriceMultiplier: (Float?) -> Unit,
+    onInputQuickAction: (String) -> Unit = {},
+    onSetPriceMultiplier: (String, Float?) -> Unit,
     onDone: () -> Unit,
     onMarketPriceClick: (() -> Unit)? = null,
 ) {
@@ -49,6 +50,7 @@ fun FloatingActions(
             ) {
                 val balance = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
                 InputAction("25%", showBorder = true) {
+                    onInputQuickAction("25%")
                     if (balance > BigDecimal.ZERO) {
                         onSetInput((balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString())
                     } else {
@@ -56,6 +58,7 @@ fun FloatingActions(
                     }
                 }
                 InputAction("50%", showBorder = true) {
+                    onInputQuickAction("50%")
                     if (balance > BigDecimal.ZERO) {
                         onSetInput((balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString())
                     } else {
@@ -63,6 +66,7 @@ fun FloatingActions(
                     }
                 }
                 InputAction(stringResource(R.string.Max), showBorder = true) {
+                    onInputQuickAction("max")
                     if (balance > BigDecimal.ZERO) {
                         onSetInput(balance.stripTrailingZeros().toPlainString())
                     } else {
@@ -157,7 +161,7 @@ private fun priceQuickActions(
     fromToken: SwapToken?,
     toToken: SwapToken?,
     isPriceInverted: Boolean,
-    onSetPriceMultiplier: (Float?) -> Unit,
+    onSetPriceMultiplier: (String, Float?) -> Unit,
     onMarketPriceClick: (() -> Unit)?,
     onDone: () -> Unit,
     doneLabel: String,
@@ -165,23 +169,23 @@ private fun priceQuickActions(
     val isFromUsd = fromToken.isUsdToken()
     val isToUsd = toToken.isUsdToken()
     val marketAction = PriceQuickAction("market") {
-        onSetPriceMultiplier(1.0f)
+        onSetPriceMultiplier("market", 1.0f)
         onMarketPriceClick?.invoke()
     }
     val decreaseActions = listOf(
         PriceQuickAction("-10%") {
-            onSetPriceMultiplier(displayPriceMultiplier(0.9f, isPriceInverted))
+            onSetPriceMultiplier("-10%", displayPriceMultiplier(0.9f, isPriceInverted))
         },
         PriceQuickAction("-20%") {
-            onSetPriceMultiplier(displayPriceMultiplier(0.8f, isPriceInverted))
+            onSetPriceMultiplier("-20%", displayPriceMultiplier(0.8f, isPriceInverted))
         },
     )
     val increaseActions = listOf(
         PriceQuickAction("+10%") {
-            onSetPriceMultiplier(displayPriceMultiplier(1.1f, isPriceInverted))
+            onSetPriceMultiplier("+10%", displayPriceMultiplier(1.1f, isPriceInverted))
         },
         PriceQuickAction("+20%") {
-            onSetPriceMultiplier(displayPriceMultiplier(1.2f, isPriceInverted))
+            onSetPriceMultiplier("+20%", displayPriceMultiplier(1.2f, isPriceInverted))
         },
     )
 
