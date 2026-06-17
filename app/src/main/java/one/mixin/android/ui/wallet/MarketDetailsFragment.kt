@@ -6,7 +6,6 @@ import android.view.View
 import android.view.View.VISIBLE
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.text.HtmlCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -364,10 +363,9 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     val desc = info.descriptions?.let { map ->
                         val lang = Locale.getDefault().language
                         selectLocalizedMarketDescription(map, lang)
-                    }?.let { HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim() }
+                    }
                     aboutContainer.isVisible = !desc.isNullOrBlank()
-                    aboutContent.expandAction = getString(R.string.More).lowercase()
-                    aboutContent.originalText = desc.orEmpty()
+                    aboutContent.setMarketDescription(desc.orEmpty())
 
                     priceValue.setTextColor(textPrimary)
                     marketCap.setTextColor(textPrimary)
@@ -404,7 +402,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     lowValue.setTextColor(textAssist)
                     lowValue.setText(R.string.N_A)
                     aboutContainer.isVisible = false
-                    aboutContent.originalText = ""
+                    aboutContent.setMarketDescription("")
                 }
             }
         }

@@ -585,18 +585,15 @@
                     android:textColor="?attr/text_minor"
                     android:textSize="13sp" />
 
-                <one.mixin.android.widget.ExpandableTextView
+                <one.mixin.android.ui.wallet.MarketDescriptionTextView
                     android:id="@+id/about_content"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
+                    android:ellipsize="end"
+                    android:maxLines="3"
                     android:textColor="?attr/text_assist"
-                    android:textSize="14sp"
-                    app:collapsedFadeColor="?attr/bg_white"
-                    app:collapsedFadeEnabled="true"
-                    app:collapsedFadeWidth="32dp"
-                    app:expandActionColor="?attr/text_blue"
-                    app:limitedMaxLines="3" />
+                    android:textSize="14sp" />
             </LinearLayout>
 
         </LinearLayout>
