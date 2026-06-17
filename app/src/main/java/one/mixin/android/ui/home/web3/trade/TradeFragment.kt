@@ -205,7 +205,6 @@ class TradeFragment : BaseFragment() {
     private var topGainerMarkets: List<MarketItem> by mutableStateOf(emptyList())
     private var topLoserMarkets: List<MarketItem> by mutableStateOf(emptyList())
     private var swapScrollToTopSignal by mutableLongStateOf(0L)
-    private var scrollSwapToTopOnResume = false
     private var tokenItems: List<TokenItem>? = null
     private var web3tokens: List<Web3TokenItem>? = null
     private var fromToken: SwapToken? by mutableStateOf(null)
@@ -826,6 +825,7 @@ class TradeFragment : BaseFragment() {
             .subscribe { event ->
                 lifecycleScope.launch(coroutineErrorHandler) {
                     selectMarketToken(event.inputAssetId, event.outputAssetId)
+                    swapScrollToTopSignal++
                 }
             }
     }
@@ -1384,7 +1384,6 @@ class TradeFragment : BaseFragment() {
         }
     }
     private fun showMarketDetails(marketItem: MarketItem) {
-        scrollSwapToTopOnResume = true
         WalletActivity.showWithMarket(
             requireActivity(),
             marketItem,
@@ -1700,10 +1699,6 @@ class TradeFragment : BaseFragment() {
         if (view != null) {
             startOrdersPolling()
         }
-        if (scrollSwapToTopOnResume) {
-            scrollSwapToTopOnResume = false
-            swapScrollToTopSignal++
-        }
     }
 
     override fun onDestroyView() {
@@ -1719,7 +1714,6 @@ class TradeFragment : BaseFragment() {
         topGainerMarkets = emptyList()
         topLoserMarkets = emptyList()
         swapScrollToTopSignal = 0L
-        scrollSwapToTopOnResume = false
         tokenItems = null
         web3tokens = null
     }

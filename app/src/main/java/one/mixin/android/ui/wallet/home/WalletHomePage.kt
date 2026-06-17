@@ -14,9 +14,12 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.home.components.BannerPager
 import one.mixin.android.ui.wallet.home.components.ImportSafetyFooter
@@ -29,11 +32,23 @@ fun WalletHomePage(
     callbacks: WalletHomeCallbacks,
 ) {
     MixinAppTheme {
+        val scrollState = rememberScrollState()
+        val coroutineScope = rememberCoroutineScope()
+        val scrollingCallbacks = remember(callbacks, scrollState, coroutineScope) {
+            object : WalletHomeCallbacks by callbacks {
+                override fun onSwapClicked() {
+                    coroutineScope.launch {
+                        scrollState.scrollTo(0)
+                        callbacks.onSwapClicked()
+                    }
+                }
+            }
+        }
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MixinAppTheme.colors.background)
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(scrollState),
         ) {
             Spacer(modifier = Modifier.height(10.dp))
             if (state.isLoading && state.cards.isEmpty()) {
@@ -54,9 +69,9 @@ fun WalletHomePage(
 
             state.cards.forEachIndexed { index, card ->
                 when (card) {
-                    WalletHomeCardType.BANNER -> BannerPager(state, callbacks)
-                    WalletHomeCardType.SUPPORT -> SupportCard(callbacks)
-                    else -> WalletHomeCard(card, state, callbacks)
+                    WalletHomeCardType.BANNER -> BannerPager(state, scrollingCallbacks)
+                    WalletHomeCardType.SUPPORT -> SupportCard(scrollingCallbacks)
+                    else -> WalletHomeCard(card, state, scrollingCallbacks)
                 }
                 if (index != state.cards.lastIndex || !state.showImportSafetyFooter) {
                     Spacer(modifier = Modifier.height(10.dp))
