@@ -47,9 +47,12 @@ import java.text.DecimalFormat
 
 private const val RECOMMENDED_MARKET_COLUMNS = 4
 private const val RECOMMENDED_MARKET_LIMIT = 8
+private val RecommendedMarketChangeHeight = 16.dp
+private val RecommendedMarketSymbolHeight = 18.dp
+private val RecommendedMarketPriceHeight = 16.dp
 
 enum class SwapRecommendedMarketType {
-    Trending,
+    Stocks,
     TopGainers,
     TopLosers,
 }
@@ -66,7 +69,7 @@ private data class RecommendedMarketUiItem(
 
 @Composable
 fun SwapRecommendedMarketCards(
-    trendingMarkets: List<MarketItem>,
+    stockMarkets: List<MarketItem>,
     topGainerMarkets: List<MarketItem>,
     topLoserMarkets: List<MarketItem>,
     onMarketClick: (MarketItem) -> Unit,
@@ -75,17 +78,17 @@ fun SwapRecommendedMarketCards(
 ) {
     val cards = listOf(
         RecommendedMarketCardData(
-            titleRes = R.string.Trending,
-            type = SwapRecommendedMarketType.Trending,
+            titleRes = R.string.Stocks,
+            type = SwapRecommendedMarketType.Stocks,
             showViewAll = true,
-            items = trendingMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = stockMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),
         RecommendedMarketCardData(
             titleRes = R.string.top_gainers,
             type = SwapRecommendedMarketType.TopGainers,
-            showViewAll = true,
+            showViewAll = false,
             items = topGainerMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
@@ -93,7 +96,7 @@ fun SwapRecommendedMarketCards(
         RecommendedMarketCardData(
             titleRes = R.string.top_losers,
             type = SwapRecommendedMarketType.TopLosers,
-            showViewAll = true,
+            showViewAll = false,
             items = topLoserMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
@@ -232,61 +235,84 @@ private fun RecommendedMarketGridItem(
             )
             item.changePercent?.let { changePercent ->
                 val changePercentFontSize = if (item.shrinkChangePercent) 10.sp else 12.sp
-                BasicText(
-                    text = changePercent,
-                    style = TextStyle(
-                        fontSize = changePercentFontSize,
-                        lineHeight = 14.sp,
-                        color = Color.White,
-                        textAlign = TextAlign.Center,
-                    ),
-                    maxLines = 1,
-                    autoSize = TextAutoSize.StepBased(
-                        minFontSize = 8.sp,
-                        maxFontSize = changePercentFontSize,
-                        stepSize = 0.5.sp,
-                    ),
+                Box(
                     modifier = Modifier
                         .offset(y = 32.dp)
                         .widthIn(min = 44.dp, max = 68.dp)
+                        .height(RecommendedMarketChangeHeight)
                         .clip(RoundedCornerShape(4.dp))
                         .background(if (item.isPositive) risingColor else fallingColor)
-                        .padding(horizontal = 4.dp, vertical = 1.dp),
-                )
+                        .padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    BasicText(
+                        text = changePercent,
+                        style = TextStyle(
+                            fontSize = changePercentFontSize,
+                            lineHeight = 14.sp,
+                            color = Color.White,
+                            textAlign = TextAlign.Center,
+                        ),
+                        maxLines = 1,
+                        autoSize = TextAutoSize.StepBased(
+                            minFontSize = 8.sp,
+                            maxFontSize = changePercentFontSize,
+                            stepSize = 0.5.sp,
+                        ),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
             }
         }
         Spacer(modifier = Modifier.height(4.dp))
-        BasicText(
-            text = item.symbol,
-            style = TextStyle(
-                fontSize = 14.sp,
-                lineHeight = 18.sp,
-                color = MixinAppTheme.colors.textPrimary,
-                textAlign = TextAlign.Center,
-            ),
-            maxLines = 1,
-            autoSize = TextAutoSize.StepBased(
-                minFontSize = 8.sp,
-                maxFontSize = 14.sp,
-                stepSize = 0.5.sp,
-            ),
-        )
-        item.price?.let { price ->
-            Spacer(modifier = Modifier.height(2.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(RecommendedMarketSymbolHeight),
+            contentAlignment = Alignment.Center,
+        ) {
             BasicText(
-                text = price,
+                text = item.symbol,
                 style = TextStyle(
-                    fontSize = 13.sp,
-                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 14.sp,
+                    lineHeight = 18.sp,
+                    color = MixinAppTheme.colors.textPrimary,
                     textAlign = TextAlign.Center,
                 ),
                 maxLines = 1,
                 autoSize = TextAutoSize.StepBased(
                     minFontSize = 8.sp,
-                    maxFontSize = 13.sp,
+                    maxFontSize = 14.sp,
                     stepSize = 0.5.sp,
                 ),
+                modifier = Modifier.fillMaxWidth(),
             )
+        }
+        Spacer(modifier = Modifier.height(2.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(RecommendedMarketPriceHeight),
+            contentAlignment = Alignment.Center,
+        ) {
+            item.price?.let { price ->
+                BasicText(
+                    text = price,
+                    style = TextStyle(
+                        fontSize = 13.sp,
+                        lineHeight = 16.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                        textAlign = TextAlign.Center,
+                    ),
+                    maxLines = 1,
+                    autoSize = TextAutoSize.StepBased(
+                        minFontSize = 8.sp,
+                        maxFontSize = 13.sp,
+                        stepSize = 0.5.sp,
+                    ),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            }
         }
     }
 }

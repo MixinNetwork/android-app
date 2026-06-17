@@ -96,14 +96,15 @@ fun SwapContent(
     lastOrderTime: Long?,
     reviewing: Boolean,
     source: String,
-    trendingMarkets: List<MarketItem>,
+    stockMarkets: List<MarketItem>,
     topGainerMarkets: List<MarketItem>,
     topLoserMarkets: List<MarketItem>,
+    scrollToTopSignal: Long,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onDeposit: (SwapToken) -> Unit,
     onRecommendedMarketClick: (MarketItem) -> Unit,
-    onRecommendedMarketViewAllClick: (SwapRecommendedMarketType) -> Unit,
+    onRecommendedMarketViewAllClick: (SwapRecommendedMarketType, Boolean) -> Unit,
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
 ) {
     val context = LocalContext.current
@@ -207,6 +208,11 @@ fun SwapContent(
             modifier = Modifier.fillMaxHeight(),
             content = { availableHeight ->
             val scrollState = rememberScrollState()
+            LaunchedEffect(scrollToTopSignal) {
+                if (scrollToTopSignal > 0L) {
+                    scrollState.scrollTo(0)
+                }
+            }
             Column(
                 modifier = if (availableHeight != null) {
                     Modifier
@@ -216,7 +222,7 @@ fun SwapContent(
                     Modifier.fillMaxSize()
                 }
             ) {
-                val hasRecommendedCards = topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
+                val hasRecommendedCards = stockMarkets.isNotEmpty() || topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
                 val showRecommendedCards = shouldShowSwapRecommendedMarketCards(
                     hasRecommendedCards = hasRecommendedCards,
                     inputText = inputText,
@@ -332,11 +338,11 @@ fun SwapContent(
                     if (showRecommendedCards) {
                         Spacer(modifier = Modifier.height(4.dp))
                         SwapRecommendedMarketCards(
-                            trendingMarkets = emptyList(),
+                            stockMarkets = stockMarkets,
                             topGainerMarkets = topGainerMarkets,
                             topLoserMarkets = topLoserMarkets,
                             onMarketClick = onRecommendedMarketClick,
-                            onViewAllClick = onRecommendedMarketViewAllClick,
+                            onViewAllClick = { type -> onRecommendedMarketViewAllClick(type, isReverse) },
                             modifier = Modifier.padding(horizontal = 20.dp),
                         )
                         Spacer(modifier = Modifier.height(14.dp))

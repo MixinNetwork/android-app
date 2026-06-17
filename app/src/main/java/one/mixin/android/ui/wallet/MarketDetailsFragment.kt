@@ -414,7 +414,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
     private fun setBottomAlertLoading(loading: Boolean) {
         binding.bottomAlertIcon.isVisible = !loading
-        binding.bottomAlertProgress.isVisible = loading
         binding.bottomAlert.isEnabled = !loading
     }
 

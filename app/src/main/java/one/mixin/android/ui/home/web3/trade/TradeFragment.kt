@@ -27,9 +27,11 @@ import com.google.gson.reflect.TypeToken
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -159,6 +161,7 @@ class TradeFragment : BaseFragment() {
         const val TAB_PERPETUAL = 2
 
         private const val RECOMMENDED_MARKET_LIMIT = 8
+        private const val MARKET_CATEGORY_STOCKS = "stocks"
         private const val MARKET_CATEGORY_TOP_GAINERS = "top_gainers"
         private const val MARKET_CATEGORY_TOP_LOSERS = "top_losers"
 
@@ -196,9 +199,11 @@ class TradeFragment : BaseFragment() {
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var remoteSwapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var stocks: List<SwapToken> by mutableStateOf(emptyList())
-    private var trendingMarkets: List<MarketItem> by mutableStateOf(emptyList())
+    private var stockMarkets: List<MarketItem> by mutableStateOf(emptyList())
     private var topGainerMarkets: List<MarketItem> by mutableStateOf(emptyList())
     private var topLoserMarkets: List<MarketItem> by mutableStateOf(emptyList())
+    private var swapScrollToTopSignal by mutableLongStateOf(0L)
+    private var scrollSwapToTopOnResume = false
     private var tokenItems: List<TokenItem>? = null
     private var web3tokens: List<Web3TokenItem>? = null
     private var fromToken: SwapToken? by mutableStateOf(null)
@@ -362,16 +367,13 @@ class TradeFragment : BaseFragment() {
                             initialTabIndex = initialTabIndex,
                             source = getSource(),
                             entrySource = getEntrySource(),
-                            trendingMarkets = trendingMarkets,
+                            stockMarkets = stockMarkets,
                             topGainerMarkets = topGainerMarkets,
                             topLoserMarkets = topLoserMarkets,
+                            scrollToTopSignal = swapScrollToTopSignal,
                             onSelectToken = { isReverse, type, isLimit ->
-                                    if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
-                                        selectCallback(swapTokens, isReverse, type, isLimit)
-                                    } else {
-                                        selectCallback(swapTokens, isReverse, type, isLimit)
-                                    }
-                                },
+                                showSwapTokenList(swapTokens, isReverse, type, isLimit)
+                            },
                                 onDismissLimitOrderTabBadge = {
                                     if (!isLimitOrderTabBadgeDismissed) {
                                         isLimitOrderTabBadgeDismissed = true
@@ -553,8 +555,19 @@ class TradeFragment : BaseFragment() {
                             onRecommendedMarketClick = { marketItem ->
                                 showMarketDetails(marketItem)
                             },
-                            onRecommendedMarketViewAllClick = {
-                                requireContext().openMarket()
+                            onRecommendedMarketViewAllClick = { type, isReverse ->
+                                when (type) {
+                                    SwapRecommendedMarketType.Stocks -> {
+                                        showSwapTokenList(
+                                            list = swapTokens,
+                                            isReverse = isReverse,
+                                            type = if (isReverse) SelectTokenType.From else SelectTokenType.To,
+                                            isLimit = false,
+                                            initialStockMode = true,
+                                        )
+                                    }
+                                    else -> requireContext().openMarket()
+                                }
                             },
                             onShowMarketList = { isLong ->
                                     PerpsMarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
@@ -605,11 +618,12 @@ class TradeFragment : BaseFragment() {
         }
     }
 
-    private val selectCallback = fun(
+    private fun showSwapTokenList(
         list: List<SwapToken>,
         isReverse: Boolean,
         type: SelectTokenType,
         isLimit: Boolean,
+        initialStockMode: Boolean = false,
     ) {
         if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
             val targetPref = if (isLimit) {
@@ -621,9 +635,10 @@ class TradeFragment : BaseFragment() {
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     targetPref,
                     ArrayList(list), stocks, if (isReverse) (if (isLimit) limitToToken?.assetId else toToken?.assetId) else (if (isLimit) limitFromToken?.assetId else fromToken?.assetId),
-                    isFrom = true
+                    isFrom = true,
+                    initialStockMode = initialStockMode,
                 ).apply {
-                    if (list.isEmpty()) {
+                    if ((initialStockMode && stocks.isEmpty()) || (!initialStockMode && list.isEmpty())) {
                         setLoading(true)
                     }
                     setOnDeposit {
@@ -644,7 +659,11 @@ class TradeFragment : BaseFragment() {
                     ),
                     stocks,
                     isFrom = true,
+                    initialStockMode = initialStockMode,
                 ).apply {
+                    if ((initialStockMode && stocks.isEmpty()) || (!initialStockMode && list.isEmpty())) {
+                        setLoading(true)
+                    }
                     setOnDeposit {
                         this@TradeFragment.lifecycleScope.launch(coroutineErrorHandler) {
                             val t = swapViewModel.getTokenByWalletAndAssetId(
@@ -694,8 +713,9 @@ class TradeFragment : BaseFragment() {
                     if (isReverse) (if (isLimit) limitFromToken?.assetId else fromToken?.assetId) else (if (isLimit) limitToToken?.assetId else toToken?.assetId)
                 } else null,
                 isFrom = false,
+                initialStockMode = initialStockMode,
             ).apply {
-                if (list.isEmpty()) {
+                if ((initialStockMode && stocks.isEmpty()) || (!initialStockMode && list.isEmpty())) {
                     setLoading(true)
                 }
                 setOnClickListener { token, alert ->
@@ -1361,6 +1381,7 @@ class TradeFragment : BaseFragment() {
         }
     }
     private fun showMarketDetails(marketItem: MarketItem) {
+        scrollSwapToTopOnResume = true
         WalletActivity.showWithMarket(
             requireActivity(),
             marketItem,
@@ -1372,63 +1393,66 @@ class TradeFragment : BaseFragment() {
 
     private suspend fun refreshRecommendedMarkets() {
         coroutineScope {
-            launch {
-                refreshRecommendedMarket(
-                    category = MARKET_CATEGORY_TOP_GAINERS,
-                    onSuccess = { topGainerMarkets = it },
-                )
-            }
-            launch {
-                refreshRecommendedMarket(
-                    category = MARKET_CATEGORY_TOP_LOSERS,
-                    onSuccess = { topLoserMarkets = it },
-                )
-            }
+            val stocksDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_STOCKS, limit = null) }
+            val topGainersDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TOP_GAINERS) }
+            val topLosersDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TOP_LOSERS) }
+
+            val newStockMarkets = stocksDeferred.await()
+            val newTopGainerMarkets = topGainersDeferred.await()
+            val newTopLoserMarkets = topLosersDeferred.await()
+
+            stockMarkets = newStockMarkets
+            topGainerMarkets = newTopGainerMarkets
+            topLoserMarkets = newTopLoserMarkets
         }
     }
 
-    private suspend fun refreshRecommendedMarket(
+    private suspend fun fetchRecommendedMarket(
         category: String? = null,
+        limit: Int? = RECOMMENDED_MARKET_LIMIT,
         sort: String? = null,
-        onSuccess: (List<MarketItem>) -> Unit,
-    ) {
-        requestRouteAPI(
-            invokeNetwork = {
-                swapViewModel.markets(
-                    category = category,
-                    limit = RECOMMENDED_MARKET_LIMIT,
-                    sort = sort,
-                )
-            },
-            successBlock = { resp ->
-                resp.data?.map { MarketItem.fromMarket(it) }.orEmpty()
-            },
-            requestSession = { swapViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
-            failureBlock = { r ->
-                if (r.errorCode == 401) {
-                    swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
-                    refreshRecommendedMarket(category, sort, onSuccess)
-                    return@requestRouteAPI true
-                }
-                if (r.errorCode == ErrorHandler.OLD_VERSION) {
-                    alertDialogBuilder()
-                        .setTitle(R.string.Update_Mixin)
-                        .setMessage(getString(R.string.update_mixin_description, requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)))
-                        .setNegativeButton(R.string.Later) { dialog, _ ->
-                            dialog.dismiss()
-                            activity?.onBackPressedDispatcher?.onBackPressed()
-                        }.setPositiveButton(R.string.Update) { dialog, _ ->
-                            dialog.dismiss()
-                            activity?.onBackPressedDispatcher?.onBackPressed()
-                            context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
-                        }.setCancelable(false)
-                        .create().show()
+    ): List<MarketItem> {
+        return try {
+            requestRouteAPI(
+                invokeNetwork = {
+                    swapViewModel.markets(
+                        category = category,
+                        limit = limit,
+                        sort = sort,
+                    )
+                },
+                successBlock = { resp ->
+                    resp.data?.map { MarketItem.fromMarket(it) }.orEmpty()
+                },
+                requestSession = { swapViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
+                failureBlock = { r ->
+                    if (r.errorCode == ErrorHandler.OLD_VERSION) {
+                        alertDialogBuilder()
+                            .setTitle(R.string.Update_Mixin)
+                            .setMessage(getString(R.string.update_mixin_description, requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)))
+                            .setNegativeButton(R.string.Later) { dialog, _ ->
+                                dialog.dismiss()
+                                activity?.onBackPressedDispatcher?.onBackPressed()
+                            }.setPositiveButton(R.string.Update) { dialog, _ ->
+                                dialog.dismiss()
+                                activity?.onBackPressedDispatcher?.onBackPressed()
+                                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                            }.setCancelable(false)
+                            .create().show()
 
-                    return@requestRouteAPI true
-                }
-                false
-            },
-        )?.let(onSuccess)
+                        return@requestRouteAPI true
+                    }
+                    true
+                },
+                exceptionBlock = { true },
+                defaultErrorHandle = {},
+                defaultExceptionHandle = {},
+            ).orEmpty()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (t: Throwable) {
+            emptyList()
+        }
     }
 
     private suspend fun refreshStocks(chainIds: List<String>?) {
@@ -1670,6 +1694,10 @@ class TradeFragment : BaseFragment() {
         if (view != null) {
             startOrdersPolling()
         }
+        if (scrollSwapToTopOnResume) {
+            scrollSwapToTopOnResume = false
+            swapScrollToTopSignal++
+        }
     }
 
     override fun onDestroyView() {
@@ -1680,9 +1708,11 @@ class TradeFragment : BaseFragment() {
         }
         swapTokens = emptyList()
         stocks = emptyList()
-        trendingMarkets = emptyList()
+        stockMarkets = emptyList()
         topGainerMarkets = emptyList()
         topLoserMarkets = emptyList()
+        swapScrollToTopSignal = 0L
+        scrollSwapToTopOnResume = false
         tokenItems = null
         web3tokens = null
     }
