@@ -162,6 +162,7 @@ class TradeFragment : BaseFragment() {
 
         private const val RECOMMENDED_MARKET_LIMIT = 8
         private const val MARKET_CATEGORY_STOCKS = "stocks"
+        private const val MARKET_CATEGORY_TRENDING = "trending"
         private const val MARKET_CATEGORY_TOP_GAINERS = "top_gainers"
         private const val MARKET_CATEGORY_TOP_LOSERS = "top_losers"
 
@@ -200,6 +201,7 @@ class TradeFragment : BaseFragment() {
     private var remoteSwapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var stocks: List<SwapToken> by mutableStateOf(emptyList())
     private var stockMarkets: List<MarketItem> by mutableStateOf(emptyList())
+    private var trendingMarkets: List<MarketItem> by mutableStateOf(emptyList())
     private var topGainerMarkets: List<MarketItem> by mutableStateOf(emptyList())
     private var topLoserMarkets: List<MarketItem> by mutableStateOf(emptyList())
     private var swapScrollToTopSignal by mutableLongStateOf(0L)
@@ -368,6 +370,7 @@ class TradeFragment : BaseFragment() {
                             source = getSource(),
                             entrySource = getEntrySource(),
                             stockMarkets = stockMarkets,
+                            trendingMarkets = trendingMarkets,
                             topGainerMarkets = topGainerMarkets,
                             topLoserMarkets = topLoserMarkets,
                             scrollToTopSignal = swapScrollToTopSignal,
@@ -566,7 +569,7 @@ class TradeFragment : BaseFragment() {
                                             initialStockMode = true,
                                         )
                                     }
-                                    else -> requireContext().openMarket()
+                                    else -> Unit
                                 }
                             },
                             onShowMarketList = { isLong ->
@@ -1394,14 +1397,17 @@ class TradeFragment : BaseFragment() {
     private suspend fun refreshRecommendedMarkets() {
         coroutineScope {
             val stocksDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_STOCKS, limit = null) }
+            val trendingDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TRENDING, limit = null) }
             val topGainersDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TOP_GAINERS) }
             val topLosersDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TOP_LOSERS) }
 
             val newStockMarkets = stocksDeferred.await()
+            val newTrendingMarkets = trendingDeferred.await()
             val newTopGainerMarkets = topGainersDeferred.await()
             val newTopLoserMarkets = topLosersDeferred.await()
 
             stockMarkets = newStockMarkets
+            trendingMarkets = newTrendingMarkets
             topGainerMarkets = newTopGainerMarkets
             topLoserMarkets = newTopLoserMarkets
         }
@@ -1709,6 +1715,7 @@ class TradeFragment : BaseFragment() {
         swapTokens = emptyList()
         stocks = emptyList()
         stockMarkets = emptyList()
+        trendingMarkets = emptyList()
         topGainerMarkets = emptyList()
         topLoserMarkets = emptyList()
         swapScrollToTopSignal = 0L

@@ -97,6 +97,7 @@ fun SwapContent(
     reviewing: Boolean,
     source: String,
     stockMarkets: List<MarketItem>,
+    trendingMarkets: List<MarketItem>,
     topGainerMarkets: List<MarketItem>,
     topLoserMarkets: List<MarketItem>,
     scrollToTopSignal: Long,
@@ -222,7 +223,7 @@ fun SwapContent(
                     Modifier.fillMaxSize()
                 }
             ) {
-                val hasRecommendedCards = stockMarkets.isNotEmpty() || topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
+                val hasRecommendedCards = stockMarkets.isNotEmpty() || trendingMarkets.isNotEmpty() || topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
                 val showRecommendedCards = shouldShowSwapRecommendedMarketCards(
                     hasRecommendedCards = hasRecommendedCards,
                     inputText = inputText,
@@ -339,6 +340,7 @@ fun SwapContent(
                         Spacer(modifier = Modifier.height(4.dp))
                         SwapRecommendedMarketCards(
                             stockMarkets = stockMarkets,
+                            trendingMarkets = trendingMarkets,
                             topGainerMarkets = topGainerMarkets,
                             topLoserMarkets = topLoserMarkets,
                             onMarketClick = onRecommendedMarketClick,

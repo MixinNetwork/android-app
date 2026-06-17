@@ -53,6 +53,7 @@ private val RecommendedMarketPriceHeight = 16.dp
 
 enum class SwapRecommendedMarketType {
     Stocks,
+    Trending,
     TopGainers,
     TopLosers,
 }
@@ -70,6 +71,7 @@ private data class RecommendedMarketUiItem(
 @Composable
 fun SwapRecommendedMarketCards(
     stockMarkets: List<MarketItem>,
+    trendingMarkets: List<MarketItem>,
     topGainerMarkets: List<MarketItem>,
     topLoserMarkets: List<MarketItem>,
     onMarketClick: (MarketItem) -> Unit,
@@ -77,6 +79,14 @@ fun SwapRecommendedMarketCards(
     modifier: Modifier = Modifier,
 ) {
     val cards = listOf(
+        RecommendedMarketCardData(
+            titleRes = R.string.Trending,
+            type = SwapRecommendedMarketType.Trending,
+            showViewAll = false,
+            items = trendingMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
+                market.toRecommendedMarketUiItem { onMarketClick(market) }
+            },
+        ),
         RecommendedMarketCardData(
             titleRes = R.string.Stocks,
             type = SwapRecommendedMarketType.Stocks,
