@@ -63,10 +63,6 @@ data class AppCardData(
             return !coverUrl.isNullOrBlank() || !cover?.url.isNullOrBlank()
         }
 
-    @IgnoredOnParcel
-    val hashCover: Boolean
-        get() = hasCover
-
     val hasValidCoverSize: Boolean
         get() {
             return cover?.let { it.width in APP_CARD_COVER_MIN_SIZE..APP_CARD_COVER_MAX_SIZE && it.height in APP_CARD_COVER_MIN_SIZE..APP_CARD_COVER_MAX_SIZE } ?: true
