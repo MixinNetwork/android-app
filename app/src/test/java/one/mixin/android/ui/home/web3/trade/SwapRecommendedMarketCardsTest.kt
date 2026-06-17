@@ -12,6 +12,7 @@ class SwapRecommendedMarketCardsTest {
         assertTrue(
             shouldShowSwapRecommendedMarketCards(
                 hasRecommendedCards = true,
+                inMixin = true,
                 inputText = "",
                 isSendFocused = false,
                 isKeyboardVisible = false,
@@ -21,6 +22,17 @@ class SwapRecommendedMarketCardsTest {
         assertFalse(
             shouldShowSwapRecommendedMarketCards(
                 hasRecommendedCards = true,
+                inMixin = false,
+                inputText = "",
+                isSendFocused = false,
+                isKeyboardVisible = false,
+            )
+        )
+
+        assertFalse(
+            shouldShowSwapRecommendedMarketCards(
+                hasRecommendedCards = true,
+                inMixin = true,
                 inputText = "",
                 isSendFocused = true,
                 isKeyboardVisible = false,
@@ -29,6 +41,7 @@ class SwapRecommendedMarketCardsTest {
         assertFalse(
             shouldShowSwapRecommendedMarketCards(
                 hasRecommendedCards = true,
+                inMixin = true,
                 inputText = "1",
                 isSendFocused = false,
                 isKeyboardVisible = false,
@@ -37,6 +50,7 @@ class SwapRecommendedMarketCardsTest {
         assertFalse(
             shouldShowSwapRecommendedMarketCards(
                 hasRecommendedCards = true,
+                inMixin = true,
                 inputText = "",
                 isSendFocused = false,
                 isKeyboardVisible = true,

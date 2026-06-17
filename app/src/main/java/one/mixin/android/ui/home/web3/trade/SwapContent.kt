@@ -226,6 +226,7 @@ fun SwapContent(
                 val hasRecommendedCards = stockMarkets.isNotEmpty() || trendingMarkets.isNotEmpty() || topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
                 val showRecommendedCards = shouldShowSwapRecommendedMarketCards(
                     hasRecommendedCards = hasRecommendedCards,
+                    inMixin = inMixin,
                     inputText = inputText,
                     isSendFocused = isSendFocused,
                     isKeyboardVisible = availableHeight != null,
@@ -420,10 +421,11 @@ fun SwapContent(
 
 internal fun shouldShowSwapRecommendedMarketCards(
     hasRecommendedCards: Boolean,
+    inMixin: Boolean,
     inputText: String,
     isSendFocused: Boolean,
     isKeyboardVisible: Boolean,
-): Boolean = hasRecommendedCards && inputText.isBlank() && !isSendFocused && !isKeyboardVisible
+): Boolean = inMixin && hasRecommendedCards && inputText.isBlank() && !isSendFocused && !isKeyboardVisible
 
 @Composable
 fun ReviewButton(
