@@ -347,7 +347,7 @@ fun SwapContent(
                             onViewAllClick = { type -> onRecommendedMarketViewAllClick(type, isReverse) },
                             modifier = Modifier.padding(horizontal = 20.dp),
                         )
-                        Spacer(modifier = Modifier.height(14.dp))
+                        Spacer(modifier = Modifier.height(40.dp))
                     }
                 }
                 if (!showRecommendedCards) {

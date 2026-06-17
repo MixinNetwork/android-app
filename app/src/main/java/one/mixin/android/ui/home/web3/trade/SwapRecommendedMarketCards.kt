@@ -47,7 +47,10 @@ import java.text.DecimalFormat
 
 private const val RECOMMENDED_MARKET_COLUMNS = 4
 private const val RECOMMENDED_MARKET_LIMIT = 8
+private val RecommendedMarketIconSize = 42.dp
 private val RecommendedMarketChangeHeight = 16.dp
+private val RecommendedMarketChangeMinWidth = 44.dp
+private val RecommendedMarketChangeMaxWidth = 52.dp
 private val RecommendedMarketSymbolHeight = 18.dp
 private val RecommendedMarketPriceHeight = 16.dp
 
@@ -90,7 +93,7 @@ fun SwapRecommendedMarketCards(
         RecommendedMarketCardData(
             titleRes = R.string.Stocks,
             type = SwapRecommendedMarketType.Stocks,
-            showViewAll = true,
+            showViewAll = false,
             items = stockMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
@@ -233,14 +236,14 @@ private fun RecommendedMarketGridItem(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
-            modifier = Modifier.size(width = 42.dp, height = 46.dp),
+            modifier = Modifier.size(width = RecommendedMarketChangeMaxWidth, height = 46.dp),
             contentAlignment = Alignment.TopCenter,
         ) {
             CoilImage(
                 model = item.iconUrl,
                 placeholder = R.drawable.ic_avatar_place_holder,
                 modifier = Modifier
-                    .size(42.dp)
+                    .size(RecommendedMarketIconSize)
                     .clip(CircleShape),
             )
             item.changePercent?.let { changePercent ->
@@ -248,7 +251,7 @@ private fun RecommendedMarketGridItem(
                 Box(
                     modifier = Modifier
                         .offset(y = 32.dp)
-                        .widthIn(min = 44.dp, max = 68.dp)
+                        .widthIn(min = RecommendedMarketChangeMinWidth, max = RecommendedMarketChangeMaxWidth)
                         .height(RecommendedMarketChangeHeight)
                         .clip(RoundedCornerShape(4.dp))
                         .background(if (item.isPositive) risingColor else fallingColor)

@@ -532,7 +532,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:textColor="?attr/text_assist"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         android:visibility="gone" />
 
                     <!-- All Time Low -->
@@ -560,7 +560,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
                         android:textColor="?attr/text_assist"
-                        android:textSize="16sp"
+                        android:textSize="14sp"
                         android:visibility="gone" />
 
                 </LinearLayout>
@@ -583,17 +583,19 @@
                     android:layout_height="wrap_content"
                     android:text="@string/About"
                     android:textColor="?attr/text_minor"
-                    android:textSize="13sp" />
+                    android:textSize="14sp" />
 
                 <one.mixin.android.ui.wallet.MarketDescriptionTextView
                     android:id="@+id/about_content"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
+                    android:breakStrategy="high_quality"
                     android:ellipsize="end"
+                    android:hyphenationFrequency="none"
                     android:maxLines="3"
                     android:textColor="?attr/text_assist"
-                    android:textSize="14sp" />
+                    android:textSize="13sp" />
             </LinearLayout>
 
         </LinearLayout>
@@ -606,9 +608,9 @@
         android:background="?attr/bg_white"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="24dp"
+        android:paddingStart="36dp"
         android:paddingTop="16dp"
-        android:paddingEnd="24dp"
+        android:paddingEnd="36dp"
         android:paddingBottom="24dp">
 
         <LinearLayout

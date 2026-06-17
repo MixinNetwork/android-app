@@ -34,15 +34,17 @@ class MarketDescriptionTextView
             maxLines = Int.MAX_VALUE
             ellipsize = null
             setOnClickListener {
-                if (expandable) {
-                    expanded = !expanded
+                if (expandable && !expanded) {
+                    expanded = true
                     requestLayout()
                 }
             }
         }
 
         fun setMarketDescription(description: String) {
-            descriptionText = description.normalizeLineBreaks().trim()
+            val normalizedDescription = description.normalizeLineBreaks().trim()
+            if (descriptionText == normalizedDescription) return
+            descriptionText = normalizedDescription
             expanded = false
             requestLayout()
         }
@@ -70,7 +72,7 @@ class MarketDescriptionTextView
                 return
             }
             expandable = buildDescriptionLayout(textWidth).lineCount > collapsedMaxLines
-            isClickable = expandable
+            isClickable = expandable && !expanded
             text = if (expandable && !expanded) {
                 buildCollapsedText(textWidth)
             } else {
@@ -159,7 +161,7 @@ class MarketDescriptionTextView
             textWidth: Int,
             text: CharSequence,
         ): StaticLayout {
-            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 StaticLayout.Builder
                     .obtain(text, 0, text.length, paint, textWidth)
                     .setIncludePad(includeFontPadding)
