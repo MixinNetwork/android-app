@@ -72,7 +72,7 @@ internal fun tradeInputMaxDecimalPlaces(
 
 internal fun SwapToken?.tradeInputMaxDecimalPlaces(): Int {
     return this?.let { token ->
-        tradeInputMaxDecimalPlaces(token.walletId != null, token.decimals)
+        tradeInputMaxDecimalPlaces(token.walletId != null && !token.isWeb3, token.decimals)
     } ?: TRADE_INPUT_MAX_DECIMAL_PLACES
 }
 
@@ -99,6 +99,21 @@ internal fun limitTradeInputDecimalPlaces(
     if (maxDecimalPlaces == 0) return value.substring(0, decimalIndex)
     val endIndex = (decimalIndex + 1 + maxDecimalPlaces).coerceAtMost(value.length)
     return value.substring(0, endIndex)
+}
+
+internal fun limitTradeInputTextFieldValue(
+    value: TextFieldValue,
+    maxDecimalPlaces: Int? = TRADE_INPUT_MAX_DECIMAL_PLACES,
+): TextFieldValue {
+    val limitedText = limitTradeInputDecimalPlaces(value.text, maxDecimalPlaces)
+    if (limitedText == value.text) return value
+    return value.copy(
+        text = limitedText,
+        selection = TextRange(
+            value.selection.start.coerceAtMost(limitedText.length),
+            value.selection.end.coerceAtMost(limitedText.length),
+        ),
+    )
 }
 
 @SuppressLint("UnrememberedMutableState")
@@ -186,16 +201,14 @@ fun InputContent(
                     BasicTextField(
                         value = textFieldValue,
                         onValueChange = {
-                            if (!isTradeInputDecimalAllowed(it.text, maxDecimalPlaces)) {
-                                return@BasicTextField
-                            }
-                            textFieldValue = it
+                            val limitedValue = limitTradeInputTextFieldValue(it, maxDecimalPlaces)
+                            textFieldValue = limitedValue
                             try {
-                                if (it.text.isBlank()) BigDecimal.ZERO else BigDecimal(it.text)
+                                if (limitedValue.text.isBlank()) BigDecimal.ZERO else BigDecimal(limitedValue.text)
                             } catch (e: Exception) {
                                 return@BasicTextField
                             }
-                            onInputChanged?.invoke(it.text)
+                            onInputChanged?.invoke(limitedValue.text)
                         },
                         maxLines = 1,
                         modifier = Modifier
