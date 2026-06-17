@@ -1,6 +1,11 @@
 package one.mixin.android.ui.wallet
 
 import android.content.Context
+import android.graphics.Canvas
+import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.Shader
 import android.os.Build
 import android.text.Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
 import android.text.SpannableStringBuilder
@@ -22,6 +27,8 @@ class MarketDescriptionTextView
         private var descriptionText: CharSequence = ""
         private var expanded = false
         private var expandable = false
+        private val collapsedFadePaint = Paint()
+        private var collapsedMoreText = ""
 
         init {
             maxLines = Int.MAX_VALUE
@@ -49,11 +56,17 @@ class MarketDescriptionTextView
             super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         }
 
+        override fun onDraw(canvas: Canvas) {
+            super.onDraw(canvas)
+            drawCollapsedFade(canvas)
+        }
+
         private fun updateDisplayedText(textWidth: Int) {
             if (textWidth <= 0 || descriptionText.isBlank()) {
                 expandable = false
                 isClickable = false
                 text = ""
+                collapsedMoreText = ""
                 return
             }
             expandable = buildDescriptionLayout(textWidth).lineCount > collapsedMaxLines
@@ -61,6 +74,7 @@ class MarketDescriptionTextView
             text = if (expandable && !expanded) {
                 buildCollapsedText(textWidth)
             } else {
+                collapsedMoreText = ""
                 descriptionText
             }
         }
@@ -85,7 +99,7 @@ class MarketDescriptionTextView
         private fun buildCollapsedCandidate(textEnd: Int): SpannableStringBuilder {
             var visibleText = descriptionText
                 .take(textEnd)
-                .trimEnd { it.isWhitespace() || it == '.' || it == Typography.ellipsis }
+                .trimEnd { it.isWhitespace() || it == '.' }
             if (textEnd < descriptionText.length &&
                 visibleText.lastOrNull()?.isLetterOrDigit() == true &&
                 descriptionText.getOrNull(textEnd)?.isLetterOrDigit() == true
@@ -96,7 +110,8 @@ class MarketDescriptionTextView
                 }
             }
             val moreText = context.getString(R.string.More).lowercase()
-            val suffix = "${Typography.ellipsis} $moreText"
+            collapsedMoreText = moreText
+            val suffix = " $moreText"
             val span = SpannableStringBuilder()
                 .append(visibleText)
                 .append(suffix)
@@ -108,6 +123,32 @@ class MarketDescriptionTextView
                 SPAN_EXCLUSIVE_EXCLUSIVE,
             )
             return span
+        }
+
+        private fun drawCollapsedFade(canvas: Canvas) {
+            if (!expandable || expanded || collapsedMoreText.isBlank()) return
+            val moreStartIndex = text.lastIndexOf(collapsedMoreText)
+            if (moreStartIndex <= 0) return
+            val textLayout = layout ?: return
+            val line = textLayout.getLineForOffset(moreStartIndex)
+            val fadeEnd = (totalPaddingLeft + textLayout.getPrimaryHorizontal(moreStartIndex))
+                .coerceAtMost((width - totalPaddingRight).toFloat())
+            val fadeStart = (fadeEnd - COLLAPSED_FADE_WIDTH * resources.displayMetrics.density)
+                .coerceAtLeast(totalPaddingLeft.toFloat())
+            if (fadeEnd <= fadeStart) return
+            val top = (totalPaddingTop + textLayout.getLineTop(line)).toFloat()
+            val bottom = (totalPaddingTop + textLayout.getLineBottom(line)).toFloat()
+            collapsedFadePaint.shader = LinearGradient(
+                fadeStart,
+                0f,
+                fadeEnd,
+                0f,
+                Color.TRANSPARENT,
+                context.colorAttr(R.attr.bg_white),
+                Shader.TileMode.CLAMP,
+            )
+            canvas.drawRect(fadeStart, top, fadeEnd, bottom, collapsedFadePaint)
+            collapsedFadePaint.shader = null
         }
 
         private fun buildDescriptionLayout(textWidth: Int): StaticLayout {
@@ -146,5 +187,6 @@ class MarketDescriptionTextView
 
         companion object {
             private const val DEFAULT_COLLAPSED_MAX_LINES = 3
+            private const val COLLAPSED_FADE_WIDTH = 32
         }
     }
