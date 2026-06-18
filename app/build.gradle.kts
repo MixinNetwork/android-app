@@ -382,6 +382,8 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-process:$lifecycleVersion")
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("androidx.room:room-paging:$roomVersion")
+    compileOnly(project(":query-codegen"))
+    ksp(project(":query-codegen"))
     ksp("androidx.room:room-compiler:$roomVersion")
     implementation("androidx.room:room-rxjava2:$roomVersion")
     implementation("androidx.room:room-ktx:$roomVersion")

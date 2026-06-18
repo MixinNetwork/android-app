@@ -1,11 +1,32 @@
 package one.mixin.android.db.fetcher
 
+import android.database.Cursor
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.provider.convertToMessageItems
 import one.mixin.android.util.SINGLE_FETCHER_THREAD
 import one.mixin.android.vo.MessageItem
+import kotlin.math.roundToInt
 import javax.inject.Inject
+
+data class ChatMessageAnchor(
+    val rowId: Long,
+    val createdAt: String,
+    val messageId: String,
+)
+
+internal fun convertToChatMessageAnchor(cursor: Cursor?): ChatMessageAnchor? =
+    if (cursor != null && cursor.moveToFirst()) {
+        ChatMessageAnchor(
+            rowId = cursor.getLong(0),
+            createdAt = cursor.getString(1),
+            messageId = cursor.getString(2),
+        )
+    } else {
+        null
+    }
+
+internal fun convertToMessageCount(cursor: Cursor?): Int =
+    if (cursor != null && cursor.moveToFirst()) cursor.getInt(0) else 0
 
 class MessageFetcher
     @Inject
@@ -13,184 +34,193 @@ class MessageFetcher
         val db: MixinDatabase,
     ) {
         companion object {
-            private const val SQL = """
-               SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
-               u.full_name AS userFullName, u.identity_number AS userIdentityNumber, u.app_id AS appId, m.category AS type,
-               m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus, m.media_waveform AS mediaWaveform,
-               m.name AS mediaName, m.media_mime_type AS mediaMimeType, m.media_size AS mediaSize, m.media_width AS mediaWidth, m.media_height AS mediaHeight,
-               m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl, m.media_url AS mediaUrl, m.media_duration AS mediaDuration, m.quote_message_id as quoteId,
-               m.quote_content as quoteContent, m.caption as caption, u.membership AS membership, u1.full_name AS participantFullName, m.action AS actionName, u1.user_id AS participantUserId,
-               COALESCE(s.snapshot_id, ss.snapshot_id) AS snapshotId, COALESCE(s.memo, ss.memo) AS snapshotMemo, COALESCE(s.type, ss.type) AS snapshotType, COALESCE(s.amount, ss.amount) AS snapshotAmount, 
-               COALESCE(a.symbol, t.symbol) AS assetSymbol, COALESCE(s.asset_id, ss.asset_id) AS assetId, COALESCE(a.icon_url, t.icon_url) AS assetIcon, t.collection_hash AS assetCollectionHash, 
-               st.asset_url AS assetUrl, st.asset_width AS assetWidth, st.asset_height AS assetHeight, st.sticker_id AS stickerId,
-               st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
-               h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
-               su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, su.membership AS sharedMembership, mm.mentions AS mentions, mm.has_read as mentionRead, 
-               pm.message_id IS NOT NULL as isPin, c.name AS groupName, em.expire_in AS expireIn, em.expire_at AS expireAt   
-               FROM messages m
-               LEFT JOIN users u ON m.user_id = u.user_id
-               LEFT JOIN users u1 ON m.participant_id = u1.user_id
-               LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id
-               LEFT JOIN safe_snapshots ss ON m.snapshot_id = ss.snapshot_id
-               LEFT JOIN assets a ON s.asset_id = a.asset_id
-               LEFT JOIN tokens t ON ss.asset_id = t.asset_id
-               LEFT JOIN stickers st ON st.sticker_id = m.sticker_id
-               LEFT JOIN hyperlinks h ON m.hyperlink = h.hyperlink
-               LEFT JOIN users su ON m.shared_user_id = su.user_id
-               LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
-               LEFT JOIN message_mentions mm ON m.id = mm.message_id
-               LEFT JOIN pin_messages pm ON m.id = pm.message_id
-               LEFT JOIN expired_messages em ON m.id = em.message_id
-        """
             const val SCROLL_THRESHOLD = 15
             const val PAGE_SIZE = 30
             private const val INIT_SIZE = 90 // PAGE_SIZE * 3
         }
 
-        private val currentlyLoadingIds = mutableSetOf<String>()
-        private val loadedIds = mutableSetOf<String>()
-        private var canLoadAbove = true
-        private var canLoadBelow = true
+    private val currentlyLoadingIds = mutableSetOf<String>()
+    private val loadedIds = mutableSetOf<String>()
+    private var canLoadAbove = true
+    private var canLoadBelow = true
 
-        suspend fun initMessages(
-            conversationId: String,
-            messageId: String? = null,
-            forceBottom: Boolean = false,
-        ): Triple<Int, List<MessageItem>, String?> =
-            withContext(SINGLE_FETCHER_THREAD) {
-                currentlyLoadingIds.clear()
-                loadedIds.clear()
-                var aroundId = messageId
-                if (aroundId == null && !forceBottom) {
-                    val idCursor = db.query("SELECT rm.message_id FROM remote_messages_status rm LEFT JOIN messages m ON m.id = rm.message_id WHERE rm.conversation_id = ? AND rm.status = 'DELIVERED' ORDER BY m.created_at ASC, m.rowid ASC LIMIT 1", arrayOf(conversationId))
-                    if (idCursor.moveToNext()) {
-                        aroundId = idCursor.getString(0)
+    suspend fun initMessages(
+        conversationId: String,
+        messageId: String? = null,
+        forceBottom: Boolean = false,
+    ): Triple<Int, List<MessageItem>, String?> =
+        withContext(SINGLE_FETCHER_THREAD) {
+            resetLoadState()
+            val anchor =
+                when {
+                    messageId != null -> findAnchorByMessageId(messageId)
+                    forceBottom -> null
+                    else -> findFirstUnreadAnchor(conversationId)
+                }
+            if (anchor == null) {
+                loadBottomMessages(conversationId)
+            } else {
+                loadAroundAnchor(conversationId, anchor)
+            }
+        }
+
+    suspend fun initMessagesAtDate(
+        conversationId: String,
+        createdAt: String,
+    ): Triple<Int, List<MessageItem>, String?> =
+        withContext(SINGLE_FETCHER_THREAD) {
+            resetLoadState()
+            val anchor = findAnchorByDate(conversationId, createdAt)
+                ?: return@withContext Triple(-1, emptyList(), null)
+            loadAroundAnchor(conversationId, anchor)
+        }
+
+    suspend fun initMessagesAtPosition(
+        conversationId: String,
+        index: Int,
+    ): Triple<Int, List<MessageItem>, String?> =
+        withContext(SINGLE_FETCHER_THREAD) {
+            resetLoadState()
+            val anchor = findAnchorByPosition(conversationId, index)
+                ?: return@withContext Triple(-1, emptyList(), null)
+            loadAroundAnchor(conversationId, anchor)
+        }
+
+    suspend fun initMessagesAtPercent(
+        conversationId: String,
+        percent: Float,
+    ): Triple<Int, List<MessageItem>, String?> =
+        withContext(SINGLE_FETCHER_THREAD) {
+            resetLoadState()
+            val anchor = findAnchorByPercent(conversationId, percent)
+                ?: return@withContext Triple(-1, emptyList(), null)
+            loadAroundAnchor(conversationId, anchor)
+        }
+
+    suspend fun findMessageById(messageIds: List<String>) =
+        withContext(SINGLE_FETCHER_THREAD) {
+            val ids = messageIds.joinToString(", ", "(", ")", transform = { "'$it'" })
+            return@withContext MessageFetcherGenerated.findMessagesByIds(db, ids)
+        }
+
+    fun isBottom() = !canLoadBelow
+
+    fun isTop() = !canLoadAbove
+
+    suspend fun nextPage(
+        conversationId: String,
+        messageId: String,
+    ) =
+        withContext(SINGLE_FETCHER_THREAD) {
+            val loadKey = "next:$messageId"
+            if (!canLoadBelow || currentlyLoadingIds.contains(loadKey) || loadedIds.contains(loadKey)) {
+                return@withContext emptyList()
+            }
+
+            currentlyLoadingIds.add(loadKey)
+            try {
+                val anchor = findAnchorByMessageId(messageId) ?: return@withContext emptyList()
+                MessageFetcherGenerated.loadNextPage(db, conversationId, anchor.createdAt, anchor.rowId, PAGE_SIZE).also {
+                    if (it.size < PAGE_SIZE) {
+                        canLoadBelow = false
                     }
-                    idCursor.close()
                 }
-                if (aroundId == null) {
-                    // load the last 60 messages
-                    val cursor =
-                        db.query(
-                            "$SQL WHERE m.conversation_id = ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
-                            arrayOf(conversationId, INIT_SIZE.toString()),
-                        )
-                    val result = convertToMessageItems(cursor).reversed()
-                    canLoadBelow = false
-                    canLoadAbove = result.size >= INIT_SIZE
-                    return@withContext Triple(result.size - 1, result, null)
-                } else {
-                    // Load data containing aroundId
-                    val preCursor =
-                        db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(aroundId))
-                    val (rowId, createdAt) =
-                        preCursor.use {
-                            if (it.moveToNext()) {
-                                Pair(it.getInt(0), it.getString(1))
-                            } else {
-                                return@withContext Triple(-1, emptyList(), null)
-                            }
-                        }
-                    // load next page by aroundId
-                    val nextCursor =
-                        db.query(
-                            "$SQL WHERE m.conversation_id = ? AND m.rowid >= ? AND m.created_at >= ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
-                            arrayOf(conversationId, rowId.toString(), createdAt, (INIT_SIZE / 2).toString()),
-                        )
-                    val result = convertToMessageItems(nextCursor)
-                    canLoadBelow = result.size >= INIT_SIZE / 2
-                    val thresholdSize = INIT_SIZE - result.size
-                    val previousCursor =
-                        db.query(
-                            "$SQL WHERE m.conversation_id = ? AND m.rowid < ? AND m.created_at < ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
-                            arrayOf(conversationId, rowId.toString(), createdAt, thresholdSize.toString()),
-                        )
-                    val previous = convertToMessageItems(previousCursor).reversed()
-                    canLoadAbove = previous.size >= thresholdSize
-                    val position =
-                        if (previous.isNotEmpty()) {
-                            previous.size
-                        } else if (result.isNotEmpty()) {
-                            0
-                        } else {
-                            -1
-                        }
-                    return@withContext Triple(position, previous + result, aroundId)
-                }
+            } finally {
+                currentlyLoadingIds.remove(loadKey)
+                loadedIds.add(loadKey)
+            }
+        }
+
+    suspend fun previousPage(
+        conversationId: String,
+        messageId: String,
+    ) =
+        withContext(SINGLE_FETCHER_THREAD) {
+            val loadKey = "previous:$messageId"
+            if (!canLoadAbove || currentlyLoadingIds.contains(loadKey) || loadedIds.contains(loadKey)) {
+                return@withContext emptyList()
             }
 
-        suspend fun findMessageById(messageIds: List<String>) =
-            withContext(SINGLE_FETCHER_THREAD) {
-                val cursor = db.query("$SQL WHERE m.id IN ${messageIds.joinToString(", ", "(", ")", transform = { "'$it'" })}", arrayOf())
-                return@withContext convertToMessageItems(cursor)
-            }
-
-        fun isBottom() = !canLoadBelow
-
-        fun isTop() = !canLoadAbove
-
-        suspend fun nextPage(
-            conversationId: String,
-            messageId: String,
-        ) =
-            withContext(SINGLE_FETCHER_THREAD) {
-                if (!canLoadBelow || currentlyLoadingIds.contains(messageId) || loadedIds.contains(messageId)) {
-                    return@withContext emptyList()
-                }
-                currentlyLoadingIds.add(messageId)
-                try {
-                    val preCursor = db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(messageId))
-                    val (rowId, createdAt) =
-                        preCursor.use {
-                            it.moveToNext()
-                            Pair(it.getInt(0), it.getString(1))
-                        }
-                    val cursor =
-                        db.query(
-                            "$SQL WHERE m.conversation_id = ? AND m.rowid > ? AND m.created_at >= ? ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
-                            arrayOf(conversationId, rowId.toString(), createdAt, PAGE_SIZE.toString()),
-                        )
-                    return@withContext convertToMessageItems(cursor).also {
-                        if (it.size < PAGE_SIZE) {
-                            canLoadBelow = false
-                        }
+            currentlyLoadingIds.add(loadKey)
+            try {
+                val anchor = findAnchorByMessageId(messageId) ?: return@withContext emptyList()
+                MessageFetcherGenerated.loadPreviousPage(db, conversationId, anchor.createdAt, anchor.rowId, PAGE_SIZE).reversed().also {
+                    if (it.size < PAGE_SIZE) {
+                        canLoadAbove = false
                     }
-                } finally {
-                    currentlyLoadingIds.remove(messageId)
-                    loadedIds.add(messageId)
                 }
+            } finally {
+                currentlyLoadingIds.remove(loadKey)
+                loadedIds.add(loadKey)
             }
+        }
 
-        suspend fun previousPage(
-            conversationId: String,
-            messageId: String,
-        ) =
-            withContext(SINGLE_FETCHER_THREAD) {
-                if (!canLoadAbove || currentlyLoadingIds.contains(messageId) || loadedIds.contains(messageId)) {
-                    return@withContext emptyList()
-                }
-                currentlyLoadingIds.add(messageId)
-                try {
-                    val preCursor =
-                        db.query("SELECT rowid, created_at FROM messages WHERE id = ?", arrayOf(messageId))
-                    val (rowId, createdAt) =
-                        preCursor.use {
-                            it.moveToNext()
-                            Pair(it.getInt(0), it.getString(1))
-                        }
-                    val cursor =
-                        db.query(
-                            "$SQL WHERE m.conversation_id = ? AND m.rowid < ? AND m.created_at <= ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
-                            arrayOf(conversationId, rowId.toString(), createdAt, PAGE_SIZE.toString()),
-                        )
-                    return@withContext convertToMessageItems(cursor).reversed().also {
-                        if (it.size < PAGE_SIZE) {
-                            canLoadAbove = false
-                        }
-                    }
-                } finally {
-                    currentlyLoadingIds.remove(messageId)
-                    loadedIds.add(messageId)
-                }
-            }
+    private fun resetLoadState() {
+        currentlyLoadingIds.clear()
+        loadedIds.clear()
+        canLoadAbove = true
+        canLoadBelow = true
     }
+
+    private fun loadBottomMessages(conversationId: String): Triple<Int, List<MessageItem>, String?> {
+        val result = MessageFetcherGenerated.loadBottomMessages(db, conversationId, INIT_SIZE).reversed()
+        canLoadBelow = false
+        canLoadAbove = result.size >= INIT_SIZE
+        return Triple(result.size - 1, result, null)
+    }
+
+    private fun loadAroundAnchor(
+        conversationId: String,
+        anchor: ChatMessageAnchor,
+    ): Triple<Int, List<MessageItem>, String?> {
+        val next = MessageFetcherGenerated.loadAroundAnchorNext(db, conversationId, anchor.createdAt, anchor.rowId, INIT_SIZE / 2)
+        canLoadBelow = next.size >= INIT_SIZE / 2
+        val thresholdSize = INIT_SIZE - next.size
+        val previous = MessageFetcherGenerated.loadAroundAnchorPrevious(db, conversationId, anchor.createdAt, anchor.rowId, thresholdSize).reversed()
+        canLoadAbove = previous.size >= thresholdSize
+        val data = previous + next
+        return Triple(data.indexOfFirst { it.messageId == anchor.messageId }, data, anchor.messageId)
+    }
+
+    private fun findFirstUnreadAnchor(conversationId: String): ChatMessageAnchor? =
+        MessageFetcherGenerated.findFirstUnreadAnchor(db, conversationId)
+
+    private fun findAnchorByMessageId(messageId: String): ChatMessageAnchor? =
+        MessageFetcherGenerated.findAnchorByMessageId(db, messageId)
+
+    private fun findAnchorByDate(
+        conversationId: String,
+        createdAt: String,
+    ): ChatMessageAnchor? =
+        MessageFetcherGenerated.findAnchorByDateAfter(db, conversationId, createdAt)
+            ?: MessageFetcherGenerated.findAnchorByDateBefore(db, conversationId, createdAt)
+
+    private fun findAnchorByPosition(
+        conversationId: String,
+        index: Int,
+    ): ChatMessageAnchor? {
+        val count = countMessages(conversationId)
+        if (count <= 0) return null
+        val offset = index.coerceIn(0, count - 1)
+        return MessageFetcherGenerated.findAnchorByPosition(db, conversationId, offset)
+    }
+
+    private fun findAnchorByPercent(
+        conversationId: String,
+        percent: Float,
+    ): ChatMessageAnchor? {
+        val count = countMessages(conversationId)
+        if (count <= 0) return null
+        val normalizedPercent =
+            when {
+                percent.isNaN() -> 0f
+                percent > 1f -> (percent / 100f).coerceIn(0f, 1f)
+                else -> percent.coerceIn(0f, 1f)
+            }
+        val index = ((count - 1) * normalizedPercent).roundToInt()
+        return findAnchorByPosition(conversationId, index)
+    }
+
+    private fun countMessages(conversationId: String): Int =
+        MessageFetcherGenerated.countMessages(db, conversationId)
+}

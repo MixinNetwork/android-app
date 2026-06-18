@@ -3,6 +3,7 @@
 /local.properties
 /.idea
 /build
+build/
 /captures
 google-services.json
 .DS_Store
@@ -17,5 +18,6 @@ CLAUDE.md
 agent.md
 .claude/
 .codex/
+.codegraph/
 .github/copilot-instructions.md
 .vscode/

@@ -28,6 +28,7 @@ import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.fetcher.MessageFetcher
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.deserialize
@@ -118,10 +119,11 @@ class ConversationViewModel
         private val userRepository: UserRepository,
         private val jobManager: MixinJobManager,
         private val tokenRepository: TokenRepository,
-        private val accountRepository: AccountRepository,
-        private val messenger: SendMessageHelper,
-        private val cleanMessageHelper: CleanMessageHelper,
-    ) : ViewModel() {
+    private val accountRepository: AccountRepository,
+    private val messenger: SendMessageHelper,
+    private val cleanMessageHelper: CleanMessageHelper,
+    private val messageFetcher: MessageFetcher,
+) : ViewModel() {
         suspend fun indexUnread(conversationId: String) =
             conversationRepository.indexUnread(conversationId) ?: 0
 
@@ -614,13 +616,28 @@ class ConversationViewModel
             jobManager.addJobInBackground(RefreshStickerAlbumJob())
         }
 
-        suspend fun findMessageIndex(
-            conversationId: String,
-            messageId: String,
-        ) =
-            conversationRepository.findMessageIndex(conversationId, messageId)
+    suspend fun findMessageIndex(
+        conversationId: String,
+        messageId: String,
+    ) =
+        conversationRepository.findMessageIndex(conversationId, messageId)
 
-        private fun createReadSessionMessage(
+    suspend fun initMessagesAtDate(
+        conversationId: String,
+        createdAt: String,
+    ) = messageFetcher.initMessagesAtDate(conversationId, createdAt)
+
+    suspend fun initMessagesAtPosition(
+        conversationId: String,
+        index: Int,
+    ) = messageFetcher.initMessagesAtPosition(conversationId, index)
+
+    suspend fun initMessagesAtPercent(
+        conversationId: String,
+        percent: Float,
+    ) = messageFetcher.initMessagesAtPercent(conversationId, percent)
+
+    private fun createReadSessionMessage(
             list: List<MessageMinimal>,
             conversationId: String,
         ) {
