@@ -2,7 +2,6 @@ package one.mixin.android.ui.wallet
 
 import androidx.sqlite.db.SimpleSQLiteQuery
 import one.mixin.android.R
-import one.mixin.android.db.SafeSnapshotDao.Companion.SNAPSHOT_ITEM_PREFIX
 import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
@@ -136,6 +135,6 @@ class FilterParams(
             else -> ""
         }
 
-        return SimpleSQLiteQuery("$SNAPSHOT_ITEM_PREFIX $whereSql $orderSql")
+        return WalletFilterQueryGenerated.snapshots(whereSql, orderSql)
     }
 }

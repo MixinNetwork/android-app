@@ -21,6 +21,7 @@ pluginManagement {
         id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
         id("com.google.devtools.ksp") version kspVersion
         id("org.jetbrains.kotlin.plugin.compose") version kotlinVersion
+        id("org.jetbrains.kotlin.jvm") version kotlinVersion
         id("com.google.firebase.firebase-perf") version firebasePerfPluginVersion
         id("org.gradle.toolchains.foojay-resolver-convention") version foojayResolverVersion
     }
@@ -30,3 +31,4 @@ plugins {
 }
 
 include(":app")
+include(":query-codegen")

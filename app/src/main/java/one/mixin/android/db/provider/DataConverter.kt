@@ -918,123 +918,109 @@ fun callableTokenItem(
     }
 }
 
-@SuppressLint("RestrictedApi")
-fun callableSearchMessageItem(
-    db: MixinDatabase,
-    statement: RoomSQLiteQuery,
-    cancellationSignal: CancellationSignal,
-): Callable<List<SearchMessageItem>> {
-    return Callable<List<SearchMessageItem>> {
-        val cursor = query(db, statement, false, cancellationSignal)
-        try {
-            val cursorIndexOfConversationId = 0
-            val cursorIndexOfConversationAvatarUrl = 1
-            val cursorIndexOfConversationName = 2
-            val cursorIndexOfConversationCategory = 3
-            val cursorIndexOfMessageCount = 4
-            val cursorIndexOfUserId = 5
-            val cursorIndexOfAppId = 6
-            val cursorIndexOfUserAvatarUrl = 7
-            val cursorIndexOfUserIdentityNumber = 8
-            val cursorIndexOfUserFullName = 9
-            val cursorIndexOfUserIsVerified = 10
-            val cursorIndexOfUserMembership = 11
-            val result: MutableList<SearchMessageItem> =
-                java.util.ArrayList(cursor.count)
-            while (cursor.moveToNext()) {
-                val item: SearchMessageItem
-                val tmpConversationId: String? =
-                    if (cursor.isNull(cursorIndexOfConversationId)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfConversationId)
-                    }
-                val tmpConversationAvatarUrl: String? =
-                    if (cursor.isNull(cursorIndexOfConversationAvatarUrl)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfConversationAvatarUrl)
-                    }
-                val tmpConversationName: String? =
-                    if (cursor.isNull(cursorIndexOfConversationName)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfConversationName)
-                    }
-                val tmpConversationCategory: String? =
-                    if (cursor.isNull(cursorIndexOfConversationCategory)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfConversationCategory)
-                    }
-                val tmpMessageCount: Int = cursor.getInt(cursorIndexOfMessageCount)
-                val tmpUserId: String? =
-                    if (cursor.isNull(cursorIndexOfUserId)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfUserId)
-                    }
-                val tempAppId: String? =
-                    if (cursor.isNull(cursorIndexOfAppId)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfAppId)
-                    }
-                val tmpUserAvatarUrl: String? =
-                    if (cursor.isNull(cursorIndexOfUserAvatarUrl)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfUserAvatarUrl)
-                    }
-                val tmpUserIdentityNumber: String? =
-                    if (cursor.isNull(cursorIndexOfUserIdentityNumber)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfUserIdentityNumber)
-                    }
-                val tmpUserFullName: String? =
-                    if (cursor.isNull(cursorIndexOfUserFullName)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfUserFullName)
-                    }
-                val tmpIsVerified: Boolean?
-                val tmp: Int? =
-                    if (cursor.isNull(cursorIndexOfUserIsVerified)) {
-                        null
-                    } else {
-                        cursor.getInt(cursorIndexOfUserIsVerified)
-                    }
-                tmpIsVerified = if (tmp == null) null else tmp != 0
-                val tmpUserMembership: String? =
-                    if (cursor.isNull(cursorIndexOfUserMembership)) {
-                        null
-                    } else {
-                        cursor.getString(cursorIndexOfUserMembership)
-                    }
-                item =
-                    SearchMessageItem(
-                        tmpConversationId!!,
-                        tmpConversationCategory,
-                        tmpConversationName,
-                        tmpMessageCount,
-                        tmpUserId!!,
-                        tempAppId,
-                        tmpUserFullName,
-                        tmpUserAvatarUrl,
-                        tmpUserIdentityNumber,
-                        tmpConversationAvatarUrl,
-                        tmpIsVerified,
-                        membershipConverter.revertData(tmpUserMembership)
-                    )
-                result.add(item)
+fun convertToSearchMessageItems(cursor: Cursor?): List<SearchMessageItem> {
+    cursor ?: return emptyList()
+    val cursorIndexOfConversationId = 0
+    val cursorIndexOfConversationAvatarUrl = 1
+    val cursorIndexOfConversationName = 2
+    val cursorIndexOfConversationCategory = 3
+    val cursorIndexOfMessageCount = 4
+    val cursorIndexOfUserId = 5
+    val cursorIndexOfAppId = 6
+    val cursorIndexOfUserAvatarUrl = 7
+    val cursorIndexOfUserIdentityNumber = 8
+    val cursorIndexOfUserFullName = 9
+    val cursorIndexOfUserIsVerified = 10
+    val cursorIndexOfUserMembership = 11
+    val result: MutableList<SearchMessageItem> =
+        java.util.ArrayList(cursor.count)
+    while (cursor.moveToNext()) {
+        val tmpConversationId: String? =
+            if (cursor.isNull(cursorIndexOfConversationId)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfConversationId)
             }
-            return@Callable result
-        } finally {
-            cursor.close()
-            statement.release()
-        }
+        val tmpConversationAvatarUrl: String? =
+            if (cursor.isNull(cursorIndexOfConversationAvatarUrl)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfConversationAvatarUrl)
+            }
+        val tmpConversationName: String? =
+            if (cursor.isNull(cursorIndexOfConversationName)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfConversationName)
+            }
+        val tmpConversationCategory: String? =
+            if (cursor.isNull(cursorIndexOfConversationCategory)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfConversationCategory)
+            }
+        val tmpMessageCount: Int = cursor.getInt(cursorIndexOfMessageCount)
+        val tmpUserId: String? =
+            if (cursor.isNull(cursorIndexOfUserId)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfUserId)
+            }
+        val tempAppId: String? =
+            if (cursor.isNull(cursorIndexOfAppId)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfAppId)
+            }
+        val tmpUserAvatarUrl: String? =
+            if (cursor.isNull(cursorIndexOfUserAvatarUrl)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfUserAvatarUrl)
+            }
+        val tmpUserIdentityNumber: String? =
+            if (cursor.isNull(cursorIndexOfUserIdentityNumber)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfUserIdentityNumber)
+            }
+        val tmpUserFullName: String? =
+            if (cursor.isNull(cursorIndexOfUserFullName)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfUserFullName)
+            }
+        val tmp: Int? =
+            if (cursor.isNull(cursorIndexOfUserIsVerified)) {
+                null
+            } else {
+                cursor.getInt(cursorIndexOfUserIsVerified)
+            }
+        val tmpIsVerified = if (tmp == null) null else tmp != 0
+        val tmpUserMembership: String? =
+            if (cursor.isNull(cursorIndexOfUserMembership)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfUserMembership)
+            }
+        result.add(
+            SearchMessageItem(
+                tmpConversationId!!,
+                tmpConversationCategory,
+                tmpConversationName,
+                tmpMessageCount,
+                tmpUserId!!,
+                tempAppId,
+                tmpUserFullName,
+                tmpUserAvatarUrl,
+                tmpUserIdentityNumber,
+                tmpConversationAvatarUrl,
+                tmpIsVerified,
+                membershipConverter.revertData(tmpUserMembership)
+            )
+        )
     }
+    return result
 }
 
 @SuppressLint("RestrictedApi")

@@ -2,7 +2,6 @@ package one.mixin.android.fts
 
 import android.os.CancellationSignal
 import androidx.core.database.getStringOrNull
-import androidx.sqlite.db.SimpleSQLiteQuery
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.extension.createAtToLong
@@ -107,14 +106,7 @@ fun FtsDatabase.rawSearch(
     return try {
         // A maximum of 999 search results are returned
         query(
-            SimpleSQLiteQuery(
-                """
-                SELECT message_id, conversation_id, user_id, count(message_id) FROM messages_metas WHERE doc_id IN (SELECT docid FROM messages_fts WHERE content MATCH '$content')
-                GROUP BY conversation_id
-                ORDER BY max(created_at) DESC
-                LIMIT 999
-            """,
-            ),
+            FtsQueryGenerated.rawSearch(content),
             cancellationSignal,
         ).use {
             val results = mutableListOf<FtsSearchResult>()
