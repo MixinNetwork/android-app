@@ -6,7 +6,6 @@ import android.view.View
 import android.view.View.VISIBLE
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.app.NotificationManagerCompat
-import androidx.core.text.HtmlCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
@@ -17,7 +16,9 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
+import one.mixin.android.event.TradeMarketSelectedEvent
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.defaultSharedPreferences
@@ -64,6 +65,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         const val ARGS_MARKET = "args_market"
         const val ARGS_ASSET_ID = "args_asset_id"
         const val ARGS_MARKET_SOURCE = "args_market_source"
+        const val ARGS_RETURN_TO_TRADE = "args_return_to_trade"
         private const val PREF_MARKET_CHART_TYPE = "pref_market_chart_type"
     }
 
@@ -85,6 +87,9 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     private val typeState = mutableStateOf("1D")
     private val marketSource by lazy {
         requireArguments().getString(ARGS_MARKET_SOURCE) ?: AnalyticsTracker.MarketSource.MORE_MARKET_CAP
+    }
+    private val returnToTrade by lazy {
+        requireArguments().getBoolean(ARGS_RETURN_TO_TRADE, false)
     }
     private fun marketFavoriteSource(): String =
         if (marketSource == AnalyticsTracker.MarketSource.MORE_MARKET_CAP) {
@@ -125,7 +130,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     } else toast(R.string.Please_wait_a_bit)
                 }
             }
-            swapAlert.swap.setOnClickListener {
+            bottomTrade.setOnClickListener {
                 viewLifecycleOwner.lifecycleScope.launch {
                     val ids = walletViewModel.findTokenIdsByCoinId(marketItem.coinId)
                     val tokens = walletViewModel.findTokensByCoinId(marketItem.coinId)
@@ -155,13 +160,18 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         USDT_ASSET_ETH_ID
                     }
                     AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.MARKET_DETAIL)
-                    view.navigate(R.id.action_market_details_to_swap,
-                        Bundle().apply {
-                            putString(ARGS_INPUT, input)
-                            putString(ARGS_OUTPUT, token.assetId)
-                            putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
-                            putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
-                        })
+                    if (returnToTrade) {
+                        RxBus.publish(TradeMarketSelectedEvent(input, token.assetId))
+                        requireActivity().finish()
+                    } else {
+                        view.navigate(R.id.action_market_details_to_swap,
+                            Bundle().apply {
+                                putString(ARGS_INPUT, input)
+                                putString(ARGS_OUTPUT, token.assetId)
+                                putString(TradeFragment.ARGS_ENTRY_SOURCE, TradeSource.MARKET_DETAIL)
+                                putString(TradeFragment.ARGS_ENTRY_TYPE, AnalyticsTracker.SpotTradeType.SIMPLE)
+                            })
+                    }
                 }
             }
             if (marketItem.coinId.isBlank()) {
@@ -169,8 +179,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             } else {
                 walletViewModel.anyAlertByCoinId(marketItem.coinId)
             }.observe(this@MarketDetailsFragment.viewLifecycleOwner) { exist ->
-                swapAlert.setAlertTitle(R.string.Alert)
-                swapAlert.alertVa.setOnClickListener {
+                bottomAlertIcon.setImageResource(if (exist) R.drawable.ic_market_alert_added else R.drawable.ic_market_alert_add)
+                bottomAlert.setOnClickListener {
                     if (NotificationManagerCompat.from(requireContext()).areNotificationsEnabled()) {
                         viewLifecycleOwner.lifecycleScope.launch {
                             var coinItem = if (marketItem.coinId.isBlank()) {
@@ -179,12 +189,12 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                 walletViewModel.simpleCoinItem(marketItem.coinId)
                             }
                             if (coinItem == null) {
-                                binding.swapAlert.alertVa.displayedChild = 1
+                                setBottomAlertLoading(true)
                                 val m = walletViewModel.refreshMarket(
                                     marketItem.coinId.ifBlank {
                                         marketItem.assetIds!!.first()
                                     }, {
-                                        binding.swapAlert.alertVa.displayedChild = 0
+                                        setBottomAlertLoading(false)
                                     }, { error ->
                                         if (error.errorCode == 404) {
                                             toast(R.string.Alert_Not_Support)
@@ -353,9 +363,9 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     val desc = info.descriptions?.let { map ->
                         val lang = Locale.getDefault().language
                         selectLocalizedMarketDescription(map, lang)
-                    }?.let { HtmlCompat.fromHtml(it, HtmlCompat.FROM_HTML_MODE_LEGACY).toString().trim() }
+                    }
                     aboutContainer.isVisible = !desc.isNullOrBlank()
-                    aboutContent.text = desc.orEmpty()
+                    aboutContent.setMarketDescription(desc.orEmpty())
 
                     priceValue.setTextColor(textPrimary)
                     marketCap.setTextColor(textPrimary)
@@ -392,12 +402,18 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     lowValue.setTextColor(textAssist)
                     lowValue.setText(R.string.N_A)
                     aboutContainer.isVisible = false
+                    aboutContent.setMarketDescription("")
                 }
             }
         }
     }
 
     private var isLoading = false
+
+    private fun setBottomAlertLoading(loading: Boolean) {
+        binding.bottomAlertIcon.isVisible = !loading
+        binding.bottomAlert.isEnabled = !loading
+    }
 
     private val textAssist by lazy {
         requireContext().colorAttr(R.attr.text_assist)

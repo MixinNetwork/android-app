@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
 import android.view.View.GONE
-import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -180,15 +178,13 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        captchaView?.release()
+        captchaView = null
         mCountDownTimer?.cancel()
+        super.onDestroyView()
     }
 
     override fun onBackPressed(): Boolean {
-        if (captchaView?.isVisible() == true) {
-            hideLoading()
-            return true
-        }
         return false
     }
 
@@ -395,7 +391,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
 
     override fun hideLoading() {
         super.hideLoading()
-        captchaView?.webView?.visibility = GONE
+        captchaView?.hide()
     }
 
     private fun sendVerification(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
@@ -443,7 +439,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 { t: Throwable ->
                     handleError(t)
                     binding.verificationNextFab.visibility = GONE
-                    captchaView?.webView?.visibility = GONE
+                    captchaView?.hide()
                 },
             )
     }
@@ -464,7 +460,6 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                             }
                         },
                     )
-                (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
             val captchaType = if (errorDescription.containsIgnoreCase(gtCAPTCHA)) {
                 CaptchaView.CaptchaType.GTCaptcha

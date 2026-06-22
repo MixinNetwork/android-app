@@ -73,7 +73,6 @@ fun TopMoversCard(
             modifier = Modifier.size(16.dp).offset(x = 4.dp),
         )
     }
-    Spacer(modifier = Modifier.height(12.dp))
 
     val rows = markets.chunked(TOP_MOVERS_COLUMNS)
     rows.forEachIndexed { index, rowMarkets ->
@@ -98,9 +97,6 @@ fun TopMoversCard(
             repeat(TOP_MOVERS_COLUMNS - rowMarkets.size) {
                 Spacer(modifier = Modifier.weight(1f))
             }
-        }
-        if (index != rows.lastIndex) {
-            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }
