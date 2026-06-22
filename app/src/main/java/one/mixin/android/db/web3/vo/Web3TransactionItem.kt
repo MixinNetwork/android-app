@@ -32,6 +32,12 @@ data class Web3TransactionItem(
     
     @ColumnInfo(name = "fee")
     val fee: String,
+
+    @ColumnInfo(name = "sponsor_fee_asset_id")
+    val sponsorFeeAssetId: String? = null,
+
+    @ColumnInfo(name = "sponsor_fee_amount")
+    val sponsorFeeAmount: String? = null,
     
     @TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "senders")
@@ -75,6 +81,9 @@ data class Web3TransactionItem(
     @ColumnInfo(name = "receive_asset_symbol")
     val receiveAssetSymbol: String? = null,
 
+    @ColumnInfo(name = "sponsor_fee_asset_symbol")
+    val sponsorFeeAssetSymbol: String? = null,
+
     @ColumnInfo(name = "level")
     val level: Int,
 ) : Parcelable {
@@ -97,6 +106,12 @@ data class Web3TransactionItem(
     }
 
     fun isNotVerified() = level < Constants.AssetLevel.VERIFIED
+
+    fun displayFeeAmount(): String = sponsorFeeAmount?.ifBlank { fee } ?: fee
+
+    fun displayFeeSymbol(): String? = sponsorFeeAssetSymbol ?: chainSymbol
+
+    fun hasSponsorFee(): Boolean = !sponsorFeeAmount.isNullOrBlank()
 
     fun getMainAmount(): String {
         return when (transactionType) {

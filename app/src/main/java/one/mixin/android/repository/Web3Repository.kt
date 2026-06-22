@@ -261,8 +261,8 @@ constructor(
         web3TransactionDao.getPendingTransactionItems(walletId).map { mapWeb3Transaction(it, walletId) }
 
     suspend fun mapWeb3Transaction(transaction: Web3TransactionItem, walletId: String): Web3TransactionItem = withContext(Dispatchers.IO) {
-        val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
-        val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds.distinct()).associateBy { it.assetId }
+        val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList()) + transaction.sponsorFeeAssetId.orEmpty()
+        val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds.filter(String::isNotBlank).distinct()).associateBy { it.assetId }
         transaction.copy(
             senders = transaction.senders.map {
                 it.copy(symbol = tokens[it.assetId]?.symbol)
@@ -272,7 +272,8 @@ constructor(
             },
             approvals = transaction.approvals?.map {
                 it.copy(symbol = tokens[it.assetId]?.symbol)
-            }
+            },
+            sponsorFeeAssetSymbol = tokens[transaction.sponsorFeeAssetId]?.symbol ?: transaction.sponsorFeeAssetSymbol,
         )
     }
 

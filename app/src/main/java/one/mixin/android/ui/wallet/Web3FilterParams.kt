@@ -107,18 +107,20 @@ class Web3FilterParams(
 
         return SimpleSQLiteQuery(
             "SELECT DISTINCT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, " +
-                "w.address, w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, " +
+                "w.address, w.fee, w.sponsor_fee_asset_id, w.sponsor_fee_amount, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, " +
                 "w.transaction_at, w.updated_at, w.level, " +
                 "c.symbol as chain_symbol, " +
                 "c.icon_url as chain_icon_url, " +
                 "s.icon_url as send_asset_icon_url, " +
                 "s.symbol as send_asset_symbol, " +
                 "r.icon_url as receive_asset_icon_url, " +
-                "r.symbol as receive_asset_symbol " +
+                "r.symbol as receive_asset_symbol, " +
+                "sf.symbol as sponsor_fee_asset_symbol " +
                 "FROM transactions w " +
                 "LEFT JOIN tokens c ON c.asset_id = w.chain_id " +
                 "LEFT JOIN tokens s ON s.asset_id = w.send_asset_id " +
                 "LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id " +
+                "LEFT JOIN tokens sf ON sf.asset_id = w.sponsor_fee_asset_id " +
                 "$whereSql $orderSql"
         )
     }
