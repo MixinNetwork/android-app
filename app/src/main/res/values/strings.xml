@@ -2591,6 +2591,8 @@
     <string name="perps_share_roe">ROE</string>
     <string name="perps_share_mixin_contact_desc">Bring your friends on board</string>
     <string name="perps_share_mixin_contact_desc_with_percent">Earn %1$s commission via this link</string>
+    <string name="top_gainers">Top Gainers</string>
+    <string name="top_losers">Top Losers</string>
     <string name="wallet_home_empty_title">Fund your wallet</string>
     <string name="wallet_home_empty_desc">Fund your wallet to start trading and earning</string>
     <string name="wallet_home_buy_crypto">Buy Crypto</string>

@@ -24,10 +24,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.google.gson.reflect.TypeToken
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -56,6 +61,7 @@ import one.mixin.android.db.web3.vo.Web3TokenFeeItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.event.BadgeEvent
+import one.mixin.android.event.TradeMarketSelectedEvent
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
@@ -65,6 +71,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openMarket
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
@@ -87,11 +94,15 @@ import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.SwapTransferPreviewData
+import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.ui.wallet.transfer.TransferWeb3BalanceErrorBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
@@ -149,6 +160,12 @@ class TradeFragment : BaseFragment() {
         const val TAB_ADVANCED = 1
         const val TAB_PERPETUAL = 2
 
+        private const val RECOMMENDED_MARKET_LIMIT = 8
+        private const val MARKET_CATEGORY_STOCKS = "stocks"
+        private const val MARKET_CATEGORY_TRENDING = "trending"
+        private const val MARKET_CATEGORY_TOP_GAINERS = "top_gainers"
+        private const val MARKET_CATEGORY_TOP_LOSERS = "top_losers"
+
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
             output: String? = null,
@@ -183,6 +200,11 @@ class TradeFragment : BaseFragment() {
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var remoteSwapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var stocks: List<SwapToken> by mutableStateOf(emptyList())
+    private var stockMarkets: List<MarketItem> by mutableStateOf(emptyList())
+    private var trendingMarkets: List<MarketItem> by mutableStateOf(emptyList())
+    private var topGainerMarkets: List<MarketItem> by mutableStateOf(emptyList())
+    private var topLoserMarkets: List<MarketItem> by mutableStateOf(emptyList())
+    private var swapScrollToTopSignal by mutableLongStateOf(0L)
     private var tokenItems: List<TokenItem>? = null
     private var web3tokens: List<Web3TokenItem>? = null
     private var fromToken: SwapToken? by mutableStateOf(null)
@@ -209,6 +231,7 @@ class TradeFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         orderBadge = defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1
+        observeTradeMarketSelection()
     }
 
     private var orderBadge: Boolean by mutableStateOf(false)
@@ -239,8 +262,15 @@ class TradeFragment : BaseFragment() {
                 }
             }
             initFromTo()
-            refreshTokens(chainIds)
-            refreshStocks(chainIds)
+            coroutineScope {
+                launch {
+                    refreshRecommendedMarkets()
+                }
+                launch {
+                    refreshTokens(chainIds)
+                    refreshStocks(chainIds)
+                }
+            }
         }
         return ComposeView(inflater.context).apply {
             setContent {
@@ -335,16 +365,17 @@ class TradeFragment : BaseFragment() {
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
-                                initialTabIndex = initialTabIndex,
-                                source = getSource(),
-                                entrySource = getEntrySource(),
-                                onSelectToken = { isReverse, type, isLimit ->
-                                    if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
-                                        selectCallback(swapTokens, isReverse, type, isLimit)
-                                    } else {
-                                        selectCallback(swapTokens, isReverse, type, isLimit)
-                                    }
-                                },
+                            initialTabIndex = initialTabIndex,
+                            source = getSource(),
+                            entrySource = getEntrySource(),
+                            stockMarkets = stockMarkets,
+                            trendingMarkets = trendingMarkets,
+                            topGainerMarkets = topGainerMarkets,
+                            topLoserMarkets = topLoserMarkets,
+                            scrollToTopSignal = swapScrollToTopSignal,
+                            onSelectToken = { isReverse, type, isLimit ->
+                                showSwapTokenList(swapTokens, isReverse, type, isLimit)
+                            },
                                 onDismissLimitOrderTabBadge = {
                                     if (!isLimitOrderTabBadgeDismissed) {
                                         isLimitOrderTabBadgeDismissed = true
@@ -520,10 +551,27 @@ class TradeFragment : BaseFragment() {
                                         this.onTradingGuide = onTradingGuide
                                     }.show(parentFragmentManager, TradeHelpBottomSheetDialogFragment.TAG)
                                 },
-                                pop = {
-                                    navigateUp(navController)
-                                },
-                                onShowMarketList = { isLong ->
+                            pop = {
+                                navigateUp(navController)
+                            },
+                            onRecommendedMarketClick = { marketItem ->
+                                showMarketDetails(marketItem)
+                            },
+                            onRecommendedMarketViewAllClick = { type, isReverse ->
+                                when (type) {
+                                    SwapRecommendedMarketType.Stocks -> {
+                                        showSwapTokenList(
+                                            list = swapTokens,
+                                            isReverse = isReverse,
+                                            type = if (isReverse) SelectTokenType.From else SelectTokenType.To,
+                                            isLimit = false,
+                                            initialStockMode = true,
+                                        )
+                                    }
+                                    else -> Unit
+                                }
+                            },
+                            onShowMarketList = { isLong ->
                                     PerpsMarketListBottomSheetDialogFragment.newInstance(isLong).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
                                 },
                                 onShowAllMarkets = { initialCategory, initialSort ->
@@ -572,11 +620,12 @@ class TradeFragment : BaseFragment() {
         }
     }
 
-    private val selectCallback = fun(
+    private fun showSwapTokenList(
         list: List<SwapToken>,
         isReverse: Boolean,
         type: SelectTokenType,
         isLimit: Boolean,
+        initialStockMode: Boolean = false,
     ) {
         if ((type == SelectTokenType.From && !isReverse) || (type == SelectTokenType.To && isReverse)) {
             val targetPref = if (isLimit) {
@@ -588,9 +637,10 @@ class TradeFragment : BaseFragment() {
                 SwapTokenListBottomSheetDialogFragment.newInstance(
                     targetPref,
                     ArrayList(list), stocks, if (isReverse) (if (isLimit) limitToToken?.assetId else toToken?.assetId) else (if (isLimit) limitFromToken?.assetId else fromToken?.assetId),
-                    isFrom = true
+                    isFrom = true,
+                    initialStockMode = initialStockMode,
                 ).apply {
-                    if (list.isEmpty()) {
+                    if ((initialStockMode && stocks.isEmpty()) || (!initialStockMode && list.isEmpty())) {
                         setLoading(true)
                     }
                     setOnDeposit {
@@ -611,7 +661,11 @@ class TradeFragment : BaseFragment() {
                     ),
                     stocks,
                     isFrom = true,
+                    initialStockMode = initialStockMode,
                 ).apply {
+                    if ((initialStockMode && stocks.isEmpty()) || (!initialStockMode && list.isEmpty())) {
+                        setLoading(true)
+                    }
                     setOnDeposit {
                         this@TradeFragment.lifecycleScope.launch(coroutineErrorHandler) {
                             val t = swapViewModel.getTokenByWalletAndAssetId(
@@ -661,8 +715,9 @@ class TradeFragment : BaseFragment() {
                     if (isReverse) (if (isLimit) limitFromToken?.assetId else fromToken?.assetId) else (if (isLimit) limitToToken?.assetId else toToken?.assetId)
                 } else null,
                 isFrom = false,
+                initialStockMode = initialStockMode,
             ).apply {
-                if (list.isEmpty()) {
+                if ((initialStockMode && stocks.isEmpty()) || (!initialStockMode && list.isEmpty())) {
                     setLoading(true)
                 }
                 setOnClickListener { token, alert ->
@@ -759,6 +814,42 @@ class TradeFragment : BaseFragment() {
                     val serializedPair = GsonHelper.customGson.toJson(tokenPair)
                     defaultSharedPreferences.putString(getPreferenceKey(false), serializedPair)
                 }
+            }
+        }
+    }
+
+    private fun observeTradeMarketSelection() {
+        RxBus.listen(TradeMarketSelectedEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                lifecycleScope.launch(coroutineErrorHandler) {
+                    selectMarketToken(event.inputAssetId, event.outputAssetId)
+                    swapScrollToTopSignal++
+                }
+            }
+    }
+
+    private suspend fun selectMarketToken(
+        inputAssetId: String,
+        outputAssetId: String,
+    ) {
+        if (!inMixin()) return
+        val input = swapViewModel.findToken(inputAssetId)?.toSwapToken() ?: return
+        val output = swapViewModel.findToken(outputAssetId)?.toSwapToken() ?: return
+        resolveDuplicateSwapTokenPair(
+            tokens = swapTokens.ifEmpty { listOf(input, output) },
+            fromToken = input,
+            toToken = output,
+            keepToToken = true,
+        ).let { pair ->
+            fromToken = pair.from
+            toToken = pair.to
+        }
+        fromToken?.let { from ->
+            toToken?.let { to ->
+                val serializedPair = GsonHelper.customGson.toJson(listOf(from, to))
+                defaultSharedPreferences.putString(getPreferenceKey(false), serializedPair)
             }
         }
     }
@@ -1292,6 +1383,83 @@ class TradeFragment : BaseFragment() {
             toToken = tempToToken
         }
     }
+    private fun showMarketDetails(marketItem: MarketItem) {
+        WalletActivity.showWithMarket(
+            requireActivity(),
+            marketItem,
+            Destination.Market,
+            AnalyticsTracker.MarketSource.MORE_MARKET_CAP,
+            returnToTrade = true,
+        )
+    }
+
+    private suspend fun refreshRecommendedMarkets() {
+        coroutineScope {
+            val stocksDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_STOCKS, limit = null) }
+            val trendingDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TRENDING, limit = null) }
+            val topGainersDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TOP_GAINERS) }
+            val topLosersDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TOP_LOSERS) }
+
+            val newStockMarkets = stocksDeferred.await()
+            val newTrendingMarkets = trendingDeferred.await()
+            val newTopGainerMarkets = topGainersDeferred.await()
+            val newTopLoserMarkets = topLosersDeferred.await()
+
+            stockMarkets = newStockMarkets
+            trendingMarkets = newTrendingMarkets
+            topGainerMarkets = newTopGainerMarkets
+            topLoserMarkets = newTopLoserMarkets
+        }
+    }
+
+    private suspend fun fetchRecommendedMarket(
+        category: String? = null,
+        limit: Int? = RECOMMENDED_MARKET_LIMIT,
+        sort: String? = null,
+    ): List<MarketItem> {
+        return try {
+            requestRouteAPI(
+                invokeNetwork = {
+                    swapViewModel.markets(
+                        category = category,
+                        limit = limit,
+                        sort = sort,
+                    )
+                },
+                successBlock = { resp ->
+                    resp.data?.map { MarketItem.fromMarket(it) }.orEmpty()
+                },
+                requestSession = { swapViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
+                failureBlock = { r ->
+                    if (r.errorCode == ErrorHandler.OLD_VERSION) {
+                        alertDialogBuilder()
+                            .setTitle(R.string.Update_Mixin)
+                            .setMessage(getString(R.string.update_mixin_description, requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)))
+                            .setNegativeButton(R.string.Later) { dialog, _ ->
+                                dialog.dismiss()
+                                activity?.onBackPressedDispatcher?.onBackPressed()
+                            }.setPositiveButton(R.string.Update) { dialog, _ ->
+                                dialog.dismiss()
+                                activity?.onBackPressedDispatcher?.onBackPressed()
+                                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                            }.setCancelable(false)
+                            .create().show()
+
+                        return@requestRouteAPI true
+                    }
+                    true
+                },
+                exceptionBlock = { true },
+                defaultErrorHandle = {},
+                defaultExceptionHandle = {},
+            ).orEmpty()
+        } catch (e: CancellationException) {
+            throw e
+        } catch (t: Throwable) {
+            emptyList()
+        }
+    }
+
     private suspend fun refreshStocks(chainIds: List<String>?) {
         val chainIdSet: Set<String>? = chainIds?.toSet()?.takeIf { it.isNotEmpty() }
         requestRouteAPI(
@@ -1541,6 +1709,11 @@ class TradeFragment : BaseFragment() {
         }
         swapTokens = emptyList()
         stocks = emptyList()
+        stockMarkets = emptyList()
+        trendingMarkets = emptyList()
+        topGainerMarkets = emptyList()
+        topLoserMarkets = emptyList()
+        swapScrollToTopSignal = 0L
         tokenItems = null
         web3tokens = null
     }

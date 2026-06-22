@@ -17,6 +17,7 @@ import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
+import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_RETURN_TO_TRADE
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_FROM_MARKET
 import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
@@ -154,6 +155,7 @@ class WalletActivity : BlazeBaseActivity() {
                     intent.getStringExtra(ARGS_MARKET_SOURCE)?.let {
                         putString(ARGS_MARKET_SOURCE, it)
                     }
+                    putBoolean(ARGS_RETURN_TO_TRADE, intent.getBooleanExtra(ARGS_RETURN_TO_TRADE, false))
                 })
             }
             is Destination.Address -> {
@@ -332,12 +334,14 @@ class WalletActivity : BlazeBaseActivity() {
             marketItem: MarketItem,
             destination: Destination,
             source: String? = null,
+            returnToTrade: Boolean = false,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(ARGS_MARKET, marketItem)
                     source?.let { putExtra(ARGS_MARKET_SOURCE, it) }
+                    putExtra(ARGS_RETURN_TO_TRADE, returnToTrade)
                 },
             )
         }
