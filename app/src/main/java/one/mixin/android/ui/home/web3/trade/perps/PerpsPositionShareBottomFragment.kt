@@ -87,6 +87,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         private const val SHARE_QR_URL = "https://mixin.one/mm"
         private const val SHARE_CARD_COVER_URL = "https://dl.mixinpay.com/perps-share-card.png"
         private const val SHARE_POSTER_BASE_WIDTH_DP = 319
+        private const val SHARE_OUTPUT_SIZE_PX = 1024
         private val MIN_DISPLAY_PNL_PERCENT = BigDecimal("-100")
 
         fun newInstance(position: PerpsPositionItem) = PerpsPositionShareBottomFragment().withArgs {
@@ -527,7 +528,14 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         return file
     }
 
-    private fun createShareBitmap(): Bitmap = currentPosterView()?.drawToBitmap() ?: binding.posterPager.drawToBitmap()
+    private fun createShareBitmap(): Bitmap {
+        val bitmap = currentPosterView()?.drawToBitmap() ?: binding.posterPager.drawToBitmap()
+        return if (bitmap.width == SHARE_OUTPUT_SIZE_PX && bitmap.height == SHARE_OUTPUT_SIZE_PX) {
+            bitmap
+        } else {
+            Bitmap.createScaledBitmap(bitmap, SHARE_OUTPUT_SIZE_PX, SHARE_OUTPUT_SIZE_PX, true)
+        }
+    }
 
     private fun currentPosterView(): View? {
         val recyclerView = binding.posterPager.getChildAt(0) as? RecyclerView ?: return null
