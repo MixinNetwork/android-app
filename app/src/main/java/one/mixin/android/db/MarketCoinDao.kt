@@ -16,6 +16,12 @@ interface MarketCoinDao : BaseDao<MarketCoin> {
     @Query("SELECT asset_id FROM market_coins WHERE coin_id = :coinId")
     suspend fun findTokenIdsByCoinId(coinId: String): List<String>
 
+    @Query("SELECT coin_id FROM market_coins WHERE asset_id = :assetId")
+    suspend fun findCoinIdByTokenId(assetId: String): String?
+
     @Query("DELETE FROM market_coins WHERE coin_id = :coinId AND asset_id IN (:assetIds)")
     suspend fun deleteByCoinIdAndAssetIds(coinId: String, assetIds: List<String>)
+
+    @Query("DELETE FROM market_coins WHERE coin_id = :coinId")
+    suspend fun deleteByCoinId(coinId: String)
 }

@@ -6,7 +6,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.market.MarketCoin
 import timber.log.Timber
 
-class RefreshMarketJob(private val assetId: String) : BaseJob(
+class RefreshMarketJob(private val id: String, private val isCoinId: Boolean = false) : BaseJob(
     Params(PRIORITY_UI_HIGH)
         .addTags(GROUP).requireNetwork(),
 ) {
@@ -15,10 +15,15 @@ class RefreshMarketJob(private val assetId: String) : BaseJob(
         const val GROUP = "RefreshMarketJob"
     }
 
-    override fun onRun() = runBlocking {
-        val response = routeService.market(assetId)
+    override fun onRun(): Unit = runBlocking {
+        val response = routeService.market(id)
         if (response.isSuccess && response.data != null) {
             response.data?.let { market ->
+                val localCoinId = if (isCoinId.not()) {
+                    marketCoinDao.findCoinIdByTokenId(id)
+                } else {
+                    null
+                }
                 marketDao.insert(market)
                 val remoteAssetIds = market.assetIds ?: emptyList()
                 val localAssetIds = marketCoinDao.findTokenIdsByCoinId(market.coinId)
@@ -34,7 +39,17 @@ class RefreshMarketJob(private val assetId: String) : BaseJob(
                         createdAt = nowInUtc()
                     )
                 })
+
+                if (localCoinId != null && localCoinId != market.coinId) {
+                    marketCoinDao.deleteByCoinId(localCoinId)
+                    marketDao.deleteByCoinId(localCoinId)
+                    marketFavoredDao.deleteByCoinId(localCoinId)
+                }
             }
+        } else if (response.errorCode == 404 && isCoinId) {
+            marketCoinDao.deleteByCoinId(id)
+            marketFavoredDao.deleteByCoinId(id)
+            marketDao.deleteByCoinId(id)
         }
     }
 }
