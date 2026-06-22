@@ -456,7 +456,7 @@ private fun ActionItem(
         Spacer(modifier = Modifier.height(11.dp))
         Text(
             text = stringResource(labelRes),
-            color = MixinAppTheme.colors.textMinor,
+            color = MixinAppTheme.colors.textPrimary,
             fontSize = 12.sp,
             fontWeight = FontWeight.W600,
             lineHeight = 16.sp,

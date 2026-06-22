@@ -2,7 +2,6 @@ package one.mixin.android.ui.home.web3.trade.perps
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -284,16 +283,17 @@ private fun ClosedPositionsContent(
     Box(modifier = Modifier.fillMaxSize()) {
         if (!isEmpty) {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
             ) {
                 item {
                     TotalRealizedPnlCard(
                         totalPnl = totalRealizedPnl,
                         quoteColorReversed = quoteColorReversed,
                     )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
                 }
                 closedPositionItems(
                     positions = positions,

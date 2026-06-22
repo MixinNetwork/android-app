@@ -2514,6 +2514,8 @@
     <string name="perps_share_mixin_contact_desc">邀请好友一起交易</string>
     <string name="perps_share_mixin_contact_desc_with_percent">通过此链接赚取 %1$s 分佣</string>
     <string name="perps_top_movers">涨跌榜</string>
+    <string name="top_gainers">涨幅榜</string>
+    <string name="top_losers">跌幅榜</string>
     <string name="wallet_home_empty_title">添加资金</string>
     <string name="wallet_home_empty_desc">立即充值，开始交易并赚取收益</string>
     <string name="wallet_home_buy_crypto">快捷买币</string>
