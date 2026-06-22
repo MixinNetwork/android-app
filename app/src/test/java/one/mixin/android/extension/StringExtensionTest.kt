@@ -147,6 +147,7 @@ class StringExtensionTest {
         assertTrue("alice".isValidMao())
         assertTrue("alice.".isValidMao())
         assertTrue("alice.mao".isValidMao())
+        assertTrue("xin.mao".isValidMao())
         assertFalse("123".isValidMao())
         assertFalse("has space".isValidMao())
         assertFalse("".isValidMao())
