@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/g_captcha"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_button_height"
+        android:background="@drawable/bg_upper_round"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/Preview_GCaptcha"
+        android:textColor="?attr/text_primary" />
+
+    <TextView
+        android:id="@+id/h_captcha"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_button_height"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/Preview_HCaptcha"
+        android:textColor="?attr/text_primary" />
+
+    <TextView
+        android:id="@+id/gt_captcha"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/bottom_button_height"
+        android:background="?attr/bg_white"
+        android:foreground="?android:attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:text="@string/Preview_GTCaptcha"
+        android:textColor="?attr/text_primary" />
+
+</LinearLayout>

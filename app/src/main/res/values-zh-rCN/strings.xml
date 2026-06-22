@@ -2000,6 +2000,11 @@
     <string name="Recovery_Reminder_Will_Show_Once">Recovery Kit 提醒弹窗将显示一次</string>
     <string name="Preview_New_Update_Reminder">预览新版本提醒</string>
     <string name="New_Update_Reminder_Will_Show_Once">新版本提醒弹窗将显示一次</string>
+    <string name="Preview_Captcha">预览验证码</string>
+    <string name="Preview_GCaptcha">预览 GCaptcha</string>
+    <string name="Preview_HCaptcha">预览 HCaptcha</string>
+    <string name="Preview_GTCaptcha">预览 GeeTest</string>
+    <string name="Captcha_Preview_Token_Received">验证码预览已收到 token：%1$s</string>
     <string name="Web3_Transactions_Deleted">Web3 交易数据已删除，将重新同步数据</string>
     <string name="Delete_Failed">删除失败: %1$s</string>
     <string name="Whats_Privacy_Wallet">什么是隐私钱包？</string>
