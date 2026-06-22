@@ -1161,7 +1161,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         snapshotDao.insert(snapshot)
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
-        runBlocking { AnalyticsTracker.setAssetLevel(tokenDao.findTotalUSDBalance() ?: 0) }
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)
@@ -1196,7 +1195,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         jobManager.addJobInBackground(RefreshTokensJob(snapshot.assetId, data.conversationId, data.messageId))
         jobManager.addJobInBackground(SyncOutputJob())
         runBlocking {
-            AnalyticsTracker.setAssetLevel(tokenDao.findTotalUSDBalance() ?: 0)
             val receivedAmount = snapshot.amount.toBigDecimalOrNull()
             if (receivedAmount != null && receivedAmount > BigDecimal.ZERO) {
                 val token = tokenDao.simpleAsset(snapshot.assetId)
