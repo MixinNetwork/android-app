@@ -360,6 +360,19 @@ fun String.formatPublicKey( limit: Int = 50, prefixLen: Int = 8, suffixLen: Int 
     return "$prefix...$suffix"
 }
 
+fun String.formatTransactionHash(): String =
+    formatPublicKey(limit = 14, prefixLen = 8, suffixLen = 6)
+
+fun String.isTransactionHashLike(): Boolean {
+    val normalized = removePrefix("0x").removePrefix("0X")
+    val isHex = normalized.length >= 40 && normalized.all { it in '0'..'9' || it in 'a'..'f' || it in 'A'..'F' }
+    val isBase58 = length >= 32 && all { it in "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz" }
+    return isHex || isBase58
+}
+
+fun String.formatTransactionHashIfNeeded(): String =
+    if (isTransactionHashLike()) formatTransactionHash() else formatPublicKey()
+
 fun String.numberFormat(): String {
     if (this.isEmpty()) return this
 

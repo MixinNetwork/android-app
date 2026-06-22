@@ -6,6 +6,7 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.style.RelativeSizeSpan
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.widget.RelativeLayout
 import androidx.annotation.DrawableRes
@@ -13,6 +14,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewTitleBinding
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
 import one.mixin.android.vo.User
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
@@ -88,6 +90,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         second: String,
     ) {
         binding.titleTv.setTextOnly(first)
+        clearSubTitleIcon()
         if (second.isBlank()) {
             binding.subTitleTv.visibility = GONE
         } else {
@@ -112,6 +115,23 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.subTitleTv.textView.compoundDrawablePadding = 4.dp
             binding.subTitleTv.textView.setCompoundDrawablesRelative(null, null, drawable, null)
         }
+    }
+
+    private fun clearSubTitleIcon() {
+        binding.subTitleTv.textView.compoundDrawablePadding = 0
+        binding.subTitleTv.textView.setCompoundDrawablesRelative(null, null, null, null)
+    }
+
+    fun setSubTitleTextStyle(
+        color: Int,
+        textSizeSp: Float,
+    ) {
+        binding.subTitleTv.setTextColor(color)
+        binding.subTitleTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, textSizeSp)
+    }
+
+    fun setWalletNameSubTitleStyle() {
+        setSubTitleTextStyle(context.colorFromAttribute(R.attr.text_remarks), 12f)
     }
 
     fun setSubTitle(
