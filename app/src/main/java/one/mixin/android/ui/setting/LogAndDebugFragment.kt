@@ -39,6 +39,7 @@ import one.mixin.android.ui.home.web3.trade.perps.PREF_HIDE_SL_GUIDE_UNTIL
 import one.mixin.android.ui.home.web3.trade.perps.PREF_HIDE_TP_GUIDE_UNTIL
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
 import one.mixin.android.ui.wallet.PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED
+import one.mixin.android.ui.wallet.PREF_WALLET_HOME_DYNAMIC_BANNER_CLOSED
 import one.mixin.android.ui.wallet.PREF_WALLET_HOME_REFERRAL_CLOSED
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.viewBinding
@@ -143,8 +144,13 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                 }
 
                 resetTpslGuide.setOnClickListener {
-                    resetDebugSharedPreferences()
+                    resetHiddenDebugSharedPreferences()
                     toast(R.string.Reset_TpSl_Guide)
+                }
+
+                resetWalletHomeBanners.setOnClickListener {
+                    resetWalletHomeBannerSharedPreferences()
+                    toast(R.string.Reset_Wallet_Home_Banners)
                 }
 
                 deleteWeb3Transactions.setOnClickListener {
@@ -240,36 +246,21 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
         view.loadCaptchaWithoutFallback(captchaType)
     }
 
-    private fun resetDebugSharedPreferences() {
+    private fun resetHiddenDebugSharedPreferences() {
         val editor = defaultSharedPreferences.edit()
-        debugSharedPreferenceKeys().forEach { key ->
+        hiddenDebugSharedPreferenceKeys(Session.getAccountId()).forEach { key ->
             editor.remove(key)
         }
         editor.apply()
     }
 
-    private fun debugSharedPreferenceKeys(): List<String> =
-        buildList {
-            add(PREF_HIDE_TP_GUIDE_UNTIL)
-            add(PREF_HIDE_SL_GUIDE_UNTIL)
-            add(TradeFragment.PREF_TRADE_SPOT_GUIDE_SHOWN)
-            add(TradeFragment.PREF_TRADE_PERPETUAL_GUIDE_SHOWN)
-            add(Constants.Account.PREF_GLOBAL_MARKET)
-            add(Constants.Account.PREF_MARKET_TYPE)
-            add(Constants.Account.PREF_MARKET_ORDER)
-            add(Constants.Account.PREF_MARKET_TOP_PERCENTAGE)
-            add(Constants.Account.PREF_HAS_USED_BUY)
-            add(Constants.Account.PREF_HAS_USED_SWAP)
-            add(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED)
-            add(PREF_WALLET_HOME_REFERRAL_CLOSED)
-            add(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED)
-            Session.getAccountId()?.let { accountId ->
-                add("${TradeFragment.PREF_TRADE_SELECTED_TAB_PREFIX}$accountId")
-                add("${Constants.Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED}_$accountId")
-                add("${Constants.Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED}_$accountId")
-                add("${Constants.Account.PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED}_$accountId")
-            }
+    private fun resetWalletHomeBannerSharedPreferences() {
+        val editor = defaultSharedPreferences.edit()
+        walletHomeBannerDebugSharedPreferenceKeys(defaultSharedPreferences.all.keys).forEach { key ->
+            editor.remove(key)
         }
+        editor.apply()
+    }
 
     private fun shareLogsFile() {
         val dialog =
@@ -317,3 +308,34 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
         }
     }
 }
+
+private fun hiddenDebugSharedPreferenceKeys(accountId: String?): List<String> =
+    buildList {
+        add(PREF_HIDE_TP_GUIDE_UNTIL)
+        add(PREF_HIDE_SL_GUIDE_UNTIL)
+        add(TradeFragment.PREF_TRADE_SPOT_GUIDE_SHOWN)
+        add(TradeFragment.PREF_TRADE_PERPETUAL_GUIDE_SHOWN)
+        add(Constants.Account.PREF_GLOBAL_MARKET)
+        add(Constants.Account.PREF_MARKET_TYPE)
+        add(Constants.Account.PREF_MARKET_ORDER)
+        add(Constants.Account.PREF_MARKET_TOP_PERCENTAGE)
+        add(Constants.Account.PREF_HAS_USED_BUY)
+        add(Constants.Account.PREF_HAS_USED_SWAP)
+        accountId?.let {
+            add("${TradeFragment.PREF_TRADE_SELECTED_TAB_PREFIX}$it")
+            add("${Constants.Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED}_$it")
+            add("${Constants.Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED}_$it")
+            add("${Constants.Account.PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED}_$it")
+        }
+    }
+
+private fun walletHomeBannerDebugSharedPreferenceKeys(existingKeys: Set<String>): Set<String> =
+    buildSet {
+        add(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED)
+        add(PREF_WALLET_HOME_DYNAMIC_BANNER_CLOSED)
+        add(PREF_WALLET_HOME_REFERRAL_CLOSED)
+        add(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED)
+        existingKeys
+            .filter { it.startsWith("$PREF_WALLET_HOME_DYNAMIC_BANNER_CLOSED:") }
+            .forEach(::add)
+    }

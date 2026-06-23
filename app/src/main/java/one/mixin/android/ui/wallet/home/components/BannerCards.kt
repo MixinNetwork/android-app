@@ -36,10 +36,14 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.api.response.WalletHomeBanner
+import one.mixin.android.api.response.WalletHomeBannerAction
+import one.mixin.android.compose.CoilImageCompat
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
@@ -51,9 +55,10 @@ internal fun BannerPager(
     state: WalletHomeState,
     callbacks: WalletHomeCallbacks,
 ) {
-    val pages = remember(state.showAddWalletBanner) {
+    val pages = remember(state.showAddWalletBanner, state.dynamicBanners) {
         buildList {
-            if (state.showAddWalletBanner) add(WalletHomeBannerPage.ADD_WALLET)
+            addAll(state.dynamicBanners.map(WalletHomeBannerPage::Dynamic))
+            if (state.showAddWalletBanner) add(WalletHomeBannerPage.AddWallet)
         }
     }
     if (pages.isEmpty()) return
@@ -70,7 +75,7 @@ internal fun BannerPager(
                 .wrapContentHeight()
                 .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
         ) {
-            Column(modifier = Modifier.padding(horizontal = 20.dp, vertical = 20.dp)) {
+            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 HorizontalPager(
                     state = pagerState,
                     modifier = Modifier
@@ -78,13 +83,18 @@ internal fun BannerPager(
                         .wrapContentHeight(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) { page ->
-                    when (pages[page]) {
-                        WalletHomeBannerPage.ADD_WALLET -> BannerCard(
+                    when (val bannerPage = pages[page]) {
+                        WalletHomeBannerPage.AddWallet -> BannerCard(
                             iconRes = R.drawable.ic_wallet_home_add,
                             titleRes = R.string.wallet_home_add_wallet_banner_title,
                             descriptionRes = null,
                             ctaRes = R.string.add_wallet,
                             onClick = callbacks::onAddWalletClicked,
+                        )
+                        is WalletHomeBannerPage.Dynamic -> DynamicBannerCard(
+                            banner = bannerPage.banner,
+                            onClick = callbacks::onDynamicBannerClicked,
+                            onActionClick = callbacks::onDynamicBannerActionClicked,
                         )
                     }
                 }
@@ -98,8 +108,9 @@ internal fun BannerPager(
                     .padding(top = 16.dp, end = 16.dp)
                     .size(12.dp)
                     .clickable {
-                        when (pages.getOrNull(pagerState.currentPage)) {
-                            WalletHomeBannerPage.ADD_WALLET -> callbacks.onBannerClosed()
+                        when (val currentPage = pages.getOrNull(pagerState.currentPage)) {
+                            WalletHomeBannerPage.AddWallet -> callbacks.onBannerClosed()
+                            is WalletHomeBannerPage.Dynamic -> callbacks.onDynamicBannerClosed(currentPage.banner)
                             null -> Unit
                         }
                     },
@@ -141,7 +152,7 @@ private fun BannerCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(end = 22.dp),
+            .padding(top = 20.dp, end = 22.dp, bottom = 20.dp),
         verticalAlignment = Alignment.Top,
     ) {
         Image(
@@ -167,7 +178,82 @@ private fun BannerCard(
                 )
             }
             Spacer(modifier = Modifier.height(12.dp))
-            BannerAction(textRes = ctaRes, onClick = onClick)
+            BannerAction(text = stringResource(ctaRes), onClick = onClick)
+        }
+    }
+}
+
+@Composable
+private fun DynamicBannerCard(
+    banner: WalletHomeBanner,
+    onClick: (WalletHomeBanner) -> Unit,
+    onActionClick: (WalletHomeBanner, WalletHomeBannerAction) -> Unit,
+) {
+    val actions = banner.visibleActions
+    val iconShape = if (banner.hasButtonStyle) CircleShape else RoundedCornerShape(8.dp)
+    val bottomPadding = if (banner.hasButtonStyle) 20.dp else 22.dp
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 22.dp, end = 22.dp, bottom = bottomPadding)
+            .clickable { onClick(banner) },
+        verticalAlignment = Alignment.Top,
+    ) {
+        val iconUrl = banner.iconUrl?.takeIf { it.isNotBlank() }
+        if (iconUrl != null) {
+            CoilImageCompat(
+                model = iconUrl,
+                placeholder = R.drawable.ic_deafult,
+                contentScale = ContentScale.Crop,
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(iconShape),
+            )
+        } else {
+            Image(
+                painter = painterResource(id = R.drawable.ic_deafult),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(42.dp)
+                    .clip(iconShape),
+            )
+        }
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = banner.title.orEmpty(),
+                color = MixinAppTheme.colors.textMinor,
+                fontSize = 16.sp,
+                lineHeight = 20.sp,
+                fontWeight = FontWeight.W500,
+            )
+            if (actions.isEmpty()) {
+                banner.description?.takeIf { it.isNotBlank() }?.let { description ->
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = description,
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp,
+                        lineHeight = 20.sp,
+                        fontWeight = FontWeight.W400,
+                    )
+                }
+            } else {
+                Spacer(modifier = Modifier.height(12.dp))
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    actions.forEach { action ->
+                        BannerAction(
+                            text = action.label.orEmpty(),
+                            onClick = { onActionClick(banner, action) },
+                            modifier = Modifier.weight(1f, fill = false),
+                            fontWeight = FontWeight.W400,
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -246,7 +332,7 @@ internal fun ReferralBannerCard(callbacks: WalletHomeCallbacks) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             BannerAction(
-                textRes = R.string.Learn_More,
+                text = stringResource(R.string.Learn_More),
                 primary = true,
                 onClick = callbacks::onReferralClicked,
                 modifier = Modifier
@@ -264,7 +350,7 @@ internal fun ReferralBannerCard(callbacks: WalletHomeCallbacks) {
 
 @Composable
 private fun BannerAction(
-    textRes: Int,
+    text: String,
     primary: Boolean = false,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -283,16 +369,19 @@ private fun BannerAction(
         contentAlignment = Alignment.Center,
     ) {
         Text(
-            text = stringResource(textRes),
+            text = text,
             color = if (primary) Color.White else MixinAppTheme.colors.accent,
             fontSize = 14.sp,
             fontWeight = fontWeight,
             lineHeight = lineHeight?.sp ?: 18.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
             textAlign = TextAlign.Center,
         )
     }
 }
 
-private enum class WalletHomeBannerPage {
-    ADD_WALLET,
+private sealed class WalletHomeBannerPage {
+    data object AddWallet : WalletHomeBannerPage()
+    data class Dynamic(val banner: WalletHomeBanner) : WalletHomeBannerPage()
 }

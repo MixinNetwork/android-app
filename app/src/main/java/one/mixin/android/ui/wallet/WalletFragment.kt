@@ -484,12 +484,28 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         }?.let { wallet ->
             jobManager.addJobInBackground(RefreshSingleWalletJob(wallet))
         }
+        refreshWalletHomeBanners()
+    }
+
+    private fun refreshWalletHomeBanners() {
+        when (selectedWalletDestination) {
+            is WalletDestination.Privacy -> {
+                if (privacyWalletFragment.isAdded) privacyWalletFragment.refreshWalletHomeBanners()
+            }
+            is WalletDestination.Classic,
+            is WalletDestination.Import,
+            is WalletDestination.Watch,
+            is WalletDestination.Safe -> {
+                if (classicWalletFragment.isAdded) classicWalletFragment.refreshWalletHomeBanners()
+            }
+            null -> Unit
+        }
     }
 
     override fun onResume() {
         super.onResume()
         jobManager.addJobInBackground(RefreshSafeAccountsJob())
-        if (classicWalletFragment.isVisible) classicWalletFragment.update()
+        update()
     }
 
     private fun closeMenu() {
