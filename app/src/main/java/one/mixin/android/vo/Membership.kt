@@ -37,6 +37,10 @@ data class Membership(
     }
 }
 
+fun Membership?.activePlan(): Plan {
+    return if (this?.isMembership() == true) plan else Plan.None
+}
+
 @DrawableRes
 fun Membership?.membershipIcon(force: Boolean = false): Int? = when {
     this == null -> View.NO_ID
