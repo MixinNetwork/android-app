@@ -1,5 +1,7 @@
 package one.mixin.android.ui.wallet.home.components
 
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -73,6 +75,7 @@ internal fun BannerPager(
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
                 .wrapContentHeight()
+                .animateContentSize(animationSpec = tween(durationMillis = 200))
                 .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
         ) {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
