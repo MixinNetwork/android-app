@@ -31,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -47,6 +48,8 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.withTimeoutOrNull
 import one.mixin.android.R
 import one.mixin.android.api.response.WalletHomeBanner
 import one.mixin.android.api.response.WalletHomeBannerAction
@@ -96,9 +99,17 @@ internal fun BannerPager(
     LaunchedEffect(pages.size) {
         if (pages.size <= 1) return@LaunchedEffect
         while (true) {
-            delay(BANNER_AUTO_SWITCH_DELAY_MILLIS)
-            val nextPage = (pagerState.currentPage + 1) % pages.size
-            pagerState.animateScrollToPage(nextPage)
+            if (pagerState.isScrollInProgress) {
+                snapshotFlow { pagerState.isScrollInProgress }.first { !it }
+            }
+            val interrupted = withTimeoutOrNull(BANNER_AUTO_SWITCH_DELAY_MILLIS) {
+                snapshotFlow { pagerState.isScrollInProgress }.first { it }
+                true
+            } ?: false
+            if (!interrupted && !pagerState.isScrollInProgress) {
+                val nextPage = (pagerState.currentPage + 1) % pages.size
+                pagerState.animateScrollToPage(nextPage)
+            }
         }
     }
 
