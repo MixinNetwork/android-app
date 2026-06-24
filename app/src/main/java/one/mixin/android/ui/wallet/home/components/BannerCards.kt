@@ -209,7 +209,6 @@ private fun DynamicBannerCard(
     val description = banner.description?.takeIf { it.isNotBlank() }
     val showDescription = actions.isEmpty() && description != null
     val titleOnly = !showDescription
-    val iconShape = if (banner.hasButtonStyle) CircleShape else RoundedCornerShape(8.dp)
     val bottomPadding = if (banner.hasButtonStyle) 20.dp else 22.dp
     Row(
         modifier = Modifier
@@ -223,17 +222,13 @@ private fun DynamicBannerCard(
                 model = iconUrl,
                 placeholder = R.drawable.ic_avatar_place_holder,
                 contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(iconShape),
+                modifier = Modifier.size(42.dp),
             )
         } else {
             Image(
                 painter = painterResource(id = R.drawable.ic_avatar_place_holder),
                 contentDescription = null,
-                modifier = Modifier
-                    .size(42.dp)
-                    .clip(iconShape),
+                modifier = Modifier.size(42.dp),
             )
         }
         Spacer(modifier = Modifier.width(14.dp))
