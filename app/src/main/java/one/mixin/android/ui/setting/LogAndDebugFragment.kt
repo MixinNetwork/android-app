@@ -24,6 +24,7 @@ import one.mixin.android.db.property.PropertyHelper.updateKeyValue
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toast
@@ -99,6 +100,9 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
 
                 logs.setOnClickListener {
                     shareLogsFile()
+                }
+                updateFcmToken.setOnClickListener {
+                    updateFcmToken()
                 }
                 database.setOnClickListener {
                     navTo(
@@ -185,6 +189,41 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                 }
             }
         }
+    }
+
+    private fun updateFcmToken() {
+        val googlePlayServicesAvailable = requireContext().isGooglePlayServicesAvailable()
+        val progressDialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+            setCancelable(false)
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            val result =
+                try {
+                    if (googlePlayServicesAvailable) {
+                        withContext(Dispatchers.IO) {
+                            viewModel.updateFcmToken()
+                        }
+                    } else {
+                        FcmTokenUpdateResult.Failure("Google Play services unavailable")
+                    }
+                } finally {
+                    progressDialog.dismiss()
+                }
+            when (result) {
+                FcmTokenUpdateResult.Success -> toast(R.string.FCM_Token_Updated)
+                is FcmTokenUpdateResult.Failure -> showFcmTokenUpdateError(result.message)
+            }
+        }
+    }
+
+    private fun showFcmTokenUpdateError(message: String) {
+        alertDialogBuilder()
+            .setTitle(R.string.Update_FCM_Token)
+            .setMessage(message)
+            .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     override fun onDestroyView() {
