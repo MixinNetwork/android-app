@@ -26,7 +26,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -42,6 +46,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlinx.coroutines.delay
 import one.mixin.android.R
 import one.mixin.android.api.response.WalletHomeBanner
 import one.mixin.android.api.response.WalletHomeBannerAction
@@ -51,20 +56,51 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeState
 
+private const val LOCAL_BANNER_SHOW_DELAY_MILLIS = 2_000L
+private const val BANNER_AUTO_SWITCH_DELAY_MILLIS = 3_000L
+
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun BannerPager(
     state: WalletHomeState,
     callbacks: WalletHomeCallbacks,
 ) {
-    val pages = remember(state.showAddWalletBanner, state.dynamicBanners) {
+    var showLocalBanner by remember(state.showAddWalletBanner, state.dynamicBanners) {
+        mutableStateOf(!state.showAddWalletBanner || state.dynamicBanners.isNotEmpty())
+    }
+    var showLocalBannerFirst by remember(state.showAddWalletBanner) {
+        mutableStateOf(false)
+    }
+    LaunchedEffect(state.showAddWalletBanner, state.dynamicBanners) {
+        if (!state.showAddWalletBanner) {
+            showLocalBanner = true
+            showLocalBannerFirst = false
+        } else if (state.dynamicBanners.isNotEmpty()) {
+            showLocalBanner = true
+        } else {
+            delay(LOCAL_BANNER_SHOW_DELAY_MILLIS)
+            showLocalBanner = true
+            showLocalBannerFirst = true
+        }
+    }
+    val showAddWalletBanner = state.showAddWalletBanner && showLocalBanner
+    val pages = remember(showAddWalletBanner, showLocalBannerFirst, state.dynamicBanners) {
         buildList {
+            if (showAddWalletBanner && showLocalBannerFirst) add(WalletHomeBannerPage.AddWallet)
             addAll(state.dynamicBanners.map(WalletHomeBannerPage::Dynamic))
-            if (state.showAddWalletBanner) add(WalletHomeBannerPage.AddWallet)
+            if (showAddWalletBanner && !showLocalBannerFirst) add(WalletHomeBannerPage.AddWallet)
         }
     }
     if (pages.isEmpty()) return
     val pagerState = rememberPagerState(initialPage = 0) { pages.size }
+    LaunchedEffect(pages.size) {
+        if (pages.size <= 1) return@LaunchedEffect
+        while (true) {
+            delay(BANNER_AUTO_SWITCH_DELAY_MILLIS)
+            val nextPage = (pagerState.currentPage + 1) % pages.size
+            pagerState.animateScrollToPage(nextPage)
+        }
+    }
 
     Column(
         modifier = Modifier.fillMaxWidth(),
