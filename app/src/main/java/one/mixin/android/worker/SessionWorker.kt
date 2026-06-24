@@ -38,15 +38,15 @@ class SessionWorker @AssistedInject constructor(
         val token = try {
             retrieveFirebaseToken()
         } catch (e: Exception) {
-            Timber.e(e, "Failed to retrieve Firebase token, retrying session update")
+            Timber.e(e, "Failed to retrieve Firebase token, skipping session update")
             reportException(IllegalStateException("SessionWorker failed to retrieve Firebase token", e))
-            return Result.retry()
+            return Result.success()
         }
         if (token.isBlank()) {
             val error = IllegalStateException("SessionWorker retrieved blank Firebase token")
-            Timber.e(error, "Failed to retrieve Firebase token, retrying session update")
+            Timber.e(error, "Failed to retrieve Firebase token, skipping session update")
             reportException(error)
-            return Result.retry()
+            return Result.success()
         }
         Timber.e("Firebase token retrieved: true")
 
