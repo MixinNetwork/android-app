@@ -190,8 +190,9 @@ private fun DynamicBannerCard(
     onActionClick: (WalletHomeBanner, WalletHomeBannerAction) -> Unit,
 ) {
     val actions = banner.visibleActions
-    val hasDescription = actions.isEmpty() && banner.description?.isNotBlank() == true
-    val titleOnly = actions.isEmpty() && !hasDescription
+    val description = banner.description?.takeIf { it.isNotBlank() }
+    val showDescription = actions.isEmpty() && description != null
+    val titleOnly = !showDescription
     val iconShape = if (banner.hasButtonStyle) CircleShape else RoundedCornerShape(8.dp)
     val bottomPadding = if (banner.hasButtonStyle) 20.dp else 22.dp
     Row(
@@ -205,7 +206,7 @@ private fun DynamicBannerCard(
         if (iconUrl != null) {
             CoilImageCompat(
                 model = iconUrl,
-                placeholder = R.drawable.ic_deafult,
+                placeholder = R.drawable.ic_avatar_place_holder,
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(42.dp)
@@ -213,7 +214,7 @@ private fun DynamicBannerCard(
             )
         } else {
             Image(
-                painter = painterResource(id = R.drawable.ic_deafult),
+                painter = painterResource(id = R.drawable.ic_avatar_place_holder),
                 contentDescription = null,
                 modifier = Modifier
                     .size(42.dp)
@@ -229,8 +230,8 @@ private fun DynamicBannerCard(
                 lineHeight = 20.sp,
                 fontWeight = if (titleOnly) FontWeight.W400 else FontWeight.W500,
             )
-            if (actions.isEmpty()) {
-                banner.description?.takeIf { it.isNotBlank() }?.let { description ->
+            if (showDescription) {
+                description.let { description ->
                     Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = description,
@@ -240,7 +241,7 @@ private fun DynamicBannerCard(
                         fontWeight = FontWeight.W400,
                     )
                 }
-            } else {
+            } else if (actions.isNotEmpty()) {
                 Spacer(modifier = Modifier.height(12.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
