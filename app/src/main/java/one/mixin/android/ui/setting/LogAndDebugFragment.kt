@@ -19,6 +19,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentLogDebugBinding
 import one.mixin.android.databinding.ViewCaptchaPreviewBottomBinding
 import one.mixin.android.db.DatabaseMonitor
+import one.mixin.android.db.property.PropertyHelper.deleteKeyValue
 import one.mixin.android.db.property.PropertyHelper.findValueByKey
 import one.mixin.android.db.property.PropertyHelper.updateKeyValue
 import one.mixin.android.extension.alertDialogBuilder
@@ -149,8 +150,10 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                 }
 
                 resetWalletHomeBanners.setOnClickListener {
-                    resetWalletHomeBannerSharedPreferences()
-                    toast(R.string.Reset_Wallet_Home_Banners)
+                    lifecycleScope.launch {
+                        resetWalletHomeBannerLocalState()
+                        toast(R.string.Reset_Wallet_Home_Banners)
+                    }
                 }
 
                 deleteWeb3Transactions.setOnClickListener {
@@ -254,12 +257,13 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
         editor.apply()
     }
 
-    private fun resetWalletHomeBannerSharedPreferences() {
+    private suspend fun resetWalletHomeBannerLocalState() {
         val editor = defaultSharedPreferences.edit()
         walletHomeBannerDebugSharedPreferenceKeys(defaultSharedPreferences.all.keys).forEach { key ->
             editor.remove(key)
         }
         editor.apply()
+        deleteKeyValue(PREF_WALLET_HOME_DYNAMIC_BANNER_CLOSED)
     }
 
     private fun shareLogsFile() {
@@ -335,6 +339,7 @@ private fun walletHomeBannerDebugSharedPreferenceKeys(existingKeys: Set<String>)
         add(PREF_WALLET_HOME_DYNAMIC_BANNER_CLOSED)
         add(PREF_WALLET_HOME_REFERRAL_CLOSED)
         add(PREF_WALLET_HOME_CASHBACK_BANNER_CLOSED)
+        add(Constants.Account.PREF_HAS_USED_ADD_WALLET)
         existingKeys
             .filter { it.startsWith("$PREF_WALLET_HOME_DYNAMIC_BANNER_CLOSED:") }
             .forEach(::add)

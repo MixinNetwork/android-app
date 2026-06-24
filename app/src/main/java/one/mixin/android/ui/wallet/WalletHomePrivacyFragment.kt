@@ -52,7 +52,6 @@ import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.putStringSet
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTokensJob
@@ -138,6 +137,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private var topMovers: List<PerpsMarket> = emptyList()
     private var pendingDisplays: List<PendingDisplay> = emptyList()
     private var dynamicBanners: List<WalletHomeBanner> = emptyList()
+    private var closedDynamicBannerIds: Set<String> = emptySet()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
     private val perpetualViewModel by viewModels<PerpetualViewModel>()
     private var walletHomeDataState = WalletHomeDataState.EMPTY
@@ -401,7 +401,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             fiatRate = fiatRate,
         )
         val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
-        val visibleDynamicBanners = dynamicBanners.visibleWalletHomeBanners(closedDynamicBannerIds())
+        val visibleDynamicBanners = dynamicBanners.visibleWalletHomeBanners(closedDynamicBannerIds)
         val showBanner = visibleDynamicBanners.isNotEmpty() || showAddWalletBanner
         val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false)
         val cards = WalletHomeBuilder.build(
@@ -478,22 +478,17 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
     }
 
-    private fun closedDynamicBannerIds(): Set<String> =
-        defaultSharedPreferences.getStringSet(dynamicBannerClosedKey(), emptySet()).orEmpty()
-
-    private fun syncClosedDynamicBannerIds(remoteBanners: List<WalletHomeBanner>) {
-        val closedBannerIds = closedDynamicBannerIds()
+    private suspend fun syncClosedDynamicBannerIds(remoteBanners: List<WalletHomeBanner>) {
+        val closedBannerIds = findWalletHomeDynamicBannerClosedIds()
         val syncedClosedBannerIds = closedBannerIds.syncedWalletHomeClosedBannerIds(remoteBanners)
         if (syncedClosedBannerIds != closedBannerIds) {
-            defaultSharedPreferences.putStringSet(dynamicBannerClosedKey(), syncedClosedBannerIds)
+            updateWalletHomeDynamicBannerClosedIds(syncedClosedBannerIds)
         }
+        closedDynamicBannerIds = syncedClosedBannerIds
     }
 
     private fun privacyWalletHomeCacheKey(): String =
         walletHomeCacheKey(WalletHomeType.PRIVACY, Session.getAccountId().orEmpty())
-
-    private fun dynamicBannerClosedKey(): String =
-        walletHomeDynamicBannerClosedKey(WalletHomeType.PRIVACY, Session.getAccountId().orEmpty())
 
     private fun List<PerpsPositionItem>.toWalletHomePositionSummary(): WalletHomePositionSummary? {
         if (isEmpty()) return null
@@ -549,11 +544,12 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
 
         override fun onDynamicBannerClosed(banner: WalletHomeBanner) {
-            defaultSharedPreferences.putStringSet(
-                dynamicBannerClosedKey(),
-                closedDynamicBannerIds().toMutableSet().apply { add(banner.key) },
-            )
-            renderHome()
+            lifecycleScope.launch {
+                val closedIds = closedDynamicBannerIds.toMutableSet().apply { add(banner.key) }
+                updateWalletHomeDynamicBannerClosedIds(closedIds)
+                closedDynamicBannerIds = closedIds
+                renderHome()
+            }
         }
 
         override fun onReferralClicked() {

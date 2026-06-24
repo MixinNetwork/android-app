@@ -190,6 +190,8 @@ private fun DynamicBannerCard(
     onActionClick: (WalletHomeBanner, WalletHomeBannerAction) -> Unit,
 ) {
     val actions = banner.visibleActions
+    val hasDescription = actions.isEmpty() && banner.description?.isNotBlank() == true
+    val titleOnly = actions.isEmpty() && !hasDescription
     val iconShape = if (banner.hasButtonStyle) CircleShape else RoundedCornerShape(8.dp)
     val bottomPadding = if (banner.hasButtonStyle) 20.dp else 22.dp
     Row(
@@ -223,9 +225,9 @@ private fun DynamicBannerCard(
             Text(
                 text = banner.title.orEmpty(),
                 color = MixinAppTheme.colors.textMinor,
-                fontSize = 16.sp,
+                fontSize = if (titleOnly) 14.sp else 16.sp,
                 lineHeight = 20.sp,
-                fontWeight = FontWeight.W500,
+                fontWeight = if (titleOnly) FontWeight.W400 else FontWeight.W500,
             )
             if (actions.isEmpty()) {
                 banner.description?.takeIf { it.isNotBlank() }?.let { description ->
@@ -249,7 +251,6 @@ private fun DynamicBannerCard(
                             text = action.label.orEmpty(),
                             onClick = { onActionClick(banner, action) },
                             modifier = Modifier.weight(1f, fill = false),
-                            fontWeight = FontWeight.W400,
                         )
                     }
                 }
