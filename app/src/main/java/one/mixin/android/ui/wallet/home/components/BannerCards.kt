@@ -70,13 +70,28 @@ internal fun BannerPager(
         modifier = Modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        val currentPage = pages.getOrNull(pagerState.currentPage)
+        val cardClickModifier =
+            when (currentPage) {
+                WalletHomeBannerPage.AddWallet -> Modifier.clickable { callbacks.onAddWalletClicked() }
+                is WalletHomeBannerPage.Dynamic -> {
+                    if (currentPage.banner.actionUrl.isNullOrBlank()) {
+                        Modifier
+                    } else {
+                        Modifier.clickable { callbacks.onDynamicBannerClicked(currentPage.banner) }
+                    }
+                }
+                null -> Modifier
+            }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
                 .wrapContentHeight()
                 .animateContentSize(animationSpec = tween(durationMillis = 200))
-                .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
+                .clip(RoundedCornerShape(8.dp))
+                .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+                .then(cardClickModifier),
         ) {
             Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                 HorizontalPager(
@@ -96,7 +111,6 @@ internal fun BannerPager(
                         )
                         is WalletHomeBannerPage.Dynamic -> DynamicBannerCard(
                             banner = bannerPage.banner,
-                            onClick = callbacks::onDynamicBannerClicked,
                             onActionClick = callbacks::onDynamicBannerActionClicked,
                         )
                     }
@@ -189,7 +203,6 @@ private fun BannerCard(
 @Composable
 private fun DynamicBannerCard(
     banner: WalletHomeBanner,
-    onClick: (WalletHomeBanner) -> Unit,
     onActionClick: (WalletHomeBanner, WalletHomeBannerAction) -> Unit,
 ) {
     val actions = banner.visibleActions
@@ -201,8 +214,7 @@ private fun DynamicBannerCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 22.dp, end = 22.dp, bottom = bottomPadding)
-            .clickable { onClick(banner) },
+            .padding(top = 22.dp, end = 22.dp, bottom = bottomPadding),
         verticalAlignment = Alignment.Top,
     ) {
         val iconUrl = banner.iconUrl?.takeIf { it.isNotBlank() }
@@ -235,7 +247,7 @@ private fun DynamicBannerCard(
             )
             if (showDescription) {
                 description.let { description ->
-                    Spacer(modifier = Modifier.height(6.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = description,
                         color = MixinAppTheme.colors.textAssist,
