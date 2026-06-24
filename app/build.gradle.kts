@@ -15,9 +15,9 @@ apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
 val versionMajor = 5
-val versionMinor = 0
+val versionMinor = 1
 val versionPatch = 0
-val versionBuild = 2
+val versionBuild = 1
 
 
 val bitcoinVersion: String by rootProject.extra
