@@ -32,7 +32,7 @@ class SessionWorker @AssistedInject constructor(
             retrieveFirebaseToken()
         } catch (e: Exception) {
             Timber.e(e, "Failed to retrieve Firebase token")
-            reportException(IllegalStateException("SessionWorker failed to retrieve Firebase token", e))
+            reportException("SessionWorker failed to retrieve Firebase token", e)
             null
         }
         val notificationToken = if (token != null && token.isBlank()) {
