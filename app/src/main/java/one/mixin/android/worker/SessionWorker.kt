@@ -7,7 +7,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.AccountService
-import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.SERVER
 import one.mixin.android.util.reportException
@@ -20,7 +19,6 @@ class SessionWorker @AssistedInject constructor(
     @Assisted parameters: WorkerParameters,
     private val accountService: AccountService,
 ) : BaseWork(context, parameters) {
-    private val appContext = context.applicationContext
 
     override suspend fun onRun(): Result {
         Timber.e("SessionWorker started")
@@ -29,30 +27,28 @@ class SessionWorker @AssistedInject constructor(
             Timber.w("Session update failed: No active account")
             return Result.failure()
         }
-        if (!appContext.isGooglePlayServicesAvailable()) {
-            Timber.w("Session update skipped: Google Play services unavailable")
-            return Result.success()
-        }
 
         val token = try {
             retrieveFirebaseToken()
         } catch (e: Exception) {
-            Timber.e(e, "Failed to retrieve Firebase token, skipping session update")
+            Timber.e(e, "Failed to retrieve Firebase token")
             reportException(IllegalStateException("SessionWorker failed to retrieve Firebase token", e))
-            return Result.success()
+            null
         }
-        if (token.isBlank()) {
+        val notificationToken = if (token != null && token.isBlank()) {
             val error = IllegalStateException("SessionWorker retrieved blank Firebase token")
-            Timber.e(error, "Failed to retrieve Firebase token, skipping session update")
+            Timber.e(error, "Failed to retrieve Firebase token")
             reportException(error)
-            return Result.success()
+            null
+        } else {
+            token
         }
-        Timber.e("Firebase token retrieved: true")
+        Timber.e("Firebase token retrieved: ${notificationToken != null}")
 
         return try {
-            val response = accountService.updateSession(SessionRequest(notificationToken = token))
+            val response = accountService.updateSession(SessionRequest(notificationToken = notificationToken))
             if (response.isSuccess) {
-                Timber.e("Session updated successfully with Firebase token")
+                Timber.e("Session updated successfully")
                 Result.success()
             } else if (response.errorCode >= SERVER) {
                 Timber.e("Session update failed with server error, retrying...")
