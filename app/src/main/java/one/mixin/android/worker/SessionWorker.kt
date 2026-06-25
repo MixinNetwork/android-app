@@ -3,16 +3,15 @@ package one.mixin.android.worker
 import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.WorkerParameters
-import com.google.firebase.messaging.FirebaseMessaging
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import kotlinx.coroutines.tasks.await
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.SERVER
 import one.mixin.android.util.reportException
+import one.mixin.android.util.retrieveFirebaseMessagingToken
 import timber.log.Timber
 
 @HiltWorker
@@ -68,5 +67,5 @@ class SessionWorker @AssistedInject constructor(
         }
     }
 
-    private suspend fun retrieveFirebaseToken(): String = FirebaseMessaging.getInstance().token.await()
+    private suspend fun retrieveFirebaseToken(): String = retrieveFirebaseMessagingToken()
 }

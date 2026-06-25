@@ -1,13 +1,12 @@
 package one.mixin.android.ui.setting
 
 import androidx.lifecycle.ViewModel
-import com.google.firebase.messaging.FirebaseMessaging
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.tasks.await
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.session.Session
+import one.mixin.android.util.retrieveFirebaseMessagingToken
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -37,7 +36,7 @@ class LogAndDebugViewModel @Inject constructor(
         }
 
         val token = try {
-            FirebaseMessaging.getInstance().token.await()
+            retrieveFirebaseMessagingToken()
         } catch (e: Exception) {
             Timber.e(e, "Debug FCM token retrieval failed")
             return FcmTokenUpdateResult.Failure("Failed to retrieve Firebase token: ${e.displayMessage()}")
