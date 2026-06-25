@@ -33,6 +33,7 @@ import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
 import one.mixin.android.api.request.web3.WEB3_FEE_TYPE_FREE
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.web3.EthGaslessTxPayload
+import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
@@ -131,6 +132,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         const val ARGS_TOKEN = "args_token"
 
         const val ARGS_BIOMETRIC_ITEM = "args_biometric_item"
+        const val ARGS_CASH_ACCOUNT_TRANSFER = "args_cash_account_transfer"
+        const val ARGS_CASH_BALANCE = "args_cash_balance"
+        const val ARGS_CASH_MIN_AMOUNT = "args_cash_min_amount"
+        private const val CASH_ACCOUNT_QUOTE_DELAY_MS = 350L
+        private const val CASH_ACCOUNT_QUOTE_SOURCE = "mixin"
+        private const val CASH_ACCOUNT_RECEIVE_SYMBOL = "USD"
 
         enum class TransferType {
             USER,
@@ -184,6 +191,18 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         requireArguments().getString(ARGS_TO_ADDRESS_TAG) ?: (assetBiometricItem as? WithdrawBiometricItem)?.address?.tag
     }
 
+    private val isCashAccountTransfer by lazy {
+        requireArguments().getBoolean(ARGS_CASH_ACCOUNT_TRANSFER, false)
+    }
+
+    private val cashBalance by lazy {
+        requireNotNull(requireArguments().getString(ARGS_CASH_BALANCE))
+    }
+
+    private val cashMinAmount by lazy {
+        requireNotNull(requireArguments().getString(ARGS_CASH_MIN_AMOUNT))
+    }
+
     private val currencyName by lazy {
         Fiats.getAccountCurrencyAppearance()
     }
@@ -209,6 +228,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private var currentNote: String? = null
 
+    private var cashQuoteJob: Job? = null
+    private var cashQuoteAmount: String? = null
+    private var cashQuote: QuoteResult? = null
+    private var cashQuoteError: String? = null
+    private var cashQuoteLoading = false
+
     private var solanaRecipientAccountState = SolanaRecipientAccountState.EXISTS
 
     @Inject
@@ -225,6 +250,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     override fun onDestroyView() {
         btcFeeRecalculateJob?.cancel()
         btcFeeRecalculateJob = null
+        cashQuoteJob?.cancel()
+        cashQuoteJob = null
         if (dialog.isShowing) {
             dialog.dismiss()
         }
@@ -535,7 +562,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         binding.titleTextView.setText(R.string.Network_Fee)
                     }
                 }
+                if (isCashAccountTransfer) {
+                    applyCashAccountInfo()
+                }
                 continueVa.setOnClickListener {
+                    if (isCashAccountTransfer) {
+                        prepareCashAccountTransfer(currentInputAmount())
+                        return@setOnClickListener
+                    }
                     when  {
                         transferType == TransferType.ADDRESS  || (transferType == TransferType.BIOMETRIC_ITEM && assetBiometricItem is WithdrawBiometricItem)-> {
                             val toAddress = requireNotNull(toAddress)
@@ -748,6 +782,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun applyFeeUi() {
+        if (isCashAccountTransfer) {
+            applyCashAccountInfo()
+            return
+        }
         val binding = bindingOrNull() ?: return
         val hasFeeText: Boolean = binding.contentTextView.text.toString().isNotEmpty()
         val showFee: Boolean = isFeeWaived && hasFeeText
@@ -760,10 +798,38 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         binding.feeTv.isVisible = showFee
     }
 
+    private fun cashAccountBalanceText(): String {
+        val amount = cashBalance
+            .toBigDecimalOrNull()
+            ?.numberFormat2()
+            ?: cashBalance
+        return "$amount USD"
+    }
+
+    private fun applyCashAccountInfo() {
+        val binding = bindingOrNull() ?: return
+        binding.titleTextView.setText(R.string.cash_balance)
+        binding.feeTv.isVisible = true
+        binding.feeTv.setText(R.string.cash_account_apy)
+        binding.feeTv.setBackgroundResource(R.drawable.bg_round_wallet_green_tv)
+        binding.feeTv.setOnClickListener(null)
+        binding.contentTextView.isVisible = true
+        binding.contentTextView.text = cashAccountBalanceText()
+        binding.contentTextView.paintFlags = binding.contentTextView.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+        binding.loadingProgressBar.isVisible = false
+        binding.iconImageView.isVisible = false
+        binding.infoLinearLayout.setOnClickListener(null)
+    }
+
     private var addressLabel:String? = null
 
     private fun initTitle() {
         binding.apply {
+            if (isCashAccountTransfer) {
+                titleView.setLabel(getString(R.string.Send_To_Title), getString(R.string.Cash_Account), "")
+                addressLabel = getString(R.string.Cash_Account)
+                return
+            }
             when (transferType) {
                 TransferType.USER -> {
                     titleView.setSubTitle(getString(R.string.Send_To_Title), user)
@@ -878,6 +944,86 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         } else {
             v
         }
+    }
+
+    private fun cashMinimumReceiveAmount(): BigDecimal =
+        cashMinAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+
+    private fun cashQuoteReceiveAmount(quote: QuoteResult? = cashQuote): BigDecimal? =
+        quote?.outAmount?.toBigDecimalOrNull()
+
+    private fun isCurrentCashQuoteBelowMinimum(amount: String): Boolean {
+        if (!isCashAccountTransfer || cashQuoteAmount != amount) return false
+        val receiveAmount = cashQuoteReceiveAmount() ?: return false
+        return receiveAmount < cashMinimumReceiveAmount()
+    }
+
+    private fun cashQuoteUnavailableText(amount: String): String {
+        val receiveAmount = cashQuoteReceiveAmount()
+        val minimumAmount = cashMinimumReceiveAmount()
+        return when {
+            cashQuoteLoading || cashQuoteAmount != amount -> getString(R.string.calculating)
+            !cashQuoteError.isNullOrBlank() -> cashQuoteError!!
+            receiveAmount != null && receiveAmount < minimumAmount ->
+                getString(R.string.cash_account_minimum_receive, minimumAmount.numberFormat8(), CASH_ACCOUNT_RECEIVE_SYMBOL)
+            else -> getString(R.string.no_available_quotes_found)
+        }
+    }
+
+    private fun resetCashAccountQuote() {
+        cashQuoteJob?.cancel()
+        cashQuoteJob = null
+        cashQuoteAmount = null
+        cashQuote = null
+        cashQuoteError = null
+        cashQuoteLoading = false
+    }
+
+    private fun scheduleCashAccountQuote(amount: String) {
+        if (!isCashAccountTransfer) return
+        val amountValue = amount.toBigDecimalOrNull()
+        if (amountValue == null || amountValue <= BigDecimal.ZERO) {
+            resetCashAccountQuote()
+            return
+        }
+        if (cashQuoteAmount == amount && (cashQuoteLoading || cashQuote != null || cashQuoteError != null)) return
+
+        cashQuoteJob?.cancel()
+        cashQuoteAmount = amount
+        cashQuote = null
+        cashQuoteError = null
+        cashQuoteLoading = true
+        cashQuoteJob = viewLifecycleOwner.lifecycleScope.launch {
+            delay(CASH_ACCOUNT_QUOTE_DELAY_MS)
+            val quote = runCatching {
+                requestCashAccountQuote(amount)
+            }.onFailure { error ->
+                if (cashQuoteAmount == amount) {
+                    cashQuoteError = ErrorHandler.getErrorMessage(error)
+                }
+            }.getOrNull()
+            if (cashQuoteAmount != amount) return@launch
+            cashQuote = quote
+            cashQuoteLoading = false
+            if (!viewDestroyed()) {
+                updateUI()
+            }
+        }
+    }
+
+    private suspend fun requestCashAccountQuote(amount: String): QuoteResult? {
+        val sourceToken = token ?: return null
+        val response = withContext(Dispatchers.IO) {
+            web3ViewModel.web3Quote(
+                inputMint = sourceToken.assetId,
+                outputMint = Constants.AssetId.USDC_ASSET_SOL_ID,
+                amount = amount,
+                source = CASH_ACCOUNT_QUOTE_SOURCE,
+            )
+        }
+        if (response.isSuccess) return response.data
+        cashQuoteError = response.errorDescription
+        return null
     }
 
     private fun shouldOfferLegacyWeb3FeeOption(): Boolean {
@@ -1127,6 +1273,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private fun updateWeb3FeeDisplay() {
         val binding = bindingOrNull() ?: return
         val token = web3Token ?: return
+        if (isCashAccountTransfer) {
+            applyCashAccountInfo()
+            return
+        }
         if (binding.loadingProgressBar.isVisible) return
         val feeOptions = web3FeeOptions()
         if (hasGaslessFeeSelection()) {
@@ -1288,6 +1438,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
 
             if (value == "0") {
+                if (isCashAccountTransfer) {
+                    resetCashAccountQuote()
+                }
                 insufficientBalance.isVisible = false
                 insufficientFeeBalance.isVisible = false
                 insufficientFunds.isVisible = false
@@ -1302,6 +1455,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         value
                     }
                 scheduleRefreshBtcFeeIfNeeded(v)
+                scheduleCashAccountQuote(v)
                 if (isReverse && (v == "0" || BigDecimal(v) == BigDecimal.ZERO)) {
                     insufficientBalance.isVisible = false
                     insufficientFeeBalance.isVisible = false
@@ -1309,7 +1463,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                     updateAddText()
-                } else if (BigDecimal(v) <= BigDecimal.ZERO){
+                } else if (BigDecimal(v) <= BigDecimal.ZERO) {
                     insufficientBalance.isVisible = false
                     insufficientFeeBalance.isVisible = false
                     insufficientFunds.isVisible = false
@@ -1321,6 +1475,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     insufficientFeeBalance.isVisible = false
                     insufficientFunds.isVisible = false
                     addTv.text = "${getString(R.string.Add)} ${token?.symbol ?: web3Token?.symbol ?: ""}"
+                    continueVa.isEnabled = false
+                    continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
+                } else if (isCashAccountTransfer && isCurrentCashQuoteBelowMinimum(v)) {
+                    insufficientBalance.isVisible = false
+                    insufficientFeeBalance.isVisible = false
+                    insufficientFunds.isVisible = true
+                    insufficientFunds.text = cashQuoteUnavailableText(v)
+                    addTv.text = ""
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
                 } else if (transferType != TransferType.WEB3 && (currentFee != null && feeTokensExtra == null ||
@@ -1670,6 +1832,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private suspend fun refreshFee() {
+        if (isCashAccountTransfer) return
         when (transferType) {
             TransferType.ADDRESS -> {
                 refreshFee(token!!)
@@ -1749,6 +1912,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun setFeeLoading(isLoading: Boolean) {
         val binding = bindingOrNull() ?: return
+        if (isCashAccountTransfer) {
+            applyCashAccountInfo()
+            return
+        }
         binding.loadingProgressBar.isVisible = isLoading
         binding.contentTextView.isVisible = !isLoading
     }
@@ -1809,6 +1976,92 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
         }
         setFeeLoading(false)
+    }
+
+    private fun prepareCashAccountTransfer(amount: String) {
+        viewLifecycleOwner.lifecycleScope.launch(
+            CoroutineExceptionHandler { _, error ->
+                ErrorHandler.handleError(error)
+                if (alertDialog.isShowing) {
+                    alertDialog.dismiss()
+                }
+            },
+        ) {
+            val sourceToken = token ?: return@launch
+            alertDialog.show()
+            val quote = try {
+                requestCashAccountQuote(amount)
+            } finally {
+                if (alertDialog.isShowing) {
+                    alertDialog.dismiss()
+                }
+            }
+            val receiveAmount = cashQuoteReceiveAmount(quote)
+            if (quote == null || receiveAmount == null || receiveAmount < cashMinimumReceiveAmount()) {
+                cashQuoteAmount = amount
+                cashQuote = quote
+                cashQuoteLoading = false
+                if (receiveAmount != null && receiveAmount < cashMinimumReceiveAmount()) {
+                    cashQuoteError = null
+                }
+                updateUI()
+                return@launch
+            }
+            cashQuoteAmount = amount
+            cashQuote = quote
+            cashQuoteError = null
+            cashQuoteLoading = false
+            val cashBot = withContext(Dispatchers.IO) {
+                web3ViewModel.refreshUser(Constants.MIXIN_CASH_USER_ID)
+            }
+            if (cashBot == null) {
+                toast(R.string.Data_error)
+                return@launch
+            }
+            val biometricItem = buildTransferBiometricItem(
+                user = cashBot,
+                token = sourceToken,
+                amount = amount,
+                traceId = null,
+                memo = null,
+                returnTo = null,
+                cashReceiveAmount = quote.outAmount,
+                cashReceiveSymbol = CASH_ACCOUNT_RECEIVE_SYMBOL,
+                cashBalance = cashBalance,
+            )
+            prepareCashAccountCheck(biometricItem)
+        }
+    }
+
+    private fun prepareCashAccountCheck(item: TransferBiometricItem) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val rawTransaction = web3ViewModel.firstUnspentTransaction()
+            if (rawTransaction != null) {
+                WaitingBottomSheetDialogFragment.newInstance()
+                    .showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
+            } else {
+                checkUtxo(item.amount) {
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        val asset = item.asset ?: return@launch
+                        val pair = web3ViewModel.findLatestTrace(item.users.first().userId, null, null, item.amount, asset.assetId)
+                        if (pair.second) {
+                            return@launch
+                        }
+                        item.trace = pair.first
+                        AnalyticsTracker.trackAssetSendPreview()
+                        CashAccountPreviewBottomSheetDialogFragment.newInstance(item).apply {
+                            setCallback(object : CashAccountPreviewBottomSheetDialogFragment.Callback() {
+                                override fun onDismiss(success: Boolean) {
+                                    if (success) {
+                                        finishTransferFlow()
+                                    }
+                                }
+                            })
+                        }.show(parentFragmentManager, CashAccountPreviewBottomSheetDialogFragment.TAG)
+                    }
+                }
+            }
+        }
     }
 
     private fun prepareCheck(item: BiometricItem) {
@@ -1889,41 +2142,44 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 setCallback(object : TransferBottomSheetDialogFragment.Callback() {
                     override fun onDismiss(success: Boolean) {
                         if (success) {
-                            val navController = findNavController()
-                            val backStackEntryCount = parentFragmentManager.backStackEntryCount
-
-                            val currentDestination = navController.currentDestination?.id
-                            val startDestination = navController.graph.startDestinationId
-                            val isStartDestination = currentDestination == startDestination || backStackEntryCount <= 1
-
-                            if (isStartDestination) {
-                                requireActivity().finish()
-                            } else {
-                                parentFragmentManager.apply {
-                                    var foundTransferDestFragment = false
-                                    val fragmentCount = backStackEntryCount
-                                    for (i in 0 until fragmentCount) {
-                                        val topFragment = fragments.lastOrNull()
-                                        if (topFragment is TransferDestinationInputFragment) {
-                                            // Found TransferDestinationInputFragment, pop it too
-                                            popBackStackImmediate()
-                                            foundTransferDestFragment = true
-                                            break
-                                        } else {
-                                            popBackStackImmediate()
-                                        }
-                                    }
-
-                                    if (!foundTransferDestFragment) {
-                                        popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
-                                    }
-                                }
-                            }
+                            finishTransferFlow()
                         }
                     }
                 })
             }.show(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
         }
+
+    private fun finishTransferFlow() {
+        val navController = findNavController()
+        val backStackEntryCount = parentFragmentManager.backStackEntryCount
+
+        val currentDestination = navController.currentDestination?.id
+        val startDestination = navController.graph.startDestinationId
+        val isStartDestination = currentDestination == startDestination || backStackEntryCount <= 1
+
+        if (isStartDestination) {
+            requireActivity().finish()
+        } else {
+            parentFragmentManager.apply {
+                var foundTransferDestFragment = false
+                val fragmentCount = backStackEntryCount
+                for (i in 0 until fragmentCount) {
+                    val topFragment = fragments.lastOrNull()
+                    if (topFragment is TransferDestinationInputFragment) {
+                        popBackStackImmediate()
+                        foundTransferDestFragment = true
+                        break
+                    } else {
+                        popBackStackImmediate()
+                    }
+                }
+
+                if (!foundTransferDestFragment) {
+                    popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+                }
+            }
+        }
+    }
 
     private suspend fun refreshWeb3Fees(t: Web3TokenItem) {
         setFeeLoading(true)

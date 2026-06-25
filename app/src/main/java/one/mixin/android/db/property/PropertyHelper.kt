@@ -8,6 +8,7 @@ import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_INSCRIPTION
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT
 import one.mixin.android.Constants.Account.Migration.PREF_MIGRATION_TRANSCRIPT_ATTACHMENT_LAST
 import one.mixin.android.Constants.Account.PREF_BACKUP
+import one.mixin.android.Constants.Account.PREF_CASH_ACCOUNT
 import one.mixin.android.Constants.Account.PREF_CLEANUP_QUOTE_CONTENT
 import one.mixin.android.Constants.Account.PREF_CLEANUP_THUMB
 import one.mixin.android.Constants.Account.PREF_DUPLICATE_TRANSFER
@@ -21,6 +22,7 @@ import one.mixin.android.Constants.Download.MOBILE_DEFAULT
 import one.mixin.android.Constants.Download.ROAMING_DEFAULT
 import one.mixin.android.Constants.Download.WIFI_DEFAULT
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.response.CashAccount
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.PropertyDao
 import one.mixin.android.extension.defaultSharedPreferences
@@ -28,6 +30,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.ClearFts4Job.Companion.FTS_CLEAR
 import one.mixin.android.job.MigratedFts4Job.Companion.FTS_NEED_MIGRATED_LAST_ROW_ID
 import one.mixin.android.session.Session
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.Property
 
 object PropertyHelper {
@@ -146,6 +149,28 @@ object PropertyHelper {
     suspend fun deleteKeyValue(key: String) {
         val propertyDao = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()).propertyDao()
         propertyDao.deletePropertyByKey(key)
+    }
+
+    suspend fun updateCashAccount(account: CashAccount?) {
+        val value = runCatching {
+            account?.takeIf { it.balance.isNotBlank() && it.minAmount.isNotBlank() }?.let {
+                GsonHelper.customGson.toJson(it)
+            }
+        }.getOrNull()
+        if (value == null) {
+            deleteKeyValue(PREF_CASH_ACCOUNT)
+        } else {
+            updateKeyValue(PREF_CASH_ACCOUNT, value)
+        }
+    }
+
+    suspend fun findCashAccount(): CashAccount? {
+        val value = findValueByKey(PREF_CASH_ACCOUNT, "")
+        if (value.isBlank()) return null
+        return runCatching {
+            val account = GsonHelper.customGson.fromJson(value, CashAccount::class.java) ?: return@runCatching null
+            account.takeIf { it.balance.isNotBlank() && it.minAmount.isNotBlank() }
+        }.getOrNull()
     }
 
     suspend fun <T> findValueByKey(

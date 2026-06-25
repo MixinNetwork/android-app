@@ -85,6 +85,7 @@ fun TransferDestinationInputPage(
     toAddAddress: () -> Unit,
     toContact: () -> Unit,
     toWallet: (String?) -> Unit,
+    toCashAccount: () -> Unit,
     onSend: (String) -> Unit,
     onDeleteAddress: (Address) -> Unit,
     onAddressClick: (Address) -> Unit,
@@ -97,6 +98,7 @@ fun TransferDestinationInputPage(
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
     var hasSafeWallet by remember { mutableStateOf(false) }
     var safeWalletChainId by remember { mutableStateOf<String?>(null) }
+    var hasCashAccount by remember { mutableStateOf(false) }
     var text by remember(contentText) { mutableStateOf(contentText) }
     val clipboardManager = LocalClipboard.current
 
@@ -115,10 +117,22 @@ fun TransferDestinationInputPage(
     }
 
     LaunchedEffect(token, web3Token) {
-        val chainId = token?.chainId ?: web3Token?.chainId ?: return@LaunchedEffect
-        val safeWallets = viewModel.getSafeWalletsByChainId(chainId)
-        hasSafeWallet = safeWallets.isNotEmpty()
-        safeWalletChainId = safeWallets.firstOrNull()?.safeChainId
+        if (token == null && web3Token == null) {
+            hasSafeWallet = false
+            safeWalletChainId = null
+            hasCashAccount = false
+            return@LaunchedEffect
+        }
+        val chainId = token?.chainId ?: web3Token?.chainId
+        if (chainId == null) {
+            hasSafeWallet = false
+            safeWalletChainId = null
+        } else {
+            val safeWallets = viewModel.getSafeWalletsByChainId(chainId)
+            hasSafeWallet = safeWallets.isNotEmpty()
+            safeWalletChainId = safeWallets.firstOrNull()?.safeChainId
+        }
+        hasCashAccount = token != null && viewModel.findCashAccount() != null
     }
 
     LaunchedEffect(addressShown) {
@@ -330,6 +344,18 @@ fun TransferDestinationInputPage(
                                 toContact.invoke()
                             },
                             true
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                    if (hasCashAccount) {
+                        DestinationMenu(
+                            icon = R.drawable.ic_destination_cash,
+                            title = stringResource(R.string.Cash_Account),
+                            subTile = stringResource(R.string.send_to_cash_account_description),
+                            onClick = {
+                                toCashAccount.invoke()
+                            },
+                            badge = stringResource(R.string.cash_account_apy)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }

@@ -386,6 +386,9 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     }.show(parentFragmentManager, WalletListBottomSheetDialogFragment.TAG)
 
                                 },
+                                toCashAccount = {
+                                    navigateToCashAccount()
+                                },
                                 toAddAddress = {
                                     AnalyticsTracker.trackAddressBookAddStart()
                                     navController.navigate(TransferDestination.Address.name)
@@ -825,6 +828,35 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                 isLoading = false
             }
         }
+    }
+
+    private fun navigateToCashAccount() {
+        requireView().hideKeyboard()
+        lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+            Timber.e(error)
+        }) {
+            val cashAccount = viewModel.findCashAccount()
+            val tokenToSend = token
+            if (cashAccount == null || tokenToSend == null) {
+                toast(R.string.Alert_Not_Support)
+                return@launch
+            }
+
+            AnalyticsTracker.trackAssetSendRecipient(AnalyticsTracker.AssetSendRecipientType.CASH_ACCOUNT)
+            navigateToInputFragmentWithBundle(Bundle().apply {
+                putParcelable(InputFragment.ARGS_TOKEN, tokenToSend)
+                putCashAccountArgs(cashAccount.balance, cashAccount.minAmount)
+            })
+        }
+    }
+
+    private fun Bundle.putCashAccountArgs(
+        balance: String,
+        minAmount: String,
+    ) {
+        putBoolean(InputFragment.ARGS_CASH_ACCOUNT_TRANSFER, true)
+        putString(InputFragment.ARGS_CASH_BALANCE, balance)
+        putString(InputFragment.ARGS_CASH_MIN_AMOUNT, minAmount)
     }
 
     private fun navigateToInputFragmentWithBundle(bundle: Bundle) {

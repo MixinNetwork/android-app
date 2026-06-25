@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<one.mixin.android.widget.BottomSheetLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_upper_round"
+    android:orientation="vertical">
+
+    <one.mixin.android.ui.wallet.transfer.widget.CashAccountTransferContent
+        android:id="@+id/content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+    <one.mixin.android.ui.wallet.transfer.widget.TransferBottom
+        android:id="@+id/bottom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal" />
+
+</one.mixin.android.widget.BottomSheetLinearLayout>

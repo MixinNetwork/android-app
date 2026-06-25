@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -252,12 +253,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
-                        lifecycleScope.launch {
-                            val wallet = web3ViewModel.findWalletById(walletId)
-                            val chainId = web3ViewModel.getAddresses(walletId).first().chainId
-                            if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet(), chainId)) return@launch
-                            WalletActivity.showBuy(requireActivity(), true, null, null, walletId)
-                        }
+                        showBuyOptionsBottomSheet()
                     }
                     sendReceiveView.send.setOnClickListener {
                         lifecycleScope.launch {
@@ -669,6 +665,51 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private fun classicWalletHomeCacheKey(): String =
         walletHomeCacheKey(WalletHomeType.CLASSIC, walletId)
 
+    private fun showBuyOptionsBottomSheet() {
+        WalletBuyOptionsBottomSheetDialogFragment.newInstance(
+            walletName = getString(R.string.Common_Wallet),
+        )
+            .setOnGooglePayOrCard(::openClassicBuy)
+            .setOnBankTransfer { openCashHome(addBank = true) }
+            .showNow(parentFragmentManager, WalletBuyOptionsBottomSheetDialogFragment.TAG)
+    }
+
+    private fun openClassicBuy() {
+        lifecycleScope.launch {
+            val wallet = web3ViewModel.findWalletById(walletId)
+            val chainId = web3ViewModel.getAddresses(walletId).first().chainId
+            if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet(), chainId)) return@launch
+            WalletActivity.showBuy(requireActivity(), true, null, null, walletId)
+        }
+    }
+
+    private fun openCashHome(addBank: Boolean = false) {
+        lifecycleScope.launch {
+            val app = web3ViewModel.findOrSyncApp(Constants.MIXIN_CASH_USER_ID)
+            val url = cashHomeUrl(app?.homeUri, addBank)
+            if (app == null) {
+                WebActivity.show(requireActivity(), url = url, app = null, conversationId = null)
+            } else {
+                WebActivity.show(requireActivity(), url = url, app = app, conversationId = null)
+            }
+        }
+    }
+
+    private fun cashHomeUrl(
+        homeUri: String?,
+        addBank: Boolean,
+    ): String {
+        val url = homeUri.takeUnless { it.isNullOrBlank() } ?: Constants.API.CASH_HOME_URL
+        return if (addBank) {
+            Uri.parse(url).buildUpon()
+                .appendQueryParameter("action", "add-cash-bank")
+                .build()
+                .toString()
+        } else {
+            url
+        }
+    }
+
     private val walletHomeCallbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() {
             AddWalletBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
@@ -720,6 +761,8 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             defaultSharedPreferences.putBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, true)
             renderHome()
         }
+
+        override fun onCashClicked() = Unit
 
         override fun onSupportClicked() {
             lifecycleScope.launch {
@@ -879,7 +922,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 )
             }
             WalletHomeBannerActionTarget.Buy -> {
-                WalletActivity.showBuy(requireActivity(), false, null, null)
+                showBuyOptionsBottomSheet()
             }
             is WalletHomeBannerActionTarget.Web -> {
                 WebActivity.show(requireActivity(), target.url, null)
