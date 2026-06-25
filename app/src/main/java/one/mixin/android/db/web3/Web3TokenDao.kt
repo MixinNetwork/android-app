@@ -12,6 +12,7 @@ import one.mixin.android.db.BaseDao
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.vo.WalletHomeTokenSummary
 import one.mixin.android.vo.safe.UnifiedAssetItem
 
 @Dao
@@ -51,6 +52,38 @@ interface Web3TokenDao : BaseDao<Web3Token> {
         ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
     """)
     fun web3TokenItemsExcludeHidden(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
+
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        LEFT JOIN chains c ON c.chain_id = t.chain_id
+        LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
+        WHERE t.wallet_id = :walletId AND (te.hidden != 1 OR te.hidden IS NULL)
+        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
+        LIMIT :limit
+    """)
+    fun walletHomeWeb3TokenPreview(
+        walletId: String,
+        limit: Int,
+        defaultIconUrl: String = Constants.DEFAULT_ICON_URL,
+    ): LiveData<List<Web3TokenItem>>
+
+    @Query(
+        """
+        SELECT
+            CAST(COALESCE(SUM(CASE WHEN te.hidden != 1 OR te.hidden IS NULL THEN 1 ELSE 0 END), 0) AS INTEGER) AS token_count,
+            COALESCE(SUM(CASE WHEN te.hidden != 1 OR te.hidden IS NULL THEN CAST(COALESCE(t.amount, '0') AS REAL) * CAST(COALESCE(t.price_usd, '0') AS REAL) ELSE 0 END), 0) AS total_usd,
+            0.0 AS total_btc,
+            MAX(CASE WHEN t.asset_id = :bitcoinAssetId THEN t.price_usd ELSE NULL END) AS bitcoin_price_usd,
+            CAST(COALESCE(SUM(CASE WHEN te.hidden = 1 THEN 1 ELSE 0 END), 0) AS INTEGER) AS hidden_token_count
+        FROM tokens t
+        LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
+        WHERE t.wallet_id = :walletId
+        """
+    )
+    fun walletHomeWeb3TokenSummary(
+        walletId: String,
+        bitcoinAssetId: String = Constants.ChainId.BITCOIN_CHAIN_ID,
+    ): LiveData<WalletHomeTokenSummary>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t

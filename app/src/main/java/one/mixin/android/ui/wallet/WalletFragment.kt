@@ -464,31 +464,40 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     fun update() {
-        val destination = selectedWalletDestination
-        when (destination) {
+        when (val destination = selectedWalletDestination) {
+            is WalletDestination.Privacy -> {
+                privacyWalletFragment.update()
+            }
+
             is WalletDestination.Classic -> {
-                destination.walletId
+                jobManager.addJobInBackground(RefreshSingleWalletJob(destination.walletId))
             }
 
             is WalletDestination.Import -> {
-                destination.walletId
+                jobManager.addJobInBackground(RefreshSingleWalletJob(destination.walletId))
             }
 
             is WalletDestination.Watch -> {
-                destination.walletId
+                jobManager.addJobInBackground(RefreshSingleWalletJob(destination.walletId))
             }
 
-            else -> {
-                null
-            }
-        }?.let { wallet ->
-            jobManager.addJobInBackground(RefreshSingleWalletJob(wallet))
+            else -> Unit
+        }
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (hidden) {
+            privacyWalletFragment.stopUpdate()
+        } else {
+            update()
         }
     }
 
     override fun onResume() {
         super.onResume()
         jobManager.addJobInBackground(RefreshSafeAccountsJob())
+        if (privacyWalletFragment.isVisible) privacyWalletFragment.update()
         if (classicWalletFragment.isVisible) classicWalletFragment.update()
     }
 

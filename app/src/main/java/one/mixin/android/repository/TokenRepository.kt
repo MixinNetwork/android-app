@@ -508,6 +508,12 @@ class TokenRepository
         suspend fun deleteLocalAddr(id: String) = addressDao.deleteById(id)
 
         fun assetItemsNotHidden() = tokenDao.assetItemsNotHidden()
+
+        fun walletHomeAssetItemsNotHiddenLimit(limit: Int) =
+            tokenDao.walletHomeAssetItemsNotHiddenLimit(limit)
+
+        fun walletHomeTokenSummary() = tokenDao.walletHomeTokenSummary()
+
         fun assetItemsNotHiddenRaw() = tokenDao.assetItemsNotHiddenRaw(
             RoomRawQuery(
             "$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN", onBindStatement = {

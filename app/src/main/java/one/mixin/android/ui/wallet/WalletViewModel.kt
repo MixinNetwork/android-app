@@ -101,6 +101,11 @@ internal constructor(
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
+    fun walletHomeAssetItemsNotHiddenLimit(limit: Int): LiveData<List<TokenItem>> =
+        tokenRepository.walletHomeAssetItemsNotHiddenLimit(limit)
+
+    fun walletHomeTokenSummary() = tokenRepository.walletHomeTokenSummary()
+
     suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){
         return@withContext tokenRepository.assetItemsNotHiddenRaw()
     }
@@ -181,7 +186,7 @@ internal constructor(
             config = PagingConfig(
                 pageSize = PAGE_SIZE,
                 prefetchDistance = PAGE_SIZE * 2,
-                enablePlaceholders = true,
+                enablePlaceholders = false,
             ),
             pagingSourceFactory = { web3Repository.web3TransactionPagingSource(filterParams) }
         ).flow.map { pagingData ->
