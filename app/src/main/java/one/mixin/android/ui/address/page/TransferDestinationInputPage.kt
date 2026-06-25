@@ -324,6 +324,18 @@ fun TransferDestinationInputPage(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
+                    if (hasCashAccount) {
+                        DestinationMenu(
+                            icon = R.drawable.ic_destination_cash,
+                            title = stringResource(R.string.Cash_Account),
+                            subTile = stringResource(R.string.send_to_cash_account_description),
+                            onClick = {
+                                toCashAccount.invoke()
+                            },
+                            badge = stringResource(R.string.cash_account_apy)
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                     if (token != null) {
                         DestinationMenu(
                             R.drawable.ic_destination_contact,
@@ -344,18 +356,6 @@ fun TransferDestinationInputPage(
                                 toContact.invoke()
                             },
                             true
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                    }
-                    if (hasCashAccount) {
-                        DestinationMenu(
-                            icon = R.drawable.ic_destination_cash,
-                            title = stringResource(R.string.Cash_Account),
-                            subTile = stringResource(R.string.send_to_cash_account_description),
-                            onClick = {
-                                toCashAccount.invoke()
-                            },
-                            badge = stringResource(R.string.cash_account_apy)
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }

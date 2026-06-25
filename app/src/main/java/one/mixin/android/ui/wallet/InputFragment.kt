@@ -27,6 +27,7 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.web3.GaslessFeeRequest
 import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
@@ -87,6 +88,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
@@ -233,6 +235,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private var cashQuote: QuoteResult? = null
     private var cashQuoteError: String? = null
     private var cashQuoteLoading = false
+    private var cashQuoteReviewing = false
+
+    private data class CashAccountQuoteResult(
+        val quote: QuoteResult? = null,
+        val errorText: String? = null,
+    )
 
     private var solanaRecipientAccountState = SolanaRecipientAccountState.EXISTS
 
@@ -826,7 +834,12 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private fun initTitle() {
         binding.apply {
             if (isCashAccountTransfer) {
-                titleView.setLabel(getString(R.string.Send_To_Title), getString(R.string.Cash_Account), "")
+                titleView.setLabel(
+                    getString(R.string.Send_To_Title),
+                    getString(R.string.Cash_Account),
+                    "",
+                    labelBackgroundRes = R.drawable.bg_label_cash_account,
+                )
                 addressLabel = getString(R.string.Cash_Account)
                 return
             }
@@ -958,6 +971,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         return receiveAmount < cashMinimumReceiveAmount()
     }
 
+    private fun shouldShowCurrentCashQuoteUnavailable(amount: String): Boolean {
+        if (!isCashAccountTransfer || cashQuoteAmount != amount) return false
+        return !cashQuoteError.isNullOrBlank() || isCurrentCashQuoteBelowMinimum(amount)
+    }
+
     private fun cashQuoteUnavailableText(amount: String): String {
         val receiveAmount = cashQuoteReceiveAmount()
         val minimumAmount = cashMinimumReceiveAmount()
@@ -977,10 +995,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         cashQuote = null
         cashQuoteError = null
         cashQuoteLoading = false
+        cashQuoteReviewing = false
     }
 
     private fun scheduleCashAccountQuote(amount: String) {
-        if (!isCashAccountTransfer) return
+        if (!isCashAccountTransfer || cashQuoteReviewing) return
         val amountValue = amount.toBigDecimalOrNull()
         if (amountValue == null || amountValue <= BigDecimal.ZERO) {
             resetCashAccountQuote()
@@ -995,7 +1014,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         cashQuoteLoading = true
         cashQuoteJob = viewLifecycleOwner.lifecycleScope.launch {
             delay(CASH_ACCOUNT_QUOTE_DELAY_MS)
-            val quote = runCatching {
+            val result = runCatching {
                 requestCashAccountQuote(amount)
             }.onFailure { error ->
                 if (cashQuoteAmount == amount) {
@@ -1003,7 +1022,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
             }.getOrNull()
             if (cashQuoteAmount != amount) return@launch
-            cashQuote = quote
+            cashQuote = result?.quote
+            cashQuoteError = result?.errorText
             cashQuoteLoading = false
             if (!viewDestroyed()) {
                 updateUI()
@@ -1011,8 +1031,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
     }
 
-    private suspend fun requestCashAccountQuote(amount: String): QuoteResult? {
-        val sourceToken = token ?: return null
+    private suspend fun requestCashAccountQuote(amount: String): CashAccountQuoteResult {
+        val sourceToken = token ?: return CashAccountQuoteResult(errorText = getString(R.string.Data_error))
         val response = withContext(Dispatchers.IO) {
             web3ViewModel.web3Quote(
                 inputMint = sourceToken.assetId,
@@ -1021,9 +1041,61 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 source = CASH_ACCOUNT_QUOTE_SOURCE,
             )
         }
-        if (response.isSuccess) return response.data
-        cashQuoteError = response.errorDescription
-        return null
+        if (response.isSuccess) {
+            return response.data?.let { CashAccountQuoteResult(quote = it) }
+                ?: CashAccountQuoteResult(errorText = getString(R.string.Data_error))
+        }
+        return CashAccountQuoteResult(errorText = cashQuoteErrorText(response, sourceToken, amount))
+    }
+
+    private fun cashQuoteErrorText(
+        response: MixinResponse<QuoteResult>,
+        sourceToken: TokenItem,
+        amount: String,
+    ): String {
+        return when (response.errorCode) {
+            ErrorHandler.INVALID_QUOTE_AMOUNT -> {
+                val min = cashQuoteExtraDataValue(response.error?.extra, "min")
+                val max = cashQuoteExtraDataValue(response.error?.extra, "max")
+                val amountValue = amount.toBigDecimalOrNull()
+                val minValue = min?.toBigDecimalOrNull()
+                val maxValue = max?.toBigDecimalOrNull()
+                when {
+                    min != null && minValue != null && (amountValue == null || amountValue < minValue) ->
+                        getString(R.string.cash_account_minimum_send, min.numberFormat8(), sourceToken.symbol)
+                    max != null && maxValue != null && amountValue != null && amountValue > maxValue ->
+                        getString(R.string.cash_account_maximum_send, max.numberFormat8(), sourceToken.symbol)
+                    min != null && max.isNullOrBlank() ->
+                        getString(R.string.cash_account_minimum_send, min.numberFormat8(), sourceToken.symbol)
+                    max != null ->
+                        getString(R.string.cash_account_maximum_send, max.numberFormat8(), sourceToken.symbol)
+                    else -> getString(R.string.error_invalid_quote_amount)
+                }
+            }
+            ErrorHandler.NO_AVAILABLE_QUOTE -> getString(R.string.error_no_available_quote)
+            ErrorHandler.INVALID_SWAP -> getString(R.string.error_invalid_swap)
+            else -> requireContext().getMixinErrorStringByCode(
+                response.errorCode,
+                response.error?.description ?: response.errorDescription,
+            )
+        }
+    }
+
+    private fun cashQuoteExtraDataValue(
+        extra: JsonElement?,
+        key: String,
+    ): String? {
+        val data = extra
+            ?.takeIf { it.isJsonObject }
+            ?.asJsonObject
+            ?.get("data")
+            ?.takeIf { it.isJsonObject }
+            ?.asJsonObject
+            ?: return null
+        return data.get(key)
+            ?.takeUnless { it.isJsonNull }
+            ?.asString
+            ?.takeIf { it.isNotBlank() }
     }
 
     private fun shouldOfferLegacyWeb3FeeOption(): Boolean {
@@ -1477,7 +1549,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                     addTv.text = "${getString(R.string.Add)} ${token?.symbol ?: web3Token?.symbol ?: ""}"
                     continueVa.isEnabled = false
                     continueTv.textColor = requireContext().getColor(R.color.wallet_text_gray)
-                } else if (isCashAccountTransfer && isCurrentCashQuoteBelowMinimum(v)) {
+                } else if (isCashAccountTransfer && shouldShowCurrentCashQuoteUnavailable(v)) {
                     insufficientBalance.isVisible = false
                     insufficientFeeBalance.isVisible = false
                     insufficientFunds.isVisible = true
@@ -1538,6 +1610,20 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             updateWeb3FeeDisplay()
         }
         applyFeeUi()
+        applyCashAccountReviewButtonState()
+    }
+
+    private fun applyCashAccountReviewButtonState() {
+        val binding = bindingOrNull() ?: return
+        if (!isCashAccountTransfer) {
+            binding.continueVa.displayedChild = 0
+            return
+        }
+        binding.continueTv.setText(R.string.Review)
+        binding.continueVa.displayedChild = if (cashQuoteReviewing) 1 else 0
+        if (cashQuoteReviewing) {
+            binding.continueVa.isEnabled = false
+        }
     }
 
     private fun scheduleRefreshBtcFeeIfNeeded(amount: String) {
@@ -1979,27 +2065,38 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun prepareCashAccountTransfer(amount: String) {
+        if (cashQuoteReviewing) return
         viewLifecycleOwner.lifecycleScope.launch(
             CoroutineExceptionHandler { _, error ->
-                ErrorHandler.handleError(error)
-                if (alertDialog.isShowing) {
-                    alertDialog.dismiss()
-                }
+                cashQuoteAmount = amount
+                cashQuote = null
+                cashQuoteError = ErrorHandler.getErrorMessage(error)
+                cashQuoteLoading = false
+                cashQuoteReviewing = false
+                updateUI()
             },
         ) {
             val sourceToken = token ?: return@launch
-            alertDialog.show()
-            val quote = try {
-                requestCashAccountQuote(amount)
-            } finally {
-                if (alertDialog.isShowing) {
-                    alertDialog.dismiss()
-                }
+            cashQuoteJob?.cancel()
+            cashQuoteAmount = amount
+            cashQuote = null
+            cashQuoteError = null
+            cashQuoteLoading = false
+            cashQuoteReviewing = true
+            updateUI()
+            val result = requestCashAccountQuote(amount)
+            if (cashQuoteAmount != amount) {
+                cashQuoteReviewing = false
+                updateUI()
+                return@launch
             }
+            cashQuoteReviewing = false
+            val quote = result.quote
             val receiveAmount = cashQuoteReceiveAmount(quote)
             if (quote == null || receiveAmount == null || receiveAmount < cashMinimumReceiveAmount()) {
                 cashQuoteAmount = amount
                 cashQuote = quote
+                cashQuoteError = result.errorText
                 cashQuoteLoading = false
                 if (receiveAmount != null && receiveAmount < cashMinimumReceiveAmount()) {
                     cashQuoteError = null
@@ -2011,6 +2108,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             cashQuote = quote
             cashQuoteError = null
             cashQuoteLoading = false
+            updateUI()
             val cashBot = withContext(Dispatchers.IO) {
                 web3ViewModel.refreshUser(Constants.MIXIN_CASH_USER_ID)
             }

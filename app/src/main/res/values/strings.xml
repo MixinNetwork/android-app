@@ -2617,6 +2617,8 @@
     <string name="cash_balance">Cash Balance</string>
     <string name="cash_account_apy">3.5% APY</string>
     <string name="cash_account_minimum_receive">Minimum received amount is %1$s %2$s</string>
+    <string name="cash_account_minimum_send">ERROR 10614: Minimum amount is %1$s %2$s.</string>
+    <string name="cash_account_maximum_send">ERROR 10614: Maximum amount is %1$s %2$s.</string>
     <string name="cash_account_add_cash">Add Cash</string>
     <string name="cash_account_preview_description">Your Cash Account is expected to receive %1$s, and the total balance will increase to %2$s.</string>
     <string name="cash_account_preview_pay_with_value">%1$s %2$s (%3$s%4$s)</string>
