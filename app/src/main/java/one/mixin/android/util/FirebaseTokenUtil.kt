@@ -19,6 +19,7 @@ suspend fun retrieveFirebaseMessagingToken(): String =
             Timber.w("Firebase installation deleted, retrying token retrieval")
         } catch (deleteError: Exception) {
             Timber.e(deleteError, "Failed to delete Firebase installation after FIS_AUTH_ERROR")
+            reportException("Failed to delete Firebase installation after FIS_AUTH_ERROR", deleteError)
             throw deleteError
         }
         FirebaseMessaging.getInstance().token.await()

@@ -6,6 +6,7 @@ import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.session.Session
+import one.mixin.android.util.reportFcmException
 import one.mixin.android.util.retrieveFirebaseMessagingToken
 import timber.log.Timber
 import javax.inject.Inject
@@ -39,9 +40,12 @@ class LogAndDebugViewModel @Inject constructor(
             retrieveFirebaseMessagingToken()
         } catch (e: Exception) {
             Timber.e(e, "Debug FCM token retrieval failed")
+            reportFcmException("Debug FCM token retrieval failed", e)
             return FcmTokenUpdateResult.Failure("Failed to retrieve Firebase token: ${e.displayMessage()}")
         }
         if (token.isBlank()) {
+            val error = IllegalStateException("Debug FCM token is blank")
+            reportFcmException("Debug FCM token retrieval failed: blank token", error)
             Timber.e("Debug FCM token retrieval failed: blank token")
             return FcmTokenUpdateResult.Failure("Firebase token is blank")
         }

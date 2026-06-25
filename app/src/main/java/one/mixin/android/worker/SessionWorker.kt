@@ -7,9 +7,10 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.AccountService
+import one.mixin.android.extension.isGooglePlayServicesAvailable
 import one.mixin.android.session.Session
 import one.mixin.android.util.ErrorHandler.Companion.SERVER
-import one.mixin.android.util.reportException
+import one.mixin.android.util.reportFcmException
 import one.mixin.android.util.retrieveFirebaseMessagingToken
 import timber.log.Timber
 
@@ -28,17 +29,22 @@ class SessionWorker @AssistedInject constructor(
             return Result.failure()
         }
 
-        val token = try {
-            retrieveFirebaseToken()
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to retrieve Firebase token")
-            reportException("SessionWorker failed to retrieve Firebase token", e)
+        val token = if (applicationContext.isGooglePlayServicesAvailable()) {
+            try {
+                retrieveFirebaseToken()
+            } catch (e: Exception) {
+                Timber.e(e, "Failed to retrieve Firebase token")
+                reportFcmException("SessionWorker failed to retrieve Firebase token", e)
+                null
+            }
+        } else {
+            Timber.w("Google Play services unavailable, skipping Firebase token retrieval")
             null
         }
         val notificationToken = if (token != null && token.isBlank()) {
             val error = IllegalStateException("SessionWorker retrieved blank Firebase token")
             Timber.e(error, "Failed to retrieve Firebase token")
-            reportException(error)
+            reportFcmException("SessionWorker retrieved blank Firebase token", error)
             null
         } else {
             token

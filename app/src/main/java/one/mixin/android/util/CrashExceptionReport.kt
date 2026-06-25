@@ -8,10 +8,16 @@ import one.mixin.android.extension.getStackTraceString
 
 fun reportException(e: Throwable) {
     FirebaseCrashlytics.getInstance().recordException(e)
-    Bugsnag.notify(e)
 }
 
 fun reportException(
+    msg: String,
+    e: Throwable,
+) {
+    FirebaseCrashlytics.getInstance().log(msg + e.getStackTraceString())
+}
+
+fun reportFcmException(
     msg: String,
     e: Throwable,
 ) {
