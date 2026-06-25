@@ -1,7 +1,5 @@
 package one.mixin.android.ui.wallet.home.components
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -27,13 +25,18 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -72,6 +75,13 @@ internal fun BannerPager(
     }
     if (pages.isEmpty()) return
     val pagerState = rememberPagerState(initialPage = 0) { pages.size }
+    val density = LocalDensity.current
+    var bannerHeightPx by remember(pages) { mutableIntStateOf(0) }
+    val bannerHeightModifier = if (bannerHeightPx > 0) {
+        Modifier.height(with(density) { bannerHeightPx.toDp() })
+    } else {
+        Modifier.wrapContentHeight()
+    }
     LaunchedEffect(pages.size) {
         if (pages.size <= 1) return@LaunchedEffect
         while (true) {
@@ -110,8 +120,7 @@ internal fun BannerPager(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 20.dp)
-                .wrapContentHeight()
-                .animateContentSize(animationSpec = tween(durationMillis = 200))
+                .then(bannerHeightModifier)
                 .clip(RoundedCornerShape(8.dp))
                 .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
                 .then(cardClickModifier),
@@ -122,20 +131,30 @@ internal fun BannerPager(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight(),
-                    verticalAlignment = Alignment.CenterVertically,
+                    beyondViewportPageCount = pages.size,
+                    verticalAlignment = Alignment.Top,
                 ) { page ->
-                    when (val bannerPage = pages[page]) {
-                        WalletHomeBannerPage.AddWallet -> BannerCard(
-                            iconRes = R.drawable.ic_wallet_home_add,
-                            titleRes = R.string.wallet_home_add_wallet_banner_title,
-                            descriptionRes = null,
-                            ctaRes = R.string.add_wallet,
-                            onClick = callbacks::onAddWalletClicked,
-                        )
-                        is WalletHomeBannerPage.Dynamic -> DynamicBannerCard(
-                            banner = bannerPage.banner,
-                            onActionClick = callbacks::onDynamicBannerActionClicked,
-                        )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onSizeChanged { size ->
+                                bannerHeightPx = maxOf(bannerHeightPx, size.height)
+                            },
+                        contentAlignment = Alignment.TopStart,
+                    ) {
+                        when (val bannerPage = pages[page]) {
+                            WalletHomeBannerPage.AddWallet -> BannerCard(
+                                iconRes = R.drawable.ic_wallet_home_add,
+                                titleRes = R.string.wallet_home_add_wallet_banner_title,
+                                descriptionRes = null,
+                                ctaRes = R.string.add_wallet,
+                                onClick = callbacks::onAddWalletClicked,
+                            )
+                            is WalletHomeBannerPage.Dynamic -> DynamicBannerCard(
+                                banner = bannerPage.banner,
+                                onActionClick = callbacks::onDynamicBannerActionClicked,
+                            )
+                        }
                     }
                 }
             }
@@ -192,7 +211,7 @@ private fun BannerCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 20.dp, end = 22.dp, bottom = 20.dp),
+            .padding(top = 16.dp, end = 22.dp, bottom = 16.dp),
         verticalAlignment = Alignment.Top,
     ) {
         Image(
@@ -204,10 +223,13 @@ private fun BannerCard(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = stringResource(titleRes),
+                modifier = Modifier.fillMaxWidth(),
                 color = MixinAppTheme.colors.textMinor,
                 fontSize = 14.sp,
                 lineHeight = 20.sp,
                 fontWeight = FontWeight.W400,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
             if (descriptionRes != null) {
                 Spacer(modifier = Modifier.height(4.dp))
@@ -215,9 +237,11 @@ private fun BannerCard(
                     text = stringResource(descriptionRes),
                     color = MixinAppTheme.colors.textAssist,
                     fontSize = 12.sp,
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(8.dp))
             BannerAction(text = stringResource(ctaRes), onClick = onClick)
         }
     }
@@ -232,11 +256,10 @@ private fun DynamicBannerCard(
     val description = banner.description?.takeIf { it.isNotBlank() }
     val showDescription = actions.isEmpty() && description != null
     val titleOnly = !showDescription
-    val bottomPadding = if (banner.hasButtonStyle) 20.dp else 22.dp
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 22.dp, end = 22.dp, bottom = bottomPadding),
+            .padding(top = 16.dp, end = 22.dp, bottom = 16.dp),
         verticalAlignment = Alignment.Top,
     ) {
         val iconUrl = banner.iconUrl?.takeIf { it.isNotBlank() }
@@ -258,10 +281,13 @@ private fun DynamicBannerCard(
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = banner.title.orEmpty(),
+                modifier = Modifier.fillMaxWidth(),
                 color = MixinAppTheme.colors.textMinor,
                 fontSize = if (titleOnly) 14.sp else 16.sp,
                 lineHeight = 20.sp,
                 fontWeight = if (titleOnly) FontWeight.W400 else FontWeight.W500,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
             if (showDescription) {
                 description.let { description ->
@@ -272,10 +298,12 @@ private fun DynamicBannerCard(
                         fontSize = 14.sp,
                         lineHeight = 20.sp,
                         fontWeight = FontWeight.W400,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
             } else if (actions.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     verticalAlignment = Alignment.CenterVertically,
