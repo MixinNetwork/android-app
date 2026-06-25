@@ -141,6 +141,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private var pendingTransactionCount: Int = 0
     private var watchAddresses: List<String> = emptyList()
     private var dynamicBanners: List<WalletHomeBanner> = emptyList()
+    private var isDynamicBannerLoaded = false
     private var closedDynamicBannerIds: Set<String> = emptySet()
     private val assetsAdapter by lazy { WalletWeb3TokenAdapter(false) }
 
@@ -165,6 +166,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 field = value
                 walletHomeDataState = WalletHomeDataState.EMPTY
                 dynamicBanners = emptyList()
+                isDynamicBannerLoaded = false
                 _walletId.value = value
                 loadWalletHomeCache()
             }
@@ -499,7 +501,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         )
         val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
         val visibleDynamicBanners = dynamicBanners.visibleWalletHomeBanners(closedDynamicBannerIds)
-        val showBanner = visibleDynamicBanners.isNotEmpty() || showAddWalletBanner
+        val showBanner = isDynamicBannerLoaded && (visibleDynamicBanners.isNotEmpty() || showAddWalletBanner)
         val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false)
         val currentImportKeyAction = importKeyAction
         val pendingCount = walletHomePendingTransactionCount(pendingRawTransactionCount, pendingTransactionCount)
@@ -533,6 +535,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             watchIndicator = if (isWatchWallet) walletHomeWatchIndicator(watchAddresses) else null,
             importKeyAction = currentImportKeyAction,
             showAddWalletBanner = showAddWalletBanner,
+            isDynamicBannerLoaded = isDynamicBannerLoaded,
             dynamicBanners = visibleDynamicBanners,
             showReferralBanner = showReferral,
             showImportSafetyFooter = !isLoading,
@@ -609,9 +612,18 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     fun refreshWalletHomeBanners() {
         if (!isAdded || walletId.isEmpty()) return
         lifecycleScope.launch {
-            val remoteBanners = web3ViewModel.walletHomeBanners(walletHomeBannerChains())
-            syncClosedDynamicBannerIds(remoteBanners)
+            val remoteBanners = runCatching {
+                web3ViewModel.walletHomeBanners(walletHomeBannerChains())
+            }.onFailure {
+                Timber.w(it, "Fetch wallet home banners failed")
+            }.getOrDefault(emptyList())
+            runCatching {
+                syncClosedDynamicBannerIds(remoteBanners)
+            }.onFailure {
+                Timber.w(it, "Sync wallet home banner closed ids failed")
+            }
             dynamicBanners = remoteBanners
+            isDynamicBannerLoaded = true
             renderHome()
         }
     }

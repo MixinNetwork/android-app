@@ -137,6 +137,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private var topMovers: List<PerpsMarket> = emptyList()
     private var pendingDisplays: List<PendingDisplay> = emptyList()
     private var dynamicBanners: List<WalletHomeBanner> = emptyList()
+    private var isDynamicBannerLoaded = false
     private var closedDynamicBannerIds: Set<String> = emptySet()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
     private val perpetualViewModel by viewModels<PerpetualViewModel>()
@@ -402,7 +403,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         )
         val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
         val visibleDynamicBanners = dynamicBanners.visibleWalletHomeBanners(closedDynamicBannerIds)
-        val showBanner = visibleDynamicBanners.isNotEmpty() || showAddWalletBanner
+        val showBanner = isDynamicBannerLoaded && (visibleDynamicBanners.isNotEmpty() || showAddWalletBanner)
         val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false)
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.PRIVACY,
@@ -435,6 +436,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             pendingIndicator = pendingDisplays.toWalletHomePendingIndicator(),
             quoteColorReversed = defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false),
             showAddWalletBanner = showAddWalletBanner,
+            isDynamicBannerLoaded = isDynamicBannerLoaded,
             dynamicBanners = visibleDynamicBanners,
             showReferralBanner = showReferral,
             showBuyBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_BUY, true),
@@ -471,9 +473,18 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     fun refreshWalletHomeBanners() {
         lifecycleScope.launch {
-            val remoteBanners = walletViewModel.walletHomeBanners()
-            syncClosedDynamicBannerIds(remoteBanners)
+            val remoteBanners = runCatching {
+                walletViewModel.walletHomeBanners()
+            }.onFailure {
+                Timber.w(it, "Fetch wallet home banners failed")
+            }.getOrDefault(emptyList())
+            runCatching {
+                syncClosedDynamicBannerIds(remoteBanners)
+            }.onFailure {
+                Timber.w(it, "Sync wallet home banner closed ids failed")
+            }
             dynamicBanners = remoteBanners
+            isDynamicBannerLoaded = true
             renderHome()
         }
     }

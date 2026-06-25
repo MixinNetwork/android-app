@@ -40,6 +40,7 @@ data class WalletHomeState(
     val hideActions: Boolean = false,
     val quoteColorReversed: Boolean = false,
     val showAddWalletBanner: Boolean = false,
+    val isDynamicBannerLoaded: Boolean = false,
     val dynamicBanners: List<WalletHomeBanner> = emptyList(),
     val showReferralBanner: Boolean = false,
     val showBuyBadge: Boolean = false,
