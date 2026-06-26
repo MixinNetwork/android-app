@@ -101,6 +101,11 @@ internal constructor(
 
     fun assetItemsNotHidden(): LiveData<List<TokenItem>> = tokenRepository.assetItemsNotHidden()
 
+    fun walletHomeAssetItemsNotHiddenLimit(limit: Int): LiveData<List<TokenItem>> =
+        tokenRepository.walletHomeAssetItemsNotHiddenLimit(limit)
+
+    fun walletHomeTokenSummary() = tokenRepository.walletHomeTokenSummary()
+
     suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){
         return@withContext tokenRepository.assetItemsNotHiddenRaw()
     }
@@ -119,6 +124,8 @@ internal constructor(
             .cachedIn(viewModelScope)
 
     fun snapshotsLimit(id: String) = tokenRepository.snapshotsLimit(id)
+
+    fun recentSnapshotsLimit() = tokenRepository.recentSnapshotsLimit()
 
     fun findAddressByReceiver(receiver: String, tag: String, chainId: String?) = tokenRepository.findAddressByDestination(receiver, tag, chainId)
 
@@ -179,7 +186,7 @@ internal constructor(
             config = PagingConfig(
                 pageSize = PAGE_SIZE,
                 prefetchDistance = PAGE_SIZE * 2,
-                enablePlaceholders = true,
+                enablePlaceholders = false,
             ),
             pagingSourceFactory = { web3Repository.web3TransactionPagingSource(filterParams) }
         ).flow.map { pagingData ->
@@ -193,6 +200,8 @@ internal constructor(
     ) = tokenRepository.pendingDeposits(assetId)
 
     fun getPendingDisplays() = tokenRepository.getPendingDisplays()
+
+    suspend fun getPendingSnapshot(assetId: String) = tokenRepository.getPendingSnapshot(assetId)
 
     suspend fun clearAllPendingDeposits() = tokenRepository.clearAllPendingDeposits()
 
@@ -254,6 +263,8 @@ internal constructor(
         }
 
     fun observeTopAssets() = tokenRepository.observeTopAssets()
+
+    fun topAssetItemsNotHiddenLimit() = tokenRepository.topAssetItemsNotHiddenLimit()
 
     fun getUser(userId: String) = userRepository.getUserById(userId)
 
@@ -324,6 +335,8 @@ internal constructor(
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
     suspend fun findBondBotUrl() = userRepository.findOrSyncApp(MIXIN_BOND_USER_ID)
+
+    suspend fun findOrSyncApp(appId: String) = userRepository.findOrSyncApp(appId)
 
     fun utxoItem(asset: String): LiveData<PagingData<UtxoItem>> {
         return tokenRepository.utxoItem(asset)

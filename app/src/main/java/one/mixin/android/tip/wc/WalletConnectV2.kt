@@ -212,6 +212,7 @@ object WalletConnectV2 : WalletConnect() {
                     sessionRequest: Wallet.Model.SessionRequest,
                     verifyContext: Wallet.Model.VerifyContext,
                 ) {
+                    Timber.d("$TAG onSessionRequest summary topic=${sessionRequest.topic} requestId=${sessionRequest.request.id} method=${sessionRequest.request.method} chainId=${sessionRequest.chainId}")
                     Timber.d("$TAG onSessionRequest $sessionRequest")
                     RxBus.publish(WCEvent.V2(Version.V2, RequestType.SessionRequest, sessionRequest.topic))
                 }
@@ -501,7 +502,10 @@ object WalletConnectV2 : WalletConnect() {
 
     fun getSessionRequest(topic: String): Wallet.Model.SessionRequest? {
         return try {
-            WalletKit.getPendingListOfSessionRequests(topic).firstOrNull()
+            val requests = WalletKit.getPendingListOfSessionRequests(topic)
+            val request = requests.firstOrNull()
+            Timber.d("$TAG getSessionRequest topic=$topic pending=${requests.size} requestId=${request?.request?.id} method=${request?.request?.method} chainId=${request?.chainId}")
+            request
         } catch (e: IllegalStateException) {
             Timber.d("$TAG getSessionRequest ${e.stackTraceToString()}")
             null
@@ -558,6 +562,7 @@ object WalletConnectV2 : WalletConnect() {
         result: String,
         sessionRequest: Wallet.Model.SessionRequest,
     ) {
+        Timber.d("$TAG approveRequest start topic=${sessionRequest.topic} requestId=${sessionRequest.request.id} method=${sessionRequest.request.method} chainId=${sessionRequest.chainId} resultLength=${result.length}")
         Timber.d("$TAG approve request $result")
         val response =
             Wallet.Params.SessionRequestResponse(
@@ -572,6 +577,7 @@ object WalletConnectV2 : WalletConnect() {
         waitActionCheckError { latch ->
             var errMsg: String? = null
             WalletKit.respondSessionRequest(response, {
+                Timber.d("$TAG approveRequest success topic=${sessionRequest.topic} requestId=${sessionRequest.request.id}")
                 latch.countDown()
             }) { error ->
                 errMsg = "$TAG approveSessionRequest error: $error"

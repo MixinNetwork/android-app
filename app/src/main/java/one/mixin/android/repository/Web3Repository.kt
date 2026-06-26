@@ -179,6 +179,15 @@ constructor(
     
     fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
 
+    fun walletHomeWeb3TokenPreview(
+        walletId: String,
+        limit: Int,
+    ) = web3TokenDao.walletHomeWeb3TokenPreview(walletId, limit)
+
+    fun walletHomeWeb3TokenSummary(walletId: String) = web3TokenDao.walletHomeWeb3TokenSummary(walletId)
+
+    fun topWeb3TokenItems(walletId: String) = web3TokenDao.topWeb3TokenItems(walletId)
+
     fun web3TokensExcludeHiddenRaw(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL) = web3TokenDao.web3TokenItemsExcludeHiddenRaw(
         RoomRawQuery(
             """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
@@ -225,9 +234,38 @@ constructor(
             }
         }
 
+    fun recentWeb3Transactions(walletId: String) =
+        web3TransactionDao.recentWeb3Transactions(walletId).switchMap { list ->
+            liveData {
+                val assetIds = list.flatMap { transaction ->
+                    transaction.senders.map { it.assetId } +
+                        transaction.receivers.map { it.assetId } +
+                        (transaction.approvals?.map { it.assetId } ?: emptyList())
+                }.distinct()
+                val tokens = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds).associateBy { it.assetId }
+                val result = list.map { transaction ->
+                    transaction.copy(
+                        senders = transaction.senders.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        },
+                        receivers = transaction.receivers.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        },
+                        approvals = transaction.approvals?.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        }
+                    )
+                }
+                emit(result)
+            }
+        }
+
     fun web3TransactionPagingSource(filterParams: Web3FilterParams): PagingSource<Int, Web3TransactionItem> {
         return web3TransactionDao.allTransactions(filterParams.buildQuery())
     }
+
+    suspend fun getPendingTransactionItems(walletId: String): List<Web3TransactionItem> =
+        web3TransactionDao.getPendingTransactionItems(walletId).map { mapWeb3Transaction(it, walletId) }
 
     suspend fun mapWeb3Transaction(transaction: Web3TransactionItem, walletId: String): Web3TransactionItem = withContext(Dispatchers.IO) {
         val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())

@@ -71,6 +71,7 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
                 } else {
                     titleView.setSubTitle(getString(R.string.Buy), getString(R.string.Common_Wallet))
                 }
+                titleView.setWalletNameSubTitleStyle()
             }
             titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             ItemTouchHelper(

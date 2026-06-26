@@ -13,6 +13,7 @@ import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.TokenEntry
+import one.mixin.android.vo.WalletHomeTokenSummary
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.UnifiedAssetItem
@@ -90,6 +91,33 @@ interface TokenDao : BaseDao<Token> {
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN")
     fun assetItemsNotHidden(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
+
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN LIMIT :limit")
+    fun walletHomeAssetItemsNotHiddenLimit(
+        limit: Int,
+        defaultIconUrl: String = Constants.DEFAULT_ICON_URL,
+    ): LiveData<List<TokenItem>>
+
+    @Query(
+        """
+        SELECT
+            CAST(COALESCE(SUM(CASE WHEN ae.hidden IS NULL OR ae.hidden = 0 THEN 1 ELSE 0 END), 0) AS INTEGER) AS token_count,
+            COALESCE(SUM(CASE WHEN ae.hidden IS NULL OR ae.hidden = 0 THEN CAST(COALESCE(ae.balance, '0') AS REAL) * CAST(COALESCE(a1.price_usd, '0') AS REAL) ELSE 0 END), 0) AS total_usd,
+            COALESCE(SUM(CASE WHEN ae.hidden IS NULL OR ae.hidden = 0 THEN CAST(COALESCE(ae.balance, '0') AS REAL) * CAST(COALESCE(a1.price_btc, '0') AS REAL) ELSE 0 END), 0) AS total_btc,
+            MAX(CASE WHEN a1.asset_id = :bitcoinAssetId THEN a1.price_usd ELSE NULL END) AS bitcoin_price_usd,
+            CAST(COALESCE(SUM(CASE WHEN ae.hidden = 1 THEN 1 ELSE 0 END), 0) AS INTEGER) AS hidden_token_count
+        FROM tokens a1
+        LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id
+        """
+    )
+    fun walletHomeTokenSummary(
+        bitcoinAssetId: String = Constants.ChainId.BITCOIN_CHAIN_ID,
+    ): LiveData<WalletHomeTokenSummary>
+
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN LIMIT 3")
+    fun topAssetItemsNotHiddenLimit(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
     @RawQuery
     fun assetItemsNotHiddenRaw(query: RoomRawQuery): List<TokenItem>
