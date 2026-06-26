@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -494,7 +495,26 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private val walletHomeCallbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() {
-            AddWalletBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+            val callback: (AddWalletBottomSheetDialogFragment.Action) -> Unit = { action ->
+                val mode = when (action) {
+                    AddWalletBottomSheetDialogFragment.Action.IMPORT_MNEMONIC -> WalletSecurityActivity.Mode.IMPORT_MNEMONIC
+                    AddWalletBottomSheetDialogFragment.Action.IMPORT_PRIVATE_KEY -> WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY
+                    AddWalletBottomSheetDialogFragment.Action.ADD_WATCH_ADDRESS -> WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS
+                    AddWalletBottomSheetDialogFragment.Action.CREATE_WALLET -> WalletSecurityActivity.Mode.CREATE_WALLET
+                }
+                val intent = Intent(requireContext(), WalletSecurityActivity::class.java)
+                intent.putExtra(WalletSecurityActivity.EXTRA_MODE, mode.ordinal)
+                startActivity(intent)
+            }
+            val showSheet = {
+                if (isAdded) {
+                    val dialog = AddWalletBottomSheetDialogFragment.newInstance()
+                    dialog.callback = callback
+                    dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+                }
+            }
+            if (showRecoveryReminderForRiskAction { showSheet() }) return
+            showSheet()
         }
 
         override fun onBannerClosed() {
