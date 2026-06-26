@@ -44,6 +44,7 @@ import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
@@ -71,6 +72,7 @@ internal constructor(
     private val accountRepository: AccountRepository,
     private val web3Repository: Web3Repository,
     private val tokenRepository: TokenRepository,
+    private val referralRepository: ReferralRepository,
     private val assetRepository: AssetRepository,
     private val jobManager: MixinJobManager,
     private val pinCipher: PinCipher,
@@ -331,6 +333,8 @@ internal constructor(
         tokenRepository.findSnapshotById(snapshotId)
 
     suspend fun profile(): MixinResponse<ProfileResponse> = tokenRepository.profile()
+
+    suspend fun walletHomeBanners() = referralRepository.fetchWalletHomeBanners()
 
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
