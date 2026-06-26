@@ -531,7 +531,7 @@ object AppModule {
                     val sourceRequest = chain.request()
                     val b = sourceRequest.newBuilder()
                     b.addHeader("User-Agent", API_UA)
-                        .addHeader("Accept-Language", Locale.getDefault().language + "-" + Locale.getDefault().country)
+                        .addHeader("Accept-Language", Locale.getDefault().toLanguageTag())
                         .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                         .addHeader(xRequestId, UUID.randomUUID().toString())
                     val botPublicKey = appContext.defaultSharedPreferences.getString(PREF_ROUTE_BOT_PK, null)

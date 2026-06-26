@@ -153,7 +153,7 @@ object AnalyticsTracker {
 
     fun trackWalletHomeAdBanner(trackingKey: String?, source: String) {
         val key = trackingKey?.takeIf { it.isNotBlank() } ?: return
-        logEvent(trackingKey) {
+        logEvent(key) {
             putString("source", source)
         }
     }
