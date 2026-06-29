@@ -28,7 +28,7 @@ object Constants {
         const val WS_URL = "wss://blaze.mixin.one"
         const val Mixin_URL = "https://mixin-api.zeromesh.net/"
         const val Mixin_WS_URL = "wss://mixin-blaze.zeromesh.net"
-        const val CASH_URL = "https://api.cash.mixin.one"
+        const val CASH_URL = "https://api.cash.mixin.one/"
         const val CASH_HOME_URL = "https://cash.mixin.one"
 
         const val GIPHY_URL = "https://api.giphy.com/v1/"
