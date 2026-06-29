@@ -195,27 +195,22 @@ class ConversationRepository
             conversationId: String,
             messageId: String,
             excludeLive: Boolean,
-        ): Int {
-            val list = if (excludeLive) {
-                messageDao.getMediaMessagesExcludeLiveList(conversationId)
+        ): Int =
+            if (excludeLive) {
+                messageDao.indexMediaMessagesExcludeLive(conversationId, messageId)
             } else {
-                messageDao.getMediaMessagesList(conversationId)
+                messageDao.indexMediaMessages(conversationId, messageId)
             }
-            val filteredList = list.filter { !it.isAppCard() || it.isAppCardWithCover() }
-            return filteredList.indexOfFirst { it.messageId == messageId }.coerceAtLeast(0)
-        }
 
         suspend fun countIndexMediaMessages(
             conversationId: String,
             excludeLive: Boolean,
-        ): Int {
-            val list = if (excludeLive) {
-                messageDao.getMediaMessagesExcludeLiveList(conversationId)
+        ): Int =
+            if (excludeLive) {
+                messageDao.countIndexMediaMessagesExcludeLive(conversationId)
             } else {
-                messageDao.getMediaMessagesList(conversationId)
+                messageDao.countIndexMediaMessages(conversationId)
             }
-            return list.count { !it.isAppCard() || it.isAppCardWithCover() }
-        }
 
         fun getMediaMessagesDataSource(
             conversationId: String,
