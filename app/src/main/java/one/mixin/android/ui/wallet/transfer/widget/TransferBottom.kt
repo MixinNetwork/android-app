@@ -5,6 +5,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import android.widget.ViewAnimator
+import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.core.view.isInvisible
 import androidx.core.view.updateLayoutParams
@@ -43,6 +44,13 @@ class TransferBottom : ViewAnimator {
 
     fun setText(text: String) {
         _binding.confirmButton.text = text
+    }
+
+    fun setCancelBackgroundResource(
+        @DrawableRes resId: Int,
+    ) {
+        _binding.cancelButton.setBackgroundResource(resId)
+        _binding.retryCancel.setBackgroundResource(resId)
     }
 
     fun updateStatus(

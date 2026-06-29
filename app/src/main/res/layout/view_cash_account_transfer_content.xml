@@ -26,20 +26,15 @@
             android:textFontWeight="600"
             android:textSize="20sp" />
 
-        <FrameLayout
-            android:id="@+id/close"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/bg_round_window_24dp"
-            android:foreground="?attr/selectableItemBackgroundBorderless">
 
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_gravity="center"
-                android:contentDescription="@null"
-                android:src="@drawable/ic_wallet_close" />
-        </FrameLayout>
+        <ImageView
+            android:id="@+id/close"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:contentDescription="@null"
+            android:foreground="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_circle_close" />
     </LinearLayout>
 
     <LinearLayout
@@ -54,7 +49,7 @@
         android:paddingStart="20dp"
         android:paddingTop="28dp"
         android:paddingEnd="20dp"
-        android:paddingBottom="28dp">
+        android:paddingBottom="40dp">
 
         <ImageView
             android:layout_width="70dp"
@@ -66,11 +61,11 @@
             android:id="@+id/receive_amount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="12dp"
             android:includeFontPadding="false"
             android:textColor="@color/wallet_green"
-            android:textFontWeight="600"
-            android:textSize="20sp"
+            android:textFontWeight="500"
+            android:textSize="18sp"
             tools:text="+835.22 USD" />
 
         <TextView
@@ -81,7 +76,8 @@
             android:includeFontPadding="false"
             android:lineSpacingExtra="2dp"
             android:textColor="?attr/text_primary"
-            android:textSize="16sp"
+            android:textFontWeight="500"
+            android:textSize="14sp"
             tools:text="Your Cash Account is expected to receive +835.22 USD, and the total balance will increase to 5,842 USD." />
     </LinearLayout>
 
@@ -106,7 +102,7 @@
                 android:includeFontPadding="false"
                 android:text="@string/Pay_with"
                 android:textColor="?attr/text_assist"
-                android:textSize="16sp" />
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/pay_with_value"
@@ -114,7 +110,7 @@
                 android:layout_height="wrap_content"
                 android:includeFontPadding="false"
                 android:textColor="?attr/text_assist"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 tools:text="0.5342 ETH ($835.22)" />
         </LinearLayout>
 
@@ -122,6 +118,7 @@
             android:layout_width="match_parent"
             android:layout_height="32dp"
             android:layout_marginTop="8dp"
+            android:layout_marginBottom="20dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -132,7 +129,7 @@
                 android:includeFontPadding="false"
                 android:text="@string/Fee"
                 android:textColor="?attr/text_assist"
-                android:textSize="16sp" />
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/fee_value"
@@ -140,7 +137,7 @@
                 android:layout_height="wrap_content"
                 android:includeFontPadding="false"
                 android:textColor="?attr/text_assist"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 tools:text="$0" />
         </LinearLayout>
     </LinearLayout>

@@ -70,6 +70,7 @@ class CashAccountPreviewBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             notifyDismiss(false)
             dismiss()
         }
+        binding.bottom.setCancelBackgroundResource(R.drawable.bg_cash_account_preview_cancel_button)
         binding.bottom.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
         binding.bottom.setOnClickListener(
             {
