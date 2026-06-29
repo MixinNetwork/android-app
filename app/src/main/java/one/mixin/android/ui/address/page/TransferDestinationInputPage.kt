@@ -98,7 +98,7 @@ fun TransferDestinationInputPage(
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
     var hasSafeWallet by remember { mutableStateOf(false) }
     var safeWalletChainId by remember { mutableStateOf<String?>(null) }
-    var hasCashAccount by remember { mutableStateOf(false) }
+    var showCashAccount by remember { mutableStateOf(false) }
     var text by remember(contentText) { mutableStateOf(contentText) }
     val clipboardManager = LocalClipboard.current
 
@@ -120,7 +120,7 @@ fun TransferDestinationInputPage(
         if (token == null && web3Token == null) {
             hasSafeWallet = false
             safeWalletChainId = null
-            hasCashAccount = false
+            showCashAccount = false
             return@LaunchedEffect
         }
         val chainId = token?.chainId ?: web3Token?.chainId
@@ -132,7 +132,7 @@ fun TransferDestinationInputPage(
             hasSafeWallet = safeWallets.isNotEmpty()
             safeWalletChainId = safeWallets.firstOrNull()?.safeChainId
         }
-        hasCashAccount = token != null && viewModel.findCashAccount() != null
+        showCashAccount = token != null
     }
 
     LaunchedEffect(addressShown) {
@@ -324,7 +324,7 @@ fun TransferDestinationInputPage(
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }
-                    if (hasCashAccount) {
+                    if (showCashAccount) {
                         DestinationMenu(
                             icon = R.drawable.ic_destination_cash,
                             title = stringResource(R.string.Cash_Account),

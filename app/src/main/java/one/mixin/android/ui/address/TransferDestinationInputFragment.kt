@@ -28,6 +28,7 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentAddressInputBinding
@@ -61,6 +62,7 @@ import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.decodeICAP
@@ -837,8 +839,12 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         }) {
             val cashAccount = viewModel.findCashAccount()
             val tokenToSend = token
-            if (cashAccount == null || tokenToSend == null) {
+            if (tokenToSend == null) {
                 toast(R.string.Alert_Not_Support)
+                return@launch
+            }
+            if (cashAccount == null) {
+                openCashHome()
                 return@launch
             }
 
@@ -847,6 +853,16 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                 putParcelable(InputFragment.ARGS_TOKEN, tokenToSend)
                 putCashAccountArgs(cashAccount.balance, cashAccount.minAmount)
             })
+        }
+    }
+
+    private fun openCashHome() {
+        lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
+            Timber.e(error)
+        }) {
+            val app = web3ViewModel.findOrSyncApp(Constants.MIXIN_CASH_USER_ID)
+            val url = app?.homeUri.takeUnless { it.isNullOrBlank() } ?: Constants.API.CASH_HOME_URL
+            WebActivity.show(requireActivity(), url = url, app = app, conversationId = null)
         }
     }
 
