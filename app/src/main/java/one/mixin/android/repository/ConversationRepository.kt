@@ -62,6 +62,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.GroupInfo
 import one.mixin.android.vo.isAppCard
+import one.mixin.android.vo.isAppCardWithMediaCover
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
@@ -250,7 +251,7 @@ class ConversationRepository
             messageId: String,
         ): MessageItem? {
             val item = messageDao.getMediaMessage(conversationId, messageId) ?: return null
-            return if (item.isAppCard() && !item.isAppCardWithCover()) null else item
+            return if (item.isAppCard() && !item.isAppCardWithMediaCover()) null else item
         }
 
         suspend fun getConversationIdIfExistsSync(recipientId: String) =

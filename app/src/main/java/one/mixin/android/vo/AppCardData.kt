@@ -62,6 +62,9 @@ data class AppCardData(
             return !coverUrl.isNullOrBlank() || !cover?.url.isNullOrBlank()
         }
 
+    val hasMediaCover: Boolean
+        get() = !coverUrl.isNullOrBlank()
+
     val hasValidCoverSize: Boolean
         get() {
             return cover?.let { it.width in APP_CARD_COVER_MIN_SIZE..APP_CARD_COVER_MAX_SIZE && it.height in APP_CARD_COVER_MIN_SIZE..APP_CARD_COVER_MAX_SIZE } ?: true
@@ -160,6 +163,18 @@ data class Cover(
 fun MessageItem.appCardCoverUrl(): String? =
     if (isAppCard()) {
         appCardData?.let { it.coverUrl?.takeIf(String::isNotBlank) ?: it.cover?.url?.takeIf(String::isNotBlank) }
+    } else {
+        null
+    }
+
+fun MessageItem.isAppCardWithMediaCover(): Boolean {
+    if (!isAppCard()) return false
+    return appCardData?.hasMediaCover == true
+}
+
+fun MessageItem.appCardMediaCoverUrl(): String? =
+    if (isAppCard()) {
+        appCardData?.coverUrl?.takeIf(String::isNotBlank)
     } else {
         null
     }
