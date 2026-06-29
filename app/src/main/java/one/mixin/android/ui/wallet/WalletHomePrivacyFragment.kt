@@ -766,7 +766,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     private fun showAddWalletDialog() {
-        AddWalletBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+        AddWalletBottomSheetDialogFragment.show(this)
     }
 
     private fun showBuyOptionsBottomSheet() {
