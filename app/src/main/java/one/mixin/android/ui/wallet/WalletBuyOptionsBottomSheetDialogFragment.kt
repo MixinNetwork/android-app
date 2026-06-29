@@ -118,17 +118,17 @@ private fun WalletBuyOptionsSheet(
                 Text(
                     text = stringResource(R.string.Buy),
                     color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 20.sp,
-                    lineHeight = 24.sp,
+                    fontSize = 18.sp,
+                    lineHeight = 21.sp,
                     fontWeight = FontWeight.W600,
                 )
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(3.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = walletName,
                         color = MixinAppTheme.colors.textAssist,
-                        fontSize = 14.sp,
-                        lineHeight = 20.sp,
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp,
                     )
                     if (walletIconRes != 0) {
                         Spacer(modifier = Modifier.width(4.dp))
@@ -141,30 +141,24 @@ private fun WalletBuyOptionsSheet(
                     }
                 }
             }
-            Box(
+            Icon(
+                painter = painterResource(R.drawable.ic_circle_close),
+                contentDescription = null,
+                tint = Color.Unspecified,
                 modifier = Modifier
-                    .size(40.dp)
+                    .size(26.dp)
                     .clip(CircleShape)
-                    .background(MixinAppTheme.colors.backgroundGrayLight)
                     .clickable(onClick = onClose),
-                contentAlignment = Alignment.Center,
-            ) {
-                Icon(
-                    painter = painterResource(R.drawable.ic_wallet_close),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(14.dp),
-                )
-            }
+            )
         }
-        Spacer(modifier = Modifier.height(28.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         WalletBuyOptionItem(
             iconRes = R.drawable.ic_wallet_buy_card,
             title = stringResource(R.string.wallet_buy_option_google_pay_or_card),
             description = stringResource(R.string.wallet_buy_option_google_pay_or_card_desc),
             onClick = onGooglePayOrCard,
         )
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(10.dp))
         WalletBuyOptionItem(
             iconRes = R.drawable.ic_wallet_buy_bank_transfer,
             title = stringResource(R.string.wallet_buy_option_bank_transfer),
@@ -172,6 +166,7 @@ private fun WalletBuyOptionsSheet(
             showBadge = true,
             onClick = onBankTransfer,
         )
+        Spacer(modifier = Modifier.height(40.dp))
     }
 }
 
@@ -190,16 +185,17 @@ private fun WalletBuyOptionItem(
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.background)
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+            .padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        Spacer(modifier = Modifier.width(8.dp))
         Icon(
             painter = painterResource(iconRes),
             contentDescription = null,
             tint = Color.Unspecified,
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(16.dp),
         )
-        Spacer(modifier = Modifier.width(16.dp))
+        Spacer(modifier = Modifier.width(20.dp))
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.Center,
@@ -209,7 +205,7 @@ private fun WalletBuyOptionItem(
                     text = title,
                     color = MixinAppTheme.colors.textMinor,
                     fontSize = 16.sp,
-                    lineHeight = 22.sp,
+                    lineHeight = 19.sp,
                     fontWeight = FontWeight.W400,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -237,8 +233,8 @@ private fun WalletBuyOptionItem(
             Text(
                 text = description,
                 color = MixinAppTheme.colors.textAssist,
-                fontSize = 14.sp,
-                lineHeight = 20.sp,
+                fontSize = 13.sp,
+                lineHeight = 18.sp,
             )
         }
     }
