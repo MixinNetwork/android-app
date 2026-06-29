@@ -85,6 +85,7 @@ import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.CursorWindowFixer
 import one.mixin.android.util.MemoryCallback
+import one.mixin.android.util.analytics.ThirdPartyUserIdentity
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.initNativeLibs
 import one.mixin.android.util.mlkit.entityInitialize
@@ -193,6 +194,7 @@ open class MixinApplication :
         }
         initBugsnag()
         initAppsFlyer()
+        Session.getAccount()?.let(ThirdPartyUserIdentity::setUser)
     }
 
     private fun initBugsnag() {
