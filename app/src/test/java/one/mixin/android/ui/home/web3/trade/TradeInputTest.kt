@@ -48,4 +48,12 @@ class TradeInputTest {
             limitTradeInputDecimalPlaces("12.123456789", maxDecimalPlaces = null)
         )
     }
+
+    @Test
+    fun swapInputPrecisionChangePreservesCurrentInput() {
+        assertEquals(
+            "12.123456",
+            swapInputTextForMaxDecimalPlacesChange("12.123456789", maxDecimalPlaces = 6)
+        )
+    }
 }
