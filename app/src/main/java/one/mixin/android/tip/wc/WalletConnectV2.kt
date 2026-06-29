@@ -14,6 +14,8 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.response.web3.WalletOutput
+import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
@@ -23,9 +25,12 @@ import one.mixin.android.tip.wc.internal.WalletConnectAddresses
 import one.mixin.android.tip.wc.internal.WcInstruction
 import one.mixin.android.tip.wc.internal.WcInstructionDeserializer
 import one.mixin.android.tip.wc.internal.WcBitcoinAccountAddress
+import one.mixin.android.tip.wc.internal.WcBitcoinFeeEstimate
 import one.mixin.android.tip.wc.internal.WcBitcoinGetAccountAddresses
+import one.mixin.android.tip.wc.internal.WcBitcoinSendTransfer
 import one.mixin.android.tip.wc.internal.WcBitcoinSignMessage
 import one.mixin.android.tip.wc.internal.WcBitcoinSignature
+import one.mixin.android.tip.wc.internal.WcBitcoinSignedTransfer
 import one.mixin.android.tip.wc.internal.WcSignature
 import one.mixin.android.tip.wc.internal.WcSolanaMessage
 import one.mixin.android.tip.wc.internal.WcSolanaTransaction
@@ -39,10 +44,17 @@ import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.extension.toHex
 import one.mixin.android.util.reportException
+import one.mixin.android.web3.send.BtcTransactionBuilder
 import one.mixin.android.web3.js.Web3Signer
 import org.bitcoinj.base.BitcoinNetwork
+import org.bitcoinj.base.Coin
 import org.bitcoinj.base.ScriptType
+import org.bitcoinj.core.Transaction
+import org.bitcoinj.core.TransactionInput
+import org.bitcoinj.core.TransactionWitness
 import org.bitcoinj.crypto.ECKey
+import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
 import org.sol4k.Keypair
 import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Credentials
@@ -51,7 +63,9 @@ import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.utils.Numeric
 import timber.log.Timber
+import java.math.BigDecimal
 import java.math.BigInteger
+import java.nio.ByteBuffer
 import java.util.Base64
 import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
@@ -381,6 +395,16 @@ object WalletConnectV2 : WalletConnect() {
                     validateBitcoinAccount(message.account, localAddress)
                     WCSignData.V2SignData(request.request.id, message, request)
                 }
+                Method.BtcSendTransfer.name -> {
+                    val transfer = gson.fromJson<WcBitcoinSendTransfer>(request.request.params)
+                    validateBitcoinAccount(transfer.account, localAddress)
+                    transfer.changeAddress?.takeIf { it.isNotBlank() }?.let { validateBitcoinAccount(it, localAddress) }
+                    if (!transfer.memo.isNullOrBlank()) {
+                        throw IllegalArgumentException("Bitcoin transfer memo is not supported")
+                    }
+                    transfer.amountBtc()
+                    WCSignData.V2SignData(request.request.id, transfer, request)
+                }
                 Method.BtcSignMessage.name -> {
                     val message = gson.fromJson<WcBitcoinSignMessage>(request.request.params)
                     validateBitcoinAccount(message.account, localAddress)
@@ -401,7 +425,9 @@ object WalletConnectV2 : WalletConnect() {
         topic: String,
         signData: WCSignData.V2SignData<*>,
         getBlockhash: suspend () -> String,
-        getNonce: suspend (String) -> BigInteger
+        getNonce: suspend (String) -> BigInteger,
+        getBitcoinOutputs: suspend (String) -> List<WalletOutput> = { emptyList() },
+        estimateBitcoinFee: suspend (String) -> WcBitcoinFeeEstimate? = { null },
     ): Any? {
         val sessionRequest = getSessionRequest(topic)
         if (sessionRequest == null) {
@@ -441,6 +467,8 @@ object WalletConnectV2 : WalletConnect() {
             return null
         } else if (signMessage is WcBitcoinGetAccountAddresses) {
             approveBitcoinAddresses(signMessage, sessionRequest)
+        } else if (signMessage is WcBitcoinSendTransfer) {
+            return buildSignedBitcoinTransfer(priv, signMessage, getBitcoinOutputs, estimateBitcoinFee)
         } else if (signMessage is WcBitcoinSignMessage) {
             approveBitcoinMessage(priv, signMessage, sessionRequest)
         }
@@ -658,6 +686,99 @@ object WalletConnectV2 : WalletConnect() {
                 ),
             )
         approveRequestInternal(gson.toJson(result), sessionRequest)
+    }
+
+    private suspend fun buildSignedBitcoinTransfer(
+        priv: ByteArray,
+        request: WcBitcoinSendTransfer,
+        getBitcoinOutputs: suspend (String) -> List<WalletOutput>,
+        estimateBitcoinFee: suspend (String) -> WcBitcoinFeeEstimate?,
+    ): WcBitcoinSignedTransfer {
+        val key = ECKey.fromPrivate(priv, true)
+        val fromAddress = key.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET).toString()
+        validateBitcoinAccount(request.account, fromAddress)
+        request.changeAddress?.takeIf { it.isNotBlank() }?.let { validateBitcoinAccount(it, fromAddress) }
+        if (!request.memo.isNullOrBlank()) {
+            throw IllegalArgumentException("Bitcoin transfer memo is not supported")
+        }
+
+        val localUtxos = getBitcoinOutputs(fromAddress)
+        if (localUtxos.isEmpty()) {
+            throw IllegalArgumentException("Empty Bitcoin UTXO")
+        }
+        val amountBtc = request.amountBtc()
+        val initial =
+            BtcTransactionBuilder.buildSendTransaction(
+                fromAddress = fromAddress,
+                toAddress = request.recipientAddress,
+                amountBtc = amountBtc,
+                localUtxos = localUtxos,
+                feeRate = BigDecimal.ONE,
+            )
+        val estimate = estimateBitcoinFee(initial.rawHex)
+        val feeRate = estimate?.feeRate ?: BigDecimal.ONE
+        val built =
+            BtcTransactionBuilder.buildSendTransaction(
+                fromAddress = fromAddress,
+                toAddress = request.recipientAddress,
+                amountBtc = amountBtc,
+                localUtxos = localUtxos,
+                feeRate = feeRate,
+                minFeeBtc = estimate?.minFee?.toBigDecimalOrNull(),
+            )
+        val signed = signBitcoinTransaction(built.rawHex, key, localUtxos)
+        return WcBitcoinSignedTransfer(
+            rawTx = signed.rawTx,
+            fromAddress = fromAddress,
+            recipientAddress = request.recipientAddress,
+            consumedOutputIds = signed.consumedOutputIds,
+            feeRate = feeRate,
+        )
+    }
+
+    private data class SignedBitcoinTransaction(
+        val rawTx: String,
+        val consumedOutputIds: List<String>,
+    )
+
+    private fun signBitcoinTransaction(
+        unsignedRawHex: String,
+        signingKey: ECKey,
+        localUtxos: List<WalletOutput>,
+    ): SignedBitcoinTransaction {
+        val transaction = Transaction.read(ByteBuffer.wrap(unsignedRawHex.hexStringToByteArray()))
+        val utxoMap = localUtxos.associateBy { utxo -> "${utxo.transactionHash}:${utxo.outputIndex}" }
+        val scriptCode: Script = ScriptBuilder.createP2PKHOutputScript(signingKey)
+        val consumedOutputIds = mutableListOf<String>()
+        val inputCount = transaction.inputs.size
+        for (inputIndex in 0 until inputCount) {
+            val input: TransactionInput = transaction.getInput(inputIndex.toLong())
+            val prevHash = input.outpoint.hash().toString()
+            val prevIndex = input.outpoint.index()
+            val utxoKey = "$prevHash:$prevIndex"
+            val utxo = utxoMap[utxoKey] ?: throw IllegalArgumentException("Missing utxo for input[$inputIndex] $utxoKey")
+            consumedOutputIds.add(utxo.outputId)
+            val utxoAmount = Coin.parseCoin(utxo.amount)
+            if (utxoAmount.isZero) {
+                throw IllegalArgumentException("Invalid utxo amount on input[$inputIndex]")
+            }
+            val signature =
+                transaction.calculateWitnessSignature(
+                    inputIndex,
+                    signingKey,
+                    scriptCode,
+                    utxoAmount,
+                    Transaction.SigHash.ALL,
+                    false,
+                )
+            val witness = TransactionWitness.of(signature.encodeToBitcoin(), signingKey.pubKey)
+            val newInput = input.withScriptBytes(byteArrayOf()).withWitness(witness)
+            transaction.replaceInput(inputIndex, newInput)
+        }
+        return SignedBitcoinTransaction(
+            rawTx = transaction.serialize().toHex(),
+            consumedOutputIds = consumedOutputIds,
+        )
     }
 
     private fun approveBitcoinMessage(

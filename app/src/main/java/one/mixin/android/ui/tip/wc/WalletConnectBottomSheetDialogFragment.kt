@@ -49,6 +49,7 @@ import one.mixin.android.tip.wc.WalletConnectV2.getProposalChainIds
 import one.mixin.android.tip.wc.WalletConnectV2.getNamespaceProposal
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
+import one.mixin.android.tip.wc.internal.WcBitcoinSendTransfer
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectAddresses
 import one.mixin.android.tip.wc.internal.WalletConnectException
@@ -416,7 +417,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     }
                 if (error == null) {
                     step =
-                        if (isSignEvmTransaction() || isSignSolanaTransaction()) {
+                        if (isSignEvmTransaction() || isSignSolanaTransaction() || isSendBitcoinTransfer()) {
                             try {
                                 step = Step.Sending
                                 val sendError =
@@ -468,13 +469,27 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     }
                     RequestType.SessionRequest -> {
                         val signData = this.signData ?: return "SignData is null"
-                        signedTransactionData = WalletConnectV2.approveRequest(priv, chain, topic, signData, {
-                            val latestBlockhash = rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
-                            return@approveRequest latestBlockhash
-                        }, { address ->
-                            val nonce = rpc.nonceAt(chain.assetId, address) ?: throw IllegalArgumentException("failed to get nonce")
-                            return@approveRequest nonce
-                        })
+                        signedTransactionData =
+                            WalletConnectV2.approveRequest(
+                                priv,
+                                chain,
+                                topic,
+                                signData,
+                                {
+                                    val latestBlockhash = rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
+                                    return@approveRequest latestBlockhash
+                                },
+                                { address ->
+                                    val nonce = rpc.nonceAt(chain.assetId, address) ?: throw IllegalArgumentException("failed to get nonce")
+                                    return@approveRequest nonce
+                                },
+                                { address ->
+                                    viewModel.outputsByAddress(address, Chain.Bitcoin.assetId)
+                                },
+                                { rawTx ->
+                                    viewModel.estimateBitcoinFee(rawTx)
+                                },
+                            )
                     }
                     RequestType.Pay -> {}
                 }
@@ -558,6 +573,8 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private fun isSignEvmTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction
 
     private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is VersionedTransactionCompat
+
+    private fun isSendBitcoinTransfer() = signData != null && signData?.signMessage is WcBitcoinSendTransfer
 
     private val bottomSheetBehaviorCallback =
         object : BottomSheetBehavior.BottomSheetCallback() {

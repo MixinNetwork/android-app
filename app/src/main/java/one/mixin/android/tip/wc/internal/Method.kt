@@ -19,6 +19,8 @@ sealed class Method(val name: String) {
 
     object BtcGetAccountAddresses : Method("getAccountAddresses")
 
+    object BtcSendTransfer : Method("sendTransfer")
+
     object BtcSignMessage : Method("signMessage")
 }
 
@@ -39,6 +41,7 @@ val solanaSupportedMethods =
 val bitcoinSupportedMethods =
     listOf(
         Method.BtcGetAccountAddresses.name,
+        Method.BtcSendTransfer.name,
         Method.BtcSignMessage.name,
     )
 

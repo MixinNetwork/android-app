@@ -53,6 +53,7 @@ class WalletConnectNamespaceTest {
         assertEquals(listOf(Chain.Bitcoin.chainId), namespaces.getValue("bip122").chains)
         assertEquals(listOf("${Chain.Bitcoin.chainId}:$bitcoinAddress"), namespaces.getValue("bip122").accounts)
         assertTrue(namespaces.getValue("bip122").methods.contains(Method.BtcGetAccountAddresses.name))
+        assertTrue(namespaces.getValue("bip122").methods.contains(Method.BtcSendTransfer.name))
     }
 
     @Test
@@ -84,10 +85,24 @@ class WalletConnectNamespaceTest {
     @Test
     fun walletConnectMethodsAreScopedToTheirChainNamespace() {
         assertTrue(isSupportedMethodForChain(Method.BtcSignMessage.name, Chain.Bitcoin.chainId))
+        assertTrue(isSupportedMethodForChain(Method.BtcSendTransfer.name, Chain.Bitcoin.chainId))
         assertFalse(isSupportedMethodForChain(Method.BtcSignMessage.name, Chain.Ethereum.chainId))
         assertFalse(isSupportedMethodForChain(Method.BtcSignMessage.name, Chain.Solana.chainId))
+        assertFalse(isSupportedMethodForChain(Method.BtcSendTransfer.name, Chain.Solana.chainId))
         assertTrue(isSupportedMethodForChain(Method.ETHSendTransaction.name, Chain.Base.chainId))
         assertFalse(isSupportedMethodForChain(Method.ETHSendTransaction.name, Chain.Bitcoin.chainId))
+    }
+
+    @Test
+    fun bitcoinSendTransferConvertsSatoshisToBtc() {
+        val transfer =
+            WcBitcoinSendTransfer(
+                account = "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu",
+                recipientAddress = "bc1qv26xqckkeqxkl7j6npuegr7nez2wlu3qjuh59t",
+                amount = "123456789",
+            )
+
+        assertEquals("1.23456789", transfer.amountBtc())
     }
 
     @Test
