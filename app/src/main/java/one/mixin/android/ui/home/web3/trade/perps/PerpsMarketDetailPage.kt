@@ -106,6 +106,9 @@ fun PerpsMarketDetailPage(
     initialMarket: PerpsMarket? = null,
     onBack: () -> Unit,
     onSharePosition: (PerpsPositionItem) -> Unit,
+    onViewAllClosedPositions: () -> Unit,
+    onPositionClick: (PerpsOrderItem) -> Unit,
+    onOpenPosition: (PerpsMarket, Boolean) -> Unit,
     source: String,
 ) {
     val context = LocalContext.current
@@ -492,23 +495,8 @@ fun PerpsMarketDetailPage(
                     Spacer(modifier = Modifier.height(16.dp))
                     ClosedPositionsSection(
                         positions = closedPositions,
-                        onViewAll = {
-                            val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
-                            activity.supportFragmentManager.navigateToPerpsRoute(
-                                AllPositionsFragment.newClosedInstance(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
-                                AllPositionsFragment.TAG,
-                                android.R.id.content,
-                                animate = false,
-                            )
-                        },
-                        onPositionClick = { position ->
-                            val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
-                            activity.supportFragmentManager.navigateToPerpsRoute(
-                                PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
-                                PositionDetailFragment.TAG,
-                                android.R.id.content,
-                            )
-                        }
+                        onViewAll = onViewAllClosedPositions,
+                        onPositionClick = onPositionClick,
                     )
                 }
 
@@ -697,16 +685,7 @@ fun PerpsMarketDetailPage(
                                     .weight(1f)
                                     .height(48.dp),
                                 onClick = {
-                                    PerpsActivity.showOpenPosition(
-                                        context = context,
-                                        marketId = marketId,
-                                        marketSymbol = marketSymbol,
-                                        marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
-                                        marketTokenSymbol = market?.tokenSymbol ?: "",
-                                        isLong = true,
-                                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
-                                        returnToDetail = true,
-                                    )
+                                    market?.let { onOpenPosition(it, true) }
                                 },
                                 backgroundColor = risingColor,
                                 contentColor = Color.White,
@@ -723,16 +702,7 @@ fun PerpsMarketDetailPage(
                                     .weight(1f)
                                     .height(48.dp),
                                 onClick = {
-                                    PerpsActivity.showOpenPosition(
-                                        context = context,
-                                        marketId = marketId,
-                                        marketSymbol = marketSymbol,
-                                        marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
-                                        marketTokenSymbol = market?.tokenSymbol ?: "",
-                                        isLong = false,
-                                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
-                                        returnToDetail = true,
-                                    )
+                                    market?.let { onOpenPosition(it, false) }
                                 },
                                 backgroundColor = fallingColor,
                                 contentColor = Color.White,

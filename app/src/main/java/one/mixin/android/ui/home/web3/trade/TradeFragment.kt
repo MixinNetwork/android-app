@@ -86,12 +86,9 @@ import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.ui.home.web3.trade.perps.AllPositionsFragment
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualGuideBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.home.web3.trade.perps.PerpsMarketListBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.trade.perps.PositionDetailFragment
-import one.mixin.android.ui.home.web3.trade.perps.navigateToPerpsRoute
+import one.mixin.android.ui.home.web3.trade.perps.PerpsRouteNavigator
 import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
@@ -592,47 +589,39 @@ class TradeFragment : BaseFragment() {
                                     PerpsMarketListBottomSheetDialogFragment.newInstance(initialCategory, initialSort).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
                                 },
                                 onShowAllOpenPositions = {
-                                    requireActivity().supportFragmentManager.navigateToPerpsRoute(
-                                        AllPositionsFragment.newOpenInstance(),
-                                        AllPositionsFragment.TAG,
-                                        R.id.container,
+                                    PerpsRouteNavigator.showPositionList(
+                                        fragmentManager = parentFragmentManager,
+                                        showOpenPositions = true,
                                     )
                                 },
                                 onShowAllClosedPositions = {
-                                    requireActivity().supportFragmentManager.navigateToPerpsRoute(
-                                        AllPositionsFragment.newClosedInstance(),
-                                        AllPositionsFragment.TAG,
-                                        R.id.container,
+                                    PerpsRouteNavigator.showPositionList(
+                                        fragmentManager = parentFragmentManager,
+                                        showOpenPositions = false,
                                     )
                                 },
                                 onOpenPositionClick = { position ->
-                                    requireActivity().supportFragmentManager.navigateToPerpsRoute(
-                                        PositionDetailFragment.newInstance(
-                                            position,
-                                            AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
-                                        ),
-                                        PositionDetailFragment.TAG,
-                                        R.id.container,
+                                    PerpsRouteNavigator.showPositionDetail(
+                                        fragmentManager = parentFragmentManager,
+                                        position = position,
+                                        source = AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
                                     )
                                 },
                                 onMarketItemClick = { market ->
-                                    PerpsActivity.showDetail(
-                                        requireContext(),
-                                        market.marketId,
-                                        market.displaySymbol,
-                                        market.displaySymbol,
-                                        market.tokenSymbol,
-                                        AnalyticsTracker.PerpsSource.MORE_EXPLORE,
+                                    PerpsRouteNavigator.showMarketDetail(
+                                        fragmentManager = parentFragmentManager,
+                                        marketId = market.marketId,
+                                        marketSymbol = market.displaySymbol,
+                                        displaySymbol = market.displaySymbol,
+                                        tokenSymbol = market.tokenSymbol,
+                                        source = AnalyticsTracker.PerpsSource.MORE_EXPLORE,
                                     )
                                 },
                                 onClosedPositionClick = { position ->
-                                    requireActivity().supportFragmentManager.navigateToPerpsRoute(
-                                        PositionDetailFragment.newInstance(
-                                            position,
-                                            AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
-                                        ),
-                                        PositionDetailFragment.TAG,
-                                        R.id.container,
+                                    PerpsRouteNavigator.showPositionDetail(
+                                        fragmentManager = parentFragmentManager,
+                                        order = position,
+                                        source = AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
                                     )
                                 }
                             )

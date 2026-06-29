@@ -237,20 +237,21 @@ class PerpsMarketListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
                 }
 
             if (hasOpenPosition || isLong == null) {
-                PerpsActivity.showDetail(
-                    context = requireContext(),
+                PerpsRouteNavigator.showMarketDetail(
+                    fragmentManager = parentFragmentManager,
                     marketId = market.marketId,
                     marketSymbol = market.displaySymbol,
-                    marketDisplaySymbol = market.displaySymbol,
-                    marketTokenSymbol = market.tokenSymbol,
+                    displaySymbol = market.displaySymbol,
+                    tokenSymbol = market.tokenSymbol,
+                    source = AnalyticsTracker.PerpsSource.MORE_EXPLORE,
                 )
             } else {
-                PerpsActivity.showOpenPosition(
-                    context = requireContext(),
+                PerpsRouteNavigator.showOpenPosition(
+                    fragmentManager = parentFragmentManager,
                     marketId = market.marketId,
                     marketSymbol = market.displaySymbol,
-                    marketDisplaySymbol = market.displaySymbol,
-                    marketTokenSymbol = market.tokenSymbol,
+                    displaySymbol = market.displaySymbol,
+                    tokenSymbol = market.tokenSymbol,
                     isLong = requireNotNull(isLong),
                     source = AnalyticsTracker.PerpsSource.MORE_EXPLORE,
                 )
