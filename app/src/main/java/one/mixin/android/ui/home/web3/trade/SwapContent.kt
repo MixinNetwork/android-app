@@ -231,6 +231,11 @@ fun SwapContent(
                     isSendFocused = isSendFocused,
                     isKeyboardVisible = availableHeight != null,
                 )
+                LaunchedEffect(availableHeight, inputText) {
+                    if (availableHeight == null && inputText.isBlank()) {
+                        isSendFocused = false
+                    }
+                }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()

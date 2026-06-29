@@ -98,6 +98,18 @@ enum class FocusedField { NONE, IN_AMOUNT, OUT_AMOUNT, PRICE }
 
 private const val MAX_DISPLAY_ORDER_COUNT: Int = 10
 
+internal fun shouldShowLimitOrderOpenOrdersCard(
+    inputText: String,
+    outputText: String,
+    limitPriceText: String,
+    focusedField: FocusedField,
+    isKeyboardVisible: Boolean,
+): Boolean = inputText.isBlank() &&
+    outputText.isBlank() &&
+    limitPriceText.isBlank() &&
+    focusedField == FocusedField.NONE &&
+    !isKeyboardVisible
+
 private fun formatBalanceInput(balance: String?, isWeb3: Boolean): String {
     val amount = balance?.toBigDecimalOrNull() ?: return ""
     if (amount <= BigDecimal.ZERO) return ""
@@ -161,7 +173,7 @@ fun LimitOrderContent(
     var isReverse by remember { mutableStateOf(false) }
     val walletId = if (inMixin) Session.getAccountId()!! else Web3Signer.currentWalletId
 
-    var focusedField by remember { mutableStateOf(FocusedField.PRICE) }
+    var focusedField by remember { mutableStateOf(FocusedField.NONE) }
 
     var fromToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) to else from)
@@ -240,6 +252,18 @@ fun LimitOrderContent(
         }
         val availableFromBalance = availableFromBalanceValue.stripTrailingZeros().toPlainString()
         KeyboardAwareBox(modifier = Modifier.fillMaxHeight(), content = { availableHeight ->
+            LaunchedEffect(availableHeight, inputText, outputText, limitPriceText) {
+                if (availableHeight == null && inputText.isBlank() && outputText.isBlank() && limitPriceText.isBlank()) {
+                    focusedField = FocusedField.NONE
+                }
+            }
+            val showOpenOrdersCard = shouldShowLimitOrderOpenOrdersCard(
+                inputText = inputText,
+                outputText = outputText,
+                limitPriceText = limitPriceText,
+                focusedField = focusedField,
+                isKeyboardVisible = availableHeight != null,
+            )
             Column(
                 modifier = if (availableHeight != null) {
                     Modifier
@@ -314,10 +338,13 @@ fun LimitOrderContent(
                             InputArea(modifier = Modifier.onFocusChanged {
                                 if (it.isFocused) {
                                     focusedField = FocusedField.IN_AMOUNT
+                                } else if (focusedField == FocusedField.IN_AMOUNT) {
+                                    focusedField = FocusedField.NONE
                                 }
                             }, token = fromToken, text = inputText, title = stringResource(id = R.string.swap_send), readOnly = false, selectClick = {
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
+                                focusedField = FocusedField.NONE
                                 onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From)
                             }, onInputChanged = { 
                                 inputText = it
@@ -352,6 +379,8 @@ fun LimitOrderContent(
                                 modifier = Modifier.onFocusChanged {
                                     if (it.isFocused) {
                                         focusedField = FocusedField.OUT_AMOUNT
+                                    } else if (focusedField == FocusedField.OUT_AMOUNT) {
+                                        focusedField = FocusedField.NONE
                                     }
                                 },
                                 token = toToken,
@@ -361,6 +390,7 @@ fun LimitOrderContent(
                                 selectClick = {
                                     keyboardController?.hide()
                                     focusManager.clearFocus()
+                                    focusedField = FocusedField.NONE
                                     onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To)
                                 },
                                 onInputChanged = { 
@@ -398,7 +428,11 @@ fun LimitOrderContent(
                             Column {
                                 PriceInputArea(
                                     modifier = Modifier.onFocusChanged {
-                                        if (it.isFocused) focusedField = FocusedField.PRICE
+                                        if (it.isFocused) {
+                                            focusedField = FocusedField.PRICE
+                                        } else if (focusedField == FocusedField.PRICE) {
+                                            focusedField = FocusedField.NONE
+                                        }
                                     },
                                     fromToken = fromToken,
                                     toToken = toToken,
@@ -425,7 +459,7 @@ fun LimitOrderContent(
                     )
                 }
 
-                if (availableHeight != null || inputText.isNotBlank()) {
+                if (!showOpenOrdersCard) {
                     Column(modifier = Modifier
                         .wrapContentHeight()
                         .padding(horizontal = 20.dp)
@@ -447,11 +481,13 @@ fun LimitOrderContent(
                             onClick = {
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
+                                focusedField = FocusedField.NONE
                                 if (isButtonEnabled && !isBusy && toToken != null) {
                                     isButtonEnabled = false
                                     isSubmitting = true
                                     keyboardController?.hide()
                                     focusManager.clearFocus()
+                                    focusedField = FocusedField.NONE
                                     scope.launch {
                                         runCatching {
                                             val fromTokenValue = requireNotNull(fromToken)
@@ -652,6 +688,7 @@ fun LimitOrderContent(
                 onDone = {
                     keyboardController?.hide()
                     focusManager.clearFocus()
+                    focusedField = FocusedField.NONE
                 },
                 onMarketPriceClick = {
                     marketPriceClickTime = System.currentTimeMillis()
