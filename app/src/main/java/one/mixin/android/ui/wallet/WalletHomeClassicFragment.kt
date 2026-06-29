@@ -695,7 +695,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 AnalyticsTracker.WalletHomeAdBannerSource.BUTTON,
             )
             action.action
-                ?.takeIf { it.isNotBlank() }
+                .takeIf { it.isNotBlank() }
                 ?.let(::openClassicBannerAction)
         }
 

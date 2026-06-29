@@ -556,7 +556,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 AnalyticsTracker.WalletHomeAdBannerSource.BUTTON,
             )
             action.action
-                ?.takeIf { it.isNotBlank() }
+                .takeIf { it.isNotBlank() }
                 ?.openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
         }
 

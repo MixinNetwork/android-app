@@ -253,7 +253,7 @@ private fun DynamicBannerCard(
     onActionClick: (WalletHomeBanner, WalletHomeBannerAction) -> Unit,
 ) {
     val actions = banner.visibleActions
-    val description = banner.description?.takeIf { it.isNotBlank() }
+    val description = banner.description.takeIf { it.isNotBlank() }
     val showDescription = actions.isEmpty() && description != null
     val titleOnly = !showDescription
     Row(
@@ -262,7 +262,7 @@ private fun DynamicBannerCard(
             .padding(top = 16.dp, end = 22.dp, bottom = 16.dp),
         verticalAlignment = Alignment.Top,
     ) {
-        val iconUrl = banner.iconUrl?.takeIf { it.isNotBlank() }
+        val iconUrl = banner.iconUrl.takeIf { it.isNotBlank() }
         if (iconUrl != null) {
             CoilImageCompat(
                 model = iconUrl,

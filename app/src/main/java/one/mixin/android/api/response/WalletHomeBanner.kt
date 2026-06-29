@@ -4,53 +4,53 @@ import com.google.gson.annotations.SerializedName
 
 data class WalletHomeBanner(
     @SerializedName(value = "banner_id", alternate = ["id"])
-    val bannerId: String? = null,
+    val bannerId: String = "",
     @SerializedName("placement")
-    val placement: String? = null,
+    val placement: String = "",
     @SerializedName("lang")
-    val lang: String? = null,
+    val lang: String = "",
     @SerializedName("icon_url")
-    val iconUrl: String? = null,
+    val iconUrl: String = "",
     @SerializedName("title")
-    val title: String? = null,
+    val title: String = "",
     @SerializedName("description")
-    val description: String? = null,
+    val description: String = "",
     @SerializedName("actions")
-    val actions: List<WalletHomeBannerAction>? = emptyList(),
+    val actions: List<WalletHomeBannerAction> = emptyList(),
     @SerializedName("action_url")
     val actionUrl: String? = null,
     @SerializedName("tracking_key")
-    val trackingKey: String? = null,
+    val trackingKey: String = "",
     @SerializedName("status")
-    val status: String? = null,
+    val status: String = BANNER_STATUS_ACTIVE,
     @SerializedName("start_at")
-    val startAt: String? = null,
+    val startAt: String = "",
     @SerializedName("end_at")
-    val endAt: String? = null,
+    val endAt: String = "",
     @SerializedName("chains")
-    val chains: List<String>? = emptyList(),
+    val chains: List<String> = emptyList(),
     @SerializedName("priority")
     val priority: Int = 0,
     @SerializedName("created_at")
-    val createdAt: String? = null,
+    val createdAt: String = "",
     @SerializedName("updated_at")
-    val updatedAt: String? = null,
+    val updatedAt: String = "",
 ) {
     val key: String
-        get() = bannerId.takeUnless(String?::isNullOrBlank)
+        get() = bannerId.takeUnless(String::isBlank)
             ?: actionUrl.takeUnless(String?::isNullOrBlank)
-            ?: title.takeUnless(String?::isNullOrBlank)
-            ?: iconUrl.orEmpty()
+            ?: title.takeUnless(String::isBlank)
+            ?: iconUrl
 
     val hasVisualContent: Boolean
-        get() = !title.isNullOrBlank() ||
-            !description.isNullOrBlank() ||
+        get() = title.isNotBlank() ||
+            description.isNotBlank() ||
             visibleActions.isNotEmpty() ||
-            !iconUrl.isNullOrBlank()
+            iconUrl.isNotBlank()
 
     val visibleActions: List<WalletHomeBannerAction>
-        get() = actions.orEmpty()
-            .firstOrNull { !it.label.isNullOrBlank() && !it.action.isNullOrBlank() }
+        get() = actions
+            .firstOrNull { it.label.isNotBlank() && it.action.isNotBlank() }
             ?.let(::listOf)
             .orEmpty()
 
@@ -58,7 +58,7 @@ data class WalletHomeBanner(
         get() = visibleActions.isNotEmpty()
 
     val isActive: Boolean
-        get() = status.isNullOrBlank() || status.equals(BANNER_STATUS_ACTIVE, ignoreCase = true)
+        get() = status.isBlank() || status.equals(BANNER_STATUS_ACTIVE, ignoreCase = true)
 
     companion object {
         const val BANNER_STATUS_ACTIVE = "active"
@@ -68,9 +68,9 @@ data class WalletHomeBanner(
 
 data class WalletHomeBannerAction(
     @SerializedName("label")
-    val label: String? = null,
+    val label: String = "",
     @SerializedName("action")
-    val action: String? = null,
+    val action: String = "",
 )
 
 fun Set<String>.syncedWalletHomeClosedBannerIds(remoteBanners: List<WalletHomeBanner>): Set<String> {
