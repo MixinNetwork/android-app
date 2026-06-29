@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.ComposeView
@@ -37,22 +38,33 @@ class PositionDetailFragment : BaseFragment() {
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_CLOSE_ORDER = "args_close_order"
         private const val ARGS_SOURCE = "args_source"
+        private const val ARGS_USE_TRADE_FLOW_NAVIGATOR = "args_use_trade_flow_navigator"
         private const val POSITION_REFRESH_INTERVAL_MS = 10_000L
 
-        fun newInstance(position: PerpsPositionItem, source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL): PositionDetailFragment {
+        fun newInstance(
+            position: PerpsPositionItem,
+            source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
+            useTradeFlowNavigator: Boolean = false,
+        ): PositionDetailFragment {
             return PositionDetailFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARGS_POSITION, position)
                     putString(ARGS_SOURCE, source)
+                    putBoolean(ARGS_USE_TRADE_FLOW_NAVIGATOR, useTradeFlowNavigator)
                 }
             }
         }
 
-        fun newInstance(order: PerpsOrderItem, source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL): PositionDetailFragment {
+        fun newInstance(
+            order: PerpsOrderItem,
+            source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
+            useTradeFlowNavigator: Boolean = false,
+        ): PositionDetailFragment {
             return PositionDetailFragment().apply {
                 arguments = Bundle().apply {
                     putParcelable(ARGS_CLOSE_ORDER, order)
                     putString(ARGS_SOURCE, source)
+                    putBoolean(ARGS_USE_TRADE_FLOW_NAVIGATOR, useTradeFlowNavigator)
                 }
             }
         }
@@ -64,6 +76,25 @@ class PositionDetailFragment : BaseFragment() {
         requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (arguments?.getBoolean(ARGS_USE_TRADE_FLOW_NAVIGATOR, false) != true) return
+        requireActivity().onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (isTopFragment()) {
+                        close()
+                    } else {
+                        isEnabled = false
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                        isEnabled = true
+                    }
+                }
+            }
+        )
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -72,6 +103,7 @@ class PositionDetailFragment : BaseFragment() {
         val position = arguments?.getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java)
         val closeOrder = arguments?.getParcelableCompat(ARGS_CLOSE_ORDER, PerpsOrderItem::class.java)
         val source = arguments?.getString(ARGS_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL
+        val useTradeFlowNavigator = arguments?.getBoolean(ARGS_USE_TRADE_FLOW_NAVIGATOR, false) == true
         AnalyticsTracker.trackPerpsActivityDetail(source)
 
         return ComposeView(inflater.context).apply {
@@ -112,8 +144,11 @@ class PositionDetailFragment : BaseFragment() {
                             pop = {
                                 activity?.onBackPressedDispatcher?.onBackPressed()
                             },
+                            onViewMarket = {
+                                openViewMarket(currentPosition, useTradeFlowNavigator)
+                            },
                             onClose = {
-                                showCloseDialog(currentPosition)
+                                showCloseDialog(currentPosition, useTradeFlowNavigator)
                             },
                             onShare = {
                                 sharePosition(currentPosition)
@@ -141,8 +176,11 @@ class PositionDetailFragment : BaseFragment() {
                                 pop = {
                                     activity?.onBackPressedDispatcher?.onBackPressed()
                                 },
+                                onViewMarket = {
+                                    openViewMarket(closeOrder, useTradeFlowNavigator)
+                                },
                                 onTradeAgain = {
-                                    openTradeAgain(closeOrder)
+                                    openTradeAgain(closeOrder, useTradeFlowNavigator)
                                 },
                                 onShare = {
                                     sharePosition(closeOrder, leverage ?: closeOrder.leverage)
@@ -181,7 +219,7 @@ class PositionDetailFragment : BaseFragment() {
                                     activity?.onBackPressedDispatcher?.onBackPressed()
                                 },
                                 onViewMarket = {
-                                    openViewMarket(closeOrder)
+                                    openViewMarket(closeOrder, useTradeFlowNavigator)
                                 },
                                 onShare = {
                                     lifecycleScope.launch {
@@ -211,46 +249,100 @@ class PositionDetailFragment : BaseFragment() {
         }
     }
 
-    private fun showCloseDialog(position: PerpsPositionItem) {
+    private fun showCloseDialog(position: PerpsPositionItem, useTradeFlowNavigator: Boolean) {
         val perpsPosition = position.toPosition()
         AnalyticsTracker.trackPerpsClosePositionStart()
         PerpsCloseBottomSheetDialogFragment.newInstance(perpsPosition)
             .setOnDone {
-                PerpsActivity.showDetail(
-                    requireContext(),
-                    position.marketId,
-                    position.displaySymbol.orEmpty(),
-                    position.displaySymbol.orEmpty(),
-                    position.tokenSymbol.orEmpty(),
-                    AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
+                showMarketDetail(
+                    marketId = position.marketId,
+                    marketSymbol = position.displaySymbol.orEmpty(),
+                    displaySymbol = position.displaySymbol.orEmpty(),
+                    tokenSymbol = position.tokenSymbol.orEmpty(),
+                    source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
+                    useTradeFlowNavigator = useTradeFlowNavigator,
                 )
-                activity?.supportFragmentManager?.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
             }
             .showNow(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
     }
 
-    private fun openTradeAgain(order: PerpsOrderItem) {
-        PerpsActivity.showDetail(
-            context = requireContext(),
-            marketId = order.marketId,
-            marketSymbol = order.displaySymbol.orEmpty(),
-            marketDisplaySymbol = order.displaySymbol.orEmpty(),
-            marketTokenSymbol = order.tokenSymbol.orEmpty(),
-            source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
-        )
-        activity?.supportFragmentManager?.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+    private fun openTradeAgain(order: PerpsOrderItem, useTradeFlowNavigator: Boolean) {
+        val marketSymbol = order.displaySymbol.orEmpty()
+        val tokenSymbol = order.tokenSymbol.orEmpty()
+        val isLong = order.side.equals("long", ignoreCase = true)
+        if (useTradeFlowNavigator) {
+            PerpsRouteNavigator.showOpenPosition(
+                fragmentManager = parentFragmentManager,
+                marketId = order.marketId,
+                marketSymbol = marketSymbol,
+                displaySymbol = marketSymbol,
+                tokenSymbol = tokenSymbol,
+                isLong = isLong,
+                source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
+            )
+        } else {
+            PerpsActivity.showOpenPosition(
+                context = requireContext(),
+                marketId = order.marketId,
+                marketSymbol = marketSymbol,
+                marketDisplaySymbol = marketSymbol,
+                marketTokenSymbol = tokenSymbol,
+                isLong = isLong,
+                source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
+            )
+        }
     }
 
-    private fun openViewMarket(order: PerpsOrderItem) {
-        PerpsActivity.showDetail(
-            context = requireContext(),
+    private fun openViewMarket(order: PerpsOrderItem, useTradeFlowNavigator: Boolean) {
+        showMarketDetail(
             marketId = order.marketId,
             marketSymbol = order.displaySymbol.orEmpty(),
-            marketDisplaySymbol = order.displaySymbol.orEmpty(),
-            marketTokenSymbol = order.tokenSymbol.orEmpty(),
+            displaySymbol = order.displaySymbol.orEmpty(),
+            tokenSymbol = order.tokenSymbol.orEmpty(),
             source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
+            useTradeFlowNavigator = useTradeFlowNavigator,
         )
-        activity?.supportFragmentManager?.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+    }
+
+    private fun openViewMarket(position: PerpsPositionItem, useTradeFlowNavigator: Boolean) {
+        showMarketDetail(
+            marketId = position.marketId,
+            marketSymbol = position.displaySymbol.orEmpty(),
+            displaySymbol = position.displaySymbol.orEmpty(),
+            tokenSymbol = position.tokenSymbol.orEmpty(),
+            source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
+            useTradeFlowNavigator = useTradeFlowNavigator,
+        )
+    }
+
+    private fun showMarketDetail(
+        marketId: String,
+        marketSymbol: String,
+        displaySymbol: String,
+        tokenSymbol: String,
+        source: String,
+        useTradeFlowNavigator: Boolean,
+    ) {
+        if (useTradeFlowNavigator) {
+            PerpsRouteNavigator.showMarketDetail(
+                fragmentManager = parentFragmentManager,
+                marketId = marketId,
+                marketSymbol = marketSymbol,
+                displaySymbol = displaySymbol,
+                tokenSymbol = tokenSymbol,
+                source = source,
+            )
+        } else {
+            PerpsActivity.showDetail(
+                requireContext(),
+                marketId,
+                marketSymbol,
+                displaySymbol,
+                tokenSymbol,
+                source,
+            )
+            activity?.supportFragmentManager?.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        }
     }
 
     private fun sharePosition(position: PerpsPositionItem) {
@@ -261,5 +353,13 @@ class PositionDetailFragment : BaseFragment() {
     private fun sharePosition(order: PerpsOrderItem, leverage: Int) {
         PerpsPositionShareBottomFragment.newInstance(order, leverage)
             .show(parentFragmentManager, PerpsPositionShareBottomFragment.TAG)
+    }
+
+    private fun close() {
+        PerpsRouteNavigator.closeTopRoute(parentFragmentManager, this)
+    }
+
+    private fun isTopFragment(): Boolean {
+        return parentFragmentManager.fragments.lastOrNull { it.isVisible } == this
     }
 }

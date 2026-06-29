@@ -65,6 +65,7 @@ fun PositionDetailPage(
     position: PerpsPositionItem,
     quoteColorReversed: Boolean = false,
     pop: () -> Unit,
+    onViewMarket: (() -> Unit)? = null,
     onClose: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
     onSupport: (() -> Unit)? = null,
@@ -200,6 +201,13 @@ fun PositionDetailPage(
         return formatPerpsSignedRawUsdDecimal(value)
     }
 
+    val viewMarketClick = onViewMarket
+    val viewMarketModifier = if (viewMarketClick != null) {
+        Modifier.clickable { viewMarketClick() }
+    } else {
+        Modifier
+    }
+
     PageScaffold(
         title = title,
         verticalScrollable = false,
@@ -229,56 +237,60 @@ fun PositionDetailPage(
                     )
             ) {
                 Spacer(modifier = Modifier.height(30.dp))
-                
-                CoilImage(
-                    model = position.iconUrl,
-                    placeholder = R.drawable.ic_avatar_place_holder,
-                    modifier = Modifier
-                        .size(70.dp)
-                        .clip(CircleShape)
-                        .align(Alignment.CenterHorizontally)
-                )
-                
-                Spacer(modifier = Modifier.height(20.dp))
 
-                Row(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    verticalAlignment = Alignment.Bottom,
+                Column(
+                    modifier = Modifier
+                        .align(Alignment.CenterHorizontally)
+                        .then(viewMarketModifier),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = absQuantity.stripTrailingZeros().toPlainString(),
-                        fontSize = 34.sp,
-                        fontWeight = FontWeight.W500,
-                        fontFamily = FontFamily(Font(R.font.mixin_font)),
-                        color = MixinAppTheme.colors.textPrimary,
+                    CoilImage(
+                        model = position.iconUrl,
+                        placeholder = R.drawable.ic_avatar_place_holder,
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(CircleShape)
                     )
-                    val symbol = position.tokenSymbol?.takeIf { it.isNotBlank() }
-                    if (symbol != null) {
-                        Spacer(modifier = Modifier.width(4.dp))
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                    ) {
                         Text(
-                            text = symbol,
-                            fontSize = 16.sp,
+                            text = absQuantity.stripTrailingZeros().toPlainString(),
+                            fontSize = 34.sp,
                             fontWeight = FontWeight.W500,
+                            fontFamily = FontFamily(Font(R.font.mixin_font)),
                             color = MixinAppTheme.colors.textPrimary,
-                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        val symbol = position.tokenSymbol?.takeIf { it.isNotBlank() }
+                        if (symbol != null) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = symbol,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.W500,
+                                color = MixinAppTheme.colors.textPrimary,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(leverageBackgroundColor)
+                            .padding(horizontal = 8.dp, vertical = 2.5.dp)
+                    ) {
+                        Text(
+                            text = "$sideText ${position.leverage}x",
+                            color = leverageTextColor,
+                            fontSize = 14.sp
                         )
                     }
-                }
-                
-                Spacer(modifier = Modifier.height(10.dp))
-
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(leverageBackgroundColor)
-                        .padding(horizontal = 8.dp, vertical = 2.5.dp)
-                        .align(Alignment.CenterHorizontally)
-                ) {
-                    Text(
-                        text = "$sideText ${position.leverage}x",
-                        color = leverageTextColor,
-                        fontSize = 14.sp
-                    )
                 }
                 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -351,7 +363,8 @@ fun PositionDetailPage(
                 PositionDetailItem(
                     label = stringResource(R.string.Perpetual).uppercase(),
                     value = position.displaySymbol ?: position.tokenSymbol ?: "Unknown",
-                    icon = position.iconUrl
+                    icon = position.iconUrl,
+                    onClick = onViewMarket
                 )
                 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -431,9 +444,17 @@ private fun PositionDetailItem(
     icon: String? = null,
     subtitle: String? = null,
     valueColor: Color = MixinAppTheme.colors.textPrimary,
+    onClick: (() -> Unit)? = null,
 ) {
+    val itemModifier = if (onClick != null) {
+        Modifier
+            .fillMaxWidth()
+            .clickable { onClick() }
+    } else {
+        Modifier.fillMaxWidth()
+    }
     Column(
-        modifier = Modifier.fillMaxWidth()
+        modifier = itemModifier
     ) {
         Text(
             text = label,
@@ -486,6 +507,7 @@ fun PositionDetailPage(
     leverage: Int?,
     quoteColorReversed: Boolean = false,
     pop: () -> Unit,
+    onViewMarket: (() -> Unit)? = null,
     onTradeAgain: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
     onSupport: (() -> Unit)? = null,
@@ -547,6 +569,13 @@ fun PositionDetailPage(
         return formatPerpsSignedRawUsdDecimal(value)
     }
 
+    val viewMarketClick = onViewMarket
+    val viewMarketModifier = if (viewMarketClick != null) {
+        Modifier.clickable { viewMarketClick() }
+    } else {
+        Modifier
+    }
+
     PageScaffold(
         title = title,
         verticalScrollable = false,
@@ -577,54 +606,58 @@ fun PositionDetailPage(
             ) {
                 Spacer(modifier = Modifier.height(30.dp))
 
-                CoilImage(
-                    model = closeOrder.iconUrl,
-                    placeholder = R.drawable.ic_avatar_place_holder,
+                Column(
                     modifier = Modifier
-                        .size(70.dp)
-                        .clip(CircleShape)
                         .align(Alignment.CenterHorizontally)
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Row(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    verticalAlignment = Alignment.Bottom,
+                        .then(viewMarketModifier),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = absQuantity.stripTrailingZeros().toPlainString(),
-                        fontSize = 34.sp,
-                        fontWeight = FontWeight.W500,
-                        fontFamily = FontFamily(Font(R.font.mixin_font)),
-                        color = MixinAppTheme.colors.textPrimary,
+                    CoilImage(
+                        model = closeOrder.iconUrl,
+                        placeholder = R.drawable.ic_avatar_place_holder,
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(CircleShape)
                     )
-                    val symbol = closeOrder.tokenSymbol?.takeIf { it.isNotBlank() }
-                    if (symbol != null) {
-                        Spacer(modifier = Modifier.width(4.dp))
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                    ) {
                         Text(
-                            text = symbol,
-                            fontSize = 16.sp,
+                            text = absQuantity.stripTrailingZeros().toPlainString(),
+                            fontSize = 34.sp,
                             fontWeight = FontWeight.W500,
+                            fontFamily = FontFamily(Font(R.font.mixin_font)),
                             color = MixinAppTheme.colors.textPrimary,
-                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        val symbol = closeOrder.tokenSymbol?.takeIf { it.isNotBlank() }
+                        if (symbol != null) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = symbol,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.W500,
+                                color = MixinAppTheme.colors.textPrimary,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(leverageBackgroundColor)
+                            .padding(horizontal = 8.dp, vertical = 2.5.dp)
+                    ) {
+                        Text(
+                            text = "$sideText ${effectiveLeverage}x",
+                            color = leverageTextColor,
+                            fontSize = 14.sp
                         )
                     }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(leverageBackgroundColor)
-                        .padding(horizontal = 8.dp, vertical = 2.5.dp)
-                        .align(Alignment.CenterHorizontally)
-                ) {
-                    Text(
-                        text = "$sideText ${effectiveLeverage}x",
-                        color = leverageTextColor,
-                        fontSize = 14.sp
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -689,7 +722,8 @@ fun PositionDetailPage(
                 PositionDetailItem(
                     label = stringResource(R.string.Perpetual).uppercase(),
                     value = closeOrder.displaySymbol ?: closeOrder.tokenSymbol ?: "Unknown",
-                    icon = closeOrder.iconUrl
+                    icon = closeOrder.iconUrl,
+                    onClick = onViewMarket
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -794,6 +828,12 @@ fun OpenedOrderDetailPage(
     val quantity = openedOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
     val leverage = openedOrder.leverage
+    val viewMarketClick = onViewMarket
+    val viewMarketModifier = if (viewMarketClick != null) {
+        Modifier.clickable { viewMarketClick() }
+    } else {
+        Modifier
+    }
 
     PageScaffold(
         title = title,
@@ -825,54 +865,58 @@ fun OpenedOrderDetailPage(
             ) {
                 Spacer(modifier = Modifier.height(30.dp))
 
-                CoilImage(
-                    model = openedOrder.iconUrl,
-                    placeholder = R.drawable.ic_avatar_place_holder,
+                Column(
                     modifier = Modifier
-                        .size(70.dp)
-                        .clip(CircleShape)
                         .align(Alignment.CenterHorizontally)
-                )
-
-                Spacer(modifier = Modifier.height(20.dp))
-
-                Row(
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    verticalAlignment = Alignment.Bottom,
+                        .then(viewMarketModifier),
+                    horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = absQuantity.stripTrailingZeros().toPlainString(),
-                        fontSize = 34.sp,
-                        fontWeight = FontWeight.W500,
-                        fontFamily = FontFamily(Font(R.font.mixin_font)),
-                        color = MixinAppTheme.colors.textPrimary,
+                    CoilImage(
+                        model = openedOrder.iconUrl,
+                        placeholder = R.drawable.ic_avatar_place_holder,
+                        modifier = Modifier
+                            .size(70.dp)
+                            .clip(CircleShape)
                     )
-                    val symbol = openedOrder.tokenSymbol?.takeIf { it.isNotBlank() }
-                    if (symbol != null) {
-                        Spacer(modifier = Modifier.width(4.dp))
+
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Row(
+                        verticalAlignment = Alignment.Bottom,
+                    ) {
                         Text(
-                            text = symbol,
-                            fontSize = 16.sp,
+                            text = absQuantity.stripTrailingZeros().toPlainString(),
+                            fontSize = 34.sp,
                             fontWeight = FontWeight.W500,
+                            fontFamily = FontFamily(Font(R.font.mixin_font)),
                             color = MixinAppTheme.colors.textPrimary,
-                            modifier = Modifier.padding(bottom = 4.dp)
+                        )
+                        val symbol = openedOrder.tokenSymbol?.takeIf { it.isNotBlank() }
+                        if (symbol != null) {
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = symbol,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.W500,
+                                color = MixinAppTheme.colors.textPrimary,
+                                modifier = Modifier.padding(bottom = 4.dp)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Box(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(8.dp))
+                            .background(leverageBackgroundColor)
+                            .padding(horizontal = 8.dp, vertical = 2.5.dp)
+                    ) {
+                        Text(
+                            text = "$sideText ${leverage}x",
+                            color = leverageTextColor,
+                            fontSize = 14.sp
                         )
                     }
-                }
-
-                Spacer(modifier = Modifier.height(10.dp))
-                Box(
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(leverageBackgroundColor)
-                        .padding(horizontal = 8.dp, vertical = 2.5.dp)
-                        .align(Alignment.CenterHorizontally)
-                ) {
-                    Text(
-                        text = "$sideText ${leverage}x",
-                        color = leverageTextColor,
-                        fontSize = 14.sp
-                    )
                 }
 
                 Spacer(modifier = Modifier.height(20.dp))
@@ -921,7 +965,8 @@ fun OpenedOrderDetailPage(
                 PositionDetailItem(
                     label = stringResource(R.string.Perpetual).uppercase(),
                     value = openedOrder.displaySymbol ?: openedOrder.tokenSymbol ?: "Unknown",
-                    icon = openedOrder.iconUrl
+                    icon = openedOrder.iconUrl,
+                    onClick = onViewMarket
                 )
 
                 Spacer(modifier = Modifier.height(20.dp))

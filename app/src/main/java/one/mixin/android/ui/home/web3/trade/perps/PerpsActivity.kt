@@ -20,6 +20,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsMarketDao
@@ -183,6 +185,9 @@ class PerpsActivity : BaseActivity() {
                         initialMarket = market,
                         onBack = { finish() },
                         onSharePosition = ::showSharePosition,
+                        onViewAllClosedPositions = ::showAllClosedPositions,
+                        onPositionClick = ::showPositionDetail,
+                        onOpenPosition = ::showOpenPosition,
                         source = source,
                     )
                 }
@@ -231,5 +236,40 @@ class PerpsActivity : BaseActivity() {
     private fun showSharePosition(position: PerpsPositionItem) {
         PerpsPositionShareBottomFragment.newInstance(position)
             .show(supportFragmentManager, PerpsPositionShareBottomFragment.TAG)
+    }
+
+    private fun showAllClosedPositions() {
+        supportFragmentManager.beginTransaction()
+            .add(
+                android.R.id.content,
+                AllPositionsFragment.newClosedInstance(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
+                AllPositionsFragment.TAG,
+            )
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun showPositionDetail(position: PerpsOrderItem) {
+        supportFragmentManager.beginTransaction()
+            .setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
+            .add(
+                android.R.id.content,
+                PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
+                PositionDetailFragment.TAG,
+            )
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun showOpenPosition(market: PerpsMarket, isLong: Boolean) {
+        PerpsActivity.showOpenPosition(
+            context = this,
+            marketId = market.marketId,
+            marketSymbol = market.displaySymbol,
+            marketDisplaySymbol = market.displaySymbol,
+            marketTokenSymbol = market.tokenSymbol,
+            isLong = isLong,
+            source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
+        )
     }
 }
