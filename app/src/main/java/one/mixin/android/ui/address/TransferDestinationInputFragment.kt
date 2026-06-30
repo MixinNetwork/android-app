@@ -851,7 +851,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             AnalyticsTracker.trackAssetSendRecipient(AnalyticsTracker.AssetSendRecipientType.CASH_ACCOUNT)
             navigateToInputFragmentWithBundle(Bundle().apply {
                 putParcelable(InputFragment.ARGS_TOKEN, tokenToSend)
-                putCashAccountArgs(cashAccount.balance, cashAccount.minAmount)
+                putCashAccountArgs(cashAccount.balance, cashAccount.minAmount, cashAccount.rewardApy)
             })
         }
     }
@@ -869,10 +869,12 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
     private fun Bundle.putCashAccountArgs(
         balance: String,
         minAmount: String,
+        rewardApy: String?,
     ) {
         putBoolean(InputFragment.ARGS_CASH_ACCOUNT_TRANSFER, true)
         putString(InputFragment.ARGS_CASH_BALANCE, balance)
         putString(InputFragment.ARGS_CASH_MIN_AMOUNT, minAmount)
+        putString(InputFragment.ARGS_CASH_REWARD_APY, rewardApy)
     }
 
     private fun navigateToInputFragmentWithBundle(bundle: Bundle) {

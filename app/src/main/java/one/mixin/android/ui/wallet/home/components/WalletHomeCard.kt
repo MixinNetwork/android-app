@@ -248,7 +248,7 @@ private fun CashAccountCard(
                 )
                 Spacer(modifier = Modifier.width(10.dp))
                 Text(
-                    text = stringResource(R.string.cash_account_apy),
+                    text = cashAccount.apyText ?: stringResource(R.string.cash_account_apy),
                     color = Color(0xFF5ECF72),
                     fontSize = 14.sp,
                     lineHeight = 16.sp,

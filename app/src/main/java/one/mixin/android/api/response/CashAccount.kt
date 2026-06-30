@@ -7,4 +7,6 @@ data class CashAccount(
     val balance: String,
     @SerializedName("min_amount")
     val minAmount: String,
+    @SerializedName("reward_apy")
+    val rewardApy: String? = null,
 )

@@ -6,7 +6,6 @@ import androidx.annotation.DrawableRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -106,7 +105,7 @@ private fun WalletBuyOptionsSheet(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MixinAppTheme.colors.backgroundWindow)
+            .background(MixinAppTheme.colors.background)
             .padding(horizontal = 20.dp)
             .padding(top = 24.dp, bottom = 20.dp),
     ) {
@@ -156,6 +155,7 @@ private fun WalletBuyOptionsSheet(
             iconRes = R.drawable.ic_wallet_buy_card,
             title = stringResource(R.string.wallet_buy_option_google_pay_or_card),
             description = stringResource(R.string.wallet_buy_option_google_pay_or_card_desc),
+            outlined = true,
             onClick = onGooglePayOrCard,
         )
         Spacer(modifier = Modifier.height(10.dp))
@@ -164,6 +164,7 @@ private fun WalletBuyOptionsSheet(
             title = stringResource(R.string.wallet_buy_option_bank_transfer),
             description = stringResource(R.string.wallet_buy_option_bank_transfer_desc),
             showBadge = true,
+            outlined = true,
             onClick = onBankTransfer,
         )
         Spacer(modifier = Modifier.height(40.dp))
@@ -176,6 +177,7 @@ private fun WalletBuyOptionItem(
     title: String,
     description: String,
     showBadge: Boolean = false,
+    outlined: Boolean = false,
     onClick: () -> Unit,
 ) {
     Row(
@@ -183,9 +185,12 @@ private fun WalletBuyOptionItem(
             .fillMaxWidth()
             .heightIn(min = 82.dp)
             .clip(RoundedCornerShape(8.dp))
-            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.background)
+            .cardBackground(
+                if (outlined) Color.Transparent else MixinAppTheme.colors.background,
+                if (outlined) MixinAppTheme.colors.borderColor else MixinAppTheme.colors.background,
+            )
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 14.dp),
+            .padding(horizontal = 18.dp, vertical = 13.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Spacer(modifier = Modifier.width(8.dp))
@@ -211,22 +216,20 @@ private fun WalletBuyOptionItem(
                     overflow = TextOverflow.Ellipsis,
                 )
                 if (showBadge) {
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Box(
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = stringResource(R.string.wallet_buy_option_new),
+                        color = Color.White,
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp,
+                        fontWeight = FontWeight.W500,
                         modifier = Modifier
-                            .clip(RoundedCornerShape(5.dp))
-                            .background(MixinAppTheme.colors.green)
-                            .padding(horizontal = 6.dp, vertical = 1.dp),
-                        contentAlignment = Alignment.Center,
-                    ) {
-                        Text(
-                            text = stringResource(R.string.wallet_buy_option_new),
-                            color = Color.White,
-                            fontSize = 11.sp,
-                            lineHeight = 14.sp,
-                            fontWeight = FontWeight.W500,
-                        )
-                    }
+                            .background(
+                                color = MixinAppTheme.colors.green,
+                                shape = RoundedCornerShape(4.dp),
+                            )
+                            .padding(horizontal = 6.dp, vertical = 2.dp),
+                    )
                 }
             }
             Spacer(modifier = Modifier.height(4.dp))

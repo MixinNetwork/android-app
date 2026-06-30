@@ -65,6 +65,7 @@ import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.ui.wallet.home.cashAccountApyText
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WalletCategory
@@ -99,6 +100,7 @@ fun TransferDestinationInputPage(
     var hasSafeWallet by remember { mutableStateOf(false) }
     var safeWalletChainId by remember { mutableStateOf<String?>(null) }
     var showCashAccount by remember { mutableStateOf(false) }
+    var cashRewardApy by remember { mutableStateOf<String?>(null) }
     var text by remember(contentText) { mutableStateOf(contentText) }
     val clipboardManager = LocalClipboard.current
 
@@ -121,6 +123,7 @@ fun TransferDestinationInputPage(
             hasSafeWallet = false
             safeWalletChainId = null
             showCashAccount = false
+            cashRewardApy = null
             return@LaunchedEffect
         }
         val chainId = token?.chainId ?: web3Token?.chainId
@@ -133,6 +136,11 @@ fun TransferDestinationInputPage(
             safeWalletChainId = safeWallets.firstOrNull()?.safeChainId
         }
         showCashAccount = token != null
+        cashRewardApy = if (showCashAccount) {
+            viewModel.findCashAccount()?.rewardApy
+        } else {
+            null
+        }
     }
 
     LaunchedEffect(addressShown) {
@@ -332,7 +340,8 @@ fun TransferDestinationInputPage(
                             onClick = {
                                 toCashAccount.invoke()
                             },
-                            badge = stringResource(R.string.cash_account_apy)
+                            badge = cashAccountApyText(cashRewardApy)
+                                ?: stringResource(R.string.cash_account_apy),
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }

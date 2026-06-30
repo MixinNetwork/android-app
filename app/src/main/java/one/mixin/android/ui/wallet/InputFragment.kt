@@ -82,6 +82,7 @@ import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.wallet.home.cashAccountApyText
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
@@ -137,6 +138,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         const val ARGS_CASH_ACCOUNT_TRANSFER = "args_cash_account_transfer"
         const val ARGS_CASH_BALANCE = "args_cash_balance"
         const val ARGS_CASH_MIN_AMOUNT = "args_cash_min_amount"
+        const val ARGS_CASH_REWARD_APY = "args_cash_reward_apy"
         private const val CASH_ACCOUNT_QUOTE_DELAY_MS = 350L
         private const val CASH_ACCOUNT_QUOTE_SOURCE = "mixin"
         private const val CASH_ACCOUNT_RECEIVE_SYMBOL = "USD"
@@ -203,6 +205,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private val cashMinAmount by lazy {
         requireNotNull(requireArguments().getString(ARGS_CASH_MIN_AMOUNT))
+    }
+
+    private val cashRewardApy by lazy {
+        arguments?.getString(ARGS_CASH_REWARD_APY)
     }
 
     private val currencyName by lazy {
@@ -818,7 +824,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val binding = bindingOrNull() ?: return
         binding.titleTextView.setText(R.string.cash_balance)
         binding.feeTv.isVisible = true
-        binding.feeTv.setText(R.string.cash_account_apy)
+        binding.feeTv.text =
+            cashAccountApyText(cashRewardApy) ?: getString(R.string.cash_account_apy)
         binding.feeTv.setBackgroundResource(R.drawable.bg_round_wallet_green_tv)
         binding.feeTv.setOnClickListener(null)
         binding.contentTextView.isVisible = true

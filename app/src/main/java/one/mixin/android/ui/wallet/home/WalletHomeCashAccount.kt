@@ -6,9 +6,13 @@ import java.math.BigDecimal
 
 data class WalletHomeCashAccount(
     val balanceUsd: BigDecimal,
+    val rewardApy: String?,
 ) {
     val balanceAmountText: String
         get() = balanceUsd.numberFormat2()
+
+    val apyText: String?
+        get() = cashAccountApyText(rewardApy)
 }
 
 internal fun CashAccount?.toWalletHomeCashAccount(): WalletHomeCashAccount? {
@@ -16,8 +20,18 @@ internal fun CashAccount?.toWalletHomeCashAccount(): WalletHomeCashAccount? {
 
     return WalletHomeCashAccount(
         balanceUsd = account.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+        rewardApy = normalizeCashAccountRewardApy(account.rewardApy),
     )
 }
+
+internal fun normalizeCashAccountRewardApy(rewardApy: String?): String? =
+    rewardApy
+        ?.trim()
+        ?.removeSuffix("%")
+        ?.takeIf { it.isNotBlank() }
+
+internal fun cashAccountApyText(rewardApy: String?): String? =
+    normalizeCashAccountRewardApy(rewardApy)?.let { "$it% APY" }
 
 internal fun walletHomeCashBalanceUsd(
     account: WalletHomeCashAccount?,
