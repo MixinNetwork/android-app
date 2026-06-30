@@ -168,7 +168,9 @@ object AnalyticsTracker {
         if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
             return
         }
-        AppsFlyerLib.getInstance().setCustomerUserId(account.userId)
+        AppsFlyerLib.getInstance().setCustomerUserId(
+            ThirdPartyUserIdentity.appsFlyerCustomerUserId(account.userId)
+        )
     }
 
     fun updateAppsFlyerConversionUserProperties(conversionData: Map<String, Any?>) {

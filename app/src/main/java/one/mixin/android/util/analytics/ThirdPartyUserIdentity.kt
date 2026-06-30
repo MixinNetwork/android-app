@@ -13,6 +13,8 @@ import one.mixin.android.vo.Account
 object ThirdPartyUserIdentity {
     fun hashedUserId(userId: String): String = userId.sha256().toHex()
 
+    fun appsFlyerCustomerUserId(userId: String): String = hashedUserId(userId)
+
     fun setUser(account: Account) {
         val userId = hashedUserId(account.userId)
         Bugsnag.setUser(userId, account.identityNumber, account.fullName)

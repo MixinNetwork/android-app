@@ -11,4 +11,12 @@ class ThirdPartyUserIdentityTest {
             ThirdPartyUserIdentity.hashedUserId("mixin-user-id"),
         )
     }
+
+    @Test
+    fun appsFlyerCustomerUserIdUsesSha256Hex() {
+        assertEquals(
+            "327552a5675d4d1a1f5ab75f3dfe38530dafea8fc9fdb40d28b0f750f4d2d142",
+            ThirdPartyUserIdentity.appsFlyerCustomerUserId("mixin-user-id"),
+        )
+    }
 }
