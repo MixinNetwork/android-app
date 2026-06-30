@@ -246,16 +246,18 @@ private fun CashAccountCard(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = cashAccount.apyText ?: stringResource(R.string.cash_account_apy),
-                    color = Color(0xFF5ECF72),
-                    fontSize = 14.sp,
-                    lineHeight = 16.sp,
-                    fontWeight = FontWeight.W400,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                cashAccount.apyText?.let { apyText ->
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = apyText,
+                        color = Color(0xFF5ECF72),
+                        fontSize = 14.sp,
+                        lineHeight = 16.sp,
+                        fontWeight = FontWeight.W400,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }

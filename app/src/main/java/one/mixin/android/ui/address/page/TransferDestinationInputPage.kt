@@ -340,8 +340,7 @@ fun TransferDestinationInputPage(
                             onClick = {
                                 toCashAccount.invoke()
                             },
-                            badge = cashAccountApyText(cashRewardApy)
-                                ?: stringResource(R.string.cash_account_apy),
+                            badge = cashAccountApyText(cashRewardApy),
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }

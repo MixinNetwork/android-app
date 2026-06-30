@@ -2617,7 +2617,6 @@
     <string name="wallet_home_referral_banner_title">Referral</string>
     <string name="wallet_home_referral_banner_desc">Invite and get up to 60% trading fee and exclusive revenue sharing.</string>
     <string name="cash_balance">Cash Balance</string>
-    <string name="cash_account_apy">3.5% APY</string>
     <string name="cash_account_minimum_receive">Minimum received amount is %1$s %2$s</string>
     <string name="cash_account_minimum_send">ERROR 10614: Minimum amount is %1$s %2$s.</string>
     <string name="cash_account_maximum_send">ERROR 10614: Maximum amount is %1$s %2$s.</string>

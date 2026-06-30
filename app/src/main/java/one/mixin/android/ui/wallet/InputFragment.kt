@@ -822,10 +822,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun applyCashAccountInfo() {
         val binding = bindingOrNull() ?: return
+        val apyText = cashAccountApyText(cashRewardApy)
         binding.titleTextView.setText(R.string.cash_balance)
-        binding.feeTv.isVisible = true
-        binding.feeTv.text =
-            cashAccountApyText(cashRewardApy) ?: getString(R.string.cash_account_apy)
+        binding.feeTv.isVisible = apyText != null
+        binding.feeTv.text = apyText
         binding.feeTv.setBackgroundResource(R.drawable.bg_round_wallet_green_tv)
         binding.feeTv.setOnClickListener(null)
         binding.contentTextView.isVisible = true
