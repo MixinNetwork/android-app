@@ -36,8 +36,8 @@ data class AppCardData(
     val actions: List<ActionButtonData>? = null,
 ) : Parcelable {
     init {
-        title = title?.take(36)
-        description = description?.take(512)
+        title = title?.take(APP_CARD_TITLE_MAX_LENGTH)
+        description = description?.take(APP_CARD_DESCRIPTION_MAX_LENGTH)
     }
 
     @IgnoredOnParcel
@@ -76,8 +76,28 @@ fun String.toAppCardDataOrNull(): AppCardData? =
         Timber.e(it, "Failed to parse AppCardData from JSON: $this")
     }.getOrNull()
 
+fun AppCardData.shareDataErrorReasons(): List<String> {
+    val reasons = mutableListOf<String>()
+    if (!hasValidCoverSize) {
+        reasons.add("coverSize=${cover?.width}x${cover?.height}")
+    }
+    val titleLength = title?.length ?: 0
+    if (titleLength !in APP_CARD_TITLE_MIN_LENGTH..APP_CARD_TITLE_MAX_LENGTH) {
+        reasons.add("titleLength=$titleLength")
+    }
+    val descriptionLength = description?.length ?: 0
+    if (descriptionLength !in APP_CARD_DESCRIPTION_MIN_LENGTH..APP_CARD_DESCRIPTION_MAX_LENGTH) {
+        reasons.add("descriptionLength=$descriptionLength")
+    }
+    return reasons
+}
+
 private const val APP_CARD_COVER_MIN_SIZE = 64
 private const val APP_CARD_COVER_MAX_SIZE = 1024
+private const val APP_CARD_TITLE_MIN_LENGTH = 1
+private const val APP_CARD_TITLE_MAX_LENGTH = 128
+private const val APP_CARD_DESCRIPTION_MIN_LENGTH = 1
+private const val APP_CARD_DESCRIPTION_MAX_LENGTH = 1024
 
 private fun String.isValidShareUrl(): Boolean {
     return isValidSendUrl() || ((startsWith("HTTPS://", true) || startsWith("HTTP://", true)) && !startsWith(HTTPS_SEND, true))
