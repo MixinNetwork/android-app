@@ -354,6 +354,8 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             maxSheetHeight -
                 binding.shareTitle.bottom -
                 contentVerticalMargin -
+                binding.contentLayout.paddingTop -
+                binding.contentLayout.paddingBottom -
                 binding.send.measuredHeight -
                 sendBottomMargin -
                 binding.root.paddingBottom
