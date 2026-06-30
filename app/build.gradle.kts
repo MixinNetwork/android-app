@@ -15,9 +15,9 @@ apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
 val versionMajor = 5
-val versionMinor = 0
-val versionPatch = 0
-val versionBuild = 2
+val versionMinor = 1
+val versionPatch = 1
+val versionBuild = 1
 
 
 val bitcoinVersion: String by rootProject.extra
@@ -460,6 +460,7 @@ dependencies {
     implementation("org.jetbrains.kotlin:kotlin-stdlib:2.4.0")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$coroutinesVersion")
     implementation("com.github.zjupure:webpdecoder:$webpdecoderVersion")
     implementation("com.github.bumptech.glide:glide:$glideVersion")
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion")

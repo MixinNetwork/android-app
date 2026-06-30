@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -23,7 +24,10 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -48,6 +52,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshPerpsPositionsJob
 import one.mixin.android.job.RefreshSnapshotsJob
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.SyncOutputJob
@@ -113,6 +118,7 @@ import kotlin.math.abs
 class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet), HeaderAdapter.OnItemListener {
     companion object {
         const val TAG = "WalletHomePrivacyFragment"
+        private const val PERPS_POSITION_REFRESH_INTERVAL_MS = 3_000L
 
         fun newInstance(): WalletHomePrivacyFragment = WalletHomePrivacyFragment()
     }
@@ -131,6 +137,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private var positions: List<PerpsPositionItem> = emptyList()
     private var topMovers: List<PerpsMarket> = emptyList()
     private var pendingDisplays: List<PendingDisplay> = emptyList()
+    private var perpsPositionsRefreshJob: Job? = null
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
     private val perpetualViewModel by viewModels<PerpetualViewModel>()
     private var walletHomeDataState = WalletHomeDataState.EMPTY
@@ -488,7 +495,26 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private val walletHomeCallbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() {
-            AddWalletBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+            val callback: (AddWalletBottomSheetDialogFragment.Action) -> Unit = { action ->
+                val mode = when (action) {
+                    AddWalletBottomSheetDialogFragment.Action.IMPORT_MNEMONIC -> WalletSecurityActivity.Mode.IMPORT_MNEMONIC
+                    AddWalletBottomSheetDialogFragment.Action.IMPORT_PRIVATE_KEY -> WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY
+                    AddWalletBottomSheetDialogFragment.Action.ADD_WATCH_ADDRESS -> WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS
+                    AddWalletBottomSheetDialogFragment.Action.CREATE_WALLET -> WalletSecurityActivity.Mode.CREATE_WALLET
+                }
+                val intent = Intent(requireContext(), WalletSecurityActivity::class.java)
+                intent.putExtra(WalletSecurityActivity.EXTRA_MODE, mode.ordinal)
+                startActivity(intent)
+            }
+            val showSheet = {
+                if (isAdded) {
+                    val dialog = AddWalletBottomSheetDialogFragment.newInstance()
+                    dialog.callback = callback
+                    dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+                }
+            }
+            if (showRecoveryReminderForRiskAction { showSheet() }) return
+            showSheet()
         }
 
         override fun onBannerClosed() {
@@ -669,6 +695,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     override fun onResume() {
         super.onResume()
         _walletId.value = Session.getAccountId().orEmpty()
+        startPerpsPositionsRefresh()
         jobManager.addJobInBackground(RefreshTokensJob())
         jobManager.addJobInBackground(RefreshSnapshotsJob())
         jobManager.addJobInBackground(SyncOutputJob())
@@ -680,13 +707,46 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
         if (!hidden) {
             _walletId.value = Session.getAccountId().orEmpty()
+            startPerpsPositionsRefresh()
             jobManager.addJobInBackground(RefreshTokensJob())
             jobManager.addJobInBackground(RefreshSnapshotsJob())
             jobManager.addJobInBackground(SyncOutputJob())
             refreshAllPendingDeposit()
+        } else {
+            stopPerpsPositionsRefresh()
         }
+    }
+
+    fun update() {
+        _walletId.value = Session.getAccountId().orEmpty()
+        startPerpsPositionsRefresh()
+    }
+
+    fun stopUpdate() {
+        stopPerpsPositionsRefresh()
+    }
+
+    private fun startPerpsPositionsRefresh() {
+        val walletId = Session.getAccountId().orEmpty()
+        if (walletId.isBlank() || !isResumed || isHidden) {
+            stopPerpsPositionsRefresh()
+            return
+        }
+        if (perpsPositionsRefreshJob?.isActive == true) return
+        perpsPositionsRefreshJob = lifecycleScope.launch {
+            while (isActive) {
+                jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))
+                delay(PERPS_POSITION_REFRESH_INTERVAL_MS)
+            }
+        }
+    }
+
+    private fun stopPerpsPositionsRefresh() {
+        perpsPositionsRefreshJob?.cancel()
+        perpsPositionsRefreshJob = null
     }
 
     private fun refreshAllPendingDeposit() =
@@ -730,7 +790,13 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         snackBar?.dismiss()
     }
 
+    override fun onPause() {
+        stopPerpsPositionsRefresh()
+        super.onPause()
+    }
+
     override fun onDestroyView() {
+        stopPerpsPositionsRefresh()
         assetsAdapter.headerView = null
         assetsAdapter.onItemListener = null
         _binding = null

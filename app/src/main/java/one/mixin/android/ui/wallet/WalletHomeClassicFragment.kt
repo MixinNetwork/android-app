@@ -621,7 +621,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private val walletHomeCallbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() {
-            AddWalletBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
+            AddWalletBottomSheetDialogFragment.show(this@WalletHomeClassicFragment)
         }
 
         override fun onBannerClosed() {
