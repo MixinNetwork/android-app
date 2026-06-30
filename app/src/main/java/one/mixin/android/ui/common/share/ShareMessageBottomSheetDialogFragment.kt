@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Build
 import android.view.Gravity
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
@@ -316,18 +317,26 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 return
             }
             val contentPadding = 16.dp
+            val contentMargin = 32.dp
             binding.contentLayout.setPadding(contentPadding, contentPadding, contentPadding, contentPadding)
-            val renderer = ShareAppActionsCardRenderer(
-                requireContext(),
-                maxOf(1, binding.contentLayout.measuredWidth - contentPadding * 2),
-                appCardContentMaxHeight(),
-            )
             (binding.contentLayout.layoutParams as ConstraintLayout.LayoutParams).apply {
                 dimensionRatio = null
                 height = WRAP_CONTENT
-                margin = 32.dp
+                margin = contentMargin
                 verticalBias = 0f
             }
+            val renderer = ShareAppActionsCardRenderer(
+                requireContext(),
+                maxOf(
+                    1,
+                    binding.root.measuredWidth -
+                        binding.root.paddingLeft -
+                        binding.root.paddingRight -
+                        contentMargin * 2 -
+                        contentPadding * 2,
+                ),
+                appCardContentMaxHeight(),
+            )
             binding.contentLayout.addView(renderer.contentView, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
                 gravity = Gravity.TOP
             })
@@ -336,9 +345,19 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun appCardContentMaxHeight(): Int {
-        val availableHeight = binding.send.top - binding.shareTitle.bottom - 64.dp
-        val fallbackHeight = resources.displayMetrics.heightPixels - requireContext().statusBarHeight()
-        return maxOf(1, if (availableHeight > 0) availableHeight else fallbackHeight)
+        val maxSheetHeight = resources.displayMetrics.heightPixels - requireContext().statusBarHeight()
+        val contentVerticalMargin = (binding.contentLayout.layoutParams as? MarginLayoutParams)?.let {
+            it.topMargin + it.bottomMargin
+        } ?: 0
+        val sendBottomMargin = (binding.send.layoutParams as? MarginLayoutParams)?.bottomMargin ?: 0
+        val maxContentHeight =
+            maxSheetHeight -
+                binding.shareTitle.bottom -
+                contentVerticalMargin -
+                binding.send.measuredHeight -
+                sendBottomMargin -
+                binding.root.paddingBottom
+        return maxOf(1, maxContentHeight)
     }
 
     private fun loadLive(content: String) {
