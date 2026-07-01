@@ -9,7 +9,7 @@ buildscript {
         classpath("com.android.tools.build:gradle:9.2.1")
         classpath("com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.0")
-        classpath("com.google.dagger:hilt-android-gradle-plugin:2.59.2")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:2.60")
         classpath("com.google.gms:google-services:4.5.0")
         classpath("com.google.firebase:firebase-crashlytics-gradle:3.0.7")
         classpath("com.google.firebase:perf-plugin:2.0.2")
