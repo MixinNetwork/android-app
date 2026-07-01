@@ -56,11 +56,11 @@ data class AppCardData(
             }
         }
 
-    val hashCover: Boolean
+    @IgnoredOnParcel
+    val hasCover: Boolean
         get() {
             if (oldVersion) return false
-            if (coverUrl.isNullOrBlank()) return false
-            return true
+            return !coverUrl.isNullOrBlank() || !cover?.url.isNullOrBlank()
         }
 
     val hasValidCoverSize: Boolean
