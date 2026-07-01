@@ -85,6 +85,7 @@
     <string name="Asset_Key">資產標識</string>
     <string name="Asset_not_found">找不到該資產</string>
     <string name="ASSETS">資產</string>
+    <string name="Assets">資產</string>
     <string name="Audio">語音</string>
     <string name="Audios">音訊</string>
     <string name="auth_assets_more">%1$s等</string>
