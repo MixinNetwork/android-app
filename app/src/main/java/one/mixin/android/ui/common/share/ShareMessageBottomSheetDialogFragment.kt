@@ -25,6 +25,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.margin
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -49,6 +50,7 @@ import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
+import one.mixin.android.vo.shareDataErrorReasons
 import one.mixin.android.vo.toAppCardDataOrNull
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
@@ -159,13 +161,11 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             } else if (shareMessage.category == ShareCategory.AppCard) {
                 val appCardData = shareMessage.content.toAppCardDataOrNull()
-                if (appCardData != null &&
-                    appCardData.hasValidCoverSize &&
-                    appCardData.title?.length in 1..36 &&
-                    appCardData.description?.length in 1..128
-                ) {
+                val errorReasons = appCardData?.shareDataErrorReasons().orEmpty()
+                if (appCardData != null && errorReasons.isEmpty()) {
                     sendMessage()
                 } else {
+                    logAppCardDataError(appCardData, errorReasons.ifEmpty { listOf("parseFailed") })
                     toast(R.string.Data_error)
                 }
             } else {
@@ -300,6 +300,7 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private fun loadAppCard(content: String) {
         val appCardData =
             content.toAppCardDataOrNull() ?: run {
+                logAppCardDataError(null, listOf("parseFailed"))
                 toast(R.string.Data_error)
                 dismiss()
                 return
@@ -316,7 +317,11 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             }
             val contentPadding = 16.dp
             binding.contentLayout.setPadding(contentPadding, contentPadding, contentPadding, contentPadding)
-            val renderer = ShareAppActionsCardRenderer(requireContext(), maxOf(1, binding.contentLayout.measuredWidth - contentPadding * 2))
+            val renderer = ShareAppActionsCardRenderer(
+                requireContext(),
+                maxOf(1, binding.contentLayout.measuredWidth - contentPadding * 2),
+                appCardContentMaxHeight(),
+            )
             (binding.contentLayout.layoutParams as ConstraintLayout.LayoutParams).apply {
                 dimensionRatio = null
                 height = WRAP_CONTENT
@@ -330,6 +335,12 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
+    private fun appCardContentMaxHeight(): Int {
+        val availableHeight = binding.send.top - binding.shareTitle.bottom - 64.dp
+        val fallbackHeight = resources.displayMetrics.heightPixels - requireContext().statusBarHeight()
+        return maxOf(1, if (availableHeight > 0) availableHeight else fallbackHeight)
+    }
+
     private fun loadLive(content: String) {
         val liveData = GsonHelper.customGson.fromJson(content, LiveMessagePayload::class.java)
         if (liveData.width <= 0 || liveData.height <= 0) {
@@ -339,6 +350,21 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         val renderer = ShareLiveRenderer(requireContext())
         binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
         renderer.render(liveData)
+    }
+
+    private fun logAppCardDataError(
+        appCardData: AppCardData?,
+        reasons: List<String>,
+    ) {
+        Timber.e(
+            "$TAG app card data error reasons=${reasons.joinToString()} " +
+                "titleLength=${appCardData?.title?.length ?: 0} " +
+                "descriptionLength=${appCardData?.description?.length ?: 0} " +
+                "coverSize=${appCardData?.cover?.width}x${appCardData?.cover?.height} " +
+                "oldVersion=${appCardData?.oldVersion} " +
+                "hasActions=${appCardData?.actions.isNullOrEmpty().not()} " +
+                "fromApp=${app != null} fromHost=${host != null}",
+        )
     }
 
     private fun generateLayoutParams(): FrameLayout.LayoutParams {
