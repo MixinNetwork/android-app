@@ -28,10 +28,11 @@ internal fun normalizeCashAccountRewardApy(rewardApy: String?): String? =
     rewardApy
         ?.trim()
         ?.removeSuffix("%")
+        ?.trim()
         ?.takeIf { it.isNotBlank() }
 
 internal fun cashAccountApyText(rewardApy: String?): String? =
-    normalizeCashAccountRewardApy(rewardApy)?.let { "$it% APY" }
+    normalizeCashAccountRewardApy(rewardApy)?.let { "$it%" }
 
 internal fun walletHomeCashBalanceUsd(
     account: WalletHomeCashAccount?,

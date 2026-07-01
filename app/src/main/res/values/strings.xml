@@ -2609,7 +2609,7 @@
     <string name="wallet_buy_option_google_pay_or_card_desc">Use Google Pay, credit or debit card to buy crypto instantly.</string>
     <string name="wallet_buy_option_bank_transfer">Bank Transfer</string>
     <string name="wallet_buy_option_bank_transfer_desc">Add money to your Cash Account, then buy crypto anytime.</string>
-    <string name="wallet_buy_option_new" translatable="false">NEW</string>
+    <string name="wallet_buy_option_new">NEW</string>
     <string name="wallet_home_receive_crypto">Receive Crypto</string>
     <string name="wallet_home_add_wallet_banner_title">Add Wallets via Private Key, Phrase, or Watch Address</string>
     <string name="wallet_home_cashback_banner_title">Buy crypto with 100% fee cashback</string>
@@ -2617,9 +2617,12 @@
     <string name="wallet_home_referral_banner_title">Referral</string>
     <string name="wallet_home_referral_banner_desc">Invite and get up to 60% trading fee and exclusive revenue sharing.</string>
     <string name="cash_balance">Cash Balance</string>
+    <string name="cash_account_apy">%1$s APY</string>
     <string name="cash_account_minimum_receive">Minimum received amount is %1$s %2$s</string>
     <string name="cash_account_minimum_send">ERROR 10614: Minimum amount is %1$s %2$s.</string>
     <string name="cash_account_maximum_send">ERROR 10614: Maximum amount is %1$s %2$s.</string>
+    <string name="cash_account_invalid_token">Token not supported for Cash Account</string>
+    <string name="cash_account_invalid_amount">Amount exceeds limit. Please re-enter.</string>
     <string name="cash_account_add_cash">Add Cash</string>
     <string name="cash_account_preview_description">Your Cash Account is expected to receive %1$s, and the total balance will increase to %2$s.</string>
     <string name="cash_account_preview_pay_with_value">%1$s %2$s (%3$s%4$s)</string>

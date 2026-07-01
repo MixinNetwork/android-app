@@ -822,7 +822,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun applyCashAccountInfo() {
         val binding = bindingOrNull() ?: return
-        val apyText = cashAccountApyText(cashRewardApy)
+        val apyText = cashAccountApyText(cashRewardApy)?.let {
+            getString(R.string.cash_account_apy, it)
+        }
         binding.titleTextView.setText(R.string.cash_balance)
         binding.feeTv.isVisible = apyText != null
         binding.feeTv.text = apyText

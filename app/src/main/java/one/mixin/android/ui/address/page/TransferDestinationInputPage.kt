@@ -103,6 +103,9 @@ fun TransferDestinationInputPage(
     var cashRewardApy by remember { mutableStateOf<String?>(null) }
     var text by remember(contentText) { mutableStateOf(contentText) }
     val clipboardManager = LocalClipboard.current
+    val cashAccountBadge = cashAccountApyText(cashRewardApy)?.let { apy ->
+        stringResource(R.string.cash_account_apy, apy)
+    }
 
     LaunchedEffect(web3Token?.walletId) {
         if (web3Token?.walletId != null) {
@@ -340,7 +343,7 @@ fun TransferDestinationInputPage(
                             onClick = {
                                 toCashAccount.invoke()
                             },
-                            badge = cashAccountApyText(cashRewardApy),
+                            badge = cashAccountBadge,
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }

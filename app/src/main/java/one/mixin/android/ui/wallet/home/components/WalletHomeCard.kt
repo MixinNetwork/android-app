@@ -249,7 +249,7 @@ private fun CashAccountCard(
                 cashAccount.apyText?.let { apyText ->
                     Spacer(modifier = Modifier.width(10.dp))
                     Text(
-                        text = apyText,
+                        text = stringResource(R.string.cash_account_apy, apyText),
                         color = Color(0xFF5ECF72),
                         fontSize = 14.sp,
                         lineHeight = 16.sp,

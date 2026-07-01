@@ -222,7 +222,6 @@ private fun WalletBuyOptionItem(
                         color = Color.White,
                         fontSize = 12.sp,
                         lineHeight = 16.sp,
-                        fontWeight = FontWeight.W500,
                         modifier = Modifier
                             .background(
                                 color = MixinAppTheme.colors.green,

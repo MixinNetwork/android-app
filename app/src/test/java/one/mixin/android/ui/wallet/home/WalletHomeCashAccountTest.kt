@@ -22,13 +22,20 @@ class WalletHomeCashAccountTest {
     }
 
     @Test
-    fun walletHomeCashAccountFormatsRewardApy() {
+    fun walletHomeCashAccountFormatsRewardApyWithPercentSuffix() {
         val account = CashAccount(
             balance = "5.8",
             minAmount = "0.01",
             rewardApy = "3.5",
         ).toWalletHomeCashAccount()
 
-        assertEquals("3.5% APY", account?.apyText)
+        assertEquals("3.5", account?.rewardApy)
+        assertEquals("3.5%", account?.apyText)
+    }
+
+    @Test
+    fun cashAccountApyTextDoesNotDuplicatePercentSuffix() {
+        assertEquals("3.5%", cashAccountApyText("3.5%"))
+        assertEquals("3.5%", cashAccountApyText(" 3.5 % "))
     }
 }
