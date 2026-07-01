@@ -773,6 +773,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         WalletBuyOptionsBottomSheetDialogFragment.newInstance(
             walletName = getString(R.string.Privacy_Wallet),
             walletIconRes = R.drawable.ic_wallet_privacy,
+            cashRewardApy = cashAccount?.rewardApy,
         )
             .setOnGooglePayOrCard {
                 WalletActivity.showBuy(requireActivity(), false, null, null)

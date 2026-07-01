@@ -36,6 +36,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.dp as px
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.ui.wallet.home.cashAccountApyText
 
 @AndroidEntryPoint
 class WalletBuyOptionsBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -43,14 +44,17 @@ class WalletBuyOptionsBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
         const val TAG = "WalletBuyOptionsBottomSheetDialogFragment"
         private const val ARGS_WALLET_NAME = "args_wallet_name"
         private const val ARGS_WALLET_ICON_RES = "args_wallet_icon_res"
+        private const val ARGS_CASH_REWARD_APY = "args_cash_reward_apy"
 
         fun newInstance(
             walletName: String,
             @DrawableRes walletIconRes: Int = 0,
+            cashRewardApy: String? = null,
         ) = WalletBuyOptionsBottomSheetDialogFragment().apply {
             arguments = Bundle().apply {
                 putString(ARGS_WALLET_NAME, walletName)
                 putInt(ARGS_WALLET_ICON_RES, walletIconRes)
+                putString(ARGS_CASH_REWARD_APY, cashRewardApy)
             }
         }
     }
@@ -76,6 +80,9 @@ class WalletBuyOptionsBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
             WalletBuyOptionsSheet(
                 walletName = requireArguments().getString(ARGS_WALLET_NAME).orEmpty(),
                 walletIconRes = requireArguments().getInt(ARGS_WALLET_ICON_RES),
+                bankTransferBadge = cashAccountApyText(requireArguments().getString(ARGS_CASH_REWARD_APY))?.let {
+                    stringResource(R.string.cash_account_apy, it)
+                },
                 onClose = { dismiss() },
                 onGooglePayOrCard = {
                     dismiss()
@@ -98,6 +105,7 @@ class WalletBuyOptionsBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
 private fun WalletBuyOptionsSheet(
     walletName: String,
     @DrawableRes walletIconRes: Int,
+    bankTransferBadge: String?,
     onClose: () -> Unit,
     onGooglePayOrCard: () -> Unit,
     onBankTransfer: () -> Unit,
@@ -163,7 +171,7 @@ private fun WalletBuyOptionsSheet(
             iconRes = R.drawable.ic_wallet_buy_bank_transfer,
             title = stringResource(R.string.wallet_buy_option_bank_transfer),
             description = stringResource(R.string.wallet_buy_option_bank_transfer_desc),
-            showBadge = true,
+            badge = bankTransferBadge,
             outlined = true,
             onClick = onBankTransfer,
         )
@@ -176,7 +184,7 @@ private fun WalletBuyOptionItem(
     @DrawableRes iconRes: Int,
     title: String,
     description: String,
-    showBadge: Boolean = false,
+    badge: String? = null,
     outlined: Boolean = false,
     onClick: () -> Unit,
 ) {
@@ -215,10 +223,10 @@ private fun WalletBuyOptionItem(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
-                if (showBadge) {
+                if (badge != null) {
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        text = stringResource(R.string.wallet_buy_option_new),
+                        text = badge,
                         color = Color.White,
                         fontSize = 12.sp,
                         lineHeight = 16.sp,

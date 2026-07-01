@@ -2532,7 +2532,6 @@
     <string name="wallet_buy_option_google_pay_or_card_desc">使用 Google Pay、信用卡或借记卡，立刻购买加密货币。</string>
     <string name="wallet_buy_option_bank_transfer">银行转账</string>
     <string name="wallet_buy_option_bank_transfer_desc">向法币账户充值，之后可随时购买加密货币。</string>
-    <string name="wallet_buy_option_new">新</string>
     <string name="wallet_home_receive_crypto">链上充值</string>
     <string name="wallet_home_add_wallet_banner_title">通过私钥、助记词或观察地址添加钱包</string>
     <string name="wallet_home_cashback_banner_title">购买加密货币，获得 100% 手续费返现</string>
