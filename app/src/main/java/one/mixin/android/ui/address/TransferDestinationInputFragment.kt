@@ -734,17 +734,26 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                     scannedAddress = if (isIcapAddress(result)) {
                         decodeICAP(result)
                     } else {
-                        result
+                        formatAddress(result)
                     }
                 }
 
                 ScanType.MEMO -> scannedMemo = result
                 ScanType.LABEL -> scannedLabel = result
-                ScanType.TRANSFER_DEST -> scannedTransferDest = result
+                ScanType.TRANSFER_DEST -> scannedTransferDest = formatAddress(result)
                 null -> Unit
             }
         }
         currentScanType = null
+    }
+
+    private fun formatAddress(text: String): String {
+        val colonIndex = text.indexOf(':')
+        return if (colonIndex != -1) {
+            text.substring(colonIndex + 1)
+        } else {
+            text
+        }
     }
 
     private fun handleClick() {
