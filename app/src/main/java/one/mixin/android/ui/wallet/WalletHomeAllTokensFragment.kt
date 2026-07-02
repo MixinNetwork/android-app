@@ -488,6 +488,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         override fun onBannerClosed() = Unit
         override fun onReferralClicked() = Unit
         override fun onReferralClosed() = Unit
+        override fun onCashClicked() = Unit
         override fun onSupportClicked() = Unit
         override fun onHelpCenterClicked() = Unit
         override fun onBuyClicked() {
