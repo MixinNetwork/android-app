@@ -2621,7 +2621,9 @@
     <string name="cash_account_minimum_send">ERROR 10614: Minimum amount is %1$s %2$s.</string>
     <string name="cash_account_maximum_send">ERROR 10614: Maximum amount is %1$s %2$s.</string>
     <string name="cash_account_invalid_token">Token not supported for Cash Account.</string>
+    <string name="cash_account_invalid_token_with_code">Error %1$d: Token not supported for Cash Account.</string>
     <string name="cash_account_invalid_amount">Amount exceeds limit. Please re-enter.</string>
+    <string name="cash_account_invalid_amount_with_code">Error %1$d: Amount exceeds limit. Please re-enter.</string>
     <string name="cash_account_add_cash">Add Cash</string>
     <string name="cash_account_preview_description">Your Cash Account is expected to receive %1$s, and the total balance will increase to %2$s.</string>
     <string name="cash_account_preview_pay_with_value">%1$s %2$s (%3$s%4$s)</string>

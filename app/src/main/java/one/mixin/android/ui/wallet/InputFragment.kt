@@ -1087,9 +1087,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         response: MixinResponse<QuoteResult>,
     ): String {
         return when (response.errorCode) {
-            ErrorHandler.INVALID_QUOTE_AMOUNT -> getString(R.string.cash_account_invalid_amount)
+            ErrorHandler.INVALID_QUOTE_AMOUNT -> getString(R.string.cash_account_invalid_amount_with_code, response.errorCode)
             ErrorHandler.NO_AVAILABLE_QUOTE,
-            ErrorHandler.INVALID_SWAP -> getString(R.string.cash_account_invalid_token)
+            ErrorHandler.INVALID_SWAP -> getString(R.string.cash_account_invalid_token_with_code, response.errorCode)
             else -> requireContext().getMixinErrorStringByCode(
                 response.errorCode,
                 response.error?.description ?: response.errorDescription,
