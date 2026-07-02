@@ -10,6 +10,22 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
 
+    <TextView
+        android:id="@+id/error_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp"
+        android:ellipsize="end"
+        android:gravity="center_horizontal"
+        android:includeFontPadding="false"
+        android:maxLines="3"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:textColor="@color/text_color_error_tip"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
     <one.mixin.android.ui.wallet.transfer.widget.TransferBottom
         android:id="@+id/bottom"
         android:layout_width="wrap_content"

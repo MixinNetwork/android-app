@@ -24,7 +24,7 @@
             android:text="@string/cash_account_add_cash"
             android:textColor="?attr/text_primary"
             android:textFontWeight="600"
-            android:textSize="20sp" />
+            android:textSize="18sp" />
 
 
         <ImageView
