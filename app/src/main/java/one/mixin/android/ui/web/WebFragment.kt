@@ -556,6 +556,9 @@ class WebFragment : BaseFragment() {
         webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.settings.userAgentString =
             webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME + " GOOGLE_PAY_SUPPORTED"
+        webView.settings.setAppCachePath(requireContext().cacheDir.absolutePath)
+        webView.settings.setAppCacheMaxSize(10 * 1024 * 1024)
+        webView.settings.setAppCacheEnabled(true)
         if (WebViewFeature.isFeatureSupported(WebViewFeature.PAYMENT_REQUEST)) {
             WebSettingsCompat.setPaymentRequestEnabled(webView.settings, true)
         }
