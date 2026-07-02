@@ -8,6 +8,7 @@ import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.isInvisible
 import one.mixin.android.R
 import one.mixin.android.databinding.ViewCashAccountTransferContentBinding
 import one.mixin.android.extension.numberFormat2
@@ -50,6 +51,11 @@ class CashAccountTransferContent : LinearLayout {
 
     fun setOnCloseClickListener(listener: OnClickListener) {
         binding.close.setOnClickListener(listener)
+    }
+
+    fun setCloseVisible(visible: Boolean) {
+        binding.close.isInvisible = !visible
+        binding.close.isEnabled = visible
     }
 
     private fun String.highlightAmounts(vararg amounts: String): SpannableString {

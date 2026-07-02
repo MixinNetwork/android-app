@@ -71,7 +71,8 @@ class CashAccountPreviewBottomSheetDialogFragment : MixinBottomSheetDialogFragme
             dismiss()
         }
         binding.bottom.setCancelBackgroundResource(R.drawable.bg_cash_account_preview_cancel_button)
-        binding.bottom.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
+        binding.bottom.setInProgressInPlace(true)
+        updateStatus(TransferStatus.AWAITING_CONFIRMATION)
         binding.bottom.setOnClickListener(
             {
                 notifyDismiss(false)
@@ -93,10 +94,10 @@ class CashAccountPreviewBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                 lifecycleScope.launch(
                     CoroutineExceptionHandler { _, error ->
                         ErrorHandler.handleError(error)
-                        binding.bottom.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
+                        updateStatus(TransferStatus.AWAITING_CONFIRMATION)
                     },
                 ) {
-                    binding.bottom.updateStatus(TransferStatus.IN_PROGRESS)
+                    updateStatus(TransferStatus.IN_PROGRESS)
                     val asset = requireNotNull(item.asset)
                     val receiverIds = item.users.map { it.userId }
                     val response = withContext(Dispatchers.IO) {
@@ -131,13 +132,18 @@ class CashAccountPreviewBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                         context?.updatePinCheck()
                         AnalyticsTracker.trackAssetSendEnd()
                         isSuccess = true
-                        binding.bottom.updateStatus(TransferStatus.SUCCESSFUL)
+                        updateStatus(TransferStatus.SUCCESSFUL)
                     } else {
                         ErrorHandler.handleMixinError(response.errorCode, response.errorDescription)
-                        binding.bottom.updateStatus(TransferStatus.AWAITING_CONFIRMATION)
+                        updateStatus(TransferStatus.AWAITING_CONFIRMATION)
                     }
                 }
             }.showNow(parentFragmentManager, PinInputBottomSheetDialogFragment.TAG)
+    }
+
+    private fun updateStatus(status: TransferStatus) {
+        binding.bottom.updateStatus(status)
+        binding.content.setCloseVisible(status != TransferStatus.IN_PROGRESS)
     }
 
     private fun getBiometricInfo(): BiometricInfo {
