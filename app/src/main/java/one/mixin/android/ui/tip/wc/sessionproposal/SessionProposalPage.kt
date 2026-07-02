@@ -43,7 +43,7 @@ import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
-import one.mixin.android.ui.home.web3.components.ActionBottom
+import one.mixin.android.widget.components.ActionBottom
 import one.mixin.android.ui.tip.wc.WalletConnectBottomSheetDialogFragment
 import one.mixin.android.ui.tip.wc.compose.ItemContent
 import one.mixin.android.ui.tip.wc.compose.Loading

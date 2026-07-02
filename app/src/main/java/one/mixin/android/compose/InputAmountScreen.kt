@@ -59,9 +59,9 @@ import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.roundQrBackground
-import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.components.ActionButton
 import androidx.hilt.navigation.compose.hiltViewModel
 import one.mixin.android.ui.wallet.WalletViewModel
 import kotlinx.coroutines.launch
