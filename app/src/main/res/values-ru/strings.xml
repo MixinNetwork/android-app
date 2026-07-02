@@ -804,6 +804,7 @@
     <string name="Set_PIN_successfully">ПИН-код успешно установлен</string>
     <string name="setting_auth_access">Одобрено: %1$s, последнее обращение: %2$s</string>
     <string name="setting_auth_search_hint">Mixin ID, имя</string>
+    <string name="Battery_Optimization">Оптимизация батареи</string>
     <string name="setting_battery_optimize_title">Это повысит надежность входящих уведомлений и вызовов Mixin.</string>
     <string name="setting_battery_optimize_title_one_ui_above_s">Это повысит надежность входящих уведомлений и вызовов Mixin. Выберите **Оптимизированный** или **Неограниченный** в меню «Настройки» > «Аккумулятор».</string>
     <string name="setting_battery_optimize_title_one_ui_below_s">Это повысит надежность входящих уведомлений и вызовов Mixin. Нажмите «Настройки» -> «Аккумулятор» и включите **Разрешить фоновую активность**.</string>

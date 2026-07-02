@@ -1,18 +1,14 @@
 package one.mixin.android.job
 
 import android.annotation.SuppressLint
-import android.app.ActivityManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
-import android.os.Build
 import android.os.IBinder
-import android.os.PowerManager
 import androidx.core.app.NotificationCompat
 import androidx.core.app.ServiceCompat
 import androidx.core.content.ContextCompat
-import androidx.core.content.getSystemService
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
@@ -47,6 +43,7 @@ import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.currentTimeSeconds
+import one.mixin.android.extension.isBatteryOptimizationRestricted
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
@@ -58,11 +55,9 @@ import one.mixin.android.messenger.HedwigImp
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager.Companion.createNodeChannel
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.RomUtil
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.vo.MessageStatus
@@ -164,8 +159,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
     private val gson = GsonHelper.customGson
 
-    private val powerManager by lazy { getSystemService<PowerManager>() }
-    private val activityManager by lazy { getSystemService<ActivityManager>() }
     private var isIgnoringBatteryOptimizations = false
     private var disposable: Disposable? = null
     private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
@@ -246,9 +239,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
         if (intent.action == ACTION_TO_BACKGROUND) {
             stopForeground(STOP_FOREGROUND_REMOVE)
-            if (!isIgnoringBatteryOptimizations) {
-                BatteryOptimizationDialogActivity.show(this, true)
-            }
             return START_STICKY
         }
 
@@ -293,11 +283,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private fun updateIgnoringBatteryOptimizations() {
-        isIgnoringBatteryOptimizations = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !RomUtil.isEmui) {
-            activityManager?.isBackgroundRestricted?.not()
-        } else {
-            powerManager?.isIgnoringBatteryOptimizations(packageName)
-        } ?: false
+        isIgnoringBatteryOptimizations = !applicationContext.isBatteryOptimizationRestricted()
     }
 
     @SuppressLint("NewApi")

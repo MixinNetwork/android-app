@@ -352,10 +352,6 @@
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.Blur" />
         <activity
-            android:name=".ui.common.BatteryOptimizationDialogActivity"
-            android:launchMode="singleTop"
-            android:theme="@style/AppTheme.Music" />
-        <activity
             android:name=".ui.imageeditor.ImageEditorActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.NoActionBar"
