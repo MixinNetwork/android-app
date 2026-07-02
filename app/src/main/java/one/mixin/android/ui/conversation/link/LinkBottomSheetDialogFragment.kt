@@ -255,6 +255,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                                     }
                                 AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
                                 WebActivity.show(requireActivity(), url, null, app)
+                                closeSourceWebActivityIfNeeded()
                             } else {
                                 showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
                             }
@@ -498,6 +499,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 if (hash != null) {
                     jobManager.addJobInBackground(SyncOutputJob())
                     InscriptionActivity.show(requireContext(), hash)
+                    closeSourceWebActivityIfNeeded()
                     dismiss()
                 } else {
                     showError()
@@ -523,7 +525,10 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                         if (found != null) {
                             oldLinkViewModel.refreshConversation(response.conversationId)
                             toast(R.string.group_already_in)
-                            context?.let { ConversationActivity.show(it, response.conversationId) }
+                            context?.let {
+                                ConversationActivity.show(it, response.conversationId)
+                                closeSourceWebActivityIfNeeded()
+                            }
                             dismiss()
                         } else {
                             val avatarUserIds = mutableListOf<String>()
@@ -738,6 +743,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                             Destination.Market,
                             AnalyticsTracker.MarketSource.SCHEMA,
                         )
+                        closeSourceWebActivityIfNeeded()
                         dismiss()
                     }
                 }
@@ -880,6 +886,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                         }
                         else -> {
                             ConversationActivity.show(requireContext(), conversationId, userId, startParam = startParam)
+                            closeSourceWebActivityIfNeeded()
                             dismiss()
                         }
                     }
@@ -887,6 +894,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     val conversation = oldLinkViewModel.getAndSyncConversation(conversationId)
                     if (conversation != null) {
                         ConversationActivity.show(requireContext(), conversation.conversationId, startParam = startParam)
+                        closeSourceWebActivityIfNeeded()
                         dismiss()
                     } else {
                         showError(R.string.Conversation_not_found)
@@ -923,6 +931,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             }
         } else if (url.startsWith(Scheme.HTTPS_BUY, true) || url.startsWith(Scheme.MIXIN_BUY, true) || url.startsWith(Scheme.BUY, true)) {
             MainActivity.showWallet(requireContext(), buy = true)
+            closeSourceWebActivityIfNeeded()
             dismiss()
         } else if (url.startsWith(Scheme.TIP, true)) {
             val uri = Uri.parse(url)
