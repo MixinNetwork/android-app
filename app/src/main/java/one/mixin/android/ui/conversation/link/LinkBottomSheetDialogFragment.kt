@@ -140,6 +140,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         const val TAG = "LinkBottomSheetDialogFragment"
         const val CODE = "code"
         const val FROM = "from"
+        const val CLOSE_SOURCE_ON_OPEN_PAGE = "close_source_on_open_page"
 
         const val FROM_EXTERNAL = 0
         const val FROM_INTERNAL = 1
@@ -148,10 +149,12 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         fun newInstance(
             code: String,
             from: Int = FROM_INTERNAL,
+            closeSourceOnOpenPage: Boolean = false,
         ) =
             LinkBottomSheetDialogFragment().withArgs {
                 putString(CODE, code)
                 putInt(FROM, from)
+                putBoolean(CLOSE_SOURCE_ON_OPEN_PAGE, closeSourceOnOpenPage)
             }
     }
 
@@ -176,6 +179,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
 
     private lateinit var url: String
     private val from: Int by lazy { requireArguments().getInt(FROM, FROM_EXTERNAL) }
+    private val closeSourceOnOpenPage: Boolean by lazy { requireArguments().getBoolean(CLOSE_SOURCE_ON_OPEN_PAGE, false) }
 
     private val newSchemeParser: NewSchemeParser by lazy { NewSchemeParser(this, linkViewModel) }
 
@@ -255,7 +259,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                                     }
                                 AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
                                 WebActivity.show(requireActivity(), url, null, app)
-                                closeSourceWebActivityIfNeeded()
+                                closeSourceWebActivityOnOpenPage()
                             } else {
                                 showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
                             }
@@ -499,7 +503,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 if (hash != null) {
                     jobManager.addJobInBackground(SyncOutputJob())
                     InscriptionActivity.show(requireContext(), hash)
-                    closeSourceWebActivityIfNeeded()
+                    closeSourceWebActivityOnOpenPage()
                     dismiss()
                 } else {
                     showError()
@@ -527,7 +531,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                             toast(R.string.group_already_in)
                             context?.let {
                                 ConversationActivity.show(it, response.conversationId)
-                                closeSourceWebActivityIfNeeded()
+                                closeSourceWebActivityOnOpenPage()
                             }
                             dismiss()
                         } else {
@@ -743,7 +747,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                             Destination.Market,
                             AnalyticsTracker.MarketSource.SCHEMA,
                         )
-                        closeSourceWebActivityIfNeeded()
+                        closeSourceWebActivityOnOpenPage()
                         dismiss()
                     }
                 }
@@ -886,7 +890,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                         }
                         else -> {
                             ConversationActivity.show(requireContext(), conversationId, userId, startParam = startParam)
-                            closeSourceWebActivityIfNeeded()
+                            closeSourceWebActivityOnOpenPage()
                             dismiss()
                         }
                     }
@@ -894,7 +898,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     val conversation = oldLinkViewModel.getAndSyncConversation(conversationId)
                     if (conversation != null) {
                         ConversationActivity.show(requireContext(), conversation.conversationId, startParam = startParam)
-                        closeSourceWebActivityIfNeeded()
+                        closeSourceWebActivityOnOpenPage()
                         dismiss()
                     } else {
                         showError(R.string.Conversation_not_found)
@@ -931,7 +935,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
             }
         } else if (url.startsWith(Scheme.HTTPS_BUY, true) || url.startsWith(Scheme.MIXIN_BUY, true) || url.startsWith(Scheme.BUY, true)) {
             MainActivity.showWallet(requireContext(), buy = true)
-            closeSourceWebActivityIfNeeded()
+            closeSourceWebActivityOnOpenPage()
             dismiss()
         } else if (url.startsWith(Scheme.TIP, true)) {
             val uri = Uri.parse(url)
@@ -1182,6 +1186,12 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         )
         closeSourceWebActivityIfNeeded()
         dismiss()
+    }
+
+    private fun closeSourceWebActivityOnOpenPage() {
+        if (closeSourceOnOpenPage) {
+            closeSourceWebActivityIfNeeded()
+        }
     }
 
     private fun closeSourceWebActivityIfNeeded() {
