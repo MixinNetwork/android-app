@@ -82,8 +82,10 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.ui.web.clips
 import one.mixin.android.ui.web.refresh
 import one.mixin.android.ui.web.releaseAll
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.CursorWindowFixer
 import one.mixin.android.util.MemoryCallback
+import one.mixin.android.util.analytics.ThirdPartyUserIdentity
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.initNativeLibs
 import one.mixin.android.util.mlkit.entityInitialize
@@ -192,6 +194,7 @@ open class MixinApplication :
         }
         initBugsnag()
         initAppsFlyer()
+        Session.getAccount()?.let(ThirdPartyUserIdentity::setUser)
     }
 
     private fun initBugsnag() {
@@ -214,6 +217,9 @@ open class MixinApplication :
         AppsFlyerLib.getInstance().init(BuildConfig.APPSFLYER_DEV_KEY, object : AppsFlyerConversionListener {
             override fun onConversionDataSuccess(conversionData: Map<String, Any>) {
                 Timber.d("AppsFlyer Conversion Data: $conversionData")
+                if (Session.checkToken()) {
+                    AnalyticsTracker.updateAppsFlyerConversionUserProperties(conversionData)
+                }
             }
 
             override fun onConversionDataFail(error: String) {
@@ -228,7 +234,7 @@ open class MixinApplication :
                 Timber.e("AppsFlyer Attribution Failure: $error")
             }
         }, this)
-        AppsFlyerLib.getInstance().start(this)
+        Session.getAccount()?.let { AnalyticsTracker.setAppsFlyerCustomerUserId(it) }
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
         val appInstanceIdTask = firebaseAnalytics.appInstanceId
         val sessionIdTask = firebaseAnalytics.sessionId
@@ -245,6 +251,13 @@ open class MixinApplication :
                     AppsFlyerLib.getInstance().setAdditionalData(additionalData)
                 }
             }
+    }
+
+    private fun startAppsFlyer(activity: Activity) {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
+            return
+        }
+        AppsFlyerLib.getInstance().start(activity)
     }
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
@@ -426,6 +439,7 @@ open class MixinApplication :
             appAuthShown = true
         }
         if (activityReferences == 1 && activity !is AppAuthActivity && !isActivityChangingConfigurations) {
+            startAppsFlyer(activity)
             checkAndShowAppAuth(activity)
         }
     }

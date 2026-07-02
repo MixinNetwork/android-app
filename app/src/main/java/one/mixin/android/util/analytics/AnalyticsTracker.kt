@@ -3,7 +3,9 @@ package one.mixin.android.util.analytics
 import android.content.Context
 import android.os.Bundle
 import androidx.core.app.NotificationManagerCompat
+import com.appsflyer.AppsFlyerLib
 import com.google.firebase.analytics.FirebaseAnalytics
+import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Plan
@@ -13,11 +15,41 @@ object AnalyticsTracker {
     private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(MixinApplication.get()) }
 
     private fun logEvent(name: String) {
-        firebaseAnalytics.logEvent(name, null)
+        logEvent(name, null)
     }
 
     private inline fun logEvent(name: String, block: Bundle.() -> Unit) {
-        firebaseAnalytics.logEvent(name, Bundle().apply(block))
+        logEvent(name, Bundle().apply(block))
+    }
+
+    private fun logEvent(event: AnalyticsEvent) {
+        logEvent(
+            event.name,
+            Bundle().apply {
+                event.params.forEach { (key, value) ->
+                    putString(key, value)
+                }
+            }.takeIf { event.params.isNotEmpty() },
+        )
+    }
+
+    private fun logEvent(name: String, params: Bundle?) {
+        firebaseAnalytics.logEvent(name, params)
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
+            return
+        }
+        AnalyticsRules.appsFlyerEventName(name)?.let { appsFlyerEventName ->
+            AppsFlyerLib.getInstance().logEvent(MixinApplication.get(), appsFlyerEventName, params?.toAppsFlyerValues())
+        }
+    }
+
+    @Suppress("DEPRECATION")
+    private fun Bundle.toAppsFlyerValues(): Map<String, Any>? {
+        val values = HashMap<String, Any>()
+        keySet().forEach { key ->
+            get(key)?.let { values[key] = it }
+        }
+        return values.takeIf { it.isNotEmpty() }
     }
 
     fun trackSignUpStart(source: String) {
@@ -26,6 +58,10 @@ object AnalyticsTracker {
         }
     }
 
+    fun trackSignUpAccountCreated(account: Account) {
+        setAppsFlyerCustomerUserId(account)
+        logEvent("sign_up_account_created")
+    }
 
     fun trackSignUpCaptcha() {
         logEvent("sign_up_captcha")
@@ -128,6 +164,21 @@ object AnalyticsTracker {
         firebaseAnalytics.setUserProperty("asset_level", level)
     }
 
+    fun setAppsFlyerCustomerUserId(account: Account) {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
+            return
+        }
+        AppsFlyerLib.getInstance().setCustomerUserId(
+            ThirdPartyUserIdentity.appsFlyerCustomerUserId(account.userId)
+        )
+    }
+
+    fun updateAppsFlyerConversionUserProperties(conversionData: Map<String, Any?>) {
+        AnalyticsRules.conversionUserProperties(conversionData).forEach { (key, value) ->
+            firebaseAnalytics.setUserProperty(key, value)
+        }
+    }
+
     fun trackAssetDetail(wallet: String, source: String) {
         logEvent("asset_detail") {
             putString("wallet", wallet)
@@ -135,8 +186,8 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackAssetDetailHide() {
-        logEvent("asset_detail_hide")
+    fun trackAssetVisibility(hidden: Boolean, wallet: String, source: String) {
+        logEvent(AnalyticsRules.assetVisibilityEvent(hidden, wallet, source))
     }
 
     fun trackAllTransactions(source: String) {
@@ -182,6 +233,13 @@ object AnalyticsTracker {
 
     fun trackAssetReceiveEnd() {
         logEvent("asset_receive_end")
+    }
+
+    fun trackAssetReceiveSuccess(assetSymbol: String?, amountUsd: BigDecimal) {
+        logEvent("asset_receive_success") {
+            putString("receive_asset_symbol", assetSymbol)
+            putString("receive_asset_level", AnalyticsRules.receiveAssetLevel(amountUsd))
+        }
     }
 
     fun trackAssetSendStart(wallet: String, source: String) {
@@ -477,6 +535,7 @@ object AnalyticsTracker {
 
     object MarketShareType {
         const val SHARE_IMAGE = "share_image"
+        const val MIXIN_CONTACT = "mixin_contact"
         const val COPY_LINK = "copy_link"
         const val SAVE_TO_ALBUM = "save_to_album"
     }
@@ -752,15 +811,11 @@ object AnalyticsTracker {
     }
 
     fun trackSpotTransactions(type: String) {
-        logEvent("trade_spot_transactions") {
-            putString("type", type)
-        }
+        logEvent(AnalyticsRules.spotOrdersEvent(type))
     }
 
     fun trackSpotDetail(type: String) {
-        logEvent("trade_spot_detail") {
-            putString("type", type)
-        }
+        logEvent(AnalyticsRules.spotOrderDetailEvent(type))
     }
 
     fun trackSpotGuide(type: String, source: String) {
@@ -849,10 +904,8 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackMarketDetailShare(type: String) {
-        logEvent("market_detail_share") {
-            putString("type", type)
-        }
+    fun trackShareMarket(type: String) {
+        logEvent(AnalyticsRules.marketShareEvent(type))
     }
 
     fun trackMarketFavoriteAdd(source: String) {

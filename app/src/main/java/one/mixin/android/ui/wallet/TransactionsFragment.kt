@@ -353,9 +353,10 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         bottomBinding.apply {
             hide.setText(if (asset.hidden == true) R.string.Show else R.string.Hide)
             hide.setOnClickListener {
-                AnalyticsTracker.trackAssetDetailHide()
+                val hidden = asset.hidden != true
+                AnalyticsTracker.trackAssetVisibility(hidden, TradeWallet.MAIN, AnalyticsTracker.AssetSource.ASSET_DETAIL)
                 lifecycleScope.launch(Dispatchers.IO) {
-                    walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
+                    walletViewModel.updateAssetHidden(asset.assetId, hidden)
                 }
                 bottomSheet.dismiss()
                 mainThreadDelayed({ activity?.onBackPressedDispatcher?.onBackPressed() }, 200)
