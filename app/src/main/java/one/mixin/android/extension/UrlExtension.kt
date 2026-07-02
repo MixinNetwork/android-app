@@ -289,6 +289,7 @@ fun String.checkUserOrApp(
                         }
                     AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
                     WebActivity.show(context, url, null, app)
+                    closeSourceWebActivityIfNeeded(context)
                     if (context is UrlInterpreterActivity) {
                         context.finish()
                     }
@@ -325,6 +326,7 @@ fun String.checkConversation(
             val conversation = conversationDao.getConversationByIdSuspend(conversationId)
             if (conversation != null) {
                 ConversationActivity.show(context, conversation.conversationId, startParam = startParam)
+                closeSourceWebActivityIfNeeded(context)
                 return@launch
             }
         }
