@@ -95,6 +95,9 @@ fun PerpsMarketDetailPage(
     initialMarket: PerpsMarket? = null,
     onBack: () -> Unit,
     onSharePosition: (PerpsPositionItem) -> Unit,
+    onViewAllClosedPositions: () -> Unit,
+    onPositionClick: (PerpsOrderItem) -> Unit,
+    onOpenPosition: (PerpsMarket, Boolean) -> Unit,
     source: String,
 ) {
     val context = LocalContext.current
@@ -393,36 +396,8 @@ fun PerpsMarketDetailPage(
                     Spacer(modifier = Modifier.height(16.dp))
                     ClosedPositionsSection(
                         positions = closedPositions,
-                        onViewAll = {
-                            val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
-                            activity.supportFragmentManager
-                                .beginTransaction()
-                                .add(
-                                    android.R.id.content,
-                                    AllPositionsFragment.newClosedInstance(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
-                                    AllPositionsFragment.TAG
-                                )
-                                .addToBackStack(null)
-                                .commit()
-                        },
-                        onPositionClick = { position ->
-                            val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
-                            activity.supportFragmentManager
-                                .beginTransaction()
-                                .setCustomAnimations(
-                                    R.anim.slide_in_right,
-                                    0,
-                                    0,
-                                    R.anim.slide_out_right
-                                )
-                                .add(
-                                    android.R.id.content,
-                                    PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
-                                    PositionDetailFragment.TAG
-                                )
-                                .addToBackStack(null)
-                                .commit()
-                        }
+                        onViewAll = onViewAllClosedPositions,
+                        onPositionClick = onPositionClick,
                     )
                 }
 
@@ -601,15 +576,7 @@ fun PerpsMarketDetailPage(
                                     .weight(1f)
                                     .height(48.dp),
                                 onClick = {
-                                    PerpsActivity.showOpenPosition(
-                                        context = context,
-                                        marketId = marketId,
-                                        marketSymbol = marketSymbol,
-                                        marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
-                                        marketTokenSymbol = market?.tokenSymbol ?: "",
-                                        isLong = true,
-                                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
-                                    )
+                                    market?.let { onOpenPosition(it, true) }
                                 },
                                 backgroundColor = risingColor,
                                 contentColor = Color.White,
@@ -626,15 +593,7 @@ fun PerpsMarketDetailPage(
                                     .weight(1f)
                                     .height(48.dp),
                                 onClick = {
-                                    PerpsActivity.showOpenPosition(
-                                        context = context,
-                                        marketId = marketId,
-                                        marketSymbol = marketSymbol,
-                                        marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
-                                        marketTokenSymbol = market?.tokenSymbol ?: "",
-                                        isLong = false,
-                                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
-                                    )
+                                    market?.let { onOpenPosition(it, false) }
                                 },
                                 backgroundColor = fallingColor,
                                 contentColor = Color.White,

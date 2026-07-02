@@ -59,6 +59,65 @@ class SwapRecommendedMarketCardsTest {
     }
 
     @Test
+    fun openOrdersShowOnlyWhenAdvancedInputsAreEmptyAndNotFocused() {
+        assertTrue(
+            shouldShowLimitOrderOpenOrdersCard(
+                inputText = "",
+                outputText = "",
+                limitPriceText = "",
+                focusedField = FocusedField.NONE,
+                isKeyboardVisible = false,
+            )
+        )
+
+        assertFalse(
+            shouldShowLimitOrderOpenOrdersCard(
+                inputText = "",
+                outputText = "",
+                limitPriceText = "",
+                focusedField = FocusedField.PRICE,
+                isKeyboardVisible = false,
+            )
+        )
+        assertFalse(
+            shouldShowLimitOrderOpenOrdersCard(
+                inputText = "1",
+                outputText = "",
+                limitPriceText = "",
+                focusedField = FocusedField.NONE,
+                isKeyboardVisible = false,
+            )
+        )
+        assertFalse(
+            shouldShowLimitOrderOpenOrdersCard(
+                inputText = "",
+                outputText = "1",
+                limitPriceText = "",
+                focusedField = FocusedField.NONE,
+                isKeyboardVisible = false,
+            )
+        )
+        assertFalse(
+            shouldShowLimitOrderOpenOrdersCard(
+                inputText = "",
+                outputText = "",
+                limitPriceText = "1",
+                focusedField = FocusedField.NONE,
+                isKeyboardVisible = false,
+            )
+        )
+        assertFalse(
+            shouldShowLimitOrderOpenOrdersCard(
+                inputText = "",
+                outputText = "",
+                limitPriceText = "",
+                focusedField = FocusedField.NONE,
+                isKeyboardVisible = true,
+            )
+        )
+    }
+
+    @Test
     fun recommendedMarketPriceUsesCompactFixedDecimals() {
         assertEquals("$1.23", formatRecommendedMarketFiatPrice(BigDecimal("1.234"), "$"))
         assertEquals("$0.1234", formatRecommendedMarketFiatPrice(BigDecimal("0.12345"), "$"))
