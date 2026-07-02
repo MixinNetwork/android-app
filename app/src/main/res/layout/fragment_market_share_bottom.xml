@@ -3,11 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/root"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:background="@drawable/bg_upper_round"
     android:orientation="vertical">
 
     <FrameLayout
+        android:id="@+id/top_bar"
         android:layout_width="match_parent"
         android:layout_height="56dp">
 
@@ -35,17 +36,17 @@
             android:src="@drawable/ic_circle_close" />
     </FrameLayout>
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:layout_weight="1"
         android:fillViewport="true"
         android:scrollbars="none">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:orientation="vertical">
 
     <LinearLayout
@@ -68,6 +69,7 @@
                 android:orientation="vertical">
 
                 <LinearLayout
+                    android:id="@+id/card_top"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_card_top"
@@ -110,7 +112,6 @@
                                 android:layout_height="wrap_content"
                                 android:includeFontPadding="false"
                                 android:textColor="?attr/text_minor"
-                                android:textSize="14sp"
                                 tools:text="BTC" />
 
                             <TextView
@@ -129,7 +130,6 @@
                                 android:paddingBottom="1dp"
                                 android:textColor="?attr/text_assist"
                                 android:textFontWeight="500"
-                                android:textSize="12sp"
                                 tools:targetApi="p"
                                 tools:text="#1" />
 
@@ -149,7 +149,6 @@
                                 android:text="@string/NA"
                                 android:textColor="?attr/text_minor"
                                 android:textFontWeight="600"
-                                android:textSize="22sp"
                                 tools:targetApi="p" />
 
                             <TextView
@@ -167,7 +166,6 @@
                                 android:text="0.00%"
                                 android:textColor="?attr/bg_white"
                                 android:textFontWeight="600"
-                                android:textSize="14sp"
                                 tools:targetApi="p" />
                         </RelativeLayout>
 
@@ -222,7 +220,6 @@
                             android:includeFontPadding="false"
                             android:text="@string/mixin_messenger"
                             android:textColor="@color/white"
-                            android:textSize="16sp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -233,8 +230,7 @@
                             android:layout_marginEnd="18dp"
                             android:includeFontPadding="false"
                             android:text="@string/share_desc"
-                            android:textColor="@color/white"
-                            android:textSize="12sp" />
+                            android:textColor="@color/white" />
                     </LinearLayout>
 
                     <FrameLayout
@@ -252,6 +248,7 @@
                             android:contentDescription="@null" />
 
                         <ImageView
+                            android:id="@+id/qr_logo"
                             android:layout_width="16dp"
                             android:layout_height="16dp"
                             android:layout_gravity="center"
@@ -401,5 +398,5 @@
         </LinearLayout>
     </LinearLayout>
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 </LinearLayout>

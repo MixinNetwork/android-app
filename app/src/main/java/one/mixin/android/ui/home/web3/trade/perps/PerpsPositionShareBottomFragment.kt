@@ -9,16 +9,21 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
+import android.widget.TextView
 import androidx.compose.runtime.Composable
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.core.widget.TextViewCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
@@ -69,6 +74,8 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 import javax.inject.Inject
 import kotlin.math.absoluteValue
+import kotlin.math.max
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
@@ -79,6 +86,8 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         private const val ARGS_CLOSE_LEVERAGE = "args_close_leverage"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
         private const val SHARE_CARD_COVER_URL = "https://dl.mixinpay.com/perps-share-card.png"
+        private const val SHARE_POSTER_BASE_WIDTH_DP = 319
+        private const val SHARE_OUTPUT_SIZE_PX = 1024
         private val MIN_DISPLAY_PNL_PERCENT = BigDecimal("-100")
 
         fun newInstance(position: PerpsPositionItem) = PerpsPositionShareBottomFragment().withArgs {
@@ -114,6 +123,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     private var isLoading = false
     private var currentDisplayMetric = ShareDisplayMetric.PNL
     private var currentPosterStyle = SharePosterStyle.CLASSIC
+    private var posterItemSize = 0
     private lateinit var shareData: ShareCardData
     private lateinit var posterAdapter: PosterAdapter
 
@@ -375,7 +385,10 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
             clipToPadding = false
             clipChildren = false
             setPadding(28.dp, 0, 28.dp, 0)
-            (getChildAt(0) as? RecyclerView)?.clipToPadding = false
+            (getChildAt(0) as? RecyclerView)?.apply {
+                clipToPadding = false
+                isNestedScrollingEnabled = false
+            }
             setPageTransformer { page, position ->
                 val factor = (1f - position.absoluteValue).coerceIn(0f, 1f)
                 page.alpha = 0.6f + factor * 0.4f
@@ -404,21 +417,29 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
 
     private fun updatePosterPagerHeight(force: Boolean = false) {
         val recyclerView = binding.posterPager.getChildAt(0) as? RecyclerView ?: return
-        val itemView = recyclerView.findViewHolderForAdapterPosition(binding.posterPager.currentItem)?.itemView ?: return
+        val holder = recyclerView.findViewHolderForAdapterPosition(binding.posterPager.currentItem) as? PosterViewHolder ?: return
+        val itemView = holder.itemView
         val width = itemView.width.takeIf { it > 0 }
             ?: (binding.posterPager.width - binding.posterPager.paddingStart - binding.posterPager.paddingEnd).takeIf { it > 0 }
             ?: return
+        posterItemSize = width
+        applyPosterItemSizeToVisibleHolders(recyclerView, width)
         itemView.measure(
             View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
-            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
         )
-        val measuredHeight = itemView.measuredHeight.takeIf { it > 0 } ?: return
-        if (!force && binding.posterPager.layoutParams.height == measuredHeight && binding.posterContainer.layoutParams.height == measuredHeight) return
+        if (!force && binding.posterPager.layoutParams.height == width && binding.posterContainer.layoutParams.height == width) return
         binding.posterPager.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = measuredHeight
+            height = width
         }
         binding.posterContainer.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = measuredHeight
+            height = width
+        }
+    }
+
+    private fun applyPosterItemSizeToVisibleHolders(recyclerView: RecyclerView, itemSize: Int) {
+        repeat(posterAdapter.itemCount) { index ->
+            (recyclerView.findViewHolderForAdapterPosition(index) as? PosterViewHolder)?.applyItemSize(itemSize)
         }
     }
 
@@ -507,7 +528,14 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         return file
     }
 
-    private fun createShareBitmap(): Bitmap = currentPosterView()?.drawToBitmap() ?: binding.posterPager.drawToBitmap()
+    private fun createShareBitmap(): Bitmap {
+        val bitmap = currentPosterView()?.drawToBitmap() ?: binding.posterPager.drawToBitmap()
+        return if (bitmap.width == SHARE_OUTPUT_SIZE_PX && bitmap.height == SHARE_OUTPUT_SIZE_PX) {
+            bitmap
+        } else {
+            Bitmap.createScaledBitmap(bitmap, SHARE_OUTPUT_SIZE_PX, SHARE_OUTPUT_SIZE_PX, true)
+        }
+    }
 
     private fun currentPosterView(): View? {
         val recyclerView = binding.posterPager.getChildAt(0) as? RecyclerView ?: return null
@@ -630,6 +658,65 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
             itemBinding.latestLabelTv.text = data.latestLabel
             itemBinding.latestValueTv.text = formatFiat(data.latestPrice)
             bindPosterFooter(itemBinding)
+            if (posterItemSize > 0) {
+                applyItemSize(posterItemSize)
+            }
+        }
+
+        fun applyItemSize(itemSize: Int) {
+            val scale = itemSize.toFloat() / SHARE_POSTER_BASE_WIDTH_DP.dp
+            itemBinding.root.updateLayoutParams<ViewGroup.LayoutParams> {
+                width = itemSize
+                height = itemSize
+            }
+            itemBinding.topCard.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = itemSize
+            }
+            itemBinding.cardContent.setPadding(20.scaledDp(scale), 16.scaledDp(scale), 0, 0)
+            itemBinding.cardContent.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = 0
+            }
+
+            itemBinding.header.setScaledDrawableSize(scale)
+            itemBinding.pnlTv.updateMargins(top = 18.scaledDp(scale))
+            itemBinding.pnlTv.setPosterAutoTextSize(16f, 32f, scale)
+            itemBinding.assetIcon.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                width = 20.scaledDp(scale)
+                height = 20.scaledDp(scale)
+                topMargin = 8.scaledDp(scale)
+            }
+            itemBinding.sideTagTv.updateMargins(start = 10.scaledDp(scale))
+            itemBinding.sideTagTv.setPadding(6.scaledDp(scale), 3.scaledDp(scale), 6.scaledDp(scale), 3.scaledDp(scale))
+            itemBinding.sideTagTv.setPosterTextSize(12f, scale)
+            itemBinding.leverageTagTv.updateMargins(start = 8.scaledDp(scale))
+            itemBinding.leverageTagTv.setPadding(6.scaledDp(scale), 3.scaledDp(scale), 6.scaledDp(scale), 3.scaledDp(scale))
+            itemBinding.leverageTagTv.setPosterTextSize(12f, scale)
+            itemBinding.priceSection.updateMargins(top = 20.scaledDp(scale), bottom = 16.scaledDp(scale))
+            itemBinding.entryLabelTv.setPosterTextSize(12f, scale)
+            itemBinding.entryValueTv.updateMargins(top = 2.scaledDp(scale))
+            itemBinding.entryValueTv.setPosterTextSize(14f, scale)
+            itemBinding.latestLabelTv.updateMargins(top = 10.scaledDp(scale))
+            itemBinding.latestLabelTv.setPosterTextSize(12f, scale)
+            itemBinding.latestValueTv.updateMargins(top = 2.scaledDp(scale), bottom = 8.scaledDp(scale))
+            itemBinding.latestValueTv.setPosterTextSize(14f, scale)
+            itemBinding.trendImage.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                marginEnd = 16.scaledDp(scale)
+                matchConstraintMaxWidth = 112.scaledDp(scale)
+                matchConstraintMaxHeight = 112.scaledDp(scale)
+            }
+
+            itemBinding.footer.setPadding(20.scaledDp(scale), 12.scaledDp(scale), 20.scaledDp(scale), 12.scaledDp(scale))
+            itemBinding.referralTitle.setPosterTextSize(16f, scale)
+            itemBinding.shareDescTv.updateMargins(top = 6.scaledDp(scale), end = 18.scaledDp(scale))
+            itemBinding.shareDescTv.setPosterTextSize(12f, scale)
+            itemBinding.iconFl.updateLayoutParams<ViewGroup.LayoutParams> {
+                width = 72.scaledDp(scale)
+                height = 72.scaledDp(scale)
+            }
+            itemBinding.qrLogo.updateLayoutParams<ViewGroup.LayoutParams> {
+                width = 16.scaledDp(scale)
+                height = 16.scaledDp(scale)
+            }
         }
 
         private fun bindPosterFooter(itemBinding: ItemPerpsPositionSharePosterBinding) {
@@ -653,6 +740,50 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
             val qrCode = currentQrUrl().generateQRCode(qrSize, qrPadding, outputSize = qrSize).first
                 .roundQrBackground(qrPadding, 6.dp.toFloat())
             itemBinding.qr.setImageBitmap(qrCode)
+        }
+    }
+
+    private fun Int.scaledDp(scale: Float): Int = (dp * scale).roundToInt().coerceAtLeast(1)
+
+    private fun TextView.setPosterTextSize(size: Float, scale: Float) {
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, size * resources.displayMetrics.density * scale)
+    }
+
+    private fun ImageView.setScaledDrawableSize(scale: Float) {
+        val drawable = drawable ?: return
+        val width = (drawable.intrinsicWidth * scale).roundToInt().coerceAtLeast(1)
+        val height = (drawable.intrinsicHeight * scale).roundToInt().coerceAtLeast(1)
+        updateLayoutParams<ViewGroup.LayoutParams> {
+            this.width = width
+            this.height = height
+        }
+    }
+
+    private fun TextView.setPosterAutoTextSize(minSize: Float, maxSize: Float, scale: Float) {
+        val density = resources.displayMetrics.density
+        val minPx = (minSize * density * scale).roundToInt().coerceAtLeast(1)
+        val maxPx = max(minPx + 1, (maxSize * density * scale).roundToInt())
+        TextViewCompat.setAutoSizeTextTypeUniformWithConfiguration(
+            this,
+            minPx,
+            maxPx,
+            density.roundToInt().coerceAtLeast(1),
+            TypedValue.COMPLEX_UNIT_PX,
+        )
+        setPosterTextSize(maxSize, scale)
+    }
+
+    private fun View.updateMargins(
+        start: Int? = null,
+        top: Int? = null,
+        end: Int? = null,
+        bottom: Int? = null,
+    ) {
+        updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            start?.let { marginStart = it }
+            top?.let { topMargin = it }
+            end?.let { marginEnd = it }
+            bottom?.let { bottomMargin = it }
         }
     }
 
