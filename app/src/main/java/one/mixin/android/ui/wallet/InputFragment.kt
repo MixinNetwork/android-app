@@ -1814,7 +1814,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private fun prepareCheck(item: BiometricItem) {
         viewLifecycleOwner.lifecycleScope.launch {
             val amount = item.amount
-            val rawTransaction = web3ViewModel.firstUnspentTransaction()
+            val rawTransaction = web3ViewModel.firstSignedTransaction()
             if (rawTransaction != null) {
                 WaitingBottomSheetDialogFragment.newInstance()
                     .showNow(parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)

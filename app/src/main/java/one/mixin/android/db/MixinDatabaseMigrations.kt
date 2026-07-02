@@ -604,6 +604,14 @@ class MixinDatabaseMigrations private constructor() {
                 }
             }
 
+        val MIGRATION_70_71: Migration =
+            object : Migration(70, 71) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("UPDATE raw_transactions SET state = 'spent' WHERE state = 'signed'")
+                    db.execSQL("UPDATE raw_transactions SET state = 'signed' WHERE state = 'unspent'")
+                }
+            }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
