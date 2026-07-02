@@ -430,7 +430,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     }
 
     private fun updateTitle() {
-        val title = getString(R.string.wallet_home_tokens)
+        val title = getString(R.string.Assets)
         val subtitle = getWalletName()
         val icon = getWalletIcon()
         if (icon != null) {
