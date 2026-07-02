@@ -1131,9 +1131,9 @@
     <string name="Reset_Wallet_Home_Banners">重置錢包首頁 Banner</string>
     <string name="cash_balance">法幣餘額</string>
     <string name="cash_account_apy">年化 %1$s</string>
-    <string name="cash_account_minimum_receive">最低到賬金額為 %1$s %2$s</string>
-    <string name="cash_account_invalid_token">暫不支援該幣種轉入法幣賬戶</string>
-    <string name="cash_account_invalid_amount">輸入金額太大，請重新輸入</string>
+    <string name="cash_account_minimum_receive">輸入金額至少價值 %1$s %2$s，請重新輸入。</string>
+    <string name="cash_account_invalid_token">暫不支援該幣種轉入法幣賬戶。</string>
+    <string name="cash_account_invalid_amount">輸入金額太大，請重新輸入。</string>
     <string name="cash_account_add_cash">新增法幣</string>
     <string name="cash_account_preview_description">你的法幣賬戶預計收到 %1$s，總餘額將增至 %2$s。</string>
     <string name="wallet_home_top_movers">熱門漲跌</string>

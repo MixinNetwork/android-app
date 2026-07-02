@@ -2540,11 +2540,11 @@
     <string name="wallet_home_referral_banner_desc">邀请好友可获得高达 60% 的交易返利和会员佣金。</string>
     <string name="cash_balance">法币余额</string>
     <string name="cash_account_apy">年化 %1$s</string>
-    <string name="cash_account_minimum_receive">最低到账金额为 %1$s %2$s</string>
+    <string name="cash_account_minimum_receive">输入金额至少价值 %1$s %2$s，请重新输入。</string>
     <string name="cash_account_minimum_send">错误 10614: 输入金额至少为 %1$s %2$s，请重新输入。</string>
     <string name="cash_account_maximum_send">错误 10614: 输入金额最多为 %1$s %2$s，请重新输入。</string>
-    <string name="cash_account_invalid_token">暂不支持该币种转入法币账户</string>
-    <string name="cash_account_invalid_amount">输入金额太大，请重新输入</string>
+    <string name="cash_account_invalid_token">暂不支持该币种转入法币账户。</string>
+    <string name="cash_account_invalid_amount">输入金额太大，请重新输入。</string>
     <string name="cash_account_add_cash">添加法币</string>
     <string name="cash_account_preview_description">你的法币账户预计收到 %1$s，总余额将增至 %2$s。</string>
     <string name="cash_account_preview_pay_with_value">%1$s %2$s（%3$s%4$s）</string>

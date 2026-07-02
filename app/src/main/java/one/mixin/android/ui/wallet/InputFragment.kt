@@ -997,6 +997,28 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
     }
 
+    private fun cashAccountQuotePrecheckText(amount: String): String? {
+        return when (cashAccountQuotePrecheckError(amount, token?.priceUsd ?: web3Token?.priceUsd, cashMinAmount)) {
+            CashAccountQuotePrecheckError.BELOW_MINIMUM_RECEIVE ->
+                getString(R.string.cash_account_minimum_receive, cashMinimumReceiveAmount().numberFormat8(), CASH_ACCOUNT_RECEIVE_SYMBOL)
+            CashAccountQuotePrecheckError.UNSUPPORTED_TOKEN -> getString(R.string.cash_account_invalid_token)
+            null -> null
+        }
+    }
+
+    private fun showCashAccountQuoteError(amount: String, errorText: String, updateUi: Boolean = true) {
+        cashQuoteJob?.cancel()
+        cashQuoteJob = null
+        cashQuoteAmount = amount
+        cashQuote = null
+        cashQuoteError = errorText
+        cashQuoteLoading = false
+        cashQuoteReviewing = false
+        if (updateUi && !viewDestroyed()) {
+            updateUI()
+        }
+    }
+
     private fun resetCashAccountQuote() {
         cashQuoteJob?.cancel()
         cashQuoteJob = null
@@ -1012,6 +1034,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val amountValue = amount.toBigDecimalOrNull()
         if (amountValue == null || amountValue <= BigDecimal.ZERO) {
             resetCashAccountQuote()
+            return
+        }
+        cashAccountQuotePrecheckText(amount)?.let { errorText ->
+            showCashAccountQuoteError(amount, errorText, updateUi = false)
             return
         }
         if (cashQuoteAmount == amount && (cashQuoteLoading || cashQuote != null || cashQuoteError != null)) return
@@ -1054,57 +1080,21 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             return response.data?.let { CashAccountQuoteResult(quote = it) }
                 ?: CashAccountQuoteResult(errorText = getString(R.string.Data_error))
         }
-        return CashAccountQuoteResult(errorText = cashQuoteErrorText(response, sourceToken, amount))
+        return CashAccountQuoteResult(errorText = cashQuoteErrorText(response))
     }
 
     private fun cashQuoteErrorText(
         response: MixinResponse<QuoteResult>,
-        sourceToken: TokenItem,
-        amount: String,
     ): String {
         return when (response.errorCode) {
-            ErrorHandler.INVALID_QUOTE_AMOUNT -> {
-                val min = cashQuoteExtraDataValue(response.error?.extra, "min")
-                val max = cashQuoteExtraDataValue(response.error?.extra, "max")
-                val amountValue = amount.toBigDecimalOrNull()
-                val minValue = min?.toBigDecimalOrNull()
-                val maxValue = max?.toBigDecimalOrNull()
-                when {
-                    min != null && minValue != null && (amountValue == null || amountValue < minValue) ->
-                        getString(R.string.cash_account_minimum_send, min.numberFormat8(), sourceToken.symbol)
-                    max != null && maxValue != null && amountValue != null && amountValue > maxValue ->
-                        getString(R.string.cash_account_maximum_send, max.numberFormat8(), sourceToken.symbol)
-                    min != null && max.isNullOrBlank() ->
-                        getString(R.string.cash_account_minimum_send, min.numberFormat8(), sourceToken.symbol)
-                    max != null ->
-                        getString(R.string.cash_account_maximum_send, max.numberFormat8(), sourceToken.symbol)
-                    else -> getString(R.string.error_invalid_quote_amount)
-                }
-            }
-            ErrorHandler.NO_AVAILABLE_QUOTE -> getString(R.string.error_no_available_quote)
-            ErrorHandler.INVALID_SWAP -> getString(R.string.error_invalid_swap)
+            ErrorHandler.INVALID_QUOTE_AMOUNT -> getString(R.string.cash_account_invalid_amount)
+            ErrorHandler.NO_AVAILABLE_QUOTE,
+            ErrorHandler.INVALID_SWAP -> getString(R.string.cash_account_invalid_token)
             else -> requireContext().getMixinErrorStringByCode(
                 response.errorCode,
                 response.error?.description ?: response.errorDescription,
             )
         }
-    }
-
-    private fun cashQuoteExtraDataValue(
-        extra: JsonElement?,
-        key: String,
-    ): String? {
-        val data = extra
-            ?.takeIf { it.isJsonObject }
-            ?.asJsonObject
-            ?.get("data")
-            ?.takeIf { it.isJsonObject }
-            ?.asJsonObject
-            ?: return null
-        return data.get(key)
-            ?.takeUnless { it.isJsonNull }
-            ?.asString
-            ?.takeIf { it.isNotBlank() }
     }
 
     private fun shouldOfferLegacyWeb3FeeOption(): Boolean {
@@ -2075,6 +2065,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun prepareCashAccountTransfer(amount: String) {
         if (cashQuoteReviewing) return
+        cashAccountQuotePrecheckText(amount)?.let { errorText ->
+            showCashAccountQuoteError(amount, errorText)
+            return
+        }
         viewLifecycleOwner.lifecycleScope.launch(
             CoroutineExceptionHandler { _, error ->
                 cashQuoteAmount = amount
