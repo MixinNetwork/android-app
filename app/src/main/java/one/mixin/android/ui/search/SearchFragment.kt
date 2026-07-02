@@ -69,7 +69,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
     companion object {
         const val TAG = "SearchFragment"
-        const val SEARCH_DEBOUNCE = 300L
+        const val SEARCH_DEBOUNCE = 500L
     }
 
     private var keyword: String? = null
