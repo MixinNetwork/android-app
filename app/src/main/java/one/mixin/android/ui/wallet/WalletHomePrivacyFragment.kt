@@ -22,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -144,6 +145,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private var dynamicBanners: List<WalletHomeBanner> = emptyList()
     private var isDynamicBannerLoaded = false
     private var closedDynamicBannerIds: Set<String> = emptySet()
+    private var walletHomeBannerRefreshJob: Job? = null
     private var perpsPositionsRefreshJob: Job? = null
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
     private val perpetualViewModel by viewModels<PerpetualViewModel>()
@@ -409,7 +411,11 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         )
         val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
         val visibleDynamicBanners = dynamicBanners.visibleWalletHomeBanners(closedDynamicBannerIds)
-        val showBanner = isDynamicBannerLoaded && (visibleDynamicBanners.isNotEmpty() || showAddWalletBanner)
+        val showBanner = shouldShowWalletHomeBannerCard(
+            showAddWalletBanner = showAddWalletBanner,
+            isDynamicBannerLoaded = isDynamicBannerLoaded,
+            hasVisibleDynamicBanners = visibleDynamicBanners.isNotEmpty(),
+        )
         val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false)
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.PRIVACY,
@@ -478,12 +484,17 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             ?: bitcoinPriceUsd
 
     fun refreshWalletHomeBanners() {
-        lifecycleScope.launch {
-            val remoteBanners = runCatching {
+        walletHomeBannerRefreshJob?.cancel()
+        if (!isAdded) return
+        walletHomeBannerRefreshJob = lifecycleScope.launch {
+            val remoteBanners = try {
                 walletViewModel.walletHomeBanners()
-            }.onFailure {
-                Timber.w(it, "Fetch wallet home banners failed")
-            }.getOrDefault(emptyList())
+            } catch (e: CancellationException) {
+                throw e
+            } catch (t: Throwable) {
+                Timber.w(t, "Fetch wallet home banners failed")
+                null
+            } ?: return@launch
             runCatching {
                 syncClosedDynamicBannerIds(remoteBanners)
             }.onFailure {
@@ -844,6 +855,8 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     override fun onDestroyView() {
+        walletHomeBannerRefreshJob?.cancel()
+        walletHomeBannerRefreshJob = null
         stopPerpsPositionsRefresh()
         assetsAdapter.headerView = null
         assetsAdapter.onItemListener = null

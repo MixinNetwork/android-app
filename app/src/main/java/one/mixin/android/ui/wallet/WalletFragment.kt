@@ -466,7 +466,9 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         } else {
             update()
         }
-        refreshWalletHomeBanners()
+        if (shouldRefreshWalletHomeBannersAfterHiddenChanged(hidden)) {
+            refreshWalletHomeBanners()
+        }
     }
 
     private fun refreshWalletHomeBanners() {

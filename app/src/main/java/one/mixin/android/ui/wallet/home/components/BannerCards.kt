@@ -66,7 +66,7 @@ internal fun BannerPager(
     state: WalletHomeState,
     callbacks: WalletHomeCallbacks,
 ) {
-    val showAddWalletBanner = state.showAddWalletBanner && state.isDynamicBannerLoaded
+    val showAddWalletBanner = state.showAddWalletBanner
     val pages = remember(showAddWalletBanner, state.dynamicBanners) {
         buildList {
             addAll(state.dynamicBanners.map(WalletHomeBannerPage::Dynamic))

@@ -90,7 +90,7 @@ class ReferralRepository
             )
         }
 
-        suspend fun fetchWalletHomeBanners(chains: List<String> = emptyList()): List<WalletHomeBanner> {
+        suspend fun fetchWalletHomeBanners(chains: List<String> = emptyList()): List<WalletHomeBanner>? {
             runCatching {
                 userRepository.getBotPublicKey(REFERRAL_BOT_USER_ID, false)
             }.onFailure {
@@ -113,7 +113,7 @@ class ReferralRepository
                     true
                 },
                 requestSession = { userRepository.fetchSessionsSuspend(it) },
-            ).orEmpty()
+            )
         }
 
     }

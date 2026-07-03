@@ -22,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -49,6 +50,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
+import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
@@ -143,6 +145,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private var dynamicBanners: List<WalletHomeBanner> = emptyList()
     private var isDynamicBannerLoaded = false
     private var closedDynamicBannerIds: Set<String> = emptySet()
+    private var walletHomeBannerRefreshJob: Job? = null
     private val assetsAdapter by lazy { WalletWeb3TokenAdapter(false) }
 
     private var distance = 0
@@ -502,7 +505,11 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         )
         val showAddWalletBanner = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED, false)
         val visibleDynamicBanners = dynamicBanners.visibleWalletHomeBanners(closedDynamicBannerIds)
-        val showBanner = isDynamicBannerLoaded && (visibleDynamicBanners.isNotEmpty() || showAddWalletBanner)
+        val showBanner = shouldShowWalletHomeBannerCard(
+            showAddWalletBanner = showAddWalletBanner,
+            isDynamicBannerLoaded = isDynamicBannerLoaded,
+            hasVisibleDynamicBanners = visibleDynamicBanners.isNotEmpty(),
+        )
         val showReferral = !defaultSharedPreferences.getBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, false)
         val currentImportKeyAction = importKeyAction
         val pendingCount = walletHomePendingTransactionCount(pendingRawTransactionCount, pendingTransactionCount)
@@ -611,25 +618,32 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     fun refreshWalletHomeBanners() {
+        walletHomeBannerRefreshJob?.cancel()
         if (!isAdded || walletId.isEmpty()) return
-        lifecycleScope.launch {
-            val remoteBanners = runCatching {
-                web3ViewModel.walletHomeBanners(walletHomeBannerChains())
-            }.onFailure {
-                Timber.w(it, "Fetch wallet home banners failed")
-            }.getOrDefault(emptyList())
+        val requestWalletId = walletId
+        walletHomeBannerRefreshJob = lifecycleScope.launch {
+            val remoteBanners = try {
+                web3ViewModel.walletHomeBanners(walletHomeBannerChains(requestWalletId))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (t: Throwable) {
+                Timber.w(t, "Fetch wallet home banners failed")
+                null
+            } ?: return@launch
+            if (!shouldApplyClassicWalletHomeBannerResponse(requestWalletId, walletId)) return@launch
             runCatching {
                 syncClosedDynamicBannerIds(remoteBanners)
             }.onFailure {
                 Timber.w(it, "Sync wallet home banner closed ids failed")
             }
+            if (!shouldApplyClassicWalletHomeBannerResponse(requestWalletId, walletId)) return@launch
             dynamicBanners = remoteBanners
             isDynamicBannerLoaded = true
             renderHome()
         }
     }
 
-    private suspend fun walletHomeBannerChains(): List<String> =
+    private suspend fun walletHomeBannerChains(walletId: String): List<String> =
         web3ViewModel.getAddresses(walletId)
             .map { it.chainId }
             .filter(String::isNotBlank)
@@ -883,7 +897,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 WalletActivity.showBuy(requireActivity(), true, null, null, walletId)
             }
             is WalletHomeBannerActionTarget.Web -> {
-                WebActivity.show(requireActivity(), target.url, null)
+                target.url.openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
             }
         }
     }
@@ -956,6 +970,8 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     override fun onDestroyView() {
+        walletHomeBannerRefreshJob?.cancel()
+        walletHomeBannerRefreshJob = null
         assetsAdapter.headerView = null
         assetsAdapter.onItemListener = null
         _binding = null
