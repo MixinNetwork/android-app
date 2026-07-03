@@ -117,7 +117,7 @@ internal fun WalletHomeCard(
                     }
                 )
                 SectionCard(
-                    title = stringResource(R.string.wallet_home_tokens),
+                    title = stringResource(R.string.Assets),
                     showViewAll = WalletHomeSection.hasMore(state.totalTokenCount),
                     onClick = callbacks::onViewMoreTokensClicked,
                     contentUsesOwnPadding = true,

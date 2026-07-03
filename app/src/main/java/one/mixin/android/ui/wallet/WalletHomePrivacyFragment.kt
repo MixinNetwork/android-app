@@ -532,7 +532,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private val walletHomeCallbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() {
-            showAddWalletDialog()
+            AddWalletBottomSheetDialogFragment.show(this@WalletHomePrivacyFragment)
         }
 
         override fun onBannerClosed() {
@@ -737,10 +737,6 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 initialTab = TradeFragment.TAB_PERPETUAL,
             )
         }
-    }
-
-    private fun showAddWalletDialog() {
-        AddWalletBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
     }
 
     override fun onResume() {

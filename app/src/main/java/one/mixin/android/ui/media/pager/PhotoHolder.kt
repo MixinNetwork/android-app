@@ -11,7 +11,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
-import one.mixin.android.vo.appCardCoverUrl
+import one.mixin.android.vo.appCardMediaCoverUrl
 import one.mixin.android.vo.isAppCard
 import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.PhotoView.PhotoView
@@ -29,7 +29,7 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
         val appCardData = messageItem.appCardData
         if (messageItem.isAppCard()) {
             imageView.loadImage(
-                messageItem.appCardCoverUrl(),
+                messageItem.appCardMediaCoverUrl(),
                 holder = R.drawable.bot_default,
                 base64Holder = appCardData?.cover?.thumbnail,
                 onSuccess = { _, _ ->

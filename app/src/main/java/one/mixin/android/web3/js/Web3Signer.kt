@@ -21,6 +21,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.tip.wc.internal.WalletConnectAddresses
 import one.mixin.android.tip.wc.internal.evmChainList
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
@@ -221,11 +222,7 @@ object Web3Signer {
         }
 
         if (WalletConnect.isEnabled()) {
-            if (currentChain.assetId == SOLANA_CHAIN_ID) {
-                WalletConnectV2.switchAccount(solanaAddress)
-            } else {
-                WalletConnectV2.switchAccount(evmAddress)
-            }
+            WalletConnectV2.switchAccount(WalletConnectAddresses(evmAddress, solanaAddress, btcAddress))
         }
     }
 
