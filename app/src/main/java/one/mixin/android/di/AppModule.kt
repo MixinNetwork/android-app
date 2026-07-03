@@ -123,6 +123,8 @@ import java.util.concurrent.TimeoutException
 import javax.inject.Singleton
 import kotlin.math.abs
 
+internal fun referralAcceptLanguage(locale: Locale = Locale.getDefault()): String = locale.toLanguageTag()
+
 @InstallIn(SingletonComponent::class)
 @Module(includes = [(BaseDbModule::class)])
 object AppModule {
@@ -574,7 +576,7 @@ object AppModule {
                     val sourceRequest = chain.request()
                     val b = sourceRequest.newBuilder()
                     b.addHeader("User-Agent", API_UA)
-                        .addHeader("Accept-Language", Locale.getDefault().language)
+                        .addHeader("Accept-Language", referralAcceptLanguage())
                         .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                         .addHeader(xRequestId, UUID.randomUUID().toString())
                     val botPublicKey = appContext.defaultSharedPreferences.getString(PREF_REFERRAL_BOT_PK, null)

@@ -74,8 +74,7 @@ data class WalletHomeBannerAction(
 )
 
 fun Set<String>.syncedWalletHomeClosedBannerIds(remoteBanners: List<WalletHomeBanner>): Set<String> {
-    val remoteKeys = remoteBanners.mapNotNull { it.key.takeIf(String::isNotBlank) }.toSet()
-    return filter { remoteKeys.contains(it) }.toSet()
+    return this
 }
 
 fun List<WalletHomeBanner>.visibleWalletHomeBanners(closedBannerIds: Set<String>): List<WalletHomeBanner> =

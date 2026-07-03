@@ -65,15 +65,16 @@ class WalletHomeBannerTest {
     }
 
     @Test
-    fun syncClosedBannerIdsKeepsOnlyRemoteBannerKeys() {
+    fun syncClosedBannerIdsKeepsExistingIdsWhenRemoteResponseIsPartial() {
         val remoteBanners = listOf(
             WalletHomeBanner(bannerId = "remote-1"),
             WalletHomeBanner(bannerId = "remote-2"),
         )
 
         assertEquals(
-            setOf("remote-1"),
-            setOf("remote-1", "removed").syncedWalletHomeClosedBannerIds(remoteBanners),
+            setOf("remote-1", "other-wallet-banner", "missing-after-failed-request"),
+            setOf("remote-1", "other-wallet-banner", "missing-after-failed-request")
+                .syncedWalletHomeClosedBannerIds(remoteBanners),
         )
     }
 

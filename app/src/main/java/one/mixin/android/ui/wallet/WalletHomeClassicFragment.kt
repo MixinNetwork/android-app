@@ -169,6 +169,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 isDynamicBannerLoaded = false
                 _walletId.value = value
                 loadWalletHomeCache()
+                refreshWalletHomeBanners()
             }
             Timber.e("walletId set to $value")
         }
@@ -879,7 +880,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 )
             }
             WalletHomeBannerActionTarget.Buy -> {
-                WalletActivity.showBuy(requireActivity(), false, null, null)
+                WalletActivity.showBuy(requireActivity(), true, null, null, walletId)
             }
             is WalletHomeBannerActionTarget.Web -> {
                 WebActivity.show(requireActivity(), target.url, null)
