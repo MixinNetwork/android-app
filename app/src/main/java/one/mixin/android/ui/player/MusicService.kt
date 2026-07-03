@@ -18,7 +18,6 @@ import androidx.media3.common.Player.DISCONTINUITY_REASON_REMOVE
 import androidx.media3.common.Player.DISCONTINUITY_REASON_SEEK_ADJUSTMENT
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
-import androidx.paging.PagedList
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.RxBus
@@ -34,8 +33,6 @@ import one.mixin.android.ui.player.internal.id
 import one.mixin.android.ui.player.internal.urlLoader
 import one.mixin.android.util.MusicPlayer
 import javax.inject.Inject
-import kotlin.math.max
-import kotlin.math.min
 
 @AndroidEntryPoint
 class MusicService : MediaSessionService(), LifecycleOwner {
@@ -125,7 +122,7 @@ class MusicService : MediaSessionService(), LifecycleOwner {
         stopSelf()
     }
 
-    private var conversationLiveData: LiveData<PagedList<MediaMetadataCompat>>? = null
+    private var conversationLiveData: LiveData<List<MediaMetadataCompat>>? = null
     private lateinit var conversationObserver: ConversationObserver
     private var urlObserver: UrlObserver? = null
 
@@ -180,22 +177,16 @@ class MusicService : MediaSessionService(), LifecycleOwner {
         conversationLiveData?.observe(this, conversationObserver)
     }
 
-    private inner class ConversationObserver(private var mediaId: String? = null) : Observer<PagedList<MediaMetadataCompat>> {
+    private inner class ConversationObserver(private var mediaId: String? = null) : Observer<List<MediaMetadataCompat>> {
         private var first = true
-        private var currentPagedList: PagedList<MediaMetadataCompat>? = null
+        private var currentList: List<MediaMetadataCompat>? = null
         private var playWhenReady = true
 
-        override fun onChanged(value: PagedList<MediaMetadataCompat>) {
+        override fun onChanged(value: List<MediaMetadataCompat>) {
             if (value.isEmpty()) return
 
-            currentPagedList = value
-            val downloadedList = mutableListOf<MediaMetadataCompat>()
-            for (i in 0 until value.size) {
-                val item = value[i]
-                if (item != null && item.downloadStatus == MediaDescriptionCompat.STATUS_DOWNLOADED) {
-                    downloadedList.add(item)
-                }
-            }
+            currentList = value
+            val downloadedList = value.filter { it.downloadStatus == MediaDescriptionCompat.STATUS_DOWNLOADED }
             currentPlaylist = downloadedList
             lifecycleScope.launch {
                 MusicPlayer.get().updatePlaylist(downloadedList)
@@ -214,14 +205,13 @@ class MusicService : MediaSessionService(), LifecycleOwner {
             mediaId: String,
             playWhenReady: Boolean = true,
         ) {
-            currentPagedList?.let { list ->
+            currentList?.let { list ->
                 if (list.isEmpty()) return@let
 
-                list.loadAround(max(0, min(list.size - 1, index)))
                 this.mediaId = mediaId
                 this.playWhenReady = playWhenReady
                 first = true
-                list.dataSource.invalidate()
+                onChanged(list)
             }
         }
     }

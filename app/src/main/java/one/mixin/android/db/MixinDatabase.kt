@@ -73,7 +73,6 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_68_69
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_69_70
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.FiatOrderConverter
-import one.mixin.android.db.datasource.DataSourceFactoryDaoReturnTypeConverter
 import one.mixin.android.db.datasource.RoomDatabaseCompat
 import one.mixin.android.db.datasource.execSQL
 import one.mixin.android.db.converter.MembershipConverter
@@ -217,7 +216,6 @@ import kotlin.math.min
     FiatOrderConverter::class
 )
 @DaoReturnTypeConverters(
-    DataSourceFactoryDaoReturnTypeConverter::class,
     LiveDataDaoReturnTypeConverter::class,
     PagingSourceDaoReturnTypeConverter::class,
 )

@@ -5,10 +5,12 @@ import android.os.CancellationSignal
 import android.os.Parcelable
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
-import androidx.paging.Config
-import androidx.paging.PagedList
-import androidx.paging.toLiveData
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -212,20 +214,23 @@ internal constructor(
         query: String,
         conversationId: String,
         cancellationSignal: CancellationSignal,
-    ): LiveData<PagedList<SearchMessageDetailItem>> {
+    ): LiveData<PagingData<SearchMessageDetailItem>> {
         val escapedQuery = query.trim().escapeSql()
-        return conversationRepository.fuzzySearchMessageDetail(
-            escapedQuery,
-            conversationId,
-            cancellationSignal,
-        ).toLiveData(
+        return Pager(
             config =
-            Config(
-                pageSize = PAGE_SIZE,
-                prefetchDistance = PAGE_SIZE * 2,
-                enablePlaceholders = false,
-            ),
-        )
+                PagingConfig(
+                    pageSize = PAGE_SIZE,
+                    prefetchDistance = PAGE_SIZE * 2,
+                    enablePlaceholders = false,
+                ),
+            pagingSourceFactory = {
+                conversationRepository.fuzzySearchMessageDetail(
+                    escapedQuery,
+                    conversationId,
+                    cancellationSignal,
+                )
+            },
+        ).flow.cachedIn(viewModelScope).asLiveData()
     }
 
     fun search(query: String): Observable<MixinResponse<User>> =

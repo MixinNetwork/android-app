@@ -20,10 +20,13 @@ import androidx.core.view.isGone
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.paging.LoadState
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
@@ -32,6 +35,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants.CIRCLE.CIRCLE_ID
 import one.mixin.android.Constants.CIRCLE.CIRCLE_NAME
@@ -72,7 +76,7 @@ import one.mixin.android.ui.common.NavigationController
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.recyclerview.NormalHolder
-import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
+import one.mixin.android.ui.common.recyclerview.PagingHeaderAdapter
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
@@ -211,6 +215,7 @@ class ConversationListFragment : LinkFragment() {
         super.onViewCreated(view, savedInstanceState)
         navigationController = NavigationController()
         binding.messageRv.adapter = messageAdapter
+        observeMessageAdapterLoadState()
         binding.messageRv.itemAnimator = null
         binding.messageRv.setHasFixedSize(true)
         binding.messageRv.addOnScrollListener(
@@ -291,7 +296,7 @@ class ConversationListFragment : LinkFragment() {
             }
 
         messageAdapter.onItemListener =
-            object : PagedHeaderAdapter.OnItemListener<ConversationItem> {
+            object : PagingHeaderAdapter.OnItemListener<ConversationItem> {
                 override fun onNormalLongClick(item: ConversationItem): Boolean {
                     showBottomSheet(item)
                     return true
@@ -594,43 +599,64 @@ class ConversationListFragment : LinkFragment() {
     }
 
     private val observer by lazy {
-        Observer<PagedList<ConversationItem>> { pagedList ->
-            messageAdapter.submitList(pagedList)
-            if (pagedList.isEmpty()) {
-                if (circleId == null) {
-                    binding.emptyView.infoTv.setText(R.string.chat_list_empty_info)
-                    binding.emptyView.startBn.setText(R.string.Start_Messaging)
-                } else {
-                    binding.emptyView.infoTv.setText(R.string.circle_no_conversation_hint)
-                    binding.emptyView.startBn.setText(R.string.Add_conversations)
-                }
-                binding.messageRv.updateLayoutParams<ConstraintLayout.LayoutParams> {
-                    height = ViewGroup.LayoutParams.WRAP_CONTENT
-                    bottomToBottom = ConstraintLayout.LayoutParams.UNSET
-                }
-                binding.emptyView.root.isVisible = true
-            } else {
-                binding.messageRv.updateLayoutParams<ConstraintLayout.LayoutParams> {
-                    height = 0
-                    bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
-                }
-                binding.emptyView.root.isVisible = false
-                pagedList
-                    .filter { item: ConversationItem? ->
-                        item?.isGroupConversation() == true && (
-                            item.iconUrl() == null ||
-                                !File(
-                                    item.iconUrl() ?: "",
-                                ).exists()
-                        )
-                    }.forEach {
-                        jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
+        Observer<PagingData<ConversationItem>> { pagingData ->
+            messageAdapter.submitData(viewLifecycleOwner.lifecycle, pagingData)
+        }
+    }
+
+    private fun observeMessageAdapterLoadState() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                messageAdapter.loadStateFlow.collectLatest { loadStates ->
+                    val items = messageAdapter.snapshot().items
+                    if (loadStates.refresh is LoadState.NotLoading) {
+                        updateEmptyState(items.isEmpty())
+                        enqueueMissingAvatars(items)
                     }
+                }
             }
         }
     }
 
-    private var conversationLiveData: LiveData<PagedList<ConversationItem>>? = null
+    private fun updateEmptyState(empty: Boolean) {
+        if (viewDestroyed()) return
+        if (empty) {
+            if (circleId == null) {
+                binding.emptyView.infoTv.setText(R.string.chat_list_empty_info)
+                binding.emptyView.startBn.setText(R.string.Start_Messaging)
+            } else {
+                binding.emptyView.infoTv.setText(R.string.circle_no_conversation_hint)
+                binding.emptyView.startBn.setText(R.string.Add_conversations)
+            }
+            binding.messageRv.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
+                bottomToBottom = ConstraintLayout.LayoutParams.UNSET
+            }
+            binding.emptyView.root.isVisible = true
+        } else {
+            binding.messageRv.updateLayoutParams<ConstraintLayout.LayoutParams> {
+                height = 0
+                bottomToBottom = ConstraintLayout.LayoutParams.PARENT_ID
+            }
+            binding.emptyView.root.isVisible = false
+        }
+    }
+
+    private fun enqueueMissingAvatars(items: List<ConversationItem>) {
+        items
+            .filter { item ->
+                item.isGroupConversation() && (
+                    item.iconUrl() == null ||
+                        !File(
+                            item.iconUrl() ?: "",
+                        ).exists()
+                )
+            }.forEach {
+                jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
+            }
+    }
+
+    private var conversationLiveData: LiveData<PagingData<ConversationItem>>? = null
     var circleId: String? = null
         set(value) {
             field = value
@@ -807,7 +833,7 @@ class ConversationListFragment : LinkFragment() {
         }
     }
 
-    class MessageAdapter : PagedHeaderAdapter<ConversationItem>(ConversationItem.DIFF_CALLBACK) {
+    class MessageAdapter : PagingHeaderAdapter<ConversationItem>(ConversationItem.DIFF_CALLBACK) {
         override fun getNormalViewHolder(
             context: Context,
             parent: ViewGroup,
@@ -841,7 +867,7 @@ class ConversationListFragment : LinkFragment() {
 
             @SuppressLint("SetTextI18n")
             fun bind(
-                onItemClickListener: PagedHeaderAdapter.OnItemListener<ConversationItem>?,
+                onItemClickListener: PagingHeaderAdapter.OnItemListener<ConversationItem>?,
                 conversationItem: ConversationItem,
             ) {
                 val id = Session.getAccountId()

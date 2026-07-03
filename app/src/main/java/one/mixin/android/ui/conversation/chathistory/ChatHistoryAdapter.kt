@@ -31,7 +31,7 @@ import one.mixin.android.databinding.ItemChatVideoQuoteBinding
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.isSameDay
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
+import one.mixin.android.ui.common.recyclerview.SafePagingDataAdapter
 import one.mixin.android.ui.conversation.chathistory.holder.ActionCardHolder
 import one.mixin.android.ui.conversation.chathistory.holder.ActionHolder
 import one.mixin.android.ui.conversation.chathistory.holder.AudioHolder
@@ -79,7 +79,7 @@ import kotlin.math.abs
 class ChatHistoryAdapter(
     private val onItemListener: OnItemListener,
     private val context: Activity,
-) : SafePagedListAdapter<ChatHistoryMessageItem, BaseViewHolder>(ChatHistoryMessageItem.DIFF_CALLBACK),
+) : SafePagingDataAdapter<ChatHistoryMessageItem, BaseViewHolder>(ChatHistoryMessageItem.DIFF_CALLBACK),
     MixinStickyRecyclerHeadersAdapter<TimeHolder> {
     override fun onCreateViewHolder(
         parent: ViewGroup,

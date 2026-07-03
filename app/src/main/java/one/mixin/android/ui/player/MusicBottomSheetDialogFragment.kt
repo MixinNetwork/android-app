@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.support.v4.media.MediaMetadataCompat
 import android.view.View
 import android.view.ViewGroup
-import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.isVisible
 import androidx.core.view.setPadding
@@ -20,7 +19,7 @@ import androidx.media3.common.Player
 import androidx.media3.common.Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED
 import androidx.media3.common.Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT
 import androidx.media3.common.util.UnstableApi
-import androidx.paging.PagedList
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -48,11 +47,8 @@ import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.webrtc.EXTRA_CONVERSATION_ID
 import one.mixin.android.widget.MixinBottomSheetDialog
-import kotlin.math.max
-import kotlin.math.min
 
 @Suppress("DEPRECATION")
 @UnstableApi
@@ -174,7 +170,7 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     viewModel.conversationLiveData(conversationId, index)
                         .observe(this@MusicBottomSheetDialogFragment) { list ->
                             if (list.isEmpty()) return@observe
-                            listAdapter.submitList(list)
+                            listAdapter.submitData(lifecycle, PagingData.from(list))
                             pb.isVisible = false
 
                             if (firstOpen && mediaId != null) {
@@ -226,33 +222,18 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private fun updateMusicLayout(
-        pagedList: PagedList<MediaMetadataCompat>,
+        list: List<MediaMetadataCompat>,
         mediaId: String,
     ) {
         binding.apply {
-            var mediaItem: MediaMetadataCompat? = null
-            for (i in 0 until pagedList.size) {
-                val item = pagedList[i]
-                if (item != null && item.id == mediaId) {
-                    mediaItem = item
-                    break
-                }
-            }
-            if (mediaItem == null) {
-                lifecycleScope.launch {
-                    val index = viewModel.indexAudioByConversationId(conversationId, mediaId)
-                    pagedList.loadAround(max(0, min(pagedList.size - 1, index)))
-                    firstOpen = true
-                    return@launch
-                }
-            }
+            val mediaItem = list.firstOrNull { it.id == mediaId } ?: return
             musicLayout.title.text = mediaItem?.displayTitle
             musicLayout.subtitle.text = mediaItem?.displaySubtitle
             musicLayout.albumArt.loadImage(mediaItem?.albumArtUri?.path, R.drawable.ic_music_place_holder)
 
-            if (pagedList.isNotEmpty() && firstOpen) {
+            if (list.isNotEmpty() && firstOpen) {
                 firstOpen = false
-                val pos = pagedList.indexOf(mediaItem)
+                val pos = list.indexOf(mediaItem)
                 if (pos != -1) {
                     playlistRv.post {
                         (playlistRv.layoutManager as LinearLayoutManager).scrollToPosition(pos)
@@ -298,29 +279,17 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 ) {
                     return
                 }
-                val pagedList = listAdapter.currentList ?: return
+                val list = listAdapter.snapshot().items
 
                 val mediaId = mediaItem.mediaId
-                updateMusicLayout(pagedList, mediaId)
+                updateMusicLayout(list, mediaId)
             }
         }
 
-    @SuppressLint("RestrictedApi")
     private val urlObserver =
         UrlLoader.UrlObserver { list ->
-            val pagedConfig =
-                PagedList.Config.Builder()
-                    .setPageSize(CONVERSATION_UI_PAGE_SIZE)
-                    .build()
-            val pagedList =
-                PagedList.Builder(
-                    FixedMessageDataSource(list, list.size),
-                    pagedConfig,
-                ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
-                    .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
-                    .build()
             lifecycleScope.launch {
-                listAdapter.submitList(pagedList)
+                listAdapter.submitData(lifecycle, PagingData.from(list))
                 binding.pb.isVisible = false
             }
         }

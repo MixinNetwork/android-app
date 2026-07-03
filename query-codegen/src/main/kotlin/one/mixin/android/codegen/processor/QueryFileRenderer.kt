@@ -4,8 +4,8 @@ data class QueryProviderModel(
     val packageName: String,
     val generatedName: String,
     val functions: List<QueryFunctionModel>,
-    val limitOffsetFunctions: List<LimitOffsetDataSourceFunctionModel> = emptyList(),
-    val noCountFunctions: List<NoCountDataSourceFunctionModel> = emptyList(),
+    val limitOffsetFunctions: List<LimitOffsetPagingSourceFunctionModel> = emptyList(),
+    val noCountFunctions: List<NoCountPagingSourceFunctionModel> = emptyList(),
     val rawCursorFunctions: List<RawCursorQueryFunctionModel> = emptyList(),
     val simpleQueryFunctions: List<RoomRawQueryFunctionModel> = emptyList(),
     val pagingSourceFunctions: List<PagingSourceQueryFunctionModel> = emptyList(),
@@ -29,7 +29,7 @@ data class QueryParameterModel(
     val type: String,
 )
 
-data class LimitOffsetDataSourceFunctionModel(
+data class LimitOffsetPagingSourceFunctionModel(
     val name: String,
     val returnType: String,
     val returnTypeImports: List<String>,
@@ -43,7 +43,7 @@ data class LimitOffsetDataSourceFunctionModel(
     val converterName: String,
 )
 
-data class NoCountDataSourceFunctionModel(
+data class NoCountPagingSourceFunctionModel(
     val name: String,
     val returnType: String,
     val returnTypeImports: List<String>,
@@ -194,36 +194,35 @@ class QueryFileRenderer {
 
     private fun renderLimitOffsetFunction(
         lines: MutableList<String>,
-        function: LimitOffsetDataSourceFunctionModel,
+        function: LimitOffsetPagingSourceFunctionModel,
     ) {
-        val itemType = function.returnType.dataSourceItemType()
+        val itemType = function.returnType.pagingSourceItemType()
         lines += "    fun ${function.name}("
         function.parameters.forEach { parameter ->
             lines += "        ${parameter.name}: ${parameter.type},"
         }
-        lines += "    ): ${function.returnType} ="
-        lines += "        object : DataSource.Factory<Int, $itemType>() {"
-        lines += "            override fun create(): DataSource<Int, $itemType> {"
-        renderRoomQueryAcquire(lines, "countStatement", function.countSql, 0, "                ")
-        renderRoomQueryAcquire(lines, "offsetStatement", function.offsetSql, 2, "                ")
-        lines += "                val querySqlGenerator = fun(ids: String): RoomQuery {"
-        lines += "                    return RoomQuery.acquire("
-        renderSqlLiteral(lines, function.querySql.renderSqlTemplate(function.parameters.map { it.name } + "ids"), "                        ")
-        lines += "                        0,"
-        lines += "                    )"
-        lines += "                }"
-        lines += "                return object : MixinLimitOffsetDataSource<$itemType>("
-        lines += "                    ${function.databaseParameter},"
-        lines += "                    countStatement,"
-        lines += "                    offsetStatement,"
-        lines += "                    querySqlGenerator,"
-        lines += "                    arrayOf(${function.tables.joinToString { "\"$it\"" }}),"
-        lines += "                ) {"
-        lines += "                    override fun convertRows(cursor: Cursor?): List<$itemType> ="
-        lines += "                        ${function.converterName}(cursor)"
-        lines += "                }"
-        lines += "            }"
+        lines += "    ): ${function.returnType} {"
+        renderRoomQueryAcquire(lines, "countStatement", function.countSql, 0, "        ")
+        renderRoomQueryAcquire(lines, "offsetStatement", function.offsetSql, 2, "        ")
+        lines += "        val querySqlGenerator = fun(ids: String): RoomQuery {"
+        lines += "            return RoomQuery.acquire("
+        renderSqlLiteral(lines, function.querySql.renderSqlTemplate(function.parameters.map { it.name } + "ids"), "                ")
+        lines += "                0,"
+        lines += "            )"
         lines += "        }"
+        lines += "        return object : MixinCountLimitOffsetDataSource<$itemType>("
+        lines += "            offsetStatement,"
+        lines += "            { ${function.databaseParameter}.query(countStatement).use { if (it.moveToFirst()) it.getInt(0) else 0 } },"
+        lines += "            querySqlGenerator,"
+        lines += "            ${function.databaseParameter},"
+        function.tables.forEach { table ->
+            lines += "            \"$table\","
+        }
+        lines += "        ) {"
+        lines += "            override fun convertRows(cursor: Cursor): List<$itemType> ="
+        lines += "                ${function.converterName}(cursor)"
+        lines += "        }"
+        lines += "    }"
     }
 
     private fun renderRawCursorFunction(
@@ -263,7 +262,7 @@ class QueryFileRenderer {
         lines: MutableList<String>,
         function: PagingSourceQueryFunctionModel,
     ) {
-        val itemType = function.returnType.dataSourceItemType()
+        val itemType = function.returnType.pagingSourceItemType()
         lines += "    fun ${function.name}("
         function.parameters.forEach { parameter ->
             lines += "        ${parameter.name}: ${parameter.type},"
@@ -363,39 +362,36 @@ class QueryFileRenderer {
 
     private fun renderNoCountFunction(
         lines: MutableList<String>,
-        function: NoCountDataSourceFunctionModel,
+        function: NoCountPagingSourceFunctionModel,
     ) {
-        val itemType = function.returnType.dataSourceItemType()
+        val itemType = function.returnType.pagingSourceItemType()
         lines += "    fun ${function.name}("
         function.parameters.forEach { parameter ->
             lines += "        ${parameter.name}: ${parameter.type},"
         }
-        lines += "    ): ${function.returnType} ="
-        lines += "        object : DataSource.Factory<Int, $itemType>() {"
-        lines += "            override fun create(): DataSource<Int, $itemType> {"
-        renderRoomQueryAcquire(lines, "_statement", function.sql, function.bindParameters.size, "                ")
+        lines += "    ): ${function.returnType} {"
+        renderRoomQueryAcquire(lines, "_statement", function.sql, function.bindParameters.size, "        ")
         function.bindParameters.forEachIndexed { index, bindParameter ->
             val argIndex = index + 1
             if (index == 0) {
-                lines += "                var _argIndex = $argIndex"
+                lines += "        var _argIndex = $argIndex"
             } else {
-                lines += "                _argIndex = $argIndex"
+                lines += "        _argIndex = $argIndex"
             }
-            renderBind(lines, function, bindParameter, "                ")
+            renderBind(lines, function, bindParameter, "        ")
         }
-        lines += "                return object : NoCountLimitOffsetDataSource<$itemType>("
-        lines += "                    ${function.databaseParameter},"
-        lines += "                    _statement,"
-        lines += "                    ${function.countParameter},"
+        lines += "        return object : MixinNonCountLimitOffsetDataSource<$itemType>("
+        lines += "            _statement,"
+        lines += "            ${function.countParameter},"
+        lines += "            ${function.databaseParameter},"
         function.tables.forEach { table ->
-            lines += "                    \"$table\","
+            lines += "            \"$table\","
         }
-        lines += "                ) {"
-        lines += "                    override fun convertRows(cursor: Cursor?): List<$itemType> ="
-        lines += "                        ${function.converterName}(cursor)"
-        lines += "                }"
-        lines += "            }"
+        lines += "        ) {"
+        lines += "            override fun convertRows(cursor: Cursor): List<$itemType> ="
+        lines += "                ${function.converterName}(cursor)"
         lines += "        }"
+        lines += "    }"
     }
 
     private fun renderRoomQueryAcquire(
@@ -441,7 +437,7 @@ class QueryFileRenderer {
 
     private fun renderBind(
         lines: MutableList<String>,
-        function: NoCountDataSourceFunctionModel,
+        function: NoCountPagingSourceFunctionModel,
         bindParameter: String,
         indent: String,
     ) {
@@ -495,7 +491,7 @@ class QueryFileRenderer {
         } else {
             listOf(
                 "android.database.Cursor",
-                "one.mixin.android.db.datasource.MixinLimitOffsetDataSource",
+                "one.mixin.android.db.datasource.MixinCountLimitOffsetDataSource",
             )
         }
 
@@ -505,7 +501,7 @@ class QueryFileRenderer {
         } else {
             listOf(
                 "android.database.Cursor",
-                "one.mixin.android.db.datasource.NoCountLimitOffsetDataSource",
+                "one.mixin.android.db.datasource.MixinNonCountLimitOffsetDataSource",
             )
         }
 
@@ -517,7 +513,7 @@ class QueryFileRenderer {
         }
 
     private fun QueryProviderModel.queryExtensionImports(): List<String> =
-        if (limitOffsetFunctions.isEmpty() && noCountFunctions.isEmpty() && rawCursorFunctions.isEmpty() && pagingSourceFunctions.isEmpty()) {
+        if (limitOffsetFunctions.isEmpty() && rawCursorFunctions.isEmpty() && pagingSourceFunctions.isEmpty()) {
             emptyList()
         } else {
             listOf("one.mixin.android.db.datasource.query")
@@ -555,7 +551,7 @@ class QueryFileRenderer {
             )
         }
 
-    private fun String.dataSourceItemType(): String =
+    private fun String.pagingSourceItemType(): String =
         substringAfterLast(",").removeSuffix(">").trim()
 
     private fun String.renderSqlTemplate(parameterNames: List<String>): String {

@@ -20,8 +20,13 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
     private val fastCountCallback: () -> Int,
     private val querySqlGenerator: (ids: String) -> RoomQuery,
     private val db: RoomDatabase,
+    vararg tables: String,
 ) : PagingSource<Int, Value>() {
     internal val itemCount: AtomicInteger = AtomicInteger(INITIAL_ITEM_COUNT)
+
+    init {
+        RoomDatabaseCompat.observeInvalidation(db, this, *tables)
+    }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Value> {
         return withContext(RoomDatabaseCompat.queryContext(db)) {
@@ -80,7 +85,12 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
         offsetQuery.bindLong(argCount, offset.toLong())
         val cursor = db.query(offsetQuery)
         val ids: List<String> = convertRowsToIds(cursor)
-        val data = convertRows(db.query(querySqlGenerator(ids.joinToString())))
+        val data =
+            if (ids.isEmpty()) {
+                emptyList()
+            } else {
+                convertRows(db.query(querySqlGenerator(ids.joinToString())))
+            }
         val nextPosToLoad = offset + data.size
         val nextKey =
             if (ids.isEmpty() || ids.size < limit || nextPosToLoad >= itemCount) {

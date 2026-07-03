@@ -1,22 +1,21 @@
 package one.mixin.android.ui.media
 
 import android.net.Uri
-import android.annotation.SuppressLint
 import androidx.annotation.OptIn
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import androidx.media3.common.util.UnstableApi
-import androidx.paging.DataSource
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
-import androidx.paging.PositionalDataSource
-import androidx.arch.core.executor.ArchTaskExecutor
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
+import androidx.paging.cachedIn
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.PAGE_SIZE
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
@@ -46,32 +45,18 @@ class SharedMediaViewModel
         private val jobManager: MixinJobManager,
     ) : ViewModel() {
 
-        fun getMediaMessagesExcludeLive(conversationId: String): LiveData<PagedList<MessageItem>> {
-            val liveData = MutableLiveData<PagedList<MessageItem>>()
+        fun getMediaMessagesExcludeLive(conversationId: String): LiveData<PagingData<MessageItem>> {
+            val liveData = MutableLiveData<PagingData<MessageItem>>()
             viewModelScope.launch(Dispatchers.IO) {
                 val list = conversationRepository.getMediaMessagesExcludeLiveList(conversationId)
                 val filteredList = list.filter { !it.isAppCard() || it.isAppCardWithCover() }
-                val pagedList = createPagedList(filteredList, 0)
-                liveData.postValue(pagedList)
+                liveData.postValue(PagingData.from(filteredList))
             }
             return liveData
         }
 
-        @SuppressLint("RestrictedApi")
-        private fun createPagedList(list: List<MessageItem>, initialKey: Int): PagedList<MessageItem> {
-            val config = PagedList.Config.Builder()
-                .setPageSize(MediaFragment.PAGE_SIZE)
-                .setEnablePlaceholders(false)
-                .build()
-            return PagedList.Builder(ListDataSource(list), config)
-                .setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
-                .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
-                .setInitialKey(initialKey)
-                .build()
-        }
-
-        fun getAudioMessages(conversationId: String): LiveData<PagedList<MessageItem>> {
-            val liveData = MutableLiveData<PagedList<MessageItem>>()
+        fun getAudioMessages(conversationId: String): LiveData<PagingData<MessageItem>> {
+            val liveData = MutableLiveData<PagingData<MessageItem>>()
             viewModelScope.launch(Dispatchers.IO) {
                 val list = conversationRepository.getAudioMessagesList(conversationId)
                 val sortedList = list.sortedWith(
@@ -96,47 +81,19 @@ class SharedMediaViewModel
                         }
                     },
                 )
-                val pagedList = createPagedList(sortedList, 0)
-                liveData.postValue(pagedList)
+                liveData.postValue(PagingData.from(sortedList))
             }
             return liveData
         }
 
-        fun getPostMessages(conversationId: String): LiveData<PagedList<MessageItem>> {
-            return LivePagedListBuilder(
-                conversationRepository.getPostMessages(conversationId),
-                PagedList.Config.Builder()
-                    .setPrefetchDistance(PAGE_SIZE * 2)
-                    .setPageSize(PAGE_SIZE)
-                    .setEnablePlaceholders(true)
-                    .build(),
-            )
-                .build()
-        }
+        fun getPostMessages(conversationId: String): LiveData<PagingData<MessageItem>> =
+            pager { conversationRepository.getPostMessages(conversationId) }
 
-        fun getLinkMessages(conversationId: String): LiveData<PagedList<HyperlinkItem>> {
-            return LivePagedListBuilder(
-                conversationRepository.getLinkMessages(conversationId),
-                PagedList.Config.Builder()
-                    .setPrefetchDistance(PAGE_SIZE * 2)
-                    .setPageSize(PAGE_SIZE)
-                    .setEnablePlaceholders(true)
-                    .build(),
-            )
-                .build()
-        }
+        fun getLinkMessages(conversationId: String): LiveData<PagingData<HyperlinkItem>> =
+            pager { conversationRepository.getLinkMessages(conversationId) }
 
-        fun getFileMessages(conversationId: String): LiveData<PagedList<MessageItem>> {
-            return LivePagedListBuilder(
-                conversationRepository.getFileMessages(conversationId),
-                PagedList.Config.Builder()
-                    .setPrefetchDistance(PAGE_SIZE * 2)
-                    .setPageSize(PAGE_SIZE)
-                    .setEnablePlaceholders(true)
-                    .build(),
-            )
-                .build()
-        }
+        fun getFileMessages(conversationId: String): LiveData<PagingData<MessageItem>> =
+            pager { conversationRepository.getFileMessages(conversationId) }
 
         fun retryDownload(id: String) =
             viewModelScope.launch(Dispatchers.IO) {
@@ -231,8 +188,13 @@ class SharedMediaViewModel
         conversationId: String,
         index: Int,
         excludeLive: Boolean,
-    ): LiveData<PagedList<MessageItem>> =
-        conversationRepository.getMediaMessages(conversationId, index, excludeLive)
+    ): LiveData<PagingData<MessageItem>> =
+        pager(
+            pageSize = MediaPagerActivity.PAGE_SIZE,
+            initialKey = index,
+        ) {
+            conversationRepository.getMediaMessagesPagingSource(conversationId, excludeLive)
+        }
 
     suspend fun getMediaMessage(
         conversationId: String,
@@ -246,27 +208,20 @@ class SharedMediaViewModel
                 jobManager.addJobInBackground(AttachmentDownloadJob(it))
             }
         }
-}
 
-class ListDataSource<T : Any>(private val items: List<T>) : PositionalDataSource<T>() {
-    override fun loadInitial(params: LoadInitialParams, callback: LoadInitialCallback<T>) {
-        val totalCount = items.size
-        if (totalCount == 0) {
-            callback.onResult(emptyList(), 0, 0)
-            return
-        }
-        val position = computeInitialLoadPosition(params, totalCount)
-        val loadSize = computeInitialLoadSize(params, position, totalCount)
-        callback.onResult(items.subList(position, minOf(position + loadSize, totalCount)), position, totalCount)
-    }
-
-    override fun loadRange(params: LoadRangeParams, callback: LoadRangeCallback<T>) {
-        val start = params.startPosition
-        val end = minOf(start + params.loadSize, items.size)
-        if (start < items.size && start < end) {
-            callback.onResult(items.subList(start, end))
-        } else {
-            callback.onResult(emptyList())
-        }
-    }
+    private fun <T : Any> pager(
+        pageSize: Int = PAGE_SIZE,
+        initialKey: Int? = null,
+        pagingSourceFactory: () -> PagingSource<Int, T>,
+    ): LiveData<PagingData<T>> =
+        Pager(
+            config =
+                PagingConfig(
+                    pageSize = pageSize,
+                    prefetchDistance = pageSize * 2,
+                    enablePlaceholders = true,
+                ),
+            initialKey = initialKey,
+            pagingSourceFactory = pagingSourceFactory,
+        ).flow.cachedIn(viewModelScope).asLiveData()
 }

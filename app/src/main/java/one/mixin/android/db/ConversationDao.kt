@@ -1,7 +1,7 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room3.Dao
 import androidx.room3.Query
 import androidx.room3.RoomWarnings
@@ -46,7 +46,7 @@ interface ConversationDao : BaseDao<Conversation> {
         ORDER BY c.pin_time DESC, c.last_message_created_at DESC
         """,
     )
-    fun conversationList(): DataSource.Factory<Int, ConversationItem>
+    fun conversationList(): PagingSource<Int, ConversationItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(

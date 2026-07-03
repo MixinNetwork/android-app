@@ -2,7 +2,7 @@ package one.mixin.android.db.provider
 
 import android.annotation.SuppressLint
 import android.os.CancellationSignal
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.datasource.RoomDatabaseCompat
@@ -23,13 +23,13 @@ import one.mixin.android.vo.safe.TokenItem
 @SuppressLint("RestrictedApi")
 class DataProvider {
     companion object {
-        fun observeConversations(database: MixinDatabase): DataSource.Factory<Int, ConversationItem> =
+        fun observeConversations(database: MixinDatabase): PagingSource<Int, ConversationItem> =
             DataProviderGenerated.observeConversations(database)
 
         fun observeConversationsByCircleId(
             circleId: String,
             database: MixinDatabase,
-        ): DataSource.Factory<Int, ConversationItem> =
+        ): PagingSource<Int, ConversationItem> =
             DataProviderGenerated.observeConversationsByCircleId(circleId, database)
 
         suspend fun fuzzySearchToken(
@@ -110,18 +110,14 @@ class DataProvider {
             conversationId: String,
             database: MixinDatabase,
             cancellationSignal: CancellationSignal,
-        ) =
-            object : DataSource.Factory<Int, SearchMessageDetailItem>() {
-                override fun create(): DataSource<Int, SearchMessageDetailItem> {
-                    return FtsDataSource(ftsDatabase, database, query, conversationId, cancellationSignal)
-                }
-            }
+        ): PagingSource<Int, SearchMessageDetailItem> =
+            FtsDataSource(ftsDatabase, database, query, conversationId, cancellationSignal)
 
         fun getPinMessages(
             database: MixinDatabase,
             conversationId: String,
             count: Int,
-        ): DataSource.Factory<Int, ChatHistoryMessageItem> =
+        ): PagingSource<Int, ChatHistoryMessageItem> =
             DataProviderGenerated.getPinMessages(database, conversationId, count)
     }
 }

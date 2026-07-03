@@ -1,7 +1,6 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
 import androidx.paging.PagingSource
 import androidx.room3.Dao
 import androidx.room3.Query
@@ -43,7 +42,7 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     }
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC")
-    fun snapshots(assetId: String): DataSource.Factory<Int, SnapshotItem>
+    fun snapshots(assetId: String): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC LIMIT 21")
     fun snapshotsLimit(assetId: String): LiveData<List<SnapshotItem>>
@@ -52,21 +51,21 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     fun recentSnapshotsLimit(): LiveData<List<SnapshotItem>>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
-    fun snapshotsOrderByAmount(assetId: String): DataSource.Factory<Int, SnapshotItem>
+    fun snapshotsOrderByAmount(assetId: String): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsByType(
         assetId: String,
         type: String,
         otherType: String? = null,
-    ): DataSource.Factory<Int, SnapshotItem>
+    ): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
     fun snapshotsByTypeOrderByAmount(
         assetId: String,
         type: String,
         otherType: String? = null,
-    ): DataSource.Factory<Int, SnapshotItem>
+    ): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsPaging(assetId: String): PagingSource<Int, SnapshotItem>
@@ -107,22 +106,22 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     fun getSnapshots(query: RoomRawQuery): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY abs(s.amount * t.price_usd) DESC")
-    fun allSnapshotsOrderByAmount(): DataSource.Factory<Int, SnapshotItem>
+    fun allSnapshotsOrderByAmount(): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type IN (:type, :otherType) ORDER BY s.created_at DESC")
     fun allSnapshotsByType(
         type: String,
         otherType: String? = null,
-    ): DataSource.Factory<Int, SnapshotItem>
+    ): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type IN (:type, :otherType) ORDER BY abs(s.amount * t.price_usd) DESC")
     fun allSnapshotsByTypeOrderByAmount(
         type: String,
         otherType: String? = null,
-    ): DataSource.Factory<Int, SnapshotItem>
+    ): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.opponent_id = :opponentId AND s.type != 'pending' ORDER BY s.created_at DESC, s.snapshot_id DESC")
-    fun snapshotsByUserId(opponentId: String): DataSource.Factory<Int, SnapshotItem>
+    fun snapshotsByUserId(opponentId: String): PagingSource<Int, SnapshotItem>
 
     @Query("SELECT t.symbol, t.icon_url, s.amount, t.asset_id FROM safe_snapshots s LEFT JOIN tokens t ON t.asset_id = s.asset_id WHERE s.type = 'pending' AND t.symbol IS NOT NULL")
     fun getPendingDisplays(): LiveData<List<PendingDisplay>>

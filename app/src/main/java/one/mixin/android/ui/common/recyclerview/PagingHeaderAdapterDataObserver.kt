@@ -2,10 +2,7 @@ package one.mixin.android.ui.common.recyclerview
 
 import androidx.recyclerview.widget.RecyclerView
 
-/**
- * Fix PagedListAdapter with header auto scroll bug.
- */
-class PagedHeaderAdapterDataObserver(
+class PagingHeaderAdapterDataObserver(
     private val dataObserver: RecyclerView.AdapterDataObserver,
     private val headerCount: Int,
 ) : RecyclerView.AdapterDataObserver() {

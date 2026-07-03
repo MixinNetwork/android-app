@@ -31,4 +31,21 @@ interface FtsQuerySpec {
         conversationId: String,
         query: String,
     ): RoomRawQuery
+
+    @GeneratedRoomRawQuery(
+        sql = """
+            SELECT message_id
+            FROM messages_metas
+            WHERE conversation_id = '{{conversationId}}'
+            AND doc_id IN (SELECT docid FROM messages_fts WHERE content MATCH '{{query}}')
+            ORDER BY created_at DESC, rowid DESC
+            LIMIT {{limit}} OFFSET {{offset}}
+        """,
+    )
+    fun messageIdsByConversationPage(
+        conversationId: String,
+        query: String,
+        limit: Int,
+        offset: Int,
+    ): RoomRawQuery
 }

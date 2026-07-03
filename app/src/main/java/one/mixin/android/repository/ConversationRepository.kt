@@ -3,9 +3,7 @@ package one.mixin.android.repository
 import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
-import androidx.paging.DataSource
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
+import androidx.paging.PagingSource
 import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -50,7 +48,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.session.Session
-import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.CircleConversation
@@ -108,7 +105,7 @@ class ConversationRepository
             limit: Int,
         ): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
 
-        fun observeConversations(circleId: String?): DataSource.Factory<Int, ConversationItem> =
+        fun observeConversations(circleId: String?): PagingSource<Int, ConversationItem> =
             if (circleId.isNullOrBlank()) {
                 DataProvider.observeConversations(MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()))
             } else {
@@ -179,7 +176,7 @@ class ConversationRepository
             query: String,
             conversationId: String,
             cancellationSignal: CancellationSignal,
-        ): DataSource.Factory<Int, SearchMessageDetailItem> {
+        ): PagingSource<Int, SearchMessageDetailItem> {
             val queryString = query.joinStar().replaceQuotationMark()
             return DataProvider.fuzzySearchMessageDetail(ftsDbHelper, queryString, conversationId, appDatabase, cancellationSignal)
         }
@@ -214,37 +211,15 @@ class ConversationRepository
                 messageDao.countIndexMediaMessages(conversationId)
             }
 
-        fun getMediaMessagesDataSource(
+        fun getMediaMessagesPagingSource(
             conversationId: String,
             excludeLive: Boolean,
-        ): DataSource.Factory<Int, MessageItem> {
+        ): PagingSource<Int, MessageItem> {
             return if (excludeLive) {
                 messageDao.getMediaMessagesExcludeLive(conversationId)
             } else {
                 messageDao.getMediaMessages(conversationId)
             }
-        }
-
-        fun getMediaMessages(
-            conversationId: String,
-            index: Int,
-            excludeLive: Boolean,
-        ): LiveData<PagedList<MessageItem>> {
-            val dataSource =
-                if (excludeLive) {
-                    messageDao.getMediaMessagesExcludeLive(conversationId)
-                } else {
-                    messageDao.getMediaMessages(conversationId)
-                }
-            val config =
-                PagedList.Config.Builder()
-                    .setPrefetchDistance(MediaPagerActivity.PAGE_SIZE)
-                    .setPageSize(MediaPagerActivity.PAGE_SIZE)
-                    .setEnablePlaceholders(true)
-                    .build()
-            return LivePagedListBuilder(dataSource, config)
-                .setInitialLoadKey(index)
-                .build()
         }
 
         suspend fun getMediaMessage(
@@ -744,7 +719,7 @@ class ConversationRepository
 
         suspend fun exists(messageId: String) = messageDao.exists(messageId)
 
-        fun findAudiosByConversationId(conversationId: String): DataSource.Factory<Int, MessageItem> =
+        fun findAudiosByConversationId(conversationId: String): PagingSource<Int, MessageItem> =
             messageDao.findAudiosByConversationId(conversationId)
 
         suspend fun indexAudioByConversationId(

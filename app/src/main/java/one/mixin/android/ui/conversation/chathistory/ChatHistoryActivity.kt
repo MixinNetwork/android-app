@@ -15,12 +15,14 @@ import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.lifecycle.LiveData
+import androidx.lifecycle.asLiveData
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
-import androidx.paging.DataSource
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
+import androidx.paging.Pager
+import androidx.paging.PagingConfig
+import androidx.paging.PagingData
+import androidx.paging.PagingSource
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.autoDispose
@@ -181,12 +183,12 @@ class ChatHistoryActivity : BaseActivity() {
         binding.recyclerView.adapter = chatHistoryAdapter
         if (isTranscript) {
             binding.unpinTv.isVisible = false
-            buildLivePagedList(conversationRepository.findTranscriptMessageItemById(transcriptId))
+            buildPagingData { conversationRepository.findTranscriptMessageItemById(transcriptId) }
                 .observe(this) { transcripts ->
                     binding.titleView.rightIb.setOnClickListener {
                         showBottomSheet()
                     }
-                    chatHistoryAdapter.submitList(transcripts)
+                    chatHistoryAdapter.submitData(this@ChatHistoryActivity.lifecycle, transcripts)
                 }
             binding.titleView.rightAnimator.isVisible = true
             binding.titleView.rightIb.setImageResource(R.drawable.ic_more)
@@ -234,9 +236,9 @@ class ChatHistoryActivity : BaseActivity() {
                 this@ChatHistoryActivity.resources.getQuantityString(R.plurals.pinned_message_title, count, count),
                 "",
             )
-            buildLivePagedList(conversationRepository.getPinMessages(conversationId, count))
+            buildPagingData { conversationRepository.getPinMessages(conversationId, count) }
                 .observe(this) { list ->
-                    chatHistoryAdapter.submitList(list)
+                    chatHistoryAdapter.submitData(this@ChatHistoryActivity.lifecycle, list)
                 }
         }
     }
@@ -254,18 +256,16 @@ class ChatHistoryActivity : BaseActivity() {
         AudioPlayer.pause()
     }
 
-    private fun buildLivePagedList(dataSource: DataSource.Factory<Int, ChatHistoryMessageItem>): LiveData<PagedList<ChatHistoryMessageItem>> {
-        val pagedListConfig =
-            PagedList.Config.Builder()
-                .setPrefetchDistance(10 * 2)
-                .setPageSize(10)
-                .setEnablePlaceholders(true)
-                .build()
-        return LivePagedListBuilder(
-            dataSource,
-            pagedListConfig,
-        ).build()
-    }
+    private fun buildPagingData(pagingSourceFactory: () -> PagingSource<Int, ChatHistoryMessageItem>): LiveData<PagingData<ChatHistoryMessageItem>> =
+        Pager(
+            config =
+                PagingConfig(
+                    pageSize = 10,
+                    prefetchDistance = 10 * 2,
+                    enablePlaceholders = true,
+                ),
+            pagingSourceFactory = pagingSourceFactory,
+        ).flow.asLiveData()
 
     private val chatHistoryAdapter by lazy {
         ChatHistoryAdapter(onItemListener, this)

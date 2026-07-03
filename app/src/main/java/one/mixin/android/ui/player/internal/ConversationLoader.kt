@@ -5,8 +5,10 @@ import android.support.v4.media.MediaBrowserCompat
 import android.support.v4.media.MediaDescriptionCompat
 import android.support.v4.media.MediaMetadataCompat
 import androidx.lifecycle.LiveData
-import androidx.paging.PagedList
-import androidx.paging.toLiveData
+import androidx.lifecycle.asLiveData
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.fileSize
 import one.mixin.android.ui.player.internal.AlbumArtCache.DEFAULT_ALBUM_ART
@@ -21,16 +23,13 @@ class ConversationLoader : MusicMetaLoader() {
         db: MixinDatabase,
         pageSize: Int = 10,
         initialLoadKey: Int = 0,
-    ): LiveData<PagedList<MediaMetadataCompat>> =
-        db.messageDao().findAudiosByConversationId(conversationId)
-            .mapByPage { loadMessageItems(it) }
-            .toLiveData(
-                PagedList.Config.Builder()
-                    .setPageSize(pageSize)
-                    .setEnablePlaceholders(true)
-                    .build(),
-                initialLoadKey,
-            )
+    ): LiveData<List<MediaMetadataCompat>> =
+        db.invalidationTracker.createFlow("messages", "users")
+            .map {
+                withContext(Dispatchers.IO) {
+                    loadMessageItems(db.messageDao().findAudiosByConversationIdList(conversationId))
+                }
+            }.asLiveData()
 
     private fun loadMessageItems(messageItems: List<MessageItem>): List<MediaMetadataCompat> {
         val mediaMetadataCompatList = mutableListOf<MediaMetadataCompat>()

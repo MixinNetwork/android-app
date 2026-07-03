@@ -10,7 +10,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.PagedList
+import androidx.paging.PagingData
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.jakewharton.rxbinding3.widget.textChanges
 import com.uber.autodispose.autoDispose
@@ -65,8 +65,8 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
 
     private val adapter by lazy { SearchMessageAdapter() }
 
-    private var observer: Observer<PagedList<SearchMessageDetailItem>>? = null
-    private var curLiveData: LiveData<PagedList<SearchMessageDetailItem>>? = null
+    private var observer: Observer<PagingData<SearchMessageDetailItem>>? = null
+    private var curLiveData: LiveData<PagingData<SearchMessageDetailItem>>? = null
 
     private val binding by viewBinding(FragmentSearchMessageBinding::bind)
 
@@ -226,7 +226,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                 observer = null
                 curLiveData = null
                 binding.progress.isVisible = false
-                adapter.submitList(null)
+                adapter.submitData(viewLifecycleOwner.lifecycle, PagingData.empty())
                 return@launch
             }
 
@@ -246,7 +246,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                 if (s != binding.searchEt.text.toString()) return@Observer
                 binding.progress.isVisible = false
 
-                adapter.submitList(it)
+                adapter.submitData(viewLifecycleOwner.lifecycle, it)
             }
         observer?.let {
             curLiveData?.observe(viewLifecycleOwner, it)

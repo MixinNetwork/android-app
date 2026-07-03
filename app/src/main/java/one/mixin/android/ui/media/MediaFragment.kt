@@ -4,8 +4,12 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ViewAnimator
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutRecyclerViewBinding
@@ -87,15 +91,17 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
         binding.recyclerView.adapter = adapter
         binding.emptyIv.setImageResource(R.drawable.ic_empty_media)
         binding.emptyTv.setText(R.string.NO_MEDIA)
+        viewLifecycleOwner.lifecycleScope.launch {
+            adapter.loadStateFlow.collectLatest { loadStates ->
+                if (loadStates.refresh is LoadState.NotLoading) {
+                    (view as ViewAnimator).displayedChild = if (adapter.itemCount <= 0) 1 else 0
+                }
+            }
+        }
         viewModel.getMediaMessagesExcludeLive(conversationId).observe(
             viewLifecycleOwner,
         ) {
-            if (it.size <= 0) {
-                (view as ViewAnimator).displayedChild = 1
-            } else {
-                (view as ViewAnimator).displayedChild = 0
-            }
-            adapter.submitList(it)
+            adapter.submitData(viewLifecycleOwner.lifecycle, it)
         }
     }
 

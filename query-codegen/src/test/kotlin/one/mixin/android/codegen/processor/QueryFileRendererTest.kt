@@ -106,7 +106,7 @@ class QueryFileRendererTest {
     }
 
     @Test
-    fun rendersLimitOffsetDataSourceFactory() {
+    fun rendersLimitOffsetPagingSource() {
         val source =
             QueryFileRenderer().render(
                 QueryProviderModel(
@@ -115,12 +115,12 @@ class QueryFileRendererTest {
                     functions = emptyList(),
                     limitOffsetFunctions =
                         listOf(
-                            LimitOffsetDataSourceFunctionModel(
+                            LimitOffsetPagingSourceFunctionModel(
                                 name = "observeConversations",
-                                returnType = "DataSource.Factory<Int, ConversationItem>",
+                                returnType = "PagingSource<Int, ConversationItem>",
                                 returnTypeImports =
                                     listOf(
-                                        "androidx.paging.DataSource",
+                                        "androidx.paging.PagingSource",
                                         "one.mixin.android.vo.ConversationItem",
                                     ),
                                 parameters = listOf(QueryParameterModel("database", "MixinDatabase")),
@@ -142,9 +142,9 @@ class QueryFileRendererTest {
 
             import android.annotation.SuppressLint
             import android.database.Cursor
-            import androidx.paging.DataSource
+            import androidx.paging.PagingSource
             import one.mixin.android.db.MixinDatabase
-            import one.mixin.android.db.datasource.MixinLimitOffsetDataSource
+            import one.mixin.android.db.datasource.MixinCountLimitOffsetDataSource
             import one.mixin.android.db.datasource.RoomQuery
             import one.mixin.android.db.datasource.query
             import one.mixin.android.vo.ConversationItem
@@ -153,41 +153,39 @@ class QueryFileRendererTest {
             object GeneratedDataProvider {
                 fun observeConversations(
                     database: MixinDatabase,
-                ): DataSource.Factory<Int, ConversationItem> =
-                    object : DataSource.Factory<Int, ConversationItem>() {
-                        override fun create(): DataSource<Int, ConversationItem> {
-                            val countStatement = RoomQuery.acquire(
-                                ""${'"'}
-                                SELECT count(1) FROM conversations
-                                ""${'"'}.trimIndent(),
-                                0,
-                            )
-                            val offsetStatement = RoomQuery.acquire(
-                                ""${'"'}
-                                SELECT c.rowid FROM conversations c LIMIT ? OFFSET ?
-                                ""${'"'}.trimIndent(),
-                                2,
-                            )
-                            val querySqlGenerator = fun(ids: String): RoomQuery {
-                                return RoomQuery.acquire(
-                                    ""${'"'}
-                                    SELECT * FROM conversations c WHERE c.rowid IN (${'$'}ids)
-                                    ""${'"'}.trimIndent(),
-                                    0,
-                                )
-                            }
-                            return object : MixinLimitOffsetDataSource<ConversationItem>(
-                                database,
-                                countStatement,
-                                offsetStatement,
-                                querySqlGenerator,
-                                arrayOf("conversations", "users"),
-                            ) {
-                                override fun convertRows(cursor: Cursor?): List<ConversationItem> =
-                                    convertToConversationItems(cursor)
-                            }
-                        }
+                ): PagingSource<Int, ConversationItem> {
+                    val countStatement = RoomQuery.acquire(
+                        ""${'"'}
+                        SELECT count(1) FROM conversations
+                        ""${'"'}.trimIndent(),
+                        0,
+                    )
+                    val offsetStatement = RoomQuery.acquire(
+                        ""${'"'}
+                        SELECT c.rowid FROM conversations c LIMIT ? OFFSET ?
+                        ""${'"'}.trimIndent(),
+                        2,
+                    )
+                    val querySqlGenerator = fun(ids: String): RoomQuery {
+                        return RoomQuery.acquire(
+                            ""${'"'}
+                            SELECT * FROM conversations c WHERE c.rowid IN (${'$'}ids)
+                            ""${'"'}.trimIndent(),
+                            0,
+                        )
                     }
+                    return object : MixinCountLimitOffsetDataSource<ConversationItem>(
+                        offsetStatement,
+                        { database.query(countStatement).use { if (it.moveToFirst()) it.getInt(0) else 0 } },
+                        querySqlGenerator,
+                        database,
+                        "conversations",
+                        "users",
+                    ) {
+                        override fun convertRows(cursor: Cursor): List<ConversationItem> =
+                            convertToConversationItems(cursor)
+                    }
+                }
             }
             """.trimIndent(),
             source,
@@ -195,7 +193,7 @@ class QueryFileRendererTest {
     }
 
     @Test
-    fun rendersNoCountDataSourceFactory() {
+    fun rendersNoCountPagingSource() {
         val source =
             QueryFileRenderer().render(
                 QueryProviderModel(
@@ -204,12 +202,12 @@ class QueryFileRendererTest {
                     functions = emptyList(),
                     noCountFunctions =
                         listOf(
-                            NoCountDataSourceFunctionModel(
+                            NoCountPagingSourceFunctionModel(
                                 name = "getPinMessages",
-                                returnType = "DataSource.Factory<Int, ChatHistoryMessageItem>",
+                                returnType = "PagingSource<Int, ChatHistoryMessageItem>",
                                 returnTypeImports =
                                     listOf(
-                                        "androidx.paging.DataSource",
+                                        "androidx.paging.PagingSource",
                                         "one.mixin.android.vo.ChatHistoryMessageItem",
                                     ),
                                 parameters =
@@ -236,11 +234,10 @@ class QueryFileRendererTest {
 
             import android.annotation.SuppressLint
             import android.database.Cursor
-            import androidx.paging.DataSource
+            import androidx.paging.PagingSource
             import one.mixin.android.db.MixinDatabase
-            import one.mixin.android.db.datasource.NoCountLimitOffsetDataSource
+            import one.mixin.android.db.datasource.MixinNonCountLimitOffsetDataSource
             import one.mixin.android.db.datasource.RoomQuery
-            import one.mixin.android.db.datasource.query
             import one.mixin.android.vo.ChatHistoryMessageItem
 
             @SuppressLint("RestrictedApi")
@@ -249,29 +246,26 @@ class QueryFileRendererTest {
                     database: MixinDatabase,
                     conversationId: String,
                     count: Int,
-                ): DataSource.Factory<Int, ChatHistoryMessageItem> =
-                    object : DataSource.Factory<Int, ChatHistoryMessageItem>() {
-                        override fun create(): DataSource<Int, ChatHistoryMessageItem> {
-                            val _statement = RoomQuery.acquire(
-                                ""${'"'}
-                                SELECT * FROM messages WHERE conversation_id = ?
-                                ""${'"'}.trimIndent(),
-                                1,
-                            )
-                            var _argIndex = 1
-                            _statement.bindString(_argIndex, conversationId)
-                            return object : NoCountLimitOffsetDataSource<ChatHistoryMessageItem>(
-                                database,
-                                _statement,
-                                count,
-                                "pin_messages",
-                                "messages",
-                            ) {
-                                override fun convertRows(cursor: Cursor?): List<ChatHistoryMessageItem> =
-                                    convertChatHistoryMessageItem(cursor)
-                            }
-                        }
+                ): PagingSource<Int, ChatHistoryMessageItem> {
+                    val _statement = RoomQuery.acquire(
+                        ""${'"'}
+                        SELECT * FROM messages WHERE conversation_id = ?
+                        ""${'"'}.trimIndent(),
+                        1,
+                    )
+                    var _argIndex = 1
+                    _statement.bindString(_argIndex, conversationId)
+                    return object : MixinNonCountLimitOffsetDataSource<ChatHistoryMessageItem>(
+                        _statement,
+                        count,
+                        database,
+                        "pin_messages",
+                        "messages",
+                    ) {
+                        override fun convertRows(cursor: Cursor): List<ChatHistoryMessageItem> =
+                            convertChatHistoryMessageItem(cursor)
                     }
+                }
             }
             """.trimIndent(),
             source,

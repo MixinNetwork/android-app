@@ -1,6 +1,6 @@
 package one.mixin.android.db
 
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
 import androidx.room3.Dao
 import androidx.room3.Query
 import androidx.room3.RoomWarnings
@@ -80,7 +80,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         ORDER BY t.created_at ASC, t.rowid ASC
         """,
     )
-    fun getTranscriptMessages(transcriptId: String): DataSource.Factory<Int, ChatHistoryMessageItem>
+    fun getTranscriptMessages(transcriptId: String): PagingSource<Int, ChatHistoryMessageItem>
 
     @Query("SELECT count(1) FROM transcript_messages WHERE created_at < (SELECT created_at FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId) AND transcript_id = :transcriptId")
     suspend fun findTranscriptMessageIndex(

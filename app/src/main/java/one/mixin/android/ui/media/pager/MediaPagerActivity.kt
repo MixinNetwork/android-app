@@ -29,7 +29,6 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.net.toFile
 import androidx.core.view.doOnPreDraw
@@ -37,7 +36,7 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.paging.PagedList
+import androidx.paging.PagingData
 import androidx.viewpager2.widget.ViewPager2
 import coil3.annotation.ExperimentalCoilApi
 import coil3.imageLoader
@@ -85,7 +84,6 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
 import one.mixin.android.util.reportEvent
 import one.mixin.android.util.rxpermission.RxPermissions
-import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -288,22 +286,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 } else {
                     viewModel.getMediaMessage(conversationId, messageId) ?: return@launch
                 }
-            val pagedConfig =
-                PagedList.Config.Builder()
-                    .setInitialLoadSizeHint(1)
-                    .setPageSize(1)
-                    .build()
-            val pagedList =
-                PagedList.Builder(
-                    FixedMessageDataSource(listOf(messageItem), 1),
-                    pagedConfig,
-                ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
-                    .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
-                    .build()
             adapter.initialPos = initialIndex
-            adapter.submitList(pagedList) {
-                observeAllDataSource()
-            }
+            adapter.submitData(lifecycle, PagingData.from(listOf(messageItem)))
+            observeAllDataSource()
             if (messageItem.isVideo() || messageItem.isLive()) {
                 checkPip()
                 messageItem.loadVideoOrLive {
@@ -316,38 +301,39 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         lifecycleScope.launch {
             val excludeLive = mediaSource == MediaSource.SharedMedia
             initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
+            adapter.addOnPagesUpdatedListener {
+                positionInitialItem(excludeLive)
+            }
             viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
                 .observe(
                     this@MediaPagerActivity,
                 ) {
-                    if (it.isEmpty()) return@observe
-                    adapter.submitList(it) {
-                        if (firstLoad) {
-                            runCatching {
-                                adapter.initialPos = initialIndex
-                                it.loadAround(initialIndex)
-                                if (excludeLive) {
-                                    binding.viewPager.setCurrentItem(initialIndex, false)
-                                } else if (it.getOrNull(initialIndex)?.messageId == messageId) { // Only change when data is same
-                                    binding.viewPager.setCurrentItem(initialIndex, false)
-                                } else {
-                                    lifecycleScope.launch {
-                                        val total = viewModel.countIndexMediaMessages(conversationId, excludeLive)
-                                        reportEvent("Initial index not found，conversationId: $conversationId，messageId: $messageId, initialIndex: $initialIndex, total: $total")
-                                    }
-                                }
-                            }.onFailure {
-                                lifecycleScope.launch {
-                                    val total = viewModel.countIndexMediaMessages(conversationId, excludeLive)
-                                    reportEvent("${it.message}，conversationId: $conversationId，messageId: $messageId, initialIndex: $initialIndex, total: $total")
-                                }
-                            }
-                            checkOrientation()
-                            firstLoad = false
-                        }
-                    }
+                    adapter.submitData(lifecycle, it)
                 }
         }
+
+    private fun positionInitialItem(excludeLive: Boolean) {
+        if (!firstLoad || adapter.itemCount <= initialIndex) return
+        runCatching {
+            adapter.initialPos = initialIndex
+            val item = adapter.peek(initialIndex) ?: return
+            if (excludeLive || item.messageId == messageId) {
+                binding.viewPager.setCurrentItem(initialIndex, false)
+            } else {
+                lifecycleScope.launch {
+                    val total = viewModel.countIndexMediaMessages(conversationId, excludeLive)
+                    reportEvent("Initial index not found，conversationId: $conversationId，messageId: $messageId, initialIndex: $initialIndex, total: $total")
+                }
+            }
+        }.onFailure {
+            lifecycleScope.launch {
+                val total = viewModel.countIndexMediaMessages(conversationId, excludeLive)
+                reportEvent("${it.message}，conversationId: $conversationId，messageId: $messageId, initialIndex: $initialIndex, total: $total")
+            }
+        }
+        checkOrientation()
+        firstLoad = false
+    }
 
     private fun checkPip() {
         if (pipVideoView.shown) {
@@ -720,7 +706,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     private fun getMessageItemByPosition(position: Int): MessageItem? =
         try {
-            adapter.currentList?.get(position)
+            adapter.peek(position)
         } catch (e: IndexOutOfBoundsException) {
             null
         }
