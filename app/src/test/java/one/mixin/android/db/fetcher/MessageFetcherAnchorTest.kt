@@ -1,10 +1,12 @@
 package one.mixin.android.db.fetcher
 
 import android.content.Context
-import androidx.room.Room
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.datasource.RoomDatabaseCompat
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -22,6 +24,7 @@ class MessageFetcherAnchorTest {
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         db = Room.inMemoryDatabaseBuilder(context, MixinDatabase::class.java)
+            .setDriver(AndroidSQLiteDriver())
             .allowMainThreadQueries()
             .build()
         fetcher = MessageFetcher(db)
@@ -113,7 +116,8 @@ class MessageFetcherAnchorTest {
     }
 
     private fun insertUser() {
-        db.openHelper.writableDatabase.execSQL(
+        RoomDatabaseCompat.execute(
+            db,
             """
             INSERT INTO users(user_id, identity_number, relationship, biography, full_name)
             VALUES (?, ?, ?, ?, ?)
@@ -123,7 +127,8 @@ class MessageFetcherAnchorTest {
     }
 
     private fun insertConversation() {
-        db.openHelper.writableDatabase.execSQL(
+        RoomDatabaseCompat.execute(
+            db,
             """
             INSERT INTO conversations(conversation_id, owner_id, category, name, created_at, status)
             VALUES (?, ?, ?, ?, ?, ?)
@@ -137,7 +142,8 @@ class MessageFetcherAnchorTest {
         messageId: String,
         createdAt: String,
     ) {
-        db.openHelper.writableDatabase.execSQL(
+        RoomDatabaseCompat.execute(
+            db,
             """
             INSERT INTO messages(rowid, id, conversation_id, user_id, category, content, status, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?)
@@ -147,7 +153,8 @@ class MessageFetcherAnchorTest {
     }
 
     private fun insertRemoteStatus(messageId: String) {
-        db.openHelper.writableDatabase.execSQL(
+        RoomDatabaseCompat.execute(
+            db,
             """
             INSERT INTO remote_messages_status(message_id, conversation_id, status)
             VALUES (?, ?, ?)

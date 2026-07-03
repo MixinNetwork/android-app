@@ -1,7 +1,8 @@
 package one.mixin.android.db
 
 import android.content.Context
-import androidx.room.Room
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
@@ -30,6 +31,7 @@ class MessageDaoTest {
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         database = Room.inMemoryDatabaseBuilder(context, MixinDatabase::class.java)
+            .setDriver(AndroidSQLiteDriver())
             .allowMainThreadQueries()
             .build()
         messageDao = database.messageDao()

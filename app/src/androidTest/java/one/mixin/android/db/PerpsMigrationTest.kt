@@ -1,10 +1,12 @@
 package one.mixin.android.db
 
-import androidx.room.testing.MigrationTestHelper
-import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import androidx.room3.testing.MigrationTestHelper
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.platform.app.InstrumentationRegistry
 import one.mixin.android.Constants
+import one.mixin.android.db.datasource.execSQL
+import one.mixin.android.db.datasource.query
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -16,8 +18,9 @@ class PerpsMigrationTest {
     val migrationTestHelper =
         MigrationTestHelper(
             InstrumentationRegistry.getInstrumentation(),
-            PerpsDatabase::class.java.canonicalName,
-            FrameworkSQLiteOpenHelperFactory(),
+            InstrumentationRegistry.getInstrumentation().targetContext.getDatabasePath(Constants.DataBase.PERPS_DB_NAME),
+            AndroidSQLiteDriver(),
+            PerpsDatabase::class,
         )
 
     @Test
@@ -218,7 +221,7 @@ class PerpsMigrationTest {
     }
 
     private fun assertColumn(
-        db: SupportSQLiteDatabase,
+        db: SQLiteConnection,
         table: String,
         column: String,
         defaultValue: String,
@@ -239,7 +242,7 @@ class PerpsMigrationTest {
         }
     }
 
-    private fun SupportSQLiteDatabase.insertMarket() {
+    private fun SQLiteConnection.insertMarket() {
         execSQL(
             """
             INSERT INTO markets (
@@ -256,7 +259,7 @@ class PerpsMigrationTest {
         )
     }
 
-    private fun SupportSQLiteDatabase.insertPositionV2() {
+    private fun SQLiteConnection.insertPositionV2() {
         execSQL(
             """
             INSERT INTO positions (
@@ -272,7 +275,7 @@ class PerpsMigrationTest {
         )
     }
 
-    private fun SupportSQLiteDatabase.insertPositionHistoryV3() {
+    private fun SQLiteConnection.insertPositionHistoryV3() {
         execSQL(
             """
             INSERT INTO position_histories (
@@ -286,7 +289,7 @@ class PerpsMigrationTest {
         )
     }
 
-    private fun SupportSQLiteDatabase.insertOrderV4() {
+    private fun SQLiteConnection.insertOrderV4() {
         execSQL(
             """
             INSERT INTO perps_orders (
@@ -302,7 +305,7 @@ class PerpsMigrationTest {
         )
     }
 
-    private fun SupportSQLiteDatabase.insertOrderV7() {
+    private fun SQLiteConnection.insertOrderV7() {
         execSQL(
             """
             INSERT INTO perps_orders (

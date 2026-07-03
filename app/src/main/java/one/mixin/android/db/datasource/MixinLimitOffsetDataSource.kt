@@ -6,22 +6,18 @@ import android.annotation.SuppressLint
 import android.database.Cursor
 import androidx.annotation.RestrictTo
 import androidx.paging.PositionalDataSource
-import androidx.room.InvalidationTracker
-import androidx.room.RoomDatabase
-import androidx.room.RoomSQLiteQuery
+import androidx.room3.RoomDatabase
 import timber.log.Timber
 
 @SuppressLint("RestrictedApi")
 @RestrictTo(RestrictTo.Scope.LIBRARY_GROUP)
 abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
     private val db: RoomDatabase,
-    private val countQuery: RoomSQLiteQuery,
-    private val offsetStatement: RoomSQLiteQuery,
-    private val querySqlGenerator: (String) -> RoomSQLiteQuery,
+    private val countQuery: RoomQuery,
+    private val offsetStatement: RoomQuery,
+    private val querySqlGenerator: (String) -> RoomQuery,
     private val tables: Array<out String>,
 ) : PositionalDataSource<T>() {
-    private val observer: InvalidationTracker.Observer
-
     /**
      * Count number of rows query can return
      */
@@ -35,7 +31,6 @@ abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
             }
         } finally {
             cursor.close()
-            countQuery.release()
         }
     }
 
@@ -91,7 +86,6 @@ abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
             return convertRows(cursor)
         } finally {
             cursor.close()
-            sqLiteQuery.release()
         }
     }
 
@@ -99,7 +93,7 @@ abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
         startPosition: Int,
         loadCount: Int,
     ): String {
-        val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
+        val offsetQuery = RoomQuery.copyFrom(offsetStatement)
         val argCount = offsetStatement.argCount
         offsetQuery.bindLong(argCount - 1, loadCount.toLong())
         offsetQuery.bindLong(argCount, startPosition.toLong())
@@ -113,17 +107,10 @@ abstract class MixinLimitOffsetDataSource<T : Any> protected constructor(
             return ids.joinToString()
         } finally {
             cursor.close()
-            offsetQuery.release()
         }
     }
 
     init {
-        observer =
-            object : InvalidationTracker.Observer(tables) {
-                override fun onInvalidated(tables: Set<String>) {
-                    invalidate()
-                }
-            }
-        db.invalidationTracker.addWeakObserver(observer)
+        RoomDatabaseCompat.observeInvalidation(db, this, *tables)
     }
 }

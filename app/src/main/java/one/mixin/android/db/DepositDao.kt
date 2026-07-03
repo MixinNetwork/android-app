@@ -1,8 +1,8 @@
 package one.mixin.android.db
 
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.Transaction
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.DestinationTag
 

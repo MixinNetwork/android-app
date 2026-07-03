@@ -1,7 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.os.Parcelable
-import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.room3.RoomRawQuery
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -53,7 +53,7 @@ class Web3FilterParams(
         return formatter.format(Instant.ofEpochMilli(timestamp))
     }
 
-    fun buildQuery(): SimpleSQLiteQuery {
+    fun buildQuery(): RoomRawQuery {
         val filters = mutableListOf<String>()
 
         tokenItems?.let {

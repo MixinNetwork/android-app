@@ -4,6 +4,7 @@ import android.os.CancellationSignal
 import androidx.core.database.getStringOrNull
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import one.mixin.android.db.datasource.query
 import one.mixin.android.extension.createAtToLong
 import one.mixin.android.extension.joinWhiteSpace
 import one.mixin.android.util.FTS_THREAD

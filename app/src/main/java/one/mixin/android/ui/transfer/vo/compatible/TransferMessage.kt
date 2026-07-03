@@ -1,7 +1,7 @@
 package one.mixin.android.ui.transfer.vo.compatible
 
-import androidx.room.ColumnInfo
-import androidx.room.PrimaryKey
+import androidx.room3.ColumnInfo
+import androidx.room3.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable

@@ -50,10 +50,10 @@ class QueryFileRendererTest {
 
             import android.annotation.SuppressLint
             import android.os.CancellationSignal
-            import androidx.room.RoomSQLiteQuery
-            import kotlinx.coroutines.asCoroutineDispatcher
             import kotlinx.coroutines.withContext
             import one.mixin.android.db.MixinDatabase
+            import one.mixin.android.db.datasource.RoomDatabaseCompat
+            import one.mixin.android.db.datasource.RoomQuery
             import one.mixin.android.vo.safe.TokenItem
 
             @SuppressLint("RestrictedApi")
@@ -70,7 +70,7 @@ class QueryFileRendererTest {
                     FROM tokens
                     WHERE symbol LIKE '%' || ? || '%'
                     ""${'"'}.trimIndent()
-                    val _statement = RoomSQLiteQuery.acquire(_sql, 4)
+                    val _statement = RoomQuery.acquire(_sql, 4)
                     var _argIndex = 1
                     if (symbol == null) {
                         _statement.bindNull(_argIndex)
@@ -95,7 +95,7 @@ class QueryFileRendererTest {
                     } else {
                         _statement.bindString(_argIndex, name)
                     }
-                    return withContext(db.queryExecutor.asCoroutineDispatcher()) {
+                    return withContext(RoomDatabaseCompat.queryContext(db)) {
                         callableTokenItem(db, _statement, cancellationSignal).call()
                     }
                 }
@@ -143,9 +143,10 @@ class QueryFileRendererTest {
             import android.annotation.SuppressLint
             import android.database.Cursor
             import androidx.paging.DataSource
-            import androidx.room.RoomSQLiteQuery
             import one.mixin.android.db.MixinDatabase
             import one.mixin.android.db.datasource.MixinLimitOffsetDataSource
+            import one.mixin.android.db.datasource.RoomQuery
+            import one.mixin.android.db.datasource.query
             import one.mixin.android.vo.ConversationItem
 
             @SuppressLint("RestrictedApi")
@@ -155,20 +156,20 @@ class QueryFileRendererTest {
                 ): DataSource.Factory<Int, ConversationItem> =
                     object : DataSource.Factory<Int, ConversationItem>() {
                         override fun create(): DataSource<Int, ConversationItem> {
-                            val countStatement = RoomSQLiteQuery.acquire(
+                            val countStatement = RoomQuery.acquire(
                                 ""${'"'}
                                 SELECT count(1) FROM conversations
                                 ""${'"'}.trimIndent(),
                                 0,
                             )
-                            val offsetStatement = RoomSQLiteQuery.acquire(
+                            val offsetStatement = RoomQuery.acquire(
                                 ""${'"'}
                                 SELECT c.rowid FROM conversations c LIMIT ? OFFSET ?
                                 ""${'"'}.trimIndent(),
                                 2,
                             )
-                            val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
-                                return RoomSQLiteQuery.acquire(
+                            val querySqlGenerator = fun(ids: String): RoomQuery {
+                                return RoomQuery.acquire(
                                     ""${'"'}
                                     SELECT * FROM conversations c WHERE c.rowid IN (${'$'}ids)
                                     ""${'"'}.trimIndent(),
@@ -236,9 +237,10 @@ class QueryFileRendererTest {
             import android.annotation.SuppressLint
             import android.database.Cursor
             import androidx.paging.DataSource
-            import androidx.room.RoomSQLiteQuery
             import one.mixin.android.db.MixinDatabase
             import one.mixin.android.db.datasource.NoCountLimitOffsetDataSource
+            import one.mixin.android.db.datasource.RoomQuery
+            import one.mixin.android.db.datasource.query
             import one.mixin.android.vo.ChatHistoryMessageItem
 
             @SuppressLint("RestrictedApi")
@@ -250,7 +252,7 @@ class QueryFileRendererTest {
                 ): DataSource.Factory<Int, ChatHistoryMessageItem> =
                     object : DataSource.Factory<Int, ChatHistoryMessageItem>() {
                         override fun create(): DataSource<Int, ChatHistoryMessageItem> {
-                            val _statement = RoomSQLiteQuery.acquire(
+                            val _statement = RoomQuery.acquire(
                                 ""${'"'}
                                 SELECT * FROM messages WHERE conversation_id = ?
                                 ""${'"'}.trimIndent(),
@@ -312,6 +314,7 @@ class QueryFileRendererTest {
 
             import android.annotation.SuppressLint
             import one.mixin.android.db.MixinDatabase
+            import one.mixin.android.db.datasource.query
             import one.mixin.android.db.provider.convertToMessageItems
             import one.mixin.android.vo.MessageItem
 
@@ -339,7 +342,7 @@ class QueryFileRendererTest {
     }
 
     @Test
-    fun rendersSimpleSQLiteQueryBuilder() {
+    fun rendersRoomRawQueryBuilder() {
         val source =
             QueryFileRenderer().render(
                 QueryProviderModel(
@@ -348,10 +351,10 @@ class QueryFileRendererTest {
                     functions = emptyList(),
                     simpleQueryFunctions =
                         listOf(
-                            SimpleSQLiteQueryFunctionModel(
+                            RoomRawQueryFunctionModel(
                                 name = "snapshotsQuery",
-                                returnType = "SimpleSQLiteQuery",
-                                returnTypeImports = listOf("androidx.sqlite.db.SimpleSQLiteQuery"),
+                                returnType = "RoomRawQuery",
+                                returnTypeImports = listOf("androidx.room3.RoomRawQuery"),
                                 parameters =
                                     listOf(
                                         QueryParameterModel("whereSql", "String"),
@@ -369,15 +372,15 @@ class QueryFileRendererTest {
             package one.mixin.android.ui.wallet
 
             import android.annotation.SuppressLint
-            import androidx.sqlite.db.SimpleSQLiteQuery
+            import androidx.room3.RoomRawQuery
 
             @SuppressLint("RestrictedApi")
             object WalletFilterQueryGenerated {
                 fun snapshotsQuery(
                     whereSql: String,
                     orderSql: String,
-                ): SimpleSQLiteQuery =
-                    SimpleSQLiteQuery(
+                ): RoomRawQuery =
+                    RoomRawQuery(
                         ""${'"'}
                         SELECT * FROM snapshots ${'$'}whereSql ${'$'}orderSql
                         ""${'"'}.trimIndent(),
@@ -432,18 +435,17 @@ class QueryFileRendererTest {
             import android.annotation.SuppressLint
             import androidx.paging.PagingSource
             import androidx.paging.PagingState
-            import androidx.room.InvalidationTracker
-            import androidx.room.RoomSQLiteQuery
-            import androidx.room.paging.util.INITIAL_ITEM_COUNT
-            import androidx.room.paging.util.INVALID
-            import androidx.room.paging.util.getClippedRefreshKey
-            import androidx.room.paging.util.getLimit
-            import androidx.room.paging.util.getOffset
-            import androidx.room.withTransaction
+            import androidx.room3.paging.util.INITIAL_ITEM_COUNT
+            import androidx.room3.paging.util.getClippedRefreshKey
+            import androidx.room3.paging.util.getLimit
+            import androidx.room3.paging.util.getOffset
+            import androidx.room3.withReadTransaction
             import java.util.concurrent.atomic.AtomicInteger
-            import kotlinx.coroutines.asCoroutineDispatcher
             import kotlinx.coroutines.withContext
             import one.mixin.android.db.WalletDatabase
+            import one.mixin.android.db.datasource.RoomDatabaseCompat
+            import one.mixin.android.db.datasource.RoomQuery
+            import one.mixin.android.db.datasource.query
             import one.mixin.android.vo.route.OrderItem
 
             @SuppressLint("RestrictedApi")
@@ -457,36 +459,29 @@ class QueryFileRendererTest {
                     object : PagingSource<Int, OrderItem>() {
                         private val itemCount = AtomicInteger(INITIAL_ITEM_COUNT)
 
-                        private val observer = object : InvalidationTracker.Observer(arrayOf("orders")) {
-                            override fun onInvalidated(tables: Set<String>) {
-                                invalidate()
-                            }
-                        }
-
                         init {
-                            database.invalidationTracker.addWeakObserver(observer)
+                            RoomDatabaseCompat.observeInvalidation(database, this, "orders")
                         }
 
                         override suspend fun load(params: LoadParams<Int>): LoadResult<Int, OrderItem> {
-                            return withContext(database.queryExecutor.asCoroutineDispatcher()) {
+                            return withContext(RoomDatabaseCompat.queryContext(database)) {
                                 val tempCount = itemCount.get()
                                 if (tempCount == INITIAL_ITEM_COUNT) {
-                                    database.withTransaction {
+                                    database.withReadTransaction {
                                         val count = countItems()
                                         itemCount.set(count)
                                         queryData(params, count)
                                     }
                                 } else {
                                     val loadResult = queryData(params, tempCount)
-                                    database.invalidationTracker.refreshVersionsSync()
                                     @Suppress("UNCHECKED_CAST")
-                                    if (invalid) INVALID as LoadResult.Invalid<Int, OrderItem> else loadResult
+                                    if (invalid) LoadResult.Invalid() else loadResult
                                 }
                             }
                         }
 
                         private fun countItems(): Int {
-                            val countStatement = RoomSQLiteQuery.acquire(
+                            val countStatement = RoomQuery.acquire(
                                 ""${'"'}
                                 SELECT COUNT(DISTINCT o.rowid) FROM orders o ${'$'}whereSql
                                 ""${'"'}.trimIndent(),
@@ -505,7 +500,7 @@ class QueryFileRendererTest {
                             val key = params.key ?: 0
                             val limit = getLimit(params, key)
                             val offset = getOffset(params, key, itemCount)
-                            val offsetStatement = RoomSQLiteQuery.acquire(
+                            val offsetStatement = RoomQuery.acquire(
                                 ""${'"'}
                                 SELECT DISTINCT o.rowid FROM orders o ${'$'}whereSql LIMIT ? OFFSET ?
                                 ""${'"'}.trimIndent(),
@@ -547,8 +542,8 @@ class QueryFileRendererTest {
                             )
                         }
 
-                        private fun querySqlGenerator(ids: String): RoomSQLiteQuery {
-                            return RoomSQLiteQuery.acquire(
+                        private fun querySqlGenerator(ids: String): RoomQuery {
+                            return RoomQuery.acquire(
                                 ""${'"'}
                                 SELECT * FROM orders o WHERE o.rowid IN (${'$'}ids) ${'$'}whereClauseSql ORDER BY ${'$'}orderBySql
                                 ""${'"'}.trimIndent(),

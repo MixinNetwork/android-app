@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet
 
-import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.room3.RoomRawQuery
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.tip.wc.SortOrder
 import org.threeten.bp.Instant
@@ -43,7 +43,7 @@ class OrderFilterParams(
         return "order:${order.name} tokens:${tokenItems?.map { it.symbol }} statuses:${statuses} fundStatuses:${fundStatuses} startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""}"
     }
 
-    fun buildQuery(): SimpleSQLiteQuery {
+    fun buildQuery(): RoomRawQuery {
         val parts = buildQueryParts()
         return WalletFilterQueryGenerated.orders(parts.whereSql, parts.orderSql)
     }

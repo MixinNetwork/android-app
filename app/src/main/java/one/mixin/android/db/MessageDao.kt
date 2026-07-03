@@ -2,11 +2,11 @@ package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RawQuery
-import androidx.room.RoomWarnings
-import androidx.sqlite.db.SupportSQLiteQuery
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RawQuery
+import androidx.room3.RoomWarnings
+import androidx.room3.RoomRawQuery
 import one.mixin.android.db.contants.AUDIOS
 import one.mixin.android.db.contants.DATA
 import one.mixin.android.db.contants.IMAGES
@@ -122,7 +122,7 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun getMediaMessagesList(conversationId: String): List<MessageItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -140,7 +140,7 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun getMediaMessagesExcludeLiveList(conversationId: String): List<MessageItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -252,7 +252,7 @@ interface MessageDao : BaseDao<Message> {
     )
     fun getPostMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -334,7 +334,7 @@ interface MessageDao : BaseDao<Message> {
     ): Int
 
     @RawQuery
-    suspend fun fuzzySearchMessage(query: SupportSQLiteQuery): List<FtsSearchResult>
+    suspend fun fuzzySearchMessage(query: RoomRawQuery): List<FtsSearchResult>
 
     @Query(
         """

@@ -5,29 +5,26 @@ import android.database.Cursor
 import android.os.CancellationSignal
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import androidx.room.RoomDatabase
-import androidx.room.RoomSQLiteQuery
-import androidx.room.paging.util.INITIAL_ITEM_COUNT
-import androidx.room.paging.util.INVALID
-import androidx.room.paging.util.getClippedRefreshKey
-import androidx.room.paging.util.getLimit
-import androidx.room.paging.util.getOffset
-import androidx.room.withTransaction
-import kotlinx.coroutines.asCoroutineDispatcher
+import androidx.room3.RoomDatabase
+import androidx.room3.paging.util.INITIAL_ITEM_COUNT
+import androidx.room3.paging.util.getClippedRefreshKey
+import androidx.room3.paging.util.getLimit
+import androidx.room3.paging.util.getOffset
+import androidx.room3.withReadTransaction
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicInteger
 
 @SuppressLint("RestrictedApi")
 abstract class MixinCountLimitOffsetDataSource<Value : Any>(
-    private val offsetStatement: RoomSQLiteQuery,
+    private val offsetStatement: RoomQuery,
     private val fastCountCallback: () -> Int,
-    private val querySqlGenerator: (ids: String) -> RoomSQLiteQuery,
+    private val querySqlGenerator: (ids: String) -> RoomQuery,
     private val db: RoomDatabase,
 ) : PagingSource<Int, Value>() {
     internal val itemCount: AtomicInteger = AtomicInteger(INITIAL_ITEM_COUNT)
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Value> {
-        return withContext(db.queryExecutor.asCoroutineDispatcher()) {
+        return withContext(RoomDatabaseCompat.queryContext(db)) {
             val tempCount = itemCount.get()
             // if itemCount is < 0, then it is initial load
             if (tempCount == INITIAL_ITEM_COUNT) {
@@ -49,7 +46,7 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
      *  initial load.
      */
     private suspend fun initialLoad(params: LoadParams<Int>): LoadResult<Int, Value> {
-        return db.withTransaction {
+        return db.withReadTransaction {
             val tempCount = getItemCount()
             itemCount.set(tempCount)
             queryData(params = params, itemCount = tempCount)
@@ -65,11 +62,8 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
         tempCount: Int,
     ): LoadResult<Int, Value> {
         val loadResult = queryData(params, tempCount)
-        // manually check if database has been updated. If so, the observer's
-        // invalidation callback will invalidate this paging source
-        db.invalidationTracker.refreshVersionsSync()
         @Suppress("UNCHECKED_CAST")
-        return if (invalid) INVALID as LoadResult.Invalid<Int, Value> else loadResult
+        return if (invalid) LoadResult.Invalid() else loadResult
     }
 
     private fun queryData(
@@ -80,7 +74,7 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
         val key = params.key ?: 0
         val limit: Int = getLimit(params, key)
         val offset: Int = getOffset(params, key, itemCount)
-        val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
+        val offsetQuery = RoomQuery.copyFrom(offsetStatement)
         val argCount = offsetStatement.argCount
         offsetQuery.bindLong(argCount - 1, limit.toLong())
         offsetQuery.bindLong(argCount, offset.toLong())

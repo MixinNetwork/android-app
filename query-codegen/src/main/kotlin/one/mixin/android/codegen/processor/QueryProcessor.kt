@@ -24,7 +24,7 @@ import one.mixin.android.codegen.annotation.GeneratedLimitOffsetDataSourceQuery
 import one.mixin.android.codegen.annotation.GeneratedNoCountDataSourceQuery
 import one.mixin.android.codegen.annotation.GeneratedPagingSourceQuery
 import one.mixin.android.codegen.annotation.GeneratedRawCursorQuery
-import one.mixin.android.codegen.annotation.GeneratedSimpleSQLiteQuery
+import one.mixin.android.codegen.annotation.GeneratedRoomRawQuery
 
 class QueryProcessor(
     environment: SymbolProcessorEnvironment,
@@ -50,7 +50,7 @@ class QueryProcessor(
         val limitOffsetFunctions = allFunctions.filter { it.hasAnnotation<GeneratedLimitOffsetDataSourceQuery>() }
         val noCountFunctions = allFunctions.filter { it.hasAnnotation<GeneratedNoCountDataSourceQuery>() }
         val rawCursorFunctions = allFunctions.filter { it.hasAnnotation<GeneratedRawCursorQuery>() }
-        val simpleQueryFunctions = allFunctions.filter { it.hasAnnotation<GeneratedSimpleSQLiteQuery>() }
+        val simpleQueryFunctions = allFunctions.filter { it.hasAnnotation<GeneratedRoomRawQuery>() }
         val pagingSourceFunctions = allFunctions.filter { it.hasAnnotation<GeneratedPagingSourceQuery>() }
         if (queryFunctions.isEmpty() && limitOffsetFunctions.isEmpty() && noCountFunctions.isEmpty() && rawCursorFunctions.isEmpty() && simpleQueryFunctions.isEmpty() && pagingSourceFunctions.isEmpty()) return
 
@@ -170,15 +170,15 @@ class QueryProcessor(
         )
     }
 
-    private fun simpleQueryFunctionModel(function: KSFunctionDeclaration): SimpleSQLiteQueryFunctionModel {
-        val annotation = function.annotation<GeneratedSimpleSQLiteQuery>()
+    private fun simpleQueryFunctionModel(function: KSFunctionDeclaration): RoomRawQueryFunctionModel {
+        val annotation = function.annotation<GeneratedRoomRawQuery>()
         val importCollector = TypeImportCollector()
         val parameters = function.parameters(importCollector)
         val returnType = function.returnType?.resolve()
         if (returnType == null) {
-            logger.error("GeneratedSimpleSQLiteQuery functions must declare a return type", function)
+            logger.error("GeneratedRoomRawQuery functions must declare a return type", function)
         }
-        return SimpleSQLiteQueryFunctionModel(
+        return RoomRawQueryFunctionModel(
             name = function.simpleName.asString(),
             returnType = returnType?.let { importCollector.render(it) } ?: "Unit",
             returnTypeImports = importCollector.imports,

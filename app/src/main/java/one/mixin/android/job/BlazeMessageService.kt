@@ -16,7 +16,6 @@ import androidx.core.content.getSystemService
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import androidx.room.InvalidationTracker
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
 import com.uber.autodispose.android.lifecycle.scope
@@ -40,6 +39,7 @@ import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.datasource.RoomDatabaseCompat
 import one.mixin.android.db.deleteMessageById
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.flow.MessageFlow.ANY_ID
@@ -349,26 +349,22 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private var ackObservedDatabase: PendingDatabase? = null
+    private var ackObserverJob: Job? = null
 
     private fun startObserveAck() {
-        val db = pendingDatabase()
-        ackObservedDatabase = db
-        db.addObserver(ackObserver)
+        ackObserverJob?.cancel()
+        ackObserverJob =
+            pendingDatabase().observeInvalidation(lifecycleScope, "jobs") {
+                runAckJob()
+            }
     }
 
     private fun stopObserveAck() {
-        ackObservedDatabase?.removeObserver(ackObserver)
-        ackObservedDatabase = null
+        ackObserverJob?.cancel()
+        ackObserverJob = null
     }
 
     private var ackJob: Job? = null
-    private val ackObserver =
-        object : InvalidationTracker.Observer("jobs") {
-            override fun onInvalidated(tables: Set<String>) {
-                runAckJob()
-            }
-        }
 
     @Synchronized
     private fun runAckJob() {
@@ -442,47 +438,41 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private var statusObservedDatabase: MixinDatabase? = null
+    private var statusObserverJob: Job? = null
 
     private fun startObserveStatus() {
         val db = mixinDatabase()
-        statusObservedDatabase = db
-        db.invalidationTracker.addObserver(statusObserver)
+        statusObserverJob?.cancel()
+        statusObserverJob =
+            RoomDatabaseCompat.observeInvalidation(lifecycleScope, db, "remote_messages_status") {
+                runStatusJob()
+            }
     }
 
     private fun stopObserveStatus() {
-        statusObservedDatabase?.invalidationTracker?.removeObserver(statusObserver)
-        statusObservedDatabase = null
+        statusObserverJob?.cancel()
+        statusObserverJob = null
     }
 
     private var statusJob: Job? = null
-    private val statusObserver =
-        object : InvalidationTracker.Observer("remote_messages_status") {
-            override fun onInvalidated(tables: Set<String>) {
-                runStatusJob()
-            }
-        }
 
-    private var expiredObservedDatabase: MixinDatabase? = null
+    private var expiredObserverJob: Job? = null
 
     private fun startObserveExpired() {
         val db = mixinDatabase()
-        expiredObservedDatabase = db
-        db.invalidationTracker.addObserver(expiredObserver)
+        expiredObserverJob?.cancel()
+        expiredObserverJob =
+            RoomDatabaseCompat.observeInvalidation(lifecycleScope, db, "expired_messages") {
+                runExpiredJob()
+            }
     }
 
     private fun stopObserveExpired() {
-        expiredObservedDatabase?.invalidationTracker?.removeObserver(expiredObserver)
-        expiredObservedDatabase = null
+        expiredObserverJob?.cancel()
+        expiredObserverJob = null
     }
 
     private var expiredJob: Job? = null
-    private val expiredObserver =
-        object : InvalidationTracker.Observer("expired_messages") {
-            override fun onInvalidated(tables: Set<String>) {
-                runExpiredJob()
-            }
-        }
 
     @Synchronized
     private fun runStatusJob() {
