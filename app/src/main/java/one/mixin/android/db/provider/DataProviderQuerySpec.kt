@@ -1,14 +1,14 @@
 package one.mixin.android.db.provider
 
 import android.os.CancellationSignal
-import androidx.paging.DataSource
+import androidx.paging.PagingSource
+import one.mixin.android.codegen.annotation.GeneratedLimitOffsetPagingSourceQuery
+import one.mixin.android.codegen.annotation.GeneratedNoCountPagingSourceQuery
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
 import one.mixin.android.codegen.annotation.GeneratedQuery
 import one.mixin.android.codegen.annotation.GeneratedQueryProvider
-import one.mixin.android.codegen.annotation.GeneratedLimitOffsetDataSourceQuery
-import one.mixin.android.codegen.annotation.GeneratedNoCountDataSourceQuery
 import one.mixin.android.codegen.annotation.GeneratedRawCursorQuery
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.ChatMinimal
@@ -215,16 +215,16 @@ private const val PIN_MESSAGES_SQL =
 
 @GeneratedQueryProvider(generatedName = "DataProviderGenerated")
 interface DataProviderQuerySpec {
-    @GeneratedLimitOffsetDataSourceQuery(
+    @GeneratedLimitOffsetPagingSourceQuery(
         countSql = OBSERVE_CONVERSATIONS_COUNT_SQL,
         offsetSql = OBSERVE_CONVERSATIONS_OFFSET_SQL,
         querySql = OBSERVE_CONVERSATIONS_QUERY_SQL,
         tables = ["message_mentions", "conversations", "users"],
         converter = "convertToConversationItems",
     )
-    fun observeConversations(database: MixinDatabase): DataSource.Factory<Int, ConversationItem>
+    fun observeConversations(database: MixinDatabase): PagingSource<Int, ConversationItem>
 
-    @GeneratedLimitOffsetDataSourceQuery(
+    @GeneratedLimitOffsetPagingSourceQuery(
         countSql = OBSERVE_CONVERSATIONS_BY_CIRCLE_COUNT_SQL,
         offsetSql = OBSERVE_CONVERSATIONS_BY_CIRCLE_OFFSET_SQL,
         querySql = OBSERVE_CONVERSATIONS_BY_CIRCLE_QUERY_SQL,
@@ -234,9 +234,9 @@ interface DataProviderQuerySpec {
     fun observeConversationsByCircleId(
         circleId: String,
         database: MixinDatabase,
-    ): DataSource.Factory<Int, ConversationItem>
+    ): PagingSource<Int, ConversationItem>
 
-    @GeneratedNoCountDataSourceQuery(
+    @GeneratedNoCountPagingSourceQuery(
         sql = PIN_MESSAGES_SQL,
         binds = ["conversationId"],
         count = "count",
@@ -247,7 +247,7 @@ interface DataProviderQuerySpec {
         database: MixinDatabase,
         conversationId: String,
         count: Int,
-    ): DataSource.Factory<Int, ChatHistoryMessageItem>
+    ): PagingSource<Int, ChatHistoryMessageItem>
 
     @GeneratedQuery(
         sql = FUZZY_SEARCH_TOKEN_SQL,

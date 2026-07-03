@@ -1,6 +1,5 @@
 package one.mixin.android.db
 
-import androidx.paging.DataSource
 import androidx.paging.PagingSource
 import androidx.room3.Dao
 import androidx.room3.Query
@@ -19,24 +18,24 @@ interface SnapshotDao : BaseDao<Snapshot> {
     }
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC")
-    fun snapshots(assetId: String): DataSource.Factory<Int, SnapshotItem>
+    fun snapshots(assetId: String): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
-    fun snapshotsOrderByAmount(assetId: String): DataSource.Factory<Int, SnapshotItem>
+    fun snapshotsOrderByAmount(assetId: String): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsByType(
         assetId: String,
         type: String,
         otherType: String? = null,
-    ): DataSource.Factory<Int, SnapshotItem>
+    ): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId AND s.type IN (:type, :otherType) ORDER BY abs(s.amount) DESC, s.snapshot_id DESC")
     fun snapshotsByTypeOrderByAmount(
         assetId: String,
         type: String,
         otherType: String? = null,
-    ): DataSource.Factory<Int, SnapshotItem>
+    ): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC")
     fun snapshotsPaging(assetId: String): PagingSource<Int, SnapshotItem>
@@ -71,25 +70,25 @@ interface SnapshotDao : BaseDao<Snapshot> {
     suspend fun findSnapshotByTraceId(traceId: String): SnapshotItem?
 
     @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY s.created_at DESC")
-    fun allSnapshots(): DataSource.Factory<Int, SnapshotItem>
+    fun allSnapshots(): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY abs(s.amount * a.price_usd) DESC")
-    fun allSnapshotsOrderByAmount(): DataSource.Factory<Int, SnapshotItem>
+    fun allSnapshotsOrderByAmount(): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type IN (:type, :otherType) ORDER BY s.created_at DESC")
     fun allSnapshotsByType(
         type: String,
         otherType: String? = null,
-    ): DataSource.Factory<Int, SnapshotItem>
+    ): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.type IN (:type, :otherType) ORDER BY abs(s.amount * a.price_usd) DESC")
     fun allSnapshotsByTypeOrderByAmount(
         type: String,
         otherType: String? = null,
-    ): DataSource.Factory<Int, SnapshotItem>
+    ): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.opponent_id = :opponentId AND s.type != 'pending' ORDER BY s.created_at DESC, s.snapshot_id DESC")
-    fun snapshotsByUserId(opponentId: String): DataSource.Factory<Int, SnapshotItem>
+    fun snapshotsByUserId(opponentId: String): PagingSource<Int, SnapshotItem>
 
     @Query("DELETE FROM snapshots WHERE asset_id = :assetId AND type = 'pending'")
     suspend fun clearPendingDepositsByAssetId(assetId: String)

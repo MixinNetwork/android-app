@@ -20,8 +20,8 @@ import com.google.devtools.ksp.symbol.Variance
 import com.google.devtools.ksp.validate
 import one.mixin.android.codegen.annotation.GeneratedQuery
 import one.mixin.android.codegen.annotation.GeneratedQueryProvider
-import one.mixin.android.codegen.annotation.GeneratedLimitOffsetDataSourceQuery
-import one.mixin.android.codegen.annotation.GeneratedNoCountDataSourceQuery
+import one.mixin.android.codegen.annotation.GeneratedLimitOffsetPagingSourceQuery
+import one.mixin.android.codegen.annotation.GeneratedNoCountPagingSourceQuery
 import one.mixin.android.codegen.annotation.GeneratedPagingSourceQuery
 import one.mixin.android.codegen.annotation.GeneratedRawCursorQuery
 import one.mixin.android.codegen.annotation.GeneratedRoomRawQuery
@@ -47,8 +47,8 @@ class QueryProcessor(
     private fun generateProvider(provider: KSClassDeclaration) {
         val allFunctions = provider.getAllFunctions().toList()
         val queryFunctions = allFunctions.filter { it.hasAnnotation<GeneratedQuery>() }
-        val limitOffsetFunctions = allFunctions.filter { it.hasAnnotation<GeneratedLimitOffsetDataSourceQuery>() }
-        val noCountFunctions = allFunctions.filter { it.hasAnnotation<GeneratedNoCountDataSourceQuery>() }
+        val limitOffsetFunctions = allFunctions.filter { it.hasAnnotation<GeneratedLimitOffsetPagingSourceQuery>() }
+        val noCountFunctions = allFunctions.filter { it.hasAnnotation<GeneratedNoCountPagingSourceQuery>() }
         val rawCursorFunctions = allFunctions.filter { it.hasAnnotation<GeneratedRawCursorQuery>() }
         val simpleQueryFunctions = allFunctions.filter { it.hasAnnotation<GeneratedRoomRawQuery>() }
         val pagingSourceFunctions = allFunctions.filter { it.hasAnnotation<GeneratedPagingSourceQuery>() }
@@ -103,15 +103,15 @@ class QueryProcessor(
         )
     }
 
-    private fun limitOffsetFunctionModel(function: KSFunctionDeclaration): LimitOffsetDataSourceFunctionModel {
-        val annotation = function.annotation<GeneratedLimitOffsetDataSourceQuery>()
+    private fun limitOffsetFunctionModel(function: KSFunctionDeclaration): LimitOffsetPagingSourceFunctionModel {
+        val annotation = function.annotation<GeneratedLimitOffsetPagingSourceQuery>()
         val importCollector = TypeImportCollector()
         val parameters = function.parameters(importCollector)
         val returnType = function.returnType?.resolve()
         if (returnType == null) {
-            logger.error("GeneratedLimitOffsetDataSourceQuery functions must declare a return type", function)
+            logger.error("GeneratedLimitOffsetPagingSourceQuery functions must declare a return type", function)
         }
-        return LimitOffsetDataSourceFunctionModel(
+        return LimitOffsetPagingSourceFunctionModel(
             name = function.simpleName.asString(),
             returnType = returnType?.let { importCollector.render(it) } ?: "Unit",
             returnTypeImports = importCollector.imports,
@@ -126,15 +126,15 @@ class QueryProcessor(
         )
     }
 
-    private fun noCountFunctionModel(function: KSFunctionDeclaration): NoCountDataSourceFunctionModel {
-        val annotation = function.annotation<GeneratedNoCountDataSourceQuery>()
+    private fun noCountFunctionModel(function: KSFunctionDeclaration): NoCountPagingSourceFunctionModel {
+        val annotation = function.annotation<GeneratedNoCountPagingSourceQuery>()
         val importCollector = TypeImportCollector()
         val parameters = function.parameters(importCollector)
         val returnType = function.returnType?.resolve()
         if (returnType == null) {
-            logger.error("GeneratedNoCountDataSourceQuery functions must declare a return type", function)
+            logger.error("GeneratedNoCountPagingSourceQuery functions must declare a return type", function)
         }
-        return NoCountDataSourceFunctionModel(
+        return NoCountPagingSourceFunctionModel(
             name = function.simpleName.asString(),
             returnType = returnType?.let { importCollector.render(it) } ?: "Unit",
             returnTypeImports = importCollector.imports,

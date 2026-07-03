@@ -60,10 +60,10 @@ abstract class PagingHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<
         }
     }
 
-    private var headerObserver: PagedHeaderAdapterDataObserver? = null
+    private var headerObserver: PagingHeaderAdapterDataObserver? = null
 
     override fun registerAdapterDataObserver(observer: RecyclerView.AdapterDataObserver) {
-        headerObserver = PagedHeaderAdapterDataObserver(observer, if (isShowHeader()) 1 else 0)
+        headerObserver = PagingHeaderAdapterDataObserver(observer, if (isShowHeader()) 1 else 0)
         try {
             super.registerAdapterDataObserver(headerObserver!!)
         } catch (e: Exception) {

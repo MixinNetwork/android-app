@@ -2,7 +2,7 @@ package one.mixin.android.codegen.annotation
 
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.SOURCE)
-annotation class GeneratedLimitOffsetDataSourceQuery(
+annotation class GeneratedLimitOffsetPagingSourceQuery(
     val countSql: String,
     val offsetSql: String,
     val querySql: String,

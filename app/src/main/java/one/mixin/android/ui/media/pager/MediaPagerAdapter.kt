@@ -14,7 +14,7 @@ import one.mixin.android.extension.displayRatio
 import one.mixin.android.extension.inflate
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
+import one.mixin.android.ui.common.recyclerview.SafePagingDataAdapter
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isImage
@@ -29,7 +29,7 @@ class MediaPagerAdapter(
     private val context: Context,
     private val onDismissListener: DismissFrameLayout.OnDismissListener,
     private val onMediaPagerAdapterListener: MediaPagerAdapterListener,
-) : SafePagedListAdapter<MessageItem, MediaPagerHolder>(MessageItem.DIFF_CALLBACK) {
+) : SafePagingDataAdapter<MessageItem, MediaPagerHolder>(MessageItem.DIFF_CALLBACK) {
     var initialPos: Int = 0
 
     private val videoStatusCache = LruCache<String, String>(100)

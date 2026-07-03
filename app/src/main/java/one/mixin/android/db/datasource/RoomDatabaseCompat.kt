@@ -2,7 +2,6 @@ package one.mixin.android.db.datasource
 
 import android.database.Cursor
 import android.os.CancellationSignal
-import androidx.paging.DataSource
 import androidx.paging.PagingSource
 import androidx.room3.PooledConnection
 import androidx.room3.RoomDatabase
@@ -98,16 +97,6 @@ object RoomDatabaseCompat {
                 connection.withTransaction(SQLiteTransactionType.IMMEDIATE, block)
             }
         }
-    }
-
-    @JvmStatic
-    fun observeInvalidation(
-        db: RoomDatabase,
-        dataSource: DataSource<*, *>,
-        vararg tables: String,
-    ) {
-        val job = observeInvalidationForTables(db.getCoroutineScope(), db, tables) { dataSource.invalidate() }
-        dataSource.addInvalidatedCallback { job.cancel() }
     }
 
     @JvmStatic

@@ -14,7 +14,6 @@ import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
-import androidx.paging.PositionalDataSource
 import androidx.recyclerview.widget.DiffUtil
 import androidx.room3.Entity
 import androidx.room3.Ignore
@@ -416,23 +415,6 @@ private fun MessageItem.simpleChat(): String {
         isPost() -> content!!
         isLocation() -> "[LOCATION https://maps.google.com/?q=${toLocationData(content).run { "${this?.latitude}&${this?.longitude}" }}]"
         else -> throw IllegalArgumentException()
-    }
-}
-
-class FixedMessageDataSource<T : Any>(private val items: List<T>, private val totalCount: Int) :
-    PositionalDataSource<T>() {
-    override fun loadRange(
-        params: LoadRangeParams,
-        callback: LoadRangeCallback<T>,
-    ) {
-        callback.onResult(items)
-    }
-
-    override fun loadInitial(
-        params: LoadInitialParams,
-        callback: LoadInitialCallback<T>,
-    ) {
-        callback.onResult(items, 0, totalCount)
     }
 }
 
