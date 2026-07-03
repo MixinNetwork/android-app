@@ -8,6 +8,7 @@ import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 import one.mixin.android.util.reportException

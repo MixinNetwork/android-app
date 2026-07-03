@@ -1,11 +1,11 @@
 package one.mixin.android.db.web3
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RawQuery
-import androidx.room.RoomRawQuery
-import androidx.room.RoomWarnings
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RawQuery
+import androidx.room3.RoomRawQuery
+import androidx.room3.RoomWarnings
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.Constants
 import one.mixin.android.db.BaseDao

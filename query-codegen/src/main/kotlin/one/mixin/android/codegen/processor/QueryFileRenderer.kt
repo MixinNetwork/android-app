@@ -7,7 +7,7 @@ data class QueryProviderModel(
     val limitOffsetFunctions: List<LimitOffsetDataSourceFunctionModel> = emptyList(),
     val noCountFunctions: List<NoCountDataSourceFunctionModel> = emptyList(),
     val rawCursorFunctions: List<RawCursorQueryFunctionModel> = emptyList(),
-    val simpleQueryFunctions: List<SimpleSQLiteQueryFunctionModel> = emptyList(),
+    val simpleQueryFunctions: List<RoomRawQueryFunctionModel> = emptyList(),
     val pagingSourceFunctions: List<PagingSourceQueryFunctionModel> = emptyList(),
 )
 
@@ -69,7 +69,7 @@ data class RawCursorQueryFunctionModel(
     val converterName: String,
 )
 
-data class SimpleSQLiteQueryFunctionModel(
+data class RoomRawQueryFunctionModel(
     val name: String,
     val returnType: String,
     val returnTypeImports: List<String>,
@@ -99,7 +99,8 @@ class QueryFileRenderer {
                 listOf(
                     "android.annotation.SuppressLint",
                 ) +
-                    model.roomSQLiteQueryImports() +
+                    model.roomQueryImports() +
+                    model.roomDatabaseCompatImports() +
                     model.coroutinesImports() +
                     model.functions.flatMap { it.parameterImports + it.returnTypeImports } +
                     model.limitOffsetFunctions.flatMap { it.parameterImports + it.returnTypeImports } +
@@ -107,6 +108,7 @@ class QueryFileRenderer {
                     model.rawCursorFunctions.flatMap { it.parameterImports + it.returnTypeImports + it.converterImport() } +
                     model.simpleQueryFunctions.flatMap { it.parameterImports + it.returnTypeImports } +
                     model.pagingSourceFunctions.flatMap { it.parameterImports + it.returnTypeImports + it.converterImport() } +
+                    model.queryExtensionImports() +
                     model.limitOffsetImports() +
                     model.noCountImports() +
                     model.pagingSourceImports()
@@ -174,7 +176,7 @@ class QueryFileRenderer {
             lines += "        $sqlLine"
         }
         lines += "        \"\"\".trimIndent()"
-        lines += "        val _statement = RoomSQLiteQuery.acquire(_sql, ${function.bindParameters.size})"
+        lines += "        val _statement = RoomQuery.acquire(_sql, ${function.bindParameters.size})"
         function.bindParameters.forEachIndexed { index, bindParameter ->
             val argIndex = index + 1
             if (index == 0) {
@@ -184,7 +186,7 @@ class QueryFileRenderer {
             }
             renderBind(lines, function, bindParameter)
         }
-        lines += "        return withContext(${function.databaseParameter}.queryExecutor.asCoroutineDispatcher()) {"
+        lines += "        return withContext(RoomDatabaseCompat.queryContext(${function.databaseParameter})) {"
         lines += "            ${function.callableName}(${function.databaseParameter}, _statement, ${function.cancellationSignalParameter}).call()"
         lines += "        }"
         lines += "    }"
@@ -204,8 +206,8 @@ class QueryFileRenderer {
         lines += "            override fun create(): DataSource<Int, $itemType> {"
         renderRoomQueryAcquire(lines, "countStatement", function.countSql, 0, "                ")
         renderRoomQueryAcquire(lines, "offsetStatement", function.offsetSql, 2, "                ")
-        lines += "                val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {"
-        lines += "                    return RoomSQLiteQuery.acquire("
+        lines += "                val querySqlGenerator = fun(ids: String): RoomQuery {"
+        lines += "                    return RoomQuery.acquire("
         renderSqlLiteral(lines, function.querySql.renderSqlTemplate(function.parameters.map { it.name } + "ids"), "                        ")
         lines += "                        0,"
         lines += "                    )"
@@ -245,14 +247,14 @@ class QueryFileRenderer {
 
     private fun renderSimpleQueryFunction(
         lines: MutableList<String>,
-        function: SimpleSQLiteQueryFunctionModel,
+        function: RoomRawQueryFunctionModel,
     ) {
         lines += "    fun ${function.name}("
         function.parameters.forEach { parameter ->
             lines += "        ${parameter.name}: ${parameter.type},"
         }
         lines += "    ): ${function.returnType} ="
-        lines += "        SimpleSQLiteQuery("
+        lines += "        RoomRawQuery("
         renderSqlLiteral(lines, function.sql.renderSqlTemplate(function.parameters.map { it.name }), "            ")
         lines += "        )"
     }
@@ -270,30 +272,23 @@ class QueryFileRenderer {
         lines += "        object : PagingSource<Int, $itemType>() {"
         lines += "            private val itemCount = AtomicInteger(INITIAL_ITEM_COUNT)"
         lines += ""
-        lines += "            private val observer = object : InvalidationTracker.Observer(arrayOf(${function.tables.joinToString { "\"$it\"" }})) {"
-        lines += "                override fun onInvalidated(tables: Set<String>) {"
-        lines += "                    invalidate()"
-        lines += "                }"
-        lines += "            }"
-        lines += ""
         lines += "            init {"
-        lines += "                ${function.databaseParameter}.invalidationTracker.addWeakObserver(observer)"
+        lines += "                RoomDatabaseCompat.observeInvalidation(${function.databaseParameter}, this, ${function.tables.joinToString { "\"$it\"" }})"
         lines += "            }"
         lines += ""
         lines += "            override suspend fun load(params: LoadParams<Int>): LoadResult<Int, $itemType> {"
-        lines += "                return withContext(${function.databaseParameter}.queryExecutor.asCoroutineDispatcher()) {"
+        lines += "                return withContext(RoomDatabaseCompat.queryContext(${function.databaseParameter})) {"
         lines += "                    val tempCount = itemCount.get()"
         lines += "                    if (tempCount == INITIAL_ITEM_COUNT) {"
-        lines += "                        ${function.databaseParameter}.withTransaction {"
+        lines += "                        ${function.databaseParameter}.withReadTransaction {"
         lines += "                            val count = countItems()"
         lines += "                            itemCount.set(count)"
         lines += "                            queryData(params, count)"
         lines += "                        }"
         lines += "                    } else {"
         lines += "                        val loadResult = queryData(params, tempCount)"
-        lines += "                        ${function.databaseParameter}.invalidationTracker.refreshVersionsSync()"
         lines += "                        @Suppress(\"UNCHECKED_CAST\")"
-        lines += "                        if (invalid) INVALID as LoadResult.Invalid<Int, $itemType> else loadResult"
+        lines += "                        if (invalid) LoadResult.Invalid() else loadResult"
         lines += "                    }"
         lines += "                }"
         lines += "            }"
@@ -350,8 +345,8 @@ class QueryFileRenderer {
         lines += "                )"
         lines += "            }"
         lines += ""
-        lines += "            private fun querySqlGenerator(ids: String): RoomSQLiteQuery {"
-        lines += "                return RoomSQLiteQuery.acquire("
+        lines += "            private fun querySqlGenerator(ids: String): RoomQuery {"
+        lines += "                return RoomQuery.acquire("
         renderSqlLiteral(lines, function.querySql.renderSqlTemplate(function.parameters.map { it.name } + "ids"), "                    ")
         lines += "                    0,"
         lines += "                )"
@@ -410,7 +405,7 @@ class QueryFileRenderer {
         argCount: Int,
         indent: String,
     ) {
-        lines += "${indent}val $variableName = RoomSQLiteQuery.acquire("
+        lines += "${indent}val $variableName = RoomQuery.acquire("
         renderSqlLiteral(lines, sql, "$indent    ")
         lines += "$indent    $argCount,"
         lines += "$indent)"
@@ -514,11 +509,25 @@ class QueryFileRenderer {
             )
         }
 
-    private fun QueryProviderModel.roomSQLiteQueryImports(): List<String> =
+    private fun QueryProviderModel.roomQueryImports(): List<String> =
         if (functions.isEmpty() && limitOffsetFunctions.isEmpty() && noCountFunctions.isEmpty() && pagingSourceFunctions.isEmpty()) {
             emptyList()
         } else {
-            listOf("androidx.room.RoomSQLiteQuery")
+            listOf("one.mixin.android.db.datasource.RoomQuery")
+        }
+
+    private fun QueryProviderModel.queryExtensionImports(): List<String> =
+        if (limitOffsetFunctions.isEmpty() && noCountFunctions.isEmpty() && rawCursorFunctions.isEmpty() && pagingSourceFunctions.isEmpty()) {
+            emptyList()
+        } else {
+            listOf("one.mixin.android.db.datasource.query")
+        }
+
+    private fun QueryProviderModel.roomDatabaseCompatImports(): List<String> =
+        if (functions.isEmpty() && pagingSourceFunctions.isEmpty()) {
+            emptyList()
+        } else {
+            listOf("one.mixin.android.db.datasource.RoomDatabaseCompat")
         }
 
     private fun QueryProviderModel.coroutinesImports(): List<String> =
@@ -526,7 +535,6 @@ class QueryFileRenderer {
             emptyList()
         } else {
             listOf(
-                "kotlinx.coroutines.asCoroutineDispatcher",
                 "kotlinx.coroutines.withContext",
             )
         }
@@ -537,13 +545,12 @@ class QueryFileRenderer {
         } else {
             listOf(
                 "androidx.paging.PagingState",
-                "androidx.room.InvalidationTracker",
-                "androidx.room.paging.util.INITIAL_ITEM_COUNT",
-                "androidx.room.paging.util.INVALID",
-                "androidx.room.paging.util.getClippedRefreshKey",
-                "androidx.room.paging.util.getLimit",
-                "androidx.room.paging.util.getOffset",
-                "androidx.room.withTransaction",
+                "androidx.room3.paging.util.INITIAL_ITEM_COUNT",
+                "androidx.room3.paging.util.getClippedRefreshKey",
+                "androidx.room3.paging.util.getLimit",
+                "androidx.room3.paging.util.getOffset",
+                "androidx.room3.withReadTransaction",
+                "one.mixin.android.db.datasource.RoomDatabaseCompat",
                 "java.util.concurrent.atomic.AtomicInteger",
             )
         }

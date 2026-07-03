@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDatabaseDebugBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.WalletDatabase
+import one.mixin.android.db.datasource.RoomDatabaseCompat
 import one.mixin.android.db.pending.PendingDatabaseImp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getClipboardManager
@@ -94,7 +95,7 @@ class DatabaseDebugFragment : BaseFragment(R.layout.fragment_database_debug) {
 
     private fun queryWalletDatabase(sql: String): String {
         return try {
-            val cursor = walletDb.openHelper.readableDatabase.query(sql)
+            val cursor = RoomDatabaseCompat.query(walletDb, sql)
             val result = StringBuilder()
             
             val columnNames = cursor.columnNames

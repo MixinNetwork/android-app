@@ -5,32 +5,26 @@ import android.database.Cursor
 import android.os.CancellationSignal
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
-import androidx.room.RoomDatabase
-import androidx.room.RoomSQLiteQuery
-import androidx.room.paging.util.ThreadSafeInvalidationObserver
-import androidx.room.paging.util.getClippedRefreshKey
-import androidx.room.paging.util.getLimit
-import androidx.room.paging.util.getOffset
-import androidx.room.withTransaction
-import kotlinx.coroutines.asCoroutineDispatcher
+import androidx.room3.RoomDatabase
+import androidx.room3.paging.util.getClippedRefreshKey
+import androidx.room3.paging.util.getLimit
+import androidx.room3.paging.util.getOffset
+import androidx.room3.withReadTransaction
 import kotlinx.coroutines.withContext
 
 @SuppressLint("RestrictedApi")
 abstract class MixinNonCountLimitOffsetDataSource<Value : Any>(
-    private val offsetStatement: RoomSQLiteQuery,
+    private val offsetStatement: RoomQuery,
     private val totalCount: Int,
     private val db: RoomDatabase,
     vararg tables: String,
 ) : PagingSource<Int, Value>() {
-    private val observer =
-        ThreadSafeInvalidationObserver(
-            tables = tables,
-            onInvalidated = ::invalidate,
-        )
+    init {
+        RoomDatabaseCompat.observeInvalidation(db, this, *tables)
+    }
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Value> {
-        return withContext(db.queryExecutor.asCoroutineDispatcher()) {
-            observer.registerIfNecessary(db)
+        return withContext(RoomDatabaseCompat.queryContext(db)) {
             initialLoad(params)
         }
     }
@@ -46,7 +40,7 @@ abstract class MixinNonCountLimitOffsetDataSource<Value : Any>(
      *  initial load.
      */
     private suspend fun initialLoad(params: LoadParams<Int>): LoadResult<Int, Value> {
-        return db.withTransaction {
+        return db.withReadTransaction {
             queryData(
                 params = params,
                 itemCount = totalCount,
@@ -62,7 +56,7 @@ abstract class MixinNonCountLimitOffsetDataSource<Value : Any>(
         val key = params.key ?: 0
         val limit: Int = getLimit(params, key)
         val offset: Int = getOffset(params, key, itemCount)
-        val offsetQuery = RoomSQLiteQuery.copyFrom(offsetStatement)
+        val offsetQuery = RoomQuery.copyFrom(offsetStatement)
         val argCount = offsetStatement.argCount
         offsetQuery.bindLong(argCount - 1, limit.toLong())
         offsetQuery.bindLong(argCount, offset.toLong())

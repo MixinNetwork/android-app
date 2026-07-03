@@ -1,12 +1,12 @@
 package one.mixin.android.db
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
-import androidx.room.RoomWarnings
-import androidx.room.Transaction
-import androidx.room.Update
+import androidx.room3.Dao
+import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
+import androidx.room3.Transaction
+import androidx.room3.Update
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.ParticipantSessionKey
 import one.mixin.android.vo.ParticipantSessionSent
@@ -24,7 +24,7 @@ interface ParticipantSessionDao : BaseDao<ParticipantSession> {
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId")
     fun getParticipantSessionsByConversationId(conversationId: String): List<ParticipantSession>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id != :userId LIMIT 1")
     fun getParticipantSessionKeyWithoutSelf(
         conversationId: String,

@@ -1,6 +1,6 @@
 package one.mixin.android.db.converter
 
-import androidx.room.TypeConverter
+import androidx.room3.ColumnTypeConverter
 import one.mixin.android.api.response.AppMetadata
 import one.mixin.android.api.response.Approval
 import one.mixin.android.api.response.Web3Fee
@@ -10,28 +10,28 @@ import one.mixin.android.util.GsonHelper
 class Web3TypeConverters {
     private val gson = GsonHelper.customGson
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun fromFee(fee: Web3Fee): String = gson.toJson(fee)
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun toFee(json: String): Web3Fee = gson.fromJson(json, Web3Fee::class.java)
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun fromTransfers(transfers: List<Web3Transfer>): String = gson.toJson(transfers)
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun toTransfers(json: String): List<Web3Transfer> = gson.fromJson(json, Array<Web3Transfer>::class.java).toList()
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun fromApprovals(approvals: List<Approval>): String = gson.toJson(approvals)
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun toApprovals(json: String): List<Approval> = gson.fromJson(json, Array<Approval>::class.java).toList()
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun fromAppMetadata(metadata: AppMetadata?): String? = metadata?.let { gson.toJson(it) }
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun toAppMetadata(json: String?): AppMetadata? = json?.let { gson.fromJson(it, AppMetadata::class.java) }
 
 }

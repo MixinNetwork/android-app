@@ -3,9 +3,9 @@ package one.mixin.android.db.provider
 import android.annotation.SuppressLint
 import android.os.CancellationSignal
 import androidx.paging.DataSource
-import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.withContext
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.datasource.RoomDatabaseCompat
 import one.mixin.android.fts.FtsDataSource
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.fts.rawSearch
@@ -86,7 +86,7 @@ class DataProvider {
             db: MixinDatabase,
             cancellationSignal: CancellationSignal,
         ): List<SearchMessageItem> =
-            withContext(db.queryExecutor.asCoroutineDispatcher()) {
+            withContext(RoomDatabaseCompat.queryContext(db)) {
                 val result = ftsDatabase.rawSearch(query, cancellationSignal)
                 if (result.isEmpty()) return@withContext emptyList()
                 val ids =

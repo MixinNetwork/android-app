@@ -1,10 +1,10 @@
 package one.mixin.android.crypto.vo
 
-import androidx.room.ColumnInfo
-import androidx.room.ColumnInfo.Companion.BLOB
-import androidx.room.Entity
-import androidx.room.Index
-import androidx.room.PrimaryKey
+import androidx.room3.ColumnInfo
+import androidx.room3.ColumnInfo.Companion.BLOB
+import androidx.room3.Entity
+import androidx.room3.Index
+import androidx.room3.PrimaryKey
 
 @Entity(tableName = "sessions", indices = [(Index(value = ["address", "device"], unique = true))])
 class Session(

@@ -1,11 +1,11 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
-import androidx.room.Transaction
-import androidx.room.Update
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
+import androidx.room3.Transaction
+import androidx.room3.Update
 import one.mixin.android.vo.Circle
 import one.mixin.android.vo.CircleOrder
 import one.mixin.android.vo.ConversationCircleItem
@@ -106,7 +106,7 @@ interface CircleDao : BaseDao<Circle> {
     @Query("SELECT * FROM circles WHERE circle_id = :circleId")
     fun findCircleById(circleId: String): Circle?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,

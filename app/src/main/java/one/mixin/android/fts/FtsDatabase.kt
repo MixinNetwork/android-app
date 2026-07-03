@@ -1,11 +1,14 @@
 package one.mixin.android.fts
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.room3.Database
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import one.mixin.android.Constants.DataBase.FTS_DB_NAME
+import one.mixin.android.db.datasource.RoomDatabaseCompat
+import one.mixin.android.db.datasource.execSQL
 import one.mixin.android.util.database.dbDir
 import java.io.File
 
@@ -23,8 +26,6 @@ abstract class FtsDatabase : RoomDatabase() {
         private val lock = Any()
         private var currentIdentityNumber: String? = null
 
-        private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
-
         fun destroy(close: Boolean = false) {
             synchronized(lock) {
                 if (close) {
@@ -32,7 +33,6 @@ abstract class FtsDatabase : RoomDatabase() {
                 }
                 INSTANCE = null
                 currentIdentityNumber = null
-                supportSQLiteDatabase = null
             }
         }
 
@@ -46,7 +46,6 @@ abstract class FtsDatabase : RoomDatabase() {
                 if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
                     INSTANCE?.close()
                     INSTANCE = null
-                    supportSQLiteDatabase = null
                 }
                 if (INSTANCE == null) {
                     val dbPath = File(dbDir(context, scopedIdentity), FTS_DB_NAME).absolutePath
@@ -55,16 +54,17 @@ abstract class FtsDatabase : RoomDatabase() {
                             context,
                             FtsDatabase::class.java,
                             dbPath,
-                        ).addCallback(
+                        ).setDriver(AndroidSQLiteDriver())
+                            .addCallback(
                             object : Callback() {
-                                override fun onOpen(db: SupportSQLiteDatabase) {
+                                override suspend fun onOpen(db: SQLiteConnection) {
                                     super.onOpen(db)
                                     db.execSQL("PRAGMA synchronous = NORMAL")
-                                    supportSQLiteDatabase = db
                                 }
                             },
                         )
-                    INSTANCE = builder.build()
+                    val database = builder.build()
+                    INSTANCE = database
                     currentIdentityNumber = scopedIdentity
                 }
             }
@@ -82,7 +82,6 @@ abstract class FtsDatabase : RoomDatabase() {
             if (INSTANCE === this) {
                 INSTANCE = null
                 currentIdentityNumber = null
-                supportSQLiteDatabase = null
             }
         }
     }

@@ -3,6 +3,7 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.perps.PerpsPositionDao
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.session.Session
 import one.mixin.android.session.resolveCurrentUserScopeManager

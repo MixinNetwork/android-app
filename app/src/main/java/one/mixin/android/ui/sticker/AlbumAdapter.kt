@@ -10,8 +10,8 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import androidx.room.Embedded
-import androidx.room.Relation
+import androidx.room3.Embedded
+import androidx.room3.Relation
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemAlbumBinding
 import one.mixin.android.databinding.ItemStickerBinding
@@ -111,7 +111,7 @@ class StickerAdapter : ListAdapter<Sticker, StickerViewHolder>(Sticker.DIFF_CALL
 
 data class StoreAlbum(
     @Embedded val album: StickerAlbum,
-    @Relation(parentColumn = "album_id", entityColumn = "album_id")
+    @Relation(parentColumns = ["album_id"], entityColumns = ["album_id"])
     val stickers: List<Sticker>,
 ) {
     companion object {

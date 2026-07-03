@@ -1,8 +1,8 @@
 package one.mixin.android.ui.wallet
 
-import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.room3.RoomRawQuery
 import one.mixin.android.codegen.annotation.GeneratedQueryProvider
-import one.mixin.android.codegen.annotation.GeneratedSimpleSQLiteQuery
+import one.mixin.android.codegen.annotation.GeneratedRoomRawQuery
 import one.mixin.android.db.SafeSnapshotDao.Companion.SNAPSHOT_ITEM_PREFIX
 
 private const val WEB3_TRANSACTION_QUERY_SQL =
@@ -25,28 +25,28 @@ private const val WEB3_TRANSACTION_QUERY_SQL =
 
 @GeneratedQueryProvider(generatedName = "WalletFilterQueryGenerated")
 interface WalletFilterQuerySpec {
-    @GeneratedSimpleSQLiteQuery(
+    @GeneratedRoomRawQuery(
         sql = SNAPSHOT_ITEM_PREFIX + "{{whereSql}} {{orderSql}}",
     )
     fun snapshots(
         whereSql: String,
         orderSql: String,
-    ): SimpleSQLiteQuery
+    ): RoomRawQuery
 
-    @GeneratedSimpleSQLiteQuery(
+    @GeneratedRoomRawQuery(
         sql = WEB3_TRANSACTION_QUERY_SQL,
     )
     fun web3Transactions(
         whereSql: String,
         orderSql: String,
         walletId: String,
-    ): SimpleSQLiteQuery
+    ): RoomRawQuery
 
-    @GeneratedSimpleSQLiteQuery(
+    @GeneratedRoomRawQuery(
         sql = "SELECT * FROM orders o {{whereSql}} {{orderSql}}",
     )
     fun orders(
         whereSql: String,
         orderSql: String,
-    ): SimpleSQLiteQuery
+    ): RoomRawQuery
 }

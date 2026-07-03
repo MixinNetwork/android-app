@@ -4,6 +4,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.parcelize")
     id("de.undercouch.download")
     id("com.google.devtools.ksp")
+    id("androidx.room3")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.0"
@@ -29,6 +30,7 @@ val pagingVersion: String by rootProject.extra
 val coilVersion: String by rootProject.extra
 val collectionx: String by rootProject.extra
 val roomVersion: String by rootProject.extra
+val sqliteVersion: String by rootProject.extra
 val navigationVersion: String by rootProject.extra
 val workManagerVersion: String by rootProject.extra
 val constraintLayoutVersion: String by rootProject.extra
@@ -192,7 +194,7 @@ android {
         }
         getByName("androidTest") {
             java.directories.add(sharedTestDir)
-            assets.directories.add("$projectDir/schemas")
+            assets.directories.add("$projectDir/schemas/googlePlay")
         }
     }
 
@@ -320,9 +322,9 @@ bugsnag {
     uploadNdkMappings = false
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-    arg("room.incremental", "true")
+room3 {
+    schemaDirectory("googlePlay", "$projectDir/schemas/googlePlay")
+    schemaDirectory("otherChannel", "$projectDir/schemas/otherChannel")
 }
 
 dependencies {
@@ -380,14 +382,14 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-service:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-process:$lifecycleVersion")
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-paging:$roomVersion")
+    implementation("androidx.room3:room3-runtime:$roomVersion")
+    implementation("androidx.room3:room3-paging:$roomVersion")
+    implementation("androidx.room3:room3-livedata:$roomVersion")
+    implementation("androidx.sqlite:sqlite-framework:$sqliteVersion")
     compileOnly(project(":query-codegen"))
     ksp(project(":query-codegen"))
-    ksp("androidx.room:room-compiler:$roomVersion")
-    implementation("androidx.room:room-rxjava2:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    androidTestImplementation("androidx.room:room-testing:$roomVersion")
+    ksp("androidx.room3:room3-compiler:$roomVersion")
+    androidTestImplementation("androidx.room3:room3-testing:$roomVersion")
 
     // media3
     implementation("androidx.media3:media3-exoplayer:$media3Version")

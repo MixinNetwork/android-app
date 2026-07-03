@@ -1,12 +1,12 @@
 package one.mixin.android.fts
 
-import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.room3.RoomRawQuery
 import one.mixin.android.codegen.annotation.GeneratedQueryProvider
-import one.mixin.android.codegen.annotation.GeneratedSimpleSQLiteQuery
+import one.mixin.android.codegen.annotation.GeneratedRoomRawQuery
 
 @GeneratedQueryProvider(generatedName = "FtsQueryGenerated")
 interface FtsQuerySpec {
-    @GeneratedSimpleSQLiteQuery(
+    @GeneratedRoomRawQuery(
         sql = """
             SELECT message_id, conversation_id, user_id, count(message_id)
             FROM messages_metas
@@ -16,9 +16,9 @@ interface FtsQuerySpec {
             LIMIT 999
         """,
     )
-    fun rawSearch(content: String): SimpleSQLiteQuery
+    fun rawSearch(content: String): RoomRawQuery
 
-    @GeneratedSimpleSQLiteQuery(
+    @GeneratedRoomRawQuery(
         sql = """
             SELECT message_id
             FROM messages_metas
@@ -30,5 +30,5 @@ interface FtsQuerySpec {
     fun messageIdsByConversation(
         conversationId: String,
         query: String,
-    ): SimpleSQLiteQuery
+    ): RoomRawQuery
 }

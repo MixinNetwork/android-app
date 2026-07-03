@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
 import androidx.recyclerview.widget.DiffUtil
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 
 data class RecentUsedApp(
     @ColumnInfo(name = "full_name")

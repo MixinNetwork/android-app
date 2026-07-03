@@ -1,22 +1,24 @@
 package one.mixin.android.db
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import androidx.room3.Database
+import androidx.room3.DaoReturnTypeConverters
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import androidx.room3.migration.Migration
+import androidx.room3.paging.PagingSourceDaoReturnTypeConverter
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsPosition
+import one.mixin.android.db.datasource.execSQL
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsOrderDao
 import one.mixin.android.db.perps.PerpsPositionDao
-import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
-import one.mixin.android.util.reportException
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.io.File
 import java.util.concurrent.Executors
 import kotlin.math.max
@@ -30,6 +32,7 @@ import kotlin.math.min
     ],
     version = 5,
 )
+@DaoReturnTypeConverters(PagingSourceDaoReturnTypeConverter::class)
 abstract class PerpsDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE: PerpsDatabase? = null
@@ -37,14 +40,14 @@ abstract class PerpsDatabase : RoomDatabase() {
         private var currentIdentityNumber: String? = null
         val MIGRATION_1_2 =
             object : Migration(1, 2) {
-                override fun migrate(db: SupportSQLiteDatabase) {
+                override suspend fun migrate(db: SQLiteConnection) {
                     db.execSQL("ALTER TABLE markets ADD COLUMN category TEXT NOT NULL DEFAULT ''")
                     db.execSQL("ALTER TABLE markets ADD COLUMN tags TEXT NOT NULL DEFAULT '[]'")
                 }
             }
         val MIGRATION_2_3 =
             object : Migration(2, 3) {
-                override fun migrate(db: SupportSQLiteDatabase) {
+                override suspend fun migrate(db: SQLiteConnection) {
                     db.execSQL("ALTER TABLE positions ADD COLUMN take_profit_price TEXT")
                     db.execSQL("ALTER TABLE positions ADD COLUMN stop_loss_price TEXT")
                     db.execSQL("ALTER TABLE positions ADD COLUMN liquidation_price TEXT")
@@ -53,7 +56,7 @@ abstract class PerpsDatabase : RoomDatabase() {
             }
         val MIGRATION_3_4 =
             object : Migration(3, 4) {
-                override fun migrate(db: SupportSQLiteDatabase) {
+                override suspend fun migrate(db: SQLiteConnection) {
                     db.execSQL("DROP TABLE IF EXISTS position_histories")
                     db.execSQL(
                         """
@@ -81,7 +84,7 @@ abstract class PerpsDatabase : RoomDatabase() {
             }
         val MIGRATION_4_5 =
             object : Migration(4, 5) {
-                override fun migrate(db: SupportSQLiteDatabase) {
+                override suspend fun migrate(db: SQLiteConnection) {
                     db.execSQL("ALTER TABLE perps_orders ADD COLUMN pay_amount TEXT NOT NULL DEFAULT '0'")
                     db.execSQL("DELETE FROM perps_orders")
                 }
@@ -104,21 +107,10 @@ abstract class PerpsDatabase : RoomDatabase() {
                         context,
                         PerpsDatabase::class.java,
                         File(dir, Constants.DataBase.PERPS_DB_NAME).absolutePath,
-                    ).openHelperFactory(
-                        MixinOpenHelperFactory(
-                            FrameworkSQLiteOpenHelperFactory(),
-                            listOf(
-                                object : MixinCorruptionCallback {
-                                    override fun onCorruption(database: SupportSQLiteDatabase) {
-                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 5")
-                                        reportException(e)
-                                    }
-                                },
-                            ),
-                        ),
-                    ).addCallback(
+                    ).setDriver(AndroidSQLiteDriver())
+                        .addCallback(
                         object : Callback() {
-                            override fun onOpen(db: SupportSQLiteDatabase) {
+                            override suspend fun onOpen(db: SQLiteConnection) {
                                 super.onOpen(db)
                                 db.execSQL("PRAGMA synchronous = NORMAL")
                             }
@@ -126,12 +118,11 @@ abstract class PerpsDatabase : RoomDatabase() {
                     ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                         .fallbackToDestructiveMigration()
                         .enableMultiInstanceInvalidation()
-                        .setQueryExecutor(
+                        .setQueryCoroutineContext(
                             Executors.newFixedThreadPool(
                                 max(2, min(Runtime.getRuntime().availableProcessors() - 1, 4)),
-                            ),
+                            ).asCoroutineDispatcher(),
                         )
-                        .setTransactionExecutor(SINGLE_DB_EXECUTOR)
                     INSTANCE = builder.build()
                     currentIdentityNumber = scopedIdentity
                 }

@@ -5,6 +5,7 @@ import android.util.ArrayMap
 import androidx.core.database.getStringOrNull
 import androidx.paging.ItemKeyedDataSource
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.datasource.query
 import one.mixin.android.vo.SearchMessageDetailItem
 import timber.log.Timber
 

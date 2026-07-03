@@ -1,10 +1,10 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
-import androidx.room.Update
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
+import androidx.room3.Update
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
@@ -43,23 +43,23 @@ interface AssetDao : BaseDao<Asset> {
     @Query("SELECT * FROM assets WHERE asset_id = :id")
     suspend fun simpleAsset(id: String): Asset?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE ae.hidden = 1 $POSTFIX_ASSET_ITEM")
     fun hiddenAssetItems(): LiveData<List<AssetItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN")
     fun assetItemsNotHidden(): LiveData<List<AssetItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM")
     fun assetItems(): LiveData<List<AssetItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("""$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds) $POSTFIX_ASSET_ITEM """)
     fun assetItems(assetIds: List<String>): LiveData<List<AssetItem>>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """$PREFIX_ASSET_ITEM 
         WHERE a1.balance > 0 
@@ -74,7 +74,7 @@ interface AssetDao : BaseDao<Asset> {
         symbol: String,
     ): List<AssetItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """$PREFIX_ASSET_ITEM 
         WHERE (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
@@ -88,15 +88,15 @@ interface AssetDao : BaseDao<Asset> {
         symbol: String,
     ): List<AssetItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :id")
     fun assetItem(id: String): LiveData<AssetItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")
     suspend fun simpleAssetItem(assetId: String): AssetItem?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.balance > 0 $POSTFIX_ASSET_ITEM")
     fun assetItemsWithBalance(): LiveData<List<AssetItem>>
 

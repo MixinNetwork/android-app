@@ -1,7 +1,7 @@
 package one.mixin.android.db.web3.vo
 
 import android.os.Parcelable
-import androidx.room.Ignore
+import androidx.room3.Ignore
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.vo.WalletCategory

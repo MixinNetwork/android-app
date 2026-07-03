@@ -1,8 +1,8 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
+import androidx.room3.Dao
+import androidx.room3.Query
 import one.mixin.android.db.contants.STICKERS
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.StickerRelationship

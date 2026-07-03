@@ -25,6 +25,7 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
     id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0" apply false
     id("com.google.devtools.ksp") version "2.3.9" apply false
+    id("androidx.room3") version "3.0.0" apply false
     id("org.jetbrains.kotlin.plugin.compose") version "2.4.0" apply false
     id("org.jetbrains.kotlin.jvm") version "2.4.0" apply false
     id("com.google.firebase.firebase-perf") version "2.0.2" apply false
@@ -38,7 +39,8 @@ val appcompatVersion by extra("1.7.1")
 val pagingVersion by extra("3.5.0")
 val coilVersion by extra("3.5.0")
 val collectionx by extra("1.6.0")
-val roomVersion by extra("2.8.4")
+val roomVersion by extra("3.0.0")
+val sqliteVersion by extra("2.7.0")
 val navigationVersion by extra("2.9.8")
 val workManagerVersion by extra("2.11.2")
 val constraintLayoutVersion by extra("2.2.1")

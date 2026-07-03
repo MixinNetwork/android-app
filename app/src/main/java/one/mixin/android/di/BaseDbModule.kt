@@ -7,8 +7,19 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.OrderDao
+import one.mixin.android.db.Web3PropertyDao
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.pending.PendingDatabase
+import one.mixin.android.db.web3.SafeWalletsDao
+import one.mixin.android.db.web3.WalletOutputDao
+import one.mixin.android.db.web3.Web3AddressDao
+import one.mixin.android.db.web3.Web3ChainDao
+import one.mixin.android.db.web3.Web3RawTransactionDao
+import one.mixin.android.db.web3.Web3TokenDao
+import one.mixin.android.db.web3.Web3TokensExtraDao
+import one.mixin.android.db.web3.Web3TransactionDao
+import one.mixin.android.db.web3.Web3WalletDao
 import one.mixin.android.session.CurrentUserScopeManager
 import javax.inject.Provider
 
@@ -20,7 +31,7 @@ internal object BaseDbModule {
     @Provides
     fun provideFtsDb(scopeManagerProvider: Provider<CurrentUserScopeManager>) = scopeManagerProvider.get().getFtsDatabase()
     @Provides
-    fun provideWalletDatabase(scopeManagerProvider: Provider<CurrentUserScopeManager>) = scopeManagerProvider.get().getWalletDatabase()
+    fun provideWalletDatabase(scopeManagerProvider: Provider<CurrentUserScopeManager>): WalletDatabase = scopeManagerProvider.get().getWalletDatabase()
     @Provides
     fun provideRatchetSenderKeyDao(db: SignalDatabase) = db.ratchetSenderKeyDao()
     @Provides
@@ -123,25 +134,25 @@ internal object BaseDbModule {
     @Provides
     fun provideMemberOrderDao(db: MixinDatabase) = db.memberOrderDao()
     @Provides
-    fun provideWeb3TokenDao(db: WalletDatabase) = db.web3TokenDao()
+    fun provideWeb3TokenDao(db: WalletDatabase): Web3TokenDao = db.web3TokenDao()
     @Provides
-    fun provideWeb3TransactionDao(db: WalletDatabase) = db.web3TransactionDao()
+    fun provideWeb3TransactionDao(db: WalletDatabase): Web3TransactionDao = db.web3TransactionDao()
     @Provides
-    fun provideWeb3WalletDao(db: WalletDatabase) = db.web3WalletDao()
+    fun provideWeb3WalletDao(db: WalletDatabase): Web3WalletDao = db.web3WalletDao()
     @Provides
-    fun provideWeb3AddressDao(db: WalletDatabase) = db.web3AddressDao()
+    fun provideWeb3AddressDao(db: WalletDatabase): Web3AddressDao = db.web3AddressDao()
     @Provides
-    fun provideWeb3TokensExtraDao(db: WalletDatabase) = db.web3TokensExtraDao()
+    fun provideWeb3TokensExtraDao(db: WalletDatabase): Web3TokensExtraDao = db.web3TokensExtraDao()
     @Provides
-    fun provideWeb3ChainDao(db: WalletDatabase) = db.web3ChainDao()
+    fun provideWeb3ChainDao(db: WalletDatabase): Web3ChainDao = db.web3ChainDao()
     @Provides
-    fun provideWeb3PropertyDao(db: WalletDatabase) = db.web3PropertyDao()
+    fun provideWeb3PropertyDao(db: WalletDatabase): Web3PropertyDao = db.web3PropertyDao()
     @Provides
-    fun provideWeb3RawTransactionDao(db: WalletDatabase) = db.web3RawTransactionDao()
+    fun provideWeb3RawTransactionDao(db: WalletDatabase): Web3RawTransactionDao = db.web3RawTransactionDao()
     @Provides
-    fun provideOrderDao(db: WalletDatabase) = db.orderDao()
+    fun provideOrderDao(db: WalletDatabase): OrderDao = db.orderDao()
     @Provides
-    fun provideSafeWalletsDao(db: WalletDatabase) = db.safeWalletsDao()
+    fun provideSafeWalletsDao(db: WalletDatabase): SafeWalletsDao = db.safeWalletsDao()
     @Provides
-    fun provideWalletOutputDao(db: WalletDatabase) = db.walletOutputDao()
+    fun provideWalletOutputDao(db: WalletDatabase): WalletOutputDao = db.walletOutputDao()
 }

@@ -4,14 +4,15 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.database.Cursor
 import android.util.ArrayMap
-import androidx.arch.core.executor.ArchTaskExecutor
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
-import one.mixin.android.BuildConfig
+import androidx.room3.Database
+import androidx.room3.DaoReturnTypeConverters
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import androidx.room3.ColumnTypeConverters
+import androidx.room3.livedata.LiveDataDaoReturnTypeConverter
+import androidx.room3.paging.PagingSourceDaoReturnTypeConverter
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.api.response.MembershipOrder
@@ -72,7 +73,9 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_68_69
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_69_70
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.FiatOrderConverter
- 
+import one.mixin.android.db.datasource.DataSourceFactoryDaoReturnTypeConverter
+import one.mixin.android.db.datasource.RoomDatabaseCompat
+import one.mixin.android.db.datasource.execSQL
 import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.OutputStateConverter
@@ -85,13 +88,11 @@ import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
 import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.util.GsonHelper
-import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.database.moveLegacyDatabaseFile
 import one.mixin.android.util.database.moveLegacyFtsDatabaseFile
 import one.mixin.android.util.database.moveLegacyPendingDatabaseFile
 import one.mixin.android.util.debug.getContent
-import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.App
@@ -141,6 +142,7 @@ import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.vo.safe.TokensExtra
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.io.File
 import java.util.concurrent.Executors
 import kotlin.math.max
@@ -201,7 +203,7 @@ import kotlin.math.min
     ],
     version = CURRENT_VERSION,
 )
-@TypeConverters(
+@ColumnTypeConverters(
     MessageStatusConverter::class,
     DepositEntryListConverter::class,
     WithdrawalMemoPossibilityConverter::class,
@@ -213,6 +215,11 @@ import kotlin.math.min
     PriceListConverter::class,
     MembershipConverter::class,
     FiatOrderConverter::class
+)
+@DaoReturnTypeConverters(
+    DataSourceFactoryDaoReturnTypeConverter::class,
+    LiveDataDaoReturnTypeConverter::class,
+    PagingSourceDaoReturnTypeConverter::class,
 )
 abstract class MixinDatabase : RoomDatabase() {
     abstract fun conversationDao(): ConversationDao
@@ -310,7 +317,6 @@ abstract class MixinDatabase : RoomDatabase() {
         private var INSTANCE: MixinDatabase? = null
 
         private val lock = Any()
-        private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
         private var currentIdentityNumber: String? = null
 
         fun destroy(close: Boolean = false) {
@@ -319,7 +325,6 @@ abstract class MixinDatabase : RoomDatabase() {
                     INSTANCE?.close()
                 }
                 INSTANCE = null
-                supportSQLiteDatabase = null
                 currentIdentityNumber = null
             }
         }
@@ -349,7 +354,6 @@ abstract class MixinDatabase : RoomDatabase() {
                 if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
                     INSTANCE?.close()
                     INSTANCE = null
-                    supportSQLiteDatabase = null
                 }
                 if (INSTANCE == null) {
                     Session.getAccount()?.let { account ->
@@ -358,19 +362,7 @@ abstract class MixinDatabase : RoomDatabase() {
                     val dbPath = File(dbDir(context, scopedIdentity), DB_NAME).absolutePath
                     val builder =
                         Room.databaseBuilder(context, MixinDatabase::class.java, dbPath)
-                            .openHelperFactory(
-                                MixinOpenHelperFactory(
-                                    FrameworkSQLiteOpenHelperFactory(),
-                                    listOf(
-                                        object : MixinCorruptionCallback {
-                                            override fun onCorruption(database: SupportSQLiteDatabase) {
-                                                val e = IllegalStateException("Mixin database is corrupted, current DB version: $CURRENT_VERSION")
-                                                reportException(e)
-                                            }
-                                        },
-                                    ),
-                                ),
-                            )
+                            .setDriver(AndroidSQLiteDriver())
                             .addMigrations(
                                 MIGRATION_15_16,
                                 MIGRATION_16_17,
@@ -429,30 +421,17 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_69_70,
                             )
                             .enableMultiInstanceInvalidation()
-                            .setQueryExecutor(
+                            .setQueryCoroutineContext(
                                 Executors.newFixedThreadPool(
                                     max(
                                         2,
                                         min(Runtime.getRuntime().availableProcessors() - 1, 4),
                                     ),
-                                ),
+                                ).asCoroutineDispatcher(),
                             )
-                            .setTransactionExecutor(SINGLE_DB_EXECUTOR)
                             .addCallback(CALLBACK)
-                    if (BuildConfig.DEBUG) {
-                        builder.setQueryCallback(
-                            object : QueryCallback {
-                                override fun onQuery(
-                                    sqlQuery: String,
-                                    bindArgs: List<Any?>,
-                                ) {
-                                    DatabaseMonitor.monitor(sqlQuery, bindArgs)
-                                }
-                            },
-                            ArchTaskExecutor.getIOThreadExecutor(),
-                        )
-                    }
-                    INSTANCE = builder.build()
+                    val database = builder.build()
+                    INSTANCE = database
                     currentIdentityNumber = scopedIdentity
                 }
                 return INSTANCE as MixinDatabase
@@ -463,8 +442,9 @@ abstract class MixinDatabase : RoomDatabase() {
             val start = System.currentTimeMillis()
             var cursor: Cursor? = null
             try {
+                val database = INSTANCE ?: return null
                 cursor =
-                    supportSQLiteDatabase?.query(query) ?: return null
+                    RoomDatabaseCompat.query(database, query)
                 cursor.moveToFirst()
                 val result = ArrayList<ArrayMap<String, String>>()
                 do {
@@ -483,18 +463,13 @@ abstract class MixinDatabase : RoomDatabase() {
         }
 
         fun checkPoint() {
-            supportSQLiteDatabase?.query("PRAGMA wal_checkpoint(FULL)")?.close()
-        }
-
-        fun getWritableDatabase(): SupportSQLiteDatabase? {
-            return INSTANCE?.openHelper?.writableDatabase
+            INSTANCE?.let { RoomDatabaseCompat.query(it, "PRAGMA wal_checkpoint(FULL)").close() }
         }
 
         private val CALLBACK =
             object : RoomDatabase.Callback() {
-                override fun onOpen(db: SupportSQLiteDatabase) {
+                override suspend fun onOpen(db: SQLiteConnection) {
                     super.onOpen(db)
-                    supportSQLiteDatabase = db
                     db.execSQL("PRAGMA synchronous = NORMAL")
                     db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
                     db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
@@ -509,7 +484,6 @@ abstract class MixinDatabase : RoomDatabase() {
         synchronized(lock) {
             if (INSTANCE === this) {
                 INSTANCE = null
-                supportSQLiteDatabase = null
                 currentIdentityNumber = null
             }
         }

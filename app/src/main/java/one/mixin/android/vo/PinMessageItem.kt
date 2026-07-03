@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
 import android.content.Context
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 import one.mixin.android.R
 
 class PinMessageItem(

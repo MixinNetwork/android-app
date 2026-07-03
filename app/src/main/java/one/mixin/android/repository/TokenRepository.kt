@@ -8,8 +8,8 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.liveData
-import androidx.room.RoomRawQuery
-import androidx.room.withTransaction
+import androidx.room3.RoomRawQuery
+import androidx.room3.withWriteTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -478,7 +478,7 @@ class TokenRepository
             id: String,
             hidden: Boolean,
         ) {
-            appDatabase.withTransaction {
+            appDatabase.withWriteTransaction {
                 val tokensExtra = tokensExtraDao.findByAssetId(id)
                 if (tokensExtra != null) {
                     tokensExtraDao.updateHiddenByAssetId(id, hidden)
@@ -1608,7 +1608,7 @@ class TokenRepository
     ) {
         val normalizedAmount = amount.removePrefix("-")
         val normalizedFee = fee.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: fee
-        appDatabase.withTransaction {
+        appDatabase.withWriteTransaction {
             web3RawTransactionDao.insertSuspend(
                 Web3RawTransaction(
                     hash = hash,
@@ -1666,9 +1666,9 @@ class TokenRepository
         chainId: String,
         updatedAt: String,
     ) {
-        appDatabase.withTransaction {
+        appDatabase.withWriteTransaction {
             val pendingRaw = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, sponsorTxId, chainId)
-                ?: return@withTransaction
+                ?: return@withWriteTransaction
             val pendingTransaction = web3TransactionDao.getLatestTransaction(sponsorTxId, chainId)
 
             web3RawTransactionDao.insertSuspend(
@@ -1699,9 +1699,9 @@ class TokenRepository
         status: String,
         updatedAt: String,
     ) {
-        appDatabase.withTransaction {
+        appDatabase.withWriteTransaction {
             val pendingRaw = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, hash, chainId)
-                ?: return@withTransaction
+                ?: return@withWriteTransaction
             web3RawTransactionDao.insertSuspend(
                 pendingRaw.copy(
                     state = status,
@@ -1719,15 +1719,15 @@ class TokenRepository
         chainId: String,
         btcRawTransactionHexToDeleteOutputs: String?,
     ) {
-        appDatabase.withTransaction {
+        appDatabase.withWriteTransaction {
             web3RawTransactionDao.insertSuspend(raw)
             web3TransactionDao.updateTransaction(hash, status, chainId)
-            if (btcRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withTransaction
+            if (btcRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withWriteTransaction
             val cleanedHex: String = btcRawTransactionHexToDeleteOutputs.removePrefix("0x").trim()
-            if (cleanedHex.isBlank()) return@withTransaction
+            if (cleanedHex.isBlank()) return@withWriteTransaction
             val tx: Transaction = runCatching {
                 Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
-            }.getOrNull() ?: return@withTransaction
+            }.getOrNull() ?: return@withWriteTransaction
             val txHash: String = tx.txId.toString()
             walletOutputDao.deleteByTransactionHash(txHash, Constants.ChainId.BITCOIN_CHAIN_ID)
 

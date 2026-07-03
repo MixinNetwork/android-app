@@ -3,9 +3,8 @@ package one.mixin.android.db.provider
 import android.annotation.SuppressLint
 import android.database.Cursor
 import android.os.CancellationSignal
-import androidx.room.RoomSQLiteQuery
-import androidx.room.util.getColumnIndexOrThrow
-import androidx.room.util.query
+import one.mixin.android.db.datasource.RoomDatabaseCompat
+import one.mixin.android.db.datasource.RoomQuery
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.MembershipConverter
@@ -23,6 +22,11 @@ import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
 import java.util.concurrent.Callable
+
+private fun getColumnIndexOrThrow(
+    cursor: Cursor,
+    columnName: String,
+): Int = cursor.getColumnIndexOrThrow(columnName)
 
 @SuppressLint("RestrictedApi")
 fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
@@ -420,11 +424,11 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
 @SuppressLint("RestrictedApi")
 fun callableUser(
     db: MixinDatabase,
-    statement: RoomSQLiteQuery,
+    statement: RoomQuery,
     cancellationSignal: CancellationSignal,
 ): Callable<List<User>> {
     return Callable<List<User>> {
-        val cursor = query(db, statement, false, cancellationSignal)
+        val cursor = RoomDatabaseCompat.query(db, statement, cancellationSignal)
         try {
             val cursorIndexOfUserId =
                 getColumnIndexOrThrow(cursor, "user_id")
@@ -568,7 +572,6 @@ fun callableUser(
             return@Callable result
         } finally {
             cursor.close()
-            statement.release()
         }
     }
 }
@@ -577,11 +580,11 @@ fun callableUser(
 @SuppressLint("RestrictedApi")
 fun callableBot(
     db: MixinDatabase,
-    statement: RoomSQLiteQuery,
+    statement: RoomQuery,
     cancellationSignal: CancellationSignal,
 ): Callable<List<SearchBot>> {
     return Callable<List<SearchBot>> {
-        val cursor = query(db, statement, false, cancellationSignal)
+        val cursor = RoomDatabaseCompat.query(db, statement, cancellationSignal)
         try {
             val cursorIndexOfUserId =
                 getColumnIndexOrThrow(cursor, "user_id")
@@ -725,7 +728,6 @@ fun callableBot(
             return@Callable result
         } finally {
             cursor.close()
-            statement.release()
         }
     }
 }
@@ -741,11 +743,11 @@ private val membershipConverter by lazy {
 @SuppressLint("RestrictedApi")
 fun callableTokenItem(
     db: MixinDatabase,
-    statement: RoomSQLiteQuery,
+    statement: RoomQuery,
     cancellationSignal: CancellationSignal,
 ): Callable<List<TokenItem>> {
     return Callable<List<TokenItem>> {
-        val cursor = query(db, statement, false, cancellationSignal)
+        val cursor = RoomDatabaseCompat.query(db, statement, cancellationSignal)
         try {
             val cursorIndexOfAssetId = 0
             val cursorIndexOfSymbol = 1
@@ -913,7 +915,6 @@ fun callableTokenItem(
             return@Callable result
         } finally {
             cursor.close()
-            statement.release()
         }
     }
 }
@@ -1026,11 +1027,11 @@ fun convertToSearchMessageItems(cursor: Cursor?): List<SearchMessageItem> {
 @SuppressLint("RestrictedApi")
 fun callableChatMinimal(
     db: MixinDatabase,
-    statement: RoomSQLiteQuery,
+    statement: RoomQuery,
     cancellationSignal: CancellationSignal,
 ): Callable<List<ChatMinimal>> {
     return Callable<List<ChatMinimal>> {
-        val cursor = query(db, statement, false, cancellationSignal)
+        val cursor = RoomDatabaseCompat.query(db, statement, cancellationSignal)
         try {
             val cursorIndexOfConversationId = 0
             val cursorIndexOfGroupIconUrl = 1
@@ -1158,7 +1159,6 @@ fun callableChatMinimal(
             return@Callable result
         } finally {
             cursor.close()
-            statement.release()
         }
     }
 }
@@ -1469,11 +1469,11 @@ fun convertChatHistoryMessageItem(
 @SuppressLint("RestrictedApi")
 fun callableSafeInscription(
     db: MixinDatabase,
-    statement: RoomSQLiteQuery,
+    statement: RoomQuery,
     cancellationSignal: CancellationSignal,
 ): Callable<List<SafeCollectible>> {
     return Callable<List<SafeCollectible>> {
-        val cursor = query(db, statement, false, cancellationSignal)
+        val cursor = RoomDatabaseCompat.query(db, statement, cancellationSignal)
         try {
             val cursorIndexOfCollectionHash = 0
             val cursorIndexOfInscriptionHash = 1
@@ -1498,7 +1498,6 @@ fun callableSafeInscription(
             return@Callable result
         } finally {
             cursor.close()
-            statement.release()
         }
     }
 }
@@ -1506,11 +1505,11 @@ fun callableSafeInscription(
 @SuppressLint("RestrictedApi")
 fun callableMarket(
     db: MixinDatabase,
-    statement: RoomSQLiteQuery,
+    statement: RoomQuery,
     cancellationSignal: CancellationSignal
 ): Callable<List<Market>> {
     return Callable<List<Market>> {
-        val cursor = query(db, statement, false, cancellationSignal)
+        val cursor = RoomDatabaseCompat.query(db, statement, cancellationSignal)
         try {
             val result: MutableList<Market> = ArrayList(cursor.count)
             while (cursor.moveToNext()) {
@@ -1551,7 +1550,6 @@ fun callableMarket(
             result
         } finally {
             cursor.close()
-            statement.release()
         }
     }
 }

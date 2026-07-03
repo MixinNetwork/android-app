@@ -2,7 +2,7 @@ package one.mixin.android.vo
 
 import android.annotation.SuppressLint
 import android.os.Parcelable
-import androidx.room.Entity
+import androidx.room3.Entity
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants.DEFAULT_THUMB_IMAGE
