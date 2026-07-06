@@ -32,10 +32,12 @@ import okhttp3.logging.HttpLoggingInterceptor
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ALLOW_INTERVAL
+import one.mixin.android.Constants.API.CASH_URL
 import one.mixin.android.Constants.API.FOURSQUARE_URL
 import one.mixin.android.Constants.API.GIPHY_URL
 import one.mixin.android.Constants.API.Mixin_URL
 import one.mixin.android.Constants.API.URL
+import one.mixin.android.Constants.Account.PREF_CASH_BOT_PK
 import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
 import one.mixin.android.Constants.DNS
@@ -52,6 +54,7 @@ import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
 import one.mixin.android.api.service.AuthorizationService
+import one.mixin.android.api.service.CashService
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ContactService
 import one.mixin.android.api.service.ConversationService
@@ -596,6 +599,49 @@ object AppModule {
                 .client(client)
                 .build()
         return retrofit.create(ReferralService::class.java)
+    }
+
+    @Singleton
+    @Provides
+    fun provideCashService(
+        resolver: ContentResolver,
+        httpLoggingInterceptor: HttpLoggingInterceptor?,
+        @ApplicationContext appContext: Context,
+    ): CashService {
+        val builder = OkHttpClient.Builder()
+        builder.connectTimeout(15, TimeUnit.SECONDS)
+        builder.writeTimeout(15, TimeUnit.SECONDS)
+        builder.readTimeout(15, TimeUnit.SECONDS)
+        builder.dns(DNS)
+        val client =
+            builder.apply {
+                httpLoggingInterceptor?.let { interceptor ->
+                    addNetworkInterceptor(interceptor)
+                }
+                addInterceptor { chain ->
+                    val sourceRequest = chain.request()
+                    val b = sourceRequest.newBuilder()
+                    b.addHeader("User-Agent", API_UA)
+                        .addHeader("Accept-Language", Locale.getDefault().toLanguageTag())
+                        .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
+                        .addHeader(xRequestId, UUID.randomUUID().toString())
+                    val botPublicKey = appContext.defaultSharedPreferences.getString(PREF_CASH_BOT_PK, null)
+                    if (botPublicKey.isNullOrBlank()) return@addInterceptor chain.proceed(b.build())
+                    val (ts, signature) = Session.getBotSignature(botPublicKey, sourceRequest)
+                    b.addHeader(mrAccessTimestamp, ts.toString())
+                    b.addHeader(mrAccessSign, signature)
+                    val request = b.build()
+                    return@addInterceptor chain.proceed(request)
+                }
+            }.build()
+        val retrofit =
+            Retrofit.Builder()
+                .baseUrl(CASH_URL)
+                .addConverterFactory(GsonConverterFactory.create())
+                .addCallAdapterFactory(CoroutineCallAdapterFactory())
+                .client(client)
+                .build()
+        return retrofit.create(CashService::class.java)
     }
 
     @Provides
