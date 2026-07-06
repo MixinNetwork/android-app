@@ -3,6 +3,8 @@ package one.mixin.android.ui.wallet.home
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.R
+import one.mixin.android.api.response.WalletHomeBanner
+import one.mixin.android.api.response.WalletHomeBannerAction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.numberFormat8
@@ -38,6 +40,8 @@ data class WalletHomeState(
     val hideActions: Boolean = false,
     val quoteColorReversed: Boolean = false,
     val showAddWalletBanner: Boolean = false,
+    val isDynamicBannerLoaded: Boolean = false,
+    val dynamicBanners: List<WalletHomeBanner> = emptyList(),
     val showReferralBanner: Boolean = false,
     val showBuyBadge: Boolean = false,
     val showSwapBadge: Boolean = false,
@@ -61,6 +65,9 @@ data class WalletHomeBalanceSnapshot(
 interface WalletHomeCallbacks {
     fun onAddWalletClicked()
     fun onBannerClosed()
+    fun onDynamicBannerClicked(banner: WalletHomeBanner) = Unit
+    fun onDynamicBannerActionClicked(banner: WalletHomeBanner, action: WalletHomeBannerAction) = Unit
+    fun onDynamicBannerClosed(banner: WalletHomeBanner) = Unit
     fun onReferralClicked()
     fun onReferralClosed()
     fun onSupportClicked()
