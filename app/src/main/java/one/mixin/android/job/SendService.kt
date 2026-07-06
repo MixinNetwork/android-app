@@ -12,6 +12,7 @@ import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
+import one.mixin.android.util.cancelConversationNotifications
 import one.mixin.android.vo.EncryptCategory
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
@@ -65,7 +66,7 @@ class SendService : IntentService("SendService") {
             jobManager.addJobInBackground(SendMessageJob(message))
         }
         val manager = getSystemService<NotificationManager>()
-        manager?.cancel(conversationId.hashCode())
+        manager?.cancelConversationNotifications(conversationId)
         messageMentionDao.markMentionReadByConversationId(conversationId)
         remoteMessageStatusDao.markRead(conversationId)
     }

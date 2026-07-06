@@ -41,6 +41,9 @@ import one.mixin.android.util.ChannelManager
 import one.mixin.android.util.ChannelManager.Companion.GROUP
 import one.mixin.android.util.ChannelManager.Companion.MESSAGES
 import one.mixin.android.util.ChannelManager.Companion.SILENCE
+import one.mixin.android.util.bubbleShortcutId
+import one.mixin.android.util.conversationNotificationId
+import one.mixin.android.util.conversationSummaryNotificationId
 import one.mixin.android.util.mention.rendMentionContent
 import one.mixin.android.util.updateShortcuts
 import one.mixin.android.vo.App
@@ -118,10 +121,10 @@ object NotificationGenerator : Injector() {
         notificationBuilder.setContentIntent(
             PendingIntent.getActivities(
                 context,
-                message.messageId.hashCode(),
+                conversationNotificationId(message.conversationId),
                 arrayOf(mainIntent, conversationIntent),
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    PendingIntent.FLAG_MUTABLE
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
                 } else {
                     PendingIntent.FLAG_UPDATE_CURRENT
                 },
@@ -154,10 +157,10 @@ object NotificationGenerator : Injector() {
             val pendingIntent =
                 PendingIntent.getService(
                     context,
-                    message.conversationId.hashCode(),
+                    conversationNotificationId(message.conversationId),
                     sendIntent,
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                        PendingIntent.FLAG_MUTABLE
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
                     } else {
                         PendingIntent.FLAG_UPDATE_CURRENT
                     },
@@ -496,7 +499,7 @@ object NotificationGenerator : Injector() {
                     style.isGroupConversation = false
                 }
 
-            notificationBuilder.setShortcutId(conversation.conversationId)
+            notificationBuilder.setShortcutId(bubbleShortcutId(conversation.conversationId))
                 .addPerson(person)
                 .setLocusId(LocusIdCompat(conversation.conversationId))
                 .setStyle(messagingStyle)
@@ -512,7 +515,7 @@ object NotificationGenerator : Injector() {
             notificationBuilder.setGroup(conversation.conversationId)
 
             buildBubble(context, conversation, notificationBuilder, message, resource, person)
-            notificationManager.notify(message.messageId.hashCode(), notificationBuilder.build())
+            notificationManager.notify(conversationNotificationId(message.conversationId), notificationBuilder.build())
 
             supportsNougat {
                 val summaryNotification =
@@ -527,7 +530,7 @@ object NotificationGenerator : Injector() {
                         .setGroup(conversation.conversationId)
                         .setGroupSummary(true)
                         .build()
-                notificationManager.notify(conversation.conversationId.hashCode(), summaryNotification)
+                notificationManager.notify(conversationSummaryNotificationId(conversation.conversationId), summaryNotification)
             }
         }
     }
@@ -553,7 +556,7 @@ object NotificationGenerator : Injector() {
                     null,
                 )
             val shortcut =
-                ShortcutInfoCompat.Builder(context, "Bubble-${conversation.conversationId}")
+                ShortcutInfoCompat.Builder(context, bubbleShortcutId(conversation.conversationId))
                     .setIntent(shortcutIntent)
                     .setLongLived(true)
                     .setIcon(icon)
@@ -574,7 +577,7 @@ object NotificationGenerator : Injector() {
             val bubbleIntent =
                 PendingIntent.getActivity(
                     context,
-                    conversation.conversationId.hashCode(),
+                    conversationNotificationId(conversation.conversationId),
                     target,
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                         PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_MUTABLE
