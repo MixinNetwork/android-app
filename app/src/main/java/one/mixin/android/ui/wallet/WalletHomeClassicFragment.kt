@@ -256,12 +256,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 ViewWalletFragmentHeaderBinding.bind(layoutInflater.inflate(R.layout.view_wallet_fragment_header, coinsRv, false)).apply {
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
-                        lifecycleScope.launch {
-                            val wallet = web3ViewModel.findWalletById(walletId)
-                            val chainId = web3ViewModel.getAddresses(walletId).first().chainId
-                            if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet(), chainId)) return@launch
-                            WalletActivity.showBuy(requireActivity(), true, null, null, walletId)
-                        }
+                        openClassicBuy()
                     }
                     sendReceiveView.send.setOnClickListener {
                         lifecycleScope.launch {
@@ -684,6 +679,15 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private fun classicWalletHomeCacheKey(): String =
         walletHomeCacheKey(WalletHomeType.CLASSIC, walletId)
 
+    private fun openClassicBuy() {
+        lifecycleScope.launch {
+            val wallet = web3ViewModel.findWalletById(walletId)
+            val chainId = web3ViewModel.getAddresses(walletId).first().chainId
+            if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet(), chainId)) return@launch
+            WalletActivity.showBuy(requireActivity(), true, null, null, walletId)
+        }
+    }
+
     private val walletHomeCallbacks = object : WalletHomeCallbacks {
         override fun onAddWalletClicked() {
             AddWalletBottomSheetDialogFragment.show(this@WalletHomeClassicFragment)
@@ -735,6 +739,8 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             defaultSharedPreferences.putBoolean(PREF_WALLET_HOME_REFERRAL_CLOSED, true)
             renderHome()
         }
+
+        override fun onCashClicked() = Unit
 
         override fun onSupportClicked() {
             lifecycleScope.launch {
@@ -894,7 +900,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 )
             }
             WalletHomeBannerActionTarget.Buy -> {
-                WalletActivity.showBuy(requireActivity(), true, null, null, walletId)
+                openClassicBuy()
             }
             is WalletHomeBannerActionTarget.Web -> {
                 target.url.openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
