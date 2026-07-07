@@ -155,6 +155,17 @@
 
                         </RadioGroup>
 
+                        <androidx.compose.ui.platform.ComposeView
+                            android:id="@+id/perps_action"
+                            android:layout_width="match_parent"
+                            android:layout_height="44dp"
+                            android:layout_below="@+id/radio_group"
+                            android:layout_marginStart="18dp"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginEnd="18dp"
+                            android:layout_marginBottom="24dp"
+                            android:visibility="gone" />
+
                     </RelativeLayout>
                 </FrameLayout>
 

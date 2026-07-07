@@ -507,6 +507,7 @@ object AnalyticsTracker {
         const val PERPS_HOME_CARD = "perps_home_card"
         const val PERPS_DETAIL_CARD = "perps_detail_card"
         const val PERPS_OPEN_POSITION_SIZE = "perps_open_position_size"
+        const val SPOT_MARKET_DETAIL = "spot_market_detail"
         const val PERPS_MARKET_DETAIL = "perps_market_detail"
         const val PERPS_ALL_POSITIONS = "perps_all_positions"
         const val PERPS_ACTIVITY_DETAIL = "perps_activity_detail"
