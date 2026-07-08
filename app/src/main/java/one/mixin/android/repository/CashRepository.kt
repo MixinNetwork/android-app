@@ -14,6 +14,9 @@ class CashRepository
         private val cashService: CashService,
         private val userRepository: UserRepository,
     ) {
+        suspend fun cachedAccount(): CashAccount? =
+            PropertyHelper.findCashAccount()
+
         suspend fun account(): MixinResponse<CashAccount> {
             userRepository.getBotPublicKey(MIXIN_CASH_USER_ID, false)
             val response = cashService.account()

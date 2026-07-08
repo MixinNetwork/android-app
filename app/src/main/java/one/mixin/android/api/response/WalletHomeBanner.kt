@@ -1,6 +1,7 @@
 package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
+import org.threeten.bp.Instant
 
 data class WalletHomeBanner(
     @SerializedName(value = "banner_id", alternate = ["id"])
@@ -60,6 +61,13 @@ data class WalletHomeBanner(
     val isActive: Boolean
         get() = status.isBlank() || status.equals(BANNER_STATUS_ACTIVE, ignoreCase = true)
 
+    fun isExpired(now: Instant = Instant.now()): Boolean {
+        if (endAt.isBlank()) return false
+        return runCatching {
+            !now.isBefore(Instant.parse(endAt))
+        }.getOrDefault(false)
+    }
+
     companion object {
         const val BANNER_STATUS_ACTIVE = "active"
         const val BANNER_STATUS_INACTIVE = "inactive"
@@ -77,10 +85,14 @@ fun Set<String>.syncedWalletHomeClosedBannerIds(remoteBanners: List<WalletHomeBa
     return this
 }
 
-fun List<WalletHomeBanner>.visibleWalletHomeBanners(closedBannerIds: Set<String>): List<WalletHomeBanner> =
+fun List<WalletHomeBanner>.visibleWalletHomeBanners(
+    closedBannerIds: Set<String>,
+    now: Instant = Instant.now(),
+): List<WalletHomeBanner> =
     filter { banner ->
         banner.key.isNotBlank() &&
             banner.isActive &&
+            !banner.isExpired(now) &&
             banner.hasVisualContent &&
             (!banner.actionUrl.isNullOrBlank() || banner.visibleActions.isNotEmpty()) &&
             !closedBannerIds.contains(banner.key)

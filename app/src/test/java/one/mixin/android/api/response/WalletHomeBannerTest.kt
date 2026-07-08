@@ -5,6 +5,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.threeten.bp.Instant
 
 class WalletHomeBannerTest {
     @Test
@@ -77,5 +78,28 @@ class WalletHomeBannerTest {
                 .syncedWalletHomeClosedBannerIds(remoteBanners),
         )
     }
+
+    @Test
+    fun visibleBannersExcludeExpiredItems() {
+        val now = Instant.parse("2026-07-08T10:00:00Z")
+
+        val banners = listOf(
+            visibleBanner("expired", endAt = "2026-07-08T09:59:59Z"),
+            visibleBanner("future", endAt = "2026-07-08T10:00:01Z"),
+            visibleBanner("open-ended"),
+        ).visibleWalletHomeBanners(emptySet(), now)
+
+        assertEquals(listOf("future", "open-ended"), banners.map { it.bannerId })
+    }
+
+    private fun visibleBanner(
+        id: String,
+        endAt: String = "",
+    ) = WalletHomeBanner(
+        bannerId = id,
+        title = id,
+        actionUrl = "mixin://$id",
+        endAt = endAt,
+    )
 
 }
