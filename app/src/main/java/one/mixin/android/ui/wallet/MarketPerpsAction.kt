@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -41,6 +42,7 @@ import kotlin.math.hypot
 
 private val MarketPerpsButtonOverlap = 13.dp
 private val MarketPerpsButtonSlant = 27.dp
+private val MarketPerpsButtonContentOffset = 6.dp
 private val MarketPerpsButtonVerticalPadding = 7.dp
 private val MarketPerpsButtonGreenBackground = Color(0xFFDCF2DE)
 private val MarketPerpsButtonRedBackground = Color(0xFFFAE4E3)
@@ -109,12 +111,20 @@ private fun MarketPerpsButton(
         contentAlignment = Alignment.Center,
     ) {
         Row(
-            modifier = Modifier.padding(
-                start = if (side == MarketPerpsButtonSide.SHORT) MarketPerpsButtonSlant else 0.dp,
-                top = MarketPerpsButtonVerticalPadding,
-                end = if (side == MarketPerpsButtonSide.LONG) MarketPerpsButtonSlant else 0.dp,
-                bottom = MarketPerpsButtonVerticalPadding,
-            ),
+            modifier = Modifier
+                .padding(
+                    start = if (side == MarketPerpsButtonSide.SHORT) MarketPerpsButtonSlant else 0.dp,
+                    top = MarketPerpsButtonVerticalPadding,
+                    end = if (side == MarketPerpsButtonSide.LONG) MarketPerpsButtonSlant else 0.dp,
+                    bottom = MarketPerpsButtonVerticalPadding,
+                )
+                .offset(
+                    x = if (side == MarketPerpsButtonSide.LONG) {
+                        MarketPerpsButtonContentOffset
+                    } else {
+                        -MarketPerpsButtonContentOffset
+                    },
+                ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
