@@ -39,7 +39,11 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import kotlin.math.hypot
 
-private val MarketPerpsButtonVerticalPadding = 11.dp
+private val MarketPerpsButtonOverlap = 13.dp
+private val MarketPerpsButtonSlant = 27.dp
+private val MarketPerpsButtonVerticalPadding = 7.dp
+private val MarketPerpsButtonGreenBackground = Color(0xFFDCF2DE)
+private val MarketPerpsButtonRedBackground = Color(0xFFFAE4E3)
 
 @Composable
 fun MarketPerpsAction(
@@ -51,16 +55,19 @@ fun MarketPerpsAction(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val longColor = if (quoteColorReversed) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.marketGreen
     val shortColor = if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
+    val longBackgroundColor = if (quoteColorReversed) MarketPerpsButtonRedBackground else MarketPerpsButtonGreenBackground
+    val shortBackgroundColor = if (quoteColorReversed) MarketPerpsButtonGreenBackground else MarketPerpsButtonRedBackground
 
     BoxWithConstraints(
         modifier = modifier
             .fillMaxWidth()
             .wrapContentHeight(),
     ) {
-        val buttonWidth = (maxWidth + 10.dp) / 2f
+        val buttonWidth = (maxWidth + MarketPerpsButtonOverlap) / 2f
         MarketPerpsButton(
             text = stringResource(R.string.Long),
             color = longColor,
+            backgroundColor = longBackgroundColor,
             side = MarketPerpsButtonSide.LONG,
             onClick = onLongClick,
             modifier = Modifier
@@ -70,6 +77,7 @@ fun MarketPerpsAction(
         MarketPerpsButton(
             text = stringResource(R.string.Short),
             color = shortColor,
+            backgroundColor = shortBackgroundColor,
             side = MarketPerpsButtonSide.SHORT,
             onClick = onShortClick,
             modifier = Modifier
@@ -83,6 +91,7 @@ fun MarketPerpsAction(
 private fun MarketPerpsButton(
     text: String,
     color: Color,
+    backgroundColor: Color,
     side: MarketPerpsButtonSide,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -91,7 +100,7 @@ private fun MarketPerpsButton(
     Box(
         modifier = modifier
             .clip(shape)
-            .background(color.copy(alpha = 0.10f))
+            .background(backgroundColor)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = LocalIndication.current,
@@ -100,7 +109,12 @@ private fun MarketPerpsButton(
         contentAlignment = Alignment.Center,
     ) {
         Row(
-            modifier = Modifier.padding(vertical = MarketPerpsButtonVerticalPadding),
+            modifier = Modifier.padding(
+                start = if (side == MarketPerpsButtonSide.SHORT) MarketPerpsButtonSlant else 0.dp,
+                top = MarketPerpsButtonVerticalPadding,
+                end = if (side == MarketPerpsButtonSide.LONG) MarketPerpsButtonSlant else 0.dp,
+                bottom = MarketPerpsButtonVerticalPadding,
+            ),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(
@@ -120,6 +134,7 @@ private fun MarketPerpsButton(
                 text = text,
                 color = color,
                 fontSize = 14.sp,
+                lineHeight = 16.sp,
                 fontWeight = FontWeight.Medium,
             )
         }
@@ -140,7 +155,7 @@ private class MarketPerpsButtonShape(
         density: Density,
     ): Outline {
         val radius = with(density) { 8.dp.toPx() }.coerceAtMost(size.height / 2)
-        val slant = with(density) { 18.dp.toPx() }.coerceAtMost(size.width / 3)
+        val slant = with(density) { MarketPerpsButtonSlant.toPx() }.coerceAtMost(size.width / 3)
         val slantRadius = radius.coerceAtMost(slant / 2)
         val diagonalLength = hypot(slant.toDouble(), size.height.toDouble()).toFloat()
         val diagonalInsetX = slantRadius * slant / diagonalLength

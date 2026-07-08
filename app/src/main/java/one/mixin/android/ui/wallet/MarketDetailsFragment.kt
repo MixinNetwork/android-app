@@ -39,6 +39,7 @@ import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.DepositTokensBottomSheetDialogFragment
@@ -451,7 +452,27 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
     private fun openPerpsAction(market: PerpsMarket, isLong: Boolean) {
         if (!isAdded) return
-        openPerpsPosition(market, isLong)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val walletId = Session.getAccountId()
+            val hasOpenPosition = if (walletId.isNullOrEmpty()) {
+                false
+            } else {
+                perpetualViewModel.getOpenPositionsFromDb(walletId).any { it.marketId == market.marketId }
+            }
+            if (!isAdded) return@launch
+            if (hasOpenPosition) {
+                PerpsActivity.showDetail(
+                    context = requireContext(),
+                    marketId = market.marketId,
+                    marketSymbol = market.displaySymbol,
+                    marketDisplaySymbol = market.displaySymbol,
+                    marketTokenSymbol = market.tokenSymbol,
+                    source = AnalyticsTracker.PerpsSource.SPOT_MARKET_DETAIL,
+                )
+            } else {
+                openPerpsPosition(market, isLong)
+            }
+        }
     }
 
     private fun openPerpsPosition(market: PerpsMarket, isLong: Boolean) {
