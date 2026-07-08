@@ -8,10 +8,11 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -38,6 +39,8 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import kotlin.math.hypot
 
+private val MarketPerpsButtonVerticalPadding = 11.dp
+
 @Composable
 fun MarketPerpsAction(
     onLongClick: () -> Unit,
@@ -50,7 +53,9 @@ fun MarketPerpsAction(
     val shortColor = if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
 
     BoxWithConstraints(
-        modifier = modifier.fillMaxSize(),
+        modifier = modifier
+            .fillMaxWidth()
+            .wrapContentHeight(),
     ) {
         val buttonWidth = (maxWidth + 10.dp) / 2f
         MarketPerpsButton(
@@ -60,8 +65,7 @@ fun MarketPerpsAction(
             onClick = onLongClick,
             modifier = Modifier
                 .align(Alignment.CenterStart)
-                .width(buttonWidth)
-                .fillMaxHeight(),
+                .width(buttonWidth),
         )
         MarketPerpsButton(
             text = stringResource(R.string.Short),
@@ -70,8 +74,7 @@ fun MarketPerpsAction(
             onClick = onShortClick,
             modifier = Modifier
                 .align(Alignment.CenterEnd)
-                .width(buttonWidth)
-                .fillMaxHeight(),
+                .width(buttonWidth),
         )
     }
 }
@@ -97,6 +100,7 @@ private fun MarketPerpsButton(
         contentAlignment = Alignment.Center,
     ) {
         Row(
+            modifier = Modifier.padding(vertical = MarketPerpsButtonVerticalPadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Icon(

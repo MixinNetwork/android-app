@@ -158,7 +158,7 @@
                         <androidx.compose.ui.platform.ComposeView
                             android:id="@+id/perps_action"
                             android:layout_width="match_parent"
-                            android:layout_height="44dp"
+                            android:layout_height="wrap_content"
                             android:layout_below="@+id/radio_group"
                             android:layout_marginStart="18dp"
                             android:layout_marginTop="20dp"
