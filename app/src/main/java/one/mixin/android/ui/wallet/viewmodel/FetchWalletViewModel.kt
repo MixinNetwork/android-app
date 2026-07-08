@@ -89,6 +89,7 @@ class FetchWalletViewModel @Inject constructor(
     private var mnemonic: String = ""
     private var currentIndex = 0
     private var spendKey: ByteArray? = null
+    private var importCategory: String = WalletCategory.IMPORTED_MNEMONIC.value
 
     init {
         startFetching(0)
@@ -113,6 +114,10 @@ class FetchWalletViewModel @Inject constructor(
 
     fun setSpendKey(spendKey: ByteArray) {
         this.spendKey = spendKey
+    }
+
+    fun setImportCategory(category: String) {
+        importCategory = category
     }
 
     fun getSpendKey(): ByteArray? {
@@ -255,7 +260,7 @@ class FetchWalletViewModel @Inject constructor(
             _state.value = FetchWalletState.IMPORTING
             try {
                 val walletsToCreate = selectedWalletInfos.value.map {
-                    val category = WalletCategory.IMPORTED_MNEMONIC.value
+                    val category = importCategory
                     val addresses = listOf(
                         createSignedWeb3AddressRequest(
                             destination = it.btcWallet.address,

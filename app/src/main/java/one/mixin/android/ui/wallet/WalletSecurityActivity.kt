@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.WindowManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.crypto.getPendingImportMnemonic
 import one.mixin.android.ui.common.BlazeBaseActivity
 
 @AndroidEntryPoint
@@ -23,6 +24,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
         if (savedInstanceState == null) {
             val chainId = intent.getStringExtra(EXTRA_CHAIN_ID)
             val walletId = intent.getStringExtra(EXTRA_WALLET_ID)
+            val pin = intent.getStringExtra(EXTRA_PIN)
 
             val fragment = when (mode) {
                 Mode.CREATE_WALLET -> WalletNoticeFragment.newInstance(Mode.CREATE_WALLET)
@@ -35,6 +37,11 @@ class WalletSecurityActivity : BlazeBaseActivity() {
                 Mode.RE_IMPORT_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_PRIVATE_KEY, walletId = walletId, chainId = chainId)
                 Mode.VIEW_ADDRESS -> ViewWalletAddressFragment.newInstance(walletId)
                 Mode.LOGIN_IMPORT_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.LOGIN_IMPORT_MNEMONIC)
+                Mode.REGISTER_IMPORT_MNEMONIC -> FetchingWalletFragment.newInstance(
+                    mnemonic = getPendingImportMnemonic(this),
+                    pin = pin,
+                    importCategory = importWalletCategoryForMode(mode),
+                )
             }
 
             supportFragmentManager.beginTransaction()
@@ -54,12 +61,14 @@ class WalletSecurityActivity : BlazeBaseActivity() {
         const val EXTRA_MODE = "extra_mode"
         const val EXTRA_CHAIN_ID = "extra_chain_id"
         const val EXTRA_WALLET_ID = "extra_wallet_id"
+        const val EXTRA_PIN = "extra_pin"
 
-        fun show(activity: Activity, mode: Mode, chainId: String? = null, walletId: String? = null) {
+        fun show(activity: Activity, mode: Mode, chainId: String? = null, walletId: String? = null, pin: String? = null) {
             val intent = android.content.Intent(activity, WalletSecurityActivity::class.java)
             intent.putExtra(EXTRA_MODE, mode.ordinal)
             chainId?.let { intent.putExtra(EXTRA_CHAIN_ID, it) }
             walletId?.let { intent.putExtra(EXTRA_WALLET_ID, it) }
+            pin?.let { intent.putExtra(EXTRA_PIN, it) }
             activity.startActivity(intent)
         }
     }
@@ -75,6 +84,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
         CREATE_WALLET,
         VIEW_ADDRESS,
         LOGIN_IMPORT_MNEMONIC,
+        REGISTER_IMPORT_MNEMONIC,
     }
 
     private fun Mode.requiresSecureWindow(): Boolean =

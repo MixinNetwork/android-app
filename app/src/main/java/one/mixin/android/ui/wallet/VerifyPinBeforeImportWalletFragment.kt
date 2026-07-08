@@ -123,10 +123,16 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                             requireActivity().finish()
                                         } else {
                                             replaceAsRoot(
-                                                FetchingWalletFragment.newInstance(mnemonic),
+                                                FetchingWalletFragment.newInstance(
+                                                    mnemonic = mnemonic,
+                                                    importCategory = importWalletCategoryForMode(mode),
+                                                ),
                                                 FetchingWalletFragment.TAG
                                             )
                                         }
+                                    }
+                                    WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC -> {
+                                        requireActivity().finish()
                                     }
                                 }
                             } else {

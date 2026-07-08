@@ -265,12 +265,16 @@ class TipFlowInteractor @Inject internal constructor(
             }
         }
         if (shouldOpenMainActivity || hasPendingImport) {
-            openNextAfterPin(context)
+            openNextAfterPin(context, tipBundle.tipType == TipType.Create, pin)
         }
         return true
     }
 
-    private suspend fun openNextAfterPin(context: Context) {
+    private suspend fun openNextAfterPin(
+        context: Context,
+        skipImportPin: Boolean = false,
+        pin: String? = null,
+    ) {
         val activity = context.findFragmentActivityOrNull()
         if (!hasPendingImportMnemonic(context)) {
             MainActivity.show(context)
@@ -287,7 +291,12 @@ class TipFlowInteractor @Inject internal constructor(
             }
             PendingMnemonicRoute.ImportMnemonic -> {
                 if (activity != null) {
-                    WalletSecurityActivity.show(activity, WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC)
+                    val mode = if (skipImportPin) {
+                        WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC
+                    } else {
+                        WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC
+                    }
+                    WalletSecurityActivity.show(activity, mode, pin = pin)
                 } else {
                     MainActivity.show(context)
                 }
