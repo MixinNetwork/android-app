@@ -4,6 +4,7 @@ import android.content.ClipData
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -279,11 +280,13 @@ fun MnemonicPhraseInput(
                             Spacer(modifier = Modifier.height(44.dp))
                         }
                         if (other) {
+                            val instructionShape = RoundedCornerShape(8.dp)
                             Box(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .background(MixinAppTheme.colors.backgroundWindow)
+                                    .clip(instructionShape)
+                                    .background(MixinAppTheme.colors.background)
+                                    .border(1.dp, MixinAppTheme.colors.borderColor, instructionShape)
                                     .padding(16.dp)
                             ) {
                                 Column {
@@ -424,11 +427,13 @@ fun MnemonicPhraseInput(
                                             .fillMaxWidth()
                                     ) {}
                                 } else if (index < inputs.size) {
+                                    val inputShape = RoundedCornerShape(4.dp)
                                     Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .clip(RoundedCornerShape(4.dp))
-                                            .background(MixinAppTheme.colors.backgroundWindow)
+                                            .clip(inputShape)
+                                            .background(MixinAppTheme.colors.background)
+                                            .border(1.dp, MixinAppTheme.colors.borderColor, inputShape)
                                             .padding(8.dp)
                                     ) {
                                         if (state == MnemonicState.Display) {
