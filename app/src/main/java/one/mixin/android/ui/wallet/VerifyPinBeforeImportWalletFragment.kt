@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.crypto.getPendingImportMnemonic
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.VerifyPinBeforeImportWalletPage
@@ -115,6 +116,17 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                     }
                                     WalletSecurityActivity.Mode.VIEW_ADDRESS -> {
                                        requireActivity().finish()
+                                    }
+                                    WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC -> {
+                                        val mnemonic = getPendingImportMnemonic(requireContext())
+                                        if (mnemonic.isNullOrBlank()) {
+                                            requireActivity().finish()
+                                        } else {
+                                            replaceAsRoot(
+                                                FetchingWalletFragment.newInstance(mnemonic),
+                                                FetchingWalletFragment.TAG
+                                            )
+                                        }
                                     }
                                 }
                             } else {

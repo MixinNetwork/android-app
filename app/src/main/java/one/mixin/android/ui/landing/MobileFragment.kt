@@ -9,6 +9,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.view.View.AUTOFILL_HINT_PHONE
 import android.view.WindowManager
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -36,6 +37,7 @@ import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
@@ -121,6 +123,8 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     private val addPhoneSource: String? by lazy {
         requireArguments().getString(ARGS_ADD_PHONE_SOURCE)
     }
+    private val useSystemKeyboard: Boolean
+        get() = from == FROM_LANDING
 
     private var captchaView: CaptchaView? = null
 
@@ -181,13 +185,14 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 policyWrapper,
                 arrayOf(policyUrl, termsUrl),
             )
-            binding.orLl.isVisible = from == FROM_LANDING
-            binding.mnemonicPhrase.isVisible = from == FROM_LANDING
-            binding.noAccount.isVisible = from == FROM_LANDING
+            binding.introductionTv.isVisible = from != FROM_LANDING
+            binding.orLl.isVisible = false
+            binding.mnemonicPhrase.isVisible = false
+            binding.noAccount.isVisible = false
 
             countryIconIv.setOnClickListener { showCountry() }
             countryCodeEt.addTextChangedListener(countryCodeWatcher)
-            countryCodeEt.showSoftInputOnFocus = false
+            countryCodeEt.showSoftInputOnFocus = useSystemKeyboard
             continueBn.setOnClickListener {
                 if (from == FROM_VERIFY_MOBILE_REMINDER
                     && presetPhoneNumber != null
@@ -197,10 +202,17 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                     showDialog()
                 }
             }
-            mobileEt.showSoftInputOnFocus = false
+            mobileEt.showSoftInputOnFocus = useSystemKeyboard
             mobileEt.addTextChangedListener(mWatcher)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 mobileEt.setAutofillHints(AUTOFILL_HINT_PHONE)
+            }
+            if (useSystemKeyboard) {
+                (continueBn.layoutParams as ConstraintLayout.LayoutParams).apply {
+                    topToBottom = R.id.mobile_input_bg
+                    topMargin = 44.dp
+                }
+                continueBn.requestLayout()
             }
             mobileCover.isClickable = true
             countryPicker = CountryPicker.newInstance()
@@ -230,6 +242,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             keyboard.tipTitleEnabled = false
             keyboard.initPinKeys()
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
+            keyboard.isVisible = !useSystemKeyboard
             mnemonicPhrase.setOnClickListener {
                 activity?.addFragment(
                     this@MobileFragment,
@@ -308,7 +321,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     }
 
     override fun onBackPressed(): Boolean {
-        if (binding.keyboard.translationY == 0f) {
+        if (!useSystemKeyboard && binding.keyboard.translationY == 0f) {
             binding.mobileEt.clearFocus()
             binding.countryCodeEt.clearFocus()
             return true
@@ -343,10 +356,19 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
 
     override fun onResume() {
         super.onResume()
-        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
-        requireActivity().currentFocus?.clearFocus()
-        requireActivity().hideKeyboard()
-        binding.mobileEt.hideKeyboard()
+        if (useSystemKeyboard) {
+            requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+            binding.mobileEt.post {
+                if (!viewDestroyed()) {
+                    binding.mobileEt.showKeyboard()
+                }
+            }
+        } else {
+            requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+            requireActivity().currentFocus?.clearFocus()
+            requireActivity().hideKeyboard()
+            binding.mobileEt.hideKeyboard()
+        }
     }
 
     private fun requestSend(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
@@ -787,6 +809,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     }
 
     private fun handleFocusChange(hasFocus: Boolean) {
+        if (useSystemKeyboard) return
         if (hasFocus) {
             binding.orLl.isVisible = false
             binding.mnemonicPhrase.isVisible = false
@@ -801,6 +824,11 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     }
 
     private fun handleTextChange(s: Editable?) {
+        if (useSystemKeyboard) {
+            binding.orLl.isVisible = false
+            binding.mnemonicPhrase.isVisible = false
+            return
+        }
         if (s.isNullOrEmpty() && !binding.mobileEt.hasFocus() && !binding.countryCodeEt.hasFocus()) {
             binding.orLl.isVisible = from == FROM_LANDING
             binding.mnemonicPhrase.isVisible = from == FROM_LANDING

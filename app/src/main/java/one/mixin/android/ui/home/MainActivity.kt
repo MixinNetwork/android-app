@@ -70,6 +70,8 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
+import one.mixin.android.crypto.clearPendingImportMnemonic
+import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
@@ -159,6 +161,8 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
+import one.mixin.android.ui.tip.PendingMnemonicRoute
+import one.mixin.android.ui.tip.routePendingMnemonicAfterWalletFetch
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
@@ -167,11 +171,14 @@ import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.ui.wallet.WalletMissingBtcAddressFragment
+import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.WalletDestination
+import one.mixin.android.ui.wallet.components.walletDestinationFromJson
+import one.mixin.android.ui.wallet.components.walletDestinationForWallet
+import one.mixin.android.ui.wallet.components.walletDestinationToJson
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.SERVER
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -398,6 +405,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             lifecycleScope.launch {
                 if (Session.hasSafe()) {
                     jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
+                    if (hasPendingImportMnemonic(this@MainActivity)) {
+                        openPendingMnemonicNext()
+                        return@launch
+                    }
                     val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
                     val shouldGoWallet: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
                     val shouldBlockNavigation: Boolean = shouldShowWalletMissingBtcAddress()
@@ -413,10 +424,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                         }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
                     }
                     if (shouldGoWallet && !shouldBlockNavigation) {
-                        binding.bottomNav.selectedItemId = R.id.nav_wallet
-                        switchToDestination(NavigationController.Wallet)
-                        lastBottomNavItemId = R.id.nav_wallet
-                        defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
+                        openWalletTabFromLogin()
                     }
                 } else {
                     CheckRegisterBottomSheetDialogFragment.newInstance()
@@ -448,6 +456,36 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     {},
                 )
         }
+    }
+
+    private suspend fun openPendingMnemonicNext() {
+        val wallets = web3Repository.syncWalletsFromRoute()
+        when (routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })) {
+            PendingMnemonicRoute.WalletHome -> {
+                clearPendingImportMnemonic(this)
+                val walletDestination = wallets?.firstOrNull { it.category == WalletCategory.CLASSIC.value }?.let { wallet ->
+                    walletDestinationForWallet(wallet.id, wallet.category)
+                }
+                openWalletTabFromLogin(walletDestination)
+            }
+            PendingMnemonicRoute.ImportMnemonic -> {
+                WalletSecurityActivity.show(this, WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC)
+            }
+            PendingMnemonicRoute.WalletFetchFailed -> {
+            }
+        }
+    }
+
+    private fun openWalletTabFromLogin(walletDestination: WalletDestination? = null) {
+        walletDestination?.let { destination ->
+            val json = walletDestinationToJson(destination)
+            defaultSharedPreferences.putString(Account.PREF_USED_WALLET, json)
+            intent.putExtra(WALLET_DESTINATION, json)
+        }
+        binding.bottomNav.selectedItemId = R.id.nav_wallet
+        switchToDestination(NavigationController.Wallet)
+        lastBottomNavItemId = R.id.nav_wallet
+        defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
     }
 
     override fun onStart() {
@@ -844,11 +882,17 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             clearCodeAfterConsume(intent, URL)
         } else if (intent.hasExtra(WALLET)) {
+            intent.getStringExtra(WALLET_DESTINATION)?.let { json ->
+                if (walletDestinationFromJson(json) != null) {
+                    defaultSharedPreferences.putString(Account.PREF_USED_WALLET, json)
+                }
+            }
             binding.bottomNav.selectedItemId = R.id.nav_wallet
             if (intent.getBooleanExtra(BUY, false)) {
                 WalletActivity.showBuy(this, false, null, null)
                 clearCodeAfterConsume(intent, BUY)
             }
+            clearCodeAfterConsume(intent, WALLET_DESTINATION)
             clearCodeAfterConsume(intent, WALLET)
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER) ?: return
@@ -1108,17 +1152,15 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     }
 
     private fun loadInitialWalletDestination(): WalletDestination {
+        intent.getStringExtra(WALLET_DESTINATION)?.let { json ->
+            walletDestinationFromJson(json)?.let { return it }
+        }
+
         val walletPref = defaultSharedPreferences.getString(
             Account.PREF_USED_WALLET, null
         )
 
-        return walletPref?.let { pref ->
-            try {
-                GsonHelper.customGson.fromJson(pref, WalletDestination::class.java)
-            } catch (_: Exception) {
-                WalletDestination.Privacy
-            }
-        } ?: WalletDestination.Privacy
+        return walletPref?.let(::walletDestinationFromJson) ?: WalletDestination.Privacy
     }
 
     private fun handleNavigationItemSelected(itemId: Int) {
@@ -1354,16 +1396,23 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         const val SCAN = "scan"
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
+        private const val WALLET_DESTINATION = "wallet_destination"
         const val WALLET_CONNECT = "wallet_connect"
         private const val KEY_LAST_BOTTOM_NAV = "last_bottom_nav_item_id"
 
         fun showWallet(
             context: Context,
             buy: Boolean = false,
+            walletDestination: WalletDestination? = null,
         ) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(WALLET, true)
                 putExtra(BUY, buy)
+                walletDestination?.let {
+                    val json = walletDestinationToJson(it)
+                    context.defaultSharedPreferences.putString(Account.PREF_USED_WALLET, json)
+                    putExtra(WALLET_DESTINATION, json)
+                }
                 addCategory(Intent.CATEGORY_LAUNCHER)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             }.run {

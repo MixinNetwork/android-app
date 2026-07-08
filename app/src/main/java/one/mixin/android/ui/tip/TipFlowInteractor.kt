@@ -24,6 +24,8 @@ import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.PinCipher
+import one.mixin.android.crypto.clearPendingImportMnemonic
+import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
@@ -31,6 +33,7 @@ import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
@@ -48,6 +51,8 @@ import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.wallet.WalletSecurityActivity
+import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
@@ -256,6 +261,10 @@ class TipFlowInteractor @Inject internal constructor(
                 return false
             }
         }
+        val hasPendingImport = hasPendingImportMnemonic(context)
+        if (shouldCreateClassicWalletAfterTip(tipBundle.tipType) && !ensureClassicWalletAfterTip(context, pin, tipPriv, onStepChanged)) {
+            return false
+        }
         val cur = System.currentTimeMillis()
         context.defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
         context.defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
@@ -268,10 +277,62 @@ class TipFlowInteractor @Inject internal constructor(
                 onShowMessage(ignored.toString())
             }
         }
-        if (shouldOpenMainActivity) {
-            MainActivity.show(context)
+        if (shouldOpenMainActivity || hasPendingImport) {
+            openNextAfterPin(context)
         }
         return true
+    }
+
+    private suspend fun ensureClassicWalletAfterTip(
+        context: Context,
+        pin: String,
+        tipPriv: ByteArray?,
+        onStepChanged: (TipStep) -> Unit,
+    ): Boolean {
+        if (web3Repository.getClassicWalletId() != null) {
+            return true
+        }
+        val seed = try {
+            tipPriv ?: tip.getOrRecoverTipPriv(context, pin).getOrThrow()
+        } catch (e: Exception) {
+            val errorInfo = e.getTipExceptionMsg(context)
+            onStepChanged(RetryRegister(null, errorInfo))
+            return false
+        }
+        val spendSeed = tip.getSpendPriv(context, seed)
+        if (ensureClassicWallet(context, spendSeed)) {
+            return true
+        }
+        onStepChanged(RetryRegister(seed, context.getString(R.string.Set_up_pin_error_message)))
+        return false
+    }
+
+    private suspend fun openNextAfterPin(context: Context) {
+        val activity = context.findFragmentActivityOrNull()
+        if (!hasPendingImportMnemonic(context)) {
+            MainActivity.show(context)
+            return
+        }
+        val wallets = web3Repository.syncWalletsFromRoute()
+        when (routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })) {
+            PendingMnemonicRoute.WalletHome -> {
+                clearPendingImportMnemonic(context)
+                val walletDestination = wallets?.firstOrNull { it.category == WalletCategory.CLASSIC.value }?.let { wallet ->
+                    walletDestinationForWallet(wallet.id, wallet.category)
+                }
+                MainActivity.showWallet(context, walletDestination = walletDestination)
+            }
+            PendingMnemonicRoute.ImportMnemonic -> {
+                if (activity != null) {
+                    WalletSecurityActivity.show(activity, WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC)
+                } else {
+                    MainActivity.show(context)
+                }
+            }
+            PendingMnemonicRoute.WalletFetchFailed -> {
+                MainActivity.show(context)
+            }
+        }
     }
 
     private suspend fun registerPublicKey(
@@ -327,7 +388,10 @@ class TipFlowInteractor @Inject internal constructor(
             val evmAddress: String = getTipAddress(context, pin, ETHEREUM_CHAIN_ID)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
-            createWallet(context, spendSeed)
+            if (!ensureClassicWallet(context, spendSeed)) {
+                onStepChanged(RetryRegister(seed, context.getString(R.string.Set_up_pin_error_message)))
+                return false
+            }
             if (Session.hasPhone()) {
                 removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
             }
@@ -345,10 +409,10 @@ class TipFlowInteractor @Inject internal constructor(
         return false
     }
 
-    private suspend fun createWallet(context: Context, spendKey: ByteArray) {
+    private suspend fun ensureClassicWallet(context: Context, spendKey: ByteArray): Boolean {
         val hasClassicWallet: Boolean = web3Repository.getClassicWalletId() != null
         if (hasClassicWallet) {
-            return
+            return true
         }
         val walletName: String = context.getString(R.string.Common_Wallet)
         val classicIndex = 0
@@ -361,21 +425,26 @@ class TipFlowInteractor @Inject internal constructor(
             createSignedWeb3AddressRequest(destination = btcAddress, chainId = Constants.ChainId.BITCOIN_CHAIN_ID, path = Bip44Path.bitcoinSegwitPathString(classicIndex), privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex), category = WalletCategory.CLASSIC.value),
         )
         val walletRequest = WalletRequest(name = walletName, category = WalletCategory.CLASSIC.value, addresses = addresses)
-        requestRouteAPI(
+        val created = requestRouteAPI(
             invokeNetwork = { web3Repository.createWallet(walletRequest) },
             successBlock = { response ->
-                response.data?.let { wallet ->
+                val wallet = response.data
+                if (wallet == null) {
+                    false
+                } else {
                     web3Repository.insertWallet(Web3Wallet(id = wallet.id, name = wallet.name, category = wallet.category, createdAt = wallet.createdAt, updatedAt = wallet.updatedAt))
                     val walletAddresses = wallet.addresses ?: emptyList()
                     if (walletAddresses.isNotEmpty()) {
                         web3Repository.insertAddressList(walletAddresses)
                     }
+                    true
                 }
             },
             requestSession = { ids ->
                 web3Repository.fetchSessionsSuspend(ids)
             },
         )
+        return created == true && web3Repository.getClassicWalletId() != null
     }
 
     private fun createSignedWeb3AddressRequest(

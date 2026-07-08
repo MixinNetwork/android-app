@@ -20,7 +20,6 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
-import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.setting.diagnosis.DiagnosisFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -190,8 +189,8 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
         binding.continueTv.setOnClickListener {
             activity?.addFragment(
                 this@LandingFragment,
-                MobileFragment.newInstance(from = FROM_LANDING),
-                MobileFragment.TAG,
+                LoginMethodFragment.newInstance(),
+                LoginMethodFragment.TAG,
             )
         }
     }

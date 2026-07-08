@@ -25,13 +25,16 @@ import one.mixin.android.api.request.doAnonymousPOW
 import one.mixin.android.crypto.CryptoPreference
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.SignalProtocol
+import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.getValueFromEncryptedPreferences
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromMnemonic
+import one.mixin.android.crypto.savePendingImportMnemonic
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toMnemonic
+import one.mixin.android.crypto.toMnemonicWithChecksum
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.containsIgnoreCase
@@ -66,13 +69,16 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
         const val TAG: String = "MnemonicPhraseFragment"
         const val ARGS_MNEMONIC_PHRASE = "mnemonic_phrase"
+        private const val ARGS_PENDING_IMPORT_MNEMONIC = "pending_import_mnemonic"
 
         fun newInstance(
-            words: ArrayList<String>? = null
+            words: ArrayList<String>? = null,
+            pendingImportWords: ArrayList<String>? = null,
         ): MnemonicPhraseFragment =
             MnemonicPhraseFragment().apply {
                 withArgs {
                     putStringArrayList(ARGS_MNEMONIC_PHRASE, words)
+                    putStringArrayList(ARGS_PENDING_IMPORT_MNEMONIC, pendingImportWords)
                 }
             }
     }
@@ -89,6 +95,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
     private val words by lazy {
         requireArguments().getStringArrayList(ARGS_MNEMONIC_PHRASE)
+    }
+    private val pendingImportWords by lazy {
+        requireArguments().getStringArrayList(ARGS_PENDING_IMPORT_MNEMONIC)
     }
 
     override fun onViewCreated(
@@ -131,14 +140,21 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val sessionKey = generateEd25519KeyPair()
             val edKey = if (!words.isNullOrEmpty()) {
-                val w = words.let {
-                    when (words.size) {
+                val completedWords = runCatching {
+                    completeMnemonicForLogin(words) { sourceWords ->
+                        toMnemonicWithChecksum(sourceWords)
+                    }
+                }.onFailure {
+                    errorInfo = getString(R.string.invalid_mnemonic_phrase)
+                }.getOrNull() ?: return@launch
+                val w = completedWords.let {
+                    when (completedWords.size) {
                         13 -> {
-                            words.subList(0, 12)
+                            completedWords.subList(0, 12)
                         }
 
                         25 -> {
-                            words.subList(0, 24)
+                            completedWords.subList(0, 24)
                         }
 
                         else -> {
@@ -365,6 +381,12 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             if (r?.isSuccess == true) {
                 val account = r.data!!
                 initializeAccountSession(requireContext(), account, sessionKey)
+                val importWords = pendingImportWords
+                if (!importWords.isNullOrEmpty()) {
+                    savePendingImportMnemonic(requireContext(), importWords)
+                } else {
+                    clearPendingImportMnemonic(requireContext())
+                }
                 when {
                     account.fullName.isNullOrBlank() -> {
                         withContext(Dispatchers.IO) {

@@ -24,16 +24,20 @@ import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
+import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.databinding.FragmentLoadingBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.InitializeJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.common.BaseFragment
@@ -41,12 +45,17 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.tip.PendingMnemonicRoute
+import one.mixin.android.ui.tip.routePendingMnemonicAfterWalletFetch
+import one.mixin.android.ui.wallet.WalletSecurityActivity
+import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.isSimplifiedChineseLocale
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -65,6 +74,9 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
 
     @Inject
     lateinit var jobManager: MixinJobManager
+
+    @Inject
+    lateinit var web3Repository: Web3Repository
 
     private val loadingViewModel by viewModels<LoadingViewModel>()
     private val binding by viewBinding(FragmentLoadingBinding::bind)
@@ -120,12 +132,16 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, true)
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
-                MainActivity.show(requireContext())
-            } else {
-                var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
-                if (deviceId == null) {
-                    deviceId = requireActivity().getStringDeviceId()
+                when {
+                    hasPendingImportMnemonic(requireContext()) -> {
+                        openPendingMnemonicNext()
+                    }
+                    else -> {
+                        MainActivity.show(requireContext())
+                    }
                 }
+            } else {
+                ensureDeviceId()
                 val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
                 if (TipType.Create == tipType) {
                     InitializeActivity.showSetupPin(requireActivity())
@@ -136,6 +152,31 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             initializeBots()
             activity?.finish()
         }
+
+    private suspend fun openPendingMnemonicNext() {
+        val wallets = web3Repository.syncWalletsFromRoute()
+        when (routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })) {
+            PendingMnemonicRoute.WalletHome -> {
+                clearPendingImportMnemonic(requireContext())
+                val walletDestination = wallets?.firstOrNull { it.category == WalletCategory.CLASSIC.value }?.let { wallet ->
+                    walletDestinationForWallet(wallet.id, wallet.category)
+                }
+                MainActivity.showWallet(requireContext(), walletDestination = walletDestination)
+            }
+            PendingMnemonicRoute.ImportMnemonic -> {
+                WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC)
+            }
+            PendingMnemonicRoute.WalletFetchFailed -> {
+                MainActivity.show(requireContext())
+            }
+        }
+    }
+
+    private fun ensureDeviceId() {
+        if (defaultSharedPreferences.getString(DEVICE_ID, null) == null) {
+            defaultSharedPreferences.putString(DEVICE_ID, requireActivity().getStringDeviceId())
+        }
+    }
 
     private fun initializeBots() {
         val phone = Session.getAccount()?.phone.orEmpty()

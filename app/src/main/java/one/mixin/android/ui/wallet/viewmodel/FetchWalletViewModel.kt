@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
@@ -30,6 +31,9 @@ import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.IndexedWallet
+import one.mixin.android.ui.wallet.components.WalletDestination
+import one.mixin.android.ui.wallet.components.fetchWalletFailureState
+import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.encodeToBase58String
@@ -77,6 +81,9 @@ class FetchWalletViewModel @Inject constructor(
     private val _partialSuccess = MutableStateFlow<Boolean?>(null)
     val partialSuccess: StateFlow<Boolean?> = _partialSuccess.asStateFlow()
 
+    private val _importedWalletDestination = MutableStateFlow<WalletDestination?>(null)
+    val importedWalletDestination: StateFlow<WalletDestination?> = _importedWalletDestination.asStateFlow()
+
     suspend fun getAllNoKeyWallets() = web3Repository.getAllNoKeyWallets()
 
     private var mnemonic: String = ""
@@ -98,6 +105,8 @@ class FetchWalletViewModel @Inject constructor(
     fun setMnemonic(mnemonic: String) {
         this.mnemonic = mnemonic
         _wallets.value = emptyList()
+        _selectedWalletInfos.value = emptySet()
+        _importedWalletDestination.value = null
         currentIndex = 0
         startFetching(0)
     }
@@ -141,6 +150,10 @@ class FetchWalletViewModel @Inject constructor(
 
     fun findMoreWallets() {
         currentIndex += 10
+        startFetching(currentIndex)
+    }
+
+    fun retryFetching() {
         startFetching(currentIndex)
     }
 
@@ -219,15 +232,18 @@ class FetchWalletViewModel @Inject constructor(
                             }
                         }
                     } else {
-                        if (offset == 0) {
-                            _wallets.value = listOf(wallets[0])
-                        }
+                        _errorCode.value = response.errorCode
+                        _errorMessage.value = MixinApplication.appContext.getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+                        _state.value = fetchWalletFailureState(_wallets.value.isNotEmpty())
+                        return@launch
                     }
                 }
                 _state.value = FetchWalletState.SELECT
             } catch (e: Exception) {
                 Timber.e(e, "Failed to fetch wallet info")
-                _state.value = FetchWalletState.SELECT
+                _errorCode.value = null
+                _errorMessage.value = ErrorHandler.getErrorMessage(e)
+                _state.value = fetchWalletFailureState(_wallets.value.isNotEmpty())
             }
         }
     }
@@ -235,6 +251,7 @@ class FetchWalletViewModel @Inject constructor(
     // Start importing selected wallet infos
     fun startImporting() {
         viewModelScope.launch {
+            _importedWalletDestination.value = null
             _state.value = FetchWalletState.IMPORTING
             try {
                 val walletsToCreate = selectedWalletInfos.value.map {
@@ -306,7 +323,11 @@ class FetchWalletViewModel @Inject constructor(
                                 updatedAt = wallet.updatedAt,
                             )
                         )
+                        wallet.addresses?.takeIf { it.isNotEmpty() }?.let { addresses ->
+                            web3Repository.insertAddressList(addresses)
+                        }
                         saveWeb3PrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, words)
+                        selectImportedWalletIfNeeded(wallet.id, wallet.category)
                         jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
                         successCount++
                     }
@@ -407,6 +428,7 @@ class FetchWalletViewModel @Inject constructor(
             try {
                 val address: String
                 val category: WalletCategory
+                _importedWalletDestination.value = null
                 _state.value = FetchWalletState.IMPORTING
                 when (mode) {
                     WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> {
@@ -485,6 +507,10 @@ class FetchWalletViewModel @Inject constructor(
                     if (privateKey.isNullOrEmpty().not()) {
                         saveWeb3ImportedPrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, privateKey)
                     }
+                    wallet.addresses?.takeIf { it.isNotEmpty() }?.let { addresses ->
+                        web3Repository.insertAddressList(addresses)
+                    }
+                    selectImportedWalletIfNeeded(wallet.id, wallet.category)
                     jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
                     Timber.d("Successfully imported wallet ${wallet.id}")
 
@@ -563,6 +589,7 @@ class FetchWalletViewModel @Inject constructor(
         }
         viewModelScope.launch {
             try {
+                _importedWalletDestination.value = null
                 _state.value = FetchWalletState.IMPORTING
                 val names = web3Repository.getAllWalletNames(listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
                 val classicIndex = web3Repository.getClassicWalletMaxIndex() + 1
@@ -608,6 +635,14 @@ class FetchWalletViewModel @Inject constructor(
                 Timber.e(e, "Failed to import wallet")
                 _state.value = FetchWalletState.IMPORT_ERROR
             }
+        }
+    }
+
+    private suspend fun selectImportedWalletIfNeeded(walletId: String, category: String) {
+        if (_importedWalletDestination.value != null) return
+        _importedWalletDestination.value = walletDestinationForWallet(walletId, category)
+        Web3Signer.setWallet(walletId, category) { queryWalletId ->
+            runBlocking { web3Repository.getAddresses(queryWalletId) }
         }
     }
 

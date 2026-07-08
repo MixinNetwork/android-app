@@ -2,14 +2,17 @@ package one.mixin.android.ui.wallet
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.fragment.app.activityViewModels
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.ImportErrorContent
@@ -34,6 +37,7 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
             val errorCode by viewModel.errorCode.collectAsState()
             val errorMessage by viewModel.errorMessage.collectAsState()
             val partialSuccess by viewModel.partialSuccess.collectAsState()
+            val importedWalletDestination by viewModel.importedWalletDestination.collectAsState()
 
             when (state) {
                 FetchWalletState.IMPORTING -> {
@@ -57,7 +61,14 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                     )
                 }
                 FetchWalletState.IMPORT_SUCCESS ->{
-                    requireActivity().finish()
+                    LaunchedEffect(importedWalletDestination) {
+                        clearPendingImportMnemonic(requireContext())
+                        MainActivity.showWallet(
+                            requireContext(),
+                            walletDestination = importedWalletDestination
+                        )
+                        requireActivity().finish()
+                    }
                 }
                 else -> {
                     ImportingContent {

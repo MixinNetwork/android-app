@@ -47,54 +47,63 @@
                 android:textSize="18sp" />
         </TextSwitcher>
 
+        <View
+            android:id="@+id/mobile_input_bg"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_marginStart="32dp"
+            android:layout_marginTop="36dp"
+            android:layout_marginEnd="32dp"
+            android:background="@drawable/bg_input_field"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/title_switcher" />
+
         <ImageView
             android:id="@+id/country_icon_iv"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="16dp"
             android:paddingStart="12dp"
             android:paddingTop="12dp"
             android:paddingEnd="4dp"
             android:paddingBottom="12dp"
             android:scaleType="centerInside"
-            app:layout_constraintBottom_toBottomOf="@+id/mobile_et"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/mobile_et"
+            app:layout_constraintBottom_toBottomOf="@+id/mobile_input_bg"
+            app:layout_constraintStart_toStartOf="@+id/mobile_input_bg"
+            app:layout_constraintTop_toTopOf="@+id/mobile_input_bg"
             tools:ignore="ContentDescription" />
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/country_code_et"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:background="@null"
             android:minWidth="48dp"
-            android:minHeight="@dimen/btn_min_height"
             android:gravity="center"
             android:inputType="number"
             android:textSize="16sp"
             android:textColor="?attr/text_primary"
-            app:layout_constraintBottom_toBottomOf="@+id/mobile_et"
+            app:layout_constraintBottom_toBottomOf="@+id/mobile_input_bg"
             app:layout_constraintStart_toEndOf="@+id/country_icon_iv"
-            app:layout_constraintTop_toTopOf="@+id/mobile_et"
+            app:layout_constraintTop_toTopOf="@+id/mobile_input_bg"
             tools:text="+86" />
 
         <one.mixin.android.widget.AutoFillPhoneText
             android:id="@+id/mobile_et"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="36dp"
-            android:layout_marginEnd="16dp"
+            android:background="@null"
             android:hint="@string/Phone_Number"
             android:inputType="number"
-            android:minHeight="@dimen/btn_min_height"
             android:textColor="?attr/text_primary"
             android:textColorHint="?attr/text_assist"
             android:textSize="16sp"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintBottom_toBottomOf="@+id/mobile_input_bg"
+            app:layout_constraintEnd_toEndOf="@+id/mobile_input_bg"
             app:layout_constraintHorizontal_bias="0.0"
             app:layout_constraintStart_toEndOf="@+id/country_code_et"
-            app:layout_constraintTop_toBottomOf="@+id/title_switcher" />
+            app:layout_constraintTop_toTopOf="@+id/mobile_input_bg" />
 
         <TextView
             android:id="@+id/introduction_tv"
@@ -110,7 +119,7 @@
             app:layout_constraintHorizontal_bias="0.206"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/mobile_et" />
+            app:layout_constraintTop_toBottomOf="@+id/mobile_input_bg" />
 
         <ViewAnimator
             style="@style/AppTheme.MaterialButton"

@@ -34,6 +34,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
                 Mode.RE_IMPORT_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_MNEMONIC, walletId = walletId)
                 Mode.RE_IMPORT_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_PRIVATE_KEY, walletId = walletId, chainId = chainId)
                 Mode.VIEW_ADDRESS -> ViewWalletAddressFragment.newInstance(walletId)
+                Mode.LOGIN_IMPORT_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.LOGIN_IMPORT_MNEMONIC)
             }
 
             supportFragmentManager.beginTransaction()
@@ -73,6 +74,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
         RE_IMPORT_PRIVATE_KEY,
         CREATE_WALLET,
         VIEW_ADDRESS,
+        LOGIN_IMPORT_MNEMONIC,
     }
 
     private fun Mode.requiresSecureWindow(): Boolean =

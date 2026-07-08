@@ -2,6 +2,8 @@ package one.mixin.android.ui.wallet
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
@@ -10,6 +12,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.wallet.components.FetchErrorContent
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.FetchingContent
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
@@ -38,7 +41,19 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         binding.titleView.rightAnimator.displayedChild = 0
         binding.titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }
         binding.compose.setContent {
-            FetchingContent()
+            val state by viewModel.state.collectAsState()
+            val errorMessage by viewModel.errorMessage.collectAsState()
+            when (state) {
+                FetchWalletState.FETCH_ERROR -> {
+                    FetchErrorContent(
+                        errorMessage = errorMessage,
+                        onRetry = viewModel::retryFetching,
+                    )
+                }
+                else -> {
+                    FetchingContent()
+                }
+            }
         }
         viewModel.setMnemonic(mnemonic.orEmpty())
         viewLifecycleOwner.lifecycleScope.launch {
