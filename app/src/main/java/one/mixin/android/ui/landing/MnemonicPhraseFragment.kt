@@ -38,8 +38,10 @@ import one.mixin.android.crypto.toMnemonicWithChecksum
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
@@ -387,15 +389,20 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 } else {
                     clearPendingImportMnemonic(requireContext())
                 }
-                when {
-                    account.fullName.isNullOrBlank() -> {
+                when (routeLoginAccount(!account.fullName.isNullOrBlank(), hasLocalAccountDatabase(requireContext(), account.identityNumber))) {
+                    LoginAccountRoute.SetupName -> {
                         withContext(Dispatchers.IO) {
                             userRepositoryProvider.get().insertUser(account.toUser())
                         }
                         InitializeActivity.showSetupName(requireContext())
                     }
 
-                    else -> {
+                    LoginAccountRoute.UseLocalDatabase -> {
+                        defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
+                        InitializeActivity.showLoading(requireContext(), source = InitializeActivity.SOURCE_LOGIN)
+                    }
+
+                    LoginAccountRoute.Restore -> {
                         RestoreActivity.show(requireContext())
                     }
                 }

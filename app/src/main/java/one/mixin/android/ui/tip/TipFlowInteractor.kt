@@ -17,8 +17,6 @@ import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
-import one.mixin.android.api.request.web3.WalletRequest
-import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.TipNodeService
@@ -30,7 +28,6 @@ import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
-import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findFragmentActivityOrNull
@@ -43,29 +40,22 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.TipBody
 import one.mixin.android.tip.TipConstants.tipNodeApi2Path
-import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.privateKeyToAddress
-import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.walletDestinationForWallet
-import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
-import org.bitcoinj.base.ScriptType
-import org.bitcoinj.crypto.ECKey
 import org.web3j.utils.Numeric
 import retrofit2.HttpException
-import java.math.BigInteger
-import java.time.Instant
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
@@ -262,9 +252,6 @@ class TipFlowInteractor @Inject internal constructor(
             }
         }
         val hasPendingImport = hasPendingImportMnemonic(context)
-        if (shouldCreateClassicWalletAfterTip(tipBundle.tipType) && !ensureClassicWalletAfterTip(context, pin, tipPriv, onStepChanged)) {
-            return false
-        }
         val cur = System.currentTimeMillis()
         context.defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
         context.defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
@@ -281,30 +268,6 @@ class TipFlowInteractor @Inject internal constructor(
             openNextAfterPin(context)
         }
         return true
-    }
-
-    private suspend fun ensureClassicWalletAfterTip(
-        context: Context,
-        pin: String,
-        tipPriv: ByteArray?,
-        onStepChanged: (TipStep) -> Unit,
-    ): Boolean {
-        if (web3Repository.getClassicWalletId() != null) {
-            return true
-        }
-        val seed = try {
-            tipPriv ?: tip.getOrRecoverTipPriv(context, pin).getOrThrow()
-        } catch (e: Exception) {
-            val errorInfo = e.getTipExceptionMsg(context)
-            onStepChanged(RetryRegister(null, errorInfo))
-            return false
-        }
-        val spendSeed = tip.getSpendPriv(context, seed)
-        if (ensureClassicWallet(context, spendSeed)) {
-            return true
-        }
-        onStepChanged(RetryRegister(seed, context.getString(R.string.Set_up_pin_error_message)))
-        return false
     }
 
     private suspend fun openNextAfterPin(context: Context) {
@@ -388,10 +351,6 @@ class TipFlowInteractor @Inject internal constructor(
             val evmAddress: String = getTipAddress(context, pin, ETHEREUM_CHAIN_ID)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
-            if (!ensureClassicWallet(context, spendSeed)) {
-                onStepChanged(RetryRegister(seed, context.getString(R.string.Set_up_pin_error_message)))
-                return false
-            }
             if (Session.hasPhone()) {
                 removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
             }
@@ -407,70 +366,6 @@ class TipFlowInteractor @Inject internal constructor(
         val errorInfo = context.getMixinErrorStringByCode(error.code, error.description)
         onStepChanged(RetryRegister(tipPriv, errorInfo))
         return false
-    }
-
-    private suspend fun ensureClassicWallet(context: Context, spendKey: ByteArray): Boolean {
-        val hasClassicWallet: Boolean = web3Repository.getClassicWalletId() != null
-        if (hasClassicWallet) {
-            return true
-        }
-        val walletName: String = context.getString(R.string.Common_Wallet)
-        val classicIndex = 0
-        val evmAddress: String = privateKeyToAddress(spendKey, ETHEREUM_CHAIN_ID, classicIndex)
-        val solAddress: String = privateKeyToAddress(spendKey, SOLANA_CHAIN_ID, classicIndex)
-        val btcAddress: String = privateKeyToAddress(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex)
-        val addresses: List<Web3AddressRequest> = listOf(
-            createSignedWeb3AddressRequest(destination = evmAddress, chainId = ETHEREUM_CHAIN_ID, path = Bip44Path.ethereumPathString(classicIndex), privateKey = tipPrivToPrivateKey(spendKey, ETHEREUM_CHAIN_ID, classicIndex), category = WalletCategory.CLASSIC.value),
-            createSignedWeb3AddressRequest(destination = solAddress, chainId = SOLANA_CHAIN_ID, path = Bip44Path.solanaPathString(classicIndex), privateKey = tipPrivToPrivateKey(spendKey, SOLANA_CHAIN_ID, classicIndex), category = WalletCategory.CLASSIC.value),
-            createSignedWeb3AddressRequest(destination = btcAddress, chainId = Constants.ChainId.BITCOIN_CHAIN_ID, path = Bip44Path.bitcoinSegwitPathString(classicIndex), privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex), category = WalletCategory.CLASSIC.value),
-        )
-        val walletRequest = WalletRequest(name = walletName, category = WalletCategory.CLASSIC.value, addresses = addresses)
-        val created = requestRouteAPI(
-            invokeNetwork = { web3Repository.createWallet(walletRequest) },
-            successBlock = { response ->
-                val wallet = response.data
-                if (wallet == null) {
-                    false
-                } else {
-                    web3Repository.insertWallet(Web3Wallet(id = wallet.id, name = wallet.name, category = wallet.category, createdAt = wallet.createdAt, updatedAt = wallet.updatedAt))
-                    val walletAddresses = wallet.addresses ?: emptyList()
-                    if (walletAddresses.isNotEmpty()) {
-                        web3Repository.insertAddressList(walletAddresses)
-                    }
-                    true
-                }
-            },
-            requestSession = { ids ->
-                web3Repository.fetchSessionsSuspend(ids)
-            },
-        )
-        return created == true && web3Repository.getClassicWalletId() != null
-    }
-
-    private fun createSignedWeb3AddressRequest(
-        destination: String,
-        chainId: String,
-        path: String?,
-        privateKey: ByteArray,
-        category: String,
-    ): Web3AddressRequest {
-        val selfId = Session.getAccountId()
-        if (category == WalletCategory.WATCH_ADDRESS.value) {
-            return Web3AddressRequest(destination = destination, chainId = chainId, path = path)
-        }
-        val now = Instant.now()
-        val message = "$destination\n$selfId\n${now.epochSecond}"
-        val signature = if (chainId == SOLANA_CHAIN_ID) {
-            Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
-        } else if (chainId in Constants.Web3EvmChainIds) {
-            Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
-        } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-            val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKey), true)
-            Numeric.toHexString(ecKey.signMessage(message, ScriptType.P2WPKH).decodeBase64())
-        } else {
-            null
-        }
-        return Web3AddressRequest(destination = destination, chainId = chainId, path = path, signature = signature, timestamp = now.toString())
     }
 
     private suspend fun getEncryptedTipBody(userId: String, pkHex: String, pin: String): String =

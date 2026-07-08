@@ -41,6 +41,7 @@ import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.tip.TipActivity
@@ -128,30 +129,49 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                     return@launch
                 }
             }
-            if (Session.hasSafe()) {
-                defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
-                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, true)
-                defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
-                when {
-                    hasPendingImportMnemonic(requireContext()) -> {
-                        openPendingMnemonicNext()
-                    }
-                    else -> {
-                        MainActivity.show(requireContext())
-                    }
+            initializeBots()
+            when (routeLoginPostGate(Session.hasSafe(), Session.getAccount()?.hasPin == true)) {
+                LoginPostGateRoute.VerifyPin -> {
+                    showLoginPinGate()
+                    return@launch
                 }
-            } else {
-                ensureDeviceId()
-                val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
-                if (TipType.Create == tipType) {
+                LoginPostGateRoute.SetupPin -> {
+                    ensureDeviceId()
                     InitializeActivity.showSetupPin(requireActivity())
-                } else {
-                    TipActivity.show(requireActivity(), tipType, shouldWatch = true)
+                }
+                LoginPostGateRoute.UpgradeTip -> {
+                    ensureDeviceId()
+                    TipActivity.show(requireActivity(), TipType.Upgrade, shouldWatch = true)
                 }
             }
-            initializeBots()
             activity?.finish()
         }
+
+    private fun showLoginPinGate() {
+        defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
+        defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+        if (parentFragmentManager.findFragmentByTag(LoginVerifyBottomSheetDialogFragment.TAG) != null) {
+            return
+        }
+        LoginVerifyBottomSheetDialogFragment.newInstance().apply {
+            onDismissCallback = { success ->
+                if (success) {
+                    lifecycleScope.launch {
+                        openNextAfterPin()
+                        activity?.finish()
+                    }
+                }
+            }
+        }.showNow(parentFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+    }
+
+    private suspend fun openNextAfterPin() {
+        if (hasPendingImportMnemonic(requireContext())) {
+            openPendingMnemonicNext()
+        } else {
+            MainActivity.show(requireContext())
+        }
+    }
 
     private suspend fun openPendingMnemonicNext() {
         val wallets = web3Repository.syncWalletsFromRoute()

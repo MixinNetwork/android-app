@@ -10,7 +10,7 @@ enum class PendingMnemonicRoute {
 
 fun shouldCreateClassicWalletAfterTip(
     tipType: TipType,
-): Boolean = tipType != TipType.Change
+): Boolean = false
 
 fun routePendingMnemonicAfterWalletFetch(walletCategories: List<String>?): PendingMnemonicRoute =
     when {

@@ -598,32 +598,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             jobManager.addJobInBackground(RefreshContactJob())
             jobManager.addJobInBackground(RefreshSafeAccountsJob())
 
-            val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
-            val hasClassicWallet: Boolean = web3Repository.hasClassicWallet()
-            // Only show login verify when it has not been verified and there is no classic wallet.
-            Timber.e("isLoginVerified: $isLoginVerified, hasClassicWallet: $hasClassicWallet")
-            if (!isLoginVerified && !hasClassicWallet && Session.getAccount()?.hasSafe == true) {
-                lifecycleScope.launch {
-                    withContext(Dispatchers.Main) {
-                        try {
-                            if (!isFinishing && !supportFragmentManager.isStateSaved && !supportFragmentManager.isDestroyed) {
-                                LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-                                    onDismissCallback = { success ->
-                                        if (success) {
-                                            defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
-                                        }
-                                        jobManager.addJobInBackground(RefreshWeb3Job())
-                                    }
-                                }.show(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
-                            }
-                        } catch (e: Exception) {
-                            Timber.w(e)
-                        }
-                    }
-                }
-            } else {
-              jobManager.addJobInBackground(RefreshWeb3Job())
-            }
+            jobManager.addJobInBackground(RefreshWeb3Job())
         }
 
     private suspend fun updateSessionIfNeeded() {

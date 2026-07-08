@@ -193,7 +193,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
             val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
-            bottomViewModel.ensureClassicWallet(pin)
+            web3Repository.syncWalletsFromRoute()
             MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
             addBtcAddressIfNeeded(pin)
             AnalyticsTracker.trackLoginEnd()

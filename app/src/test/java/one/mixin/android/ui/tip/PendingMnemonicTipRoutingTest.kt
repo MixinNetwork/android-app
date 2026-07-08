@@ -8,15 +8,9 @@ import one.mixin.android.vo.WalletCategory
 
 class PendingMnemonicTipRoutingTest {
     @Test
-    fun pendingMnemonicImportStillCreatesClassicWallet() {
-        assertTrue(shouldCreateClassicWalletAfterTip(TipType.Create))
-        assertTrue(shouldCreateClassicWalletAfterTip(TipType.Upgrade))
-    }
-
-    @Test
-    fun nonImportTipStillCreatesClassicWallet() {
-        assertTrue(shouldCreateClassicWalletAfterTip(TipType.Create))
-        assertTrue(shouldCreateClassicWalletAfterTip(TipType.Upgrade))
+    fun tipFlowDoesNotCreateClassicWalletBeforePendingImport() {
+        assertFalse(shouldCreateClassicWalletAfterTip(TipType.Create))
+        assertFalse(shouldCreateClassicWalletAfterTip(TipType.Upgrade))
         assertFalse(shouldCreateClassicWalletAfterTip(TipType.Change))
     }
 
