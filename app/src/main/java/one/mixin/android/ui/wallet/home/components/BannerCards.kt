@@ -131,7 +131,7 @@ internal fun BannerPager(
                     modifier = Modifier
                         .fillMaxWidth()
                         .wrapContentHeight(),
-                    beyondViewportPageCount = pages.size,
+                    beyondViewportPageCount = minOf(2, pages.lastIndex),
                     verticalAlignment = Alignment.Top,
                 ) { page ->
                     Box(

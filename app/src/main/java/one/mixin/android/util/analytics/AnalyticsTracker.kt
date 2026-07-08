@@ -232,6 +232,7 @@ object AnalyticsTracker {
         const val WALLET = "wallet"
         const val ADDRESS_BOOK = "address_book"
         const val CONTACT = "contact"
+        const val CASH_ACCOUNT = "cash_account"
     }
 
     fun trackAddressBookAddStart() {

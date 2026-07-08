@@ -65,6 +65,7 @@ import one.mixin.android.ui.address.component.DestinationMenu
 import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.ui.wallet.home.cashAccountApyText
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.WalletCategory
@@ -85,6 +86,7 @@ fun TransferDestinationInputPage(
     toAddAddress: () -> Unit,
     toContact: () -> Unit,
     toWallet: (String?) -> Unit,
+    toCashAccount: () -> Unit,
     onSend: (String) -> Unit,
     onDeleteAddress: (Address) -> Unit,
     onAddressClick: (Address) -> Unit,
@@ -97,8 +99,13 @@ fun TransferDestinationInputPage(
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
     var hasSafeWallet by remember { mutableStateOf(false) }
     var safeWalletChainId by remember { mutableStateOf<String?>(null) }
+    var showCashAccount by remember { mutableStateOf(false) }
+    var cashRewardApy by remember { mutableStateOf<String?>(null) }
     var text by remember(contentText) { mutableStateOf(contentText) }
     val clipboardManager = LocalClipboard.current
+    val cashAccountBadge = cashAccountApyText(cashRewardApy)?.let { apy ->
+        stringResource(R.string.cash_account_apy, apy)
+    }
 
     LaunchedEffect(web3Token?.walletId) {
         if (web3Token?.walletId != null) {
@@ -115,10 +122,28 @@ fun TransferDestinationInputPage(
     }
 
     LaunchedEffect(token, web3Token) {
-        val chainId = token?.chainId ?: web3Token?.chainId ?: return@LaunchedEffect
-        val safeWallets = viewModel.getSafeWalletsByChainId(chainId)
-        hasSafeWallet = safeWallets.isNotEmpty()
-        safeWalletChainId = safeWallets.firstOrNull()?.safeChainId
+        if (token == null && web3Token == null) {
+            hasSafeWallet = false
+            safeWalletChainId = null
+            showCashAccount = false
+            cashRewardApy = null
+            return@LaunchedEffect
+        }
+        val chainId = token?.chainId ?: web3Token?.chainId
+        if (chainId == null) {
+            hasSafeWallet = false
+            safeWalletChainId = null
+        } else {
+            val safeWallets = viewModel.getSafeWalletsByChainId(chainId)
+            hasSafeWallet = safeWallets.isNotEmpty()
+            safeWalletChainId = safeWallets.firstOrNull()?.safeChainId
+        }
+        showCashAccount = token != null
+        cashRewardApy = if (showCashAccount) {
+            viewModel.findCashAccount()?.rewardApy
+        } else {
+            null
+        }
     }
 
     LaunchedEffect(addressShown) {
@@ -307,6 +332,18 @@ fun TransferDestinationInputPage(
                                 localLocalSoftwareKeyboardController?.hide()
                                 onShowAddressBook()
                             }
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                    if (showCashAccount) {
+                        DestinationMenu(
+                            icon = R.drawable.ic_destination_cash,
+                            title = stringResource(R.string.Cash_Account),
+                            subTile = stringResource(R.string.send_to_cash_account_description),
+                            onClick = {
+                                toCashAccount.invoke()
+                            },
+                            badge = cashAccountBadge,
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                     }

@@ -103,6 +103,13 @@ class Web3ViewModel @Inject constructor(
 
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
+    suspend fun web3Quote(
+        inputMint: String,
+        outputMint: String,
+        amount: String,
+        source: String,
+    ) = tokenRepository.web3Quote(inputMint, outputMint, amount, source)
+
     fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
 
     fun walletHomeWeb3TokenPreview(
