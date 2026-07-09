@@ -109,6 +109,7 @@ class DepositFragment : BaseFragment() {
                 rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.deposit_url)) }
             }
             title.setSubTitle(getString(R.string.Deposit_Token, asset.symbol), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
+            title.setWalletNameSubTitleStyle()
             addressDesc.text = getTipsByAsset(asset)
             if (notSupport) {
                 notSupportLl.isVisible = true
@@ -345,6 +346,7 @@ class DepositFragment : BaseFragment() {
                 Constants.ChainId.Solana,
                 Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID,
                 Constants.ChainId.Avalanche,
+                Constants.ChainId.HyperEVM,
                 Constants.ChainId.TON_CHAIN_ID -> true
 
                 else -> false

@@ -25,6 +25,7 @@ class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
+        binding.titleView.setSubTitle(getString(R.string.import_wallet_title), "")
         binding.compose.setContent {
             val wallets by viewModel.wallets.collectAsState()
             val selectedWalletInfos by viewModel.selectedWalletInfos.collectAsState()
@@ -42,7 +43,6 @@ class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
                         )
                         .commit()
                 },
-                onBackPressed = { requireActivity().finish() },
                 onSelectAll = viewModel::selectAll,
                 onFindMore = viewModel::findMoreWallets,
                 isLoadingMore = state == FetchWalletState.FETCHING && wallets.isNotEmpty(),

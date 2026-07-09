@@ -170,6 +170,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
             detailTv.movementMethod = LinkMovementMethod()
             detailTv.addAutoLinkMode(AutoLinkMode.MODE_URL)
             detailTv.setUrlModeColor(LINK_COLOR)
+            detailTv.expandAction = getString(R.string.More).lowercase()
             detailTv.setAutoLinkOnClickListener { _, url ->
                 url.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
                 dismiss()

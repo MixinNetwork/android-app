@@ -8,9 +8,9 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:9.2.1")
         classpath("com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.3.21")
-        classpath("com.google.dagger:hilt-android-gradle-plugin:2.59.2")
-        classpath("com.google.gms:google-services:4.4.4")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.0")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:2.60.1")
+        classpath("com.google.gms:google-services:4.5.0")
         classpath("com.google.firebase:firebase-crashlytics-gradle:3.0.7")
         classpath("com.google.firebase:perf-plugin:2.0.2")
         classpath("com.bugsnag:bugsnag-android-gradle-plugin:8.+")
@@ -20,12 +20,12 @@ buildscript {
 plugins {
     id("com.android.application") version "9.2.1" apply false
     id("com.android.library") version "9.2.1" apply false
-    id("org.jetbrains.kotlin.plugin.parcelize") version "2.3.21" apply false
+    id("org.jetbrains.kotlin.plugin.parcelize") version "2.4.0" apply false
     id("de.undercouch.download") version "5.5.0" apply false
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.3.21" apply false
-    id("com.google.devtools.ksp") version "2.3.8" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.3.21" apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0" apply false
+    id("com.google.devtools.ksp") version "2.3.9" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.0" apply false
     id("com.google.firebase.firebase-perf") version "2.0.2" apply false
 }
 
@@ -35,7 +35,7 @@ val activity_version by extra("1.13.0")
 val lifecycleVersion by extra("2.10.0")
 val appcompatVersion by extra("1.7.1")
 val pagingVersion by extra("3.5.0")
-val coilVersion by extra("3.4.0")
+val coilVersion by extra("3.5.0")
 val collectionx by extra("1.6.0")
 val roomVersion by extra("2.8.4")
 val navigationVersion by extra("2.9.8")
@@ -59,7 +59,7 @@ val espressoVersion by extra("3.7.0")
 val cameraxVersion by extra("1.6.1")
 val glideVersion by extra("5.0.7")
 val timberVersion by extra("5.0.1")
-val okhttpVersion by extra("5.3.2")
+val okhttpVersion by extra("5.4.0")
 val rxJavaVersion by extra("2.2.21")
 val rxAndroidVersion by extra("2.1.1")
 val rxbindingVersion by extra("3.1.0")

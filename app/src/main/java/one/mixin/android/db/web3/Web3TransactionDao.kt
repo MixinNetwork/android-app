@@ -32,6 +32,24 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
     """)
     fun web3Transactions(walletId: String, assetId: String): LiveData<List<Web3TransactionItem>>
 
+    @Query("""
+        SELECT DISTINCT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, w.address, w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, w.transaction_at, w.updated_at, w.level,
+            c.symbol as chain_symbol,
+            c.icon_url as chain_icon_url,
+            s.icon_url as send_asset_icon_url,
+            s.symbol as send_asset_symbol,
+            r.icon_url as receive_asset_icon_url,
+            r.symbol as receive_asset_symbol
+        FROM transactions w
+        LEFT JOIN tokens c ON c.asset_id = w.chain_id AND c.wallet_id = :walletId
+        LEFT JOIN tokens s ON s.asset_id = w.send_asset_id AND s.wallet_id = :walletId
+        LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id AND r.wallet_id = :walletId
+        WHERE w.address in (SELECT destination FROM addresses WHERE wallet_id = :walletId) AND w.level >= 11
+        ORDER BY w.transaction_at DESC
+        LIMIT 4
+    """)
+    fun recentWeb3Transactions(walletId: String): LiveData<List<Web3TransactionItem>>
+
     @RawQuery(observedEntities = [Web3Transaction::class])
     fun allTransactions(query: SupportSQLiteQuery): PagingSource<Int, Web3TransactionItem>
 
@@ -52,6 +70,16 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
 
     @Query("SELECT DISTINCT transaction_hash, * FROM transactions WHERE status = 'pending' AND address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)")
     suspend fun getPendingTransactions(walletId: String): List<Web3Transaction>
+
+    @Query(""" SELECT DISTINCT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, w.address, w.fee, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, w.transaction_at, w.updated_at, w.level,
+        c.symbol chain_symbol, c.icon_url chain_icon_url, s.icon_url send_asset_icon_url, s.symbol send_asset_symbol, r.icon_url receive_asset_icon_url, r.symbol receive_asset_symbol
+        FROM transactions w
+        LEFT JOIN tokens c ON c.asset_id = w.chain_id AND c.wallet_id = :walletId
+        LEFT JOIN tokens s ON s.asset_id = w.send_asset_id AND s.wallet_id = :walletId
+        LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id AND r.wallet_id = :walletId
+        WHERE w.status = 'pending' AND w.address IN (SELECT destination FROM addresses WHERE wallet_id = :walletId)
+        ORDER BY w.transaction_at DESC """)
+    suspend fun getPendingTransactionItems(walletId: String): List<Web3TransactionItem>
 
     @Query("DELETE FROM transactions WHERE address IN (SELECT destination FROM addresses WHERE wallet_id = :walletId)")
     suspend fun deleteByWalletId(walletId: String)

@@ -39,6 +39,10 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.paging.PagedList
 import androidx.viewpager2.widget.ViewPager2
+import coil3.annotation.ExperimentalCoilApi
+import coil3.imageLoader
+import coil3.request.ImageRequest
+import coil3.request.SuccessResult
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -85,6 +89,8 @@ import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
+import one.mixin.android.vo.appCardMediaCoverUrl
+import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isMedia
@@ -95,6 +101,7 @@ import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.PhotoView.DismissFrameLayout
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
+import java.io.File
 import java.io.FileInputStream
 import kotlin.math.min
 
@@ -438,8 +445,13 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
             bottomSheet.dismiss()
         }
         binding.shareImage.setOnClickListener {
-            item.absolutePath()?.let {
-                shareMedia(false, it)
+            lifecycleScope.launch {
+                val file = withContext(Dispatchers.IO) { resolveLocalFile(item) }
+                if (file != null && file.exists()) {
+                    shareMedia(false, Uri.fromFile(file).toString())
+                } else {
+                    toast(R.string.Save_failure)
+                }
             }
             bottomSheet.dismiss()
         }
@@ -451,17 +463,32 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         bottomSheet.show()
     }
 
+    @OptIn(ExperimentalCoilApi::class)
+    private suspend fun resolveLocalFile(item: MessageItem): File? {
+        val coverUrl = item.appCardMediaCoverUrl()
+        if (coverUrl != null) {
+            return try {
+                val loader = imageLoader
+                val result = loader.execute(ImageRequest.Builder(this).data(coverUrl).build())
+                if (result !is SuccessResult) {
+                    null
+                } else {
+                    loader.diskCache?.openSnapshot(coverUrl)?.data?.toFile()
+                }
+            } catch (e: Exception) {
+                null
+            }
+        }
+        val path = item.absolutePath() ?: return null
+        return Uri.parse(path).toFile()
+    }
+
     private fun save(item: MessageItem) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val path = item.absolutePath()
-            if (path == null) {
-                toast(R.string.Save_failure)
-                return@launch
-            }
-            val file = Uri.parse(item.absolutePath()).toFile()
-            if (!file.exists()) {
+            val file = resolveLocalFile(item)
+            if (file == null || !file.exists()) {
                 withContext(Dispatchers.Main) {
-                    toast(R.string.File_does_not_exist)
+                    toast(R.string.Save_failure)
                 }
                 return@launch
             }
@@ -846,7 +873,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 messageItem: MessageItem,
                 view: View,
             ) {
-                if (messageItem.isImage()) {
+                if (messageItem.isAppCard() || messageItem.isImage()) {
                     showImageBottom(messageItem, view)
                 } else if (messageItem.isVideo()) {
                     showVideoBottom(messageItem)

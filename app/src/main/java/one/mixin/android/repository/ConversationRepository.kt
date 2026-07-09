@@ -61,6 +61,8 @@ import one.mixin.android.vo.ConversationMinimal
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.ConversationStorageUsage
 import one.mixin.android.vo.GroupInfo
+import one.mixin.android.vo.isAppCard
+import one.mixin.android.vo.isAppCardWithMediaCover
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
@@ -211,6 +213,17 @@ class ConversationRepository
                 messageDao.countIndexMediaMessages(conversationId)
             }
 
+        fun getMediaMessagesDataSource(
+            conversationId: String,
+            excludeLive: Boolean,
+        ): DataSource.Factory<Int, MessageItem> {
+            return if (excludeLive) {
+                messageDao.getMediaMessagesExcludeLive(conversationId)
+            } else {
+                messageDao.getMediaMessages(conversationId)
+            }
+        }
+
         fun getMediaMessages(
             conversationId: String,
             index: Int,
@@ -236,8 +249,10 @@ class ConversationRepository
         suspend fun getMediaMessage(
             conversationId: String,
             messageId: String,
-        ) =
-            messageDao.getMediaMessage(conversationId, messageId)
+        ): MessageItem? {
+            val item = messageDao.getMediaMessage(conversationId, messageId) ?: return null
+            return if (item.isAppCard() && !item.isAppCardWithMediaCover()) null else item
+        }
 
         suspend fun getConversationIdIfExistsSync(recipientId: String) =
             conversationDao.getConversationIdIfExistsSync(recipientId)
@@ -736,4 +751,10 @@ class ConversationRepository
             conversationId: String,
         ): Int =
             messageDao.indexAudioByConversationId(messageId, conversationId)
+
+        suspend fun getMediaMessagesList(conversationId: String) = messageDao.getMediaMessagesList(conversationId)
+
+        suspend fun getMediaMessagesExcludeLiveList(conversationId: String) = messageDao.getMediaMessagesExcludeLiveList(conversationId)
+
+        suspend fun getAudioMessagesList(conversationId: String) = messageDao.getAudioMessagesList(conversationId)
     }

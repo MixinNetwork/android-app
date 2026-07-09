@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -55,6 +56,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.widget.components.MixinButton
@@ -68,7 +70,7 @@ private const val CLOSED_POSITION_PREVIEW_LIMIT = 10
 fun PerpetualContent(
     onShowTradingGuide: () -> Unit,
     onShowMarketList: (isLong: Boolean) -> Unit,
-    onShowAllMarkets: (String?) -> Unit,
+    onShowAllMarkets: (String?, MarketSort?) -> Unit,
     onShowAllOpenPositions: () -> Unit,
     onShowAllClosedPositions: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
@@ -102,6 +104,9 @@ fun PerpetualContent(
     val openPositionsCount = openPositions.size
     val openPositionsPreview = openPositions.take(3)
     val marketsPreview = markets.take(3)
+    val topMoversPreview = remember(markets) {
+        markets.topMoversPreview()
+    }
     val sourceOrder = remember(markets) {
         markets.withIndex().associate { it.value.marketId to it.index }
     }
@@ -274,13 +279,13 @@ fun PerpetualContent(
                         Text(
                             text = stringResource(R.string.positions_count, openPositionsCount),
                             fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textPrimary,
+                            color = MixinAppTheme.colors.textMinor,
                         )
                         Icon(
-                            painter = painterResource(R.drawable.ic_arrow_right),
+                            painter = painterResource(R.drawable.ic_arrow_gray_right),
                             contentDescription = null,
-                            tint = MixinAppTheme.colors.textAssist,
-                            modifier = Modifier.size(16.dp)
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(16.dp).offset(x = 4.dp)
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
@@ -308,6 +313,25 @@ fun PerpetualContent(
                 }
             }
 
+            if (topMoversPreview.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .clip(RoundedCornerShape(8.dp))
+                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                        .padding(vertical = 16.dp)
+                ) {
+                    TopMoversCard(
+                        markets = topMoversPreview,
+                        quoteColorReversed = quoteColorReversed,
+                        onViewAllClick = { onShowAllMarkets(null, MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING) },
+                        onMarketItemClick = onMarketItemClick,
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Column(
@@ -324,8 +348,8 @@ fun PerpetualContent(
                         markets = marketsPreview,
                         totalCount = markets.size,
                         quoteColorReversed = quoteColorReversed,
-                        onTitleClick = { onShowAllMarkets(null) },
-                        onViewAllClick = { onShowAllMarkets(null) },
+                        onTitleClick = { onShowAllMarkets(null, null) },
+                        onViewAllClick = { onShowAllMarkets(null, null) },
                         onMarketItemClick = onMarketItemClick,
                     )
                 } else if (isLoading) {
@@ -373,10 +397,10 @@ fun PerpetualContent(
                         totalCount = stocksMarkets.size,
                         quoteColorReversed = quoteColorReversed,
                         onTitleClick = {
-                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_STOCKS)
+                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_STOCKS, null)
                         },
                         onViewAllClick = {
-                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_STOCKS)
+                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_STOCKS, null)
                         },
                         onMarketItemClick = onMarketItemClick,
                     )
@@ -399,10 +423,10 @@ fun PerpetualContent(
                         totalCount = commoditiesMarkets.size,
                         quoteColorReversed = quoteColorReversed,
                         onTitleClick = {
-                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_COMMODITIES)
+                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_COMMODITIES, null)
                         },
                         onViewAllClick = {
-                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_COMMODITIES)
+                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_COMMODITIES, null)
                         },
                         onMarketItemClick = onMarketItemClick,
                     )
@@ -431,13 +455,13 @@ fun PerpetualContent(
                     Text(
                         text = stringResource(R.string.perps_activity),
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textPrimary,
+                        color = MixinAppTheme.colors.textMinor,
                     )
                     Icon(
-                        painter = painterResource(R.drawable.ic_arrow_right),
+                        painter = painterResource(R.drawable.ic_arrow_gray_right),
                         contentDescription = null,
-                        tint = MixinAppTheme.colors.textAssist,
-                        modifier = Modifier.size(16.dp)
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(16.dp).offset(x = 4.dp)
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
@@ -589,13 +613,13 @@ private fun MarketPreviewSection(
         Text(
             text = title,
             fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary,
+            color = MixinAppTheme.colors.textMinor,
         )
         Icon(
-            painter = painterResource(R.drawable.ic_arrow_right),
+            painter = painterResource(R.drawable.ic_arrow_gray_right),
             contentDescription = null,
-            tint = MixinAppTheme.colors.textAssist,
-            modifier = Modifier.size(16.dp),
+            tint = Color.Unspecified,
+            modifier = Modifier.size(16.dp).offset(x = 4.dp),
         )
     }
     Spacer(modifier = Modifier.height(12.dp))
@@ -637,7 +661,6 @@ private fun calculatePnlPercent(
         .multiply(BigDecimal(100))
         .toDouble()
 }
-
 
 @Composable
 private fun ViewAllAction(onClick: () -> Unit) {

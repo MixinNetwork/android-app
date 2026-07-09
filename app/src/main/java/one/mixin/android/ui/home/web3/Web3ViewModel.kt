@@ -46,6 +46,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
@@ -86,6 +87,7 @@ class Web3ViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val assetRepository: AssetRepository,
     private val tokenRepository: TokenRepository,
+    private val referralRepository: ReferralRepository,
     private val jobManager: MixinJobManager,
     private val web3Repository: Web3Repository,
     private val rpc: Rpc,
@@ -93,9 +95,31 @@ class Web3ViewModel @Inject constructor(
 ) : ViewModel() {
     var scrollOffset: Int = 0
 
+    suspend fun refreshUser(userId: String) = userRepository.refreshUser(userId)
+
+    suspend fun findOrSyncApp(appId: String) = userRepository.findOrSyncApp(appId)
+
+    suspend fun walletHomeBanners(chains: List<String>) = referralRepository.fetchWalletHomeBanners(chains)
+
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
+    suspend fun web3Quote(
+        inputMint: String,
+        outputMint: String,
+        amount: String,
+        source: String,
+    ) = tokenRepository.web3Quote(inputMint, outputMint, amount, source)
+
     fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
+
+    fun walletHomeWeb3TokenPreview(
+        walletId: String,
+        limit: Int,
+    ) = web3Repository.walletHomeWeb3TokenPreview(walletId, limit)
+
+    fun walletHomeWeb3TokenSummary(walletId: String) = web3Repository.walletHomeWeb3TokenSummary(walletId)
+
+    fun topWeb3TokenItems(walletId: String) = web3Repository.topWeb3TokenItems(walletId)
 
     suspend fun web3TokensExcludeHiddenRaw(walletId: String) = withContext(Dispatchers.IO) {
         return@withContext web3Repository.web3TokensExcludeHiddenRaw(walletId)
@@ -121,6 +145,10 @@ class Web3ViewModel @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     fun web3Transactions(walletId: String, assetId: String) = web3Repository.web3Transactions(walletId, assetId)
+
+    fun recentWeb3Transactions(walletId: String) = web3Repository.recentWeb3Transactions(walletId)
+
+    suspend fun getPendingTransactionItems(walletId: String) = web3Repository.getPendingTransactionItems(walletId)
 
     fun web3TokenExtraFlow(walletId: String, assetId: String) =
         tokenRepository.web3TokenExtraFlow(walletId, assetId)
@@ -579,6 +607,8 @@ class Web3ViewModel @Inject constructor(
     suspend fun getRawTransactionByHashAndChain(walletId: String, hash: String, chainId: String) = tokenRepository.getRawTransactionByHashAndChain(walletId, hash, chainId)
 
     suspend fun getPendingTransactions(walletId: String) = tokenRepository.getPendingTransactions(walletId)
+
+    fun getPendingRawTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingRawTransactionCount(walletId)
 
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingTransactionCount(walletId)
 

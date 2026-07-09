@@ -21,6 +21,7 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
+import one.mixin.android.tip.wc.internal.WalletConnectAddresses
 import one.mixin.android.tip.wc.internal.evmChainList
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.decodeBase58
@@ -143,6 +144,7 @@ object Web3Signer {
             Chain.Avalanche.hexReference -> Chain.Avalanche
             Chain.Polygon.hexReference -> Chain.Polygon
             Chain.BinanceSmartChain.hexReference -> Chain.BinanceSmartChain
+            Chain.HyperEVM.hexReference -> Chain.HyperEVM
             Chain.Solana.hexReference -> Chain.Solana
             else -> null
         }
@@ -220,11 +222,7 @@ object Web3Signer {
         }
 
         if (WalletConnect.isEnabled()) {
-            if (currentChain.assetId == SOLANA_CHAIN_ID) {
-                WalletConnectV2.switchAccount(solanaAddress)
-            } else {
-                WalletConnectV2.switchAccount(evmAddress)
-            }
+            WalletConnectV2.switchAccount(WalletConnectAddresses(evmAddress, solanaAddress, btcAddress))
         }
     }
 
@@ -265,6 +263,11 @@ object Web3Signer {
                 currentChain = Chain.BinanceSmartChain
                 persist()
                 Result.success(Chain.BinanceSmartChain.name)
+            }
+            Chain.HyperEVM.hexReference -> {
+                currentChain = Chain.HyperEVM
+                persist()
+                Result.success(Chain.HyperEVM.name)
             }
             Chain.Solana.hexReference -> {
                 currentChain = Chain.Solana

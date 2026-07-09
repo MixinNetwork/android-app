@@ -179,6 +179,15 @@ constructor(
     
     fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
 
+    fun walletHomeWeb3TokenPreview(
+        walletId: String,
+        limit: Int,
+    ) = web3TokenDao.walletHomeWeb3TokenPreview(walletId, limit)
+
+    fun walletHomeWeb3TokenSummary(walletId: String) = web3TokenDao.walletHomeWeb3TokenSummary(walletId)
+
+    fun topWeb3TokenItems(walletId: String) = web3TokenDao.topWeb3TokenItems(walletId)
+
     fun web3TokensExcludeHiddenRaw(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL) = web3TokenDao.web3TokenItemsExcludeHiddenRaw(
         RoomRawQuery(
             """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
@@ -225,9 +234,38 @@ constructor(
             }
         }
 
+    fun recentWeb3Transactions(walletId: String) =
+        web3TransactionDao.recentWeb3Transactions(walletId).switchMap { list ->
+            liveData {
+                val assetIds = list.flatMap { transaction ->
+                    transaction.senders.map { it.assetId } +
+                        transaction.receivers.map { it.assetId } +
+                        (transaction.approvals?.map { it.assetId } ?: emptyList())
+                }.distinct()
+                val tokens = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds).associateBy { it.assetId }
+                val result = list.map { transaction ->
+                    transaction.copy(
+                        senders = transaction.senders.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        },
+                        receivers = transaction.receivers.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        },
+                        approvals = transaction.approvals?.map {
+                            it.copy(symbol = tokens[it.assetId]?.symbol)
+                        }
+                    )
+                }
+                emit(result)
+            }
+        }
+
     fun web3TransactionPagingSource(filterParams: Web3FilterParams): PagingSource<Int, Web3TransactionItem> {
         return web3TransactionDao.allTransactions(filterParams.buildQuery())
     }
+
+    suspend fun getPendingTransactionItems(walletId: String): List<Web3TransactionItem> =
+        web3TransactionDao.getPendingTransactionItems(walletId).map { mapWeb3Transaction(it, walletId) }
 
     suspend fun mapWeb3Transaction(transaction: Web3TransactionItem, walletId: String): Web3TransactionItem = withContext(Dispatchers.IO) {
         val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
@@ -293,7 +331,15 @@ constructor(
 
     suspend fun deleteTransactionsByWalletId(walletId: String) = web3TransactionDao.deleteByWalletId(walletId)
 
-    suspend fun getAddressesByChainId(walletId: String, chainId: String) = web3AddressDao.getAddressesByChainId(walletId, chainId)
+    suspend fun getAddressesByChainId(walletId: String, chainId: String): Web3Address? {
+        val address = web3AddressDao.getAddressesByChainId(walletId, chainId)
+        if (address != null) return address
+        // EVM chains share the same derived address; fall back to Ethereum entry for non-Ethereum EVM chains
+        if (chainId != Constants.ChainId.ETHEREUM_CHAIN_ID && chainId in Constants.Web3EvmChainIds) {
+            return web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.ETHEREUM_CHAIN_ID)
+        }
+        return null
+    }
 
     suspend fun getAddresses(walletId: String) = web3AddressDao.getAddressesByWalletId(walletId)
 
@@ -305,10 +351,16 @@ constructor(
     suspend fun getSafeWalletsByChainId(chainId: String) =
         web3WalletDao.getSafeWalletsByChainId(chainId).updateWithLocalKeyInfo(context)
     suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String): List<WalletItem> {
-        val wallets = if (chainId.isBlank()) {
+        // EVM chains share the same derived address stored under ETHEREUM_CHAIN_ID
+        val effectiveChainId = if (chainId != Constants.ChainId.ETHEREUM_CHAIN_ID && chainId in Constants.Web3EvmChainIds) {
+            Constants.ChainId.ETHEREUM_CHAIN_ID
+        } else {
+            chainId
+        }
+        val wallets = if (effectiveChainId.isBlank()) {
             web3WalletDao.getWalletsExcludingByNameAllChains(excludeWalletId, query)
         } else {
-            web3WalletDao.getWalletsExcludingByName(excludeWalletId, chainId, query)
+            web3WalletDao.getWalletsExcludingByName(excludeWalletId, effectiveChainId, query)
         }
         return wallets.updateWithLocalKeyInfo(context)
     }

@@ -151,8 +151,21 @@ object AnalyticsTracker {
         }
     }
 
+    fun trackWalletHomeAdBanner(trackingKey: String?, source: String) {
+        val key = trackingKey?.takeIf { it.isNotBlank() } ?: return
+        logEvent(key) {
+            putString("source", source)
+        }
+    }
+
+    object WalletHomeAdBannerSource {
+        const val BACKGROUND = "wallet_home_ad_banner_background"
+        const val BUTTON = "wallet_home_ad_banner_button"
+    }
+
     object AssetSource {
         const val WALLET_HOME = "wallet_home"
+        const val TOKEN_LIST = "token_list"
         const val ASSET_DETAIL = "asset_detail"
         const val PROFILE = "profile"
         const val MARKET_DETAIL = "market_detail"
@@ -219,6 +232,7 @@ object AnalyticsTracker {
         const val WALLET = "wallet"
         const val ADDRESS_BOOK = "address_book"
         const val CONTACT = "contact"
+        const val CASH_ACCOUNT = "cash_account"
     }
 
     fun trackAddressBookAddStart() {
@@ -358,6 +372,7 @@ object AnalyticsTracker {
         const val TRADE_DETAIL = "trade_detail"
         const val SCHEMA = "scheme"
         const val ASSET_DETAIL = "asset_detail"
+        const val TOKEN_LIST = "token_list"
         const val EXPLORE = "explore"
         const val FEE = "fee"
         const val BALANCE = "balance"

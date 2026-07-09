@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Color
 import android.graphics.Typeface
 import android.view.LayoutInflater
+import android.view.View.MeasureSpec
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
@@ -21,9 +22,9 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.widget.ActionButton
 
-open class ShareAppActionsCardRenderer(val context: Context, containerWidth: Int) {
+open class ShareAppActionsCardRenderer(val context: Context, containerWidth: Int, private val maxHeight: Int) {
     private val binding = ItemChatActionsCardBinding.inflate(LayoutInflater.from(context), null, false)
-    val contentView get() = ScrollView(context).apply {
+    val contentView: ScrollView get() = MaxHeightScrollView(context, maxHeight).apply {
             addView(binding.root, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
         }
 
@@ -84,5 +85,18 @@ open class ShareAppActionsCardRenderer(val context: Context, containerWidth: Int
                 R.drawable.chat_bubble_post_me_last_night
             },
         )
+    }
+}
+
+private class MaxHeightScrollView(
+    context: Context,
+    private val maxHeight: Int,
+) : ScrollView(context) {
+    override fun onMeasure(
+        widthMeasureSpec: Int,
+        heightMeasureSpec: Int,
+    ) {
+        val cappedHeightMeasureSpec = MeasureSpec.makeMeasureSpec(maxHeight, MeasureSpec.AT_MOST)
+        super.onMeasure(widthMeasureSpec, cappedHeightMeasureSpec)
     }
 }

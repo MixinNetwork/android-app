@@ -2,6 +2,8 @@ package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint
 import android.util.TypedValue
+import android.view.ViewGroup
+import android.view.ViewGroup.MarginLayoutParams
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -25,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenHeaderBinding
@@ -35,13 +38,32 @@ import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.colorAttr
+import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.textColorResource
 import one.mixin.android.ui.home.web3.StakeAccountSummary
+import one.mixin.android.extension.dp as dip
 
 class Web3TransactionHolder(
-    val binding: ItemWeb3TransactionsBinding
+    val binding: ItemWeb3TransactionsBinding,
+    private val compact: Boolean = false,
+    private val compactAvatarStartMargin: Int = 16.dip,
 ) : RecyclerView.ViewHolder(binding.root) {
+    init {
+        if (compact) {
+            binding.root.updateLayoutParams<ViewGroup.LayoutParams> {
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
+            }
+            binding.root.setPadding(0, 4.dip, 0, 4.dip)
+            binding.avatarFl.updateLayoutParams<MarginLayoutParams> {
+                marginStart = compactAvatarStartMargin
+                marginEnd = 14.dip
+            }
+            binding.amountAnimator.updateLayoutParams<MarginLayoutParams> {
+                marginEnd = 16.dip
+            }
+        }
+    }
 
     fun formatAmountWithSign(amount: String?, positive: Boolean): String {
         if (amount.isNullOrEmpty()) return "N/A"
@@ -57,11 +79,7 @@ class Web3TransactionHolder(
     fun bind(transaction: Web3TransactionItem) {
         binding.apply {
             val hash = transaction.transactionHash
-            name.text = if (hash.length > 14) {
-                "${hash.substring(0, 8)}...${hash.substring(hash.length - 6)}"
-            } else {
-                hash
-            }
+            name.text = hash.formatPublicKey(limit = 14, prefixLen = 8, suffixLen = 6)
             icSpam.isVisible = transaction.isNotVerified()
             val amount = transaction.getFormattedAmount()
             when {

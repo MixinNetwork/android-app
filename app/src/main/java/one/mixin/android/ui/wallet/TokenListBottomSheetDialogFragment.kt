@@ -23,6 +23,7 @@ import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.Base
 import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.HyperEVM
 import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
@@ -191,6 +192,10 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                     R.id.radio_avalanche -> {
                         Avalanche
+                    }
+
+                    R.id.radio_hyperevm -> {
+                        HyperEVM
                     }
 
                     else -> {

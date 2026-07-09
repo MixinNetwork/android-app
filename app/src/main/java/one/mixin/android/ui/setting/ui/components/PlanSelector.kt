@@ -11,13 +11,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -29,14 +34,23 @@ fun PlanSelector(
     selectedPlan: Plan,
     onPlanSelected: (Plan) -> Unit
 ) {
-    Row(
+    val plans = listOf(Plan.ADVANCE, Plan.ELITE, Plan.PROSPERITY)
+    val selectedIndex = plans.indexOf(selectedPlan).coerceAtLeast(0)
+    val listState = rememberLazyListState(initialFirstVisibleItemIndex = selectedIndex)
+
+    LaunchedEffect(selectedIndex) {
+        listState.animateScrollToItem(selectedIndex)
+    }
+
+    LazyRow(
+        state = listState,
         modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Start
+        horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        listOf(Plan.ADVANCE, Plan.ELITE, Plan.PROSPERITY).forEachIndexed { index, plan ->
-            if (index > 0) {
-                Spacer(modifier = Modifier.width(12.dp))
-            }
+        itemsIndexed(
+            items = plans,
+            key = { _: Int, plan: Plan -> plan.name }
+        ) { _: Int, plan: Plan ->
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(24.dp))
@@ -64,7 +78,10 @@ fun PlanSelector(
                             }
                         ),
                         color = if (selectedPlan == plan) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Clip,
+                        softWrap = false
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     MembershipIcon(

@@ -82,6 +82,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.web3.isNativeSolAsset
 import one.mixin.android.web3.nativeSolSpendableBalance
 import java.math.BigDecimal
@@ -95,9 +96,16 @@ fun SwapContent(
     lastOrderTime: Long?,
     reviewing: Boolean,
     source: String,
+    stockMarkets: List<MarketItem>,
+    trendingMarkets: List<MarketItem>,
+    topGainerMarkets: List<MarketItem>,
+    topLoserMarkets: List<MarketItem>,
+    scrollToTopSignal: Long,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onReview: (QuoteResult, SwapToken, SwapToken, String) -> Unit,
     onDeposit: (SwapToken) -> Unit,
+    onRecommendedMarketClick: (MarketItem) -> Unit,
+    onRecommendedMarketViewAllClick: (SwapRecommendedMarketType, Boolean) -> Unit,
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
 ) {
     val context = LocalContext.current
@@ -113,20 +121,24 @@ fun SwapContent(
     var quoteMin by remember { mutableStateOf<String?>(null) }
     var quoteMax by remember { mutableStateOf<String?>(null) }
 
-    var inputText by remember { mutableStateOf(initialAmount ?: "") }
-    LaunchedEffect(lastOrderTime) {
-        inputText = initialAmount ?: ""
-    }
-
     var isLoading by remember { mutableStateOf(false) }
     var isReverse by remember { mutableStateOf(false) }
     var invalidFlag by remember { mutableStateOf(false) }
+    var isSendFocused by remember { mutableStateOf(false) }
 
     var fromToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) to else from)
     }
     var toToken by remember(from, to, isReverse) {
         mutableStateOf(if (isReverse) from else to)
+    }
+    val fromMaxDecimalPlaces = fromToken.tradeInputMaxDecimalPlaces()
+
+    var inputText by remember {
+        mutableStateOf(limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces))
+    }
+    LaunchedEffect(lastOrderTime, fromMaxDecimalPlaces) {
+        inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
     }
 
     val shouldRefreshQuote = remember { MutableStateFlow(inputText) }
@@ -192,7 +204,16 @@ fun SwapContent(
             rawFromBalanceValue
         }
         val availableFromBalance = availableFromBalanceValue.stripTrailingZeros().toPlainString()
-        KeyboardAwareBox(modifier = Modifier.fillMaxHeight(), content = { availableHeight ->
+
+        KeyboardAwareBox(
+            modifier = Modifier.fillMaxHeight(),
+            content = { availableHeight ->
+            val scrollState = rememberScrollState()
+            LaunchedEffect(scrollToTopSignal) {
+                if (scrollToTopSignal > 0L) {
+                    scrollState.scrollTo(0)
+                }
+            }
             Column(
                 modifier = if (availableHeight != null) {
                     Modifier
@@ -202,20 +223,19 @@ fun SwapContent(
                     Modifier.fillMaxSize()
                 }
             ) {
-
-                val scrollState = rememberScrollState()
+                val hasRecommendedCards = stockMarkets.isNotEmpty() || trendingMarkets.isNotEmpty() || topGainerMarkets.isNotEmpty() || topLoserMarkets.isNotEmpty()
+                val showRecommendedCards = shouldShowSwapRecommendedMarketCards(
+                    hasRecommendedCards = hasRecommendedCards,
+                    inMixin = inMixin,
+                    inputText = inputText,
+                    isSendFocused = isSendFocused,
+                    isKeyboardVisible = availableHeight != null,
+                )
                 Column(
-                    modifier = if (availableHeight != null) {
-                        Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .verticalScroll(scrollState)
-                            .verticalScrollbar(scrollState)
-                    } else {
-                        Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight()
-                    }
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(scrollState)
                 ) {
                     TradeLayout(
                         centerCompose = {
@@ -242,7 +262,8 @@ fun SwapContent(
                                             }
                                         }
                                         quoteResult?.let {
-                                            inputText = it.outAmount
+                                            val nextFromMaxDecimalPlaces = toToken.tradeInputMaxDecimalPlaces()
+                                            inputText = limitTradeInputDecimalPlaces(it.outAmount, nextFromMaxDecimalPlaces)
                                             quoteResult = null
                                         }
                                         context.clickVibrate()
@@ -268,11 +289,13 @@ fun SwapContent(
                                 onInputChanged = { inputText = it },
                                 onDeposit = onDeposit,
                                 displayBalanceOverride = if (from.isNativeSolAsset()) fromBalance else null,
+                                maxDecimalPlaces = fromMaxDecimalPlaces,
+                                onFocusChanged = { isSendFocused = it },
                                 onMax = {
                                     AnalyticsTracker.trackSpotSendInputBalance()
                                     val balance = availableFromBalanceValue
                                     if (balance > BigDecimal.ZERO) {
-                                        inputText = balance.stripTrailingZeros().toPlainString()
+                                        inputText = limitTradeInputDecimalPlaces(balance.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                                     } else {
                                         inputText = ""
                                     }
@@ -290,44 +313,67 @@ fun SwapContent(
                                     selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.From else SelectTokenType.To) },
                                     onDeposit = null,
                                 )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                QuoteInfoBox(
-                                    availableHeight = availableHeight,
-                                    quoteError = quoteError,
-                                    quoteResult = quoteResult,
-                                    fromToken = fromToken,
-                                    toToken = toToken,
-                                    isLoading = isLoading,
-                                    inputText = inputText,
-                                    quoteMin = quoteMin,
-                                    quoteMax = quoteMax,
-                                    onInputTextChange = { inputText = it },
-                                    onInvalidFlagChange = { invalidFlag = !invalidFlag },
-                                    onSwitchToLimitOrder = onSwitchToLimitOrder,
-                                )
+                                if (!showRecommendedCards) {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    QuoteInfoBox(
+                                        availableHeight = availableHeight,
+                                        quoteError = quoteError,
+                                        quoteResult = quoteResult,
+                                        fromToken = fromToken,
+                                        toToken = toToken,
+                                        isLoading = isLoading,
+                                        inputText = inputText,
+                                        quoteMin = quoteMin,
+                                        quoteMax = quoteMax,
+                                        onInputTextChange = {
+                                            inputText = limitTradeInputDecimalPlaces(it, fromMaxDecimalPlaces)
+                                        },
+                                        onInvalidFlagChange = { invalidFlag = !invalidFlag },
+                                        onSwitchToLimitOrder = onSwitchToLimitOrder,
+                                    )
+                                }
                             }
 
                         },
                         margin = 6.dp,
                     )
+                    if (showRecommendedCards) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        SwapRecommendedMarketCards(
+                            stockMarkets = stockMarkets,
+                            trendingMarkets = trendingMarkets,
+                            topGainerMarkets = topGainerMarkets,
+                            topLoserMarkets = topLoserMarkets,
+                            onMarketClick = onRecommendedMarketClick,
+                            onViewAllClick = { type -> onRecommendedMarketViewAllClick(type, isReverse) },
+                            modifier = Modifier.padding(horizontal = 20.dp),
+                        )
+                        Spacer(modifier = Modifier.height(40.dp))
+                    }
                 }
-                Spacer(modifier = Modifier.height(if (availableHeight == null) 14.dp else 8.dp))
-                ReviewButton(
-                    inputText = inputText,
-                    fromBalance = availableFromBalance,
-                    fromToken = fromToken!!,
-                    quoteResult = quoteResult,
-                    quoteError = quoteError,
-                    isLoading = isLoading,
-                    reviewing = reviewing,
-                    isButtonEnabled = isButtonEnabled,
-                    onButtonEnabledChange = { isButtonEnabled = it },
-                    onReview = { onReview(it, fromToken!!, toToken!!, inputText) },
-                    keyboardController = keyboardController,
-                    focusManager = focusManager,
-                    scope = scope
-                )
-                Spacer(modifier = Modifier.height(14.dp))
+                if (!showRecommendedCards) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 20.dp)
+                    ) {
+                        ReviewButton(
+                            inputText = inputText,
+                            fromBalance = availableFromBalance,
+                            fromToken = fromToken!!,
+                            quoteResult = quoteResult,
+                            quoteError = quoteError,
+                            isLoading = isLoading,
+                            reviewing = reviewing,
+                            isButtonEnabled = isButtonEnabled,
+                            onButtonEnabledChange = { isButtonEnabled = it },
+                            onReview = { onReview(it, fromToken!!, toToken!!, inputText) },
+                            keyboardController = keyboardController,
+                            focusManager = focusManager,
+                            scope = scope
+                        )
+                    }
+                }
             }
         }, floating = {
             Row(
@@ -341,7 +387,7 @@ fun SwapContent(
                 InputAction("25%", showBorder = true) {
                     AnalyticsTracker.trackSpotSendInputPercent("25%")
                     if (balance > BigDecimal.ZERO) {
-                        inputText = (balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString()
+                        inputText = limitTradeInputDecimalPlaces((balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                     } else {
                         inputText = ""
                     }
@@ -349,7 +395,7 @@ fun SwapContent(
                 InputAction("50%", showBorder = true) {
                     AnalyticsTracker.trackSpotSendInputPercent("50%")
                     if (balance > BigDecimal.ZERO) {
-                        inputText = (balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString()
+                        inputText = limitTradeInputDecimalPlaces((balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                     } else {
                         inputText = ""
                     }
@@ -357,7 +403,7 @@ fun SwapContent(
                 InputAction(stringResource(R.string.Max), showBorder = true) {
                     AnalyticsTracker.trackSpotSendInputPercent("max")
                     if (balance > BigDecimal.ZERO) {
-                        inputText = balance.stripTrailingZeros().toPlainString()
+                        inputText = limitTradeInputDecimalPlaces(balance.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                     } else {
                         inputText = ""
                     }
@@ -372,6 +418,14 @@ fun SwapContent(
         Loading()
     }
 }
+
+internal fun shouldShowSwapRecommendedMarketCards(
+    hasRecommendedCards: Boolean,
+    inMixin: Boolean,
+    inputText: String,
+    isSendFocused: Boolean,
+    isKeyboardVisible: Boolean,
+): Boolean = inMixin && hasRecommendedCards && inputText.isBlank() && !isSendFocused && !isKeyboardVisible
 
 @Composable
 fun ReviewButton(

@@ -116,7 +116,7 @@
                     android:textColor="?attr/text_primary"
                     app:expandAction="@string/More"
                     app:expandActionColor="?attr/text_blue"
-                    app:limitedMaxLines="6" />
+                    app:limitedMaxLines="3" />
 
                 <LinearLayout
                     android:id="@+id/avatar_ll"
