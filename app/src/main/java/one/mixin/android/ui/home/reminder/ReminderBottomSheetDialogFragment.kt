@@ -13,6 +13,10 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.app.NotificationManagerCompat
 import dagger.hilt.android.AndroidEntryPoint
@@ -34,6 +38,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.RomUtil
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
@@ -115,7 +120,7 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
 
         @StringRes
         private fun getBatteryOptimizationContentResId(): Int {
-            return if (one.mixin.android.util.RomUtil.isOneUi) {
+            return if (RomUtil.isOneUi) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                     R.string.setting_battery_optimize_title_one_ui_above_s
                 } else {
@@ -273,16 +278,53 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
     override fun showError(error: String) {
     }
 
-    private fun batteryOptimizationContent(): String {
-        return getString(getBatteryOptimizationContentResId())
-            .replace("<b>", "")
-            .replace("</b>", "")
-            .replace("**", "")
+    private fun batteryOptimizationContent(): AnnotatedString {
+        return batteryOptimizationAnnotatedContent(getString(getBatteryOptimizationContentResId()))
     }
 
     sealed class PopupType {
         object NewVersionReminder : PopupType()
         object NotificationPermissionReminder : PopupType()
         object BatteryOptimizationReminder : PopupType()
+    }
+}
+
+internal fun batteryOptimizationAnnotatedContent(content: String): AnnotatedString {
+    return buildAnnotatedString {
+        fun appendBold(text: String) {
+            val start = length
+            append(text)
+            addStyle(SpanStyle(fontWeight = FontWeight.Bold), start, length)
+        }
+
+        var index = 0
+        while (index < content.length) {
+            when {
+                content.startsWith("<b>", index) -> {
+                    val end = content.indexOf("</b>", index + 3)
+                    if (end >= 0) {
+                        appendBold(content.substring(index + 3, end))
+                        index = end + 4
+                    } else {
+                        append("<b>")
+                        index += 3
+                    }
+                }
+                content.startsWith("**", index) -> {
+                    val end = content.indexOf("**", index + 2)
+                    if (end >= 0) {
+                        appendBold(content.substring(index + 2, end))
+                        index = end + 2
+                    } else {
+                        append("**")
+                        index += 2
+                    }
+                }
+                else -> {
+                    append(content[index].toString())
+                    index++
+                }
+            }
+        }
     }
 }

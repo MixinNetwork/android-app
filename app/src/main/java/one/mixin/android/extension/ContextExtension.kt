@@ -92,6 +92,8 @@ import one.mixin.android.util.RomPermissionUtil
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.getChainName
+import one.mixin.android.util.isPowerManagerBatteryOptimizationRestricted
+import one.mixin.android.util.shouldPrioritizeBatteryOptimizationRequest
 import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.ChatHistoryMessageItem
@@ -1368,7 +1370,9 @@ private fun Context.isSystemBatteryOptimizationRestricted(): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !RomUtil.isEmui) {
         getSystemService<ActivityManager>()?.isBackgroundRestricted == true
     } else {
-        getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(packageName) == false
+        isPowerManagerBatteryOptimizationRestricted(
+            getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(packageName),
+        )
     }
 }
 
@@ -1382,15 +1386,11 @@ fun Context.openBatteryOptimizationSetting() {
         Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
             data = Uri.parse("package:$packageName")
         }
+    val romType = RomPermissionUtil.getCurrentRomType()
     val intents =
-        if (RomUtil.isOneUi) {
+        if (romType == RomPermissionUtil.RomType.SAMSUNG) {
             listOf(appDetailsIntent, requestIntent)
-        } else if (
-            Build.MANUFACTURER.equals("google", ignoreCase = true) ||
-            Build.MANUFACTURER.equals("samsung", ignoreCase = true) ||
-            Build.MANUFACTURER.equals("huawei", ignoreCase = true) ||
-            Build.MANUFACTURER.equals("honor", ignoreCase = true)
-        ) {
+        } else if (shouldPrioritizeBatteryOptimizationRequest(romType)) {
             listOf(requestIntent, appDetailsIntent)
         } else {
             listOf(appDetailsIntent, requestIntent)

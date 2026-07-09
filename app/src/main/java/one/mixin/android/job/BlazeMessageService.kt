@@ -55,6 +55,7 @@ import one.mixin.android.messenger.HedwigImp
 import one.mixin.android.receiver.ExitBroadcastReceiver
 import one.mixin.android.session.CurrentUserScopeManager
 import one.mixin.android.session.Session
+import one.mixin.android.ui.common.BatteryOptimizationDialogActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.ChannelManager.Companion.createNodeChannel
 import one.mixin.android.util.GsonHelper
@@ -239,6 +240,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
         if (intent.action == ACTION_TO_BACKGROUND) {
             stopForeground(STOP_FOREGROUND_REMOVE)
+            if (!isIgnoringBatteryOptimizations) {
+                BatteryOptimizationDialogActivity.show(this, true)
+            }
             return START_STICKY
         }
 
