@@ -8,7 +8,17 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.util.analytics.AnalyticsTracker
 
 object PerpsRouteNavigator {
+    private val ROUTE_TAGS = setOf(
+        PerpsMarketDetailFragment.TAG,
+        AllPositionsFragment.TAG,
+        PositionDetailFragment.TAG,
+        PerpsOpenPositionFragment.TAG,
+    )
+
     fun showTradeRoot(fragmentManager: FragmentManager) {
+        ROUTE_TAGS.forEach { tag ->
+            popRoute(fragmentManager, tag)
+        }
         removeRoutes(fragmentManager) { it.isPerpsRoute() }
     }
 
@@ -20,6 +30,7 @@ object PerpsRouteNavigator {
         tokenSymbol: String,
         source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
     ) {
+        popRoute(fragmentManager, PerpsMarketDetailFragment.TAG)
         removeRoutes(fragmentManager) { it is PerpsMarketDetailFragment }
         addRoute(
             fragmentManager = fragmentManager,
@@ -39,6 +50,7 @@ object PerpsRouteNavigator {
         showOpenPositions: Boolean,
         source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS,
     ) {
+        popRoute(fragmentManager, AllPositionsFragment.TAG)
         removeRoutes(fragmentManager) { it is AllPositionsFragment }
         addRoute(
             fragmentManager = fragmentManager,
@@ -56,6 +68,7 @@ object PerpsRouteNavigator {
         position: PerpsPositionItem,
         source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
     ) {
+        popRoute(fragmentManager, PositionDetailFragment.TAG)
         removeRoutes(fragmentManager) { it is PositionDetailFragment }
         addRoute(
             fragmentManager = fragmentManager,
@@ -73,6 +86,7 @@ object PerpsRouteNavigator {
         order: PerpsOrderItem,
         source: String = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
     ) {
+        popRoute(fragmentManager, PositionDetailFragment.TAG)
         removeRoutes(fragmentManager) { it is PositionDetailFragment }
         addRoute(
             fragmentManager = fragmentManager,
@@ -94,6 +108,7 @@ object PerpsRouteNavigator {
         isLong: Boolean,
         source: String,
     ) {
+        popRoute(fragmentManager, PerpsOpenPositionFragment.TAG)
         removeRoutes(fragmentManager) { it is PerpsOpenPositionFragment }
         addRoute(
             fragmentManager = fragmentManager,
@@ -110,6 +125,14 @@ object PerpsRouteNavigator {
     }
 
     fun closeTopRoute(fragmentManager: FragmentManager, fragment: Fragment) {
+        val topEntryName = fragmentManager.takeIf { it.backStackEntryCount > 0 }
+            ?.getBackStackEntryAt(fragmentManager.backStackEntryCount - 1)
+            ?.name
+        if (topEntryName in ROUTE_TAGS) {
+            fragmentManager.popBackStack()
+            return
+        }
+
         val topFragment = fragmentManager.fragments.lastOrNull { it.isVisible }
         val target = if (topFragment?.isPerpsRoute() == true) topFragment else fragment
         removeRoute(fragmentManager, target)
@@ -123,7 +146,13 @@ object PerpsRouteNavigator {
         fragmentManager.beginTransaction()
             .setCustomAnimations(R.anim.slide_in_right, 0, 0, R.anim.slide_out_right)
             .add(R.id.container, fragment, tag)
+            .addToBackStack(tag)
             .commitAllowingStateLoss()
+    }
+
+    private fun popRoute(fragmentManager: FragmentManager, tag: String) {
+        if (fragmentManager.isStateSaved) return
+        fragmentManager.popBackStackImmediate(tag, FragmentManager.POP_BACK_STACK_INCLUSIVE)
     }
 
     private fun removeRoutes(
