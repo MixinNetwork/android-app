@@ -68,9 +68,11 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.clearPendingImportMnemonic
+import one.mixin.android.crypto.getPendingImportMnemonic
 import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
@@ -127,6 +129,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
+import one.mixin.android.tip.getSpendKeyFromPin
 import one.mixin.android.tip.wc.WCErrorEvent
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
@@ -162,6 +165,7 @@ import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.tip.PendingMnemonicRoute
+import one.mixin.android.ui.tip.importedMnemonicWalletIdForPendingImport
 import one.mixin.android.ui.tip.routePendingMnemonicAfterWalletFetch
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
@@ -405,18 +409,32 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             lifecycleScope.launch {
                 if (Session.hasSafe()) {
                     jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
-                    if (hasPendingImportMnemonic(this@MainActivity)) {
-                        openPendingMnemonicNext()
-                        return@launch
-                    }
                     val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
                     val shouldGoWallet: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
                     val shouldBlockNavigation: Boolean = shouldShowWalletMissingBtcAddress()
                     Timber.e("isLoginVerified: $isLoginVerified, shouldGoWallet: $shouldGoWallet, shouldBlockNavigation: $shouldBlockNavigation")
+                    if (hasPendingImportMnemonic(this@MainActivity)) {
+                        if (isLoginVerified) {
+                            AnalyticsTracker.trackLoginPinVerify("pin_verify")
+                            LoginVerifyBottomSheetDialogFragment.newInstance().apply {
+                                onDismissCallback = { success, pin ->
+                                    if (success) {
+                                        defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                                        lifecycleScope.launch {
+                                            openPendingMnemonicNext(pin)
+                                        }
+                                    }
+                                }
+                            }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                        } else {
+                            openPendingMnemonicNext()
+                        }
+                        return@launch
+                    }
                     if (isLoginVerified) {
                         AnalyticsTracker.trackLoginPinVerify("pin_verify")
                         LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-                            onDismissCallback = { success ->
+                            onDismissCallback = { success, _ ->
                                 if (success) {
                                     defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
                                 }
@@ -458,20 +476,32 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
     }
 
-    private suspend fun openPendingMnemonicNext() {
+    private suspend fun openPendingMnemonicNext(pin: String? = null) {
         val wallets = web3Repository.syncWalletsFromRoute()
         when (routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })) {
             PendingMnemonicRoute.WalletHome -> {
-                clearPendingImportMnemonic(this)
-                val walletDestination = wallets?.firstOrNull { it.category == WalletCategory.CLASSIC.value }?.let { wallet ->
-                    walletDestinationForWallet(wallet.id, wallet.category)
+                val importedWalletId = importedMnemonicWalletIdForPendingImport(wallets)
+                val pendingMnemonic = getPendingImportMnemonic(this)?.split(" ")
+                if (importedWalletId != null && pin != null && pendingMnemonic != null) {
+                    val saved = runCatching {
+                        CryptoWalletHelper.saveMnemonicWithSpendKey(
+                            this@MainActivity,
+                            tip.getSpendKeyFromPin(this@MainActivity, pin),
+                            importedWalletId,
+                            pendingMnemonic,
+                        )
+                    }.getOrDefault(false)
+                    if (saved) {
+                        clearPendingImportMnemonic(this)
+                    }
+                }
+                val walletDestination = importedWalletId?.let { walletId ->
+                    walletDestinationForWallet(walletId, WalletCategory.IMPORTED_MNEMONIC.value)
                 }
                 openWalletTabFromLogin(walletDestination)
             }
             PendingMnemonicRoute.ImportMnemonic -> {
-                WalletSecurityActivity.show(this, WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC)
-            }
-            PendingMnemonicRoute.WalletFetchFailed -> {
+                WalletSecurityActivity.show(this, WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC, pin = pin)
             }
         }
     }

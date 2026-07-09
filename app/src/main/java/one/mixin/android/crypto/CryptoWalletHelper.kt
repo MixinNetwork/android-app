@@ -209,6 +209,22 @@ object CryptoWalletHelper {
         return aesGcmEncrypt(originalEntropy, aesKeyBytes).base64RawURLEncode()
     }
 
+    fun saveMnemonicWithSpendKey(
+        context: Context,
+        spendKey: ByteArray,
+        walletId: String,
+        mnemonicWords: List<String>,
+    ): Boolean {
+        return try {
+            val encryptedString = encryptMnemonicWithSpendKey(spendKey, mnemonicWords)
+            saveWeb3PrivateKey(context, walletId, encryptedString)
+            hasPrivateKey(context, walletId)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to save web3 mnemonic")
+            false
+        }
+    }
+
     fun decryptMnemonicWithSpendKey(
         spendKey: ByteArray,
         base64EncryptedData: String
@@ -286,7 +302,14 @@ object CryptoWalletHelper {
                 currentCategory == WalletCategory.CLASSIC.value || currentWalletId.isEmpty() -> {
                     val derivationIndex = extractIndexFromPath(Web3Signer.path) ?: 0
                     Timber.d("currentWalletId: ${Web3Signer.currentWalletId}, currentWalletCategory: ${Web3Signer.currentWalletCategory}, evmAddress: ${Web3Signer.evmAddress}, solanaAddress: ${Web3Signer.solanaAddress} derivationIndex: $derivationIndex")
-                    tipPrivToPrivateKey(spendKey, chainId, derivationIndex)
+                    val mnemonic = currentWalletId.takeIf { it.isNotEmpty() }?.let {
+                        getWeb3Mnemonic(context, spendKey, it)
+                    }
+                    if (mnemonic != null) {
+                        getMnemonicPrivateKey(mnemonic, chainId, derivationIndex)
+                    } else {
+                        tipPrivToPrivateKey(spendKey, chainId, derivationIndex)
+                    }
                 }
 
                 currentCategory == WalletCategory.IMPORTED_PRIVATE_KEY.value -> {
@@ -297,18 +320,7 @@ object CryptoWalletHelper {
                     val mnemonic = getWeb3Mnemonic(context, spendKey, currentWalletId)
                         ?: return null
                     val derivationIndex = requireNotNull(extractIndexFromPath(Web3Signer.path))
-
-                    when (chainId) {
-                        Constants.ChainId.SOLANA_CHAIN_ID -> {
-                            SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
-                        }
-                        Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                            BitcoinKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", derivationIndex)
-                        }
-                        else -> {
-                            EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
-                        }
-                    }
+                    getMnemonicPrivateKey(mnemonic, chainId, derivationIndex)
                 }
             }
         } catch (e: Exception) {
@@ -316,6 +328,23 @@ object CryptoWalletHelper {
             null
         }
     }
+
+    private fun getMnemonicPrivateKey(
+        mnemonic: String,
+        chainId: String,
+        derivationIndex: Int,
+    ): ByteArray? =
+        when (chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
+                SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
+            }
+            Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                BitcoinKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", derivationIndex)
+            }
+            else -> {
+                EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
+            }
+        }
 
     fun saveWeb3PrivateKey(context: Context, walletId: String, encryptedString: String) {
         secureStorage(context)?.putString(walletId, encryptedString)

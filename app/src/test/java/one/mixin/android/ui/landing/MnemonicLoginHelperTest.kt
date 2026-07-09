@@ -37,6 +37,43 @@ class MnemonicLoginHelperTest {
     }
 
     @Test
+    fun `keeps 12 and 24 word phrases as pending import mnemonic`() {
+        val twelveWords = (1..12).map { "word$it" }
+        val twentyFourWords = (1..24).map { "word$it" }
+
+        assertEquals(twelveWords, pendingImportMnemonicForLogin(twelveWords))
+        assertEquals(twentyFourWords, pendingImportMnemonicForLogin(twentyFourWords))
+    }
+
+    @Test
+    fun `does not keep 13 and 25 word phrases as pending import mnemonic`() {
+        assertEquals(null, pendingImportMnemonicForLogin((1..13).map { "word$it" }))
+        assertEquals(null, pendingImportMnemonicForLogin((1..25).map { "word$it" }))
+    }
+
+    @Test
+    fun `prepares short mnemonic as completed login words plus pending import words`() {
+        val words = (1..12).map { "word$it" }
+
+        val result = prepareMnemonicForLogin(words) { input ->
+            input + "checksum"
+        }
+
+        assertEquals(words + "checksum", result.completedWords)
+        assertEquals(words, result.pendingImportWords)
+    }
+
+    @Test
+    fun `prepares recovery kit mnemonic as completed login words without pending import`() {
+        val words = (1..13).map { "word$it" }
+
+        val result = prepareMnemonicForLogin(words) { error("unused") }
+
+        assertEquals(words, result.completedWords)
+        assertEquals(null, result.pendingImportWords)
+    }
+
+    @Test
     fun `rejects unsupported word counts`() {
         assertFailsWith<IllegalArgumentException> {
             completeMnemonicForLogin((1..11).map { "word$it" }) { error("unused") }

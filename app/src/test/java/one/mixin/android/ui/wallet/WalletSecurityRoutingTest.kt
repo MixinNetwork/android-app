@@ -6,10 +6,18 @@ import kotlin.test.assertEquals
 
 class WalletSecurityRoutingTest {
     @Test
-    fun `login import mnemonic verifies pin before fetch`() {
+    fun `login import mnemonic verifies pin before fetch when pin is missing`() {
         assertEquals(
             WalletSecurityStartRoute.VerifyPin,
             walletSecurityStartRoute(WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC),
+        )
+    }
+
+    @Test
+    fun `login import mnemonic fetches without another pin prompt after pin verification`() {
+        assertEquals(
+            WalletSecurityStartRoute.FetchPendingMnemonic,
+            walletSecurityStartRoute(WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC, hasVerifiedPin = true),
         )
     }
 
@@ -22,17 +30,17 @@ class WalletSecurityRoutingTest {
     }
 
     @Test
-    fun `pending mnemonic login imports a classic wallet`() {
+    fun `pending mnemonic login imports an imported mnemonic wallet`() {
         assertEquals(
-            WalletCategory.CLASSIC.value,
+            WalletCategory.IMPORTED_MNEMONIC.value,
             importWalletCategoryForMode(WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC),
         )
     }
 
     @Test
-    fun `pending mnemonic registration imports a classic wallet`() {
+    fun `pending mnemonic registration imports an imported mnemonic wallet`() {
         assertEquals(
-            WalletCategory.CLASSIC.value,
+            WalletCategory.IMPORTED_MNEMONIC.value,
             importWalletCategoryForMode(WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC),
         )
     }

@@ -14,6 +14,7 @@ import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.INTERVAL_10_MINS
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.RegisterRequest
@@ -21,20 +22,22 @@ import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.UtxoService
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.clearPendingImportMnemonic
+import one.mixin.android.crypto.getPendingImportMnemonic
 import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.toHex
+import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
@@ -43,19 +46,21 @@ import one.mixin.android.tip.TipConstants.tipNodeApi2Path
 import one.mixin.android.tip.exception.DifferentIdentityException
 import one.mixin.android.tip.exception.NotAllSignerSuccessException
 import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
+import one.mixin.android.tip.getSpendKeyFromPin
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.wallet.buildClassicWalletRequest
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.walletDestinationForWallet
+import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
-import org.web3j.utils.Numeric
 import retrofit2.HttpException
+import timber.log.Timber
 import java.util.concurrent.atomic.AtomicInteger
 import javax.inject.Inject
 
@@ -68,6 +73,7 @@ class TipFlowInteractor @Inject internal constructor(
     private val utxoService: UtxoService,
     private val pinCipher: PinCipher,
     private val web3Repository: Web3Repository,
+    private val userRepository: UserRepository,
 ) {
     suspend fun tryConnect(
         context: Context,
@@ -251,7 +257,6 @@ class TipFlowInteractor @Inject internal constructor(
                 return false
             }
         }
-        val hasPendingImport = hasPendingImportMnemonic(context)
         val cur = System.currentTimeMillis()
         context.defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
         context.defaultSharedPreferences.putLong(Constants.Account.PREF_PIN_CHECK, cur)
@@ -264,7 +269,7 @@ class TipFlowInteractor @Inject internal constructor(
                 onShowMessage(ignored.toString())
             }
         }
-        if (shouldOpenMainActivity || hasPendingImport) {
+        if (shouldOpenMainActivity) {
             openNextAfterPin(context, tipBundle.tipType == TipType.Create, pin)
         }
         return true
@@ -276,16 +281,31 @@ class TipFlowInteractor @Inject internal constructor(
         pin: String? = null,
     ) {
         val activity = context.findFragmentActivityOrNull()
+        val syncedWallets = ensureClassicWallet(context, pin)
         if (!hasPendingImportMnemonic(context)) {
             MainActivity.show(context)
             return
         }
-        val wallets = web3Repository.syncWalletsFromRoute()
+        val wallets = syncedWallets ?: web3Repository.syncWalletsFromRoute()
         when (routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })) {
             PendingMnemonicRoute.WalletHome -> {
-                clearPendingImportMnemonic(context)
-                val walletDestination = wallets?.firstOrNull { it.category == WalletCategory.CLASSIC.value }?.let { wallet ->
-                    walletDestinationForWallet(wallet.id, wallet.category)
+                val importedWalletId = importedMnemonicWalletIdForPendingImport(wallets)
+                val pendingMnemonic = getPendingImportMnemonic(context)?.split(" ")
+                if (importedWalletId != null && pin != null && pendingMnemonic != null) {
+                    val saved = runCatching {
+                        CryptoWalletHelper.saveMnemonicWithSpendKey(
+                            context,
+                            tip.getSpendKeyFromPin(context, pin),
+                            importedWalletId,
+                            pendingMnemonic,
+                        )
+                    }.getOrDefault(false)
+                    if (saved) {
+                        clearPendingImportMnemonic(context)
+                    }
+                }
+                val walletDestination = importedWalletId?.let { walletId ->
+                    walletDestinationForWallet(walletId, WalletCategory.IMPORTED_MNEMONIC.value)
                 }
                 MainActivity.showWallet(context, walletDestination = walletDestination)
             }
@@ -301,10 +321,43 @@ class TipFlowInteractor @Inject internal constructor(
                     MainActivity.show(context)
                 }
             }
-            PendingMnemonicRoute.WalletFetchFailed -> {
-                MainActivity.show(context)
-            }
         }
+    }
+
+    private suspend fun ensureClassicWallet(
+        context: Context,
+        pin: String?,
+    ) = runCatching {
+        val wallets = web3Repository.syncWalletsFromRoute()
+        if (wallets?.any { it.category == WalletCategory.CLASSIC.value } == true || pin == null) {
+            return@runCatching wallets
+        }
+        val spendKey = tip.getSpendKeyFromPin(context, pin)
+        val walletRequest = buildClassicWalletRequest(web3Repository, spendKey)
+        requestRouteAPI(
+            invokeNetwork = { web3Repository.createWallet(walletRequest) },
+            successBlock = { response ->
+                response.data?.let { wallet ->
+                    web3Repository.insertWallet(wallet)
+                    wallet.addresses?.takeIf { it.isNotEmpty() }?.let { addresses ->
+                        web3Repository.insertAddressList(addresses)
+                    }
+                }
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to create classic wallet: ${response.errorCode} - ${response.errorDescription}")
+                false
+            },
+            exceptionBlock = { throwable ->
+                Timber.e(throwable, "Failed to create classic wallet")
+                true
+            },
+            requestSession = { userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
+        )
+        web3Repository.syncWalletsFromRoute() ?: wallets
+    }.getOrElse { throwable ->
+        Timber.e(throwable, "Failed to ensure classic wallet")
+        null
     }
 
     private suspend fun registerPublicKey(

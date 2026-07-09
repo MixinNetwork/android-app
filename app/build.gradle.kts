@@ -559,6 +559,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-contrib:$espressoVersion") {
         exclude(group = "com.android.support", module = "support-annotations")
         exclude(group = "org.checkerframework", module = "checker")
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
     }
     androidTestImplementation("androidx.test.espresso:espresso-idling-resource:$espressoVersion")
     androidTestImplementation("androidx.test.ext:junit:$androidxJunitVersion")

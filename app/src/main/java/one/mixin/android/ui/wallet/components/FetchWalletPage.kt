@@ -60,6 +60,10 @@ enum class FetchWalletState {
 fun fetchWalletFailureState(hasExistingWallets: Boolean): FetchWalletState =
     if (hasExistingWallets) FetchWalletState.SELECT else FetchWalletState.FETCH_ERROR
 
+fun fetchWalletMissingMnemonicState(): FetchWalletState = FetchWalletState.FETCHING
+
+fun shouldStartWalletFetch(mnemonic: String): Boolean = mnemonic.isNotBlank()
+
 data class AssetInfo(
     val symbol: String,
     val iconUrl: String,

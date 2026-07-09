@@ -10,7 +10,10 @@ enum class WalletSecurityStartRoute {
     FetchPendingMnemonic,
 }
 
-fun walletSecurityStartRoute(mode: WalletSecurityActivity.Mode): WalletSecurityStartRoute =
+fun walletSecurityStartRoute(
+    mode: WalletSecurityActivity.Mode,
+    hasVerifiedPin: Boolean = false,
+): WalletSecurityStartRoute =
     when (mode) {
         WalletSecurityActivity.Mode.CREATE_WALLET,
         WalletSecurityActivity.Mode.IMPORT_MNEMONIC,
@@ -22,8 +25,14 @@ fun walletSecurityStartRoute(mode: WalletSecurityActivity.Mode): WalletSecurityS
         -> WalletSecurityStartRoute.ViewSecurity
         WalletSecurityActivity.Mode.RE_IMPORT_MNEMONIC,
         WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY,
-        WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC,
         -> WalletSecurityStartRoute.VerifyPin
+        WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC -> {
+            if (hasVerifiedPin) {
+                WalletSecurityStartRoute.FetchPendingMnemonic
+            } else {
+                WalletSecurityStartRoute.VerifyPin
+            }
+        }
         WalletSecurityActivity.Mode.VIEW_ADDRESS -> WalletSecurityStartRoute.ViewAddress
         WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC -> WalletSecurityStartRoute.FetchPendingMnemonic
     }
@@ -32,6 +41,7 @@ fun importWalletCategoryForMode(mode: WalletSecurityActivity.Mode): String =
     when (mode) {
         WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC,
         WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC,
-        -> WalletCategory.CLASSIC.value
+        WalletSecurityActivity.Mode.IMPORT_MNEMONIC,
+        -> WalletCategory.IMPORTED_MNEMONIC.value
         else -> WalletCategory.IMPORTED_MNEMONIC.value
     }

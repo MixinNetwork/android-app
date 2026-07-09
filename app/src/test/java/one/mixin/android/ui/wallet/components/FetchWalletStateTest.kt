@@ -13,4 +13,16 @@ class FetchWalletStateTest {
     fun loadMoreFailureKeepsSelectionState() {
         assertEquals(FetchWalletState.SELECT, fetchWalletFailureState(hasExistingWallets = true))
     }
+
+    @Test
+    fun missingMnemonicKeepsFetchingState() {
+        assertEquals(FetchWalletState.FETCHING, fetchWalletMissingMnemonicState())
+    }
+
+    @Test
+    fun blankMnemonicDoesNotStartWalletFetch() {
+        assertEquals(false, shouldStartWalletFetch(""))
+        assertEquals(false, shouldStartWalletFetch("   "))
+        assertEquals(true, shouldStartWalletFetch("blur staff nurse happy palm neutral inflict inform soup almost always canal"))
+    }
 }

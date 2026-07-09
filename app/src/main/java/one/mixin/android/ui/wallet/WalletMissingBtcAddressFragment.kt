@@ -31,7 +31,7 @@ class WalletMissingBtcAddressFragment : Fragment(R.layout.fragment_wallet_missin
         val fragment = parentFragmentManager.findFragmentByTag(LoginVerifyBottomSheetDialogFragment.TAG)
         if (fragment != null) return
         val dialog = LoginVerifyBottomSheetDialogFragment.newInstance()
-        dialog.onDismissCallback = { isSuccess: Boolean ->
+        dialog.onDismissCallback = { isSuccess: Boolean, _ ->
             if (isSuccess) {
                 this@WalletMissingBtcAddressFragment.lifecycleScope.launch {
                     (activity as? Callback)?.onWalletMissingBtcAddressPinSuccess()

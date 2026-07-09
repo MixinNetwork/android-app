@@ -178,6 +178,13 @@ class LandingFragment : Fragment(R.layout.fragment_landing) {
                         MnemonicPhraseFragment.TAG,
                     )
                 }
+                .setOnImportWallet {
+                    activity?.addFragment(
+                        this@LandingFragment,
+                        LandingMnemonicPhraseFragment.newInstance(LoginMnemonicMode.TWELVE_OR_TWENTY_FOUR),
+                        LandingMnemonicPhraseFragment.TAG,
+                    )
+                }
                 .setOnPrivacyPolicy {
                     activity?.openUrl(getString(R.string.landing_privacy_policy_url))
                 }

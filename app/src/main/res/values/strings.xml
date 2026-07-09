@@ -630,6 +630,7 @@
     <string name="landing_introduction">By proceeding, you agree to the %1$s and\n%2$s.</string>
     <string name="create_account_confirm_title">Create your account</string>
     <string name="create_account_confirm_action_create">Create an account</string>
+    <string name="create_account_confirm_action_import_wallet">Import from another wallet?</string>
     <string name="onboarding_description">An open source crypto wallet with Signal messaging</string>
     <string name="onboarding_mixin_description">An open source crypto wallet with Signal messaging</string>
     <string name="onboarding_decentralized_title">Your keys, your crypto</string>

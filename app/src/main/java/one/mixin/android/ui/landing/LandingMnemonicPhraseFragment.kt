@@ -11,8 +11,10 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.isMnemonicValid
 import one.mixin.android.crypto.mnemonicChecksum
+import one.mixin.android.crypto.savePendingImportMnemonic
 import one.mixin.android.crypto.toMnemonicWithChecksum
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.navTo
@@ -122,13 +124,19 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
                 showOtherWords = false,
                 compactInput = true,
                 onComplete = { words ->
-                    val completedWords = completeMnemonicForLogin(words) { sourceWords ->
+                    val preparedMnemonic = prepareMnemonicForLogin(words) { sourceWords ->
                         toMnemonicWithChecksum(sourceWords)
+                    }
+                    val pendingImportWords = preparedMnemonic.pendingImportWords
+                    if (pendingImportWords != null) {
+                        savePendingImportMnemonic(requireContext(), pendingImportWords)
+                    } else {
+                        clearPendingImportMnemonic(requireContext())
                     }
                     navTo(
                         MnemonicPhraseFragment.newInstance(
-                            ArrayList(completedWords),
-                            if (mode == LoginMnemonicMode.TWELVE_OR_TWENTY_FOUR) ArrayList(words) else null,
+                            ArrayList(preparedMnemonic.completedWords),
+                            pendingImportWords?.let { ArrayList(it) },
                         ),
                         MnemonicPhraseFragment.TAG,
                     )

@@ -1082,6 +1082,7 @@
     <string name="no_available_utxo">沒有可用 UTXO</string>
     <string name="create_account_confirm_title">創建你的賬戶</string>
     <string name="create_account_confirm_action_create">創建賬戶</string>
+    <string name="create_account_confirm_action_import_wallet">從其他錢包匯入？</string>
     <string name="Take_Profit">止盈</string>
     <string name="Stop_Loss">止損</string>
     <string name="take_profit_for_long">%1$s 做多止盈</string>

@@ -278,19 +278,21 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
     }
 
     private var pinSuccess = false
-    var onDismissCallback: ((Boolean) -> Unit)? = null
+    private var verifiedPin: String? = null
+    var onDismissCallback: ((Boolean, String?) -> Unit)? = null
 
     override fun doWhenInvokeNetworkSuccess(
         response: MixinResponse<*>,
         pin: String,
     ): Boolean {
         pinSuccess = true
+        verifiedPin = pin
         return true
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        onDismissCallback?.invoke(pinSuccess)
+        onDismissCallback?.invoke(pinSuccess, verifiedPin)
     }
 
     override fun getBiometricInfo() =

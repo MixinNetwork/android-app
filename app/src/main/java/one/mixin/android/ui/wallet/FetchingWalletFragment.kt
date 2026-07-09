@@ -17,7 +17,9 @@ import one.mixin.android.ui.wallet.components.FetchErrorContent
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.FetchingContent
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -71,7 +73,7 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                 FetchWalletState.FETCH_ERROR -> {
                     FetchErrorContent(
                         errorMessage = errorMessage,
-                        onRetry = viewModel::retryFetching,
+                        onRetry = ::prepareAndFetch,
                     )
                 }
                 else -> {
@@ -79,20 +81,7 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                 }
             }
         }
-        viewLifecycleOwner.lifecycleScope.launch {
-            importCategory?.let { viewModel.setImportCategory(it) }
-            pin?.let { pin ->
-                val tipPriv = tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
-                val spendKey = tip.getSpendPrivFromEncryptedSalt(
-                    tip.getMnemonicFromEncryptedPreferences(requireContext()),
-                    tip.getEncryptedSalt(requireContext()),
-                    pin,
-                    tipPriv,
-                )
-                viewModel.setSpendKey(spendKey)
-            }
-            viewModel.setMnemonic(mnemonic.orEmpty())
-        }
+        prepareAndFetch()
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.state.collect { state ->
                 if (state == FetchWalletState.SELECT) {
@@ -105,6 +94,30 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                         .commit()
                 }
             }
+        }
+    }
+
+    private fun prepareAndFetch() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            importCategory?.let { viewModel.setImportCategory(it) }
+            val pin = pin
+            if (pin != null) {
+                val spendKey = try {
+                    val tipPriv = tip.getOrRecoverTipPriv(requireContext(), pin).getOrThrow()
+                    tip.getSpendPrivFromEncryptedSalt(
+                        tip.getMnemonicFromEncryptedPreferences(requireContext()),
+                        tip.getEncryptedSalt(requireContext()),
+                        pin,
+                        tipPriv,
+                    )
+                } catch (e: Exception) {
+                    Timber.e(e, "Failed to prepare wallet fetch")
+                    viewModel.failFetching(ErrorHandler.getErrorMessage(e))
+                    return@launch
+                }
+                viewModel.setSpendKey(spendKey)
+            }
+            viewModel.setMnemonic(mnemonic.orEmpty())
         }
     }
 }

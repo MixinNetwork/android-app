@@ -1,23 +1,22 @@
 package one.mixin.android.ui.tip
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNull
 import org.junit.Test
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.vo.WalletCategory
 
 class PendingMnemonicTipRoutingTest {
     @Test
-    fun tipFlowDoesNotCreateClassicWalletBeforePendingImport() {
-        assertFalse(shouldCreateClassicWalletAfterTip(TipType.Create))
-        assertFalse(shouldCreateClassicWalletAfterTip(TipType.Upgrade))
-        assertFalse(shouldCreateClassicWalletAfterTip(TipType.Change))
+    fun tipFlowCreatesClassicWalletAfterSafeRegistration() {
+        assertTrue(shouldCreateClassicWalletAfterTip(TipType.Create))
     }
 
     @Test
-    fun classicWalletRoutesPendingImportToWalletHome() {
+    fun classicWalletDoesNotCompletePendingImport() {
         assertEquals(
-            PendingMnemonicRoute.WalletHome,
+            PendingMnemonicRoute.ImportMnemonic,
             routePendingMnemonicAfterWalletFetch(listOf(WalletCategory.CLASSIC.value)),
         )
     }
@@ -31,24 +30,69 @@ class PendingMnemonicTipRoutingTest {
     }
 
     @Test
-    fun failedWalletFetchKeepsPendingImportForLaterRetry() {
+    fun failedWalletFetchRoutesPendingImportToFetchPage() {
         assertEquals(
-            PendingMnemonicRoute.WalletFetchFailed,
+            PendingMnemonicRoute.ImportMnemonic,
             routePendingMnemonicAfterWalletFetch(null),
         )
     }
 
     @Test
-    fun nonClassicWalletsRoutePendingImportToImportPage() {
+    fun importedMnemonicWalletRoutesPendingImportToWalletHome() {
+        assertEquals(
+            PendingMnemonicRoute.WalletHome,
+            routePendingMnemonicAfterWalletFetch(listOf(WalletCategory.IMPORTED_MNEMONIC.value)),
+        )
+    }
+
+    @Test
+    fun nonImportedMnemonicWalletsRoutePendingImportToImportPage() {
         assertEquals(
             PendingMnemonicRoute.ImportMnemonic,
             routePendingMnemonicAfterWalletFetch(
                 listOf(
-                    WalletCategory.IMPORTED_MNEMONIC.value,
+                    WalletCategory.CLASSIC.value,
                     WalletCategory.WATCH_ADDRESS.value,
                     WalletCategory.MIXIN_SAFE.value,
                 ),
             ),
         )
     }
+
+    @Test
+    fun importedMnemonicWalletIdForPendingImportReturnsFirstImportedMnemonicWallet() {
+        assertEquals(
+            "imported-id",
+            importedMnemonicWalletIdForPendingImport(
+                listOf(
+                    testWallet("classic-id", WalletCategory.CLASSIC.value),
+                    testWallet("imported-id", WalletCategory.IMPORTED_MNEMONIC.value),
+                ),
+            ),
+        )
+    }
+
+    @Test
+    fun importedMnemonicWalletIdForPendingImportReturnsNullWhenNoImportedMnemonicWallet() {
+        assertNull(
+            importedMnemonicWalletIdForPendingImport(
+                listOf(
+                    testWallet("classic-id", WalletCategory.CLASSIC.value),
+                    testWallet("watch-id", WalletCategory.WATCH_ADDRESS.value),
+                ),
+            ),
+        )
+        assertNull(importedMnemonicWalletIdForPendingImport(null))
+    }
+
+    private fun testWallet(
+        id: String,
+        category: String,
+    ) = Web3Wallet(
+        id = id,
+        name = id,
+        category = category,
+        createdAt = "",
+        updatedAt = "",
+    )
 }

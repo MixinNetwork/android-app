@@ -266,6 +266,13 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                             MnemonicPhraseFragment.TAG,
                         )
                     }
+                    .setOnImportWallet {
+                        activity?.addFragment(
+                            this@MobileFragment,
+                            LandingMnemonicPhraseFragment.newInstance(LoginMnemonicMode.TWELVE_OR_TWENTY_FOUR),
+                            LandingMnemonicPhraseFragment.TAG,
+                        )
+                    }
                     .setOnPrivacyPolicy {
                         activity?.openUrl(getString(R.string.landing_privacy_policy_url))
                     }

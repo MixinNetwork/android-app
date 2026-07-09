@@ -37,7 +37,19 @@ class WalletSecurityActivity : BlazeBaseActivity() {
                 Mode.RE_IMPORT_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_MNEMONIC, walletId = walletId)
                 Mode.RE_IMPORT_PRIVATE_KEY -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.RE_IMPORT_PRIVATE_KEY, walletId = walletId, chainId = chainId)
                 Mode.VIEW_ADDRESS -> ViewWalletAddressFragment.newInstance(walletId)
-                Mode.LOGIN_IMPORT_MNEMONIC -> VerifyPinBeforeImportWalletFragment.newInstance(Mode.LOGIN_IMPORT_MNEMONIC)
+                Mode.LOGIN_IMPORT_MNEMONIC -> {
+                    if (pin.isNullOrBlank()) {
+                        VerifyPinBeforeImportWalletFragment.newInstance(Mode.LOGIN_IMPORT_MNEMONIC)
+                    } else {
+                        FetchingWalletFragment.newInstance(
+                            mnemonic = getPendingImportMnemonic(this),
+                            pin = pin,
+                            importCategory = importWalletCategoryForMode(mode),
+                            fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,
+                            importCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_IMPORT,
+                        )
+                    }
+                }
                 Mode.REGISTER_IMPORT_MNEMONIC -> FetchingWalletFragment.newInstance(
                     mnemonic = getPendingImportMnemonic(this),
                     pin = pin,

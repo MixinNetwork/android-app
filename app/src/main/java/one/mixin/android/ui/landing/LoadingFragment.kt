@@ -25,7 +25,9 @@ import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
 import one.mixin.android.crypto.clearPendingImportMnemonic
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.crypto.getPendingImportMnemonic
 import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.databinding.FragmentLoadingBinding
 import one.mixin.android.extension.base64Encode
@@ -40,10 +42,13 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.getSpendKeyFromPin
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.logs.LogViewerBottomSheet
+import one.mixin.android.ui.tip.importedMnemonicWalletIdForPendingImport
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.PendingMnemonicRoute
@@ -78,6 +83,9 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
 
     @Inject
     lateinit var web3Repository: Web3Repository
+
+    @Inject
+    lateinit var tip: Tip
 
     private val loadingViewModel by viewModels<LoadingViewModel>()
     private val binding by viewBinding(FragmentLoadingBinding::bind)
@@ -154,10 +162,10 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             return
         }
         LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-            onDismissCallback = { success ->
+            onDismissCallback = { success, pin ->
                 if (success) {
                     lifecycleScope.launch {
-                        openNextAfterPin()
+                        openNextAfterPin(pin)
                         activity?.finish()
                     }
                 }
@@ -165,29 +173,41 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         }.showNow(parentFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
     }
 
-    private suspend fun openNextAfterPin() {
+    private suspend fun openNextAfterPin(pin: String?) {
         if (hasPendingImportMnemonic(requireContext())) {
-            openPendingMnemonicNext()
+            openPendingMnemonicNext(pin)
         } else {
             MainActivity.show(requireContext())
         }
     }
 
-    private suspend fun openPendingMnemonicNext() {
+    private suspend fun openPendingMnemonicNext(pin: String?) {
         val wallets = web3Repository.syncWalletsFromRoute()
         when (routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })) {
             PendingMnemonicRoute.WalletHome -> {
-                clearPendingImportMnemonic(requireContext())
-                val walletDestination = wallets?.firstOrNull { it.category == WalletCategory.CLASSIC.value }?.let { wallet ->
-                    walletDestinationForWallet(wallet.id, wallet.category)
+                val context = requireContext()
+                val importedWalletId = importedMnemonicWalletIdForPendingImport(wallets)
+                val pendingMnemonic = getPendingImportMnemonic(context)?.split(" ")
+                if (importedWalletId != null && pin != null && pendingMnemonic != null) {
+                    val saved = runCatching {
+                        CryptoWalletHelper.saveMnemonicWithSpendKey(
+                            context,
+                            tip.getSpendKeyFromPin(context, pin),
+                            importedWalletId,
+                            pendingMnemonic,
+                        )
+                    }.getOrDefault(false)
+                    if (saved) {
+                        clearPendingImportMnemonic(context)
+                    }
                 }
-                MainActivity.showWallet(requireContext(), walletDestination = walletDestination)
+                val walletDestination = importedWalletId?.let { walletId ->
+                    walletDestinationForWallet(walletId, WalletCategory.IMPORTED_MNEMONIC.value)
+                }
+                MainActivity.showWallet(context, walletDestination = walletDestination)
             }
             PendingMnemonicRoute.ImportMnemonic -> {
-                WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC)
-            }
-            PendingMnemonicRoute.WalletFetchFailed -> {
-                MainActivity.show(requireContext())
+                WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC, pin = pin)
             }
         }
     }
