@@ -110,7 +110,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         if (activity is LandingActivity) {
             applySafeTopPadding(view)
         }
-        Timber.e("MnemonicPhraseFragment onViewCreated")
+        Timber.i("LoginFlow account_creation_open source=${if (words.isNullOrEmpty()) "signup" else "mnemonic_login"} pending_import=${!pendingImportWords.isNullOrEmpty()}")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
@@ -187,7 +187,6 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 }
                 newKeyPairFromMnemonic(mnemonic)
             }
-            Timber.e("PublicKey:${edKey.publicKey.hexString()}")
             val (messageHex, signatureHex) = buildAnonymousRequestPayload(edKey)
             var needCaptcha = false
             val r = handleMixinResponse(
@@ -382,6 +381,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
             if (r?.isSuccess == true) {
                 val account = r.data!!
+                Timber.i(
+                    "LoginFlow anonymous_account_success source=${if (words.isNullOrEmpty()) "signup" else "mnemonic_login"} has_full_name=${!account.fullName.isNullOrBlank()} pending_import=${!pendingImportWords.isNullOrEmpty()}"
+                )
                 if (words.isNullOrEmpty() || account.fullName.isNullOrBlank()) {
                     AnalyticsTracker.trackSignUpAccountCreated()
                 }
@@ -392,7 +394,13 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 } else {
                     clearPendingImportMnemonic(requireContext())
                 }
-                when (routeLoginAccount(!account.fullName.isNullOrBlank(), hasLocalAccountDatabase(requireContext(), account.identityNumber))) {
+                val hasFullName = !account.fullName.isNullOrBlank()
+                val localAccountDatabaseExists = hasLocalAccountDatabase(requireContext(), account.identityNumber)
+                val loginAccountRoute = routeLoginAccount(hasFullName, localAccountDatabaseExists)
+                Timber.i(
+                    "LoginFlow account_route source=mnemonic route=$loginAccountRoute has_full_name=$hasFullName has_local_database=$localAccountDatabaseExists pending_import=${!importWords.isNullOrEmpty()}"
+                )
+                when (loginAccountRoute) {
                     LoginAccountRoute.SetupName -> {
                         withContext(Dispatchers.IO) {
                             userRepositoryProvider.get().insertUser(account.toUser())

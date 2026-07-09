@@ -152,7 +152,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         if (activity is LandingActivity) {
             applySafeTopPadding(view)
         }
-        Timber.e("MobileFragment onViewCreated")
+        Timber.i("LoginFlow mobile_input_open from=$from")
         if (from == FROM_LANDING) {
             AnalyticsTracker.trackLoginStart(AnalyticsTracker.LoginStartType.PHONE_NUMBER, loginStartSource)
         }
@@ -431,8 +431,10 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 { r: MixinResponse<VerificationResponse> ->
                     if (!r.isSuccess) {
                         if (r.errorCode == NEED_CAPTCHA) {
+                            Timber.i("LoginFlow mobile_verification_request_captcha_required from=$from")
                             initAndLoadCaptcha(r.errorDescription)
                         } else {
+                            Timber.i("LoginFlow mobile_verification_request_failed from=$from code=${r.errorCode}")
                             hideLoading()
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                         }
@@ -441,6 +443,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                     hideLoading()
 
                     val verificationResponse = r.data as VerificationResponse
+                    Timber.i(
+                        "LoginFlow mobile_verification_request_success from=$from deactivation_dialog=${!r.data?.deactivationEffectiveAt.isNullOrBlank()} emergency_contact=${verificationResponse.hasEmergencyContact}"
+                    )
                     if (!r.data?.deactivationEffectiveAt.isNullOrBlank() && from == FROM_LANDING) {
                         LandingDeleteAccountFragment.newInstance(r.data?.deactivationRequestedAt, r.data?.deactivationEffectiveAt)
                             .setContinueCallback {

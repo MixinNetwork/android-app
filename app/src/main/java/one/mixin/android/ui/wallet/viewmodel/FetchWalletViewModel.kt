@@ -153,10 +153,12 @@ class FetchWalletViewModel @Inject constructor(
     }
 
     fun retryFetching() {
+        Timber.i("LoginFlow wallet_fetch_retry offset=$currentIndex")
         startFetching(currentIndex)
     }
 
     fun failFetching(errorMessage: String?) {
+        Timber.i("LoginFlow wallet_fetch_failed source=prepare has_existing_wallets=${_wallets.value.isNotEmpty()}")
         _errorCode.value = null
         _errorMessage.value = errorMessage
         _state.value = fetchWalletFailureState(_wallets.value.isNotEmpty())
@@ -169,9 +171,11 @@ class FetchWalletViewModel @Inject constructor(
             _state.value = FetchWalletState.FETCHING
             try {
                 if (!shouldStartWalletFetch(mnemonic)) {
+                    Timber.i("LoginFlow wallet_fetch_skip reason=missing_mnemonic")
                     _state.value = fetchWalletMissingMnemonicState()
                     return@launch
                 }
+                Timber.i("LoginFlow wallet_fetch_start offset=$offset import_category=$importCategory")
                 if (localMaxIndex == 0) {
                     val names = web3Repository.getAllWalletNames(listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
                     val commonWalletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
@@ -181,7 +185,6 @@ class FetchWalletViewModel @Inject constructor(
                         .mapNotNull { name ->
                             regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
                         }.maxOrNull() ?: 0
-                    Timber.e("localMaxIndex $localMaxIndex")
                 }
 
                 val wallets = (offset until offset + 10).map { index ->
@@ -214,6 +217,7 @@ class FetchWalletViewModel @Inject constructor(
                         if (offset == 0) {
                             _wallets.value = listOf(wallets[0])
                         }
+                        Timber.i("LoginFlow wallet_fetch_result success=true offset=$offset found_wallets=0 default_wallet=${offset == 0}")
                     } else {
                         val walletInfos = wallets.map { wallet ->
                             val evmTokens =
@@ -238,8 +242,12 @@ class FetchWalletViewModel @Inject constructor(
                             _selectedWalletInfos.value = (walletInfos.filter { it.exists.not() } + _selectedWalletInfos.value).toSet()
                             _wallets.value = _wallets.value + walletInfos
                         }
+                        Timber.i(
+                            "LoginFlow wallet_fetch_result success=true offset=$offset found_wallets=${walletInfos.size} selected_count=${_selectedWalletInfos.value.size}"
+                        )
                     }
                 } else {
+                    Timber.i("LoginFlow wallet_fetch_result success=false offset=$offset code=${response.errorCode}")
                     _errorCode.value = response.errorCode
                     _errorMessage.value = MixinApplication.appContext.getMixinErrorStringByCode(response.errorCode, response.errorDescription)
                     _state.value = fetchWalletFailureState(_wallets.value.isNotEmpty())
@@ -247,6 +255,7 @@ class FetchWalletViewModel @Inject constructor(
                 }
                 _state.value = FetchWalletState.SELECT
             } catch (e: Exception) {
+                Timber.i("LoginFlow wallet_fetch_result success=false offset=$offset exception=true")
                 Timber.e(e, "Failed to fetch wallet info")
                 _errorCode.value = null
                 _errorMessage.value = ErrorHandler.getErrorMessage(e)
@@ -261,6 +270,7 @@ class FetchWalletViewModel @Inject constructor(
             _importedWalletDestination.value = null
             _state.value = FetchWalletState.IMPORTING
             try {
+                Timber.i("LoginFlow wallet_import_viewmodel_start selected_count=${selectedWalletInfos.value.size} category=$importCategory")
                 val walletsToCreate = selectedWalletInfos.value.map {
                     val category = importCategory
                     val addresses = listOf(
@@ -292,13 +302,14 @@ class FetchWalletViewModel @Inject constructor(
                 val expectedCount = walletsToCreate.size
                 val successCount = saveWallets(walletsToCreate)
 
-                Timber.d("Import completed: $successCount/$expectedCount wallets imported successfully")
+                Timber.i("LoginFlow wallet_import_viewmodel_result success_count=$successCount expected_count=$expectedCount")
                 if (expectedCount == successCount) {
                     _state.value = FetchWalletState.IMPORT_SUCCESS
                 } else {
                     _partialSuccess.value = successCount > 0
                 }
             } catch (e: Exception) {
+                Timber.i("LoginFlow wallet_import_viewmodel_exception")
                 Timber.e(e, "Failed to import wallets")
                 _errorCode.value = null
                 _errorMessage.value = e.message
@@ -310,6 +321,7 @@ class FetchWalletViewModel @Inject constructor(
     private suspend fun saveWallets(walletsToCreate: List<Pair<WalletRequest, List<String>>>): Int {
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
+            Timber.i("LoginFlow wallet_import_save_failed reason=missing_spend_key")
             Timber.e("Spend key is null, cannot save wallets.")
             return 0
         }

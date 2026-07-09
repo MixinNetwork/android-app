@@ -8,6 +8,7 @@ import one.mixin.android.R
 import one.mixin.android.crypto.getPendingImportMnemonic
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
+import timber.log.Timber
 
 @AndroidEntryPoint
 class WalletSecurityActivity : BlazeBaseActivity() {
@@ -26,6 +27,9 @@ class WalletSecurityActivity : BlazeBaseActivity() {
             val chainId = intent.getStringExtra(EXTRA_CHAIN_ID)
             val walletId = intent.getStringExtra(EXTRA_WALLET_ID)
             val pin = intent.getStringExtra(EXTRA_PIN)
+            Timber.i(
+                "LoginFlow wallet_security_open mode=$mode pending_import=${getPendingImportMnemonic(this) != null} pin_reused=${pin != null}"
+            )
 
             val fragment = when (mode) {
                 Mode.CREATE_WALLET -> WalletNoticeFragment.newInstance(Mode.CREATE_WALLET)

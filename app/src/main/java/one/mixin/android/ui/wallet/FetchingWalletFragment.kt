@@ -111,6 +111,7 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                         tipPriv,
                     )
                 } catch (e: Exception) {
+                    Timber.i("LoginFlow wallet_fetch_prepare_failed")
                     Timber.e(e, "Failed to prepare wallet fetch")
                     viewModel.failFetching(ErrorHandler.getErrorMessage(e))
                     return@launch

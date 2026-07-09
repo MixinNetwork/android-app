@@ -18,6 +18,7 @@ import one.mixin.android.ui.wallet.components.ImportErrorContent
 import one.mixin.android.ui.wallet.components.ImportingContent
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 
 class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
     private val binding by viewBinding(FragmentComposeBinding::bind)
@@ -46,6 +47,7 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                     }
                 }
                 FetchWalletState.IMPORT_ERROR -> {
+                    Timber.i("LoginFlow wallet_import_result success=false partial_success=$partialSuccess code=$errorCode")
                     binding.titleView.leftIb.setImageResource(R.drawable.ic_close_black)
                     ImportErrorContent(
                         partialSuccess =partialSuccess,
@@ -62,7 +64,9 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                 }
                 FetchWalletState.IMPORT_SUCCESS ->{
                     LaunchedEffect(importedWalletDestination) {
+                        Timber.i("LoginFlow wallet_import_result success=true has_destination=${importedWalletDestination != null}")
                         clearPendingImportMnemonic(requireContext())
+                        Timber.i("LoginFlow pending_import_cleared source=wallet_import")
                         MainActivity.showWallet(
                             requireContext(),
                             walletDestination = importedWalletDestination

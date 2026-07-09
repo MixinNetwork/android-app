@@ -245,6 +245,7 @@ class TipFlowInteractor @Inject internal constructor(
         onShowMessage: (String) -> Unit,
     ): Boolean {
         if (!Session.hasSafe()) {
+            Timber.i("LoginFlow safe_register_start tip_type=${tipBundle.tipType}")
             val registerResult: Boolean = try {
                 registerPublicKey(context, tipBundle, pin, tipPriv, onStepChanged, onShowMessage)
             } catch (e: Exception) {
@@ -252,6 +253,7 @@ class TipFlowInteractor @Inject internal constructor(
                 onStepChanged(RetryRegister(null, errorInfo))
                 false
             }
+            Timber.i("LoginFlow safe_register_result success=$registerResult has_safe=${Session.hasSafe()}")
             if (!registerResult) {
                 // register public key failed, already go to RetryRegister
                 return false
@@ -287,7 +289,11 @@ class TipFlowInteractor @Inject internal constructor(
             return
         }
         val wallets = syncedWallets ?: web3Repository.syncWalletsFromRoute()
-        when (routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })) {
+        val route = routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })
+        Timber.i(
+            "LoginFlow pending_import_wallet_sync_result source=tip route=$route wallet_count=${wallets?.size ?: -1}"
+        )
+        when (route) {
             PendingMnemonicRoute.WalletHome -> {
                 val importedWalletId = importedMnemonicWalletIdForPendingImport(wallets)
                 val pendingMnemonic = getPendingImportMnemonic(context)?.split(" ")
@@ -300,8 +306,10 @@ class TipFlowInteractor @Inject internal constructor(
                             pendingMnemonic,
                         )
                     }.getOrDefault(false)
+                    Timber.i("LoginFlow pending_import_local_key_save source=tip success=$saved")
                     if (saved) {
                         clearPendingImportMnemonic(context)
+                        Timber.i("LoginFlow pending_import_cleared source=tip")
                     }
                 }
                 val walletDestination = importedWalletId?.let { walletId ->
@@ -316,8 +324,10 @@ class TipFlowInteractor @Inject internal constructor(
                     } else {
                         WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC
                     }
+                    Timber.i("LoginFlow pending_import_fetch_open source=tip mode=$mode pin_reused=${pin != null}")
                     WalletSecurityActivity.show(activity, mode, pin = pin)
                 } else {
+                    Timber.i("LoginFlow pending_import_fetch_open_failed source=tip reason=no_activity")
                     MainActivity.show(context)
                 }
             }
@@ -343,6 +353,7 @@ class TipFlowInteractor @Inject internal constructor(
                         web3Repository.insertAddressList(addresses)
                     }
                 }
+                Timber.i("LoginFlow classic_wallet_create_success")
             },
             failureBlock = { response ->
                 Timber.e("Failed to create classic wallet: ${response.errorCode} - ${response.errorDescription}")
@@ -354,8 +365,13 @@ class TipFlowInteractor @Inject internal constructor(
             },
             requestSession = { userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
         )
-        web3Repository.syncWalletsFromRoute() ?: wallets
+        val refreshedWallets = web3Repository.syncWalletsFromRoute() ?: wallets
+        Timber.i(
+            "LoginFlow classic_wallet_ensure_complete has_classic=${refreshedWallets?.any { it.category == WalletCategory.CLASSIC.value } == true} wallet_count=${refreshedWallets?.size ?: -1}"
+        )
+        refreshedWallets
     }.getOrElse { throwable ->
+        Timber.i("LoginFlow classic_wallet_ensure_exception")
         Timber.e(throwable, "Failed to ensure classic wallet")
         null
     }

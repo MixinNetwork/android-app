@@ -100,7 +100,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
         if (activity is LandingActivity) {
             applySafeTopPadding(view)
         }
-        Timber.e("LandingMnemonicPhraseFragment onViewCreated")
+        Timber.i("LoginFlow mnemonic_input_open mode=${mode.name}")
         AnalyticsTracker.trackLoginStart(mode.loginStartType(), loginStartSource)
         binding.titleView.titleTv.setTextOnly(R.string.Log_in)
         binding.titleView.leftIb.setOnClickListener {
@@ -128,6 +128,9 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
                         toMnemonicWithChecksum(sourceWords)
                     }
                     val pendingImportWords = preparedMnemonic.pendingImportWords
+                    Timber.i(
+                        "LoginFlow mnemonic_input_complete mode=${mode.name} word_count=${words.size} pending_import=${pendingImportWords != null}"
+                    )
                     if (pendingImportWords != null) {
                         savePendingImportMnemonic(requireContext(), pendingImportWords)
                     } else {

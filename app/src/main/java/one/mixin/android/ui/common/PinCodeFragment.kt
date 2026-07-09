@@ -30,6 +30,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
+import timber.log.Timber
 
 abstract class PinCodeFragment(
     @LayoutRes contentLayoutId: Int,
@@ -120,7 +121,13 @@ abstract class PinCodeFragment(
         hideLoading()
         action.invoke()
 
-        when (routeLoginAccount(!account.fullName.isNullOrBlank(), hasLocalAccountDatabase(requireContext(), account.identityNumber))) {
+        val hasFullName = !account.fullName.isNullOrBlank()
+        val localAccountDatabaseExists = hasLocalAccountDatabase(requireContext(), account.identityNumber)
+        val loginAccountRoute = routeLoginAccount(hasFullName, localAccountDatabaseExists)
+        Timber.i(
+            "LoginFlow account_route source=phone route=$loginAccountRoute has_full_name=$hasFullName has_local_database=$localAccountDatabaseExists"
+        )
+        when (loginAccountRoute) {
             LoginAccountRoute.SetupName -> {
                 insertUser(account.toUser())
                 InitializeActivity.showSetupName(requireContext())

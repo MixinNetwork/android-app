@@ -16,6 +16,7 @@ import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 
 @AndroidEntryPoint
 class LoginMethodFragment : BaseFragment(R.layout.fragment_login_method) {
@@ -49,6 +50,7 @@ class LoginMethodFragment : BaseFragment(R.layout.fragment_login_method) {
             true
         }
         binding.otherWalletsRow.setOnClickListener {
+            Timber.i("LoginFlow method_selected type=mnemonic_12_24")
             activity?.addFragment(
                 this,
                 LandingMnemonicPhraseFragment.newInstance(LoginMnemonicMode.TWELVE_OR_TWENTY_FOUR),
@@ -56,6 +58,7 @@ class LoginMethodFragment : BaseFragment(R.layout.fragment_login_method) {
             )
         }
         binding.mobileRow.setOnClickListener {
+            Timber.i("LoginFlow method_selected type=mobile")
             activity?.addFragment(
                 this,
                 MobileFragment.newInstance(from = FROM_LANDING),
@@ -63,6 +66,7 @@ class LoginMethodFragment : BaseFragment(R.layout.fragment_login_method) {
             )
         }
         binding.recoveryKitRow.setOnClickListener {
+            Timber.i("LoginFlow method_selected type=mnemonic_13_25")
             activity?.addFragment(
                 this,
                 LandingMnemonicPhraseFragment.newInstance(LoginMnemonicMode.THIRTEEN_OR_TWENTY_FIVE),

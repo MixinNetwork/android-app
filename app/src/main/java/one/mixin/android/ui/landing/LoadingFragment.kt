@@ -138,7 +138,13 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 }
             }
             initializeBots()
-            when (routeLoginPostGate(Session.hasSafe(), Session.getAccount()?.hasPin == true)) {
+            val hasSafe = Session.hasSafe()
+            val hasPin = Session.getAccount()?.hasPin == true
+            val loginPostGateRoute = routeLoginPostGate(hasSafe, hasPin)
+            Timber.i(
+                "LoginFlow post_login_gate route=$loginPostGateRoute has_safe=$hasSafe has_pin=$hasPin pending_import=${hasPendingImportMnemonic(requireContext())}"
+            )
+            when (loginPostGateRoute) {
                 LoginPostGateRoute.VerifyPin -> {
                     showLoginPinGate()
                     return@launch
@@ -163,6 +169,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         }
         LoginVerifyBottomSheetDialogFragment.newInstance().apply {
             onDismissCallback = { success, pin ->
+                Timber.i("LoginFlow login_pin_gate_result success=$success pending_import=${hasPendingImportMnemonic(requireContext())}")
                 if (success) {
                     lifecycleScope.launch {
                         openNextAfterPin(pin)
@@ -183,7 +190,11 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
 
     private suspend fun openPendingMnemonicNext(pin: String?) {
         val wallets = web3Repository.syncWalletsFromRoute()
-        when (routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })) {
+        val route = routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })
+        Timber.i(
+            "LoginFlow pending_import_wallet_sync_result source=loading route=$route wallet_count=${wallets?.size ?: -1}"
+        )
+        when (route) {
             PendingMnemonicRoute.WalletHome -> {
                 val context = requireContext()
                 val importedWalletId = importedMnemonicWalletIdForPendingImport(wallets)
@@ -197,8 +208,10 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                             pendingMnemonic,
                         )
                     }.getOrDefault(false)
+                    Timber.i("LoginFlow pending_import_local_key_save source=loading success=$saved")
                     if (saved) {
                         clearPendingImportMnemonic(context)
+                        Timber.i("LoginFlow pending_import_cleared source=loading")
                     }
                 }
                 val walletDestination = importedWalletId?.let { walletId ->
@@ -207,6 +220,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                 MainActivity.showWallet(context, walletDestination = walletDestination)
             }
             PendingMnemonicRoute.ImportMnemonic -> {
+                Timber.i("LoginFlow pending_import_fetch_open source=loading pin_reused=${pin != null}")
                 WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC, pin = pin)
             }
         }
