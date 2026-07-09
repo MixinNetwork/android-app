@@ -131,6 +131,7 @@ import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.Output
 import one.mixin.android.vo.safe.OutputState
 import one.mixin.android.vo.safe.RawTransaction
+import one.mixin.android.vo.safe.RawTransactionState
 import one.mixin.android.vo.safe.RawTransactionType
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeSnapshotType
@@ -371,9 +372,9 @@ class BottomSheetViewModel
                         Timber.e("Kernel Withdrawal($traceId): db insert fee snapshot")
                         tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$feeTransactionHash".toByteArray()).toString(), senderId, receiverId, feeTransactionHash, feeTraceId, feeAssetId, feeAmount, "", SafeSnapshotType.snapshot)
                         Timber.e("Kernel Withdrawal($traceId): db raw transaction")
-                        tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc(), withdrawalUtxos.inscriptionHash))
+                        tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, RawTransactionState.signed, nowInUtc(), withdrawalUtxos.inscriptionHash))
                         Timber.e("Kernel Withdrawal($traceId): db insert fee raw transaction")
-                        tokenRepository.insetRawTransaction(RawTransaction(feeData.requestId, signFeeResult.raw, receiverId, RawTransactionType.FEE, OutputState.unspent, nowInUtc(), null))
+                        tokenRepository.insetRawTransaction(RawTransaction(feeData.requestId, signFeeResult.raw, receiverId, RawTransactionType.FEE, RawTransactionState.signed, nowInUtc(), null))
                     }
                     Timber.e("Kernel Withdrawal($traceId): db end")
                     jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId), assetIdToAsset(feeAssetId))))
@@ -406,7 +407,7 @@ class BottomSheetViewModel
                                 ),
                         )
                         Timber.e("Kernel Withdrawal($traceId): db update raw transaction")
-                        tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, OutputState.unspent, nowInUtc(), withdrawalUtxos.inscriptionHash))
+                        tokenRepository.insetRawTransaction(RawTransaction(withdrawalData.requestId, signWithdrawalResult.raw, formatDestination(destination, tag), RawTransactionType.WITHDRAWAL, RawTransactionState.signed, nowInUtc(), withdrawalUtxos.inscriptionHash))
                     }
                     Timber.e("Kernel Withdrawal($traceId): db end")
                     jobManager.addJobInBackground(CheckBalanceJob(arrayListOf(assetIdToAsset(assetId))))
@@ -422,12 +423,12 @@ class BottomSheetViewModel
             if (transactionRsp.error != null) {
                 Timber.e("Kernel Withdrawal($traceId): withdrawal error ${transactionRsp.errorDescription}")
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
-                tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
-                tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                tokenRepository.updateRawTransaction(traceId, RawTransactionState.spent.name)
+                tokenRepository.updateRawTransaction(feeTraceId, RawTransactionState.spent.name)
                 return transactionRsp
             } else {
-                tokenRepository.updateRawTransaction(traceId, OutputState.signed.name)
-                tokenRepository.updateRawTransaction(feeTraceId, OutputState.signed.name)
+                tokenRepository.updateRawTransaction(traceId, RawTransactionState.spent.name)
+                tokenRepository.updateRawTransaction(feeTraceId, RawTransactionState.spent.name)
             }
             jobManager.addJobInBackground(SyncOutputJob())
             Timber.e("Kernel Withdrawal($traceId): withdrawal end")
@@ -452,7 +453,7 @@ class BottomSheetViewModel
 
             Timber.e("Kernel Address Transaction($trace): begin")
             val rawTransaction = tokenRepository.findRawTransaction(trace)
-            if (rawTransaction?.state == OutputState.unspent) {
+            if (rawTransaction?.state == RawTransactionState.signed) {
                 Timber.e("Kernel Address Transaction($trace): sync restore")
                 return innerTransaction(rawTransaction.rawTransaction, trace, listOf(), utxoWrapper.inscriptionHash)
             }
@@ -501,7 +502,7 @@ class BottomSheetViewModel
                     Timber.e("Kernel Address Transaction($trace): sign db insert snapshot")
                     tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("$senderId:$transactionHash".toByteArray()).toString(), senderId, kernelAddress, transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot, reference = reference)
                     Timber.e("Kernel Address Transaction($trace): sign db insert raw transaction")
-                    tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, "", RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc(), utxoWrapper.inscriptionHash))
+                    tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, "", RawTransactionType.TRANSFER, RawTransactionState.signed, nowInUtc(), utxoWrapper.inscriptionHash))
                     Timber.e("Kernel Address Transaction($trace): sign db mark utxo ${utxoWrapper.ids.joinToString(", ")}")
                     tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
                     Timber.e("Kernel Address Transaction: sign end")
@@ -592,7 +593,7 @@ class BottomSheetViewModel
                         tokenRepository.insertSafeSnapshot(UUID.nameUUIDFromBytes("${senderIds.first()}:$transactionHash".toByteArray()).toString(), senderIds.first(), opponentId, transactionHash, trace, assetId, amount, memo, SafeSnapshotType.snapshot, reference = reference ?: (if (release == true) null else inscriptionHash))
                     }
                     Timber.e("Kernel Transaction($trace): sign db insert raw transaction")
-                    tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverIds.joinToString(","), RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc(), if (release == true) null else utxoWrapper.inscriptionHash))
+                    tokenRepository.insetRawTransaction(RawTransaction(transactionResponse.data!!.first().requestId, signResult.raw, receiverIds.joinToString(","), RawTransactionType.TRANSFER, RawTransactionState.signed, nowInUtc(), if (release == true) null else utxoWrapper.inscriptionHash))
                     Timber.e("Kernel Transaction($trace): sign db mark utxo ${utxoWrapper.ids.joinToString(", ")}")
                     tokenRepository.updateUtxoToSigned(utxoWrapper.ids)
                     Timber.e("Kernel Transaction: sign end")
@@ -622,11 +623,11 @@ class BottomSheetViewModel
             if (transactionRsp.error != null) {
                 Timber.e("Kernel Transaction($traceId): innerTransaction error ${transactionRsp.errorDescription}")
                 reportException(Throwable("Transaction Error ${transactionRsp.errorDescription}"))
-                tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
+                tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, RawTransactionState.spent.name)
                 return transactionRsp
             } else {
                 Timber.e("Kernel Transaction($traceId): innerTransaction update raw transaction")
-                tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, OutputState.signed.name)
+                tokenRepository.updateRawTransaction(transactionRsp.data!!.first().requestId, RawTransactionState.spent.name)
             }
             if (receiverIds.size == 1 && !isConsolidation) {
                 // Workaround with only the case of a single transfer
@@ -813,7 +814,7 @@ class BottomSheetViewModel
                                     ""
                                 } else {
                                     recipient.uuidMembers.joinToString(",")
-                                }, RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc(), null
+                                }, RawTransactionType.TRANSFER, RawTransactionState.signed, nowInUtc(), null
                             )
                         )
                         Timber.e("Kernel Duplicate Invoice Transaction(${signedTransaction.trace}): sign db mark utxo ${signedTransaction.utxoWrapperIds.joinToString(", ")}")
@@ -830,7 +831,7 @@ class BottomSheetViewModel
                             signedResponse.data?.forEach {
                                 tokenRepository.updateRawTransaction(
                                     it.requestId,
-                                    OutputState.signed.name
+                                    RawTransactionState.spent.name
                                 )
                             }
                             Timber.e("Kernel Duplicate Invoice Transaction(${signedTransaction.trace}): sign db end")
@@ -1029,7 +1030,7 @@ class BottomSheetViewModel
                                     ""
                                 } else {
                                     invoice.recipient.uuidMembers.joinToString(",")
-                                }, RawTransactionType.TRANSFER, OutputState.unspent, nowInUtc(), null
+                                }, RawTransactionType.TRANSFER, RawTransactionState.signed, nowInUtc(), null
                             )
                         )
                         Timber.e("Kernel Invoice Transaction(${t.trace}): sign db mark utxo ${t.utxoWrapperIds.joinToString(", ")}")
@@ -1049,7 +1050,7 @@ class BottomSheetViewModel
                     appDatabase.runInTransaction {
                         Timber.e("Kernel Invoice Transaction: sign db begin")
                         signedResponse.data?.forEach {
-                            tokenRepository.updateRawTransaction(it.requestId, OutputState.signed.name)
+                            tokenRepository.updateRawTransaction(it.requestId, RawTransactionState.spent.name)
                         }
                         Timber.e("Kernel Invoice Transaction: sign db end")
                     }
@@ -1757,9 +1758,9 @@ class BottomSheetViewModel
             }
         }
 
-        suspend fun firstUnspentTransaction() =
+        suspend fun firstSignedTransaction() =
             withContext(Dispatchers.IO) {
-                tokenRepository.firstUnspentTransaction()
+                tokenRepository.firstSignedTransaction()
             }
 
         suspend fun getScheme(id: String) = accountRepository.getScheme(id)

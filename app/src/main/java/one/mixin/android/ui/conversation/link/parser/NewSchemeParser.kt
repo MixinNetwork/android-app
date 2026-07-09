@@ -167,7 +167,7 @@ class NewSchemeParser(
                         return Result.failure(ParserError(FAILURE))
                     }
                 }
-                val rawTransaction = linkViewModel.firstUnspentTransaction()
+                val rawTransaction = linkViewModel.firstSignedTransaction()
                 if (rawTransaction != null) {
                     Timber.d("$TAG invoice found pending raw transaction traceId=$traceId")
                     WaitingBottomSheetDialogFragment.newInstance().showNow(bottomSheet.parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)
@@ -507,7 +507,7 @@ class NewSchemeParser(
     }
 
     private suspend fun checkRawTransaction(biometricItem: AssetBiometricItem) {
-        val rawTransaction = linkViewModel.firstUnspentTransaction()
+        val rawTransaction = linkViewModel.firstSignedTransaction()
         if (rawTransaction != null) {
             Timber.d("$TAG checkRawTransaction found pending raw transaction ${describeBiometricItem(biometricItem)}")
             WaitingBottomSheetDialogFragment.newInstance().showNow(bottomSheet.parentFragmentManager, WaitingBottomSheetDialogFragment.TAG)

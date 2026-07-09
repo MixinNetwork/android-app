@@ -60,6 +60,7 @@ import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.Output
+import one.mixin.android.vo.safe.RawTransaction
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.sumsub.ProfileResponse
@@ -339,6 +340,11 @@ internal constructor(
 
     suspend fun findSnapshot(snapshotId: String): SnapshotItem? =
         tokenRepository.findSnapshotById(snapshotId)
+
+    suspend fun findRawTransaction(traceId: String): RawTransaction? =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findRawTransaction(traceId)
+        }
 
     suspend fun profile(): MixinResponse<ProfileResponse> = tokenRepository.profile()
 
