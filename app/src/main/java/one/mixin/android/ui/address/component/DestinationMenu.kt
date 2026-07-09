@@ -67,7 +67,9 @@ fun DestinationMenu(
     onClick: () -> Unit = {},
     free: Boolean = false,
     isPrivacy: Boolean = false,
+    badge: String? = null,
 ) {
+    val badgeText = badge ?: if (free) stringResource(R.string.FREE) else null
     Row(
         modifier = Modifier
             .clickable(onClick = onClick)
@@ -82,7 +84,7 @@ fun DestinationMenu(
             modifier = Modifier.padding(8.dp),
             painter = painterResource(icon),
             contentDescription = null,
-            tint = MixinAppTheme.colors.icon
+            tint = Color.Unspecified
         )
         Spacer(modifier = Modifier.width(16.dp))
         Column {
@@ -93,16 +95,16 @@ fun DestinationMenu(
                     lineHeight = 19.sp,
                     color = MixinAppTheme.colors.textPrimary
                 )
-                if (free) {
+                if (badgeText != null) {
                     Spacer(modifier = Modifier.width(6.dp))
                     Text(
-                        stringResource(R.string.FREE),
+                        badgeText,
                         color = Color.White,
                         fontSize = 12.sp,
                         lineHeight = 16.sp,
                         modifier = Modifier
                             .background(
-                                color = MixinAppTheme.colors.accent,
+                                color = if (badge == null) MixinAppTheme.colors.accent else MixinAppTheme.colors.green,
                                 shape = RoundedCornerShape(4.dp)
                             )
                             .padding(horizontal = 6.dp, vertical = 2.dp)

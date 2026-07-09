@@ -28,6 +28,8 @@ object Constants {
         const val WS_URL = "wss://blaze.mixin.one"
         const val Mixin_URL = "https://mixin-api.zeromesh.net/"
         const val Mixin_WS_URL = "wss://mixin-blaze.zeromesh.net"
+        const val CASH_URL = "https://api.cash.mixin.one/"
+        const val CASH_HOME_URL = "https://cash.mixin.one"
 
         const val GIPHY_URL = "https://api.giphy.com/v1/"
         const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
@@ -106,6 +108,8 @@ object Constants {
         const val PREF_MARKET_ORDER = "pref_market_order"
         const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
+        const val PREF_CASH_BOT_PK = "pref_cash_bot_pk"
+        const val PREF_CASH_ACCOUNT = "pref_cash_account"
 
         const val PREF_REFERRAL_BOT_PK = "pref_referral_bot_pk"
 
@@ -216,7 +220,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 70
+        const val CURRENT_VERSION = 71
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -536,13 +540,11 @@ object Constants {
 
         const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
         const val REFERRAL_BOT_USER_ID = "b35af74d-cca6-400c-a62b-5a7e659de91e"
-
         const val SAFE_BOT_USER_ID = "b5418449-9ed6-4979-a690-82690949c542"
 
         const val ROUTE_BOT_URL = "https://api.route.mixin.one"
 
         const val REFERRAL_API_URL = "https://api.reward.mixin.one"
-
         const val GOOGLE_PAY = "googlepay"
 
         const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION

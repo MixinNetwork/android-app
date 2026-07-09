@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -73,6 +74,9 @@ class PerpsActivity : BaseActivity() {
             source: String? = null,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
+                if (context !is Activity) {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
                 addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 putExtra(EXTRA_MARKET_ID, marketId)
                 putExtra(EXTRA_MARKET_SYMBOL, marketSymbol)
@@ -94,6 +98,9 @@ class PerpsActivity : BaseActivity() {
             source: String,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
+                if (context !is Activity) {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
                 addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
                 putExtra(EXTRA_MARKET_ID, marketId)
                 putExtra(EXTRA_MARKET_SYMBOL, marketSymbol)
