@@ -15,6 +15,7 @@ enum class WalletHomeCardType {
     EMPTY_GUIDE,
     BALANCE,
     BANNER,
+    CASH,
     POSITIONS,
     TOP_MOVERS,
     TOKENS,

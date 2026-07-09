@@ -1344,9 +1344,16 @@ fun Activity.showPipPermissionNotification(
 fun getStringDeviceId(resolver: ContentResolver): String {
     var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
     if (deviceId == null || deviceId == "9774d56d682e549c") {
-        deviceId = FirebaseInstallations.getInstance().id.result
+        deviceId = getFirebaseInstallationIdIfReady() ?: Build.FINGERPRINT
     }
     return UUID.nameUUIDFromBytes(deviceId.toByteArray()).toString()
+}
+
+private fun getFirebaseInstallationIdIfReady(): String? {
+    val task = FirebaseInstallations.getInstance().id
+    if (!task.isComplete) return null
+    task.exception?.let { Timber.w(it, "Firebase installation id unavailable for device id") }
+    return if (task.isSuccessful) task.result else null
 }
 
 fun Context.getStringDeviceId(): String {

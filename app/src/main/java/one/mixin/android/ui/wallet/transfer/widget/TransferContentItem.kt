@@ -15,6 +15,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemTransferContentBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
+import one.mixin.android.ui.wallet.WalletTransferLabelStyle
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
@@ -103,7 +104,7 @@ class TransferContentItem : RelativeLayout {
             val start = fullText.lastIndexOf(label)
             val end = start + label.length
 
-            val backgroundColor: Int = if (toWallet) Color.parseColor("#B34B7CDD") else Color.parseColor("#8DCC99")
+            val backgroundColor = Color.parseColor(WalletTransferLabelStyle.backgroundColorHex(label, toWallet))
             val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
             spannableString.setSpan(RelativeSizeSpan(0.8f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             spannableString.setSpan(backgroundColorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

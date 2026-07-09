@@ -4,7 +4,6 @@ import android.Manifest
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.annotation.SuppressLint
-import android.content.Intent
 import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Bundle
@@ -54,7 +53,6 @@ import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.home.MainActivity
-import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
@@ -408,31 +406,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private var migrateEnable = false
 
     private fun handleAddWalletClick() {
-        val callback: (AddWalletBottomSheetDialogFragment.Action) -> Unit = { action ->
-            val intent = Intent(requireContext(), WalletSecurityActivity::class.java)
-            val mode = when (action) {
-                AddWalletBottomSheetDialogFragment.Action.IMPORT_MNEMONIC -> WalletSecurityActivity.Mode.IMPORT_MNEMONIC
-                AddWalletBottomSheetDialogFragment.Action.IMPORT_PRIVATE_KEY -> WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY
-                AddWalletBottomSheetDialogFragment.Action.ADD_WATCH_ADDRESS -> WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS
-                AddWalletBottomSheetDialogFragment.Action.CREATE_WALLET -> WalletSecurityActivity.Mode.CREATE_WALLET
-            }
-            intent.putExtra(WalletSecurityActivity.EXTRA_MODE, mode.ordinal)
-            startActivity(intent)
-        }
-
-        if (!Session.saltExported() && Session.isAnonymous()) {
-            RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager) {
-                if (this@WalletFragment.isAdded) {
-                    val dialog = AddWalletBottomSheetDialogFragment.newInstance()
-                    dialog.callback = callback
-                    dialog.show(this@WalletFragment.parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
-                }
-            }
-        } else {
-            val dialog = AddWalletBottomSheetDialogFragment.newInstance()
-            dialog.callback = callback
-            dialog.show(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
-        }
+        AddWalletBottomSheetDialogFragment.show(this)
     }
 
     private fun handleWalletCardClick(destination: WalletDestination) {
@@ -464,31 +438,58 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     }
 
     fun update() {
-        val destination = selectedWalletDestination
-        when (destination) {
+        when (val destination = selectedWalletDestination) {
+            is WalletDestination.Privacy -> {
+                privacyWalletFragment.update()
+            }
+
             is WalletDestination.Classic -> {
-                destination.walletId
+                jobManager.addJobInBackground(RefreshSingleWalletJob(destination.walletId))
             }
 
             is WalletDestination.Import -> {
-                destination.walletId
+                jobManager.addJobInBackground(RefreshSingleWalletJob(destination.walletId))
             }
 
             is WalletDestination.Watch -> {
-                destination.walletId
+                jobManager.addJobInBackground(RefreshSingleWalletJob(destination.walletId))
             }
 
-            else -> {
-                null
+            else -> Unit
+        }
+    }
+
+    override fun onHiddenChanged(hidden: Boolean) {
+        super.onHiddenChanged(hidden)
+        if (hidden) {
+            privacyWalletFragment.stopUpdate()
+        } else {
+            update()
+        }
+        if (shouldRefreshWalletHomeBannersAfterHiddenChanged(hidden)) {
+            refreshWalletHomeBanners()
+        }
+    }
+
+    private fun refreshWalletHomeBanners() {
+        when (selectedWalletDestination) {
+            is WalletDestination.Privacy -> {
+                if (privacyWalletFragment.isAdded) privacyWalletFragment.refreshWalletHomeBanners()
             }
-        }?.let { wallet ->
-            jobManager.addJobInBackground(RefreshSingleWalletJob(wallet))
+            is WalletDestination.Classic,
+            is WalletDestination.Import,
+            is WalletDestination.Watch,
+            is WalletDestination.Safe -> {
+                if (classicWalletFragment.isAdded) classicWalletFragment.refreshWalletHomeBanners()
+            }
+            null -> Unit
         }
     }
 
     override fun onResume() {
         super.onResume()
         jobManager.addJobInBackground(RefreshSafeAccountsJob())
+        if (privacyWalletFragment.isVisible) privacyWalletFragment.update()
         if (classicWalletFragment.isVisible) classicWalletFragment.update()
     }
 

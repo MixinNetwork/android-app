@@ -17,14 +17,6 @@ import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.Constants.DEFAULT_BOTS
 import one.mixin.android.Constants.DEFAULT_CN_BOTS
 import one.mixin.android.Constants.DEVICE_ID
-import one.mixin.android.Constants.MIXIN_ALERT_USER_ID
-import one.mixin.android.Constants.MIXIN_CARD_USER_ID
-import one.mixin.android.Constants.MIXIN_COMMUNITY_USER_ID
-import one.mixin.android.Constants.MIXIN_DISCOURSE_USER_ID
-import one.mixin.android.Constants.MIXIN_REWARD_USER_ID
-import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
-import one.mixin.android.Constants.TEAM_MIXIN_USER_NAME
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.SessionSecretRequest

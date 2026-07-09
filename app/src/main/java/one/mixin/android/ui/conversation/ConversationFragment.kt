@@ -281,6 +281,7 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.LinearSmoothScrollerCustom
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.buildBottomSheetView
+import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardShownListener
@@ -1504,9 +1505,12 @@ class ConversationFragment() :
                     flags: Int,
                     opts: Bundle?,
                 ) {
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        if (inputContentInfo != null) {
-                            sendImageMessage(inputContentInfo.contentUri, false, null, true)
+                    val uri = inputContentInfo?.contentUri ?: return
+                    if (opts?.getBoolean(ContentEditText.OPTION_FROM_CLIPBOARD, false) == true) {
+                        handleClipboardImage(uri, opts.getString(ContentEditText.OPTION_CONTENT_MIME_TYPE))
+                    } else {
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            sendImageMessage(uri, false, null, true)
                         }
                     }
                 }
@@ -2133,6 +2137,25 @@ class ConversationFragment() :
     private fun encryptCategory(): EncryptCategory = getEncryptedCategory(isBot, app)
 
     private var lastSendMessageId: String? = null
+
+    private fun handleClipboardImage(
+        uri: Uri,
+        mimeType: String?,
+    ) {
+        val imageMimeType = mimeType ?: getMimeType(uri, true)
+        when {
+            imageMimeType.equals(MimeType.GIF.toString(), true) ||
+                imageMimeType.equals(MimeType.WEBP.toString(), true) -> {
+                showPreview(uri, getString(R.string.Send), false) { imageUri, _, _ ->
+                    sendImageMessage(imageUri, mimeType = imageMimeType)
+                }
+            }
+            imageMimeType?.isImageSupport() == true -> {
+                getEditorResult.launch(Pair(uri, getString(R.string.Send)))
+            }
+            else -> toast(R.string.Format_not_supported)
+        }
+    }
 
     private fun sendImageMessage(
         uri: Uri,

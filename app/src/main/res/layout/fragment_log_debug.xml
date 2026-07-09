@@ -50,6 +50,18 @@
                     android:foreground="?android:attr/selectableItemBackground"
                     android:textSize="16sp" />
 
+            <TextView
+                    android:id="@+id/update_fcm_token"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:gravity="center_vertical"
+                    android:paddingStart="@dimen/activity_horizontal_margin"
+                    android:paddingEnd="@dimen/activity_horizontal_margin"
+                    android:text="@string/Update_FCM_Token"
+                    android:textColor="@color/colorBlue"
+                    android:foreground="?android:attr/selectableItemBackground"
+                    android:textSize="16sp" />
+
 
             <RelativeLayout
                     android:id="@+id/web_debug"
@@ -166,6 +178,18 @@
                 android:textSize="16sp" />
 
             <TextView
+                android:id="@+id/preview_captcha"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:text="@string/Preview_Captcha"
+                android:textColor="@color/colorBlue"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:textSize="16sp" />
+
+            <TextView
                 android:id="@+id/reset_tpsl_guide"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"
@@ -173,6 +197,18 @@
                 android:paddingStart="@dimen/activity_horizontal_margin"
                 android:paddingEnd="@dimen/activity_horizontal_margin"
                 android:text="@string/Reset_TpSl_Guide"
+                android:textColor="@color/colorBlue"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/reset_wallet_home_banners"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/bottom_button_height"
+                android:gravity="center_vertical"
+                android:paddingStart="@dimen/activity_horizontal_margin"
+                android:paddingEnd="@dimen/activity_horizontal_margin"
+                android:text="@string/Reset_Wallet_Home_Banners"
                 android:textColor="@color/colorBlue"
                 android:foreground="?android:attr/selectableItemBackground"
                 android:textSize="16sp" />

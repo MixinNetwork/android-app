@@ -110,4 +110,7 @@ data class Market(
     @SerializedName("descriptions")
     @ColumnInfo(name = "descriptions")
     val descriptions: Map<String, String>? = null,
+    @SerializedName("perps_market_id")
+    @ColumnInfo(name = "perps_market_id")
+    val perpsMarketId: String? = null,
 ) : Parcelable

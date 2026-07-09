@@ -2,6 +2,7 @@ package one.mixin.android.widget
 
 import android.annotation.SuppressLint
 import android.content.ClipData
+import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Build
@@ -24,6 +25,11 @@ import one.mixin.android.extension.supportsOreo
 import one.mixin.android.widget.gallery.MimeType
 
 open class ContentEditText : AppCompatEditText {
+    companion object {
+        const val OPTION_FROM_CLIPBOARD = "one.mixin.android.widget.ContentEditText.FROM_CLIPBOARD"
+        const val OPTION_CONTENT_MIME_TYPE = "one.mixin.android.widget.ContentEditText.CONTENT_MIME_TYPE"
+    }
+
     constructor(context: Context) : super(context)
 
     constructor(context: Context, attrs: AttributeSet) : super(context, attrs)
@@ -72,6 +78,9 @@ open class ContentEditText : AppCompatEditText {
     @SuppressLint("ObsoleteSdkInt")
     override fun onTextContextMenuItem(id: Int): Boolean {
         if (id == android.R.id.paste) {
+            if (commitClipboardImage()) {
+                return true
+            }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 return super.onTextContextMenuItem(android.R.id.pasteAsPlainText)
             } else {
@@ -95,6 +104,27 @@ open class ContentEditText : AppCompatEditText {
             }
         }
     }
+
+    private fun commitClipboardImage(): Boolean {
+        val listener = listener ?: return false
+        val clipboard: ClipboardManager = context?.getClipboardManager() ?: return false
+        val clip = clipboard.primaryClip ?: return false
+        val mimeType = clip.description.supportedImageMimeType() ?: return false
+        for (i in 0 until clip.itemCount) {
+            val uri = clip.getItemAt(i).uri ?: continue
+            val opts =
+                Bundle().apply {
+                    putBoolean(OPTION_FROM_CLIPBOARD, true)
+                    putString(OPTION_CONTENT_MIME_TYPE, mimeType)
+                }
+            listener.commitContentAsync(InputContentInfoCompat(uri, clip.description, null), 0, opts)
+            return true
+        }
+        return false
+    }
+
+    private fun ClipDescription.supportedImageMimeType(): String? =
+        mimeTypes.firstOrNull { hasMimeType(it) }
 
     override fun onCreateInputConnection(editorInfo: EditorInfo): InputConnection? {
         val ic =

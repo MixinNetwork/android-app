@@ -179,6 +179,13 @@ constructor(
     
     fun web3TokensExcludeHidden(walletId: String) = web3TokenDao.web3TokenItemsExcludeHidden(walletId)
 
+    fun walletHomeWeb3TokenPreview(
+        walletId: String,
+        limit: Int,
+    ) = web3TokenDao.walletHomeWeb3TokenPreview(walletId, limit)
+
+    fun walletHomeWeb3TokenSummary(walletId: String) = web3TokenDao.walletHomeWeb3TokenSummary(walletId)
+
     fun topWeb3TokenItems(walletId: String) = web3TokenDao.topWeb3TokenItems(walletId)
 
     fun web3TokensExcludeHiddenRaw(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL) = web3TokenDao.web3TokenItemsExcludeHiddenRaw(

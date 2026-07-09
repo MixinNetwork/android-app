@@ -3,6 +3,8 @@ package one.mixin.android.ui.address
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.map
+import one.mixin.android.api.response.CashAccount
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.TokenRepository
@@ -27,6 +29,9 @@ class AddressViewModel
     suspend fun findWeb3WalletById(walletId: String) = web3Repository.findWalletById(walletId)
 
     suspend fun getSafeWalletsByChainId(chainId: String) = web3Repository.getSafeWalletsByChainId(chainId)
+
+    suspend fun findCashAccount(): CashAccount? =
+        PropertyHelper.findCashAccount()
 
     suspend fun validateExternalAddress(
         assetId: String, chain: String, destination: String, tag: String?

@@ -110,6 +110,7 @@ fun InputContent(
     inputFontWeight: FontWeight = FontWeight.Black,
     autoFocus: Boolean = false,
     maxDecimalPlaces: Int? = null,
+    onFocusChanged: ((Boolean) -> Unit)? = null,
 ) {
     if (readOnly) {
         Column(modifier = Modifier.fillMaxWidth()) {
@@ -194,6 +195,7 @@ fun InputContent(
                             .fillMaxWidth()
                             .focusRequester(focusRequester)
                             .onFocusChanged {
+                                onFocusChanged?.invoke(it.isFocused)
                                 if (it.isFocused) {
                                     keyboardController?.show()
                                 }
