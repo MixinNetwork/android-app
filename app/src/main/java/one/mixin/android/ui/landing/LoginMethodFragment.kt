@@ -42,7 +42,7 @@ class LoginMethodFragment : BaseFragment(R.layout.fragment_login_method) {
             requireActivity().onBackPressedDispatcher.onBackPressed()
         }
         binding.titleView.rightIb.setOnClickListener {
-            openCustomerService(source = AnalyticsTracker.CustomerServiceSource.LOGIN_PHONE_NUMER)
+            openCustomerService(source = AnalyticsTracker.CustomerServiceSource.LOGIN_BY)
         }
         binding.titleView.setOnLongClickListener {
             LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)

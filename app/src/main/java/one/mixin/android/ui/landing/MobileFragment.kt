@@ -75,6 +75,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         const val ARGS_PHONE_NUM = "args_phone_num"
         const val ARGS_FROM = "args_from"
         const val ARGS_ADD_PHONE_SOURCE = "args_add_phone_source"
+        private const val ARGS_LOGIN_START_SOURCE = "args_login_start_source"
         const val FROM_LANDING = 0
         const val FROM_LANDING_CREATE = 1
         const val FROM_CHANGE_PHONE_ACCOUNT = 2
@@ -86,6 +87,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             from: Int = FROM_LANDING,
             phoneNumber: String? = null,
             addPhoneSource: String? = null,
+            loginStartSource: String = AnalyticsTracker.LoginStartSource.LOGIN_BY,
         ): MobileFragment =
             MobileFragment().apply {
                 val b =
@@ -98,6 +100,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                             putString(ARGS_PHONE_NUM, phoneNumber)
                         }
                         addPhoneSource?.let { putString(ARGS_ADD_PHONE_SOURCE, it) }
+                        putString(ARGS_LOGIN_START_SOURCE, loginStartSource)
                     }
                 arguments = b
             }
@@ -122,6 +125,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     }
     private val addPhoneSource: String? by lazy {
         requireArguments().getString(ARGS_ADD_PHONE_SOURCE)
+    }
+    private val loginStartSource: String by lazy {
+        requireArguments().getString(ARGS_LOGIN_START_SOURCE) ?: AnalyticsTracker.LoginStartSource.LOGIN_BY
     }
     private val useSystemKeyboard: Boolean
         get() = from == FROM_LANDING
@@ -148,7 +154,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         }
         Timber.e("MobileFragment onViewCreated")
         if (from == FROM_LANDING) {
-            AnalyticsTracker.trackLoginStart()
+            AnalyticsTracker.trackLoginStart(AnalyticsTracker.LoginStartType.PHONE_NUMBER, loginStartSource)
         }
         if (isAddPhoneFlow()) {
             AnalyticsTracker.trackAddPhoneInputPhone()

@@ -6,11 +6,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.fragment.app.activityViewModels
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
-import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
@@ -23,6 +22,7 @@ import one.mixin.android.util.viewBinding
 class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
     private val binding by viewBinding(FragmentComposeBinding::bind)
     private val viewModel by activityViewModels<FetchWalletViewModel>()
+    private val customerServiceSource: String? by lazy { arguments?.getString(ARG_CUSTOMER_SERVICE_SOURCE) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -31,7 +31,7 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         binding.titleView.rightIb.setImageResource(R.drawable.ic_support)
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightAnimator.displayedChild = 0
-        binding.titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }
+        binding.titleView.rightAnimator.setOnClickListener { openCustomerService(source = customerServiceSource) }
         binding.compose.setContent {
             val state by viewModel.state.collectAsState()
             val errorCode by viewModel.errorCode.collectAsState()
@@ -104,9 +104,14 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         private const val ARG_WALLET_NAME = "arg_wallet_name"
         private const val ARG_MODE = "arg_mode"
         private const val ARG_FROM_DETAIL = "arg_from_detail"
+        private const val ARG_CUSTOMER_SERVICE_SOURCE = "arg_customer_service_source"
 
-        fun newInstance(): ImportingWalletFragment {
-            return ImportingWalletFragment()
+        fun newInstance(customerServiceSource: String? = null): ImportingWalletFragment {
+            return ImportingWalletFragment().apply {
+                arguments = Bundle().apply {
+                    customerServiceSource?.let { putString(ARG_CUSTOMER_SERVICE_SOURCE, it) }
+                }
+            }
         }
 
         fun newInstance(mode: WalletSecurityActivity.Mode): ImportingWalletFragment {

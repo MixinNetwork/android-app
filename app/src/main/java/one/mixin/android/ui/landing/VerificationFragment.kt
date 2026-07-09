@@ -150,8 +150,13 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         }
         binding.verificationResendTv.setOnClickListener { sendVerification() }
         binding.verificationNeedHelpTv.setOnClickListener {
-            if (isAddPhoneFlow()) {
-                AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.ADD_PHONE_SMS_VERIFY)
+            when {
+                isAddPhoneFlow() -> AnalyticsTracker.CustomerServiceSource.ADD_PHONE_SMS_VERIFY
+                from == FROM_LANDING_CREATE -> AnalyticsTracker.CustomerServiceSource.SIGN_UP_SMS_VERIFY
+                from == FROM_LANDING -> AnalyticsTracker.CustomerServiceSource.LOGIN_SMS_VERIFY
+                else -> null
+            }?.let { source ->
+                AnalyticsTracker.trackCustomerServiceDialog(source)
             }
             showBottom()
         }
@@ -338,6 +343,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             handleMixinResponse(
                 invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
                 successBlock = { response ->
+                    if (response.isSuccess && response.data?.fullName.isNullOrBlank()) {
+                        AnalyticsTracker.trackSignUpAccountCreated()
+                    }
                     handleAccount(response, sessionKey) {
                         defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
                     }

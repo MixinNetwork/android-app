@@ -8,10 +8,9 @@ import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
-import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.FetchErrorContent
@@ -28,11 +27,21 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         private const val ARGS_MNEMONIC = "args_mnemonic"
         private const val ARGS_PIN = "args_pin"
         private const val ARGS_IMPORT_CATEGORY = "args_import_category"
-        fun newInstance(mnemonic: String?, pin: String? = null, importCategory: String? = null) = FetchingWalletFragment().apply {
+        private const val ARGS_FETCH_CUSTOMER_SERVICE_SOURCE = "args_fetch_customer_service_source"
+        private const val ARGS_IMPORT_CUSTOMER_SERVICE_SOURCE = "args_import_customer_service_source"
+        fun newInstance(
+            mnemonic: String?,
+            pin: String? = null,
+            importCategory: String? = null,
+            fetchCustomerServiceSource: String? = null,
+            importCustomerServiceSource: String? = null,
+        ) = FetchingWalletFragment().apply {
             arguments = Bundle().apply {
                 putString(ARGS_MNEMONIC, mnemonic)
                 pin?.let { putString(ARGS_PIN, it) }
                 importCategory?.let { putString(ARGS_IMPORT_CATEGORY, it) }
+                fetchCustomerServiceSource?.let { putString(ARGS_FETCH_CUSTOMER_SERVICE_SOURCE, it) }
+                importCustomerServiceSource?.let { putString(ARGS_IMPORT_CUSTOMER_SERVICE_SOURCE, it) }
             }
         }
     }
@@ -45,6 +54,8 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
     private val mnemonic: String? by lazy { arguments?.getString(ARGS_MNEMONIC) }
     private val pin: String? by lazy { arguments?.getString(ARGS_PIN) }
     private val importCategory: String? by lazy { arguments?.getString(ARGS_IMPORT_CATEGORY) }
+    private val fetchCustomerServiceSource: String? by lazy { arguments?.getString(ARGS_FETCH_CUSTOMER_SERVICE_SOURCE) }
+    private val importCustomerServiceSource: String? by lazy { arguments?.getString(ARGS_IMPORT_CUSTOMER_SERVICE_SOURCE) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -52,7 +63,7 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         binding.titleView.rightIb.setImageResource(R.drawable.ic_support)
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightAnimator.displayedChild = 0
-        binding.titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }
+        binding.titleView.rightAnimator.setOnClickListener { openCustomerService(source = fetchCustomerServiceSource) }
         binding.compose.setContent {
             val state by viewModel.state.collectAsState()
             val errorMessage by viewModel.errorMessage.collectAsState()
@@ -86,7 +97,11 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
             viewModel.state.collect { state ->
                 if (state == FetchWalletState.SELECT) {
                     parentFragmentManager.beginTransaction()
-                        .replace(R.id.container, SelectWalletFragment.newInstance(), SelectWalletFragment.TAG)
+                        .replace(
+                            R.id.container,
+                            SelectWalletFragment.newInstance(importCustomerServiceSource),
+                            SelectWalletFragment.TAG
+                        )
                         .commit()
                 }
             }

@@ -34,18 +34,33 @@ enum class LoginMnemonicMode(
     THIRTEEN_OR_TWENTY_FIVE(13, 25),
 }
 
+private fun LoginMnemonicMode.loginStartType(): String =
+    when (this) {
+        LoginMnemonicMode.TWELVE_OR_TWENTY_FOUR -> AnalyticsTracker.LoginStartType.LOGIN_MNEMONIC_PHRASE_12
+        LoginMnemonicMode.THIRTEEN_OR_TWENTY_FIVE -> AnalyticsTracker.LoginStartType.LOGIN_MNEMONIC_PHRASE_13
+    }
+
+private fun LoginMnemonicMode.customerServiceSource(): String =
+    when (this) {
+        LoginMnemonicMode.TWELVE_OR_TWENTY_FOUR -> AnalyticsTracker.CustomerServiceSource.LOGIN_MNEMONIC_PHRASE_12
+        LoginMnemonicMode.THIRTEEN_OR_TWENTY_FIVE -> AnalyticsTracker.CustomerServiceSource.LOGIN_MNEMONIC_PHRASE_13
+    }
+
 @AndroidEntryPoint
 class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mnemonic_phrase) {
     companion object {
         const val TAG: String = "MnemonicPhraseFragment"
         private const val ARGS_MODE = "args_mode"
+        private const val ARGS_LOGIN_START_SOURCE = "args_login_start_source"
 
         fun newInstance(
             mode: LoginMnemonicMode = LoginMnemonicMode.THIRTEEN_OR_TWENTY_FIVE,
+            loginStartSource: String = AnalyticsTracker.LoginStartSource.LOGIN_BY,
         ): LandingMnemonicPhraseFragment =
             LandingMnemonicPhraseFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARGS_MODE, mode.name)
+                    putString(ARGS_LOGIN_START_SOURCE, loginStartSource)
                 }
             }
     }
@@ -54,6 +69,9 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
     private val mode: LoginMnemonicMode by lazy {
         arguments?.getString(ARGS_MODE)?.let(LoginMnemonicMode::valueOf)
             ?: LoginMnemonicMode.THIRTEEN_OR_TWENTY_FIVE
+    }
+    private val loginStartSource: String by lazy {
+        arguments?.getString(ARGS_LOGIN_START_SOURCE) ?: AnalyticsTracker.LoginStartSource.LOGIN_BY
     }
     private var scannedMnemonicList by mutableStateOf<List<String>>(emptyList())
     private lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
@@ -81,7 +99,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
             applySafeTopPadding(view)
         }
         Timber.e("LandingMnemonicPhraseFragment onViewCreated")
-        AnalyticsTracker.trackLoginMnemonicPhrase()
+        AnalyticsTracker.trackLoginStart(mode.loginStartType(), loginStartSource)
         binding.titleView.titleTv.setTextOnly(R.string.Log_in)
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
@@ -90,7 +108,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightAnimator.displayedChild = 0
         binding.titleView.rightIb.setOnClickListener {
-            openCustomerService(source = AnalyticsTracker.CustomerServiceSource.LOGIN_MNEMONIC_PHRASE)
+            openCustomerService(source = mode.customerServiceSource())
         }
         binding.titleView.setOnLongClickListener {
             LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)

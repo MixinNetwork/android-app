@@ -17,6 +17,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.VerifyPinBeforeImportWalletPage
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
+import one.mixin.android.util.analytics.AnalyticsTracker
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -126,6 +127,8 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                                 FetchingWalletFragment.newInstance(
                                                     mnemonic = mnemonic,
                                                     importCategory = importWalletCategoryForMode(mode),
+                                                    fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,
+                                                    importCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_IMPORT,
                                                 ),
                                                 FetchingWalletFragment.TAG
                                             )

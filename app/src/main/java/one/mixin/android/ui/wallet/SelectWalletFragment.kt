@@ -16,11 +16,17 @@ import one.mixin.android.util.viewBinding
 class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
         const val TAG = "select"
-        fun newInstance() = SelectWalletFragment()
+        private const val ARGS_CUSTOMER_SERVICE_SOURCE = "args_customer_service_source"
+        fun newInstance(customerServiceSource: String? = null) = SelectWalletFragment().apply {
+            arguments = Bundle().apply {
+                customerServiceSource?.let { putString(ARGS_CUSTOMER_SERVICE_SOURCE, it) }
+            }
+        }
     }
 
     private val binding by viewBinding(FragmentComposeBinding::bind)
     private val viewModel by activityViewModels<FetchWalletViewModel>()
+    private val customerServiceSource: String? by lazy { arguments?.getString(ARGS_CUSTOMER_SERVICE_SOURCE) }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -38,7 +44,7 @@ class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
                     parentFragmentManager.beginTransaction()
                         .replace(
                             R.id.container,
-                            ImportingWalletFragment.newInstance(),
+                            ImportingWalletFragment.newInstance(customerServiceSource),
                             ImportingWalletFragment.TAG
                         )
                         .commit()

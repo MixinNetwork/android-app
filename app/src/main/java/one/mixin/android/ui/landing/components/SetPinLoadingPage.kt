@@ -111,7 +111,7 @@ fun SetPinLoadingPage(
             IconButton(onClick = {
                 context.openUrl(
                     Constants.HelpLink.CUSTOMER_SERVICE,
-                    source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_MNEMONIC_PHRASE_CREATING,
+                    source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_PIN_SETTING,
                 )
             }) {
                 Icon(

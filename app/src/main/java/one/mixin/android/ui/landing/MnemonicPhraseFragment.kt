@@ -382,6 +382,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
             if (r?.isSuccess == true) {
                 val account = r.data!!
+                if (words.isNullOrEmpty() || account.fullName.isNullOrBlank()) {
+                    AnalyticsTracker.trackSignUpAccountCreated()
+                }
                 initializeAccountSession(requireContext(), account, sessionKey)
                 val importWords = pendingImportWords
                 if (!importWords.isNullOrEmpty()) {

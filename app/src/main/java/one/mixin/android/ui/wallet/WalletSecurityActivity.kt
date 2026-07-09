@@ -7,6 +7,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.crypto.getPendingImportMnemonic
 import one.mixin.android.ui.common.BlazeBaseActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 @AndroidEntryPoint
 class WalletSecurityActivity : BlazeBaseActivity() {
@@ -41,6 +42,8 @@ class WalletSecurityActivity : BlazeBaseActivity() {
                     mnemonic = getPendingImportMnemonic(this),
                     pin = pin,
                     importCategory = importWalletCategoryForMode(mode),
+                    fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,
+                    importCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_IMPORT,
                 )
             }
 
