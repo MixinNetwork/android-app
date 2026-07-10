@@ -50,7 +50,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -61,6 +60,7 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
@@ -281,13 +281,13 @@ fun OpenPositionPage(
             ?: ""
 
     fun showPerpsGuide(tab: Int) {
-        val activity = context as? FragmentActivity ?: return
+        val activity = context.findFragmentActivityOrNull() ?: return
         PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
             .show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
     }
 
     fun showTpSlBottomSheet(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
-        val activity = context as? FragmentActivity ?: return
+        val activity = context.findFragmentActivityOrNull() ?: return
         PerpsTpSlBottomSheetDialogFragment.newInstance(
             mode = mode,
             price = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
@@ -447,7 +447,7 @@ fun OpenPositionPage(
                                     color = MixinAppTheme.colors.accent,
                                 ),
                                 modifier = Modifier.clickable {
-                                    val activity = context as? FragmentActivity ?: return@clickable
+                                    val activity = context.findFragmentActivityOrNull() ?: return@clickable
                                     val token = currentToken
                                     if (token == null) {
                                         onTokenSelect()
@@ -491,7 +491,7 @@ fun OpenPositionPage(
                 }
                 Spacer(modifier = Modifier.height(2.dp))
                 val showLeverageInput = {
-                    val activity = context as? FragmentActivity
+                    val activity = context.findFragmentActivityOrNull()
                     if (activity != null) {
                         LeverageBottomSheetDialogFragment.newInstance(
                             currentLeverage = leverage,
@@ -526,7 +526,7 @@ fun OpenPositionPage(
 
                     Text(
                         modifier = Modifier.clickable {
-                            val activity = context as? FragmentActivity ?: return@clickable
+                            val activity = context.findFragmentActivityOrNull() ?: return@clickable
                             LeverageBottomSheetDialogFragment.newInstance(
                                 currentLeverage = leverage,
                                 maxLeverage = maxLeverage,
@@ -585,7 +585,7 @@ fun OpenPositionPage(
                                     .clickable {
                                         if (lev == -1) {
                                             AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_TAB)
-                                            val activity = context as? FragmentActivity ?: return@clickable
+                                            val activity = context.findFragmentActivityOrNull() ?: return@clickable
                                             LeverageBottomSheetDialogFragment.newInstance(
                                                 currentLeverage = leverage,
                                                 maxLeverage = maxLeverage,
@@ -745,7 +745,7 @@ fun OpenPositionPage(
                         val walletId = Session.getAccountId() ?: "" // Privacy Wallet
                         if (walletId.isEmpty()) { isProcessing = false; return@MixinButton }
 
-                        val activity = context as? FragmentActivity ?: run { isProcessing = false; return@MixinButton }
+                        val activity = context.findFragmentActivityOrNull() ?: run { isProcessing = false; return@MixinButton }
 
                         val price = m.last.toBigDecimalOrNull() ?: BigDecimal.ZERO
                         if (price == BigDecimal.ZERO) { isProcessing = false; return@MixinButton }
