@@ -66,6 +66,32 @@ class WalletHomeBannerTest {
     }
 
     @Test
+    fun filterByChainsKeepsGlobalAndMatchingBanners() {
+        val banners = listOf(
+            WalletHomeBanner(bannerId = "global"),
+            WalletHomeBanner(bannerId = "blank", chains = listOf("")),
+            WalletHomeBanner(bannerId = "ethereum", chains = listOf("ethereum")),
+            WalletHomeBanner(bannerId = "multi-chain", chains = listOf("bitcoin", "ethereum")),
+            WalletHomeBanner(bannerId = "solana", chains = listOf("solana")),
+        )
+
+        assertEquals(
+            listOf("global", "blank", "ethereum", "multi-chain"),
+            banners.filterWalletHomeBannersByChains(listOf("ethereum")).map { it.bannerId },
+        )
+    }
+
+    @Test
+    fun filterByChainsWithoutWalletChainsKeepsAllBanners() {
+        val banners = listOf(
+            WalletHomeBanner(bannerId = "global"),
+            WalletHomeBanner(bannerId = "ethereum", chains = listOf("ethereum")),
+        )
+
+        assertEquals(banners, banners.filterWalletHomeBannersByChains(emptyList()))
+    }
+
+    @Test
     fun syncClosedBannerIdsKeepsExistingIdsWhenRemoteResponseIsPartial() {
         val remoteBanners = listOf(
             WalletHomeBanner(bannerId = "remote-1"),

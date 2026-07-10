@@ -167,7 +167,10 @@ class WalletHomeCashAccountTest {
         val state = WalletHomeState(
             walletType = WalletHomeType.PRIVACY,
             isLoading = true,
-        ).withDynamicBanners(listOf(banner))
+        ).withDynamicBanners(
+            dynamicBanners = listOf(banner),
+            showAddWalletBanner = false,
+        )
 
         assertEquals(listOf(banner), state.dynamicBanners)
         assertEquals(

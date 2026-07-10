@@ -588,7 +588,11 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         dynamicBanners = banners
         isDynamicBannerLoaded = true
         _homeState.value = _homeState.value.withDynamicBanners(
-            banners.visibleWalletHomeBanners(closedDynamicBannerIds),
+            dynamicBanners = banners.visibleWalletHomeBanners(closedDynamicBannerIds),
+            showAddWalletBanner = !defaultSharedPreferences.getBoolean(
+                PREF_WALLET_HOME_ADD_WALLET_BANNER_CLOSED,
+                false,
+            ),
         )
         renderHome()
     }

@@ -81,6 +81,15 @@ data class WalletHomeBannerAction(
     val action: String = "",
 )
 
+fun List<WalletHomeBanner>.filterWalletHomeBannersByChains(chains: Collection<String>): List<WalletHomeBanner> {
+    val walletChains = chains.filterTo(mutableSetOf(), String::isNotBlank)
+    if (walletChains.isEmpty()) return this
+
+    return filter { banner ->
+        banner.chains.none(String::isNotBlank) || banner.chains.any(walletChains::contains)
+    }
+}
+
 fun Set<String>.syncedWalletHomeClosedBannerIds(remoteBanners: List<WalletHomeBanner>): Set<String> {
     return this
 }

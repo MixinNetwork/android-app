@@ -75,9 +75,11 @@ private fun List<WalletHomeCardType>.withCashCard(): List<WalletHomeCardType> {
 
 internal fun WalletHomeState.withDynamicBanners(
     dynamicBanners: List<WalletHomeBanner>,
+    showAddWalletBanner: Boolean,
 ): WalletHomeState {
+    val showBanner = showAddWalletBanner || dynamicBanners.isNotEmpty()
     val bannerCards = when {
-        dynamicBanners.isEmpty() -> cards - WalletHomeCardType.BANNER
+        !showBanner -> cards - WalletHomeCardType.BANNER
         cards.isEmpty() -> WalletHomeBuilder.build(
             walletType = walletType,
             hasAssetValue = false,
@@ -96,7 +98,8 @@ internal fun WalletHomeState.withDynamicBanners(
     }
     return copy(
         cards = bannerCards,
-        isLoading = if (dynamicBanners.isNotEmpty()) false else isLoading,
+        isLoading = if (showBanner) false else isLoading,
+        showAddWalletBanner = showAddWalletBanner,
         dynamicBanners = dynamicBanners,
         isDynamicBannerLoaded = true,
     )
