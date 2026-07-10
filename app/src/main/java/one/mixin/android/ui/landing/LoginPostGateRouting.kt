@@ -1,5 +1,8 @@
 package one.mixin.android.ui.landing
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+
 enum class LoginAccountRoute {
     SetupName,
     UseLocalDatabase,
@@ -45,3 +48,31 @@ fun routeLoginPinGate(
     } else {
         LoginPinGateResult.Block
     }
+
+fun loginPinGateDismissCallback(
+    ownerScope: CoroutineScope,
+    openNext: suspend (String?) -> Boolean,
+    finish: () -> Unit,
+): (Boolean, String?) -> Unit = { success, pin ->
+    if (routeLoginPinGate(success) == LoginPinGateResult.Continue) {
+        ownerScope.launch {
+            if (openNext(pin)) {
+                finish()
+            }
+        }
+    }
+}
+
+fun <T> reuseOrCreateLoginPinGate(
+    existing: T?,
+    create: () -> T,
+    bind: (T) -> Unit,
+    show: (T) -> Unit,
+): T {
+    val dialog = existing ?: create()
+    bind(dialog)
+    if (existing == null) {
+        show(dialog)
+    }
+    return dialog
+}

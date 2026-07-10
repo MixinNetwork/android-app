@@ -36,6 +36,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.InitializeJob
 import one.mixin.android.job.MixinJobManager
@@ -48,11 +49,10 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.logs.LogViewerBottomSheet
-import one.mixin.android.ui.tip.importedMnemonicWalletIdForPendingImport
+import one.mixin.android.ui.tip.PendingMnemonicResolution
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
-import one.mixin.android.ui.tip.PendingMnemonicRoute
-import one.mixin.android.ui.tip.routePendingMnemonicAfterWalletFetch
+import one.mixin.android.ui.tip.resolvePendingMnemonicAfterWalletFetch
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.util.ErrorHandler
@@ -104,6 +104,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             InitializeActivity.SOURCE_SIGN_UP -> AnalyticsTracker.trackSignUpSignalInit()
             InitializeActivity.SOURCE_LOGIN -> AnalyticsTracker.trackLoginSignalInit()
         }
+        findLoginPinGate()?.let(::bindLoginPinGate)
         checkAndLoad()
     }
 
@@ -164,64 +165,91 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
     private fun showLoginPinGate() {
         defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
         defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
-        if (parentFragmentManager.findFragmentByTag(LoginVerifyBottomSheetDialogFragment.TAG) != null) {
-            return
-        }
-        LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-            onDismissCallback = { success, pin ->
-                Timber.i("LoginFlow login_pin_gate_result success=$success pending_import=${hasPendingImportMnemonic(requireContext())}")
-                if (success) {
-                    lifecycleScope.launch {
-                        openNextAfterPin(pin)
-                        activity?.finish()
-                    }
-                }
-            }
-        }.showNow(parentFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+        reuseOrCreateLoginPinGate(
+            existing = findLoginPinGate(),
+            create = LoginVerifyBottomSheetDialogFragment::newInstance,
+            bind = ::bindLoginPinGate,
+            show = { dialog ->
+                dialog.showNow(parentFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+            },
+        )
     }
 
-    private suspend fun openNextAfterPin(pin: String?) {
-        if (hasPendingImportMnemonic(requireContext())) {
+    private fun findLoginPinGate(): LoginVerifyBottomSheetDialogFragment? =
+        parentFragmentManager.findFragmentByTag(LoginVerifyBottomSheetDialogFragment.TAG) as? LoginVerifyBottomSheetDialogFragment
+
+    private fun bindLoginPinGate(dialog: LoginVerifyBottomSheetDialogFragment) {
+        dialog.onDismissCallback = loginPinGateDismissCallback(
+            ownerScope = this@LoadingFragment.lifecycleScope,
+            openNext = { pin ->
+                Timber.i("LoginFlow login_pin_gate_result success=true pending_import=${hasPendingImportMnemonic(requireContext())}")
+                openNextAfterPin(pin)
+            },
+            finish = { activity?.finish() },
+        )
+    }
+
+    private suspend fun openNextAfterPin(pin: String?): Boolean {
+        return if (hasPendingImportMnemonic(requireContext())) {
             openPendingMnemonicNext(pin)
         } else {
             MainActivity.show(requireContext())
+            true
         }
     }
 
-    private suspend fun openPendingMnemonicNext(pin: String?) {
+    private suspend fun openPendingMnemonicNext(pin: String?): Boolean {
+        val context = requireContext()
         val wallets = web3Repository.syncWalletsFromRoute()
-        val route = routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })
-        Timber.i(
-            "LoginFlow pending_import_wallet_sync_result source=loading route=$route wallet_count=${wallets?.size ?: -1}"
+        val resolution = resolvePendingMnemonicAfterWalletFetch(
+            wallets = wallets,
+            pin = pin,
+            pendingWords = getPendingImportMnemonic(context)?.split(" "),
+            save = { walletId, verifiedPin, words ->
+                CryptoWalletHelper.saveMnemonicWithSpendKey(
+                    context,
+                    tip.getSpendKeyFromPin(context, verifiedPin),
+                    walletId,
+                    words,
+                )
+            },
+            clear = {
+                clearPendingImportMnemonic(context)
+                Timber.i("LoginFlow pending_import_cleared source=loading")
+            },
         )
-        when (route) {
-            PendingMnemonicRoute.WalletHome -> {
-                val context = requireContext()
-                val importedWalletId = importedMnemonicWalletIdForPendingImport(wallets)
-                val pendingMnemonic = getPendingImportMnemonic(context)?.split(" ")
-                if (importedWalletId != null && pin != null && pendingMnemonic != null) {
-                    val saved = runCatching {
-                        CryptoWalletHelper.saveMnemonicWithSpendKey(
-                            context,
-                            tip.getSpendKeyFromPin(context, pin),
-                            importedWalletId,
-                            pendingMnemonic,
-                        )
-                    }.getOrDefault(false)
-                    Timber.i("LoginFlow pending_import_local_key_save source=loading success=$saved")
-                    if (saved) {
-                        clearPendingImportMnemonic(context)
-                        Timber.i("LoginFlow pending_import_cleared source=loading")
-                    }
-                }
-                val walletDestination = importedWalletId?.let { walletId ->
-                    walletDestinationForWallet(walletId, WalletCategory.IMPORTED_MNEMONIC.value)
-                }
+        Timber.i(
+            "LoginFlow pending_import_wallet_sync_result source=loading resolution=$resolution wallet_count=${wallets?.size ?: -1}"
+        )
+        return when (resolution) {
+            is PendingMnemonicResolution.WalletHome -> {
+                val walletDestination = walletDestinationForWallet(
+                    resolution.walletId,
+                    WalletCategory.IMPORTED_MNEMONIC.value,
+                )
                 MainActivity.showWallet(context, walletDestination = walletDestination)
+                true
             }
-            PendingMnemonicRoute.ImportMnemonic -> {
+            PendingMnemonicResolution.ImportMnemonic -> {
                 Timber.i("LoginFlow pending_import_fetch_open source=loading pin_reused=${pin != null}")
                 WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC, pin = pin)
+                true
+            }
+            PendingMnemonicResolution.NeedPin -> {
+                showRetry { showLoginPinGate() }
+                false
+            }
+            PendingMnemonicResolution.LocalSaveFailed -> {
+                toast(R.string.Save_failure)
+                showRetry {
+                    lifecycleScope.launch {
+                        showLoading()
+                        if (openPendingMnemonicNext(pin)) {
+                            activity?.finish()
+                        }
+                    }
+                }
+                false
             }
         }
     }
@@ -299,7 +327,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         }
     }
 
-    private fun showRetry() {
+    private fun showRetry(onRetry: () -> Unit = { checkAndLoad() }) {
         if (viewDestroyed()) return
 
         count = 2
@@ -308,7 +336,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             pb.isVisible = false
             retryTv.isVisible = true
             retryTv.setOnClickListener {
-                checkAndLoad()
+                onRetry()
             }
         }
     }

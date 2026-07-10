@@ -38,4 +38,27 @@ class WalletDestinationTest {
             walletDestinationFromJson(walletDestinationToJson(destination)),
         )
     }
+
+    @Test
+    fun classicDestinationHasClassicSignerTarget() {
+        assertEquals(
+            WalletSignerTarget("classic-id", WalletCategory.CLASSIC.value),
+            WalletDestination.Classic("classic-id").signerTarget(),
+        )
+    }
+
+    @Test
+    fun importedMnemonicDestinationKeepsItsSignerCategory() {
+        assertEquals(
+            WalletSignerTarget("imported-id", WalletCategory.IMPORTED_MNEMONIC.value),
+            WalletDestination.Import("imported-id", WalletCategory.IMPORTED_MNEMONIC.value).signerTarget(),
+        )
+    }
+
+    @Test
+    fun nonSigningDestinationsHaveNoSignerTarget() {
+        assertEquals(null, WalletDestination.Privacy.signerTarget())
+        assertEquals(null, WalletDestination.Watch("watch-id", WalletCategory.WATCH_ADDRESS.value).signerTarget())
+        assertEquals(null, WalletDestination.Safe("safe-id", true, null, null).signerTarget())
+    }
 }

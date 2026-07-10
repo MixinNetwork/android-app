@@ -21,9 +21,28 @@ import org.web3j.utils.Numeric
 import java.math.BigInteger
 import java.time.Instant
 
+const val INITIAL_CLASSIC_WALLET_INDEX = 0
+
+fun classicWalletIndexForCreation(
+    hasClassicWallet: Boolean,
+    maxClassicIndex: Int,
+): Int = if (hasClassicWallet) maxClassicIndex + 1 else INITIAL_CLASSIC_WALLET_INDEX
+
+suspend fun <T> ensureInitialClassicWallet(
+    syncWallets: suspend () -> List<T>?,
+    isClassicWallet: (T) -> Boolean,
+    createClassicWallet: suspend (Int) -> Unit,
+): List<T>? {
+    val syncedWallets = syncWallets() ?: return null
+    if (syncedWallets.any(isClassicWallet)) return syncedWallets
+    createClassicWallet(INITIAL_CLASSIC_WALLET_INDEX)
+    return syncWallets() ?: syncedWallets
+}
+
 suspend fun buildClassicWalletRequest(
     web3Repository: Web3Repository,
     spendKey: ByteArray,
+    classicIndex: Int,
 ): WalletRequest {
     val names = web3Repository.getAllWalletNames(
         listOf(
@@ -32,7 +51,6 @@ suspend fun buildClassicWalletRequest(
             WalletCategory.IMPORTED_MNEMONIC.value,
         )
     )
-    val classicIndex = web3Repository.getClassicWalletMaxIndex() + 1
     val name = nextCommonWalletName(names)
     val evmAddress = privateKeyToAddress(spendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex)
     val solAddress = privateKeyToAddress(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex)

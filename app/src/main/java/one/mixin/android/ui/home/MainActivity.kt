@@ -155,6 +155,7 @@ import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.landing.RestoreActivity
+import one.mixin.android.ui.landing.reuseOrCreateLoginPinGate
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
 import one.mixin.android.ui.search.SearchMessageFragment
@@ -164,9 +165,8 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
-import one.mixin.android.ui.tip.PendingMnemonicRoute
-import one.mixin.android.ui.tip.importedMnemonicWalletIdForPendingImport
-import one.mixin.android.ui.tip.routePendingMnemonicAfterWalletFetch
+import one.mixin.android.ui.tip.PendingMnemonicResolution
+import one.mixin.android.ui.tip.resolvePendingMnemonicAfterWalletFetch
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
@@ -355,6 +355,13 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         setContentView(binding.root)
 
         initFragmentsFromSavedState(restoreState)
+        findLoginPinGate()?.let { dialog ->
+            if (hasPendingImportMnemonic(this)) {
+                bindPendingMnemonicPinGate(dialog)
+            } else if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
+                bindLoginVerificationPinGate(dialog)
+            }
+        }
 
         val account = Session.getAccount()
         account?.let {
@@ -416,16 +423,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     if (hasPendingImportMnemonic(this@MainActivity)) {
                         if (isLoginVerified) {
                             AnalyticsTracker.trackLoginPinVerify("pin_verify")
-                            LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-                                onDismissCallback = { success, pin ->
-                                    if (success) {
-                                        defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
-                                        lifecycleScope.launch {
-                                            openPendingMnemonicNext(pin)
-                                        }
-                                    }
-                                }
-                            }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                            showPendingMnemonicPinGate()
                         } else {
                             openPendingMnemonicNext()
                         }
@@ -433,13 +431,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     }
                     if (isLoginVerified) {
                         AnalyticsTracker.trackLoginPinVerify("pin_verify")
-                        LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-                            onDismissCallback = { success, _ ->
-                                if (success) {
-                                    defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
-                                }
-                            }
-                        }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                        showLoginVerificationPinGate()
                     }
                     if (shouldGoWallet && !shouldBlockNavigation) {
                         openWalletTabFromLogin()
@@ -476,32 +468,97 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
     }
 
-    private suspend fun openPendingMnemonicNext(pin: String? = null) {
-        val wallets = web3Repository.syncWalletsFromRoute()
-        when (routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })) {
-            PendingMnemonicRoute.WalletHome -> {
-                val importedWalletId = importedMnemonicWalletIdForPendingImport(wallets)
-                val pendingMnemonic = getPendingImportMnemonic(this)?.split(" ")
-                if (importedWalletId != null && pin != null && pendingMnemonic != null) {
-                    val saved = runCatching {
-                        CryptoWalletHelper.saveMnemonicWithSpendKey(
-                            this@MainActivity,
-                            tip.getSpendKeyFromPin(this@MainActivity, pin),
-                            importedWalletId,
-                            pendingMnemonic,
-                        )
-                    }.getOrDefault(false)
-                    if (saved) {
-                        clearPendingImportMnemonic(this)
-                    }
+    private fun showPendingMnemonicPinGate() {
+        reuseOrCreateLoginPinGate(
+            existing = findLoginPinGate(),
+            create = LoginVerifyBottomSheetDialogFragment::newInstance,
+            bind = ::bindPendingMnemonicPinGate,
+            show = { dialog ->
+                dialog.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+            },
+        )
+    }
+
+    private fun findLoginPinGate(): LoginVerifyBottomSheetDialogFragment? =
+        supportFragmentManager.findFragmentByTag(LoginVerifyBottomSheetDialogFragment.TAG) as? LoginVerifyBottomSheetDialogFragment
+
+    private fun bindPendingMnemonicPinGate(dialog: LoginVerifyBottomSheetDialogFragment) {
+        dialog.onDismissCallback = { success, pin ->
+            if (success) {
+                this@MainActivity.lifecycleScope.launch {
+                    openPendingMnemonicNext(pin)
                 }
-                val walletDestination = importedWalletId?.let { walletId ->
-                    walletDestinationForWallet(walletId, WalletCategory.IMPORTED_MNEMONIC.value)
-                }
-                openWalletTabFromLogin(walletDestination)
             }
-            PendingMnemonicRoute.ImportMnemonic -> {
+        }
+    }
+
+    private fun showLoginVerificationPinGate() {
+        reuseOrCreateLoginPinGate(
+            existing = findLoginPinGate(),
+            create = LoginVerifyBottomSheetDialogFragment::newInstance,
+            bind = ::bindLoginVerificationPinGate,
+            show = { dialog ->
+                dialog.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+            },
+        )
+    }
+
+    private fun bindLoginVerificationPinGate(dialog: LoginVerifyBottomSheetDialogFragment) {
+        dialog.onDismissCallback = { success, _ ->
+            if (success) {
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+            }
+        }
+    }
+
+    private suspend fun openPendingMnemonicNext(pin: String? = null): Boolean {
+        val wallets = web3Repository.syncWalletsFromRoute()
+        val resolution = resolvePendingMnemonicAfterWalletFetch(
+            wallets = wallets,
+            pin = pin,
+            pendingWords = getPendingImportMnemonic(this)?.split(" "),
+            save = { walletId, verifiedPin, words ->
+                CryptoWalletHelper.saveMnemonicWithSpendKey(
+                    this@MainActivity,
+                    tip.getSpendKeyFromPin(this@MainActivity, verifiedPin),
+                    walletId,
+                    words,
+                )
+            },
+            clear = { clearPendingImportMnemonic(this) },
+        )
+        return when (resolution) {
+            is PendingMnemonicResolution.WalletHome -> {
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                val walletDestination = walletDestinationForWallet(
+                    resolution.walletId,
+                    WalletCategory.IMPORTED_MNEMONIC.value,
+                )
+                openWalletTabFromLogin(walletDestination)
+                true
+            }
+            PendingMnemonicResolution.ImportMnemonic -> {
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
                 WalletSecurityActivity.show(this, WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC, pin = pin)
+                true
+            }
+            PendingMnemonicResolution.NeedPin -> {
+                showPendingMnemonicPinGate()
+                false
+            }
+            PendingMnemonicResolution.LocalSaveFailed -> {
+                if (pin == null) {
+                    showPendingMnemonicPinGate()
+                } else {
+                    Snackbar.make(binding.container, R.string.Save_failure, Snackbar.LENGTH_INDEFINITE)
+                        .setAction(R.string.Retry) {
+                            lifecycleScope.launch {
+                                openPendingMnemonicNext(pin)
+                            }
+                        }
+                        .show()
+                }
+                false
             }
         }
     }
@@ -514,6 +571,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         }
         binding.bottomNav.selectedItemId = R.id.nav_wallet
         switchToDestination(NavigationController.Wallet)
+        intent.removeExtra(WALLET_DESTINATION)
         lastBottomNavItemId = R.id.nav_wallet
         defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
     }
@@ -1149,8 +1207,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 is NavigationController.Market -> MarketFragment()
             }
         } else if (fragment is WalletFragment) {
-            // Ensure wallet fragment refreshes its content when switching back
-            fragment.update()
+            fragment.selectWalletDestination(loadInitialWalletDestination())
         }
 
         navigationController.navigate(fm, destination, fragment)

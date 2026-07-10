@@ -9,6 +9,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletMissingBtcAddressIntroBinding
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
+import one.mixin.android.ui.landing.reuseOrCreateLoginPinGate
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -25,12 +26,24 @@ class WalletMissingBtcAddressFragment : Fragment(R.layout.fragment_wallet_missin
         binding.unlockByPin.setOnClickListener {
             showLoginVerify()
         }
+        findLoginVerify()?.let(::bindLoginVerify)
     }
 
     private fun showLoginVerify() {
-        val fragment = parentFragmentManager.findFragmentByTag(LoginVerifyBottomSheetDialogFragment.TAG)
-        if (fragment != null) return
-        val dialog = LoginVerifyBottomSheetDialogFragment.newInstance()
+        reuseOrCreateLoginPinGate(
+            existing = findLoginVerify(),
+            create = LoginVerifyBottomSheetDialogFragment::newInstance,
+            bind = ::bindLoginVerify,
+            show = { dialog ->
+                dialog.showNow(parentFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+            },
+        )
+    }
+
+    private fun findLoginVerify(): LoginVerifyBottomSheetDialogFragment? =
+        parentFragmentManager.findFragmentByTag(LoginVerifyBottomSheetDialogFragment.TAG) as? LoginVerifyBottomSheetDialogFragment
+
+    private fun bindLoginVerify(dialog: LoginVerifyBottomSheetDialogFragment) {
         dialog.onDismissCallback = { isSuccess: Boolean, _ ->
             if (isSuccess) {
                 this@WalletMissingBtcAddressFragment.lifecycleScope.launch {
@@ -38,7 +51,6 @@ class WalletMissingBtcAddressFragment : Fragment(R.layout.fragment_wallet_missin
                 }
             }
         }
-        dialog.showNow(parentFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
     }
 
     companion object {

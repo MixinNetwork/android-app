@@ -50,7 +50,9 @@ import one.mixin.android.tip.getSpendKeyFromPin
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.wallet.INITIAL_CLASSIC_WALLET_INDEX
 import one.mixin.android.ui.wallet.buildClassicWalletRequest
+import one.mixin.android.ui.wallet.ensureInitialClassicWallet
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
@@ -272,7 +274,14 @@ class TipFlowInteractor @Inject internal constructor(
             }
         }
         if (shouldOpenMainActivity) {
-            openNextAfterPin(context, tipBundle.tipType == TipType.Create, pin)
+            if (!openNextAfterPin(context, tipBundle.tipType == TipType.Create, pin)) {
+                val reason = context.getString(R.string.Save_failure)
+                tipBundle.pin = null
+                tipBundle.oldPin = null
+                onShowMessage(reason)
+                onStepChanged(RetryRegister(null, reason))
+                return false
+            }
         }
         return true
     }
@@ -280,94 +289,99 @@ class TipFlowInteractor @Inject internal constructor(
     private suspend fun openNextAfterPin(
         context: Context,
         skipImportPin: Boolean = false,
-        pin: String? = null,
-    ) {
+        pin: String,
+    ): Boolean {
         val activity = context.findFragmentActivityOrNull()
         val syncedWallets = ensureClassicWallet(context, pin)
         if (!hasPendingImportMnemonic(context)) {
             MainActivity.show(context)
-            return
+            return true
         }
         val wallets = syncedWallets ?: web3Repository.syncWalletsFromRoute()
-        val route = routePendingMnemonicAfterWalletFetch(wallets?.map { it.category })
-        Timber.i(
-            "LoginFlow pending_import_wallet_sync_result source=tip route=$route wallet_count=${wallets?.size ?: -1}"
+        val resolution = resolvePendingMnemonicAfterWalletFetch(
+            wallets = wallets,
+            pin = pin,
+            pendingWords = getPendingImportMnemonic(context)?.split(" "),
+            save = { walletId, verifiedPin, words ->
+                CryptoWalletHelper.saveMnemonicWithSpendKey(
+                    context,
+                    tip.getSpendKeyFromPin(context, verifiedPin),
+                    walletId,
+                    words,
+                )
+            },
+            clear = {
+                clearPendingImportMnemonic(context)
+                Timber.i("LoginFlow pending_import_cleared source=tip")
+            },
         )
-        when (route) {
-            PendingMnemonicRoute.WalletHome -> {
-                val importedWalletId = importedMnemonicWalletIdForPendingImport(wallets)
-                val pendingMnemonic = getPendingImportMnemonic(context)?.split(" ")
-                if (importedWalletId != null && pin != null && pendingMnemonic != null) {
-                    val saved = runCatching {
-                        CryptoWalletHelper.saveMnemonicWithSpendKey(
-                            context,
-                            tip.getSpendKeyFromPin(context, pin),
-                            importedWalletId,
-                            pendingMnemonic,
-                        )
-                    }.getOrDefault(false)
-                    Timber.i("LoginFlow pending_import_local_key_save source=tip success=$saved")
-                    if (saved) {
-                        clearPendingImportMnemonic(context)
-                        Timber.i("LoginFlow pending_import_cleared source=tip")
-                    }
-                }
-                val walletDestination = importedWalletId?.let { walletId ->
-                    walletDestinationForWallet(walletId, WalletCategory.IMPORTED_MNEMONIC.value)
-                }
+        Timber.i(
+            "LoginFlow pending_import_wallet_sync_result source=tip resolution=$resolution wallet_count=${wallets?.size ?: -1}"
+        )
+        return when (resolution) {
+            is PendingMnemonicResolution.WalletHome -> {
+                val walletDestination = walletDestinationForWallet(
+                    resolution.walletId,
+                    WalletCategory.IMPORTED_MNEMONIC.value,
+                )
                 MainActivity.showWallet(context, walletDestination = walletDestination)
+                true
             }
-            PendingMnemonicRoute.ImportMnemonic -> {
+            PendingMnemonicResolution.ImportMnemonic -> {
                 if (activity != null) {
                     val mode = if (skipImportPin) {
                         WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC
                     } else {
                         WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC
                     }
-                    Timber.i("LoginFlow pending_import_fetch_open source=tip mode=$mode pin_reused=${pin != null}")
+                    Timber.i("LoginFlow pending_import_fetch_open source=tip mode=$mode pin_reused=true")
                     WalletSecurityActivity.show(activity, mode, pin = pin)
                 } else {
                     Timber.i("LoginFlow pending_import_fetch_open_failed source=tip reason=no_activity")
                     MainActivity.show(context)
                 }
+                true
             }
+            PendingMnemonicResolution.NeedPin,
+            PendingMnemonicResolution.LocalSaveFailed -> false
         }
     }
 
-    private suspend fun ensureClassicWallet(
+    internal suspend fun ensureClassicWallet(
         context: Context,
-        pin: String?,
+        pin: String,
     ) = runCatching {
-        val wallets = web3Repository.syncWalletsFromRoute()
-        if (wallets?.any { it.category == WalletCategory.CLASSIC.value } == true || pin == null) {
-            return@runCatching wallets
-        }
-        val spendKey = tip.getSpendKeyFromPin(context, pin)
-        val walletRequest = buildClassicWalletRequest(web3Repository, spendKey)
-        requestRouteAPI(
-            invokeNetwork = { web3Repository.createWallet(walletRequest) },
-            successBlock = { response ->
-                response.data?.let { wallet ->
-                    web3Repository.insertWallet(wallet)
-                    wallet.addresses?.takeIf { it.isNotEmpty() }?.let { addresses ->
-                        web3Repository.insertAddressList(addresses)
-                    }
-                }
-                Timber.i("LoginFlow classic_wallet_create_success")
+        val refreshedWallets = ensureInitialClassicWallet(
+            syncWallets = { web3Repository.syncWalletsFromRoute() },
+            isClassicWallet = { wallet -> wallet.category == WalletCategory.CLASSIC.value },
+            createClassicWallet = { classicIndex ->
+                val spendKey = tip.getSpendKeyFromPin(context, pin)
+                val walletRequest = buildClassicWalletRequest(web3Repository, spendKey, classicIndex)
+                requestRouteAPI(
+                    invokeNetwork = { web3Repository.createWallet(walletRequest) },
+                    successBlock = { response ->
+                        response.data?.let { wallet ->
+                            web3Repository.insertWallet(wallet)
+                            wallet.addresses?.takeIf { it.isNotEmpty() }?.let { addresses ->
+                                web3Repository.insertAddressList(addresses)
+                            }
+                        }
+                        Timber.i("LoginFlow classic_wallet_create_success index=$classicIndex")
+                    },
+                    failureBlock = { response ->
+                        Timber.e("Failed to create classic wallet: ${response.errorCode} - ${response.errorDescription}")
+                        false
+                    },
+                    exceptionBlock = { throwable ->
+                        Timber.e(throwable, "Failed to create classic wallet")
+                        true
+                    },
+                    requestSession = { userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
+                )
             },
-            failureBlock = { response ->
-                Timber.e("Failed to create classic wallet: ${response.errorCode} - ${response.errorDescription}")
-                false
-            },
-            exceptionBlock = { throwable ->
-                Timber.e(throwable, "Failed to create classic wallet")
-                true
-            },
-            requestSession = { userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
         )
-        val refreshedWallets = web3Repository.syncWalletsFromRoute() ?: wallets
         Timber.i(
-            "LoginFlow classic_wallet_ensure_complete has_classic=${refreshedWallets?.any { it.category == WalletCategory.CLASSIC.value } == true} wallet_count=${refreshedWallets?.size ?: -1}"
+            "LoginFlow classic_wallet_ensure_complete has_classic=${refreshedWallets?.any { it.category == WalletCategory.CLASSIC.value } == true} wallet_count=${refreshedWallets?.size ?: -1} initial_index=$INITIAL_CLASSIC_WALLET_INDEX"
         )
         refreshedWallets
     }.getOrElse { throwable ->

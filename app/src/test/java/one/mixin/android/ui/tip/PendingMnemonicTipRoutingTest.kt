@@ -1,6 +1,8 @@
 package one.mixin.android.ui.tip
 
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.assertNull
 import org.junit.Test
@@ -83,6 +85,87 @@ class PendingMnemonicTipRoutingTest {
             ),
         )
         assertNull(importedMnemonicWalletIdForPendingImport(null))
+    }
+
+    @Test
+    fun successfulLocalSaveClearsPendingAndRoutesToWalletHome() = runBlocking {
+        var cleared = false
+        val result = resolvePendingMnemonicAfterWalletFetch(
+            wallets = listOf(testWallet("imported-id", WalletCategory.IMPORTED_MNEMONIC.value)),
+            pin = "123456",
+            pendingWords = listOf("word"),
+            save = { _, _, _ -> true },
+            clear = { cleared = true },
+        )
+
+        assertEquals(PendingMnemonicResolution.WalletHome("imported-id"), result)
+        assertTrue(cleared)
+    }
+
+    @Test
+    fun failedLocalSaveDoesNotClearPendingOrRouteToWalletHome() = runBlocking {
+        var cleared = false
+        val result = resolvePendingMnemonicAfterWalletFetch(
+            wallets = listOf(testWallet("imported-id", WalletCategory.IMPORTED_MNEMONIC.value)),
+            pin = "123456",
+            pendingWords = listOf("word"),
+            save = { _, _, _ -> false },
+            clear = { cleared = true },
+        )
+
+        assertEquals(PendingMnemonicResolution.LocalSaveFailed, result)
+        assertFalse(cleared)
+    }
+
+    @Test
+    fun localSaveExceptionDoesNotClearPendingOrRouteToWalletHome() = runBlocking {
+        var cleared = false
+        val result = resolvePendingMnemonicAfterWalletFetch(
+            wallets = listOf(testWallet("imported-id", WalletCategory.IMPORTED_MNEMONIC.value)),
+            pin = "123456",
+            pendingWords = listOf("word"),
+            save = { _, _, _ -> error("save failed") },
+            clear = { cleared = true },
+        )
+
+        assertEquals(PendingMnemonicResolution.LocalSaveFailed, result)
+        assertFalse(cleared)
+    }
+
+    @Test
+    fun missingPinRequestsVerificationWithoutSaving() = runBlocking {
+        var saved = false
+        val result = resolvePendingMnemonicAfterWalletFetch(
+            wallets = listOf(testWallet("imported-id", WalletCategory.IMPORTED_MNEMONIC.value)),
+            pin = null,
+            pendingWords = listOf("word"),
+            save = { _, _, _ ->
+                saved = true
+                true
+            },
+            clear = {},
+        )
+
+        assertEquals(PendingMnemonicResolution.NeedPin, result)
+        assertFalse(saved)
+    }
+
+    @Test
+    fun missingImportedWalletRoutesToImportWithoutSaving() = runBlocking {
+        var saved = false
+        val result = resolvePendingMnemonicAfterWalletFetch(
+            wallets = listOf(testWallet("classic-id", WalletCategory.CLASSIC.value)),
+            pin = "123456",
+            pendingWords = listOf("word"),
+            save = { _, _, _ ->
+                saved = true
+                true
+            },
+            clear = {},
+        )
+
+        assertEquals(PendingMnemonicResolution.ImportMnemonic, result)
+        assertFalse(saved)
     }
 
     private fun testWallet(

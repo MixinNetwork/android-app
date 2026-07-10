@@ -23,6 +23,7 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.wallet.buildClassicWalletRequest
+import one.mixin.android.ui.wallet.classicWalletIndexForCreation
 import one.mixin.android.ui.wallet.createSignedWeb3AddressRequest
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.FetchWalletState
@@ -603,7 +604,12 @@ class FetchWalletViewModel @Inject constructor(
             try {
                 _importedWalletDestination.value = null
                 _state.value = FetchWalletState.IMPORTING
-                val walletRequest = buildClassicWalletRequest(web3Repository, currentSpendKey)
+                val hasClassicWallet = web3Repository.getClassicWalletId() != null
+                val classicIndex = classicWalletIndexForCreation(
+                    hasClassicWallet = hasClassicWallet,
+                    maxClassicIndex = web3Repository.getClassicWalletMaxIndex(),
+                )
+                val walletRequest = buildClassicWalletRequest(web3Repository, currentSpendKey, classicIndex)
                 saveImportedWallet(walletRequest, null)
             } catch (e: Exception) {
                 Timber.e(e, "Failed to import wallet")
