@@ -63,6 +63,52 @@ class PendingMnemonicTipRoutingTest {
     }
 
     @Test
+    fun savesEveryMatchingImportedMnemonicWalletBeforeClearingPending() = runBlocking {
+        val savedWalletIds = mutableListOf<String>()
+        var cleared = false
+        val result = resolvePendingMnemonicAfterWalletFetch(
+            wallets = listOf(
+                matchingImportedWallet("first-id", index = 0),
+                matchingImportedWallet("second-id", index = 1),
+            ),
+            pin = "123456",
+            pendingWords = pendingMnemonicWords,
+            save = { walletId, _, _ ->
+                savedWalletIds += walletId
+                true
+            },
+            clear = { cleared = true },
+        )
+
+        assertEquals(PendingMnemonicResolution.WalletHome("first-id"), result)
+        assertEquals(listOf("first-id", "second-id"), savedWalletIds)
+        assertTrue(cleared)
+    }
+
+    @Test
+    fun laterLocalSaveFailureKeepsPendingForEveryMatchingWallet() = runBlocking {
+        val savedWalletIds = mutableListOf<String>()
+        var cleared = false
+        val result = resolvePendingMnemonicAfterWalletFetch(
+            wallets = listOf(
+                matchingImportedWallet("first-id", index = 0),
+                matchingImportedWallet("second-id", index = 1),
+            ),
+            pin = "123456",
+            pendingWords = pendingMnemonicWords,
+            save = { walletId, _, _ ->
+                savedWalletIds += walletId
+                walletId != "second-id"
+            },
+            clear = { cleared = true },
+        )
+
+        assertEquals(PendingMnemonicResolution.LocalSaveFailed, result)
+        assertEquals(listOf("first-id", "second-id"), savedWalletIds)
+        assertFalse(cleared)
+    }
+
+    @Test
     fun missingPinRequestsVerificationWithoutSaving() = runBlocking {
         var saved = false
         val result = resolvePendingMnemonicAfterWalletFetch(
@@ -139,7 +185,7 @@ class PendingMnemonicTipRoutingTest {
         updatedAt = "",
     )
 
-    private fun matchingImportedWallet(id: String): Web3Wallet {
+    private fun matchingImportedWallet(id: String, index: Int = 0): Web3Wallet {
         val wallet = testWallet(id, WalletCategory.IMPORTED_MNEMONIC.value)
         wallet.addresses = listOf(
             Web3Address(
@@ -157,8 +203,9 @@ class PendingMnemonicTipRoutingTest {
                 destination = CryptoWalletHelper.mnemonicToAddress(
                     mnemonic = pendingMnemonicWords.joinToString(" "),
                     chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                    index = index,
                 ),
-                path = "m/44'/60'/0'/0/0",
+                path = "m/44'/60'/0'/0/$index",
                 createdAt = "",
             ),
         )

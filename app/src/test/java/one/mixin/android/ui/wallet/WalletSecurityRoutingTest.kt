@@ -52,4 +52,12 @@ class WalletSecurityRoutingTest {
             importWalletCategoryForMode(WalletSecurityActivity.Mode.IMPORT_MNEMONIC),
         )
     }
+
+    @Test
+    fun `pending mnemonic import blocks back only during import steps`() {
+        assertEquals(true, shouldBlockWalletSecurityBack(WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC, isImportStep = true))
+        assertEquals(true, shouldBlockWalletSecurityBack(WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC, isImportStep = true))
+        assertEquals(false, shouldBlockWalletSecurityBack(WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC, isImportStep = false))
+        assertEquals(false, shouldBlockWalletSecurityBack(WalletSecurityActivity.Mode.IMPORT_MNEMONIC, isImportStep = true))
+    }
 }

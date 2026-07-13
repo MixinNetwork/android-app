@@ -92,14 +92,32 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         prepareAndFetch()
         viewLifecycleOwner.lifecycleScope.launch {
             viewModel.state.collect { state ->
-                if (state == FetchWalletState.SELECT) {
-                    parentFragmentManager.beginTransaction()
-                        .replace(
-                            R.id.container,
-                            SelectWalletFragment.newInstance(importCustomerServiceSource, hideCloseButton),
-                            SelectWalletFragment.TAG
-                        )
-                        .commit()
+                when (state) {
+                    FetchWalletState.SELECT -> {
+                        parentFragmentManager.beginTransaction()
+                            .replace(
+                                R.id.container,
+                                SelectWalletFragment.newInstance(importCustomerServiceSource, hideCloseButton),
+                                SelectWalletFragment.TAG
+                            )
+                            .commit()
+                    }
+                    FetchWalletState.IMPORT_SUCCESS,
+                    FetchWalletState.IMPORT_ERROR
+                    -> {
+                        parentFragmentManager.beginTransaction()
+                            .replace(
+                                R.id.container,
+                                ImportingWalletFragment.newInstance(
+                                    customerServiceSource = importCustomerServiceSource,
+                                    hideCloseButton = hideCloseButton,
+                                    reuseExistingMnemonic = true,
+                                ),
+                                ImportingWalletFragment.TAG
+                            )
+                            .commit()
+                    }
+                    else -> Unit
                 }
             }
         }

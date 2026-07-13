@@ -154,6 +154,27 @@ fun MnemonicPhraseInput(
             else -> true
         }
     }
+    fun completedInputError(words: List<String>): String? {
+        return when (state) {
+            MnemonicState.Input,
+            MnemonicState.Import -> {
+                if (isValidMnemonicForCurrentMode(words)) validate?.invoke(words) else invalidMnemonicPhrase
+            }
+            MnemonicState.Verify -> {
+                if (mnemonicList == words) validate?.invoke(words) else invalidMnemonicPhrase
+            }
+            MnemonicState.Display -> null
+        }
+    }
+    fun updateInputs(value: List<String>) {
+        inputs = value
+        val words = inputs.map(String::trim)
+        errorInfo = if (words.all { MnemonicCode.INSTANCE.wordList.contains(it) }) {
+            completedInputError(words).orEmpty()
+        } else {
+            ""
+        }
+    }
     val suggestedWords = if (
         focusIndex >= 0 &&
         currentText.isNotBlank() &&
@@ -226,7 +247,7 @@ fun MnemonicPhraseInput(
                                 WordCountButton(
                                     onClick = {
                                         legacy = false
-                                        inputs = List(shortWordCount) { "" }
+                                        updateInputs(List(shortWordCount) { "" })
                                     },
                                     border = BorderStroke(
                                         width = 1.dp,
@@ -239,7 +260,7 @@ fun MnemonicPhraseInput(
                                 WordCountButton(
                                     onClick = {
                                         legacy = true
-                                        inputs = List(legacyWordCount) { "" }
+                                        updateInputs(List(legacyWordCount) { "" })
                                     },
                                     border = BorderStroke(
                                         width = 1.dp,
@@ -355,7 +376,7 @@ fun MnemonicPhraseInput(
                                             },
                                             value = inputs[index],
                                             onValueChange = { newText ->
-                                                inputs = inputs.toMutableList().also { it[index] = newText }
+                                                updateInputs(inputs.toMutableList().also { it[index] = newText })
                                                 currentText = newText
                                             },
                                             singleLine = true,
@@ -506,12 +527,12 @@ fun MnemonicPhraseInput(
                                                     when {
                                                         words.size == legacyWordCount && isValidMnemonicForCurrentMode(words) -> {
                                                             legacy = true
-                                                            inputs = words
+                                                            updateInputs(words)
                                                         }
 
                                                         words.size == shortWordCount && isValidMnemonicForCurrentMode(words) -> {
                                                             legacy = false
-                                                            inputs = words
+                                                            updateInputs(words)
                                                         }
 
                                                         else -> {
@@ -559,7 +580,7 @@ fun MnemonicPhraseInput(
                                         .clip(RoundedCornerShape(4.dp))
                                         .clickable(enabled = state == MnemonicState.Display || clearEnabled) {
                                             if (state == MnemonicState.Input || state == MnemonicState.Verify || state == MnemonicState.Import) {
-                                                inputs = inputs.map { "" }
+                                                updateInputs(inputs.map { "" })
                                             } else if (state == MnemonicState.Display) {
                                                 val content = mnemonicList.joinToString(" ")
                                                 context.copySensitiveTextToClipboard(content, coroutineScope)
@@ -630,7 +651,7 @@ fun MnemonicPhraseInput(
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                         if (showImportSafety) {
-                            Spacer(modifier = Modifier.height(8.dp))
+                            Spacer(modifier = Modifier.height(60.dp))
                             Text(
                                 modifier = Modifier.align(Alignment.Start),
                                 text = stringResource(R.string.mnemonic_login_security_title),
@@ -803,7 +824,7 @@ fun MnemonicPhraseInput(
                     InputBar(suggestedWords) { word ->
                         val maxInput = inputs.size
                         if (focusIndex in 0 until maxInput) {
-                            inputs = inputs.toMutableList().also { it[focusIndex] = word }
+                            updateInputs(inputs.toMutableList().also { it[focusIndex] = word })
                         }
                         if (focusIndex == maxInput - 1) {
                             keyboardController?.hide()

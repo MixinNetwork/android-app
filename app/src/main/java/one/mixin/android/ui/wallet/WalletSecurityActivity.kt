@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.app.Activity
 import android.os.Bundle
 import android.view.WindowManager
+import androidx.activity.OnBackPressedCallback
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.crypto.getPendingImportMnemonic
@@ -23,6 +24,18 @@ class WalletSecurityActivity : BlazeBaseActivity() {
             window?.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
         }
         setContentView(R.layout.activity_add_wallet)
+        onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (shouldBlockWalletSecurityBack(mode, isImportStep = isPendingMnemonicImportStep())) {
+                        Timber.i("LoginFlow wallet_security_back_ignored mode=$mode")
+                    } else {
+                        finish()
+                    }
+                }
+            },
+        )
         if (savedInstanceState == null) {
             val chainId = intent.getStringExtra(EXTRA_CHAIN_ID)
             val walletId = intent.getStringExtra(EXTRA_WALLET_ID)
@@ -111,8 +124,13 @@ class WalletSecurityActivity : BlazeBaseActivity() {
     private fun Mode.requiresSecureWindow(): Boolean =
         this == Mode.VIEW_MNEMONIC || this == Mode.VIEW_PRIVATE_KEY
 
-    override fun onBackPressed() {
-        super.onBackPressed()
-        finish()
-    }
+    private fun isPendingMnemonicImportStep(): Boolean =
+        when (supportFragmentManager.findFragmentById(R.id.container)) {
+            is FetchingWalletFragment,
+            is SelectWalletFragment,
+            is ImportingWalletFragment,
+            -> true
+            else -> false
+        }
+
 }

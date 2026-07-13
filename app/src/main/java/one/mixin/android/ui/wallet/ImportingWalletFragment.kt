@@ -25,6 +25,7 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
     private val viewModel by activityViewModels<FetchWalletViewModel>()
     private val customerServiceSource: String? by lazy { arguments?.getString(ARG_CUSTOMER_SERVICE_SOURCE) }
     private val hideCloseButton: Boolean by lazy { arguments?.getBoolean(ARG_HIDE_CLOSE_BUTTON, false) ?: false }
+    private val reuseExistingMnemonic: Boolean by lazy { arguments?.getBoolean(ARG_REUSE_EXISTING_MNEMONIC, false) ?: false }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -100,7 +101,7 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                     ?: WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY.ordinal
             val mode = WalletSecurityActivity.Mode.entries[modeOrdinal]
             viewModel.importWallet(key, chainId, mode, walletName)
-        } else {
+        } else if (!reuseExistingMnemonic) {
             viewModel.startImporting()
         }
     }
@@ -114,15 +115,18 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         private const val ARG_FROM_DETAIL = "arg_from_detail"
         private const val ARG_CUSTOMER_SERVICE_SOURCE = "arg_customer_service_source"
         private const val ARG_HIDE_CLOSE_BUTTON = "arg_hide_close_button"
+        private const val ARG_REUSE_EXISTING_MNEMONIC = "arg_reuse_existing_mnemonic"
 
         fun newInstance(
             customerServiceSource: String? = null,
             hideCloseButton: Boolean = false,
+            reuseExistingMnemonic: Boolean = false,
         ): ImportingWalletFragment {
             return ImportingWalletFragment().apply {
                 arguments = Bundle().apply {
                     customerServiceSource?.let { putString(ARG_CUSTOMER_SERVICE_SOURCE, it) }
                     putBoolean(ARG_HIDE_CLOSE_BUTTON, hideCloseButton)
+                    putBoolean(ARG_REUSE_EXISTING_MNEMONIC, reuseExistingMnemonic)
                 }
             }
         }

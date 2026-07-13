@@ -45,3 +45,12 @@ fun importWalletCategoryForMode(mode: WalletSecurityActivity.Mode): String =
         -> WalletCategory.IMPORTED_MNEMONIC.value
         else -> WalletCategory.IMPORTED_MNEMONIC.value
     }
+
+fun shouldBlockWalletSecurityBack(
+    mode: WalletSecurityActivity.Mode,
+    isImportStep: Boolean,
+): Boolean =
+    isImportStep && (
+        mode == WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC ||
+            mode == WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC
+        )

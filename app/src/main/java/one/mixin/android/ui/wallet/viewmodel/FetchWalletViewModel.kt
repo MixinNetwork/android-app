@@ -29,11 +29,13 @@ import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.IndexedWallet
 import one.mixin.android.ui.wallet.components.WalletDestination
+import one.mixin.android.ui.wallet.components.defaultWalletSelection
 import one.mixin.android.ui.wallet.components.fetchWalletFailureState
 import one.mixin.android.ui.wallet.components.fetchWalletMissingMnemonicState
 import one.mixin.android.ui.wallet.components.shouldStartWalletFetch
 import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.ui.tip.matchesMnemonicWalletAddresses
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.util.getMixinErrorStringByCode
@@ -176,6 +178,9 @@ class FetchWalletViewModel @Inject constructor(
                     _state.value = fetchWalletMissingMnemonicState()
                     return@launch
                 }
+                if (restoreExistingMnemonicWallets(mnemonic)) {
+                    return@launch
+                }
                 Timber.i("LoginFlow wallet_fetch_start offset=$offset import_category=$importCategory")
                 if (localMaxIndex == 0) {
                     val names = web3Repository.getAllWalletNames(listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
@@ -217,6 +222,7 @@ class FetchWalletViewModel @Inject constructor(
                     if (tokensMap.isEmpty()) {
                         if (offset == 0) {
                             _wallets.value = listOf(wallets[0])
+                            _selectedWalletInfos.value = defaultWalletSelection(_wallets.value)
                         }
                         Timber.i("LoginFlow wallet_fetch_result success=true offset=$offset found_wallets=0 default_wallet=${offset == 0}")
                     } else {
@@ -239,9 +245,12 @@ class FetchWalletViewModel @Inject constructor(
                         if (offset == 0 && walletInfos.isEmpty()) {
                             localMaxIndex ++
                             _wallets.value = listOf(wallets[0])
+                            _selectedWalletInfos.value = defaultWalletSelection(_wallets.value)
                         } else {
-                            _selectedWalletInfos.value = (walletInfos.filter { it.exists.not() } + _selectedWalletInfos.value).toSet()
                             _wallets.value = _wallets.value + walletInfos
+                            _selectedWalletInfos.value = (
+                                walletInfos.filter { !it.exists } + _selectedWalletInfos.value
+                            ).toSet()
                         }
                         Timber.i(
                             "LoginFlow wallet_fetch_result success=true offset=$offset found_wallets=${walletInfos.size} selected_count=${_selectedWalletInfos.value.size}"
@@ -263,6 +272,52 @@ class FetchWalletViewModel @Inject constructor(
                 _state.value = fetchWalletFailureState(_wallets.value.isNotEmpty())
             }
         }
+    }
+
+    private suspend fun restoreExistingMnemonicWallets(mnemonic: String): Boolean {
+        if (importCategory != WalletCategory.IMPORTED_MNEMONIC.value) return false
+
+        val matchingWallets = buildList {
+            web3Repository.getAllNoKeyWallets().forEach { wallet ->
+                if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value &&
+                    matchesMnemonicWalletAddresses(mnemonic, web3Repository.getAddresses(wallet.id))
+                ) {
+                    add(wallet)
+                }
+            }
+        }
+        if (matchingWallets.isEmpty()) return false
+
+        Timber.i("LoginFlow wallet_import_local_reuse matched_count=${matchingWallets.size}")
+        val currentSpendKey = spendKey
+        if (currentSpendKey == null) {
+            _errorCode.value = null
+            _errorMessage.value = MixinApplication.appContext.getString(R.string.Save_failure)
+            _state.value = FetchWalletState.IMPORT_ERROR
+            return true
+        }
+
+        for (wallet in matchingWallets) {
+            val saved = saveWeb3PrivateKey(
+                MixinApplication.appContext,
+                currentSpendKey,
+                wallet.id,
+                mnemonic.split(" "),
+            )
+            if (!saved) {
+                Timber.e("LoginFlow wallet_import_local_reuse_failed wallet_id=${wallet.id}")
+                _errorCode.value = null
+                _errorMessage.value = MixinApplication.appContext.getString(R.string.Save_failure)
+                _state.value = FetchWalletState.IMPORT_ERROR
+                return true
+            }
+            jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
+        }
+
+        val wallet = matchingWallets.first()
+        selectImportedWalletIfNeeded(wallet.id, wallet.category)
+        _state.value = FetchWalletState.IMPORT_SUCCESS
+        return true
     }
 
     // Start importing selected wallet infos

@@ -85,6 +85,9 @@ data class IndexedWallet(
         }
 }
 
+fun defaultWalletSelection(wallets: List<IndexedWallet>): Set<IndexedWallet> =
+    wallets.filter { !it.exists }.toSet()
+
 @Composable
 private fun LoadingState(title: String, subtitle: String) {
     MixinAppTheme {
