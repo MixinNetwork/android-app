@@ -126,6 +126,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
 
     private fun isPendingMnemonicImportStep(): Boolean =
         when (supportFragmentManager.findFragmentById(R.id.container)) {
+            is VerifyPinBeforeImportWalletFragment,
             is FetchingWalletFragment,
             is SelectWalletFragment,
             is ImportingWalletFragment,

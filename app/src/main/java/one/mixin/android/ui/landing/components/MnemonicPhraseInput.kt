@@ -276,12 +276,12 @@ fun MnemonicPhraseInput(
                         }
                         val inputCount = inputs.size
                         val gridSize = if (state == MnemonicState.Display) {
-                            if (mnemonicList.size > 12) 27 else 15
+                            mnemonicList.size + 2
                         } else {
                             inputCount + 3
                         }
                         InputGrid(gridSize, 10.dp) { index ->
-                            if (state == MnemonicState.Display && ((mnemonicList.size == 12 && index == 12) || (mnemonicList.size == 24 && index == 24))) {
+                            if (state == MnemonicState.Display && index == mnemonicList.size) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -302,7 +302,7 @@ fun MnemonicPhraseInput(
                                         color = MixinAppTheme.colors.textPrimary,
                                     )
                                 }
-                            } else if (state == MnemonicState.Display && ((mnemonicList.size == 12 && index == 13) || (mnemonicList.size == 24 && index == 25))) {
+                            } else if (state == MnemonicState.Display && index == mnemonicList.size + 1) {
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -327,13 +327,7 @@ fun MnemonicPhraseInput(
                                     )
 
                                 }
-                            } else if (state == MnemonicState.Display && ((mnemonicList.size == 12 && index == 14) || (mnemonicList.size == 24 && index == 26))) {
-                                // placeholder
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                ) {}
-                            } else if (index < inputs.size) {
+                            } else if (index < if (state == MnemonicState.Display) mnemonicList.size else inputs.size) {
                                 val inputShape = RoundedCornerShape(4.dp)
                                 Box(
                                     modifier = Modifier

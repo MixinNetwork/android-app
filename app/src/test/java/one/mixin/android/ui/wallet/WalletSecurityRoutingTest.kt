@@ -60,4 +60,11 @@ class WalletSecurityRoutingTest {
         assertEquals(false, shouldBlockWalletSecurityBack(WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC, isImportStep = false))
         assertEquals(false, shouldBlockWalletSecurityBack(WalletSecurityActivity.Mode.IMPORT_MNEMONIC, isImportStep = true))
     }
+
+    @Test
+    fun `pending mnemonic import hides the pin page close button`() {
+        assertEquals(true, shouldHideWalletSecurityClose(WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC))
+        assertEquals(true, shouldHideWalletSecurityClose(WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC))
+        assertEquals(false, shouldHideWalletSecurityClose(WalletSecurityActivity.Mode.IMPORT_MNEMONIC))
+    }
 }

@@ -50,7 +50,12 @@ fun shouldBlockWalletSecurityBack(
     mode: WalletSecurityActivity.Mode,
     isImportStep: Boolean,
 ): Boolean =
-    isImportStep && (
-        mode == WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC ||
-            mode == WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC
-        )
+    isImportStep && shouldHideWalletSecurityClose(mode)
+
+fun shouldHideWalletSecurityClose(mode: WalletSecurityActivity.Mode): Boolean =
+    when (mode) {
+        WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC,
+        WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC,
+        -> true
+        else -> false
+    }

@@ -57,7 +57,7 @@ import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.util.ErrorHandler
 
 @Composable
-fun VerifyPinBeforeImportWalletPage(tip: Tip, mode: WalletSecurityActivity.Mode, pop: () -> Unit, next: (String) -> Unit) {
+fun VerifyPinBeforeImportWalletPage(tip: Tip, mode: WalletSecurityActivity.Mode, pop: (() -> Unit)?, next: (String) -> Unit) {
     val context = LocalContext.current
     var size by remember { mutableStateOf(IntSize.Zero) }
     var isLoading by remember { mutableStateOf(false) }

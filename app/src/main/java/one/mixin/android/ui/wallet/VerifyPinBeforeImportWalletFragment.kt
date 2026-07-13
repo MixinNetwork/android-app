@@ -53,9 +53,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                 VerifyPinBeforeImportWalletPage(
                     tip = tip,
                     mode = mode,
-                    pop = {
-                        activity?.finish()
-                    },
+                    pop = if (shouldHideWalletSecurityClose(mode)) null else ({ activity?.finish() }),
                     next = { pin ->
                         lifecycleScope.launch {
                             val result = tip.getOrRecoverTipPriv(requireContext(), pin)
