@@ -121,7 +121,6 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
                 state = MnemonicState.Input,
                 mnemonicList = scannedMnemonicList,
                 inputWordCounts = mode.shortWordCount to mode.legacyWordCount,
-                showOtherWords = false,
                 compactInput = true,
                 onComplete = { words ->
                     val preparedMnemonic = prepareMnemonicForLogin(words) { sourceWords ->
