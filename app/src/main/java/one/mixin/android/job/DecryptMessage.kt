@@ -521,7 +521,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             updateConversationList.forEach { cId ->
                                 remoteMessageStatusDao.updateConversationUnseen(cId)
                                 MessageFlow.update(cId, updateMessageIds)
-                                notificationManager.cancel(cId.hashCode())
+                                notificationManager.cancelConversationNotifications(cId)
                             }
                         }
 
