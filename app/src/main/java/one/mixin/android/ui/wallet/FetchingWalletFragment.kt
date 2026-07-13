@@ -31,12 +31,14 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         private const val ARGS_IMPORT_CATEGORY = "args_import_category"
         private const val ARGS_FETCH_CUSTOMER_SERVICE_SOURCE = "args_fetch_customer_service_source"
         private const val ARGS_IMPORT_CUSTOMER_SERVICE_SOURCE = "args_import_customer_service_source"
+        private const val ARGS_HIDE_CLOSE_BUTTON = "args_hide_close_button"
         fun newInstance(
             mnemonic: String?,
             pin: String? = null,
             importCategory: String? = null,
             fetchCustomerServiceSource: String? = null,
             importCustomerServiceSource: String? = null,
+            hideCloseButton: Boolean = false,
         ) = FetchingWalletFragment().apply {
             arguments = Bundle().apply {
                 putString(ARGS_MNEMONIC, mnemonic)
@@ -44,6 +46,7 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                 importCategory?.let { putString(ARGS_IMPORT_CATEGORY, it) }
                 fetchCustomerServiceSource?.let { putString(ARGS_FETCH_CUSTOMER_SERVICE_SOURCE, it) }
                 importCustomerServiceSource?.let { putString(ARGS_IMPORT_CUSTOMER_SERVICE_SOURCE, it) }
+                putBoolean(ARGS_HIDE_CLOSE_BUTTON, hideCloseButton)
             }
         }
     }
@@ -58,10 +61,15 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
     private val importCategory: String? by lazy { arguments?.getString(ARGS_IMPORT_CATEGORY) }
     private val fetchCustomerServiceSource: String? by lazy { arguments?.getString(ARGS_FETCH_CUSTOMER_SERVICE_SOURCE) }
     private val importCustomerServiceSource: String? by lazy { arguments?.getString(ARGS_IMPORT_CUSTOMER_SERVICE_SOURCE) }
+    private val hideCloseButton: Boolean by lazy { arguments?.getBoolean(ARGS_HIDE_CLOSE_BUTTON, false) ?: false }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
+        if (hideCloseButton) {
+            binding.titleView.leftIb.visibility = View.GONE
+        } else {
+            binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
+        }
         binding.titleView.rightIb.setImageResource(R.drawable.ic_support)
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightAnimator.displayedChild = 0
@@ -88,7 +96,7 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                     parentFragmentManager.beginTransaction()
                         .replace(
                             R.id.container,
-                            SelectWalletFragment.newInstance(importCustomerServiceSource),
+                            SelectWalletFragment.newInstance(importCustomerServiceSource, hideCloseButton),
                             SelectWalletFragment.TAG
                         )
                         .commit()

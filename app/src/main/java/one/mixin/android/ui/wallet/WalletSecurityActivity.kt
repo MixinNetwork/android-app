@@ -51,6 +51,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
                             importCategory = importWalletCategoryForMode(mode),
                             fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,
                             importCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_IMPORT,
+                            hideCloseButton = true,
                         )
                     }
                 }
@@ -60,6 +61,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
                     importCategory = importWalletCategoryForMode(mode),
                     fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,
                     importCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_IMPORT,
+                    hideCloseButton = true,
                 )
             }
 

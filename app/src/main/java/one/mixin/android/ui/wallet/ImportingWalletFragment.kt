@@ -24,11 +24,16 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
     private val binding by viewBinding(FragmentComposeBinding::bind)
     private val viewModel by activityViewModels<FetchWalletViewModel>()
     private val customerServiceSource: String? by lazy { arguments?.getString(ARG_CUSTOMER_SERVICE_SOURCE) }
+    private val hideCloseButton: Boolean by lazy { arguments?.getBoolean(ARG_HIDE_CLOSE_BUTTON, false) ?: false }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
-        binding.titleView.leftIb.setImageResource(R.drawable.ic_close_black)
+        if (hideCloseButton) {
+            binding.titleView.leftIb.visibility = View.GONE
+        } else {
+            binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
+            binding.titleView.leftIb.setImageResource(R.drawable.ic_close_black)
+        }
         binding.titleView.rightIb.setImageResource(R.drawable.ic_support)
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightAnimator.displayedChild = 0
@@ -48,7 +53,6 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                 }
                 FetchWalletState.IMPORT_ERROR -> {
                     Timber.i("LoginFlow wallet_import_result success=false partial_success=$partialSuccess code=$errorCode")
-                    binding.titleView.leftIb.setImageResource(R.drawable.ic_close_black)
                     ImportErrorContent(
                         partialSuccess =partialSuccess,
                         errorCode = errorCode,
@@ -109,11 +113,16 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         private const val ARG_MODE = "arg_mode"
         private const val ARG_FROM_DETAIL = "arg_from_detail"
         private const val ARG_CUSTOMER_SERVICE_SOURCE = "arg_customer_service_source"
+        private const val ARG_HIDE_CLOSE_BUTTON = "arg_hide_close_button"
 
-        fun newInstance(customerServiceSource: String? = null): ImportingWalletFragment {
+        fun newInstance(
+            customerServiceSource: String? = null,
+            hideCloseButton: Boolean = false,
+        ): ImportingWalletFragment {
             return ImportingWalletFragment().apply {
                 arguments = Bundle().apply {
                     customerServiceSource?.let { putString(ARG_CUSTOMER_SERVICE_SOURCE, it) }
+                    putBoolean(ARG_HIDE_CLOSE_BUTTON, hideCloseButton)
                 }
             }
         }

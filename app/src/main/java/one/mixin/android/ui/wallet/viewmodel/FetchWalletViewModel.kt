@@ -330,6 +330,7 @@ class FetchWalletViewModel @Inject constructor(
         var successCount = 0
 
         for ((walletRequest, words) in walletsToCreate) {
+            var privateKeySaveFailed = false
             val result = requestRouteAPI(
                 invokeNetwork = { web3Repository.createWallet(walletRequest) },
                 successBlock = { response ->
@@ -346,10 +347,23 @@ class FetchWalletViewModel @Inject constructor(
                         wallet.addresses?.takeIf { it.isNotEmpty() }?.let { addresses ->
                             web3Repository.insertAddressList(addresses)
                         }
-                        saveWeb3PrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, words)
-                        selectImportedWalletIfNeeded(wallet.id, wallet.category)
-                        jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
-                        successCount++
+                        val privateKeySaved = try {
+                            saveWeb3PrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, words)
+                        } catch (e: Exception) {
+                            Timber.e(e, "Failed to save imported wallet mnemonic")
+                            false
+                        }
+                        if (privateKeySaved) {
+                            selectImportedWalletIfNeeded(wallet.id, wallet.category)
+                            jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
+                            successCount++
+                        } else {
+                            Timber.e("LoginFlow wallet_import_save_failed reason=private_key wallet_id=${wallet.id}")
+                            _errorCode.value = null
+                            _errorMessage.value = MixinApplication.appContext.getString(R.string.Save_failure)
+                            _state.value = FetchWalletState.IMPORT_ERROR
+                            privateKeySaveFailed = true
+                        }
                     }
                 },
                 failureBlock = { response ->
@@ -366,7 +380,7 @@ class FetchWalletViewModel @Inject constructor(
                     true
                 }
             )
-            if (result == null) break
+            if (result == null || privateKeySaveFailed) break
         }
 
         return successCount

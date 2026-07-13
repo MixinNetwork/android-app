@@ -129,6 +129,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                                     importCategory = importWalletCategoryForMode(mode),
                                                     fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,
                                                     importCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_IMPORT,
+                                                    hideCloseButton = true,
                                                 ),
                                                 FetchingWalletFragment.TAG
                                             )
