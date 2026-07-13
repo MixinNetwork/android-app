@@ -74,6 +74,7 @@ class DepositFragment : BaseFragment() {
     private val walletViewModel by viewModels<WalletViewModel>()
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
+    private var assetPrice: String? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -91,12 +92,13 @@ class DepositFragment : BaseFragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
         val asset = requireNotNull(requireArguments().getParcelableCompat(ARGS_ASSET, TokenItem::class.java)) { "required TokenItem can not be null" }
+        assetPrice = asset.priceUsd
         val hideNetworkSwitch = requireArguments().getBoolean(ARGS_HIDE_NETWORK_SWITCH, false)
         initView(asset, hideNetworkSwitch)
     }
 
     override fun onDestroyView() {
-        AnalyticsTracker.trackAssetReceiveEnd()
+        AnalyticsTracker.trackAssetReceiveSuccess(assetPrice)
         super.onDestroyView()
         _binding = null
     }

@@ -192,8 +192,10 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackAssetReceiveEnd() {
-        logEvent("asset_receive_end")
+    fun trackAssetReceiveSuccess(price: String?) {
+        logEvent("asset_receive_success") {
+            putString("asset_level", getAssetLevel(BigDecimal.ONE, price))
+        }
     }
 
     fun trackAssetSendStart(wallet: String, source: String) {
@@ -526,20 +528,18 @@ object AnalyticsTracker {
     }
 
     fun trackTradeEnd(wallet: String, amountValue: BigDecimal, price: String?) {
-        val amountUsd = runCatching {
-            val priceValue = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            amountValue.multiply(priceValue).toDouble()
-        }.getOrDefault(0.0)
-        
-        val tradeAssetLevel = getTradeAssetLevel(amountUsd)
-        
         logEvent("trade_end") {
             putString("wallet", wallet)
-            putString("trade_asset_level", tradeAssetLevel)
+            putString("asset_level", getAssetLevel(amountValue, price))
         }
     }
 
-    private fun getTradeAssetLevel(amountUsd: Double): String {
+    private fun getAssetLevel(amountValue: BigDecimal, price: String?): String {
+        val priceValue = price?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return "N/A"
+        val amountUsd = runCatching {
+            amountValue.multiply(priceValue).toDouble()
+        }.getOrNull() ?: return "N/A"
+
         return when {
             amountUsd >= 1000000 -> "v1,000,000"
             amountUsd >= 100000 -> "v100,000"
@@ -622,13 +622,9 @@ object AnalyticsTracker {
     }
 
     fun trackPerpsOpenPositionEnd(leverage: Int, amountValue: BigDecimal, price: String?) {
-        val amountUsd = runCatching {
-            val priceValue = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            amountValue.multiply(priceValue).toDouble()
-        }.getOrDefault(0.0)
         logEvent("trade_perps_open_position_end") {
             putString("leverage", leverage.toString())
-            putString("trade_asset_level", getTradeAssetLevel(amountUsd))
+            putString("asset_level", getAssetLevel(amountValue, price))
         }
     }
 
@@ -749,13 +745,9 @@ object AnalyticsTracker {
     }
 
     fun trackSpotEnd(wallet: String, amountValue: BigDecimal, price: String?) {
-        val amountUsd = runCatching {
-            val priceValue = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            amountValue.multiply(priceValue).toDouble()
-        }.getOrDefault(0.0)
         logEvent("trade_spot_end") {
             putString("wallet", wallet)
-            putString("trade_asset_level", getTradeAssetLevel(amountUsd))
+            putString("asset_level", getAssetLevel(amountValue, price))
         }
     }
 
