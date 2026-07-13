@@ -517,6 +517,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             wallets = wallets,
             pin = pin,
             pendingWords = getPendingImportMnemonic(this)?.split(" "),
+            walletAddresses = { wallet -> web3Repository.getAddresses(wallet.id) },
             save = { walletId, verifiedPin, words ->
                 CryptoWalletHelper.saveMnemonicWithSpendKey(
                     this@MainActivity,

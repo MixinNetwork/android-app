@@ -4,8 +4,10 @@ import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
-import org.junit.Assert.assertNull
 import org.junit.Test
+import one.mixin.android.Constants
+import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.vo.WalletCategory
 
@@ -16,84 +18,12 @@ class PendingMnemonicTipRoutingTest {
     }
 
     @Test
-    fun classicWalletDoesNotCompletePendingImport() {
-        assertEquals(
-            PendingMnemonicRoute.ImportMnemonic,
-            routePendingMnemonicAfterWalletFetch(listOf(WalletCategory.CLASSIC.value)),
-        )
-    }
-
-    @Test
-    fun emptyWalletFetchRoutesPendingImportToImportPage() {
-        assertEquals(
-            PendingMnemonicRoute.ImportMnemonic,
-            routePendingMnemonicAfterWalletFetch(emptyList()),
-        )
-    }
-
-    @Test
-    fun failedWalletFetchRoutesPendingImportToFetchPage() {
-        assertEquals(
-            PendingMnemonicRoute.ImportMnemonic,
-            routePendingMnemonicAfterWalletFetch(null),
-        )
-    }
-
-    @Test
-    fun importedMnemonicWalletRoutesPendingImportToWalletHome() {
-        assertEquals(
-            PendingMnemonicRoute.WalletHome,
-            routePendingMnemonicAfterWalletFetch(listOf(WalletCategory.IMPORTED_MNEMONIC.value)),
-        )
-    }
-
-    @Test
-    fun nonImportedMnemonicWalletsRoutePendingImportToImportPage() {
-        assertEquals(
-            PendingMnemonicRoute.ImportMnemonic,
-            routePendingMnemonicAfterWalletFetch(
-                listOf(
-                    WalletCategory.CLASSIC.value,
-                    WalletCategory.WATCH_ADDRESS.value,
-                    WalletCategory.MIXIN_SAFE.value,
-                ),
-            ),
-        )
-    }
-
-    @Test
-    fun importedMnemonicWalletIdForPendingImportReturnsFirstImportedMnemonicWallet() {
-        assertEquals(
-            "imported-id",
-            importedMnemonicWalletIdForPendingImport(
-                listOf(
-                    testWallet("classic-id", WalletCategory.CLASSIC.value),
-                    testWallet("imported-id", WalletCategory.IMPORTED_MNEMONIC.value),
-                ),
-            ),
-        )
-    }
-
-    @Test
-    fun importedMnemonicWalletIdForPendingImportReturnsNullWhenNoImportedMnemonicWallet() {
-        assertNull(
-            importedMnemonicWalletIdForPendingImport(
-                listOf(
-                    testWallet("classic-id", WalletCategory.CLASSIC.value),
-                    testWallet("watch-id", WalletCategory.WATCH_ADDRESS.value),
-                ),
-            ),
-        )
-        assertNull(importedMnemonicWalletIdForPendingImport(null))
-    }
-
-    @Test
     fun successfulLocalSaveClearsPendingAndRoutesToWalletHome() = runBlocking {
         var cleared = false
         val result = resolvePendingMnemonicAfterWalletFetch(
-            wallets = listOf(testWallet("imported-id", WalletCategory.IMPORTED_MNEMONIC.value)),
+            wallets = listOf(matchingImportedWallet("imported-id")),
             pin = "123456",
-            pendingWords = listOf("word"),
+            pendingWords = pendingMnemonicWords,
             save = { _, _, _ -> true },
             clear = { cleared = true },
         )
@@ -106,9 +36,9 @@ class PendingMnemonicTipRoutingTest {
     fun failedLocalSaveDoesNotClearPendingOrRouteToWalletHome() = runBlocking {
         var cleared = false
         val result = resolvePendingMnemonicAfterWalletFetch(
-            wallets = listOf(testWallet("imported-id", WalletCategory.IMPORTED_MNEMONIC.value)),
+            wallets = listOf(matchingImportedWallet("imported-id")),
             pin = "123456",
-            pendingWords = listOf("word"),
+            pendingWords = pendingMnemonicWords,
             save = { _, _, _ -> false },
             clear = { cleared = true },
         )
@@ -121,9 +51,9 @@ class PendingMnemonicTipRoutingTest {
     fun localSaveExceptionDoesNotClearPendingOrRouteToWalletHome() = runBlocking {
         var cleared = false
         val result = resolvePendingMnemonicAfterWalletFetch(
-            wallets = listOf(testWallet("imported-id", WalletCategory.IMPORTED_MNEMONIC.value)),
+            wallets = listOf(matchingImportedWallet("imported-id")),
             pin = "123456",
-            pendingWords = listOf("word"),
+            pendingWords = pendingMnemonicWords,
             save = { _, _, _ -> error("save failed") },
             clear = { cleared = true },
         )
@@ -136,9 +66,9 @@ class PendingMnemonicTipRoutingTest {
     fun missingPinRequestsVerificationWithoutSaving() = runBlocking {
         var saved = false
         val result = resolvePendingMnemonicAfterWalletFetch(
-            wallets = listOf(testWallet("imported-id", WalletCategory.IMPORTED_MNEMONIC.value)),
+            wallets = listOf(matchingImportedWallet("imported-id")),
             pin = null,
-            pendingWords = listOf("word"),
+            pendingWords = pendingMnemonicWords,
             save = { _, _, _ ->
                 saved = true
                 true
@@ -168,6 +98,36 @@ class PendingMnemonicTipRoutingTest {
         assertFalse(saved)
     }
 
+    @Test
+    fun unmatchedImportedMnemonicWalletRoutesToImportWithoutSaving() = runBlocking {
+        var saved = false
+        val wallet = testWallet("imported-id", WalletCategory.IMPORTED_MNEMONIC.value).apply {
+            addresses = listOf(
+                Web3Address(
+                    addressId = "address-id",
+                    walletId = id,
+                    chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                    destination = "0xnot-the-pending-mnemonic-address",
+                    path = "m/44'/60'/0'/0/0",
+                    createdAt = "",
+                ),
+            )
+        }
+        val result = resolvePendingMnemonicAfterWalletFetch(
+            wallets = listOf(wallet),
+            pin = "123456",
+            pendingWords = pendingMnemonicWords,
+            save = { _, _, _ ->
+                saved = true
+                true
+            },
+            clear = {},
+        )
+
+        assertEquals(PendingMnemonicResolution.ImportMnemonic, result)
+        assertFalse(saved)
+    }
+
     private fun testWallet(
         id: String,
         category: String,
@@ -178,4 +138,35 @@ class PendingMnemonicTipRoutingTest {
         createdAt = "",
         updatedAt = "",
     )
+
+    private fun matchingImportedWallet(id: String): Web3Wallet {
+        val wallet = testWallet(id, WalletCategory.IMPORTED_MNEMONIC.value)
+        wallet.addresses = listOf(
+            Web3Address(
+                addressId = "other-address-id",
+                walletId = id,
+                chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                destination = "0xnot-the-pending-mnemonic-address",
+                path = "m/44'/60'/0'/0/1",
+                createdAt = "",
+            ),
+            Web3Address(
+                addressId = "address-id",
+                walletId = id,
+                chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                destination = CryptoWalletHelper.mnemonicToAddress(
+                    mnemonic = pendingMnemonicWords.joinToString(" "),
+                    chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                ),
+                path = "m/44'/60'/0'/0/0",
+                createdAt = "",
+            ),
+        )
+        return wallet
+    }
+
+    private companion object {
+        val pendingMnemonicWords =
+            "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about".split(" ")
+    }
 }

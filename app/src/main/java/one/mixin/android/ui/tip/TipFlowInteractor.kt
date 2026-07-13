@@ -302,6 +302,7 @@ class TipFlowInteractor @Inject internal constructor(
             wallets = wallets,
             pin = pin,
             pendingWords = getPendingImportMnemonic(context)?.split(" "),
+            walletAddresses = { wallet -> web3Repository.getAddresses(wallet.id) },
             save = { walletId, verifiedPin, words ->
                 CryptoWalletHelper.saveMnemonicWithSpendKey(
                     context,
