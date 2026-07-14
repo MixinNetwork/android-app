@@ -351,6 +351,15 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             finish()
             return
         }
+        if (hasPendingImportMnemonic(this)) {
+            Timber.i("LoginFlow main_pending_import_redirect")
+            WalletSecurityActivity.show(
+                this,
+                WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC,
+            )
+            finish()
+            return
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
