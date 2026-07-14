@@ -433,46 +433,47 @@ private fun LazyListScope.closedPositionItems(
         } else {
             null
         }
-        val isFirst = index == 0 || previousDate?.let { it != date } == true
-        val isLast = index == positions.itemCount - 1 || nextDate?.let { it != date } == true
+        val isFirst = index == 0 || previousDate != date
+        val isLast = index == positions.itemCount - 1 || nextDate != date
         val shape = when {
             isFirst && isLast -> RoundedCornerShape(8.dp)
             isFirst -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
             isLast -> RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
             else -> RoundedCornerShape(0.dp)
         }
-        Column {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = if (isFirst && index > 0) 16.dp else 0.dp)
+                .clip(shape)
+                .groupedItemBorder(
+                    backgroundColor = MixinAppTheme.colors.background,
+                    borderColor = MixinAppTheme.colors.borderColor,
+                    isFirst = isFirst,
+                    isLast = isLast,
+                ),
+        ) {
             if (isFirst) {
                 PerpsActivityDateHeader(
                     date = date,
                     modifier = Modifier.padding(
-                        top = if (index == 0) 0.dp else 16.dp,
+                        top = 12.dp,
+                        start = 16.dp,
+                        end = 16.dp,
                         bottom = 8.dp,
                     ),
                 )
             }
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(shape)
-                    .groupedItemBorder(
-                        backgroundColor = MixinAppTheme.colors.background,
-                        borderColor = MixinAppTheme.colors.borderColor,
-                        isFirst = isFirst,
-                        isLast = isLast,
-                    )
-            ) {
-                if (order.orderType == PerpsOrder.TYPE_CLOSE) {
-                    ClosedActivityItem(
-                        order = order,
-                        onClick = { onPositionClick(order) },
-                    )
-                } else {
-                    OpenedOrderItem(
-                        order = order,
-                        onClick = { onPositionClick(order) },
-                    )
-                }
+            if (order.orderType == PerpsOrder.TYPE_CLOSE) {
+                ClosedActivityItem(
+                    order = order,
+                    onClick = { onPositionClick(order) },
+                )
+            } else {
+                OpenedOrderItem(
+                    order = order,
+                    onClick = { onPositionClick(order) },
+                )
             }
         }
     }

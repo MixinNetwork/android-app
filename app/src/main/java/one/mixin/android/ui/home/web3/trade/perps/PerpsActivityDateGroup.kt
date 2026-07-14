@@ -9,11 +9,22 @@ import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.timeAgoDay
+import org.threeten.bp.ZoneId
+import org.threeten.bp.ZonedDateTime
+import org.threeten.bp.format.DateTimeFormatter
 
 fun PerpsOrderItem.createdAtDateLabel(context: Context): String {
     return runCatching {
-        createdAt.timeAgoDay(context.getString(R.string.date_format_date))
+        val zone = ZoneId.systemDefault()
+        val date = ZonedDateTime.parse(createdAt).withZoneSameInstant(zone)
+        val pattern = context.getString(
+            if (date.year == ZonedDateTime.now(zone).year) {
+                R.string.date_format_month_day
+            } else {
+                R.string.date_format_date
+            },
+        )
+        date.format(DateTimeFormatter.ofPattern(pattern).withZone(zone))
     }.getOrDefault(createdAt).ifBlank { createdAt }
 }
 
