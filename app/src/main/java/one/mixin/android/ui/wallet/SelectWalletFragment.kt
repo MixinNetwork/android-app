@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.fragment.app.activityViewModels
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.SelectContent
@@ -41,6 +42,10 @@ class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
         } else {
             binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
         }
+        binding.titleView.rightIb.setImageResource(R.drawable.ic_support)
+        binding.titleView.rightAnimator.visibility = View.VISIBLE
+        binding.titleView.rightAnimator.displayedChild = 0
+        binding.titleView.rightAnimator.setOnClickListener { openCustomerService(source = customerServiceSource) }
         binding.titleView.setSubTitle(getString(R.string.import_wallet_title), "")
         binding.compose.setContent {
             val wallets by viewModel.wallets.collectAsState()

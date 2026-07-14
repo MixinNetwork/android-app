@@ -182,7 +182,9 @@ fun SetPinLoadingPage(
                     ) {
                         Text(
                             text = stringResource(R.string.Retry),
-                            color = Color.White
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.W500,
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))

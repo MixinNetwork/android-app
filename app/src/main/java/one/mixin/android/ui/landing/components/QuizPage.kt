@@ -234,7 +234,7 @@ fun QuizResultBottomSheetContent(
             Text(
                 text = stringResource(if (isCorrect) R.string.Got_it else R.string.Try_Again),
                 color = Color.White,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.W500
             )
         }

@@ -219,6 +219,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:text="@string/sign_in_no_account"
+            android:textFontWeight="600"
             android:textSize="14sp" />
 
         <TextView

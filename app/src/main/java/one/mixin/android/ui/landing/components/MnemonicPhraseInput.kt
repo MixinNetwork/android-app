@@ -275,12 +275,13 @@ fun MnemonicPhraseInput(
                             Spacer(modifier = Modifier.height(44.dp))
                         }
                         val inputCount = inputs.size
+                        val compactLegacyInput = compactInput && legacy
                         val gridSize = if (state == MnemonicState.Display) {
                             mnemonicList.size + 2
                         } else {
                             inputCount + 3
                         }
-                        InputGrid(gridSize, 10.dp) { index ->
+                        InputGrid(gridSize, if (compactLegacyInput) 6.dp else 10.dp) { index ->
                             if (state == MnemonicState.Display && index == mnemonicList.size) {
                                 Row(
                                     modifier = Modifier
@@ -645,7 +646,7 @@ fun MnemonicPhraseInput(
                             Spacer(modifier = Modifier.height(8.dp))
                         }
                         if (showImportSafety) {
-                            Spacer(modifier = Modifier.height(60.dp))
+                            Spacer(modifier = Modifier.height(if (compactLegacyInput) 24.dp else 60.dp))
                             Text(
                                 modifier = Modifier.align(Alignment.Start),
                                 text = stringResource(R.string.mnemonic_login_security_title),
@@ -700,7 +701,12 @@ fun MnemonicPhraseInput(
                             }
                         }
                         Spacer(modifier = Modifier.height(if (legacy) 20.dp else 8.dp))
-                        Spacer(modifier = Modifier.weight(1f))
+                    }
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 20.dp),
+                    ) {
                         Button(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -805,13 +811,14 @@ fun MnemonicPhraseInput(
                                         }
                                     ),
                                     color = Color.White,
+                                    fontSize = 14.sp,
                                     fontWeight = W500,
                                 )
                             }
                         }
-
-                        Spacer(modifier = Modifier.height(40.dp))
                     }
+
+                    Spacer(modifier = Modifier.height(if (compactInput) 20.dp else 40.dp))
                 }
             }, floating = {
                 if (suggestedWords.isNotEmpty()) {

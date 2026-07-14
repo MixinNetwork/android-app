@@ -321,7 +321,9 @@ fun SetupPinPage(
                     text = stringResource(
                         if (errorMessage.isNotEmpty()) R.string.Retry else R.string.Next
                     ),
-                    color = Color.White
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W500,
                 )
             }
         }
