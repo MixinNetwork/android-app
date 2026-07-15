@@ -581,6 +581,11 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             if (isAddPhoneFlow()) {
                 AnalyticsTracker.trackAddPhoneInputPhoneCountry()
             }
+            if (useSystemKeyboard) {
+                binding.mobileEt.hideKeyboard()
+                binding.mobileEt.clearFocus()
+                binding.countryCodeEt.clearFocus()
+            }
             activity?.supportFragmentManager?.inTransaction {
                 setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
                     .add(R.id.container, countryPicker).addToBackStack(null)
