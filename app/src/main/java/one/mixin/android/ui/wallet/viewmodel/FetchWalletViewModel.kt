@@ -615,14 +615,7 @@ class FetchWalletViewModel @Inject constructor(
     }
 
     private fun saveWeb3ImportedPrivateKey(context: Context, spendKey: ByteArray, walletId: String, privateKey: String): Boolean {
-        return try {
-            val encryptedString = CryptoWalletHelper.encryptPrivateKeyWithSpendKey(spendKey, privateKey)
-            CryptoWalletHelper.saveWeb3PrivateKey(context, walletId, encryptedString)
-            true
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to save web3 private key")
-            false
-        }
+        return CryptoWalletHelper.savePrivateKeyWithSpendKey(context, spendKey, walletId, privateKey)
     }
 
     fun savePrivateKey(walletId: String, chainId: String, privateKey: String) {

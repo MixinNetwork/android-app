@@ -214,6 +214,14 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                     words,
                 )
             },
+            savePrivateKey = { walletId, verifiedPin, privateKey ->
+                CryptoWalletHelper.savePrivateKeyWithSpendKey(
+                    context,
+                    tip.getSpendKeyFromPin(context, verifiedPin),
+                    walletId,
+                    privateKey,
+                )
+            },
             clear = {
                 clearPendingImportMnemonic(context)
                 Timber.i("LoginFlow pending_import_cleared source=loading")
@@ -226,7 +234,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             is PendingMnemonicResolution.WalletHome -> {
                 val walletDestination = walletDestinationForWallet(
                     resolution.walletId,
-                    WalletCategory.IMPORTED_MNEMONIC.value,
+                    resolution.walletCategory,
                 )
                 MainActivity.showWallet(context, walletDestination = walletDestination)
                 true

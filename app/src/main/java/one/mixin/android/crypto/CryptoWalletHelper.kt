@@ -195,6 +195,28 @@ object CryptoWalletHelper {
         }
     }
 
+    fun mnemonicToImportedPrivateKey(
+        mnemonic: String,
+        chainId: String,
+        index: Int,
+    ): String =
+        when (chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
+                val privateKey = Numeric.hexStringToByteArray(
+                    mnemonicToSolanaWallet(mnemonic, index = index).privateKey,
+                )
+                fromSecretKey(privateKey).secret.encodeToBase58String()
+            }
+            Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                val privateKey = Numeric.hexStringToByteArray(
+                    mnemonicToBitcoinSegwitWallet(mnemonic, index = index).privateKey,
+                )
+                ECKey.fromPrivate(privateKey, true).getPrivateKeyEncoded(BitcoinNetwork.MAINNET).toBase58()
+            }
+            in Constants.Web3EvmChainIds -> mnemonicToEthereumWallet(mnemonic, index = index).privateKey
+            else -> throw IllegalArgumentException("Unsupported chainId: $chainId")
+        }
+
     fun encryptPrivateKeyWithSpendKey(spendKey: ByteArray, privateKey: String): String {
         val sha256Digest = MessageDigest.getInstance("SHA-256")
         val aesKeyBytes = sha256Digest.digest(spendKey)
@@ -221,6 +243,22 @@ object CryptoWalletHelper {
             hasPrivateKey(context, walletId)
         } catch (e: Exception) {
             Timber.e(e, "Failed to save web3 mnemonic")
+            false
+        }
+    }
+
+    fun savePrivateKeyWithSpendKey(
+        context: Context,
+        spendKey: ByteArray,
+        walletId: String,
+        privateKey: String,
+    ): Boolean {
+        return try {
+            val encryptedString = encryptPrivateKeyWithSpendKey(spendKey, privateKey)
+            saveWeb3PrivateKey(context, walletId, encryptedString)
+            hasPrivateKey(context, walletId)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to save web3 private key")
             false
         }
     }

@@ -174,6 +174,36 @@ class PendingMnemonicTipRoutingTest {
         assertFalse(saved)
     }
 
+    @Test
+    fun matchingImportedPrivateKeyWalletSavesDerivedPrivateKeyAndRoutesToWalletHome() = runBlocking {
+        var savedWalletId: String? = null
+        var savedPrivateKey: String? = null
+        val derivedPrivateKey = "derived-private-key"
+        val result = resolvePendingMnemonicAfterWalletFetch(
+            wallets = listOf(matchingImportedPrivateKeyWallet("private-key-id")),
+            pin = "123456",
+            pendingWords = pendingMnemonicWords,
+            privateKeyForAddress = { _, _, _ -> derivedPrivateKey },
+            save = { _, _, _ -> error("Mnemonic should not be saved for an imported private key wallet") },
+            savePrivateKey = { walletId, _, privateKey ->
+                savedWalletId = walletId
+                savedPrivateKey = privateKey
+                true
+            },
+            clear = {},
+        )
+
+        assertEquals(
+            PendingMnemonicResolution.WalletHome(
+                "private-key-id",
+                WalletCategory.IMPORTED_PRIVATE_KEY.value,
+            ),
+            result,
+        )
+        assertEquals("private-key-id", savedWalletId)
+        assertEquals(derivedPrivateKey, savedPrivateKey)
+    }
+
     private fun testWallet(
         id: String,
         category: String,
@@ -206,6 +236,24 @@ class PendingMnemonicTipRoutingTest {
                     index = index,
                 ),
                 path = "m/44'/60'/0'/0/$index",
+                createdAt = "",
+            ),
+        )
+        return wallet
+    }
+
+    private fun matchingImportedPrivateKeyWallet(id: String): Web3Wallet {
+        val wallet = testWallet(id, WalletCategory.IMPORTED_PRIVATE_KEY.value)
+        wallet.addresses = listOf(
+            Web3Address(
+                addressId = "address-id",
+                walletId = id,
+                chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                destination = CryptoWalletHelper.mnemonicToAddress(
+                    mnemonic = pendingMnemonicWords.joinToString(" "),
+                    chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                ),
+                path = "m/44'/60'/0'/0/0",
                 createdAt = "",
             ),
         )

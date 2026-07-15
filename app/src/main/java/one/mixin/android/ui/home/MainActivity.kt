@@ -535,6 +535,14 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     words,
                 )
             },
+            savePrivateKey = { walletId, verifiedPin, privateKey ->
+                CryptoWalletHelper.savePrivateKeyWithSpendKey(
+                    this@MainActivity,
+                    tip.getSpendKeyFromPin(this@MainActivity, verifiedPin),
+                    walletId,
+                    privateKey,
+                )
+            },
             clear = { clearPendingImportMnemonic(this) },
         )
         return when (resolution) {
@@ -542,7 +550,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
                 val walletDestination = walletDestinationForWallet(
                     resolution.walletId,
-                    WalletCategory.IMPORTED_MNEMONIC.value,
+                    resolution.walletCategory,
                 )
                 openWalletTabFromLogin(walletDestination)
                 true

@@ -311,6 +311,14 @@ class TipFlowInteractor @Inject internal constructor(
                     words,
                 )
             },
+            savePrivateKey = { walletId, verifiedPin, privateKey ->
+                CryptoWalletHelper.savePrivateKeyWithSpendKey(
+                    context,
+                    tip.getSpendKeyFromPin(context, verifiedPin),
+                    walletId,
+                    privateKey,
+                )
+            },
             clear = {
                 clearPendingImportMnemonic(context)
                 Timber.i("LoginFlow pending_import_cleared source=tip")
@@ -323,7 +331,7 @@ class TipFlowInteractor @Inject internal constructor(
             is PendingMnemonicResolution.WalletHome -> {
                 val walletDestination = walletDestinationForWallet(
                     resolution.walletId,
-                    WalletCategory.IMPORTED_MNEMONIC.value,
+                    resolution.walletCategory,
                 )
                 MainActivity.showWallet(context, walletDestination = walletDestination)
                 true
