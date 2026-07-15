@@ -76,6 +76,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
         arguments?.getString(ARGS_LOGIN_START_SOURCE) ?: AnalyticsTracker.LoginStartSource.LOGIN_BY
     }
     private var scannedMnemonicList by mutableStateOf<List<String>>(emptyList())
+    private var pastedMnemonicWords by mutableStateOf<List<String>?>(null)
     private lateinit var getScanResult: ActivityResultLauncher<Pair<String, Boolean>>
 
     override fun onAttach(context: Context) {
@@ -123,6 +124,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
                 inputWordCounts = mode.shortWordCount to mode.legacyWordCount,
                 compactInput = true,
                 onComplete = { words ->
+                    val pastedWords = pastedMnemonicWords?.takeIf { it == words }
                     val preparedMnemonic = prepareMnemonicForLogin(words) { sourceWords ->
                         toMnemonicWithChecksum(sourceWords)
                     }
@@ -139,10 +141,12 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
                         MnemonicPhraseFragment.newInstance(
                             ArrayList(preparedMnemonic.completedWords),
                             pendingImportWords?.let { ArrayList(it) },
+                            pastedWords?.let { ArrayList(it) },
                         ),
                         MnemonicPhraseFragment.TAG,
                     )
                 },
+                onPastedMnemonic = { pastedMnemonicWords = it },
                 onScan = {
                     getScanResult.launch(Pair(CaptureActivity.ARGS_FOR_SCAN_RESULT, true))
                 },

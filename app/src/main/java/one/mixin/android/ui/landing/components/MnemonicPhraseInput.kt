@@ -93,6 +93,7 @@ fun MnemonicPhraseInput(
     state: MnemonicState,
     mnemonicList: List<String> = emptyList(),
     onComplete: (List<String>) -> Unit,
+    onPastedMnemonic: ((List<String>) -> Unit)? = null,
     tip: Tip? = null,
     pin: String? = null,
     onQrCode: ((List<String>) -> Unit)? = null,
@@ -527,11 +528,13 @@ fun MnemonicPhraseInput(
                                                         words.size == legacyWordCount && isValidMnemonicForCurrentMode(words) -> {
                                                             legacy = true
                                                             updateInputs(words)
+                                                            onPastedMnemonic?.invoke(words)
                                                         }
 
                                                         words.size == shortWordCount && isValidMnemonicForCurrentMode(words) -> {
                                                             legacy = false
                                                             updateInputs(words)
+                                                            onPastedMnemonic?.invoke(words)
                                                         }
 
                                                         else -> {

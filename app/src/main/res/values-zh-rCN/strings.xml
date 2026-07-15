@@ -618,6 +618,7 @@
     <string name="landing_delete_content">您在 %1$s 申请了删除账号，账号将于 %2$s 被删除，如果您继续登录，删除您账户的请求将被取消。</string>
     <string name="landing_enter_mobile_tip">我们不会公开你的手机号码</string>
     <string name="landing_introduction">继续使用即表示你同意 %1$s和%2$s</string>
+    <string name="landing_mobile_linked_tip">这是与你的账户关联的手机号码。</string>
     <string name="onboarding_description">带有端对端加密消息功能的开源加密钱包</string>
     <string name="onboarding_mixin_description">一个带有端对端加密聊天功能的开源加密货币钱包</string>
     <string name="onboarding_decentralized_title">你的私钥，你的资产</string>

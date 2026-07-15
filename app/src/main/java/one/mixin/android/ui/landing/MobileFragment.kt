@@ -192,6 +192,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 arrayOf(policyUrl, termsUrl),
             )
             binding.introductionTv.isVisible = from != FROM_LANDING
+            binding.mobileLoginTipTv.isVisible = from == FROM_LANDING
             binding.orLl.isVisible = false
             binding.mnemonicPhrase.isVisible = false
             binding.noAccount.isVisible = false
@@ -215,7 +216,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
             if (useSystemKeyboard) {
                 (continueBn.layoutParams as ConstraintLayout.LayoutParams).apply {
-                    topToBottom = R.id.mobile_input_bg
+                    topToBottom = R.id.mobile_login_tip_tv
                     topMargin = 44.dp
                 }
                 continueBn.requestLayout()

@@ -121,6 +121,22 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/mobile_input_bg" />
 
+        <TextView
+            android:id="@+id/mobile_login_tip_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="52dp"
+            android:layout_marginTop="20dp"
+            android:layout_marginEnd="52dp"
+            android:gravity="start"
+            android:text="@string/landing_mobile_linked_tip"
+            android:textColor="?attr/text_assist"
+            android:textSize="14sp"
+            android:visibility="gone"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/mobile_input_bg" />
+
         <ViewAnimator
             style="@style/AppTheme.MaterialButton"
             android:id="@+id/continue_bn"

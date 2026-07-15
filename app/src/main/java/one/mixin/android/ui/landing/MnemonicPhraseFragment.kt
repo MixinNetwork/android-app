@@ -1,6 +1,8 @@
 package one.mixin.android.ui.landing
 
+import android.content.ClipData
 import android.os.Bundle
+import android.os.Build
 import android.view.View
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,6 +41,7 @@ import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putBoolean
@@ -72,15 +75,18 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         const val TAG: String = "MnemonicPhraseFragment"
         const val ARGS_MNEMONIC_PHRASE = "mnemonic_phrase"
         private const val ARGS_PENDING_IMPORT_MNEMONIC = "pending_import_mnemonic"
+        private const val ARGS_PASTED_MNEMONIC = "pasted_mnemonic"
 
         fun newInstance(
             words: ArrayList<String>? = null,
             pendingImportWords: ArrayList<String>? = null,
+            pastedMnemonicWords: ArrayList<String>? = null,
         ): MnemonicPhraseFragment =
             MnemonicPhraseFragment().apply {
                 withArgs {
                     putStringArrayList(ARGS_MNEMONIC_PHRASE, words)
                     putStringArrayList(ARGS_PENDING_IMPORT_MNEMONIC, pendingImportWords)
+                    putStringArrayList(ARGS_PASTED_MNEMONIC, pastedMnemonicWords)
                 }
             }
     }
@@ -100,6 +106,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     }
     private val pendingImportWords by lazy {
         requireArguments().getStringArrayList(ARGS_PENDING_IMPORT_MNEMONIC)
+    }
+    private val pastedMnemonicWords by lazy {
+        requireArguments().getStringArrayList(ARGS_PASTED_MNEMONIC)
     }
 
     override fun onViewCreated(
@@ -225,6 +234,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
 
             if (r?.isSuccess == true) {
+                clearPastedMnemonicFromClipboard()
                 if (!r.data?.deactivationEffectiveAt.isNullOrBlank() && !words.isNullOrEmpty()) {
                     LandingDeleteAccountFragment.newInstance(r.data?.deactivationRequestedAt, r.data?.deactivationEffectiveAt)
                         .setContinueCallback {
@@ -328,6 +338,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
 
             if (r?.isSuccess == true) {
+                clearPastedMnemonicFromClipboard()
                 if (!r.data?.deactivationEffectiveAt.isNullOrBlank() && !words.isNullOrEmpty()) {
                     LandingDeleteAccountFragment.newInstance(r.data?.deactivationRequestedAt, r.data?.deactivationEffectiveAt)
                         .setContinueCallback {
@@ -341,6 +352,26 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             } else {
                 landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
             }
+        }
+    }
+
+    private fun clearPastedMnemonicFromClipboard() {
+        val pastedWords = pastedMnemonicWords ?: return
+        val clipboard = requireContext().getClipboardManager()
+        val clipboardWords = clipboard.primaryClip
+            ?.takeIf { it.itemCount > 0 }
+            ?.getItemAt(0)
+            ?.text
+            ?.toString()
+            ?.trim()
+            ?.split(Regex("\\s+"))
+            ?.filter(String::isNotBlank)
+            ?: return
+        if (clipboardWords != pastedWords) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            clipboard.clearPrimaryClip()
+        } else {
+            clipboard.setPrimaryClip(ClipData.newPlainText("", ""))
         }
     }
 
