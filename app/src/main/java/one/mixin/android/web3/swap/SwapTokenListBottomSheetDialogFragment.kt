@@ -436,7 +436,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             successBlock = { resp ->
                 return@handleMixinResponse resp.data?.map {
                     if (!inMixin) {
-                        it.copy(walletId = Web3Signer.currentWalletId)
+                        it.copy(walletId = Web3Signer.currentWalletId, isWeb3 = true)
                     } else {
                         it
                     }

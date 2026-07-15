@@ -72,6 +72,7 @@ import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.TradeFragment
+import one.mixin.android.ui.home.web3.trade.limitTradeInputDecimalPlaces
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -144,6 +145,7 @@ fun OpenPositionPage(
     var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
     var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
     var usdtAmount by remember { mutableStateOf("") }
+    val amountMaxDecimalPlaces = PERPS_AMOUNT_MAX_DECIMAL_PLACES
     var takeProfitPrice by remember { mutableStateOf("") }
     var stopLossPrice by remember { mutableStateOf("") }
     var remoteLiquidationPrice by remember { mutableStateOf<String?>(null) }
@@ -159,6 +161,10 @@ fun OpenPositionPage(
             .coerceAtLeast(1)
     }
     var leverage by remember(marketId) { mutableFloatStateOf(savedLeverage.toFloat()) }
+
+    LaunchedEffect(currentToken?.assetId, amountMaxDecimalPlaces) {
+        usdtAmount = limitTradeInputDecimalPlaces(usdtAmount, amountMaxDecimalPlaces)
+    }
 
     LaunchedEffect(marketId) {
         while (true) {
@@ -413,6 +419,7 @@ fun OpenPositionPage(
                         },
                         onInputChanged = { usdtAmount = it },
                         tokenIconSize = 25.dp,
+                        maxDecimalPlaces = amountMaxDecimalPlaces,
                     )
 
                     Row(
@@ -435,7 +442,7 @@ fun OpenPositionPage(
                             ),
                             modifier = Modifier.clickable {
                                 AnalyticsTracker.trackPerpsAmountInputBalance()
-                                usdtAmount = currentToken?.balance ?: "0"
+                                usdtAmount = limitTradeInputDecimalPlaces(currentToken?.balance ?: "0", amountMaxDecimalPlaces)
                             }
                         )
                         if (showAddAction) {
@@ -829,10 +836,13 @@ fun OpenPositionPage(
                 floating = {
                     fun applyBalancePercent(percent: BigDecimal) {
                         if (tokenBalance > BigDecimal.ZERO) {
-                            usdtAmount = tokenBalance
-                                .multiply(percent)
-                                .stripTrailingZeros()
-                                .toPlainString()
+                            usdtAmount = limitTradeInputDecimalPlaces(
+                                tokenBalance
+                                    .multiply(percent)
+                                    .stripTrailingZeros()
+                                    .toPlainString(),
+                                amountMaxDecimalPlaces,
+                            )
                         } else {
                             usdtAmount = ""
                         }

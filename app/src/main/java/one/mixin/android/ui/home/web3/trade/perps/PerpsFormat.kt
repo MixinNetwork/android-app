@@ -9,6 +9,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 const val PERPS_USD_SYMBOL = "\$"
+internal const val PERPS_AMOUNT_MAX_DECIMAL_PLACES = 2
 
 fun PerpsMarket.changePercent(): BigDecimal {
     return try {
