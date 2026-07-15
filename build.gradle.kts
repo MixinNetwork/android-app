@@ -6,7 +6,7 @@ buildscript {
         maven { url = uri("https://maven.sumsub.com/repository/maven-public/") }
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:9.2.1")
+        classpath("com.android.tools.build:gradle:9.3.0")
         classpath("com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.10")
         classpath("com.google.dagger:hilt-android-gradle-plugin:2.60.1")
