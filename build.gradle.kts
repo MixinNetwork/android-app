@@ -20,7 +20,7 @@ buildscript {
 plugins {
     id("com.android.application") version "9.3.0" apply false
     id("com.android.library") version "9.2.1" apply false
-    id("org.jetbrains.kotlin.plugin.parcelize") version "2.4.0" apply false
+    id("org.jetbrains.kotlin.plugin.parcelize") version "2.4.10" apply false
     id("de.undercouch.download") version "5.5.0" apply false
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
     id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0" apply false
