@@ -137,8 +137,11 @@ fun SwapContent(
     var inputText by remember {
         mutableStateOf(limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces))
     }
-    LaunchedEffect(lastOrderTime, fromMaxDecimalPlaces) {
+    LaunchedEffect(lastOrderTime) {
         inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
+    }
+    LaunchedEffect(fromMaxDecimalPlaces) {
+        inputText = swapInputTextForMaxDecimalPlacesChange(inputText, fromMaxDecimalPlaces)
     }
 
     val shouldRefreshQuote = remember { MutableStateFlow(inputText) }
@@ -231,6 +234,11 @@ fun SwapContent(
                     isSendFocused = isSendFocused,
                     isKeyboardVisible = availableHeight != null,
                 )
+                LaunchedEffect(availableHeight, inputText) {
+                    if (availableHeight == null && inputText.isBlank()) {
+                        isSendFocused = false
+                    }
+                }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -426,6 +434,11 @@ internal fun shouldShowSwapRecommendedMarketCards(
     isSendFocused: Boolean,
     isKeyboardVisible: Boolean,
 ): Boolean = inMixin && hasRecommendedCards && inputText.isBlank() && !isSendFocused && !isKeyboardVisible
+
+internal fun swapInputTextForMaxDecimalPlacesChange(
+    currentInput: String,
+    maxDecimalPlaces: Int?,
+): String = limitTradeInputDecimalPlaces(currentInput, maxDecimalPlaces)
 
 @Composable
 fun ReviewButton(

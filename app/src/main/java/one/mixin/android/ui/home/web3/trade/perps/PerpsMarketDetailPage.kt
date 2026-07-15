@@ -47,7 +47,6 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -68,6 +67,7 @@ import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
@@ -95,6 +95,9 @@ fun PerpsMarketDetailPage(
     initialMarket: PerpsMarket? = null,
     onBack: () -> Unit,
     onSharePosition: (PerpsPositionItem) -> Unit,
+    onViewAllClosedPositions: () -> Unit,
+    onPositionClick: (PerpsOrderItem) -> Unit,
+    onOpenPosition: (PerpsMarket, Boolean) -> Unit,
     source: String,
 ) {
     val context = LocalContext.current
@@ -278,7 +281,7 @@ fun PerpsMarketDetailPage(
                     }
 
                     fun showTpSlBottomSheetFromGuide(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
-                        val activity = context as? FragmentActivity ?: return
+                        val activity = context.findFragmentActivityOrNull() ?: return
                         val existingPrice = when (mode) {
                             PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> currentPosition.takeProfitPrice.orEmpty()
                             PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> currentPosition.stopLossPrice.orEmpty()
@@ -370,7 +373,7 @@ fun PerpsMarketDetailPage(
                         HowPerpsWorksCard(
                             onLearnClick = {
                                 AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_DETAIL_CARD)
-                                val activity = context as? FragmentActivity ?: return@HowPerpsWorksCard
+                                val activity = context.findFragmentActivityOrNull() ?: return@HowPerpsWorksCard
                                 PerpetualGuideBottomSheetDialogFragment.newInstance(
                                     PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
                                 ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
@@ -381,7 +384,7 @@ fun PerpsMarketDetailPage(
                     MarketInfoCard(
                         market = market!!,
                         onFundingRateTipClick = {
-                            val activity = context as? FragmentActivity ?: return@MarketInfoCard
+                            val activity = context.findFragmentActivityOrNull() ?: return@MarketInfoCard
                             PerpetualGuideBottomSheetDialogFragment.newInstance(
                                 PerpetualGuideBottomSheetDialogFragment.TAB_FUNDING_RATE
                             ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
@@ -393,36 +396,8 @@ fun PerpsMarketDetailPage(
                     Spacer(modifier = Modifier.height(16.dp))
                     ClosedPositionsSection(
                         positions = closedPositions,
-                        onViewAll = {
-                            val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
-                            activity.supportFragmentManager
-                                .beginTransaction()
-                                .add(
-                                    android.R.id.content,
-                                    AllPositionsFragment.newClosedInstance(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
-                                    AllPositionsFragment.TAG
-                                )
-                                .addToBackStack(null)
-                                .commit()
-                        },
-                        onPositionClick = { position ->
-                            val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
-                            activity.supportFragmentManager
-                                .beginTransaction()
-                                .setCustomAnimations(
-                                    R.anim.slide_in_right,
-                                    0,
-                                    0,
-                                    R.anim.slide_out_right
-                                )
-                                .add(
-                                    android.R.id.content,
-                                    PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
-                                    PositionDetailFragment.TAG
-                                )
-                                .addToBackStack(null)
-                                .commit()
-                        }
+                        onViewAll = onViewAllClosedPositions,
+                        onPositionClick = onPositionClick,
                     )
                 }
 
@@ -431,7 +406,7 @@ fun PerpsMarketDetailPage(
                     HowPerpsWorksCard(
                         onLearnClick = {
                             AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_DETAIL_CARD)
-                            val activity = context as? FragmentActivity ?: return@HowPerpsWorksCard
+                            val activity = context.findFragmentActivityOrNull() ?: return@HowPerpsWorksCard
                             PerpetualGuideBottomSheetDialogFragment.newInstance(
                                 PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
                             ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
@@ -485,7 +460,7 @@ fun PerpsMarketDetailPage(
                                     onClick = {
                                         if (isAddingProcessing) return@MixinButton
                                         isAddingProcessing = true
-                                        val activity = context as? FragmentActivity ?: run { isAddingProcessing = false; return@MixinButton }
+                                        val activity = context.findFragmentActivityOrNull() ?: run { isAddingProcessing = false; return@MixinButton }
                                         val positionForAdd = currentPosition
                                         PerpsAddBottomSheetDialogFragment.newInstance(positionForAdd)
                                             .setOnDestroy {
@@ -555,7 +530,7 @@ fun PerpsMarketDetailPage(
                                         .height(48.dp),
                                     enabled = true,
                                     onClick = {
-                                        val activity = context as? FragmentActivity ?: return@MixinButton
+                                        val activity = context.findFragmentActivityOrNull() ?: return@MixinButton
                                         val position = currentPosition.toPosition()
                                         AnalyticsTracker.trackPerpsClosePositionStart()
                                         PerpsCloseBottomSheetDialogFragment.newInstance(
@@ -601,15 +576,7 @@ fun PerpsMarketDetailPage(
                                     .weight(1f)
                                     .height(48.dp),
                                 onClick = {
-                                    PerpsActivity.showOpenPosition(
-                                        context = context,
-                                        marketId = marketId,
-                                        marketSymbol = marketSymbol,
-                                        marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
-                                        marketTokenSymbol = market?.tokenSymbol ?: "",
-                                        isLong = true,
-                                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
-                                    )
+                                    market?.let { onOpenPosition(it, true) }
                                 },
                                 backgroundColor = risingColor,
                                 contentColor = Color.White,
@@ -626,15 +593,7 @@ fun PerpsMarketDetailPage(
                                     .weight(1f)
                                     .height(48.dp),
                                 onClick = {
-                                    PerpsActivity.showOpenPosition(
-                                        context = context,
-                                        marketId = marketId,
-                                        marketSymbol = marketSymbol,
-                                        marketDisplaySymbol = market?.displaySymbol ?: marketSymbol,
-                                        marketTokenSymbol = market?.tokenSymbol ?: "",
-                                        isLong = false,
-                                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
-                                    )
+                                    market?.let { onOpenPosition(it, false) }
                                 },
                                 backgroundColor = fallingColor,
                                 contentColor = Color.White,
@@ -916,14 +875,14 @@ private fun OpenPositionCard(
     val compactTextStyle = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
 
     fun showTpSlGuide() {
-        val activity = context as? FragmentActivity ?: return
+        val activity = context.findFragmentActivityOrNull() ?: return
         PerpetualGuideBottomSheetDialogFragment.newInstance(
             PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL
         ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
     }
 
     fun showTpSlBottomSheet(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
-        val activity = context as? FragmentActivity ?: return
+        val activity = context.findFragmentActivityOrNull() ?: return
         val existingPrice = when (mode) {
             PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> position.takeProfitPrice.orEmpty()
             PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> position.stopLossPrice.orEmpty()
@@ -1094,7 +1053,7 @@ private fun OpenPositionCard(
                         modifier = Modifier
                             .size(12.dp)
                             .clickable {
-                                val activity = context as? FragmentActivity ?: return@clickable
+                                val activity = context.findFragmentActivityOrNull() ?: return@clickable
                                 PerpetualGuideBottomSheetDialogFragment.newInstance(
                                     PerpetualGuideBottomSheetDialogFragment.TAB_POSITION
                                 ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
@@ -1163,7 +1122,7 @@ private fun OpenPositionCard(
                         modifier = Modifier
                             .size(12.dp)
                             .clickable {
-                                val activity = context as? FragmentActivity ?: return@clickable
+                                val activity = context.findFragmentActivityOrNull() ?: return@clickable
                                 PerpetualGuideBottomSheetDialogFragment.newInstance(
                                     PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION
                                 ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
