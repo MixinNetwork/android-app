@@ -46,8 +46,12 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusDirection
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -281,7 +285,7 @@ fun MnemonicPhraseInput(
                         } else {
                             inputCount + 3
                         }
-                        InputGrid(gridSize, if (compactLegacyInput) 6.dp else 10.dp) { index ->
+                        InputGrid(gridSize, 10.dp) { index ->
                             if (state == MnemonicState.Display && index == mnemonicList.size) {
                                 Row(
                                     modifier = Modifier
@@ -659,21 +663,21 @@ fun MnemonicPhraseInput(
                                 modifier = Modifier.align(Alignment.Start),
                                 text = stringResource(R.string.mnemonic_login_security_tip_1),
                                 fontSize = 13.sp,
-                                color = MixinAppTheme.colors.textMinor,
+                                color = MixinAppTheme.colors.textAssist,
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 modifier = Modifier.align(Alignment.Start),
                                 text = stringResource(R.string.mnemonic_login_security_tip_2),
                                 fontSize = 13.sp,
-                                color = MixinAppTheme.colors.textMinor,
+                                color = MixinAppTheme.colors.textAssist,
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 modifier = Modifier.align(Alignment.Start),
                                 text = stringResource(R.string.mnemonic_login_security_tip_3),
                                 fontSize = 13.sp,
-                                color = MixinAppTheme.colors.textMinor,
+                                color = MixinAppTheme.colors.textAssist,
                             )
                             Spacer(modifier = Modifier.height(24.dp))
                             Row(
@@ -705,7 +709,23 @@ fun MnemonicPhraseInput(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
+                            .then(
+                                Modifier
+                                    .drawBehind {
+                                        val shadowHeight = 4.dp.toPx()
+                                        drawRect(
+                                            brush = Brush.verticalGradient(
+                                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.05f)),
+                                                startY = -shadowHeight,
+                                                endY = 0f,
+                                            ),
+                                            topLeft = Offset(0f, -shadowHeight),
+                                            size = Size(size.width, shadowHeight),
+                                        )
+                                    }
+                                    .background(MixinAppTheme.colors.background),
+                            )
+                            .padding(start = 20.dp, top = 20.dp, end = 20.dp),
                     ) {
                         Button(
                             modifier = Modifier
