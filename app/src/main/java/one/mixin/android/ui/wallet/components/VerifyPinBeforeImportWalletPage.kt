@@ -24,6 +24,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -46,14 +48,17 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.pxToDp
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.WalletSecurityActivity
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.ErrorHandler
 
 @Composable
@@ -104,6 +109,23 @@ fun VerifyPinBeforeImportWalletPage(tip: Tip, mode: WalletSecurityActivity.Mode,
             verticalScrollable = false,
             backIcon = R.drawable.ic_close_black,
             pop = pop,
+            actions = {
+                if (mode == WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC) {
+                    IconButton(
+                        onClick = {
+                            context.openCustomerService(
+                                source = AnalyticsTracker.CustomerServiceSource.LOGIN_PIN_VERIFY,
+                            )
+                        },
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_support),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.icon,
+                        )
+                    }
+                }
+            },
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.padding(horizontal = 20.dp)) {
                 Spacer(modifier = Modifier.height(70.dp))

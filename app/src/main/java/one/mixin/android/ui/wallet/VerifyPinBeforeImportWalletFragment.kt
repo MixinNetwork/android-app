@@ -13,6 +13,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.crypto.getPendingImportMnemonic
+import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.VerifyPinBeforeImportWalletPage
@@ -58,6 +59,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                         lifecycleScope.launch {
                             val result = tip.getOrRecoverTipPriv(requireContext(), pin)
                             if (result.isSuccess) {
+                                requireContext().updatePinCheck()
                                 val tipPriv = result.getOrThrow()
                                 val spendKey = tip.getSpendPrivFromEncryptedSalt(
                                     tip.getMnemonicFromEncryptedPreferences(requireContext()),
