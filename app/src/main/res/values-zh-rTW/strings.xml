@@ -486,7 +486,7 @@
     <string name="landing_delete_content">您在 %1$s 申請了刪除帳號，帳號將於 %2$s 被刪除，如果您繼續登入，刪除您帳戶的請求將被取消。</string>
     <string name="landing_enter_mobile_tip">我們不會公開你的手機號碼</string>
     <string name="landing_introduction">繼續使用即表示你同意 %1$s 和 %2$s。</string>
-    <string name="landing_mobile_linked_tip">這是與你的帳戶關聯的手機號碼。</string>
+    <string name="mobile_number_description">請輸入已繫結 Mixin 賬號的手機號</string>
     <string name="onboarding_description">帶有端對端加密訊息功能的開源加密錢包</string>
     <string name="onboarding_mixin_description">帶有端對端加密訊息功能的開源加密錢包</string>
     <string name="onboarding_decentralized_title">你的金鑰，你的加密資產</string>
@@ -1083,7 +1083,7 @@
     <string name="no_available_utxo">沒有可用 UTXO</string>
     <string name="create_account_confirm_title">創建你的賬戶</string>
     <string name="create_account_confirm_action_create">創建賬戶</string>
-    <string name="create_account_confirm_action_import_wallet">從其他錢包匯入？</string>
+    <string name="import_from_another_wallet">匯入其他錢包？</string>
     <string name="Take_Profit">止盈</string>
     <string name="Stop_Loss">止損</string>
     <string name="take_profit_for_long">%1$s 做多止盈</string>
