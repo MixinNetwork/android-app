@@ -920,7 +920,7 @@ object AnalyticsTracker {
     }
 
     object LoginStartSource {
-        const val LOGIN_BY = "login_by"
+        const val LOGIN_METHODS = "login_methods"
         const val SIGN_UP_INTRO_DIALOG = "sign_up_intro_dialog"
     }
 }

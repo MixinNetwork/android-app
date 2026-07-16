@@ -31,3 +31,9 @@ fun pendingImportMnemonicForLogin(words: List<String>): List<String>? =
         13, 25 -> null
         else -> throw IllegalArgumentException("Unsupported mnemonic word count: ${words.size}")
     }
+
+fun shouldStoreLoginMnemonicForSafe(
+    hasSafe: Boolean,
+    hasPhone: Boolean,
+    hasPendingWalletImport: Boolean,
+): Boolean = !hasPhone || hasPendingWalletImport || !hasSafe

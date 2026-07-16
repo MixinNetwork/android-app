@@ -31,8 +31,9 @@ import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.getValueFromEncryptedPreferences
 import one.mixin.android.crypto.initFromSeedAndSign
+import one.mixin.android.crypto.markPendingImportMnemonic
 import one.mixin.android.crypto.newKeyPairFromMnemonic
-import one.mixin.android.crypto.savePendingImportMnemonic
+import one.mixin.android.crypto.preparePendingImportMnemonic
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toMnemonic
@@ -49,6 +50,7 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.session.Session
 import one.mixin.android.session.initializeAccountSession
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
@@ -178,12 +180,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                     }
                 }
                 val mnemonic = w.joinToString(" ")
-                val entropy  = runCatching { toEntropy(w)}.onFailure { errorInfo = getString(R.string.invalid_mnemonic_phrase) }.getOrNull() ?: return@launch
-                storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, entropy)
-                if (getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy).not()) {
-                    errorInfo = getString(R.string.Save_failure) // Save entropy failure
-                    return@launch
-                }
+                runCatching { toEntropy(w) }.onFailure { errorInfo = getString(R.string.invalid_mnemonic_phrase) }.getOrNull() ?: return@launch
                 newKeyPairFromMnemonic(mnemonic)
             } else {
                 val entropy = tip.getMnemonicFromEncryptedPreferences(requireContext()) ?: tip.generateEntropyAndStore(requireContext())
@@ -423,8 +420,27 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 }
                 initializeAccountSession(requireContext(), account, sessionKey)
                 val importWords = pendingImportWords
-                if (!importWords.isNullOrEmpty()) {
-                    savePendingImportMnemonic(requireContext(), importWords)
+                val hasPendingWalletImport = !importWords.isNullOrEmpty()
+                if (shouldStoreLoginMnemonicForSafe(account.hasSafe, Session.hasPhone(), hasPendingWalletImport) && !words.isNullOrEmpty()) {
+                    val loginWords = words.orEmpty().dropLast(1)
+                    val entropy = runCatching { toEntropy(loginWords) }.getOrNull()
+                    if (entropy == null) {
+                        errorInfo = getString(R.string.invalid_mnemonic_phrase)
+                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                        return@launch
+                    }
+                    storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, entropy)
+                    if (!getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy)) {
+                        errorInfo = getString(R.string.Save_failure)
+                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                        return@launch
+                    }
+                }
+                if (hasPendingWalletImport) {
+                    preparePendingImportMnemonic(importWords.orEmpty())
+                    if (account.hasSafe || !Session.hasPhone()) {
+                        markPendingImportMnemonic(requireContext())
+                    }
                 } else {
                     clearPendingImportMnemonic(requireContext())
                 }

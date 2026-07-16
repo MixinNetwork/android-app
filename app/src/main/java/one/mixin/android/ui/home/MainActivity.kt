@@ -72,7 +72,6 @@ import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.clearPendingImportMnemonic
-import one.mixin.android.crypto.getPendingImportMnemonic
 import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
@@ -522,10 +521,18 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     private suspend fun openPendingMnemonicNext(pin: String? = null): Boolean {
         val wallets = web3Repository.syncWalletsFromRoute()
+        val pendingWords = if (pin == null) {
+            null
+        } else {
+            runCatching { tip.getPendingImportMnemonic(this, pin) }
+                .onFailure { Timber.e(it, "Failed to restore pending mnemonic from Safe") }
+                .getOrNull()
+                ?: return false
+        }
         val resolution = resolvePendingMnemonicAfterWalletFetch(
             wallets = wallets,
             pin = pin,
-            pendingWords = getPendingImportMnemonic(this)?.split(" "),
+            pendingWords = pendingWords,
             walletAddresses = { wallet -> web3Repository.getAddresses(wallet.id) },
             save = { walletId, verifiedPin, words ->
                 CryptoWalletHelper.saveMnemonicWithSpendKey(

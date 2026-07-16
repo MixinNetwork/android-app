@@ -53,7 +53,6 @@ object Constants {
         const val ALIAS_TIP_PRIV = "alias_tip_priv"
 
         const val MNEMONIC = "mnemonic"
-        const val PENDING_IMPORT_MNEMONIC = "pending_import_mnemonic"
 
         const val SPEND_SALT = "spend_salt"
         const val ALIAS_SPEND_SALT = "alias_spend_salt"
@@ -64,6 +63,7 @@ object Constants {
     }
 
     object Account {
+        const val PREF_PENDING_MNEMONIC_IMPORT = "pref_pending_mnemonic_import"
         const val PREF_PIN_CHECK = "pref_pin_check"
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_RANDOM = "pref_random"

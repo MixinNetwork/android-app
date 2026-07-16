@@ -19,11 +19,13 @@ import one.mixin.android.crypto.aesDecrypt
 import one.mixin.android.crypto.aesEncrypt
 import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.generateRandomBytes
+import one.mixin.android.crypto.getPendingImportMnemonicEntropy
 import one.mixin.android.crypto.getValueFromEncryptedPreferences
 import one.mixin.android.crypto.isMnemonicValid
 import one.mixin.android.crypto.newKeyPairFromMnemonic
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
+import one.mixin.android.crypto.replacePendingImportMnemonicEntropy
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toMnemonicWithChecksum
@@ -179,18 +181,50 @@ class Tip
                 }
             } else {
                 val local = getMnemonicFromEncryptedPreferences(context)
-                if (local != null && !salt.contentEquals(local)) {
-                    // Clear local mnemonic if salt not matched
-                    removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
+                if (local != null && !shouldRemoveLocalMnemonic(local, salt)) {
+                    reportMnemonicMismatch()
                 }
             }
+        }
+
+        suspend fun removeLocalMnemonicIfSafeMatches(
+            context: Context,
+            pin: String,
+            tipPriv: ByteArray? = null,
+        ): ByteArray? {
+            val local = getMnemonicFromEncryptedPreferences(context) ?: return null
+            val privateKey = tipPriv ?: getOrRecoverTipPriv(context, pin).getOrThrow()
+            val safeEntropy = getSalt(getEncryptedSalt(context), pin, privateKey)
+            removeLocalMnemonicIfSafeMatches(context, local, safeEntropy)
+            return safeEntropy
+        }
+
+        private fun removeLocalMnemonicIfSafeMatches(
+            context: Context,
+            local: ByteArray?,
+            safeEntropy: ByteArray,
+        ) {
+            if (local == null) return
+            if (!shouldRemoveLocalMnemonic(local, safeEntropy)) {
+                reportMnemonicMismatch()
+                return
+            }
+            replacePendingImportMnemonicEntropy(safeEntropy)
+            removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
+        }
+
+        private fun reportMnemonicMismatch() {
+            reportException(IllegalStateException("Safe mnemonic does not match local mnemonic"))
         }
 
         suspend fun getEncryptSalt(context: Context, pin: String, tipPriv: ByteArray, isAnonymous: Boolean): String {
             val rawSalt = if (isAnonymous) {
                 ByteArray(16)
             } else {
-                requireNotNull(getMnemonicFromEncryptedPreferences(context)) // Only register safe
+                requireNotNull(
+                    getMnemonicFromEncryptedPreferences(context)
+                        ?: getPendingImportMnemonicEntropy()
+                )
             }
             val saltAESKey = generateSaltAESKey(pin, tipPriv)
             val encryptedSalt = aesEncrypt(saltAESKey, rawSalt)
@@ -224,6 +258,7 @@ class Tip
 
         suspend fun getMnemonicEdKey(context: Context, pin: String, tipPriv: ByteArray): EdKeyPair {
             var entropy = getMnemonicFromEncryptedPreferences(context)
+                ?: getPendingImportMnemonicEntropy()
             if (entropy == null) { // If not exist, get it from safe and decrypt it
                 val saltAESKey = generateSaltAESKey(pin, tipPriv)
                 val encryptedSalt = getEncryptedSalt(context)
@@ -238,13 +273,31 @@ class Tip
             if (entropy != null) {
                 return toMnemonic(entropy).split(" ")
             } else {
-                val tipPrivateKey = getOrRecoverTipPriv(context, pin).getOrThrow()
-                val safeEntropy = getSalt(getEncryptedSalt(context), pin, tipPrivateKey)
+                val safeEntropy = getMnemonicEntropyFromSafe(context, pin)
                 if (safeEntropy.contentEquals(ByteArray(16))) return null
                 val mn = toMnemonic(safeEntropy) // legacy user salt 32 bytes
                 storeValueInEncryptedPreferences(context, Constants.Tip.MNEMONIC, safeEntropy)
                 return mn.split(" ")
             }
+        }
+
+        suspend fun getPendingImportMnemonic(context: Context, pin: String): List<String>? {
+            val pendingEntropy = getPendingImportMnemonicEntropy()
+            val localEntropy = getMnemonicFromEncryptedPreferences(context)
+            val entropy = if (Session.hasPhone()) {
+                val safeEntropy = getMnemonicEntropyFromSafe(context, pin)
+                removeLocalMnemonicIfSafeMatches(context, localEntropy, safeEntropy)
+                resolvePhonePendingImportEntropy(pendingEntropy, localEntropy, safeEntropy)
+            } else {
+                pendingEntropy ?: localEntropy ?: getMnemonicEntropyFromSafe(context, pin)
+            }
+            if (entropy.contentEquals(ByteArray(16))) return null
+            return toMnemonic(entropy).split(" ")
+        }
+
+        private suspend fun getMnemonicEntropyFromSafe(context: Context, pin: String): ByteArray {
+            val tipPrivateKey = getOrRecoverTipPriv(context, pin).getOrThrow()
+            return getSalt(getEncryptedSalt(context), pin, tipPrivateKey)
         }
 
         suspend fun getEncryptedSalt(context: Context): ByteArray {
@@ -291,6 +344,7 @@ class Tip
 
         fun getSpendPriv(context: Context, seed: ByteArray): ByteArray {
             var entropy = getMnemonicFromEncryptedPreferences(context)
+                ?: getPendingImportMnemonicEntropy()
             if (entropy == null) { // Register safe must generate mnemonic, Only once
                 if (Session.getAccount() != null && !Session.hasPhone() && !Session.saltExported()) {
                     throw IllegalStateException("Entropy lost")
@@ -731,4 +785,20 @@ class Tip
 
             fun onNodeFailed(info: String)
         }
+    }
+
+internal fun shouldRemoveLocalMnemonic(
+    local: ByteArray?,
+    safeEntropy: ByteArray,
+): Boolean = local?.contentEquals(safeEntropy) == true
+
+internal fun resolvePhonePendingImportEntropy(
+    pendingEntropy: ByteArray?,
+    localEntropy: ByteArray?,
+    safeEntropy: ByteArray,
+): ByteArray =
+    if (localEntropy == null || shouldRemoveLocalMnemonic(localEntropy, safeEntropy)) {
+        safeEntropy
+    } else {
+        pendingEntropy ?: localEntropy
     }

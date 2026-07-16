@@ -12,7 +12,6 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.crypto.getPendingImportMnemonic
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
@@ -119,21 +118,17 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                        requireActivity().finish()
                                     }
                                     WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC -> {
-                                        val mnemonic = getPendingImportMnemonic(requireContext())
-                                        if (mnemonic.isNullOrBlank()) {
-                                            requireActivity().finish()
-                                        } else {
-                                            replaceAsRoot(
-                                                FetchingWalletFragment.newInstance(
-                                                    mnemonic = mnemonic,
-                                                    importCategory = importWalletCategoryForMode(mode),
-                                                    fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,
-                                                    importCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_IMPORT,
-                                                    hideCloseButton = true,
-                                                ),
-                                                FetchingWalletFragment.TAG
-                                            )
-                                        }
+                                        replaceAsRoot(
+                                            FetchingWalletFragment.newInstance(
+                                                mnemonic = null,
+                                                pin = pin,
+                                                importCategory = importWalletCategoryForMode(mode),
+                                                fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,
+                                                importCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_IMPORT,
+                                                hideCloseButton = true,
+                                            ),
+                                            FetchingWalletFragment.TAG
+                                        )
                                     }
                                     WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC -> {
                                         requireActivity().finish()

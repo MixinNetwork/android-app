@@ -11,10 +11,8 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.isMnemonicValid
 import one.mixin.android.crypto.mnemonicChecksum
-import one.mixin.android.crypto.savePendingImportMnemonic
 import one.mixin.android.crypto.toMnemonicWithChecksum
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.navTo
@@ -57,7 +55,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
 
         fun newInstance(
             mode: LoginMnemonicMode = LoginMnemonicMode.THIRTEEN_OR_TWENTY_FIVE,
-            loginStartSource: String = AnalyticsTracker.LoginStartSource.LOGIN_BY,
+            loginStartSource: String = AnalyticsTracker.LoginStartSource.LOGIN_METHODS,
         ): LandingMnemonicPhraseFragment =
             LandingMnemonicPhraseFragment().apply {
                 arguments = Bundle().apply {
@@ -73,7 +71,7 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
             ?: LoginMnemonicMode.THIRTEEN_OR_TWENTY_FIVE
     }
     private val loginStartSource: String by lazy {
-        arguments?.getString(ARGS_LOGIN_START_SOURCE) ?: AnalyticsTracker.LoginStartSource.LOGIN_BY
+        arguments?.getString(ARGS_LOGIN_START_SOURCE) ?: AnalyticsTracker.LoginStartSource.LOGIN_METHODS
     }
     private var scannedMnemonicList by mutableStateOf<List<String>>(emptyList())
     private var pastedMnemonicWords by mutableStateOf<List<String>?>(null)
@@ -132,11 +130,6 @@ class LandingMnemonicPhraseFragment : BaseFragment(R.layout.fragment_landing_mne
                     Timber.i(
                         "LoginFlow mnemonic_input_complete mode=${mode.name} word_count=${words.size} pending_import=${pendingImportWords != null}"
                     )
-                    if (pendingImportWords != null) {
-                        savePendingImportMnemonic(requireContext(), pendingImportWords)
-                    } else {
-                        clearPendingImportMnemonic(requireContext())
-                    }
                     navTo(
                         MnemonicPhraseFragment.newInstance(
                             ArrayList(preparedMnemonic.completedWords),

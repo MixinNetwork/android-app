@@ -25,12 +25,12 @@ import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.crypto.clearPendingImportMnemonic
-import one.mixin.android.crypto.getPendingImportMnemonic
 import one.mixin.android.crypto.hasPendingImportMnemonic
+import one.mixin.android.crypto.hasPendingImportMnemonicInMemory
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.crypto.initFromSeedAndSign
+import one.mixin.android.crypto.markPendingImportMnemonic
 import one.mixin.android.crypto.newKeyPairFromSeed
-import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.hexString
@@ -298,10 +298,14 @@ class TipFlowInteractor @Inject internal constructor(
             return true
         }
         val wallets = syncedWallets ?: web3Repository.syncWalletsFromRoute()
+        val pendingWords = runCatching { tip.getPendingImportMnemonic(context, pin) }
+            .onFailure { Timber.e(it, "Failed to restore pending mnemonic from Safe") }
+            .getOrNull()
+            ?: return false
         val resolution = resolvePendingMnemonicAfterWalletFetch(
             wallets = wallets,
             pin = pin,
-            pendingWords = getPendingImportMnemonic(context)?.split(" "),
+            pendingWords = pendingWords,
             walletAddresses = { wallet -> web3Repository.getAddresses(wallet.id) },
             save = { walletId, verifiedPin, words ->
                 CryptoWalletHelper.saveMnemonicWithSpendKey(
@@ -413,6 +417,18 @@ class TipFlowInteractor @Inject internal constructor(
             val account = requireNotNull(meResp.data) { "required account can not be null" }
             Session.storeAccount(account)
             if (account.hasSafe) {
+                if (hasPendingImportMnemonicInMemory()) {
+                    markPendingImportMnemonic(context)
+                }
+                if (Session.hasPhone()) {
+                    try {
+                        tip.removeLocalMnemonicIfSafeMatches(context, pin, tipPriv)
+                    } catch (e: Exception) {
+                        tipBundle.oldPin = null
+                        onStepChanged(RetryRegister(tipPriv, e.getTipExceptionMsg(context)))
+                        return false
+                    }
+                }
                 return true
             }
         } else {
@@ -448,13 +464,22 @@ class TipFlowInteractor @Inject internal constructor(
         if (registerResp.isSuccess) {
             val account = requireNotNull(registerResp.data) { "required account can not be null" }
             Session.storeAccount(account)
+            if (hasPendingImportMnemonicInMemory()) {
+                markPendingImportMnemonic(context)
+            }
+            if (Session.hasPhone()) {
+                try {
+                    tip.removeLocalMnemonicIfSafeMatches(context, pin, seed)
+                } catch (e: Exception) {
+                    tipBundle.oldPin = null
+                    onStepChanged(RetryRegister(seed, e.getTipExceptionMsg(context)))
+                    return false
+                }
+            }
             val solAddress: String = getTipAddress(context, pin, SOLANA_CHAIN_ID)
             val evmAddress: String = getTipAddress(context, pin, ETHEREUM_CHAIN_ID)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
             Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
-            if (Session.hasPhone()) {
-                removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)
-            }
             return true
         }
         if (registerResp.errorCode == ErrorHandler.INVALID_PIN_FORMAT) {
