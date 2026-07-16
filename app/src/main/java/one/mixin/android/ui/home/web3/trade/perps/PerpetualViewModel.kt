@@ -6,6 +6,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.room.withTransaction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -29,6 +30,7 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.service.RouteService
+import one.mixin.android.db.PerpsDatabase
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsOrderDao
@@ -50,6 +52,7 @@ import javax.inject.Inject
 class PerpetualViewModel @Inject constructor(
     private val routeService: RouteService,
     private val tokenDao: TokenDao,
+    private val perpsDatabase: PerpsDatabase,
     private val perpsPositionDao: PerpsPositionDao,
     private val perpsOrderDao: PerpsOrderDao,
     private val perpsMarketDao: PerpsMarketDao,
@@ -62,6 +65,35 @@ class PerpetualViewModel @Inject constructor(
 
     fun refreshPositions(walletId: String) {
         jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))
+    }
+
+    suspend fun refreshPositionsForBatchClose(walletId: String): Result<List<PerpsPositionItem>> {
+        return runCatching {
+            val response = withContext(Dispatchers.IO) {
+                routeService.getPerpsPositions(walletId = walletId)
+            }
+            val positions = response.data?.map { it.copy(walletId = walletId) }
+            if (!response.isSuccess || positions == null) {
+                error("Failed to refresh perps positions: ${response.errorDescription}")
+            }
+
+            withContext(Dispatchers.IO) {
+                perpsDatabase.withTransaction {
+                    if (positions.isEmpty()) {
+                        perpsPositionDao.deleteOpenByWallet(walletId)
+                    } else {
+                        perpsPositionDao.deleteOpenByWalletAndNotIn(
+                            walletId,
+                            positions.map { it.positionId },
+                        )
+                        perpsPositionDao.insertAll(positions)
+                    }
+                }
+                perpsPositionDao.getOpenPositions(walletId)
+            }
+        }.onFailure { error ->
+            Timber.e(error, "Failed to refresh positions before batch close")
+        }
     }
 
     private var refreshOrdersJob: kotlinx.coroutines.Job? = null

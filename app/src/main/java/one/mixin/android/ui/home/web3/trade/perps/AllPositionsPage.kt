@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +58,7 @@ import androidx.paging.compose.itemKey
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrder
@@ -64,6 +66,7 @@ import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -95,6 +98,8 @@ fun AllPositionsPage(
     val walletId = Session.getAccountId().orEmpty()
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val coroutineScope = rememberCoroutineScope()
+    var isRefreshingBeforeCloseAll by remember(walletId) { mutableStateOf(false) }
 
     val openPositionsSnapshot by remember(walletId) {
         if (walletId.isNotEmpty()) {
@@ -200,7 +205,25 @@ fun AllPositionsPage(
                         onShowTradingGuide = onShowTradingGuide,
                         onPositionClick = onOpenPositionClick,
                         openPositions = openPositionsSnapshot,
-                        onCloseAllPositions = onCloseAllPositions,
+                        isCloseAllLoading = isRefreshingBeforeCloseAll,
+                        onCloseAllPositions = {
+                            if (!isRefreshingBeforeCloseAll) {
+                                isRefreshingBeforeCloseAll = true
+                                coroutineScope.launch {
+                                    viewModel.refreshPositionsForBatchClose(walletId)
+                                        .onSuccess { refreshedPositions ->
+                                            isRefreshingBeforeCloseAll = false
+                                            if (refreshedPositions.isNotEmpty()) {
+                                                onCloseAllPositions(refreshedPositions)
+                                            }
+                                        }
+                                        .onFailure {
+                                            isRefreshingBeforeCloseAll = false
+                                            toast(R.string.Data_error)
+                                        }
+                                }
+                            }
+                        },
                     )
                 } else {
                     ClosedPositionsContent(
@@ -225,7 +248,8 @@ private fun OpenPositionsContent(
     onShowTradingGuide: () -> Unit,
     onPositionClick: (PerpsPositionItem) -> Unit,
     openPositions: List<PerpsPositionItem>,
-    onCloseAllPositions: (List<PerpsPositionItem>) -> Unit,
+    isCloseAllLoading: Boolean,
+    onCloseAllPositions: () -> Unit,
 ) {
     val refreshState = positions.loadState.refresh
     val isEmpty = refreshState is LoadState.NotLoading && positions.itemCount == 0
@@ -276,7 +300,8 @@ private fun OpenPositionsContent(
 
         if (openPositions.isNotEmpty()) {
             MixinButton(
-                onClick = { onCloseAllPositions(openPositions) },
+                onClick = onCloseAllPositions,
+                enabled = !isCloseAllLoading,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
@@ -284,10 +309,18 @@ private fun OpenPositionsContent(
                     .height(48.dp),
                 shape = RoundedCornerShape(24.dp),
             ) {
-                Text(
-                    text = stringResource(R.string.Close_All_Positions, openPositions.size),
-                    fontSize = 16.sp,
-                )
+                if (isCloseAllLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.Close_All_Positions, openPositions.size),
+                        fontSize = 16.sp,
+                    )
+                }
             }
         }
     }
