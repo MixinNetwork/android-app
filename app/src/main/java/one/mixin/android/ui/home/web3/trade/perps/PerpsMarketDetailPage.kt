@@ -1381,6 +1381,7 @@ private fun ClosedPositionsSection(
     onViewAll: () -> Unit,
     onPositionClick: (PerpsOrderItem) -> Unit,
 ) {
+    val context = LocalContext.current
     val displayPositions = positions.take(3)
 
     Column(
@@ -1415,7 +1416,16 @@ private fun ClosedPositionsSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        var previousDate: String? = null
         displayPositions.forEach { order ->
+            val date = order.createdAtDateLabel(context)
+            if (date != previousDate) {
+                PerpsActivityDateHeader(
+                    date = date,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             if (order.orderType == PerpsOrder.TYPE_CLOSE) {
                 ClosedActivityItem(
                     order = order,
@@ -1430,6 +1440,7 @@ private fun ClosedPositionsSection(
             if (order != displayPositions.last()) {
                 Spacer(modifier = Modifier.height(8.dp))
             }
+            previousDate = date
         }
     }
 }

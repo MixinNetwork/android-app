@@ -486,7 +486,16 @@ fun PerpetualContent(
                         )
                     }
                 } else {
+                    var previousDate: String? = null
                     closedPositionsPreview.forEach { order ->
+                        val date = order.createdAtDateLabel(context)
+                        if (date != previousDate) {
+                            PerpsActivityDateHeader(
+                                date = date,
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
                         if (order.orderType == PerpsOrder.TYPE_CLOSE) {
                             ClosedActivityItem(
                                 order = order,
@@ -499,6 +508,7 @@ fun PerpetualContent(
                             )
                         }
                         Spacer(modifier = Modifier.height(12.dp))
+                        previousDate = date
                     }
 
                     if (closedPositions.size > closedPositionsPreview.size) {
