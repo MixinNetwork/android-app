@@ -55,6 +55,11 @@ class PerpetualViewModel @Inject constructor(
     private val perpsMarketDao: PerpsMarketDao,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
+    data class BatchCloseResult(
+        val failedPositions: List<PerpsPositionItem>,
+        val errors: List<String>,
+    )
+
     fun refreshPositions(walletId: String) {
         jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))
     }
@@ -784,40 +789,59 @@ class PerpetualViewModel @Inject constructor(
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
-            try {
-                val request = CloseOrderRequest(
-                    positionId = positionId
-                )
-                
-                val response = withContext(Dispatchers.IO) {
-                    routeService.closePerpsOrder(request)
-                }
-                
-                if (response.isSuccess) {
-                    val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
-                    withContext(Dispatchers.IO) {
-                        perpsPositionDao.getPosition(positionId)?.let { position ->
-                            perpsOrderDao.insert(
-                                createCachedClosedOrder(
-                                    position = position,
-                                    leverage = leverage.takeIf { it > 0 } ?: position.leverage,
-                                )
-                            )
-                        }
-                        perpsPositionDao.deleteById(positionId)
+            closePerpsOrder(positionId, leverage)
+                .onSuccess { onSuccess() }
+                .onFailure { onError(it.message.orEmpty()) }
+        }
+    }
+
+    fun closePerpsOrders(
+        positions: List<PerpsPositionItem>,
+        onComplete: (BatchCloseResult) -> Unit,
+    ) {
+        viewModelScope.launch {
+            val failedPositions = mutableListOf<PerpsPositionItem>()
+            val errors = mutableListOf<String>()
+
+            positions.forEach { position ->
+                closePerpsOrder(position.positionId, position.leverage)
+                    .onFailure { error ->
+                        failedPositions += position
+                        errors += error.message.orEmpty()
                     }
-                    Timber.d("Perps order closed: $positionId")
-                    onSuccess()
-                } else {
-                    val error = "Failed to close perps order: ${response.errorDescription}"
-                    Timber.e(error)
-                    onError(error)
-                }
-            } catch (e: Exception) {
-                val error = "Error closing perps order: ${e.message}"
-                Timber.e(e, error)
-                onError(error)
             }
+
+            onComplete(BatchCloseResult(failedPositions, errors))
+        }
+    }
+
+    private suspend fun closePerpsOrder(
+        positionId: String,
+        leverage: Int,
+    ): Result<Unit> {
+        return runCatching {
+            val response = withContext(Dispatchers.IO) {
+                routeService.closePerpsOrder(CloseOrderRequest(positionId = positionId))
+            }
+
+            if (!response.isSuccess) {
+                error("Failed to close perps order: ${response.errorDescription}")
+            }
+
+            withContext(Dispatchers.IO) {
+                perpsPositionDao.getPosition(positionId)?.let { position ->
+                    perpsOrderDao.insert(
+                        createCachedClosedOrder(
+                            position = position,
+                            leverage = leverage.takeIf { it > 0 } ?: position.leverage,
+                        )
+                    )
+                }
+                perpsPositionDao.deleteById(positionId)
+            }
+            Timber.d("Perps order closed: $positionId")
+        }.onFailure { error ->
+            Timber.e(error, "Error closing perps order: $positionId")
         }
     }
 

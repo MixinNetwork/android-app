@@ -111,6 +111,11 @@ class AllPositionsFragment : BaseFragment() {
                                 }
                             }
                         },
+                        onCloseAllPositions = { positions ->
+                            AnalyticsTracker.trackPerpsClosePositionStart()
+                            PerpsBatchCloseBottomSheetDialogFragment.newInstance(positions)
+                                .show(parentFragmentManager, PerpsBatchCloseBottomSheetDialogFragment.TAG)
+                        },
                         onClosedPositionClick = { position ->
                             activity?.supportFragmentManager?.let { fm ->
                                 fm.beginTransaction()

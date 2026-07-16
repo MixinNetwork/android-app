@@ -2455,8 +2455,11 @@
     <string name="Position_Submitted">Position Submitted</string>
     <string name="Position_Add_Submitted">Add Submitted</string>
     <string name="Close_Position">Close</string>
+    <string name="Close_All_Positions">Close All Positions(%1$d)</string>
     <string name="confirm_closing_position">Confirm Closing</string>
     <string name="Position_Closed">Position Closed</string>
+    <string name="Positions_Closed">Positions Closed</string>
+    <string name="Positions_Close_Failed">Failed to close positions</string>
     <string name="Opened_Long">Opened Long</string>
     <string name="Opened_Short">Opened Short</string>
     <string name="Closed_Long">Closed Long</string>

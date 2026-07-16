@@ -2380,6 +2380,9 @@
     <string name="confirm_closing_position">确认平仓</string>
     <string name="Position_Closed">平仓成功</string>
     <string name="Close_Position">平仓</string>
+    <string name="Close_All_Positions">全部平仓(%1$d)</string>
+    <string name="Positions_Closed">全部平仓成功</string>
+    <string name="Positions_Close_Failed">平仓失败</string>
     <string name="Opened_Long">开仓做多</string>
     <string name="Opened_Short">开仓做空</string>
     <string name="Closed_Long">平仓做多</string>

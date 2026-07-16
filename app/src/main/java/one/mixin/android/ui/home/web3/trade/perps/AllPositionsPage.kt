@@ -67,6 +67,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -86,6 +87,7 @@ fun AllPositionsPage(
     onSupport: () -> Unit,
     onShowTradingGuide: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
+    onCloseAllPositions: (List<PerpsPositionItem>) -> Unit,
     onClosedPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val context = LocalContext.current
@@ -197,6 +199,8 @@ fun AllPositionsPage(
                         quoteColorReversed = quoteColorReversed,
                         onShowTradingGuide = onShowTradingGuide,
                         onPositionClick = onOpenPositionClick,
+                        openPositions = openPositionsSnapshot,
+                        onCloseAllPositions = onCloseAllPositions,
                     )
                 } else {
                     ClosedPositionsContent(
@@ -220,6 +224,8 @@ private fun OpenPositionsContent(
     quoteColorReversed: Boolean,
     onShowTradingGuide: () -> Unit,
     onPositionClick: (PerpsPositionItem) -> Unit,
+    openPositions: List<PerpsPositionItem>,
+    onCloseAllPositions: (List<PerpsPositionItem>) -> Unit,
 ) {
     val refreshState = positions.loadState.refresh
     val isEmpty = refreshState is LoadState.NotLoading && positions.itemCount == 0
@@ -228,7 +234,7 @@ private fun OpenPositionsContent(
         if (!isEmpty) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
             ) {
                 item {
                     TotalPositionValueCard(
@@ -264,6 +270,23 @@ private fun OpenPositionsContent(
                     actionText = stringResource(R.string.how_perps_works),
                     onActionClick = onShowTradingGuide,
                     modifier = Modifier.align(Alignment.Center),
+                )
+            }
+        }
+
+        if (openPositions.isNotEmpty()) {
+            MixinButton(
+                onClick = { onCloseAllPositions(openPositions) },
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 20.dp)
+                    .height(48.dp),
+                shape = RoundedCornerShape(24.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.Close_All_Positions, openPositions.size),
+                    fontSize = 16.sp,
                 )
             }
         }
