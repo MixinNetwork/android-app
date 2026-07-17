@@ -234,7 +234,6 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
 
             if (r?.isSuccess == true) {
-                clearPastedMnemonicFromClipboard()
                 if (!r.data?.deactivationEffectiveAt.isNullOrBlank() && !words.isNullOrEmpty()) {
                     LandingDeleteAccountFragment.newInstance(r.data?.deactivationRequestedAt, r.data?.deactivationEffectiveAt)
                         .setContinueCallback {
@@ -338,7 +337,6 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
 
             if (r?.isSuccess == true) {
-                clearPastedMnemonicFromClipboard()
                 if (!r.data?.deactivationEffectiveAt.isNullOrBlank() && !words.isNullOrEmpty()) {
                     LandingDeleteAccountFragment.newInstance(r.data?.deactivationRequestedAt, r.data?.deactivationEffectiveAt)
                         .setContinueCallback {
@@ -438,12 +436,11 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 }
                 if (hasPendingWalletImport) {
                     preparePendingImportMnemonic(importWords.orEmpty())
-                    if (account.hasSafe || !Session.hasPhone()) {
-                        markPendingImportMnemonic(requireContext())
-                    }
+                    markPendingImportMnemonic(requireContext())
                 } else {
                     clearPendingImportMnemonic(requireContext())
                 }
+                clearPastedMnemonicFromClipboard()
                 val hasFullName = !account.fullName.isNullOrBlank()
                 val localAccountDatabaseExists = hasLocalAccountDatabase(requireContext(), account.identityNumber)
                 val loginAccountRoute = routeLoginAccount(hasFullName, localAccountDatabaseExists)

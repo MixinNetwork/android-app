@@ -153,8 +153,10 @@ import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
+import one.mixin.android.ui.landing.PendingMnemonicStartupRoute
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.ui.landing.reuseOrCreateLoginPinGate
+import one.mixin.android.ui.landing.routePendingMnemonicStartup
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
 import one.mixin.android.ui.search.SearchMessageFragment
@@ -350,14 +352,28 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             finish()
             return
         }
-        if (hasPendingImportMnemonic(this)) {
-            Timber.i("LoginFlow main_pending_import_redirect")
-            WalletSecurityActivity.show(
-                this,
-                WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC,
+        when (
+            routePendingMnemonicStartup(
+                hasPendingImport = hasPendingImportMnemonic(this),
+                hasSafe = Session.hasSafe(),
             )
-            finish()
-            return
+        ) {
+            PendingMnemonicStartupRoute.Continue -> Unit
+            PendingMnemonicStartupRoute.ResumeAccountSetup -> {
+                Timber.i("LoginFlow main_pending_import_resume_account_setup")
+                InitializeActivity.showLoading(this, false)
+                finish()
+                return
+            }
+            PendingMnemonicStartupRoute.ImportMnemonic -> {
+                Timber.i("LoginFlow main_pending_import_redirect")
+                WalletSecurityActivity.show(
+                    this,
+                    WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC,
+                )
+                finish()
+                return
+            }
         }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)

@@ -25,6 +25,22 @@ enum class LoginPostGateRoute {
     UpgradeTip,
 }
 
+enum class PendingMnemonicStartupRoute {
+    Continue,
+    ResumeAccountSetup,
+    ImportMnemonic,
+}
+
+fun routePendingMnemonicStartup(
+    hasPendingImport: Boolean,
+    hasSafe: Boolean,
+): PendingMnemonicStartupRoute =
+    when {
+        !hasPendingImport -> PendingMnemonicStartupRoute.Continue
+        !hasSafe -> PendingMnemonicStartupRoute.ResumeAccountSetup
+        else -> PendingMnemonicStartupRoute.ImportMnemonic
+    }
+
 fun routeLoginPostGate(
     hasSafe: Boolean,
     hasPin: Boolean,
