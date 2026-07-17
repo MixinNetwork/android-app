@@ -44,4 +44,15 @@ class MnemonicSaltTest {
             resolvePhonePendingImportEntropy(null, localEntropy, safeEntropy),
         )
     }
+
+    @Test
+    fun `marks pending mnemonic login as exported after Safe verification`() {
+        val localEntropy = byteArrayOf(1, 2, 3)
+        val safeEntropy = localEntropy.copyOf()
+
+        assertTrue(shouldMarkPendingMnemonicAsExported(false, localEntropy, null))
+        assertTrue(shouldMarkPendingMnemonicAsExported(true, null, safeEntropy))
+        assertTrue(shouldMarkPendingMnemonicAsExported(true, localEntropy, safeEntropy))
+        assertFalse(shouldMarkPendingMnemonicAsExported(true, localEntropy, byteArrayOf(3, 2, 1)))
+    }
 }

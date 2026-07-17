@@ -1894,7 +1894,7 @@
     <string name="enter_mnemonic_phrase">输入或粘贴您的 %1$d 个助记词。</string>
     <string name="log_in_whit_mnemonic_phrase">助记词登录</string>
     <string name="mnemonic_login_security_title">导入到 Mixin 安全吗？</string>
-    <string name="mnemonic_login_security_tip_1">· Mixin 开源、可复现，并经过独立审计。</string>
+    <string name="mnemonic_login_security_tip_1">· Mixin 开源、可验证，并经过独立审计。</string>
     <string name="mnemonic_login_security_tip_2">· 你的数据会被安全加密并存储在本机。</string>
     <string name="mnemonic_login_security_tip_3">· Mixin 不会访问你的隐私信息，也不会与第三方共享。</string>
     <string name="write_down_mnemonic_phrase">写下您的助记词</string>

@@ -10,6 +10,7 @@ import one.mixin.android.api.request.PinRequest
 import one.mixin.android.api.request.TipSecretAction
 import one.mixin.android.api.request.TipSecretReadRequest
 import one.mixin.android.api.request.TipSecretRequest
+import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.TipSigner
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.TipService
@@ -21,6 +22,7 @@ import one.mixin.android.crypto.argon2IHash
 import one.mixin.android.crypto.generateRandomBytes
 import one.mixin.android.crypto.getPendingImportMnemonicEntropy
 import one.mixin.android.crypto.getValueFromEncryptedPreferences
+import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.isMnemonicValid
 import one.mixin.android.crypto.newKeyPairFromMnemonic
 import one.mixin.android.crypto.newKeyPairFromSeed
@@ -284,15 +286,50 @@ class Tip
         suspend fun getPendingImportMnemonic(context: Context, pin: String): List<String>? {
             val pendingEntropy = getPendingImportMnemonicEntropy()
             val localEntropy = getMnemonicFromEncryptedPreferences(context)
-            val entropy = if (Session.hasPhone()) {
+            val hasPhone = Session.hasPhone()
+            val (entropy, shouldMarkAsExported) = if (hasPhone) {
                 val safeEntropy = getMnemonicEntropyFromSafe(context, pin)
                 removeLocalMnemonicIfSafeMatches(context, localEntropy, safeEntropy)
-                resolvePhonePendingImportEntropy(pendingEntropy, localEntropy, safeEntropy)
+                resolvePhonePendingImportEntropy(pendingEntropy, localEntropy, safeEntropy) to
+                    shouldMarkPendingMnemonicAsExported(hasPhone, localEntropy, safeEntropy)
             } else {
-                pendingEntropy ?: localEntropy ?: getMnemonicEntropyFromSafe(context, pin)
+                (pendingEntropy ?: localEntropy ?: getMnemonicEntropyFromSafe(context, pin)) to
+                    shouldMarkPendingMnemonicAsExported(hasPhone, localEntropy, null)
             }
             if (entropy.contentEquals(ByteArray(16))) return null
+            if (shouldMarkAsExported) {
+                markPendingMnemonicAsExported(context, pin, entropy)
+            }
             return toMnemonic(entropy).split(" ")
+        }
+
+        private suspend fun markPendingMnemonicAsExported(
+            context: Context,
+            pin: String,
+            entropy: ByteArray,
+        ) {
+            if (Session.saltExported()) return
+            runCatching {
+                val userId = requireNotNull(Session.getAccountId())
+                val tipPrivateKey = getOrRecoverTipPriv(context, pin).getOrThrow()
+                val edKey = newKeyPairFromMnemonic(toMnemonic(entropy))
+                val pinToken = Session.getPinToken()?.decodeBase64() ?: throw TipNullException("No pin token")
+                tipNetwork {
+                    accountService.saltExport(
+                        ExportRequest(
+                            publicKey = edKey.publicKey.toHex(),
+                            signature = initFromSeedAndSign(edKey.privateKey, userId.toByteArray()).toHex(),
+                            pinBase64 = encryptTipPinInternal(pinToken, tipPrivateKey, TipBody.forExport(userId)),
+                        )
+                    )
+                }.getOrThrow()
+            }.onSuccess { account ->
+                Session.storeAccount(account)
+                Timber.i("LoginFlow mnemonic_login_backup_mark_result success=true")
+            }.onFailure {
+                Timber.i("LoginFlow mnemonic_login_backup_mark_result success=false")
+                Timber.e(it, "Failed to mark mnemonic login as backed up")
+            }
         }
 
         private suspend fun getMnemonicEntropyFromSafe(context: Context, pin: String): ByteArray {
@@ -802,3 +839,12 @@ internal fun resolvePhonePendingImportEntropy(
     } else {
         pendingEntropy ?: localEntropy
     }
+
+internal fun shouldMarkPendingMnemonicAsExported(
+    hasPhone: Boolean,
+    localEntropy: ByteArray?,
+    safeEntropy: ByteArray?,
+): Boolean =
+    !hasPhone ||
+        localEntropy == null ||
+        safeEntropy?.let { shouldRemoveLocalMnemonic(localEntropy, it) } == true
