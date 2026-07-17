@@ -325,7 +325,7 @@ class TipFlowInteractor @Inject internal constructor(
             },
             clear = {
                 clearPendingImportMnemonic(context)
-                Timber.i("LoginFlow pending_import_cleared source=tip")
+                Timber.e("LoginFlow pending_import_cleared source=tip")
             },
         )
         Timber.i(
@@ -333,6 +333,9 @@ class TipFlowInteractor @Inject internal constructor(
         )
         return when (resolution) {
             is PendingMnemonicResolution.WalletHome -> {
+                Timber.e(
+                    "LoginFlow pending_import_wallet_open source=tip wallet_id=${resolution.walletId} category=${resolution.walletCategory}"
+                )
                 val walletDestination = walletDestinationForWallet(
                     resolution.walletId,
                     resolution.walletCategory,

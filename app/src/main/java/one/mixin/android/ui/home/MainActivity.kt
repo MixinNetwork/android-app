@@ -360,7 +360,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         ) {
             PendingMnemonicStartupRoute.Continue -> Unit
             PendingMnemonicStartupRoute.ResumeAccountSetup -> {
-                Timber.i("LoginFlow main_pending_import_resume_account_setup")
+                Timber.e("LoginFlow main_pending_import_resume_account_setup")
                 InitializeActivity.showLoading(this, false)
                 finish()
                 return
@@ -566,10 +566,16 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     privateKey,
                 )
             },
-            clear = { clearPendingImportMnemonic(this) },
+            clear = {
+                clearPendingImportMnemonic(this)
+                Timber.e("LoginFlow pending_import_cleared source=main")
+            },
         )
         return when (resolution) {
             is PendingMnemonicResolution.WalletHome -> {
+                Timber.e(
+                    "LoginFlow pending_import_wallet_open source=main wallet_id=${resolution.walletId} category=${resolution.walletCategory}"
+                )
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
                 val walletDestination = walletDestinationForWallet(
                     resolution.walletId,

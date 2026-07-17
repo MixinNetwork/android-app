@@ -21,6 +21,8 @@ private data class PendingMnemonicWalletMatch(
     val privateKey: String? = null,
 )
 
+private const val WATCH_WALLET_DERIVATION_COUNT = 10
+
 fun shouldCreateClassicWalletAfterTip(
     tipType: TipType,
 ): Boolean = tipType == TipType.Create
@@ -29,16 +31,25 @@ fun matchesMnemonicWalletAddresses(
     mnemonic: String,
     addresses: List<Web3Address>,
 ): Boolean =
-    addresses.any { address ->
-        val derivationIndex = address.path?.let(CryptoWalletHelper::extractIndexFromPath) ?: return@any false
+    addresses.any { address -> matchesMnemonicWalletAddress(mnemonic, address) }
+
+private fun matchesMnemonicWalletAddress(
+    mnemonic: String,
+    address: Web3Address,
+    fallbackIndexes: IntRange? = null,
+): Boolean {
+    val derivationIndex = address.path?.let(CryptoWalletHelper::extractIndexFromPath)
+    val indexes = derivationIndex?.let(::listOf) ?: fallbackIndexes ?: return false
+    return indexes.any { index ->
         runCatching {
             CryptoWalletHelper.mnemonicToAddress(
                 mnemonic = mnemonic,
                 chainId = address.chainId,
-                index = derivationIndex,
+                index = index,
             ).equals(address.destination, ignoreCase = true)
         }.getOrDefault(false)
     }
+}
 
 private suspend fun pendingMnemonicWalletMatches(
     wallets: List<Web3Wallet>?,
@@ -54,19 +65,21 @@ private suspend fun pendingMnemonicWalletMatches(
     return buildList {
         wallets.orEmpty().forEach { wallet ->
             if (wallet.category != WalletCategory.IMPORTED_MNEMONIC.value &&
-                wallet.category != WalletCategory.IMPORTED_PRIVATE_KEY.value
+                wallet.category != WalletCategory.IMPORTED_PRIVATE_KEY.value &&
+                wallet.category != WalletCategory.WATCH_ADDRESS.value
             ) {
                 return@forEach
             }
             val address = walletAddresses(wallet).firstOrNull { address ->
-                val derivationIndex = address.path?.let(CryptoWalletHelper::extractIndexFromPath) ?: return@firstOrNull false
-                runCatching {
-                    CryptoWalletHelper.mnemonicToAddress(
-                        mnemonic = mnemonic,
-                        chainId = address.chainId,
-                        index = derivationIndex,
-                    ).equals(address.destination, ignoreCase = true)
-                }.getOrDefault(false)
+                matchesMnemonicWalletAddress(
+                    mnemonic = mnemonic,
+                    address = address,
+                    fallbackIndexes = if (wallet.category == WalletCategory.WATCH_ADDRESS.value) {
+                        0 until WATCH_WALLET_DERIVATION_COUNT
+                    } else {
+                        null
+                    },
+                )
             } ?: return@forEach
             val privateKey = if (wallet.category == WalletCategory.IMPORTED_PRIVATE_KEY.value) {
                 val derivationIndex = address.path?.let(CryptoWalletHelper::extractIndexFromPath)
@@ -103,6 +116,12 @@ suspend fun resolvePendingMnemonicAfterWalletFetch(
     val words = pendingWords ?: return PendingMnemonicResolution.LocalSaveFailed
     val matches = pendingMnemonicWalletMatches(wallets, words, walletAddresses, privateKeyForAddress)
     if (matches.isEmpty()) return PendingMnemonicResolution.ImportMnemonic
+    matches.firstOrNull { it.walletCategory == WalletCategory.WATCH_ADDRESS.value }?.let { watchWallet ->
+        return runCatching {
+            clear()
+            PendingMnemonicResolution.WalletHome(watchWallet.walletId, watchWallet.walletCategory)
+        }.getOrDefault(PendingMnemonicResolution.LocalSaveFailed)
+    }
     return runCatching {
         if (matches.any { match ->
                 when (match.walletCategory) {

@@ -231,7 +231,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             },
             clear = {
                 clearPendingImportMnemonic(context)
-                Timber.i("LoginFlow pending_import_cleared source=loading")
+                Timber.e("LoginFlow pending_import_cleared source=loading")
             },
         )
         Timber.i(
@@ -239,6 +239,9 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         )
         return when (resolution) {
             is PendingMnemonicResolution.WalletHome -> {
+                Timber.e(
+                    "LoginFlow pending_import_wallet_open source=loading wallet_id=${resolution.walletId} category=${resolution.walletCategory}"
+                )
                 val walletDestination = walletDestinationForWallet(
                     resolution.walletId,
                     resolution.walletCategory,
