@@ -609,6 +609,7 @@ fun PerpsMarketDetailPage(
                                         marketTokenSymbol = market?.tokenSymbol ?: "",
                                         isLong = true,
                                         source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
+                                        returnToDetail = true,
                                     )
                                 },
                                 backgroundColor = risingColor,
@@ -634,6 +635,7 @@ fun PerpsMarketDetailPage(
                                         marketTokenSymbol = market?.tokenSymbol ?: "",
                                         isLong = false,
                                         source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
+                                        returnToDetail = true,
                                     )
                                 },
                                 backgroundColor = fallingColor,
