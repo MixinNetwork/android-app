@@ -71,12 +71,15 @@ class PerpsActivity : BaseActivity() {
             marketDisplaySymbol: String,
             marketTokenSymbol: String = "",
             source: String? = null,
+            reuseCurrentActivity: Boolean = true,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
                 if (context !is Activity) {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
-                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                if (reuseCurrentActivity) {
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
                 putExtra(EXTRA_MARKET_ID, marketId)
                 putExtra(EXTRA_MARKET_SYMBOL, marketSymbol)
                 putExtra(EXTRA_MARKET_DISPLAY_SYMBOL, marketDisplaySymbol)

@@ -395,33 +395,20 @@ fun PerpsMarketDetailPage(
                         positions = closedPositions,
                         onViewAll = {
                             val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
-                            activity.supportFragmentManager
-                                .beginTransaction()
-                                .add(
-                                    android.R.id.content,
-                                    AllPositionsFragment.newClosedInstance(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
-                                    AllPositionsFragment.TAG
-                                )
-                                .addToBackStack(null)
-                                .commit()
+                            activity.supportFragmentManager.navigateToPerpsRoute(
+                                AllPositionsFragment.newClosedInstance(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
+                                AllPositionsFragment.TAG,
+                                android.R.id.content,
+                                animate = false,
+                            )
                         },
                         onPositionClick = { position ->
                             val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
-                            activity.supportFragmentManager
-                                .beginTransaction()
-                                .setCustomAnimations(
-                                    R.anim.slide_in_right,
-                                    0,
-                                    0,
-                                    R.anim.slide_out_right
-                                )
-                                .add(
-                                    android.R.id.content,
-                                    PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
-                                    PositionDetailFragment.TAG
-                                )
-                                .addToBackStack(null)
-                                .commit()
+                            activity.supportFragmentManager.navigateToPerpsRoute(
+                                PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
+                                PositionDetailFragment.TAG,
+                                android.R.id.content,
+                            )
                         }
                     )
                 }
