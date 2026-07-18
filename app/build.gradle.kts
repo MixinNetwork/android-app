@@ -7,7 +7,7 @@ plugins {
     id("androidx.room3")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.4.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.10"
     id("com.google.firebase.firebase-perf")
     id("com.bugsnag.android.gradle")
 }
@@ -16,8 +16,8 @@ apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
 val versionMajor = 5
-val versionMinor = 1
-val versionPatch = 2
+val versionMinor = 2
+val versionPatch = 1
 val versionBuild = 1
 
 
@@ -308,7 +308,7 @@ android {
             force("org.bouncycastle:bcprov-jdk15to18:$bcVersion")
             force("org.bouncycastle:bcutil-jdk15to18:$bcVersion")
             force("org.bouncycastle:bcpkix-jdk15to18:$bcVersion")
-            force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
+            force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.10")
             dependencySubstitution {
                 substitute(module("org.bouncycastle:bcprov-jdk15on")).using(module("org.bouncycastle:bcprov-jdk15to18:$bcVersion"))
                 substitute(module("org.bouncycastle:bcutil-jdk15on")).using(module("org.bouncycastle:bcutil-jdk15to18:$bcVersion"))
@@ -461,7 +461,7 @@ dependencies {
     implementation("com.google.zxing:core:$zxingVersion")
     implementation("com.github.tougee:sticky-headers-recyclerview:$stickyheadersrecyclerviewVersion")
     implementation("org.whispersystems:signal-protocol-android:$signalVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.4.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.4.10")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$coroutinesVersion")

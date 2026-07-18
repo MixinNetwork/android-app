@@ -182,6 +182,7 @@ class TransferContent : LinearLayout {
                 memo.isVisible = true
                 memo.setContent(R.string.Memo, transferBiometricItem.memo ?: "")
             }
+            token.isVisible = false
 
             val tokenItem = transferBiometricItem.asset!!
             network.setContent(R.string.network, tokenItem.chainName ?: getChainNetwork(assetId = tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey) ?: "")

@@ -606,6 +606,13 @@ class MixinDatabaseMigrations private constructor() {
                 }
             }
 
+        val MIGRATION_70_71: Migration =
+            object : Migration(70, 71) {
+                override suspend fun migrate(db: SQLiteConnection) {
+                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `perps_market_id` TEXT")
+                }
+            }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }
