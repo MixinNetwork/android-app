@@ -2,8 +2,45 @@ package one.mixin.android.codegen.processor
 
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
 
 class QueryFileRendererTest {
+    @Test
+    fun rendersLimitOffsetParametersInEveryQuery() {
+        val source =
+            QueryFileRenderer().render(
+                QueryProviderModel(
+                    packageName = "one.mixin.android.db.provider",
+                    generatedName = "GeneratedDataProvider",
+                    functions = emptyList(),
+                    limitOffsetFunctions =
+                        listOf(
+                            LimitOffsetPagingSourceFunctionModel(
+                                name = "observeConversations",
+                                returnType = "PagingSource<Int, ConversationItem>",
+                                returnTypeImports = listOf("androidx.paging.PagingSource", "one.mixin.android.vo.ConversationItem"),
+                                parameters =
+                                    listOf(
+                                        QueryParameterModel("circleId", "String"),
+                                        QueryParameterModel("database", "MixinDatabase"),
+                                    ),
+                                parameterImports = listOf("one.mixin.android.db.MixinDatabase"),
+                                countSql = "SELECT count(1) FROM conversations WHERE circle_id = '{{circleId}}'",
+                                offsetSql = "SELECT rowid FROM conversations WHERE circle_id = '{{circleId}}' LIMIT ? OFFSET ?",
+                                querySql = "SELECT * FROM conversations WHERE circle_id = '{{circleId}}' AND rowid IN ({{ids}})",
+                                tables = listOf("conversations"),
+                                databaseParameter = "database",
+                                converterName = "convertToConversationItems",
+                            ),
+                        ),
+                ),
+            )
+
+        assertFalse(source.contains("{{circleId}}"))
+        assertTrue(source.contains("circle_id = '${'$'}circleId'"))
+    }
+
     @Test
     fun rendersSuspendQueryWithNullableStringBinds() {
         val source =
@@ -176,7 +213,7 @@ class QueryFileRendererTest {
                     }
                     return object : MixinCountLimitOffsetDataSource<ConversationItem>(
                         offsetStatement,
-                        { database.query(countStatement).use { if (it.moveToFirst()) it.getInt(0) else 0 } },
+                        { connection -> connection.query(countStatement).use { if (it.moveToFirst()) it.getInt(0) else 0 } },
                         querySqlGenerator,
                         database,
                         "conversations",
@@ -429,10 +466,12 @@ class QueryFileRendererTest {
             import android.annotation.SuppressLint
             import androidx.paging.PagingSource
             import androidx.paging.PagingState
+            import androidx.room3.PooledConnection
             import androidx.room3.paging.util.INITIAL_ITEM_COUNT
             import androidx.room3.paging.util.getClippedRefreshKey
             import androidx.room3.paging.util.getLimit
             import androidx.room3.paging.util.getOffset
+            import androidx.room3.useReaderConnection
             import androidx.room3.withReadTransaction
             import java.util.concurrent.atomic.AtomicInteger
             import kotlinx.coroutines.withContext
@@ -462,26 +501,28 @@ class QueryFileRendererTest {
                                 val tempCount = itemCount.get()
                                 if (tempCount == INITIAL_ITEM_COUNT) {
                                     database.withReadTransaction {
-                                        val count = countItems()
+                                        val count = countItems(this)
                                         itemCount.set(count)
-                                        queryData(params, count)
+                                        queryData(this, params, count)
                                     }
                                 } else {
-                                    val loadResult = queryData(params, tempCount)
-                                    @Suppress("UNCHECKED_CAST")
-                                    if (invalid) LoadResult.Invalid() else loadResult
+                                    database.useReaderConnection { connection ->
+                                        val loadResult = queryData(connection, params, tempCount)
+                                        @Suppress("UNCHECKED_CAST")
+                                        if (invalid) LoadResult.Invalid() else loadResult
+                                    }
                                 }
                             }
                         }
 
-                        private fun countItems(): Int {
+                        private suspend fun countItems(connection: PooledConnection): Int {
                             val countStatement = RoomQuery.acquire(
                                 ""${'"'}
                                 SELECT COUNT(DISTINCT o.rowid) FROM orders o ${'$'}whereSql
                                 ""${'"'}.trimIndent(),
                                 0,
                             )
-                            val cursor = database.query(countStatement)
+                            val cursor = connection.query(countStatement)
                             return try {
                                 if (cursor.moveToFirst()) cursor.getInt(0) else 0
                             } finally {
@@ -490,7 +531,7 @@ class QueryFileRendererTest {
                             }
                         }
 
-                        private fun queryData(params: LoadParams<Int>, itemCount: Int): LoadResult.Page<Int, OrderItem> {
+                        private suspend fun queryData(connection: PooledConnection, params: LoadParams<Int>, itemCount: Int): LoadResult.Page<Int, OrderItem> {
                             val key = params.key ?: 0
                             val limit = getLimit(params, key)
                             val offset = getOffset(params, key, itemCount)
@@ -502,7 +543,7 @@ class QueryFileRendererTest {
                             )
                             offsetStatement.bindLong(1, limit.toLong())
                             offsetStatement.bindLong(2, offset.toLong())
-                            val offsetCursor = database.query(offsetStatement)
+                            val offsetCursor = connection.query(offsetStatement)
                             val ids = mutableListOf<String>()
                             try {
                                 while (offsetCursor.moveToNext()) {
@@ -516,7 +557,7 @@ class QueryFileRendererTest {
                                 emptyList()
                             } else {
                                 val queryStatement = querySqlGenerator(ids.joinToString())
-                                val cursor = database.query(queryStatement)
+                                val cursor = connection.query(queryStatement)
                                 try {
                                     convertToOrderItems(cursor)
                                 } finally {

@@ -202,8 +202,9 @@ class QueryFileRenderer {
             lines += "        ${parameter.name}: ${parameter.type},"
         }
         lines += "    ): ${function.returnType} {"
-        renderRoomQueryAcquire(lines, "countStatement", function.countSql, 0, "        ")
-        renderRoomQueryAcquire(lines, "offsetStatement", function.offsetSql, 2, "        ")
+        val parameterNames = function.parameters.map { it.name }
+        renderRoomQueryAcquire(lines, "countStatement", function.countSql.renderSqlTemplate(parameterNames), 0, "        ")
+        renderRoomQueryAcquire(lines, "offsetStatement", function.offsetSql.renderSqlTemplate(parameterNames), 2, "        ")
         lines += "        val querySqlGenerator = fun(ids: String): RoomQuery {"
         lines += "            return RoomQuery.acquire("
         renderSqlLiteral(lines, function.querySql.renderSqlTemplate(function.parameters.map { it.name } + "ids"), "                ")
@@ -212,7 +213,7 @@ class QueryFileRenderer {
         lines += "        }"
         lines += "        return object : MixinCountLimitOffsetDataSource<$itemType>("
         lines += "            offsetStatement,"
-        lines += "            { ${function.databaseParameter}.query(countStatement).use { if (it.moveToFirst()) it.getInt(0) else 0 } },"
+        lines += "            { connection -> connection.query(countStatement).use { if (it.moveToFirst()) it.getInt(0) else 0 } },"
         lines += "            querySqlGenerator,"
         lines += "            ${function.databaseParameter},"
         function.tables.forEach { table ->
@@ -280,21 +281,23 @@ class QueryFileRenderer {
         lines += "                    val tempCount = itemCount.get()"
         lines += "                    if (tempCount == INITIAL_ITEM_COUNT) {"
         lines += "                        ${function.databaseParameter}.withReadTransaction {"
-        lines += "                            val count = countItems()"
+        lines += "                            val count = countItems(this)"
         lines += "                            itemCount.set(count)"
-        lines += "                            queryData(params, count)"
+        lines += "                            queryData(this, params, count)"
         lines += "                        }"
         lines += "                    } else {"
-        lines += "                        val loadResult = queryData(params, tempCount)"
-        lines += "                        @Suppress(\"UNCHECKED_CAST\")"
-        lines += "                        if (invalid) LoadResult.Invalid() else loadResult"
+        lines += "                        ${function.databaseParameter}.useReaderConnection { connection ->"
+        lines += "                            val loadResult = queryData(connection, params, tempCount)"
+        lines += "                            @Suppress(\"UNCHECKED_CAST\")"
+        lines += "                            if (invalid) LoadResult.Invalid() else loadResult"
+        lines += "                        }"
         lines += "                    }"
         lines += "                }"
         lines += "            }"
         lines += ""
-        lines += "            private fun countItems(): Int {"
+        lines += "            private suspend fun countItems(connection: PooledConnection): Int {"
         renderRoomQueryAcquire(lines, "countStatement", function.countSql.renderSqlTemplate(function.parameters.map { it.name }), 0, "                ")
-        lines += "                val cursor = ${function.databaseParameter}.query(countStatement)"
+        lines += "                val cursor = connection.query(countStatement)"
         lines += "                return try {"
         lines += "                    if (cursor.moveToFirst()) cursor.getInt(0) else 0"
         lines += "                } finally {"
@@ -303,14 +306,14 @@ class QueryFileRenderer {
         lines += "                }"
         lines += "            }"
         lines += ""
-        lines += "            private fun queryData(params: LoadParams<Int>, itemCount: Int): LoadResult.Page<Int, $itemType> {"
+        lines += "            private suspend fun queryData(connection: PooledConnection, params: LoadParams<Int>, itemCount: Int): LoadResult.Page<Int, $itemType> {"
         lines += "                val key = params.key ?: 0"
         lines += "                val limit = getLimit(params, key)"
         lines += "                val offset = getOffset(params, key, itemCount)"
         renderRoomQueryAcquire(lines, "offsetStatement", function.offsetSql.renderSqlTemplate(function.parameters.map { it.name }), 2, "                ")
         lines += "                offsetStatement.bindLong(1, limit.toLong())"
         lines += "                offsetStatement.bindLong(2, offset.toLong())"
-        lines += "                val offsetCursor = ${function.databaseParameter}.query(offsetStatement)"
+        lines += "                val offsetCursor = connection.query(offsetStatement)"
         lines += "                val ids = mutableListOf<String>()"
         lines += "                try {"
         lines += "                    while (offsetCursor.moveToNext()) {"
@@ -324,7 +327,7 @@ class QueryFileRenderer {
         lines += "                    emptyList()"
         lines += "                } else {"
         lines += "                    val queryStatement = querySqlGenerator(ids.joinToString())"
-        lines += "                    val cursor = ${function.databaseParameter}.query(queryStatement)"
+        lines += "                    val cursor = connection.query(queryStatement)"
         lines += "                    try {"
         lines += "                        ${function.converterName}(cursor)"
         lines += "                    } finally {"
@@ -541,10 +544,12 @@ class QueryFileRenderer {
         } else {
             listOf(
                 "androidx.paging.PagingState",
+                "androidx.room3.PooledConnection",
                 "androidx.room3.paging.util.INITIAL_ITEM_COUNT",
                 "androidx.room3.paging.util.getClippedRefreshKey",
                 "androidx.room3.paging.util.getLimit",
                 "androidx.room3.paging.util.getOffset",
+                "androidx.room3.useReaderConnection",
                 "androidx.room3.withReadTransaction",
                 "one.mixin.android.db.datasource.RoomDatabaseCompat",
                 "java.util.concurrent.atomic.AtomicInteger",

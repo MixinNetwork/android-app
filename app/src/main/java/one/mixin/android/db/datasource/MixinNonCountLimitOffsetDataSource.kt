@@ -5,6 +5,7 @@ import android.database.Cursor
 import android.os.CancellationSignal
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import androidx.room3.PooledConnection
 import androidx.room3.RoomDatabase
 import androidx.room3.paging.util.getClippedRefreshKey
 import androidx.room3.paging.util.getLimit
@@ -19,14 +20,16 @@ abstract class MixinNonCountLimitOffsetDataSource<Value : Any>(
     private val db: RoomDatabase,
     vararg tables: String,
 ) : PagingSource<Int, Value>() {
-    init {
-        RoomDatabaseCompat.observeInvalidation(db, this, *tables)
-    }
+    private val invalidation = RoomDatabaseCompat.observeInvalidation(db, this, *tables)
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Value> {
-        return withContext(RoomDatabaseCompat.queryContext(db)) {
+        invalidation.awaitStart()
+        val result = withContext(RoomDatabaseCompat.queryContext(db)) {
             initialLoad(params)
         }
+        invalidation.refresh()
+        @Suppress("UNCHECKED_CAST")
+        return if (invalid) LoadResult.Invalid() else result
     }
 
     /**
@@ -42,13 +45,15 @@ abstract class MixinNonCountLimitOffsetDataSource<Value : Any>(
     private suspend fun initialLoad(params: LoadParams<Int>): LoadResult<Int, Value> {
         return db.withReadTransaction {
             queryData(
+                connection = this,
                 params = params,
                 itemCount = totalCount,
             )
         }
     }
 
-    private fun queryData(
+    private suspend fun queryData(
+        connection: PooledConnection,
         params: LoadParams<Int>,
         itemCount: Int,
         cancellationSignal: CancellationSignal? = null,
@@ -60,8 +65,12 @@ abstract class MixinNonCountLimitOffsetDataSource<Value : Any>(
         val argCount = offsetStatement.argCount
         offsetQuery.bindLong(argCount - 1, limit.toLong())
         offsetQuery.bindLong(argCount, offset.toLong())
-        val cursor = db.query(offsetQuery, cancellationSignal)
-        val data = convertRows(cursor)
+        val data =
+            try {
+                connection.query(offsetQuery, cancellationSignal).use(::convertRows)
+            } finally {
+                offsetQuery.release()
+            }
         val nextPosToLoad = offset + data.size
         val nextKey =
             if (data.isEmpty() || data.size < limit || nextPosToLoad >= itemCount) {

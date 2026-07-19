@@ -1,27 +1,22 @@
 package one.mixin.android.util.database
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-import android.os.Build
-import androidx.room3.Transactor.SQLiteTransactionType
-import androidx.room3.useWriterConnection
 import one.mixin.android.Constants
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.datasource.execSQL
+import one.mixin.android.db.datasource.RoomDatabaseCompat
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.moveTo
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber
 import java.io.File
 
-@SuppressLint("ObsoleteSdkInt")
 suspend fun clearJobsAndRawTransaction(
     context: Context,
     identityNumber: String,
 ) {
-        val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
         val scopedDbFile = databaseFile(context, identityNumber)
         val legacyDbFile = legacyDatabaseFile(context)
 
@@ -32,21 +27,11 @@ suspend fun clearJobsAndRawTransaction(
 
         try {
             val db = MixinDatabase.getDatabase(context, identityNumber)
-            db.useWriterConnection { connection ->
-                if (!supportsDeferForeignKeys) {
-                    connection.execSQL("PRAGMA foreign_keys = FALSE")
-                }
-                if (supportsDeferForeignKeys) {
-                    connection.execSQL("PRAGMA defer_foreign_keys = TRUE")
-                }
-                connection.withTransaction(SQLiteTransactionType.IMMEDIATE) {
-                    execSQL("DELETE FROM `jobs`")
-                    execSQL("DELETE FROM `raw_transactions`")
-                    execSQL("DELETE FROM `outputs`")
-                }
-                if (!supportsDeferForeignKeys) {
-                    connection.execSQL("PRAGMA foreign_keys = TRUE")
-                }
+            db.runInTransaction {
+                RoomDatabaseCompat.execute(db, "PRAGMA defer_foreign_keys = TRUE")
+                RoomDatabaseCompat.execute(db, "DELETE FROM `jobs`")
+                RoomDatabaseCompat.execute(db, "DELETE FROM `raw_transactions`")
+                RoomDatabaseCompat.execute(db, "DELETE FROM `outputs`")
             }
             Timber.e("Clear jobs and raw transaction")
         } catch (e: Exception) {

@@ -5,11 +5,13 @@ import android.database.Cursor
 import android.os.CancellationSignal
 import androidx.paging.PagingSource
 import androidx.paging.PagingState
+import androidx.room3.PooledConnection
 import androidx.room3.RoomDatabase
 import androidx.room3.paging.util.INITIAL_ITEM_COUNT
 import androidx.room3.paging.util.getClippedRefreshKey
 import androidx.room3.paging.util.getLimit
 import androidx.room3.paging.util.getOffset
+import androidx.room3.useReaderConnection
 import androidx.room3.withReadTransaction
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicInteger
@@ -17,18 +19,16 @@ import java.util.concurrent.atomic.AtomicInteger
 @SuppressLint("RestrictedApi")
 abstract class MixinCountLimitOffsetDataSource<Value : Any>(
     private val offsetStatement: RoomQuery,
-    private val fastCountCallback: () -> Int,
+    private val fastCountCallback: suspend (PooledConnection) -> Int,
     private val querySqlGenerator: (ids: String) -> RoomQuery,
     private val db: RoomDatabase,
     vararg tables: String,
 ) : PagingSource<Int, Value>() {
     internal val itemCount: AtomicInteger = AtomicInteger(INITIAL_ITEM_COUNT)
-
-    init {
-        RoomDatabaseCompat.observeInvalidation(db, this, *tables)
-    }
+    private val invalidation = RoomDatabaseCompat.observeInvalidation(db, this, *tables)
 
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Value> {
+        invalidation.awaitStart()
         return withContext(RoomDatabaseCompat.queryContext(db)) {
             val tempCount = itemCount.get()
             // if itemCount is < 0, then it is initial load
@@ -52,26 +52,28 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
      */
     private suspend fun initialLoad(params: LoadParams<Int>): LoadResult<Int, Value> {
         return db.withReadTransaction {
-            val tempCount = getItemCount()
+            val tempCount = getItemCount(this)
             itemCount.set(tempCount)
-            queryData(params = params, itemCount = tempCount)
+            queryData(this, params = params, itemCount = tempCount)
         }
     }
 
-    private fun getItemCount(): Int {
-        return fastCountCallback.invoke()
+    private suspend fun getItemCount(connection: PooledConnection): Int {
+        return fastCountCallback.invoke(connection)
     }
 
     private suspend fun nonInitialLoad(
         params: LoadParams<Int>,
         tempCount: Int,
     ): LoadResult<Int, Value> {
-        val loadResult = queryData(params, tempCount)
+        val loadResult = db.useReaderConnection { queryData(it, params, tempCount) }
+        invalidation.refresh()
         @Suppress("UNCHECKED_CAST")
         return if (invalid) LoadResult.Invalid() else loadResult
     }
 
-    private fun queryData(
+    private suspend fun queryData(
+        connection: PooledConnection,
         params: LoadParams<Int>,
         itemCount: Int,
         cancellationSignal: CancellationSignal? = null,
@@ -83,13 +85,22 @@ abstract class MixinCountLimitOffsetDataSource<Value : Any>(
         val argCount = offsetStatement.argCount
         offsetQuery.bindLong(argCount - 1, limit.toLong())
         offsetQuery.bindLong(argCount, offset.toLong())
-        val cursor = db.query(offsetQuery)
-        val ids: List<String> = convertRowsToIds(cursor)
+        val ids =
+            try {
+                convertRowsToIds(connection.query(offsetQuery))
+            } finally {
+                offsetQuery.release()
+            }
         val data =
             if (ids.isEmpty()) {
                 emptyList()
             } else {
-                convertRows(db.query(querySqlGenerator(ids.joinToString())))
+                val query = querySqlGenerator(ids.joinToString())
+                try {
+                    connection.query(query).use(::convertRows)
+                } finally {
+                    query.release()
+                }
             }
         val nextPosToLoad = offset + data.size
         val nextKey =

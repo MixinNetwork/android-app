@@ -2,8 +2,8 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.db.withRoomTransaction
 import one.mixin.android.db.perps.PerpsPositionDao
-import one.mixin.android.db.runInTransaction
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.session.Session
 import one.mixin.android.session.resolveCurrentUserScopeManager
@@ -49,15 +49,13 @@ class RefreshPerpsPositionsJob(
                 Timber.d("RefreshPerpsPositionsJob: Fetched ${positions.size} positions for wallet $walletId")
 
                 val perpsDb = resolveCurrentUserScopeManager(applicationContext).getPerpsDatabase()
-                perpsDb.runInTransaction {
-                    runBlocking {
-                        if (positions.isEmpty()) {
-                            positionDao.deleteOpenByWallet(walletId)
-                        } else {
-                            val positionIds = positions.map { it.positionId }
-                            positionDao.deleteOpenByWalletAndNotIn(walletId, positionIds)
-                            positionDao.insertAll(positions)
-                        }
+                perpsDb.withRoomTransaction {
+                    if (positions.isEmpty()) {
+                        positionDao.deleteOpenByWallet(walletId)
+                    } else {
+                        val positionIds = positions.map { it.positionId }
+                        positionDao.deleteOpenByWalletAndNotIn(walletId, positionIds)
+                        positionDao.insertAll(positions)
                     }
                 }
             } else {

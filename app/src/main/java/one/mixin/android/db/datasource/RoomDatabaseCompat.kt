@@ -6,14 +6,17 @@ import androidx.paging.PagingSource
 import androidx.room3.PooledConnection
 import androidx.room3.RoomDatabase
 import androidx.room3.RoomRawQuery
-import androidx.room3.Transactor.SQLiteTransactionType
 import androidx.room3.useReaderConnection
-import androidx.room3.useWriterConnection
+import androidx.room3.util.performBlocking
+import androidx.room3.util.performInTransactionBlocking
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.CoroutineContext
 
 object RoomDatabaseCompat {
@@ -35,11 +38,7 @@ object RoomDatabaseCompat {
         runBlocking(queryContext(db)) {
             cancellationSignal?.throwIfCanceled()
             db.useReaderConnection { connection ->
-                connection.usePrepared(query.sql) { statement ->
-                    RoomRawQueryCompat.bind(query, statement)
-                    cancellationSignal?.throwIfCanceled()
-                    statement.toCursor()
-                }
+                connection.query(query, cancellationSignal)
             }
         }
 
@@ -78,9 +77,12 @@ object RoomDatabaseCompat {
         sql: String,
         bindArgs: Array<Any?> = emptyArray(),
     ) {
-        runBlocking(queryContext(db)) {
-            db.useWriterConnection { connection ->
-                connection.execSQL(sql, bindArgs)
+        performBlocking(db, isReadOnly = false, inTransaction = true) { connection ->
+            connection.prepare(sql).use { statement ->
+                bindArgs.forEachIndexed { index, value ->
+                    statement.bindArg(index + 1, value)
+                }
+                statement.step()
             }
         }
     }
@@ -90,24 +92,15 @@ object RoomDatabaseCompat {
 
     fun <T> runInWriteTransaction(
         db: RoomDatabase,
-        block: suspend androidx.room3.TransactionScope<T>.() -> T,
-    ): T {
-        return runBlocking(queryContext(db)) {
-            db.useWriterConnection { connection ->
-                connection.withTransaction(SQLiteTransactionType.IMMEDIATE, block)
-            }
-        }
-    }
+        block: () -> T,
+    ): T = performInTransactionBlocking(db, block)
 
     @JvmStatic
     fun observeInvalidation(
         db: RoomDatabase,
         pagingSource: PagingSource<*, *>,
         vararg tables: String,
-    ) {
-        val job = observeInvalidationForTables(db.getCoroutineScope(), db, tables) { pagingSource.invalidate() }
-        pagingSource.registerInvalidatedCallback { job.cancel() }
-    }
+    ): PagingSourceInvalidation = PagingSourceInvalidation(db, pagingSource, tables)
 
     @JvmStatic
     fun observeInvalidation(
@@ -131,12 +124,69 @@ object RoomDatabaseCompat {
         onInvalidated: () -> Unit,
     ): Job {
         return scope.launch {
-            db.invalidationTracker.createFlow(*tables)
-                .drop(1)
+            db.invalidationTracker.createFlow(*tables, emitInitialState = false)
                 .collect { onInvalidated() }
         }
     }
 }
+
+class PagingSourceInvalidation internal constructor(
+    private val db: RoomDatabase,
+    private val pagingSource: PagingSource<*, *>,
+    private val tables: Array<out String>,
+) {
+    private val collectorStarted = CompletableDeferred<Unit>()
+    private val refreshStarted = AtomicBoolean(false)
+    private val job =
+        db.getCoroutineScope().launch {
+            db.invalidationTracker.createFlow(*tables, emitInitialState = true).collect {
+                val initialState = collectorStarted.complete(Unit)
+                if (pagingSource.invalid) {
+                    throw CancellationException("PagingSource is invalid")
+                }
+                if (!initialState && refreshStarted.get()) {
+                    pagingSource.invalidate()
+                }
+            }
+        }
+
+    init {
+        pagingSource.registerInvalidatedCallback {
+            job.cancel()
+        }
+    }
+
+    suspend fun awaitStart() {
+        collectorStarted.await()
+        refreshStarted.compareAndSet(false, true)
+    }
+
+    suspend fun refresh() {
+        withContext(RoomDatabaseCompat.queryContext(db)) {
+            val invalidated = db.invalidationTracker.refresh(*tables)
+            if (invalidated) {
+                pagingSource.invalidate()
+            }
+        }
+    }
+}
+
+suspend fun PooledConnection.query(
+    query: RoomRawQuery,
+    cancellationSignal: CancellationSignal? = null,
+): Cursor {
+    cancellationSignal?.throwIfCanceled()
+    return usePrepared(query.sql) { statement ->
+        RoomRawQueryCompat.bind(query, statement)
+        cancellationSignal?.throwIfCanceled()
+        statement.toCursor()
+    }
+}
+
+suspend fun PooledConnection.query(
+    query: RoomQuery,
+    cancellationSignal: CancellationSignal? = null,
+): Cursor = query(query.toRoomRawQuery(), cancellationSignal)
 
 suspend fun PooledConnection.execSQL(
     sql: String,
