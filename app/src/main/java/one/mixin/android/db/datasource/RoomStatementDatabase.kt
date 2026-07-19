@@ -25,7 +25,7 @@ class RoomStatementDatabase internal constructor(
         if (transactionSuccessful && statements != null) {
             RoomDatabaseCompat.runInWriteTransaction(db) {
                 statements.forEach { (sql, bindArgs) ->
-                    execSQL(sql, bindArgs)
+                    RoomDatabaseCompat.execute(db, sql, bindArgs)
                 }
             }
         }
