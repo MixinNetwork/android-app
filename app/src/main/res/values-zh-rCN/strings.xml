@@ -320,6 +320,7 @@
     <string name="database_upgrade_tips">正在进行数据库升级，可能需要几分钟，请不要强制关闭应用。</string>
     <string name="Date">日期</string>
     <string name="date_format_date">yyyy 年 MM 月 dd 日</string>
+    <string name="date_format_month_day">MM 月 dd 日</string>
     <string name="db_debug_warning">注意：如果执行了有侵害性的 SQL，结果不可逆！</string>
     <string name="Decline">挂断</string>
     <string name="Declined">已拒绝</string>

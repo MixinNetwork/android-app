@@ -6,7 +6,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.4.0"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.10"
     id("com.google.firebase.firebase-perf")
     id("com.bugsnag.android.gradle")
 }
@@ -91,7 +91,6 @@ val robolectricVersion: String by rootProject.extra
 val gsonVersion: String by rootProject.extra
 val serializationVersion: String by rootProject.extra
 val autodisposeVersion: String by rootProject.extra
-val isoparserVersion: String by rootProject.extra
 val bitcoinPaymentURI: String by rootProject.extra
 val startupVersion: String by rootProject.extra
 val dnsVersion: String by rootProject.extra
@@ -306,7 +305,7 @@ android {
             force("org.bouncycastle:bcprov-jdk15to18:$bcVersion")
             force("org.bouncycastle:bcutil-jdk15to18:$bcVersion")
             force("org.bouncycastle:bcpkix-jdk15to18:$bcVersion")
-            force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.0")
+            force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.10")
             dependencySubstitution {
                 substitute(module("org.bouncycastle:bcprov-jdk15on")).using(module("org.bouncycastle:bcprov-jdk15to18:$bcVersion"))
                 substitute(module("org.bouncycastle:bcutil-jdk15on")).using(module("org.bouncycastle:bcutil-jdk15to18:$bcVersion"))
@@ -457,7 +456,7 @@ dependencies {
     implementation("com.google.zxing:core:$zxingVersion")
     implementation("com.github.tougee:sticky-headers-recyclerview:$stickyheadersrecyclerviewVersion")
     implementation("org.whispersystems:signal-protocol-android:$signalVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.4.0")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.4.10")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$coroutinesVersion")
@@ -479,7 +478,6 @@ dependencies {
     implementation("com.uber.autodispose:autodispose-android:$autodisposeVersion")
     implementation("com.uber.autodispose:autodispose-android-archcomponents:$autodisposeVersion")
     implementation("com.uber.autodispose:autodispose-lifecycle:$autodisposeVersion")
-    implementation("com.googlecode.mp4parser:isoparser:$isoparserVersion")
     implementation("io.noties.markwon:core:$markwonVersion")
     implementation("io.noties.markwon:image:$markwonVersion")
     implementation("io.noties.markwon:image-glide:$markwonVersion")

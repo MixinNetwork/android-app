@@ -280,7 +280,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             id = when (step) {
                                 Step.Pending -> if (isAddPosition) R.string.confirm_adding_position else R.string.confirm_opening_position
                                 Step.Done -> if (isAddPosition) R.string.Position_Add_Submitted else R.string.Position_Submitted
-                                Step.Error -> R.string.swap_failed
+                                Step.Error -> when {
+                                    isAddPosition && isLong -> R.string.Added_Long_Failed
+                                    isAddPosition -> R.string.Added_Short_Failed
+                                    isLong -> R.string.Opened_Long_Failed
+                                    else -> R.string.Opened_Short_Failed
+                                }
                                 Step.Sending -> R.string.Sending
                             }
                         ),

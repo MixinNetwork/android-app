@@ -477,25 +477,49 @@ private fun LazyListScope.closedPositionItems(
         },
     ) { index ->
         val order = positions[index] ?: return@items
-        val isFirst = index == 0
-        val isLast = index == positions.itemCount - 1
+        val context = LocalContext.current
+        val date = order.createdAtDateLabel(context)
+        val previousDate = if (index > 0) {
+            positions.peek(index - 1)?.createdAtDateLabel(context)
+        } else {
+            null
+        }
+        val nextDate = if (index < positions.itemCount - 1) {
+            positions.peek(index + 1)?.createdAtDateLabel(context)
+        } else {
+            null
+        }
+        val isFirst = index == 0 || previousDate != date
+        val isLast = index == positions.itemCount - 1 || nextDate != date
         val shape = when {
             isFirst && isLast -> RoundedCornerShape(8.dp)
             isFirst -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
             isLast -> RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
             else -> RoundedCornerShape(0.dp)
         }
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .padding(top = if (isFirst && index > 0) 16.dp else 0.dp)
                 .clip(shape)
                 .groupedItemBorder(
                     backgroundColor = MixinAppTheme.colors.background,
                     borderColor = MixinAppTheme.colors.borderColor,
                     isFirst = isFirst,
                     isLast = isLast,
-                )
+                ),
         ) {
+            if (isFirst) {
+                PerpsActivityDateHeader(
+                    date = date,
+                    modifier = Modifier.padding(
+                        top = 12.dp,
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 8.dp,
+                    ),
+                )
+            }
             if (order.orderType == PerpsOrder.TYPE_CLOSE) {
                 ClosedActivityItem(
                     order = order,
