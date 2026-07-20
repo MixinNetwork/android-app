@@ -91,7 +91,6 @@ val robolectricVersion: String by rootProject.extra
 val gsonVersion: String by rootProject.extra
 val serializationVersion: String by rootProject.extra
 val autodisposeVersion: String by rootProject.extra
-val isoparserVersion: String by rootProject.extra
 val bitcoinPaymentURI: String by rootProject.extra
 val startupVersion: String by rootProject.extra
 val dnsVersion: String by rootProject.extra
@@ -479,7 +478,6 @@ dependencies {
     implementation("com.uber.autodispose:autodispose-android:$autodisposeVersion")
     implementation("com.uber.autodispose:autodispose-android-archcomponents:$autodisposeVersion")
     implementation("com.uber.autodispose:autodispose-lifecycle:$autodisposeVersion")
-    implementation("com.googlecode.mp4parser:isoparser:$isoparserVersion")
     implementation("io.noties.markwon:core:$markwonVersion")
     implementation("io.noties.markwon:image:$markwonVersion")
     implementation("io.noties.markwon:image-glide:$markwonVersion")

@@ -5,10 +5,12 @@ import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaItem.ClippingConfiguration
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
+import androidx.media3.effect.Presentation
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.DefaultEncoderFactory
 import androidx.media3.transformer.EditedMediaItem
 import androidx.media3.transformer.EditedMediaItemSequence
+import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.ProgressHolder
@@ -48,7 +50,6 @@ import one.mixin.android.vo.toQuoteMessageItem
 import one.mixin.android.widget.ConvertEvent
 import timber.log.Timber
 import java.io.File
-import kotlin.math.min
 import kotlin.time.Duration.Companion.milliseconds
 
 class ConvertVideoJob(
@@ -144,9 +145,22 @@ class ConvertVideoJob(
                 mediaItemBuilder.setClippingConfiguration(clippingConfiguration)
             }
             val mediaItem = mediaItemBuilder.build()
-            val editedMediaItem =
-                EditedMediaItem.Builder(mediaItem)
-                    .build()
+            val editedMediaItemBuilder = EditedMediaItem.Builder(mediaItem)
+            if (video.resultWidth != video.originalWidth || video.resultHeight != video.originalHeight) {
+                editedMediaItemBuilder.setEffects(
+                    Effects(
+                        emptyList(),
+                        listOf(
+                            Presentation.createForWidthAndHeight(
+                                video.resultWidth,
+                                video.resultHeight,
+                                Presentation.LAYOUT_SCALE_TO_FIT,
+                            ),
+                        ),
+                    ),
+                )
+            }
+            val editedMediaItem = editedMediaItemBuilder.build()
             val videoSequence = EditedMediaItemSequence.Builder().addItem(editedMediaItem).build()
             val composition = Composition.Builder(ImmutableList.of(videoSequence))
                 .build()
@@ -155,7 +169,7 @@ class ConvertVideoJob(
             val videoFile: File = MixinApplication.get().getVideoPath().createVideoTemp(conversationId, messageId, "mp4")
             val videoEncoderSettings =
                 VideoEncoderSettings.Builder()
-                    .setBitrate(min(video.bitrate, 4_000_000))
+                    .setBitrate(video.bitrate)
                     .build()
             val encoderFactory =
                 DefaultEncoderFactory.Builder(MixinApplication.get())
