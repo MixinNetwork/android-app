@@ -27,7 +27,6 @@ import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
 import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.generateEd25519KeyPair
-import one.mixin.android.crypto.getPendingImportMnemonic
 import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.databinding.FragmentLoadingBinding
 import one.mixin.android.extension.base64Encode
@@ -201,10 +200,18 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
     private suspend fun openPendingMnemonicNext(pin: String?): Boolean {
         val context = requireContext()
         val wallets = web3Repository.syncWalletsFromRoute()
+        val pendingWords = if (pin == null) {
+            null
+        } else {
+            runCatching { tip.getPendingImportMnemonic(context, pin) }
+                .onFailure { Timber.e(it, "Failed to restore pending mnemonic from Safe") }
+                .getOrNull()
+                ?: return false
+        }
         val resolution = resolvePendingMnemonicAfterWalletFetch(
             wallets = wallets,
             pin = pin,
-            pendingWords = getPendingImportMnemonic(context)?.split(" "),
+            pendingWords = pendingWords,
             walletAddresses = { wallet -> web3Repository.getAddresses(wallet.id) },
             save = { walletId, verifiedPin, words ->
                 CryptoWalletHelper.saveMnemonicWithSpendKey(
@@ -224,7 +231,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             },
             clear = {
                 clearPendingImportMnemonic(context)
-                Timber.i("LoginFlow pending_import_cleared source=loading")
+                Timber.e("LoginFlow pending_import_cleared source=loading")
             },
         )
         Timber.i(
@@ -232,6 +239,9 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         )
         return when (resolution) {
             is PendingMnemonicResolution.WalletHome -> {
+                Timber.e(
+                    "LoginFlow pending_import_wallet_open source=loading wallet_id=${resolution.walletId} category=${resolution.walletCategory}"
+                )
                 val walletDestination = walletDestinationForWallet(
                     resolution.walletId,
                     resolution.walletCategory,

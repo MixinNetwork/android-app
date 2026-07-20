@@ -618,7 +618,7 @@
     <string name="landing_delete_content">您在 %1$s 申请了删除账号，账号将于 %2$s 被删除，如果您继续登录，删除您账户的请求将被取消。</string>
     <string name="landing_enter_mobile_tip">我们不会公开你的手机号码</string>
     <string name="landing_introduction">继续使用即表示你同意 %1$s和%2$s</string>
-    <string name="landing_mobile_linked_tip">这是与你的账户关联的手机号码。</string>
+    <string name="mobile_number_description">请输入已绑定 Mixin 账号的手机号</string>
     <string name="onboarding_description">带有端对端加密消息功能的开源加密钱包</string>
     <string name="onboarding_mixin_description">一个带有端对端加密聊天功能的开源加密货币钱包</string>
     <string name="onboarding_decentralized_title">你的私钥，你的资产</string>
@@ -1834,7 +1834,7 @@
     <string name="Create_Account">创建帐户</string>
     <string name="create_account_confirm_title">创建你的账户</string>
     <string name="create_account_confirm_action_create">创建账户</string>
-    <string name="create_account_confirm_action_import_wallet">从其他钱包导入？</string>
+    <string name="import_from_another_wallet">导入其他钱包？</string>
     <string name="Mobile_Phone">手机</string>
     <string name="Mnemonic_Phrase">助记词</string>
     <string name="private_key">私钥</string>
@@ -1894,7 +1894,7 @@
     <string name="enter_mnemonic_phrase">输入或粘贴您的 %1$d 个助记词。</string>
     <string name="log_in_whit_mnemonic_phrase">助记词登录</string>
     <string name="mnemonic_login_security_title">导入到 Mixin 安全吗？</string>
-    <string name="mnemonic_login_security_tip_1">· Mixin 开源、可复现，并经过独立审计。</string>
+    <string name="mnemonic_login_security_tip_1">· Mixin 开源、可验证，并经过独立审计。</string>
     <string name="mnemonic_login_security_tip_2">· 你的数据会被安全加密并存储在本机。</string>
     <string name="mnemonic_login_security_tip_3">· Mixin 不会访问你的隐私信息，也不会与第三方共享。</string>
     <string name="write_down_mnemonic_phrase">写下您的助记词</string>

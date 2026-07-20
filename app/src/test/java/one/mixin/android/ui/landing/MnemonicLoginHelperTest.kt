@@ -79,4 +79,21 @@ class MnemonicLoginHelperTest {
             completeMnemonicForLogin((1..11).map { "word$it" }) { error("unused") }
         }
     }
+
+    @Test
+    fun `stores login mnemonic until Safe registration`() {
+        assertEquals(true, shouldStoreLoginMnemonicForSafe(hasSafe = false, hasPhone = true, hasPendingWalletImport = false))
+        assertEquals(true, shouldStoreLoginMnemonicForSafe(hasSafe = false, hasPhone = false, hasPendingWalletImport = false))
+    }
+
+    @Test
+    fun `keeps local mnemonic for accounts without phone recovery`() {
+        assertEquals(true, shouldStoreLoginMnemonicForSafe(hasSafe = true, hasPhone = false, hasPendingWalletImport = true))
+    }
+
+    @Test
+    fun `stores pending wallet mnemonic until Safe salt is verified for phone accounts`() {
+        assertEquals(true, shouldStoreLoginMnemonicForSafe(hasSafe = false, hasPhone = true, hasPendingWalletImport = true))
+        assertEquals(true, shouldStoreLoginMnemonicForSafe(hasSafe = true, hasPhone = true, hasPendingWalletImport = true))
+    }
 }

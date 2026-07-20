@@ -486,7 +486,7 @@
     <string name="landing_delete_content">您在 %1$s 申請了刪除帳號，帳號將於 %2$s 被刪除，如果您繼續登入，刪除您帳戶的請求將被取消。</string>
     <string name="landing_enter_mobile_tip">我們不會公開你的手機號碼</string>
     <string name="landing_introduction">繼續使用即表示你同意 %1$s 和 %2$s。</string>
-    <string name="landing_mobile_linked_tip">這是與你的帳戶關聯的手機號碼。</string>
+    <string name="mobile_number_description">請輸入已繫結 Mixin 賬號的手機號</string>
     <string name="onboarding_description">帶有端對端加密訊息功能的開源加密錢包</string>
     <string name="onboarding_mixin_description">帶有端對端加密訊息功能的開源加密錢包</string>
     <string name="onboarding_decentralized_title">你的金鑰，你的加密資產</string>
@@ -1083,7 +1083,7 @@
     <string name="no_available_utxo">沒有可用 UTXO</string>
     <string name="create_account_confirm_title">創建你的賬戶</string>
     <string name="create_account_confirm_action_create">創建賬戶</string>
-    <string name="create_account_confirm_action_import_wallet">從其他錢包匯入？</string>
+    <string name="import_from_another_wallet">匯入其他錢包？</string>
     <string name="Take_Profit">止盈</string>
     <string name="Stop_Loss">止損</string>
     <string name="take_profit_for_long">%1$s 做多止盈</string>
@@ -1123,7 +1123,7 @@
     <string name="login_method_mnemonic_13_25_title">13 或 25 個詞</string>
     <string name="login_method_mnemonic_13_25_desc">使用 Mixin 助記詞登入。</string>
     <string name="mnemonic_login_security_title">匯入到 Mixin 安全嗎？</string>
-    <string name="mnemonic_login_security_tip_1">· Mixin 開源、可復現，並經過獨立審計。</string>
+    <string name="mnemonic_login_security_tip_1">· Mixin 開源、可驗證，並經過獨立審計。</string>
     <string name="mnemonic_login_security_tip_2">· 你的資料會被安全加密並存儲在本機。</string>
     <string name="mnemonic_login_security_tip_3">· Mixin 不會訪問你的隱私資訊，也不會與第三方共享。</string>
     <string name="positions_count">倉位(%d)</string>

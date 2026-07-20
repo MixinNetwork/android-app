@@ -6,7 +6,7 @@ import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
-import one.mixin.android.crypto.getPendingImportMnemonic
+import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
 import timber.log.Timber
@@ -41,7 +41,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
             val walletId = intent.getStringExtra(EXTRA_WALLET_ID)
             val pin = intent.getStringExtra(EXTRA_PIN)
             Timber.i(
-                "LoginFlow wallet_security_open mode=$mode pending_import=${getPendingImportMnemonic(this) != null} pin_reused=${pin != null}"
+                "LoginFlow wallet_security_open mode=$mode pending_import=${hasPendingImportMnemonic(this)} pin_reused=${pin != null}"
             )
 
             val fragment = when (mode) {
@@ -59,7 +59,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
                         VerifyPinBeforeImportWalletFragment.newInstance(Mode.LOGIN_IMPORT_MNEMONIC)
                     } else {
                         FetchingWalletFragment.newInstance(
-                            mnemonic = getPendingImportMnemonic(this),
+                            mnemonic = null,
                             pin = pin,
                             importCategory = importWalletCategoryForMode(mode),
                             fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,
@@ -69,7 +69,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
                     }
                 }
                 Mode.REGISTER_IMPORT_MNEMONIC -> FetchingWalletFragment.newInstance(
-                    mnemonic = getPendingImportMnemonic(this),
+                    mnemonic = null,
                     pin = pin,
                     importCategory = importWalletCategoryForMode(mode),
                     fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,

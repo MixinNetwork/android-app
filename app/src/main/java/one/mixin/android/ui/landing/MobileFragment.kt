@@ -87,7 +87,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             from: Int = FROM_LANDING,
             phoneNumber: String? = null,
             addPhoneSource: String? = null,
-            loginStartSource: String = AnalyticsTracker.LoginStartSource.LOGIN_BY,
+            loginStartSource: String = AnalyticsTracker.LoginStartSource.LOGIN_METHODS,
         ): MobileFragment =
             MobileFragment().apply {
                 val b =
@@ -127,7 +127,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         requireArguments().getString(ARGS_ADD_PHONE_SOURCE)
     }
     private val loginStartSource: String by lazy {
-        requireArguments().getString(ARGS_LOGIN_START_SOURCE) ?: AnalyticsTracker.LoginStartSource.LOGIN_BY
+        requireArguments().getString(ARGS_LOGIN_START_SOURCE) ?: AnalyticsTracker.LoginStartSource.LOGIN_METHODS
     }
     private val useSystemKeyboard: Boolean
         get() = from == FROM_LANDING

@@ -33,6 +33,51 @@ class PendingMnemonicTipRoutingTest {
     }
 
     @Test
+    fun matchingPathlessWatchWalletClearsPendingAndRoutesToWatchWallet() = runBlocking {
+        var cleared = false
+        val result = resolvePendingMnemonicAfterWalletFetch(
+            wallets = listOf(matchingWatchWallet("watch-id", index = 7)),
+            pin = "123456",
+            pendingWords = pendingMnemonicWords,
+            save = { _, _, _ -> error("Mnemonic should not be saved for a watch wallet") },
+            clear = { cleared = true },
+        )
+
+        assertEquals(
+            PendingMnemonicResolution.WalletHome(
+                "watch-id",
+                WalletCategory.WATCH_ADDRESS.value,
+            ),
+            result,
+        )
+        assertTrue(cleared)
+    }
+
+    @Test
+    fun matchingWatchWalletTakesPriorityOverImportedWallet() = runBlocking {
+        var cleared = false
+        val result = resolvePendingMnemonicAfterWalletFetch(
+            wallets = listOf(
+                matchingImportedWallet("imported-id"),
+                matchingWatchWallet("watch-id"),
+            ),
+            pin = "123456",
+            pendingWords = pendingMnemonicWords,
+            save = { _, _, _ -> error("Imported wallet should not be restored when a watch wallet matches") },
+            clear = { cleared = true },
+        )
+
+        assertEquals(
+            PendingMnemonicResolution.WalletHome(
+                "watch-id",
+                WalletCategory.WATCH_ADDRESS.value,
+            ),
+            result,
+        )
+        assertTrue(cleared)
+    }
+
+    @Test
     fun failedLocalSaveDoesNotClearPendingOrRouteToWalletHome() = runBlocking {
         var cleared = false
         val result = resolvePendingMnemonicAfterWalletFetch(
@@ -254,6 +299,25 @@ class PendingMnemonicTipRoutingTest {
                     chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
                 ),
                 path = "m/44'/60'/0'/0/0",
+                createdAt = "",
+            ),
+        )
+        return wallet
+    }
+
+    private fun matchingWatchWallet(id: String, index: Int = 0): Web3Wallet {
+        val wallet = testWallet(id, WalletCategory.WATCH_ADDRESS.value)
+        wallet.addresses = listOf(
+            Web3Address(
+                addressId = "address-id",
+                walletId = id,
+                chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                destination = CryptoWalletHelper.mnemonicToAddress(
+                    mnemonic = pendingMnemonicWords.joinToString(" "),
+                    chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
+                    index = index,
+                ),
+                path = null,
                 createdAt = "",
             ),
         )

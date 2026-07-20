@@ -144,7 +144,23 @@ class FetchingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                 }
                 viewModel.setSpendKey(spendKey)
             }
-            viewModel.setMnemonic(mnemonic.orEmpty())
+            val resolvedMnemonic = if (mnemonic.isNullOrBlank() && pin != null) {
+                try {
+                    tip.getPendingImportMnemonic(requireContext(), pin)?.joinToString(" ")
+                } catch (e: Exception) {
+                    Timber.i("LoginFlow wallet_fetch_mnemonic_restore_failed")
+                    Timber.e(e, "Failed to restore pending mnemonic from Safe")
+                    viewModel.failFetching(ErrorHandler.getErrorMessage(e))
+                    return@launch
+                }
+            } else {
+                mnemonic
+            }
+            if (resolvedMnemonic.isNullOrBlank()) {
+                viewModel.failFetching(getString(R.string.Save_failure))
+                return@launch
+            }
+            viewModel.setMnemonic(resolvedMnemonic)
         }
     }
 }

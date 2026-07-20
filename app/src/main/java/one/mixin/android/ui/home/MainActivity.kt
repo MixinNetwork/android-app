@@ -72,7 +72,6 @@ import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.clearPendingImportMnemonic
-import one.mixin.android.crypto.getPendingImportMnemonic
 import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
@@ -154,8 +153,10 @@ import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
+import one.mixin.android.ui.landing.PendingMnemonicStartupRoute
 import one.mixin.android.ui.landing.RestoreActivity
 import one.mixin.android.ui.landing.reuseOrCreateLoginPinGate
+import one.mixin.android.ui.landing.routePendingMnemonicStartup
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
 import one.mixin.android.ui.search.SearchMessageFragment
@@ -351,14 +352,28 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             finish()
             return
         }
-        if (hasPendingImportMnemonic(this)) {
-            Timber.i("LoginFlow main_pending_import_redirect")
-            WalletSecurityActivity.show(
-                this,
-                WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC,
+        when (
+            routePendingMnemonicStartup(
+                hasPendingImport = hasPendingImportMnemonic(this),
+                hasSafe = Session.hasSafe(),
             )
-            finish()
-            return
+        ) {
+            PendingMnemonicStartupRoute.Continue -> Unit
+            PendingMnemonicStartupRoute.ResumeAccountSetup -> {
+                Timber.e("LoginFlow main_pending_import_resume_account_setup")
+                InitializeActivity.showLoading(this, false)
+                finish()
+                return
+            }
+            PendingMnemonicStartupRoute.ImportMnemonic -> {
+                Timber.i("LoginFlow main_pending_import_redirect")
+                WalletSecurityActivity.show(
+                    this,
+                    WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC,
+                )
+                finish()
+                return
+            }
         }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -522,10 +537,18 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     private suspend fun openPendingMnemonicNext(pin: String? = null): Boolean {
         val wallets = web3Repository.syncWalletsFromRoute()
+        val pendingWords = if (pin == null) {
+            null
+        } else {
+            runCatching { tip.getPendingImportMnemonic(this, pin) }
+                .onFailure { Timber.e(it, "Failed to restore pending mnemonic from Safe") }
+                .getOrNull()
+                ?: return false
+        }
         val resolution = resolvePendingMnemonicAfterWalletFetch(
             wallets = wallets,
             pin = pin,
-            pendingWords = getPendingImportMnemonic(this)?.split(" "),
+            pendingWords = pendingWords,
             walletAddresses = { wallet -> web3Repository.getAddresses(wallet.id) },
             save = { walletId, verifiedPin, words ->
                 CryptoWalletHelper.saveMnemonicWithSpendKey(
@@ -543,10 +566,16 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     privateKey,
                 )
             },
-            clear = { clearPendingImportMnemonic(this) },
+            clear = {
+                clearPendingImportMnemonic(this)
+                Timber.e("LoginFlow pending_import_cleared source=main")
+            },
         )
         return when (resolution) {
             is PendingMnemonicResolution.WalletHome -> {
+                Timber.e(
+                    "LoginFlow pending_import_wallet_open source=main wallet_id=${resolution.walletId} category=${resolution.walletCategory}"
+                )
                 defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
                 val walletDestination = walletDestinationForWallet(
                     resolution.walletId,

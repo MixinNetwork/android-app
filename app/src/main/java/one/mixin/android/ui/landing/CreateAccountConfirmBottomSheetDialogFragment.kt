@@ -168,7 +168,7 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
                     contentColor = MixinAppTheme.colors.accent,
                 ) {
                     Text(
-                        text = stringResource(R.string.create_account_confirm_action_import_wallet),
+                        text = stringResource(R.string.import_from_another_wallet),
                         fontSize = 14.sp,
                         fontWeight = FontWeight.W500,
                         color = MixinAppTheme.colors.accent,
