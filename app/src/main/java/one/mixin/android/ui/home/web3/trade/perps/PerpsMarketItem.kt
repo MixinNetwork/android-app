@@ -25,8 +25,6 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.extension.priceFormat
-import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
@@ -51,17 +49,10 @@ fun PerpsMarketItem(
         }
     }
     val changeText = formatPerpsSignedPercent(changePercent)
-    val fiatRate = BigDecimal(Fiats.getRate())
-    val fiatSymbol = Fiats.getSymbol()
-
-    val formattedPrice = try {
-        BigDecimal(market.last).multiply(fiatRate).priceFormat()
-    } catch (e: Exception) {
-        market.last
-    }
+    val displayPrice = market.last
 
     val formattedVolume = try {
-        BigDecimal(market.volume).multiply(fiatRate).numberFormatCompact()
+        BigDecimal(market.volume).numberFormatCompact()
     } catch (e: Exception) {
         market.volume
     }
@@ -106,11 +97,11 @@ fun PerpsMarketItem(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .background(MixinAppTheme.colors.backgroundGrayLight)
-                            .padding(horizontal = 3.dp, vertical = 2.dp)
+                            .padding(horizontal = 3.dp, vertical = 1.dp)
                     )
                 }
                 Text(
-                    text = "$fiatSymbol$formattedPrice",
+                    text = "$PERPS_USD_SYMBOL$displayPrice",
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )
@@ -120,7 +111,7 @@ fun PerpsMarketItem(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
-                    text = stringResource(R.string.Vol, "$fiatSymbol$formattedVolume"),
+                    text = stringResource(R.string.Vol, formattedVolume),
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textAssist,
                     modifier = Modifier.weight(1f)

@@ -15,16 +15,24 @@ import one.mixin.android.databinding.ItemTransactionHeaderBinding
 import one.mixin.android.databinding.ItemWalletTransactionsBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.formatPublicKey
+import one.mixin.android.extension.formatTransactionHash
+import one.mixin.android.extension.formatTransactionHashIfNeeded
+import one.mixin.android.extension.isTransactionHashLike
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.timeAgoDay
 import one.mixin.android.ui.common.recyclerview.NormalHolder
+import one.mixin.android.ui.wallet.WalletTransferLabelStyle
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
 
-open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolder(itemView) {
+open class SnapshotHolder(
+    itemView: View,
+    layout: Boolean = false,
+    compact: Boolean = false,
+    private val compactAvatarStartMargin: Int = 16.dp,
+) : NormalHolder(itemView) {
     private val binding = ItemWalletTransactionsBinding.bind(itemView)
 
     init {
@@ -41,6 +49,16 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
                 }
             }
         }
+        if (compact) {
+            itemView.updateLayoutParams {
+                height = RelativeLayout.LayoutParams.WRAP_CONTENT
+            }
+            itemView.setPadding(0, 4.dp, 0, 4.dp)
+            binding.avatar.updateLayoutParams<MarginLayoutParams> {
+                marginEnd = 14.dp
+                marginStart = compactAvatarStartMargin
+            }
+        }
     }
 
     open fun bind(
@@ -54,8 +72,8 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
                     binding.name.text = "N/A"
                     binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_assist)
                     binding.avatar.setAnonymous()
-                } else if (snapshot.opponentId.startsWith("XIN", true)) {
-                    binding.name.text = snapshot.opponentId
+                } else if (snapshot.opponentId.startsWith("XIN", true) || snapshot.opponentId.isTransactionHashLike()) {
+                    binding.name.text = snapshot.opponentId.formatTransactionHash()
                     binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_assist)
                     binding.avatar.setAnonymous()
                 } else {
@@ -70,10 +88,19 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
             }
 
             SafeSnapshotType.pending -> {
+                val maxConfirmations = snapshot.assetConfirmations.coerceAtLeast(0)
+                val currentConfirmations = (snapshot.confirmations ?: 0)
+                    .coerceAtLeast(0)
+                    .coerceAtMost(maxConfirmations)
                 binding.name.textColor = binding.root.context.colorFromAttribute(R.attr.text_primary)
-                binding.name.text = itemView.context.resources.getQuantityString(R.plurals.pending_confirmation, snapshot.confirmations ?: 0, snapshot.confirmations ?: 0, snapshot.assetConfirmations)
+                binding.name.text = itemView.context.resources.getQuantityString(
+                    R.plurals.pending_confirmation,
+                    currentConfirmations,
+                    currentConfirmations,
+                    maxConfirmations
+                )
                 binding.avatar.setDeposit()
-                binding.bg.setConfirmation(snapshot.assetConfirmations, snapshot.confirmations ?: 0)
+                binding.bg.setConfirmation(maxConfirmations, currentConfirmations)
             }
 
             else -> {
@@ -81,13 +108,11 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
                     binding.avatar.setDeposit()
                     val sender = snapshot.deposit?.sender
                     binding.name.text =
-                        (
-                            if (sender.isNullOrBlank()) {
-                                "N/A"
-                            } else {
-                                sender
-                            }
-                            ).formatPublicKey()
+                        if (sender.isNullOrBlank()) {
+                            "N/A"
+                        } else {
+                            sender.formatTransactionHashIfNeeded()
+                        }
                 } else {
                     binding.avatar.setWithdrawal()
                     val receiver = snapshot.withdrawal?.receiver
@@ -95,14 +120,14 @@ open class SnapshotHolder(itemView: View, layout: Boolean = false) : NormalHolde
                     if (receiver.isNullOrBlank()) {
                         binding.name.text = "N/A"
                     } else if (label.isNullOrBlank()) {
-                        binding.name.text = receiver.formatPublicKey()
+                        binding.name.text = receiver.formatTransactionHashIfNeeded()
                     } else {
-                        val fullText = "${snapshot.withdrawal.receiver} $label"
+                        val fullText = "${receiver.formatTransactionHashIfNeeded()} $label"
                         val spannableString = SpannableString(fullText)
                         val start = fullText.lastIndexOf(label)
                         val end = start + label.length
 
-                        val backgroundColor: Int = Color.parseColor("#8DCC99")
+                        val backgroundColor = Color.parseColor(WalletTransferLabelStyle.backgroundColorHex(label))
                         val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
                         spannableString.setSpan(RelativeSizeSpan(0.8f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                         spannableString.setSpan(backgroundColorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

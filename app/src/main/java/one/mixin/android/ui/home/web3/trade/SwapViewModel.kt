@@ -18,6 +18,7 @@ import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.web3.vo.Web3Chain
@@ -37,6 +38,7 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeQuoteReason
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeQuoteType
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.TokenItem
@@ -57,15 +59,23 @@ class SwapViewModel
     internal constructor(
         private val assetRepository: AssetRepository,
         private val jobManager: MixinJobManager,
-        private val tokenRepository: TokenRepository,
-        private val userRepository: UserRepository,
-        private val web3Repository: Web3Repository,
-        private val walletDatabase: WalletDatabase,
-    ) : ViewModel() {
+    private val tokenRepository: TokenRepository,
+    private val userRepository: UserRepository,
+    private val web3Repository: Web3Repository,
+    private val routeService: RouteService,
+    private val walletDatabase: WalletDatabase,
+) : ViewModel() {
 
     suspend fun getBotPublicKey(botId: String, force: Boolean) = userRepository.getBotPublicKey(botId, force)
 
     suspend fun web3Tokens(source: String, category: String? = null): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens(source, category)
+
+    suspend fun markets(
+        category: String? = null,
+        limit: Int? = null,
+        sort: String? = null,
+        duration: String? = null,
+    ): MixinResponse<List<Market>> = routeService.markets(category = category, limit = limit, sort = sort, duration = duration)
 
     suspend fun web3Quote(
         inputMint: String,
@@ -128,11 +138,20 @@ class SwapViewModel
                         AnalyticsTracker.TradeQuoteResult.SUCCESS,
                         type
                     )
+                    AnalyticsTracker.trackSpotQuote(
+                        AnalyticsTracker.TradeQuoteResult.SUCCESS,
+                        TradeQuoteType.SWAP
+                    )
                     Result.success(requireNotNull(response.data))
                 } else if (response.errorCode == INVALID_QUOTE_AMOUNT) {
                     AnalyticsTracker.trackTradeQuote(
                         AnalyticsTracker.TradeQuoteResult.FAILURE,
                         type,
+                        TradeQuoteReason.INVALID_AMOUNT
+                    )
+                    AnalyticsTracker.trackSpotQuote(
+                        AnalyticsTracker.TradeQuoteResult.FAILURE,
+                        TradeQuoteType.SWAP,
                         TradeQuoteReason.INVALID_AMOUNT
                     )
                     val extra = response.error?.extra?.asJsonObject?.get("data")?.asJsonObject
@@ -155,6 +174,11 @@ class SwapViewModel
                     AnalyticsTracker.trackTradeQuote(
                         AnalyticsTracker.TradeQuoteResult.FAILURE,
                         type,
+                        reason
+                    )
+                    AnalyticsTracker.trackSpotQuote(
+                        AnalyticsTracker.TradeQuoteResult.FAILURE,
+                        TradeQuoteType.SWAP,
                         reason
                     )
                     if (response.errorCode == NO_AVAILABLE_QUOTE || response.errorCode == INVALID_SWAP) {

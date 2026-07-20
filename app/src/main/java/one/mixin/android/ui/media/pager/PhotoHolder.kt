@@ -11,6 +11,8 @@ import one.mixin.android.session.Session
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
+import one.mixin.android.vo.appCardMediaCoverUrl
+import one.mixin.android.vo.isAppCard
 import one.mixin.android.widget.CircleProgress
 import one.mixin.android.widget.PhotoView.PhotoView
 import one.mixin.android.widget.gallery.MimeType
@@ -24,10 +26,12 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
         val imageView = (itemView as ViewGroup).getChildAt(0) as PhotoView
         val photoViewAttacher = imageView.attacher
         val circleProgress = itemView.findViewById<CircleProgress>(R.id.circle_progress)
-        if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
+        val appCardData = messageItem.appCardData
+        if (messageItem.isAppCard()) {
             imageView.loadImage(
-                messageItem.absolutePath(),
-                base64Holder = messageItem.thumbImage,
+                messageItem.appCardMediaCoverUrl(),
+                holder = R.drawable.bot_default,
+                base64Holder = appCardData?.cover?.thumbnail,
                 onSuccess = { _, _ ->
                     photoViewAttacher.isZoomable = true
                     if (needPostTransition) {
@@ -36,46 +40,65 @@ class PhotoHolder(itemView: View) : MediaPagerHolder(itemView) {
                     }
                 },
             )
-        } else {
-            imageView.loadImage(
-                messageItem.absolutePath(),
-                base64Holder = messageItem.thumbImage,
-                onSuccess = { _, _ ->
-                    photoViewAttacher.isZoomable = true
-                    if (needPostTransition) {
-                        ViewCompat.setTransitionName(imageView, "transition")
-                        mediaPagerAdapterListener.onReadyPostTransition(imageView)
-                    }
-                },
-            )
-        }
-        if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
             circleProgress.isVisible = false
             circleProgress.setBindId(messageItem.messageId)
+            imageView.setOnLongClickListener(null)
         } else {
-            circleProgress.isVisible = true
-            circleProgress.setBindId(messageItem.messageId)
-            if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
-                circleProgress.enableLoading(getAttachmentProcess(messageItem.messageId))
-            } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
-                if (Session.getAccountId() == messageItem.userId) {
-                    circleProgress.enableUpload()
-                } else {
-                    circleProgress.enableDownload()
-                }
+            if (messageItem.mediaMimeType.equals(MimeType.GIF.toString(), true)) {
+                imageView.loadImage(
+                    messageItem.absolutePath(),
+                    base64Holder = messageItem.thumbImage,
+                    onSuccess = { _, _ ->
+                        photoViewAttacher.isZoomable = true
+                        if (needPostTransition) {
+                            ViewCompat.setTransitionName(imageView, "transition")
+                            mediaPagerAdapterListener.onReadyPostTransition(imageView)
+                        }
+                    },
+                )
             } else {
-                // TODO expired
+                imageView.loadImage(
+                    messageItem.absolutePath(),
+                    base64Holder = messageItem.thumbImage,
+                    onSuccess = { _, _ ->
+                        photoViewAttacher.isZoomable = true
+                        if (needPostTransition) {
+                            ViewCompat.setTransitionName(imageView, "transition")
+                            mediaPagerAdapterListener.onReadyPostTransition(imageView)
+                        }
+                    },
+                )
             }
-            circleProgress.setOnClickListener {
-                mediaPagerAdapterListener.onCircleProgressClick(messageItem)
+            if (messageItem.mediaStatus == MediaStatus.DONE.name || messageItem.mediaStatus == MediaStatus.READ.name) {
+                circleProgress.isVisible = false
+                circleProgress.setBindId(messageItem.messageId)
+            } else {
+                circleProgress.isVisible = true
+                circleProgress.setBindId(messageItem.messageId)
+                if (messageItem.mediaStatus == MediaStatus.PENDING.name) {
+                    circleProgress.enableLoading(getAttachmentProcess(messageItem.messageId))
+                } else if (messageItem.mediaStatus == MediaStatus.CANCELED.name) {
+                    if (Session.getAccountId() == messageItem.userId) {
+                        circleProgress.enableUpload()
+                    } else {
+                        circleProgress.enableDownload()
+                    }
+                } else {
+                    // TODO expired
+                }
+                circleProgress.setOnClickListener {
+                    mediaPagerAdapterListener.onCircleProgressClick(messageItem)
+                }
             }
         }
         imageView.setOnClickListener {
             mediaPagerAdapterListener.onClick(messageItem)
         }
-        imageView.setOnLongClickListener {
-            mediaPagerAdapterListener.onLongClick(messageItem, itemView)
-            return@setOnLongClickListener true
+        if (!messageItem.isAppCard()) {
+            imageView.setOnLongClickListener {
+                mediaPagerAdapterListener.onLongClick(messageItem, itemView)
+                return@setOnLongClickListener true
+            }
         }
         if (needPostTransition) {
             ViewCompat.setTransitionName(imageView, "transition")

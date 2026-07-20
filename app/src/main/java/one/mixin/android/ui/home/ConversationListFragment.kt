@@ -365,10 +365,14 @@ class ConversationListFragment : LinkFragment() {
     }
 
     private fun analytics() {
-        lifecycleScope.launch{
+        lifecycleScope.launch {
             val totalUsd = conversationListViewModel.findTotalUSDBalance()
             AnalyticsTracker.setAssetLevel(totalUsd)
             AnalyticsTracker.setNotificationAuthStatus(requireContext())
+            Session.getAccount()?.let {
+                AnalyticsTracker.setHasRecoveryContact(it)
+                AnalyticsTracker.setMembership(it)
+            }
         }
     }
 
@@ -766,6 +770,7 @@ class ConversationListFragment : LinkFragment() {
                 if (VerifyMobileReminderBottomSheetDialogFragment.shouldShow(requireContext())) {
                     if (VerifyMobileReminderBottomSheetDialogFragment.showSafely(
                         parentFragmentManager,
+                        addPhoneSource = AnalyticsTracker.AddPhoneSource.SETTINGS,
                     )) {
                         return@launch
                     }

@@ -52,6 +52,7 @@ import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.Ticker
@@ -345,7 +346,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         binding.titleView.rightExtraIb.visibility = View.VISIBLE
         binding.titleView.rightExtraIb.setImageResource(R.drawable.ic_support)
         binding.titleView.rightExtraIb.setOnClickListener {
-            context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+            context?.openUrl(
+                Constants.HelpLink.CUSTOMER_SERVICE,
+                source = AnalyticsTracker.CustomerServiceSource.TRANSACTION_DETAIL,
+                wallet = AnalyticsTracker.TradeWallet.WEB3,
+            )
         }
         binding.root.isClickable = true
         binding.apply {
@@ -357,6 +362,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             } else {
                 titleView.setSubTitle(getString(R.string.Transaction), getString(R.string.Common_Wallet))
             }
+            titleView.setWalletNameSubTitleStyle()
             spamLl.isVisible = transaction.isNotVerified()
             transactionHashTv.text = transaction.transactionHash
             val amountColor = if (transaction.status == TransactionStatus.PENDING.value || transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value) {

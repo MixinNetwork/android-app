@@ -6,13 +6,14 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
+import androidx.room.RoomWarnings
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface MarketDao : BaseDao<Market> {
-    @RewriteQueriesToDropUnusedColumns
     @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id LEFT JOIN market_coins mc ON mc.coin_id = m.coin_id WHERE mc.asset_id = :assetId")
     fun marketById(assetId: String): LiveData<MarketItem?>
 
@@ -24,7 +25,6 @@ interface MarketDao : BaseDao<Market> {
     )
     fun fuzzyMarkets(query: String): List<Market>
 
-    @RewriteQueriesToDropUnusedColumns
     @Query(
         """
        SELECT * FROM (

@@ -36,6 +36,7 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.landing.SetupPinViewModel
+import one.mixin.android.ui.landing.toSetPinErrorMessage
 import one.mixin.android.ui.landing.vo.SetupState
 import one.mixin.android.ui.tip.LegacyPIN
 import one.mixin.android.ui.tip.Processing
@@ -43,6 +44,7 @@ import one.mixin.android.ui.tip.RetryConnect
 import one.mixin.android.ui.tip.RetryProcess
 import one.mixin.android.ui.tip.RetryRegister
 import one.mixin.android.ui.tip.TryConnecting
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 @Composable
 fun SetPinLoadingPage(
@@ -68,6 +70,7 @@ fun SetPinLoadingPage(
         }
     }
 
+    val setupPinErrorMessage = stringResource(R.string.Set_up_pin_error_message)
     val statusMessage =
         when (val step = tipStep) {
             TryConnecting -> stringResource(R.string.Trying_connect_tip_network)
@@ -89,10 +92,10 @@ fun SetPinLoadingPage(
                 }
                 append(stringResource(R.string.Connect_to_TIP_network_failed))
             }
-            is RetryProcess -> step.reason
-            is RetryRegister -> step.reason
-            is LegacyPIN -> step.message
-            else -> stringResource(R.string.Set_up_pin_error_message)
+            is RetryProcess -> step.reason.toSetPinErrorMessage(setupPinErrorMessage)
+            is RetryRegister -> step.reason.toSetPinErrorMessage(setupPinErrorMessage)
+            is LegacyPIN -> step.message.toSetPinErrorMessage(setupPinErrorMessage)
+            else -> setupPinErrorMessage
         }
     val statusColor =
         when (tipStep) {
@@ -106,7 +109,10 @@ fun SetPinLoadingPage(
         onTopBarLongClick = onTopBarLongClick,
         actions = {
             IconButton(onClick = {
-                context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                context.openUrl(
+                    Constants.HelpLink.CUSTOMER_SERVICE,
+                    source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_MNEMONIC_PHRASE_CREATING,
+                )
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),

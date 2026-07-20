@@ -18,6 +18,7 @@ import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.util.analytics.AnalyticsTracker
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -26,18 +27,25 @@ class AllPositionsFragment : BaseFragment() {
     companion object {
         const val TAG = "AllPositionsFragment"
         private const val ARGS_POSITION_TYPE = "args_position_type"
+        private const val ARGS_SOURCE = "args_source"
         private const val TYPE_OPEN = "type_open"
         private const val TYPE_CLOSED = "type_closed"
 
-        fun newInstance(showOpenPositions: Boolean = false) = AllPositionsFragment().apply {
+        fun newInstance(
+            showOpenPositions: Boolean = false,
+            source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS,
+        ) = AllPositionsFragment().apply {
             arguments = Bundle().apply {
                 putString(ARGS_POSITION_TYPE, if (showOpenPositions) TYPE_OPEN else TYPE_CLOSED)
+                putString(ARGS_SOURCE, source)
             }
         }
 
-        fun newOpenInstance() = newInstance(showOpenPositions = true)
+        fun newOpenInstance(source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS) =
+            newInstance(showOpenPositions = true, source = source)
 
-        fun newClosedInstance() = newInstance(showOpenPositions = false)
+        fun newClosedInstance(source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS) =
+            newInstance(showOpenPositions = false, source = source)
     }
 
     @Inject
@@ -54,6 +62,13 @@ class AllPositionsFragment : BaseFragment() {
             TYPE_OPEN -> AllPositionsType.OPEN
             else -> AllPositionsType.CLOSED
         }
+        val source = arguments?.getString(ARGS_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS
+        if (positionType == AllPositionsType.OPEN) {
+            AnalyticsTracker.trackPerpsAllPositions(source)
+        }
+        if (positionType == AllPositionsType.CLOSED) {
+            AnalyticsTracker.trackPerpsActivity(source)
+        }
 
         return ComposeView(inflater.context).apply {
             setContent {
@@ -67,9 +82,14 @@ class AllPositionsFragment : BaseFragment() {
                             activity?.onBackPressedDispatcher?.onBackPressed()
                         },
                         onSupport = {
-                            context.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                            context.openUrl(
+                                Constants.HelpLink.CUSTOMER_SERVICE,
+                                source = AnalyticsTracker.CustomerServiceSource.PERPS_ALL_POSITIONS,
+                                wallet = AnalyticsTracker.TradeWallet.WEB3,
+                            )
                         },
                         onShowTradingGuide = {
+                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS)
                             PerpetualGuideBottomSheetDialogFragment.newInstance(
                                 initialTab = PerpetualGuideBottomSheetDialogFragment.TAB_OVERVIEW
                             ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
@@ -86,26 +106,18 @@ class AllPositionsFragment : BaseFragment() {
                                         marketSymbol = market?.displaySymbol ?: "",
                                         marketDisplaySymbol = market?.displaySymbol ?: "",
                                         marketTokenSymbol = market?.tokenSymbol ?: "",
+                                        source = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS,
                                     )
                                 }
                             }
                         },
                         onClosedPositionClick = { position ->
                             activity?.supportFragmentManager?.let { fm ->
-                                fm.beginTransaction()
-                                    .setCustomAnimations(
-                                        R.anim.slide_in_right,
-                                        0,
-                                        0,
-                                        R.anim.slide_out_right,
-                                    )
-                                    .add(
-                                        android.R.id.content,
-                                        PositionDetailFragment.newInstance(position),
-                                        PositionDetailFragment.TAG,
-                                    )
-                                    .addToBackStack(null)
-                                    .commit()
+                                fm.navigateToPerpsRoute(
+                                    PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_LIST),
+                                    PositionDetailFragment.TAG,
+                                    android.R.id.content,
+                                )
                             }
                         },
                     )

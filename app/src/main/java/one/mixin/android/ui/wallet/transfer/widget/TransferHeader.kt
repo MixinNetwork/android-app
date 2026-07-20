@@ -314,7 +314,7 @@ class TransferHeader : LinearLayout {
                         R.string.error_insufficient_withdraw_balance_desc,
                         "${t.fee?.fee?.numberFormat8()} ${t.fee?.token?.symbol}",
                         "${t.amount.numberFormat8()} ${asset.symbol}",
-                        "${extra?.balance?.numberFormat8()} ${asset.symbol}",
+                        "${extra?.balance?.numberFormat8() ?: "0"} ${asset.symbol}",
                     )
                     title.text =
                         context.getString(R.string.insufficient_balance_symbol, asset.symbol)

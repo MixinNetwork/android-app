@@ -30,6 +30,10 @@ data class PerpsMarket(
     @ColumnInfo(name = "mark_price")
     val markPrice: String,
 
+    @SerializedName("price_scale")
+    @ColumnInfo(name = "price_scale", defaultValue = "2")
+    val priceScale: Int = 2,
+
     @SerializedName("leverage")
     @ColumnInfo(name = "leverage")
     val leverage: Int,
@@ -103,4 +107,5 @@ fun PerpsMarket.withDefaults(): PerpsMarket =
     copy(
         category = (category as String?) ?: "",
         tags = (tags as? List<*>)?.mapNotNull { it as? String }.orEmpty(),
+        priceScale = priceScale.coerceAtLeast(0),
     )

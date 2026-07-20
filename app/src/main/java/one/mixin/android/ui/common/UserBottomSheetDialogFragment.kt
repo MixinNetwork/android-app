@@ -80,6 +80,7 @@ import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.addPinShortcut
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -109,6 +110,7 @@ import javax.inject.Inject
 class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
     companion object {
         const val TAG = "UserBottomSheetDialogFragment"
+        private const val ARGS_BOT_ENTRY_SOURCE = "args_bot_entry_source"
 
         @SuppressLint("StaticFieldLeak")
         private var instant: UserBottomSheetDialogFragment? = null
@@ -116,6 +118,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         fun newInstance(
             user: User,
             conversationId: String? = null,
+            botEntrySource: String? = null,
         ): UserBottomSheetDialogFragment? {
             try {
                 instant?.dismiss()
@@ -130,6 +133,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     Bundle().apply {
                         putParcelable(ARGS_USER, user)
                         putString(ARGS_CONVERSATION_ID, conversationId)
+                        botEntrySource?.let { putString(ARGS_BOT_ENTRY_SOURCE, it) }
                     }
             }.apply {
                 instant = this
@@ -143,6 +147,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
     }
 
     private lateinit var user: User
+    private var botEntrySource: String? = null
 
     // bot need conversation id
     private var botConversationId: String? = null
@@ -186,6 +191,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
         super.setupDialog(dialog, style)
         user = requireArguments().getParcelableCompat(ARGS_USER, User::class.java)!!
         botConversationId = requireArguments().getString(ARGS_CONVERSATION_ID)
+        botEntrySource = requireArguments().getString(ARGS_BOT_ENTRY_SOURCE)
         binding.title.rightIv.setOnClickListener { dismiss() }
         renderCollapsedContent(user)
         binding.avatar.setOnClickListener {
@@ -248,6 +254,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                 return@setOnClickListener
             }
             context?.let { ctx ->
+                botEntrySource?.takeIf { user.isBot() }?.let { source ->
+                    AnalyticsTracker.trackOpenBotConversation(source, user.identityNumber)
+                }
                 if (MixinApplication.conversationId == null || conversationId != MixinApplication.conversationId) {
                     RxBus.publish(BotCloseEvent())
                     ConversationActivity.showAndClear(ctx, conversationId = null, recipientId = user.userId)
@@ -259,6 +268,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             forwardContact(user)
         }
         setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
+        binding.detailTv.expandAction = getString(R.string.More).lowercase()
         bottomViewModel.refreshUser(user.userId, true)
         bottomViewModel.loadFavoriteApps(user.userId)
         bottomViewModel.observerFavoriteApps(user.userId).observe(this@UserBottomSheetDialogFragment) { apps ->
@@ -865,6 +875,9 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             .observeOn(AndroidSchedulers.mainThread())
             .throttleFirst(1, TimeUnit.SECONDS)
             .autoDispose(stopScope).subscribe {
+                botEntrySource?.takeIf { user.isBot() }?.let { source ->
+                    AnalyticsTracker.trackOpenBotHomePage(source, user.identityNumber)
+                }
                 dismiss()
                 RxBus.publish(BotCloseEvent())
                 WebActivity.show(requireActivity(), app.homeUri, botConversationId, app)
@@ -1139,6 +1152,7 @@ fun showUserBottom(
     user: User,
     conversationId: String? = null,
     sharedMediaCallback: (() -> Unit)? = null,
+    botEntrySource: String? = null,
 ) {
     if (fragmentManager.isStateSaved) return
 
@@ -1146,7 +1160,7 @@ fun showUserBottom(
         NonMessengerUserBottomSheetDialogFragment.newInstance(user, conversationId)
             .showNow(fragmentManager, NonMessengerUserBottomSheetDialogFragment.TAG)
     } else {
-        UserBottomSheetDialogFragment.newInstance(user, conversationId)?.apply {
+        UserBottomSheetDialogFragment.newInstance(user, conversationId, botEntrySource = botEntrySource)?.apply {
             sharedMediaCallback?.let {
                 this.sharedMediaCallback = sharedMediaCallback
             }

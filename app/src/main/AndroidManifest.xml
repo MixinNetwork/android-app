@@ -126,6 +126,7 @@
                 <data android:pathPrefix="/swap" />
                 <data android:pathPrefix="/wc" />
                 <data android:pathPrefix="/referrals" />
+                <data android:pathPrefix="/buy" />
             </intent-filter>
             <intent-filter>
                 <data android:scheme="wc" />
@@ -329,17 +330,7 @@
             android:theme="@style/AppTheme.Blur"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
         <activity
-            android:name=".ui.wallet.MarketShareActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:theme="@style/AppTheme.Blur"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
-        <activity
             android:name=".ui.wallet.DepositShareActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:theme="@style/AppTheme.Blur"
-            android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
-        <activity
-            android:name=".ui.home.web3.trade.perps.PerpsPositionShareActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.Blur"
             android:windowSoftInputMode="stateAlwaysHidden|adjustResize" />
@@ -540,6 +531,15 @@
     <queries>
         <intent>
             <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+        <intent>
+            <action android:name="org.chromium.intent.action.PAY"/>
+        </intent>
+        <intent>
+            <action android:name="org.chromium.intent.action.IS_READY_TO_PAY"/>
+        </intent>
+        <intent>
+            <action android:name="org.chromium.intent.action.UPDATE_PAYMENT_DETAILS"/>
         </intent>
     </queries>
 </manifest>

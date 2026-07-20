@@ -1,13 +1,10 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -16,9 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListScope
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -31,15 +28,20 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
@@ -50,20 +52,21 @@ import androidx.paging.LoadState
 import androidx.paging.PagingData
 import androidx.paging.compose.LazyPagingItems
 import androidx.paging.compose.collectAsLazyPagingItems
+import androidx.paging.compose.itemContentType
+import androidx.paging.compose.itemKey
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsOrder
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
-import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -83,7 +86,7 @@ fun AllPositionsPage(
     onSupport: () -> Unit,
     onShowTradingGuide: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
-    onClosedPositionClick: (PerpsPositionHistoryItem) -> Unit,
+    onClosedPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -105,6 +108,13 @@ fun AllPositionsPage(
             flowOf(0.0)
         }
     }.collectAsStateWithLifecycle(initialValue = 0.0)
+    val totalRealizedPnl by remember(walletId) {
+        if (walletId.isNotEmpty()) {
+            viewModel.observeTotalRealizedPnl(walletId)
+        } else {
+            flowOf(0.0)
+        }
+    }.collectAsStateWithLifecycle(initialValue = 0.0)
     val openPositionsPaging = remember(walletId) {
         if (walletId.isNotEmpty()) {
             viewModel.getOpenPositionsPaged(walletId)
@@ -114,9 +124,9 @@ fun AllPositionsPage(
     }.collectAsLazyPagingItems()
     val closedPositionsPaging = remember(walletId) {
         if (walletId.isNotEmpty()) {
-            viewModel.getClosedPositionsPaged(walletId)
+            viewModel.getOrdersPaged(walletId)
         } else {
-            flowOf(PagingData.empty<PerpsPositionHistoryItem>())
+            flowOf(PagingData.empty<PerpsOrderItem>())
         }
     }.collectAsLazyPagingItems()
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
@@ -124,10 +134,14 @@ fun AllPositionsPage(
     LaunchedEffect(walletId, lifecycleOwner) {
         if (walletId.isEmpty()) return@LaunchedEffect
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
-            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_REFRESH_LIMIT)
-            while (isActive) {
-                viewModel.refreshPositions(walletId)
-                delay(POSITION_REFRESH_INTERVAL_MS)
+            viewModel.startRefreshOrders(walletId, intervalMs = POSITION_REFRESH_INTERVAL_MS)
+            try {
+                while (isActive) {
+                    viewModel.refreshPositions(walletId)
+                    delay(POSITION_REFRESH_INTERVAL_MS)
+                }
+            } finally {
+                viewModel.stopRefreshOrders()
             }
         }
     }
@@ -137,7 +151,7 @@ fun AllPositionsPage(
         val currentCount = openPositionsSnapshot.size
         val lastCount = previousOpenPositionsCount
         if (lastCount != null && currentCount < lastCount) {
-            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_REFRESH_LIMIT)
+            viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_REFRESH_LIMIT)
         }
         previousOpenPositionsCount = currentCount
     }
@@ -187,6 +201,8 @@ fun AllPositionsPage(
                 } else {
                     ClosedPositionsContent(
                         positions = closedPositionsPaging,
+                        totalRealizedPnl = BigDecimal.valueOf(totalRealizedPnl),
+                        quoteColorReversed = quoteColorReversed,
                         onPositionClick = onClosedPositionClick,
                     )
                 }
@@ -256,8 +272,10 @@ private fun OpenPositionsContent(
 
 @Composable
 private fun ClosedPositionsContent(
-    positions: LazyPagingItems<PerpsPositionHistoryItem>,
-    onPositionClick: (PerpsPositionHistoryItem) -> Unit,
+    positions: LazyPagingItems<PerpsOrderItem>,
+    totalRealizedPnl: BigDecimal,
+    quoteColorReversed: Boolean,
+    onPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val refreshState = positions.loadState.refresh
     val isEmpty = refreshState is LoadState.NotLoading && positions.itemCount == 0
@@ -265,17 +283,18 @@ private fun ClosedPositionsContent(
     Box(modifier = Modifier.fillMaxSize()) {
         if (!isEmpty) {
             LazyColumn(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .cardBackground(
-                        backgroundColor = MixinAppTheme.colors.background,
-                        borderColor = MixinAppTheme.colors.borderColor,
-                    ),
-                contentPadding = PaddingValues(vertical = 16.dp),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
             ) {
+                item {
+                    TotalRealizedPnlCard(
+                        totalPnl = totalRealizedPnl,
+                        quoteColorReversed = quoteColorReversed,
+                    )
+                }
+                item {
+                    Spacer(modifier = Modifier.height(12.dp))
+                }
                 closedPositionItems(
                     positions = positions,
                     onPositionClick = onPositionClick,
@@ -307,40 +326,193 @@ private fun LazyListScope.openPositionItems(
     positions: LazyPagingItems<PerpsPositionItem>,
     onPositionClick: (PerpsPositionItem) -> Unit,
 ) {
-    items(count = positions.itemCount) { index ->
+    if (positions.itemCount == 0) return
+    items(
+        count = positions.itemCount,
+        key = positions.itemKey { it.positionId },
+        contentType = positions.itemContentType { "open_position" },
+    ) { index ->
         val position = positions[index] ?: return@items
-        val shape = groupedPositionShape(index = index, itemCount = positions.itemCount)
+        val isFirst = index == 0
+        val isLast = index == positions.itemCount - 1
+        val shape = when {
+            isFirst && isLast -> RoundedCornerShape(8.dp)
+            isFirst -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+            isLast -> RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
+            else -> RoundedCornerShape(0.dp)
+        }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(shape)
-                .background(MixinAppTheme.colors.background, shape)
-                .border(0.8.dp, MixinAppTheme.colors.borderColor, shape)
+                .groupedItemBorder(
+                    backgroundColor = MixinAppTheme.colors.background,
+                    borderColor = MixinAppTheme.colors.borderColor,
+                    isFirst = isFirst,
+                    isLast = isLast,
+                )
         ) {
             OpenPositionItem(
                 position = position,
                 onClick = { onPositionClick(position) },
             )
         }
-        if (index < positions.itemCount - 1) {
-            Divider(
-                color = MixinAppTheme.colors.borderColor,
-                thickness = 0.8.dp,
-                modifier = Modifier.padding(horizontal = 16.dp),
-            )
+    }
+}
+
+private fun Modifier.groupedItemBorder(
+    backgroundColor: Color,
+    borderColor: Color,
+    isFirst: Boolean,
+    isLast: Boolean,
+    cornerRadius: Dp = 8.dp,
+    borderWidth: Dp = 0.8.dp,
+): Modifier = this.drawBehind {
+    drawRect(color = backgroundColor)
+    val r = cornerRadius.toPx()
+    val sw = borderWidth.toPx()
+    val half = sw / 2f
+    val w = size.width
+    val h = size.height
+    val left = half
+    val top = half
+    val right = w - half
+    val bottom = h - half
+    val path = Path()
+    when {
+        isFirst && isLast -> path.addRoundRect(
+            RoundRect(Rect(left, top, right, bottom), CornerRadius(r, r)),
+        )
+        isFirst -> {
+            path.moveTo(left, h)
+            path.lineTo(left, top + r)
+            path.arcTo(Rect(left, top, left + 2 * r, top + 2 * r), 180f, 90f, false)
+            path.lineTo(right - r, top)
+            path.arcTo(Rect(right - 2 * r, top, right, top + 2 * r), 270f, 90f, false)
+            path.lineTo(right, h)
+        }
+        isLast -> {
+            path.moveTo(left, 0f)
+            path.lineTo(left, bottom - r)
+            path.arcTo(Rect(left, bottom - 2 * r, left + 2 * r, bottom), 180f, -90f, false)
+            path.lineTo(right - r, bottom)
+            path.arcTo(Rect(right - 2 * r, bottom - 2 * r, right, bottom), 90f, -90f, false)
+            path.lineTo(right, 0f)
+        }
+        else -> {
+            path.moveTo(left, 0f)
+            path.lineTo(left, h)
+            path.moveTo(right, 0f)
+            path.lineTo(right, h)
+        }
+    }
+    drawPath(path, color = borderColor, style = Stroke(width = sw))
+}
+
+private fun LazyListScope.closedPositionItems(
+    positions: LazyPagingItems<PerpsOrderItem>,
+    onPositionClick: (PerpsOrderItem) -> Unit,
+) {
+    items(
+        count = positions.itemCount,
+        key = positions.itemKey { it.orderId },
+        contentType = positions.itemContentType { order ->
+            if (order.orderType == PerpsOrder.TYPE_CLOSE) "close" else "open"
+        },
+    ) { index ->
+        val order = positions[index] ?: return@items
+        val context = LocalContext.current
+        val date = order.createdAtDateLabel(context)
+        val previousDate = if (index > 0) {
+            positions.peek(index - 1)?.createdAtDateLabel(context)
+        } else {
+            null
+        }
+        val nextDate = if (index < positions.itemCount - 1) {
+            positions.peek(index + 1)?.createdAtDateLabel(context)
+        } else {
+            null
+        }
+        val isFirst = index == 0 || previousDate != date
+        val isLast = index == positions.itemCount - 1 || nextDate != date
+        val shape = when {
+            isFirst && isLast -> RoundedCornerShape(8.dp)
+            isFirst -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
+            isLast -> RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
+            else -> RoundedCornerShape(0.dp)
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = if (isFirst && index > 0) 16.dp else 0.dp)
+                .clip(shape)
+                .groupedItemBorder(
+                    backgroundColor = MixinAppTheme.colors.background,
+                    borderColor = MixinAppTheme.colors.borderColor,
+                    isFirst = isFirst,
+                    isLast = isLast,
+                ),
+        ) {
+            if (isFirst) {
+                PerpsActivityDateHeader(
+                    date = date,
+                    modifier = Modifier.padding(
+                        top = 12.dp,
+                        start = 16.dp,
+                        end = 16.dp,
+                        bottom = 8.dp,
+                    ),
+                )
+            }
+            if (order.orderType == PerpsOrder.TYPE_CLOSE) {
+                ClosedActivityItem(
+                    order = order,
+                    onClick = { onPositionClick(order) },
+                )
+            } else {
+                OpenedOrderItem(
+                    order = order,
+                    onClick = { onPositionClick(order) },
+                )
+            }
         }
     }
 }
 
-private fun LazyListScope.closedPositionItems(
-    positions: LazyPagingItems<PerpsPositionHistoryItem>,
-    onPositionClick: (PerpsPositionHistoryItem) -> Unit,
+@Composable
+private fun TotalRealizedPnlCard(
+    totalPnl: BigDecimal,
+    quoteColorReversed: Boolean,
 ) {
-    items(count = positions.itemCount) { index ->
-        val position = positions[index] ?: return@items
-        ClosedPositionItem(
-            position = position,
-            onClick = { onPositionClick(position) },
+    val gainColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val lossColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val pnlColor = when {
+        totalPnl > BigDecimal.ZERO -> gainColor
+        totalPnl < BigDecimal.ZERO -> lossColor
+        else -> MixinAppTheme.colors.textAssist
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .cardBackground(
+                backgroundColor = MixinAppTheme.colors.background,
+                borderColor = MixinAppTheme.colors.borderColor,
+            )
+            .padding(horizontal = 16.dp, vertical = 12.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.Total_Realized_PnL),
+            fontSize = 13.sp,
+            color = MixinAppTheme.colors.textAssist,
+        )
+        Spacer(modifier = Modifier.height(6.dp))
+        Text(
+            text = formatPerpsSignedUsdDecimal(totalPnl),
+            fontSize = 18.sp,
+            fontWeight = FontWeight.W500,
+            color = pnlColor,
         )
     }
 }
@@ -395,14 +567,14 @@ private fun TotalPositionValueCard(
         )
         Spacer(modifier = Modifier.height(6.dp))
         Text(
-            text = formatPerpsFiatDecimal(totalMargin.abs().multiply(BigDecimal(Fiats.getRate())), Fiats.getSymbol()),
+            text = formatPerpsUsdDecimal(totalMargin.abs()),
             fontSize = 18.sp,
             fontWeight = FontWeight.W500,
             color = MixinAppTheme.colors.textPrimary,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = "${formatPerpsSignedFiatDecimal(totalPnl.multiply(BigDecimal(Fiats.getRate())), Fiats.getSymbol())} (${formatPerpsSignedPercent(totalPnlPercent, withSign = false)})",
+            text = "${formatPerpsSignedUsdDecimal(totalPnl)} (${formatPerpsSignedPercent(totalPnlPercent, withSign = false)})",
             fontSize = 13.sp,
             color = pnlColor,
         )
@@ -442,15 +614,6 @@ private fun EmptyPositionsState(
                 modifier = Modifier.clickable(onClick = onActionClick),
             )
         }
-    }
-}
-
-private fun groupedPositionShape(index: Int, itemCount: Int): Shape {
-    return when {
-        itemCount <= 1 -> RoundedCornerShape(8.dp)
-        index == 0 -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
-        index == itemCount - 1 -> RoundedCornerShape(bottomStart = 8.dp, bottomEnd = 8.dp)
-        else -> RectangleShape
     }
 }
 

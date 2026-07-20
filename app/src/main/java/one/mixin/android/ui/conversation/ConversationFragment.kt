@@ -214,6 +214,7 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.MusicPlayer
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.markdown.MarkwonUtil.Companion.getMiniMarkwon
 import one.mixin.android.util.mention.mentionDisplay
@@ -280,6 +281,7 @@ import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.LinearSmoothScrollerCustom
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.buildBottomSheetView
+import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardHiddenListener
 import one.mixin.android.widget.keyboard.KeyboardLayout.OnKeyboardShownListener
@@ -817,8 +819,9 @@ class ConversationFragment() :
                 if (openInputAction(action)) return
 
                 lifecycleScope.launch {
+                    val context = context ?: return@launch
                     val app = chatViewModel.findAppById(appId ?: userId)
-                    action.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope, app)
+                    action.openAsUrlOrWeb(context, conversationId, parentFragmentManager, lifecycleScope, app)
                 }
             }
 
@@ -874,6 +877,7 @@ class ConversationFragment() :
                                 } else {
                                     null
                                 },
+                                botEntrySource = AnalyticsTracker.BotSource.CHAT_MESSAGE_CONTACT,
                             )
                         }
                     },
@@ -1501,9 +1505,12 @@ class ConversationFragment() :
                     flags: Int,
                     opts: Bundle?,
                 ) {
-                    lifecycleScope.launch(Dispatchers.IO) {
-                        if (inputContentInfo != null) {
-                            sendImageMessage(inputContentInfo.contentUri, false, null, true)
+                    val uri = inputContentInfo?.contentUri ?: return
+                    if (opts?.getBoolean(ContentEditText.OPTION_FROM_CLIPBOARD, false) == true) {
+                        handleClipboardImage(uri, opts.getString(ContentEditText.OPTION_CONTENT_MIME_TYPE))
+                    } else {
+                        lifecycleScope.launch(Dispatchers.IO) {
+                            sendImageMessage(uri, false, null, true)
                         }
                     }
                 }
@@ -2131,6 +2138,25 @@ class ConversationFragment() :
 
     private var lastSendMessageId: String? = null
 
+    private fun handleClipboardImage(
+        uri: Uri,
+        mimeType: String?,
+    ) {
+        val imageMimeType = mimeType ?: getMimeType(uri, true)
+        when {
+            imageMimeType.equals(MimeType.GIF.toString(), true) ||
+                imageMimeType.equals(MimeType.WEBP.toString(), true) -> {
+                showPreview(uri, getString(R.string.Send), false) { imageUri, _, _ ->
+                    sendImageMessage(imageUri, mimeType = imageMimeType)
+                }
+            }
+            imageMimeType?.isImageSupport() == true -> {
+                getEditorResult.launch(Pair(uri, getString(R.string.Send)))
+            }
+            else -> toast(R.string.Format_not_supported)
+        }
+    }
+
     private fun sendImageMessage(
         uri: Uri,
         notCompress: Boolean = false,
@@ -2454,6 +2480,7 @@ class ConversationFragment() :
                 } else {
                     null
                 },
+                botEntrySource = AnalyticsTracker.BotSource.CHAT_AVATAR_DIALOG,
             )
         }
         binding.bottomUnblock.setOnClickListener {
@@ -2687,6 +2714,8 @@ class ConversationFragment() :
                         MenuType.App -> {
                             menu.app?.let { app ->
                                 binding.chatControl.chatEt.hideKeyboard()
+                                AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.CHAT_BOTTOM_MENU, app.appNumber)
+                                AnalyticsTracker.trackOpenBotConversation(AnalyticsTracker.BotSource.CHAT_MORE_MENU, app.appNumber)
                                 WebActivity.show(
                                     requireActivity(),
                                     app.homeUri,
@@ -3009,12 +3038,13 @@ class ConversationFragment() :
         audioSwitch.selectSpeakerphone()
     }
 
-    private fun openBotHome() {
+    private fun openBotHome(source: String = AnalyticsTracker.BotSource.CHAT_MORE_MENU) {
         hideIfShowBottomSheet()
         recipient?.userId?.let { id ->
             chatViewModel.refreshUser(id, true)
         }
         app?.let {
+            AnalyticsTracker.trackOpenBotHomePage(source, it.appNumber)
             open(it.homeUri, it, null)
         }
     }
@@ -3100,7 +3130,7 @@ class ConversationFragment() :
             }
 
             override fun onBotClick() {
-                openBotHome()
+                openBotHome(AnalyticsTracker.BotSource.CHAT_BOTTOM_MENU)
             }
 
             override fun onGalleryClick() {

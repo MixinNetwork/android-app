@@ -11,8 +11,6 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.databinding.ItemMarketListBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.extension.priceFormat
-import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 class PerpsMarketListAdapter(
@@ -40,8 +38,6 @@ class PerpsMarketListAdapter(
 
         fun bind(market: PerpsMarket) {
             binding.apply {
-                val fiatRate = BigDecimal(Fiats.getRate())
-                val fiatSymbol = Fiats.getSymbol()
                 if (iconIv.tag != market.iconUrl) {
                     iconIv.tag = market.iconUrl
                     iconIv.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
@@ -50,18 +46,13 @@ class PerpsMarketListAdapter(
                 leverageTv.text = root.context.getString(R.string.Perpetual_Leverage_Format, market.leverage)
 
                 val formattedVolume = try {
-                    BigDecimal(market.volume).multiply(fiatRate).numberFormatCompact()
+                    BigDecimal(market.volume).numberFormatCompact()
                 } catch (e: Exception) {
                     market.volume
                 }
-                volumeTv.text = root.context.getString(R.string.Vol, "$fiatSymbol$formattedVolume")
+                volumeTv.text = root.context.getString(R.string.Vol, formattedVolume)
 
-                val formattedPrice = try {
-                    BigDecimal(market.last).multiply(fiatRate).priceFormat()
-                } catch (e: Exception) {
-                    market.last
-                }
-                priceTv.text = "$fiatSymbol$formattedPrice"
+                priceTv.text = "$PERPS_USD_SYMBOL${market.last}"
 
                 val changePercent = market.changePercent()
                 val isPositive = changePercent >= BigDecimal.ZERO

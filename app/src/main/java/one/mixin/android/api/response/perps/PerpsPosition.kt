@@ -53,9 +53,19 @@ data class PerpsPosition(
     @SerializedName("open_pay_asset_id")
     @ColumnInfo(name = "open_pay_asset_id")
     val openPayAssetId: String,
+    @SerializedName("take_profit_price")
+    @ColumnInfo(name = "take_profit_price")
+    val takeProfitPrice: String? = null,
+    @SerializedName("stop_loss_price")
+    @ColumnInfo(name = "stop_loss_price")
+    val stopLossPrice: String? = null,
+    @SerializedName("liquidation_price")
+    @ColumnInfo(name = "liquidation_price")
+    val liquidationPrice: String? = null,
     @SerializedName("bot_id")
     @ColumnInfo(name = "bot_id")
     val botId: String,
+    @SerializedName("wallet_id")
     @ColumnInfo(name = "wallet_id")
     val walletId: String,
     @SerializedName("created_at")
@@ -64,4 +74,10 @@ data class PerpsPosition(
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String,
-) : Parcelable
+) : Parcelable {
+    companion object {
+        const val STATE_OPEN = "open"
+        const val STATE_OPENING = "opening"
+        const val STATE_ADDING = "adding"
+    }
+}

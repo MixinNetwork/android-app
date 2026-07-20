@@ -12,7 +12,9 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.landing.MobileFragment.Companion.FROM_LANDING
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.landing.components.CreateAccountPage
+import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.util.viewBinding
 import timber.log.Timber
 
@@ -42,7 +44,11 @@ class CreateAccountFragment : Fragment(R.layout.fragment_compose) {
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightAnimator.displayedChild = 0
         binding.titleView.rightIb.setOnClickListener {
-            openCustomerService()
+            openCustomerService(source = AnalyticsTracker.CustomerServiceSource.SIGN_UP)
+        }
+        binding.titleView.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
         }
         binding.compose.setContent {
             CreateAccountPage({ create ->

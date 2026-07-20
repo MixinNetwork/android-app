@@ -17,16 +17,17 @@ import one.mixin.android.extension.networkConnected
 import one.mixin.android.ui.setting.diagnosis.DiagnosisActivity
 import one.mixin.android.vo.LinkState
 import javax.inject.Inject
+import javax.inject.Provider
 
 abstract class LinkFragment : BaseFragment(), Observer<Int> {
     @Inject
     lateinit var linkState: LinkState
 
     @Inject
-    lateinit var floodMessageDao: FloodMessageDao
+    lateinit var floodMessageDaoProvider: Provider<FloodMessageDao>
 
     @Inject
-    lateinit var pendingMessageDao: PendingMessageDao
+    lateinit var pendingMessageDaoProvider: Provider<PendingMessageDao>
 
     private lateinit var processedCount: LiveData<Int>
 
@@ -38,8 +39,8 @@ abstract class LinkFragment : BaseFragment(), Observer<Int> {
     ) {
         super.onViewCreated(view, savedInstanceState)
         processedCount =
-            floodMessageDao.getFloodMessageCount()
-                .combineWith(pendingMessageDao.getPendingMessageCount()) { a, b ->
+            floodMessageDaoProvider.get().getFloodMessageCount()
+                .combineWith(pendingMessageDaoProvider.get().getPendingMessageCount()) { a, b ->
                     (a ?: 0) + (b ?: 0)
                 }
         linkState.observe(viewLifecycleOwner) { state ->

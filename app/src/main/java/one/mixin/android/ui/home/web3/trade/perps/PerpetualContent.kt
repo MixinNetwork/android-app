@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -48,15 +49,16 @@ import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.api.response.perps.PerpsPositionHistoryItem
+import one.mixin.android.api.response.perps.PerpsOrder
+import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
-import one.mixin.android.ui.home.web3.trade.ClosedPositionItem
+import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.vo.Fiats
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -68,12 +70,12 @@ private const val CLOSED_POSITION_PREVIEW_LIMIT = 10
 fun PerpetualContent(
     onShowTradingGuide: () -> Unit,
     onShowMarketList: (isLong: Boolean) -> Unit,
-    onShowAllMarkets: (String?) -> Unit,
+    onShowAllMarkets: (String?, MarketSort?) -> Unit,
     onShowAllOpenPositions: () -> Unit,
     onShowAllClosedPositions: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
     onMarketItemClick: (PerpsMarket) -> Unit,
-    onClosedPositionClick: (PerpsPositionHistoryItem) -> Unit,
+    onClosedPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val context = LocalContext.current
     val walletId = Session.getAccountId()!!
@@ -81,8 +83,6 @@ fun PerpetualContent(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-    val fiatSymbol = Fiats.getSymbol()
-    val fiatRate = BigDecimal(Fiats.getRate())
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -98,12 +98,15 @@ fun PerpetualContent(
         viewModel.observeTotalUnrealizedPnl(walletId)
     }.collectAsStateWithLifecycle(initialValue = 0.0)
     val closedPositions by remember(walletId) {
-        viewModel.observeClosedPositions(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
+        viewModel.observeOrders(walletId, CLOSED_POSITION_PREVIEW_LIMIT)
     }.collectAsStateWithLifecycle(initialValue = emptyList())
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
     val openPositionsCount = openPositions.size
     val openPositionsPreview = openPositions.take(3)
     val marketsPreview = markets.take(3)
+    val topMoversPreview = remember(markets) {
+        markets.topMoversPreview()
+    }
     val sourceOrder = remember(markets) {
         markets.withIndex().associate { it.value.marketId to it.index }
     }
@@ -120,8 +123,8 @@ fun PerpetualContent(
         total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
     }
     val totalPnlAmount = BigDecimal.valueOf(totalPnl)
-    val totalPositionValueFiatText = "${fiatSymbol}${formatPerpsDisplayDecimal(totalMargin.multiply(fiatRate))}"
-    val totalPnlFiatText = "${if (totalPnlAmount >= BigDecimal.ZERO) "+" else "-"}$fiatSymbol${formatPerpsDisplayDecimal(totalPnlAmount.abs().multiply(fiatRate))}"
+    val totalPositionValueFiatText = formatPerpsUsdDecimal(totalMargin)
+    val totalPnlFiatText = formatPerpsSignedUsdDecimal(totalPnlAmount)
     val totalPnlPercent = calculatePnlPercent(totalMargin, totalPnlAmount)
 
     LaunchedEffect(Unit) {
@@ -146,15 +149,19 @@ fun PerpetualContent(
                     )
                 }
             )
-            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
-            while (isActive) {
-                viewModel.refreshMarkets(
-                    onError = { error ->
-                        errorMessage = error
-                    }
-                )
-                viewModel.refreshPositions(walletId)
-                delay(POSITION_REFRESH_INTERVAL_MS)
+            viewModel.startRefreshOrders(walletId, intervalMs = POSITION_REFRESH_INTERVAL_MS)
+            try {
+                while (isActive) {
+                    viewModel.refreshMarkets(
+                        onError = { error ->
+                            errorMessage = error
+                        }
+                    )
+                    viewModel.refreshPositions(walletId)
+                    delay(POSITION_REFRESH_INTERVAL_MS)
+                }
+            } finally {
+                viewModel.stopRefreshOrders()
             }
         }
     }
@@ -162,7 +169,7 @@ fun PerpetualContent(
     LaunchedEffect(walletId, openPositionsCount) {
         val lastCount = previousOpenPositionsCount
         if (lastCount != null && openPositionsCount < lastCount) {
-            viewModel.refreshPositionHistory(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
+            viewModel.refreshOrders(walletId, limit = CLOSED_POSITION_PREVIEW_LIMIT)
         }
         previousOpenPositionsCount = openPositionsCount
     }
@@ -175,52 +182,56 @@ fun PerpetualContent(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight()
-                        .clip(RoundedCornerShape(8.dp))
-                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                        .padding(16.dp),
-            ) {
-                Text(
-                    text = stringResource(R.string.Total_Position_Value),
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist,
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = totalPositionValueFiatText,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.W600,
-                    color = MixinAppTheme.colors.textPrimary,
-                )
-                Spacer(modifier = Modifier.height(6.dp))
-                Row(verticalAlignment = Alignment.CenterVertically) {
+            if (openPositionsCount > 0) {
+                Column(
+                    modifier =
+                        Modifier
+                            .fillMaxWidth()
+                            .wrapContentHeight()
+                            .clip(RoundedCornerShape(8.dp))
+                            .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                            .padding(16.dp),
+                ) {
                     Text(
-                        text = totalPnlFiatText,
+                        text = stringResource(R.string.Total_Position_Value),
                         fontSize = 14.sp,
-                        color = if (totalPnl >= 0) risingColor else fallingColor,
+                        color = MixinAppTheme.colors.textAssist,
                     )
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
-                        text = "(${formatPerpsSignedPercent(totalPnlPercent, withSign = false)})",
-                        fontSize = 14.sp,
-                        color = if (totalPnl >= 0) risingColor else fallingColor,
+                        text = totalPositionValueFiatText,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600,
+                        color = MixinAppTheme.colors.textPrimary,
                     )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = totalPnlFiatText,
+                            fontSize = 14.sp,
+                            color = if (totalPnl >= 0) risingColor else fallingColor,
+                        )
+                        Text(
+                            text = "(${formatPerpsSignedPercent(totalPnlPercent, withSign = false)})",
+                            fontSize = 14.sp,
+                            color = if (totalPnl >= 0) risingColor else fallingColor,
+                        )
+                    }
                 }
             }
 
             if (openPositionsCount == 0) {
-                Spacer(modifier = Modifier.height(16.dp))
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
                         .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                        .clickable { onShowTradingGuide() }
+                        .clickable {
+                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_HOME_CARD)
+                            onShowTradingGuide()
+                        }
                         .padding(16.dp)
                 ) {
                     Row(
@@ -268,13 +279,13 @@ fun PerpetualContent(
                         Text(
                             text = stringResource(R.string.positions_count, openPositionsCount),
                             fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textPrimary,
+                            color = MixinAppTheme.colors.textMinor,
                         )
                         Icon(
-                            painter = painterResource(R.drawable.ic_arrow_right),
+                            painter = painterResource(R.drawable.ic_arrow_gray_right),
                             contentDescription = null,
-                            tint = MixinAppTheme.colors.textAssist,
-                            modifier = Modifier.size(16.dp)
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(16.dp).offset(x = 4.dp)
                         )
                     }
                     Spacer(modifier = Modifier.height(12.dp))
@@ -302,6 +313,25 @@ fun PerpetualContent(
                 }
             }
 
+            if (topMoversPreview.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .wrapContentHeight()
+                        .clip(RoundedCornerShape(8.dp))
+                        .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
+                        .padding(vertical = 16.dp)
+                ) {
+                    TopMoversCard(
+                        markets = topMoversPreview,
+                        quoteColorReversed = quoteColorReversed,
+                        onViewAllClick = { onShowAllMarkets(null, MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING) },
+                        onMarketItemClick = onMarketItemClick,
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
             Column(
@@ -318,8 +348,8 @@ fun PerpetualContent(
                         markets = marketsPreview,
                         totalCount = markets.size,
                         quoteColorReversed = quoteColorReversed,
-                        onTitleClick = { onShowAllMarkets(null) },
-                        onViewAllClick = { onShowAllMarkets(null) },
+                        onTitleClick = { onShowAllMarkets(null, null) },
+                        onViewAllClick = { onShowAllMarkets(null, null) },
                         onMarketItemClick = onMarketItemClick,
                     )
                 } else if (isLoading) {
@@ -367,10 +397,10 @@ fun PerpetualContent(
                         totalCount = stocksMarkets.size,
                         quoteColorReversed = quoteColorReversed,
                         onTitleClick = {
-                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_STOCKS)
+                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_STOCKS, null)
                         },
                         onViewAllClick = {
-                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_STOCKS)
+                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_STOCKS, null)
                         },
                         onMarketItemClick = onMarketItemClick,
                     )
@@ -393,10 +423,10 @@ fun PerpetualContent(
                         totalCount = commoditiesMarkets.size,
                         quoteColorReversed = quoteColorReversed,
                         onTitleClick = {
-                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_COMMODITIES)
+                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_COMMODITIES, null)
                         },
                         onViewAllClick = {
-                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_COMMODITIES)
+                            onShowAllMarkets(PerpsMarketListBottomSheetDialogFragment.CATEGORY_COMMODITIES, null)
                         },
                         onMarketItemClick = onMarketItemClick,
                     )
@@ -425,13 +455,13 @@ fun PerpetualContent(
                     Text(
                         text = stringResource(R.string.perps_activity),
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textPrimary,
+                        color = MixinAppTheme.colors.textMinor,
                     )
                     Icon(
-                        painter = painterResource(R.drawable.ic_arrow_right),
+                        painter = painterResource(R.drawable.ic_arrow_gray_right),
                         contentDescription = null,
-                        tint = MixinAppTheme.colors.textAssist,
-                        modifier = Modifier.size(16.dp)
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(16.dp).offset(x = 4.dp)
                     )
                 }
                 Spacer(modifier = Modifier.height(12.dp))
@@ -456,11 +486,29 @@ fun PerpetualContent(
                         )
                     }
                 } else {
-                    closedPositionsPreview.forEach { position ->
-                        ClosedPositionItem(
-                            position = position,
-                            onClick = { onClosedPositionClick(position) })
+                    var previousDate: String? = null
+                    closedPositionsPreview.forEach { order ->
+                        val date = order.createdAtDateLabel(context)
+                        if (date != previousDate) {
+                            PerpsActivityDateHeader(
+                                date = date,
+                                modifier = Modifier.padding(horizontal = 16.dp),
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+                        if (order.orderType == PerpsOrder.TYPE_CLOSE) {
+                            ClosedActivityItem(
+                                order = order,
+                                onClick = { onClosedPositionClick(order) },
+                            )
+                        } else {
+                            OpenedOrderItem(
+                                order = order,
+                                onClick = { onClosedPositionClick(order) },
+                            )
+                        }
                         Spacer(modifier = Modifier.height(12.dp))
+                        previousDate = date
                     }
 
                     if (closedPositions.size > closedPositionsPreview.size) {
@@ -477,7 +525,10 @@ fun PerpetualContent(
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(8.dp))
                         .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                        .clickable { onShowTradingGuide() }
+                        .clickable {
+                            AnalyticsTracker.trackPerpsGuide(AnalyticsTracker.PerpsSource.PERPS_HOME_CARD)
+                            onShowTradingGuide()
+                        }
                         .padding(16.dp)
                 ) {
                     Row(
@@ -572,13 +623,13 @@ private fun MarketPreviewSection(
         Text(
             text = title,
             fontSize = 14.sp,
-            color = MixinAppTheme.colors.textPrimary,
+            color = MixinAppTheme.colors.textMinor,
         )
         Icon(
-            painter = painterResource(R.drawable.ic_arrow_right),
+            painter = painterResource(R.drawable.ic_arrow_gray_right),
             contentDescription = null,
-            tint = MixinAppTheme.colors.textAssist,
-            modifier = Modifier.size(16.dp),
+            tint = Color.Unspecified,
+            modifier = Modifier.size(16.dp).offset(x = 4.dp),
         )
     }
     Spacer(modifier = Modifier.height(12.dp))
@@ -620,7 +671,6 @@ private fun calculatePnlPercent(
         .multiply(BigDecimal(100))
         .toDouble()
 }
-
 
 @Composable
 private fun ViewAllAction(onClick: () -> Unit) {

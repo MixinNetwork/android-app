@@ -8,8 +8,6 @@ import android.text.Selection
 import android.text.TextWatcher
 import android.view.View
 import android.view.View.AUTOFILL_HINT_PHONE
-import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -60,12 +58,21 @@ import one.mixin.android.widget.countrypicker.Country
 import one.mixin.android.widget.countrypicker.CountryPicker
 import timber.log.Timber
 
+private fun CaptchaView.CaptchaType.analyticsName(): String {
+    return when (this) {
+        CaptchaView.CaptchaType.GTCaptcha -> AnalyticsTracker.CaptchaType.GEETEST
+        CaptchaView.CaptchaType.HCaptcha -> AnalyticsTracker.CaptchaType.HCAPTCHA
+        CaptchaView.CaptchaType.GCaptcha -> AnalyticsTracker.CaptchaType.RECAPTCHA
+    }
+}
+
 @AndroidEntryPoint
 class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     companion object {
         const val TAG: String = "MobileFragment"
         const val ARGS_PHONE_NUM = "args_phone_num"
         const val ARGS_FROM = "args_from"
+        const val ARGS_ADD_PHONE_SOURCE = "args_add_phone_source"
         const val FROM_LANDING = 0
         const val FROM_LANDING_CREATE = 1
         const val FROM_CHANGE_PHONE_ACCOUNT = 2
@@ -76,6 +83,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             pin: String? = null,
             from: Int = FROM_LANDING,
             phoneNumber: String? = null,
+            addPhoneSource: String? = null,
         ): MobileFragment =
             MobileFragment().apply {
                 val b =
@@ -87,6 +95,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                         if (!phoneNumber.isNullOrBlank()) {
                             putString(ARGS_PHONE_NUM, phoneNumber)
                         }
+                        addPhoneSource?.let { putString(ARGS_ADD_PHONE_SOURCE, it) }
                     }
                 arguments = b
             }
@@ -108,6 +117,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
 
     private val presetPhoneNumber: String? by lazy {
         requireArguments().getString(ARGS_PHONE_NUM)
+    }
+    private val addPhoneSource: String? by lazy {
+        requireArguments().getString(ARGS_ADD_PHONE_SOURCE)
     }
 
     private var captchaView: CaptchaView? = null
@@ -134,6 +146,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         if (from == FROM_LANDING) {
             AnalyticsTracker.trackLoginStart()
         }
+        if (isAddPhoneFlow()) {
+            AnalyticsTracker.trackAddPhoneInputPhone()
+        }
         binding.apply {
             pin = requireArguments().getString(ARGS_PIN)
             if (pin != null) {
@@ -145,7 +160,17 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
             binding.titleView.leftIb.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
             binding.titleView.rightIb.setOnClickListener {
-                openCustomerService()
+                val source = if (isAddPhoneFlow()) {
+                    AnalyticsTracker.CustomerServiceSource.ADD_PHONE_INPUT_PHONE
+                } else {
+                    when (from) {
+                        FROM_LANDING_CREATE -> AnalyticsTracker.CustomerServiceSource.SIGN_UP_PHONE_NUMBER
+                        FROM_CHANGE_PHONE_ACCOUNT -> AnalyticsTracker.CustomerServiceSource.PHONE_NUMBER_CHANGE
+                        FROM_VERIFY_MOBILE_REMINDER -> AnalyticsTracker.CustomerServiceSource.PHONE_NUMBER_CHANGE_SMS_VERIFY
+                        else -> AnalyticsTracker.CustomerServiceSource.LOGIN_PHONE_NUMER
+                    }
+                }
+                openCustomerService(source = source)
             }
             val policy: String = requireContext().getString(R.string.Privacy_Policy)
             val termsService: String = requireContext().getString(R.string.Terms_of_Service)
@@ -213,6 +238,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 )
             }
             noAccount.setOnClickListener {
+                AnalyticsTracker.trackSignUpStart(AnalyticsTracker.SignUpStartSource.LOGIN_START)
                 CreateAccountConfirmBottomSheetDialogFragment.newInstance()
                     .setOnCreateAccount {
                         activity?.addFragment(
@@ -231,6 +257,12 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
         }
         setupFocusListeners()
+    }
+
+    override fun onDestroyView() {
+        captchaView?.release()
+        captchaView = null
+        super.onDestroyView()
     }
 
     private fun applySafeTopPadding(rootView: View) {
@@ -276,10 +308,6 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     }
 
     override fun onBackPressed(): Boolean {
-        if (captchaView?.isVisible() == true) {
-            hideLoading()
-            return true
-        }
         if (binding.keyboard.translationY == 0f) {
             binding.mobileEt.clearFocus()
             binding.countryCodeEt.clearFocus()
@@ -304,6 +332,8 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             .setPositiveButton(R.string.Confirm) { dialog, _ ->
                 if (from == FROM_LANDING) {
                     AnalyticsTracker.trackLoginSmsSendConfirmed()
+                } else if (isAddPhoneFlow()) {
+                    AnalyticsTracker.trackAddPhoneSmsSendConfirmed()
                 }
                 requestSend()
                 dialog.dismiss()
@@ -387,6 +417,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                                         pin,
                                         verificationResponse.hasEmergencyContact,
                                         from,
+                                        addPhoneSource,
                                     ),
                                     VerificationFragment.TAG,
                                 )
@@ -400,6 +431,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                                 pin,
                                 verificationResponse.hasEmergencyContact,
                                 from,
+                                addPhoneSource,
                             ),
                             VerificationFragment.TAG,
                         )
@@ -434,18 +466,22 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                             }
                         },
                     )
-                (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
+            }
+            val captchaType = if (errorDescription.containsIgnoreCase(gtCAPTCHA)) {
+                CaptchaView.CaptchaType.GTCaptcha
+            } else if (errorDescription.containsIgnoreCase(hCAPTCHA)) {
+                CaptchaView.CaptchaType.HCaptcha
+            } else {
+                CaptchaView.CaptchaType.GCaptcha
             }
             if (from == FROM_LANDING_CREATE) {
                 AnalyticsTracker.trackSignUpCaptcha()
             } else if (from == FROM_LANDING) {
                 AnalyticsTracker.trackLoginCaptcha("phone_number")
+            } else if (isAddPhoneFlow()) {
+                AnalyticsTracker.trackAddPhoneCaptcha(captchaType.analyticsName())
             }
-            captchaView?.loadCaptcha(
-                if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
-                else if (errorDescription.containsIgnoreCase(hCAPTCHA)) CaptchaView.CaptchaType.HCaptcha
-                else CaptchaView.CaptchaType.GCaptcha
-            )
+            captchaView?.loadCaptcha(captchaType)
         }
 
     private fun hideLoading() {
@@ -454,6 +490,10 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         binding.continueBn.displayedChild = 0
         binding.mobileCover.isVisible = false
         captchaView?.hide()
+    }
+
+    private fun isAddPhoneFlow(): Boolean {
+        return from == FROM_CHANGE_PHONE_ACCOUNT || from == FROM_VERIFY_MOBILE_REMINDER
     }
 
     private fun handleEditView() {
@@ -498,6 +538,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
 
     private fun showCountry() {
         try {
+            if (isAddPhoneFlow()) {
+                AnalyticsTracker.trackAddPhoneInputPhoneCountry()
+            }
             activity?.supportFragmentManager?.inTransaction {
                 setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
                     .add(R.id.container, countryPicker).addToBackStack(null)

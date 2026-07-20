@@ -12,8 +12,10 @@ import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.perps.CloseOrderRequest
 import one.mixin.android.api.request.perps.CloseOrderResponse
+import one.mixin.android.api.request.perps.IncreaseOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderResponse
+import one.mixin.android.api.request.perps.PositionTpSlRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.GaslessFeeRequest
@@ -32,9 +34,10 @@ import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.UserAddressView
 import one.mixin.android.api.response.perps.CandleView
+import one.mixin.android.api.response.perps.MarketLiquidationPriceView
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsPosition
-import one.mixin.android.api.response.perps.PerpsPositionHistory
 import one.mixin.android.api.response.web3.GaslessFeeResponse
 import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
 import one.mixin.android.api.response.web3.GaslessTxResponse
@@ -246,7 +249,7 @@ interface RouteService {
     ): MixinResponse<Market>
 
     @GET("markets")
-    suspend fun markets(@Query("category") category: String? = null, @Query("limit") limit: Int? = null, @Query("sort") sort: String? = null, @Query("offset") offset: Int? = null): MixinResponse<List<Market>>
+    suspend fun markets(@Query("category") category: String? = null, @Query("limit") limit: Int? = null, @Query("sort") sort: String? = null, @Query("offset") offset: Int? = null, @Query("duration") duration: String? = null): MixinResponse<List<Market>>
 
     @POST("markets/fetch")
     suspend fun fetchMarket(@Body ids: List<String>): MixinResponse<List<Market>>
@@ -394,6 +397,15 @@ interface RouteService {
         @Query("time_frame") timeFrame: String
     ): MixinResponse<CandleView>
 
+    @GET("perps/markets/liquidation-price")
+    suspend fun getPerpsLiquidationPrice(
+        @Query("market_id") marketId: String? = null,
+        @Query("amount") amount: String,
+        @Query("side") side: String? = null,
+        @Query("leverage") leverage: Int? = null,
+        @Query("position_id") positionId: String? = null,
+    ): MixinResponse<MarketLiquidationPriceView>
+
     @GET("perps/orders/accepted-assets")
     suspend fun getAcceptedAssets(): MixinResponse<List<String>>
 
@@ -417,10 +429,21 @@ interface RouteService {
         @Path("id") positionId: String
     ): MixinResponse<PerpsPosition>
 
-    @GET("perps/positions/history")
-    suspend fun getPerpsPositionHistory(
+    @POST("perps/positions/tpsl")
+    suspend fun setPerpsPositionTpSl(
+        @Body request: PositionTpSlRequest
+    ): MixinResponse<PerpsPosition>
+
+    @POST("perps/positions/{id}/increase")
+    suspend fun increasePerpsPosition(
+        @Path("id") positionId: String,
+        @Body request: IncreaseOrderRequest,
+    ): MixinResponse<OpenOrderResponse>
+
+    @GET("perps/orders")
+    suspend fun getPerpsOrders(
         @Query("offset") offset: String? = null,
         @Query("limit") limit: Int = 100,
-        @Query("wallet_id") walletId: String
-    ): MixinResponse<List<PerpsPositionHistory>>
+        @Query("wallet_id") walletId: String,
+    ): MixinResponse<List<PerpsOrder>>
 }

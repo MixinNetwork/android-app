@@ -2,8 +2,6 @@ package one.mixin.android.ui.landing
 
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -48,6 +46,8 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
+import one.mixin.android.ui.logs.LogViewerBottomSheet
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -102,6 +102,10 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         Timber.e("MnemonicPhraseFragment onViewCreated")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+        binding.titleView.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
         }
         binding.compose.setContent {
             MnemonicPhrasePage(!words.isNullOrEmpty(), errorInfo) {
@@ -179,7 +183,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 exceptionBlock = { t ->
                     landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
-                    errorInfo = t.message
+                    errorInfo = ErrorHandler.getErrorMessage(t)
                     Timber.e(t)
                     true
                 },
@@ -219,6 +223,13 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     }
 
     private var captchaView: CaptchaView? = null
+
+    override fun onDestroyView() {
+        captchaView?.release()
+        captchaView = null
+        super.onDestroyView()
+    }
+
     private fun initAndLoadCaptcha(sessionKey: EdKeyPair, edKey: EdKeyPair, errorDescription: String) =
         lifecycleScope.launch {
             errorInfo = null
@@ -231,6 +242,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                             override fun onStop() {
                                 if (viewDestroyed()) return
                                 binding.mobileCover.isVisible = false
+                                landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                             }
 
                             override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
@@ -239,7 +251,6 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                             }
                         },
                     )
-                (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
             captchaView?.loadCaptcha(
                 if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
@@ -280,7 +291,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 exceptionBlock = { t ->
                     landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
-                    errorInfo = t.message
+                    errorInfo = ErrorHandler.getErrorMessage(t)
                     Timber.e(t)
                     true
                 },
@@ -340,7 +351,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 exceptionBlock = { t ->
                     landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
-                    errorInfo = t.message
+                    errorInfo = ErrorHandler.getErrorMessage(t)
                     Timber.e(t)
                     true
                 },

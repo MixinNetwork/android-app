@@ -5,6 +5,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Build
 import android.view.Gravity
+import android.view.ViewGroup.MarginLayoutParams
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.FrameLayout
@@ -25,6 +26,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.margin
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -49,6 +51,8 @@ import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.ShareImageData
+import one.mixin.android.vo.shareDataErrorReasons
+import one.mixin.android.vo.toAppCardDataOrNull
 import one.mixin.android.websocket.ContactMessagePayload
 import one.mixin.android.websocket.LiveMessagePayload
 import one.mixin.android.websocket.StickerMessagePayload
@@ -114,18 +118,12 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         binding.close.setOnClickListener {
             dismiss()
         }
-        try {
-            contentView.doOnPreDraw {
+        contentView.doOnPreDraw {
+            try {
                 loadData()
+            } catch (e: Exception) {
+                handleLoadError(e)
             }
-        } catch (e: Exception) {
-            Timber.e("Load \"${shareMessage.content}\" ERROR!!!")
-            if (app != null || host != null) {
-                reportException(IllegalArgumentException("app:${app?.appNumber} host:$host ${e.message}"))
-            }
-            toast(getString(R.string.error_unknown_with_message, "${e.javaClass.name} ${shareMessage.content}"))
-            dismiss()
-            return
         }
         when {
             app != null -> {
@@ -163,10 +161,12 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     sendMessage()
                 }
             } else if (shareMessage.category == ShareCategory.AppCard) {
-                val appCardData = GsonHelper.customGson.fromJson(shareMessage.content, AppCardData::class.java)
-                if (appCardData.title?.length in 1..36 && appCardData.description?.length in 1..128) {
+                val appCardData = shareMessage.content.toAppCardDataOrNull()
+                val errorReasons = appCardData?.shareDataErrorReasons().orEmpty()
+                if (appCardData != null && errorReasons.isEmpty()) {
                     sendMessage()
                 } else {
+                    logAppCardDataError(appCardData, errorReasons.ifEmpty { listOf("parseFailed") })
                     toast(R.string.Data_error)
                 }
             } else {
@@ -299,26 +299,67 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun loadAppCard(content: String) {
-        val appCardData = GsonHelper.customGson.fromJson(content, AppCardData::class.java)
+        val appCardData =
+            content.toAppCardDataOrNull() ?: run {
+                logAppCardDataError(null, listOf("parseFailed"))
+                toast(R.string.Data_error)
+                dismiss()
+                return
+            }
         if (appCardData.oldVersion) {
             val renderer = ShareAppCardRenderer(requireContext())
             binding.contentLayout.addView(renderer.contentView, generateLayoutParams())
             renderer.render(appCardData, requireContext().isNightMode())
         } else {
-            if (appCardData.cover != null && ((appCardData.cover.width < 64 || appCardData.cover.width > 104) || (appCardData.cover.height < 64 || appCardData.cover.height > 104))) {
+            if (!appCardData.hasValidCoverSize) {
                 toast(getString(R.string.error_unknown_with_message, "Illegal size"))
                 dismiss()
+                return
             }
-            val renderer = ShareAppActionsCardRenderer(requireContext(), binding.contentLayout.measuredWidth)
+            val contentPadding = 16.dp
+            val contentMargin = 32.dp
+            binding.contentLayout.setPadding(contentPadding, contentPadding, contentPadding, contentPadding)
             (binding.contentLayout.layoutParams as ConstraintLayout.LayoutParams).apply {
-                margin = 20.dp
+                dimensionRatio = null
+                height = WRAP_CONTENT
+                margin = contentMargin
+                verticalBias = 0f
             }
+            val renderer = ShareAppActionsCardRenderer(
+                requireContext(),
+                maxOf(
+                    1,
+                    binding.root.measuredWidth -
+                        binding.root.paddingLeft -
+                        binding.root.paddingRight -
+                        contentMargin * 2 -
+                        contentPadding * 2,
+                ),
+                appCardContentMaxHeight(),
+            )
             binding.contentLayout.addView(renderer.contentView, FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
                 gravity = Gravity.TOP
-                topMargin = 20.dp
             })
             renderer.render(appCardData, requireContext().isNightMode())
         }
+    }
+
+    private fun appCardContentMaxHeight(): Int {
+        val maxSheetHeight = resources.displayMetrics.heightPixels - requireContext().statusBarHeight()
+        val contentVerticalMargin = (binding.contentLayout.layoutParams as? MarginLayoutParams)?.let {
+            it.topMargin + it.bottomMargin
+        } ?: 0
+        val sendBottomMargin = (binding.send.layoutParams as? MarginLayoutParams)?.bottomMargin ?: 0
+        val maxContentHeight =
+            maxSheetHeight -
+                binding.shareTitle.bottom -
+                contentVerticalMargin -
+                binding.contentLayout.paddingTop -
+                binding.contentLayout.paddingBottom -
+                binding.send.measuredHeight -
+                sendBottomMargin -
+                binding.root.paddingBottom
+        return maxOf(1, maxContentHeight)
     }
 
     private fun loadLive(content: String) {
@@ -332,10 +373,34 @@ class ShareMessageBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         renderer.render(liveData)
     }
 
+    private fun logAppCardDataError(
+        appCardData: AppCardData?,
+        reasons: List<String>,
+    ) {
+        Timber.e(
+            "$TAG app card data error reasons=${reasons.joinToString()} " +
+                "titleLength=${appCardData?.title?.length ?: 0} " +
+                "descriptionLength=${appCardData?.description?.length ?: 0} " +
+                "coverSize=${appCardData?.cover?.width}x${appCardData?.cover?.height} " +
+                "oldVersion=${appCardData?.oldVersion} " +
+                "hasActions=${appCardData?.actions.isNullOrEmpty().not()} " +
+                "fromApp=${app != null} fromHost=${host != null}",
+        )
+    }
+
     private fun generateLayoutParams(): FrameLayout.LayoutParams {
         return FrameLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
             gravity = Gravity.CENTER
         }
+    }
+
+    private fun handleLoadError(e: Exception) {
+        Timber.e(e, "Load \"${shareMessage.content}\" ERROR!!!")
+        if (app != null || host != null) {
+            reportException(IllegalArgumentException("app:${app?.appNumber} host:$host ${e.message}"))
+        }
+        toast(getString(R.string.error_unknown_with_message, "${e.javaClass.name} ${shareMessage.content}"))
+        dismiss()
     }
 
     override fun onDetach() {

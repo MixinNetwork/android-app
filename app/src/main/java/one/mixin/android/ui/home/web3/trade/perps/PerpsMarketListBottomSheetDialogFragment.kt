@@ -28,6 +28,7 @@ import one.mixin.android.db.perps.PerpsPositionDao
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.extension.scrollToCenterCheckedRadio
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -56,6 +57,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         const val TAG = "PerpsMarketListBottomSheetDialogFragment"
         private const val ARGS_IS_LONG = "args_is_long"
         private const val ARGS_INITIAL_CATEGORY = "args_initial_category"
+        private const val ARGS_INITIAL_SORT = "args_initial_sort"
         const val CATEGORY_STOCKS = "stocks"
         const val CATEGORY_COMMODITIES = "commodities"
 
@@ -63,8 +65,12 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             putBoolean(ARGS_IS_LONG, isLong)
         }
 
-        fun newInstance(initialCategory: String? = null) = PerpsMarketListBottomSheetDialogFragment().withArgs {
+        fun newInstance(
+            initialCategory: String? = null,
+            initialSort: MarketSort? = null,
+        ) = PerpsMarketListBottomSheetDialogFragment().withArgs {
             initialCategory?.let { putString(ARGS_INITIAL_CATEGORY, it) }
+            initialSort?.let { putInt(ARGS_INITIAL_SORT, it.value) }
         }
     }
 
@@ -85,6 +91,12 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     }
     private val initialCategory by lazy {
         arguments?.getString(ARGS_INITIAL_CATEGORY)
+    }
+    private val initialSort by lazy {
+        arguments
+            ?.takeIf { it.containsKey(ARGS_INITIAL_SORT) }
+            ?.getInt(ARGS_INITIAL_SORT)
+            ?.let { MarketSort.fromValueOrNull(it) }
     }
     private var allMarkets = listOf<PerpsMarket>()
     private var currentQuery = ""
@@ -116,6 +128,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             marketRv.adapter = adapter
             (marketRv.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
             applyInitialCategory()
+            currentSort = initialSort
             categoryScroll.scrollToCenterCheckedRadio(categoryGroup)
 
             searchEt.listener = object : SearchView.OnSearchViewListener {
@@ -315,7 +328,8 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                     marketSymbol = market.displaySymbol,
                     marketDisplaySymbol = market.displaySymbol,
                     marketTokenSymbol = market.tokenSymbol,
-                    isLong = requireNotNull(isLong)
+                    isLong = requireNotNull(isLong),
+                    source = AnalyticsTracker.PerpsSource.MORE_EXPLORE,
                 )
             }
             dismiss()
