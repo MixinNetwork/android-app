@@ -177,9 +177,15 @@ fun LimitOrderContent(
     }
     var outputText by remember { mutableStateOf("") }
 
-    LaunchedEffect(lastOrderTime, fromMaxDecimalPlaces) {
+    LaunchedEffect(lastOrderTime) {
         inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
         outputText = ""
+    }
+    LaunchedEffect(fromMaxDecimalPlaces) {
+        inputText = limitTradeInputDecimalPlaces(inputText, fromMaxDecimalPlaces)
+    }
+    LaunchedEffect(toMaxDecimalPlaces) {
+        outputText = limitTradeInputDecimalPlaces(outputText, toMaxDecimalPlaces)
     }
 
     var isButtonEnabled by remember { mutableStateOf(true) }
@@ -282,9 +288,13 @@ fun LimitOrderContent(
 
                                         val oldPrice = limitPriceText.toBigDecimalOrNull()
                                         if (oldPrice != null && oldPrice > BigDecimal.ZERO) {
-                                            limitPriceText = BigDecimal.ONE.divide(
-                                                oldPrice, 8, RoundingMode.HALF_UP
-                                            ).stripTrailingZeros().toPlainString()
+                                            val nextPriceMaxDecimalPlaces = fromToken.tradeInputMaxDecimalPlaces()
+                                            limitPriceText = limitTradeInputDecimalPlaces(
+                                                BigDecimal.ONE.divide(oldPrice, nextPriceMaxDecimalPlaces, RoundingMode.DOWN)
+                                                    .stripTrailingZeros()
+                                                    .toPlainString(),
+                                                nextPriceMaxDecimalPlaces,
+                                            )
                                         }
 
                                         fromToken?.let { f ->

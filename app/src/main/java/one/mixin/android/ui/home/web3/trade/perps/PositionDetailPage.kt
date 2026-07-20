@@ -583,6 +583,7 @@ fun PositionDetailPage(
                     modifier = Modifier
                         .size(70.dp)
                         .clip(CircleShape)
+                        .clickable(enabled = onTradeAgain != null) { onTradeAgain?.invoke() }
                         .align(Alignment.CenterHorizontally)
                 )
 
@@ -831,6 +832,7 @@ fun OpenedOrderDetailPage(
                     modifier = Modifier
                         .size(70.dp)
                         .clip(CircleShape)
+                        .clickable(enabled = onViewMarket != null) { onViewMarket?.invoke() }
                         .align(Alignment.CenterHorizontally)
                 )
 

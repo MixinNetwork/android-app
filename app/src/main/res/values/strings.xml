@@ -322,6 +322,7 @@
     <string name="database_upgrade_tips">The database is being upgraded, it may take several minutes, please do not close this App.</string>
     <string name="Date">Date</string>
     <string name="date_format_date">MMM dd, yyyy</string>
+    <string name="date_format_month_day">MMM dd</string>
     <string name="db_debug_warning">Attention: If a harmful SQL statement is executed, the result is irreversible!</string>
     <string name="Debug_database">Debug database</string>
     <string name="Debug_database_logs">Debug database logs</string>

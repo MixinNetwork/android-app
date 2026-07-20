@@ -395,33 +395,20 @@ fun PerpsMarketDetailPage(
                         positions = closedPositions,
                         onViewAll = {
                             val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
-                            activity.supportFragmentManager
-                                .beginTransaction()
-                                .add(
-                                    android.R.id.content,
-                                    AllPositionsFragment.newClosedInstance(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
-                                    AllPositionsFragment.TAG
-                                )
-                                .addToBackStack(null)
-                                .commit()
+                            activity.supportFragmentManager.navigateToPerpsRoute(
+                                AllPositionsFragment.newClosedInstance(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
+                                AllPositionsFragment.TAG,
+                                android.R.id.content,
+                                animate = false,
+                            )
                         },
                         onPositionClick = { position ->
                             val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
-                            activity.supportFragmentManager
-                                .beginTransaction()
-                                .setCustomAnimations(
-                                    R.anim.slide_in_right,
-                                    0,
-                                    0,
-                                    R.anim.slide_out_right
-                                )
-                                .add(
-                                    android.R.id.content,
-                                    PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
-                                    PositionDetailFragment.TAG
-                                )
-                                .addToBackStack(null)
-                                .commit()
+                            activity.supportFragmentManager.navigateToPerpsRoute(
+                                PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
+                                PositionDetailFragment.TAG,
+                                android.R.id.content,
+                            )
                         }
                     )
                 }
@@ -609,6 +596,7 @@ fun PerpsMarketDetailPage(
                                         marketTokenSymbol = market?.tokenSymbol ?: "",
                                         isLong = true,
                                         source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
+                                        returnToDetail = true,
                                     )
                                 },
                                 backgroundColor = risingColor,
@@ -634,6 +622,7 @@ fun PerpsMarketDetailPage(
                                         marketTokenSymbol = market?.tokenSymbol ?: "",
                                         isLong = false,
                                         source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
+                                        returnToDetail = true,
                                     )
                                 },
                                 backgroundColor = fallingColor,
@@ -1381,6 +1370,7 @@ private fun ClosedPositionsSection(
     onViewAll: () -> Unit,
     onPositionClick: (PerpsOrderItem) -> Unit,
 ) {
+    val context = LocalContext.current
     val displayPositions = positions.take(3)
 
     Column(
@@ -1415,7 +1405,16 @@ private fun ClosedPositionsSection(
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        var previousDate: String? = null
         displayPositions.forEach { order ->
+            val date = order.createdAtDateLabel(context)
+            if (date != previousDate) {
+                PerpsActivityDateHeader(
+                    date = date,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             if (order.orderType == PerpsOrder.TYPE_CLOSE) {
                 ClosedActivityItem(
                     order = order,
@@ -1430,6 +1429,7 @@ private fun ClosedPositionsSection(
             if (order != displayPositions.last()) {
                 Spacer(modifier = Modifier.height(8.dp))
             }
+            previousDate = date
         }
     }
 }

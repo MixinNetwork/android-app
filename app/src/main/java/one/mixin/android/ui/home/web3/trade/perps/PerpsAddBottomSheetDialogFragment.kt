@@ -82,7 +82,9 @@ import one.mixin.android.ui.home.web3.components.InputAction
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import one.mixin.android.ui.home.web3.trade.TradeFragment
+import one.mixin.android.ui.home.web3.trade.limitTradeInputDecimalPlaces
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsPrice
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsQuantity
 import one.mixin.android.ui.home.web3.trade.perps.formatPerpsUsdDecimal
@@ -301,8 +303,12 @@ private fun PerpsAddContent(
             isLiquidationLoading = true
             delay(200L)
             while (true) {
+                val normalizedAmount = addMargin
+                    .stripTrailingZeros()
+                    .toPlainString()
+                    .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
                 val result = viewModel.estimateLiquidationPrice(
-                    amount = addMargin.stripTrailingZeros().toPlainString(),
+                    amount = normalizedAmount,
                     positionId = position.positionId,
                 )
                 if (result != null) {
@@ -472,6 +478,7 @@ private fun PerpsAddContent(
                         onInputChanged = { amount = it },
                         tokenIconSize = 25.dp,
                         autoFocus = true,
+                        maxDecimalPlaces = TRADE_INPUT_MAX_DECIMAL_PLACES,
                     )
 
                     Row(
@@ -493,7 +500,7 @@ private fun PerpsAddContent(
                                 textAlign = TextAlign.Start,
                             ),
                             modifier = Modifier.clickable {
-                                amount = selectedToken?.balance ?: "0"
+                                amount = limitTradeInputDecimalPlaces(selectedToken?.balance ?: "0", TRADE_INPUT_MAX_DECIMAL_PLACES)
                             },
                         )
                         if (insufficientBalance || tokenBalance <= BigDecimal.ZERO) {
@@ -606,11 +613,12 @@ private fun PerpsAddContent(
                         onAdd = {
                             val token = selectedToken ?: return@PerpsAddActionFooter
                             val normalizedAmount = amount.toBigDecimalOrNull()
-                            ?.stripTrailingZeros()
-                            ?.toPlainString()
-                            ?: return@PerpsAddActionFooter
-                        onAdd(token, normalizedAmount, displayLiquidationPrice)
-                    },
+                                ?.stripTrailingZeros()
+                                ?.toPlainString()
+                                ?.let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
+                                ?: return@PerpsAddActionFooter
+                            onAdd(token, normalizedAmount, displayLiquidationPrice)
+                        },
                 )
             }
             }
@@ -618,7 +626,10 @@ private fun PerpsAddContent(
         floating = {
             fun applyBalancePercent(percent: BigDecimal) {
                 amount = if (tokenBalance > BigDecimal.ZERO) {
-                    tokenBalance.multiply(percent).stripTrailingZeros().toPlainString()
+                    tokenBalance.multiply(percent)
+                        .stripTrailingZeros()
+                        .toPlainString()
+                        .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
                 } else {
                     ""
                 }
@@ -642,6 +653,7 @@ private fun PerpsAddContent(
                         val normalizedAmount = amount.toBigDecimalOrNull()
                             ?.stripTrailingZeros()
                             ?.toPlainString()
+                            ?.let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
                             ?: return@PerpsAddActionFooter
                         onAdd(token, normalizedAmount, displayLiquidationPrice)
                     },
