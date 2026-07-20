@@ -113,20 +113,11 @@ class AllPositionsFragment : BaseFragment() {
                         },
                         onClosedPositionClick = { position ->
                             activity?.supportFragmentManager?.let { fm ->
-                                fm.beginTransaction()
-                                    .setCustomAnimations(
-                                        R.anim.slide_in_right,
-                                        0,
-                                        0,
-                                        R.anim.slide_out_right,
-                                    )
-                                    .add(
-                                        android.R.id.content,
-                                        PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_LIST),
-                                        PositionDetailFragment.TAG,
-                                    )
-                                    .addToBackStack(null)
-                                    .commit()
+                                fm.navigateToPerpsRoute(
+                                    PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_LIST),
+                                    PositionDetailFragment.TAG,
+                                    android.R.id.content,
+                                )
                             }
                         },
                     )
