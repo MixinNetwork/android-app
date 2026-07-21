@@ -8,7 +8,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
@@ -683,8 +682,10 @@ class FetchWalletViewModel @Inject constructor(
     private suspend fun selectImportedWalletIfNeeded(walletId: String, category: String) {
         if (_importedWalletDestination.value != null) return
         _importedWalletDestination.value = walletDestinationForWallet(walletId, category)
+        if (category == WalletCategory.WATCH_ADDRESS.value) return
+        val addresses = web3Repository.getAddresses(walletId)
         Web3Signer.setWallet(walletId, category) { queryWalletId ->
-            runBlocking { web3Repository.getAddresses(queryWalletId) }
+            if (queryWalletId == walletId) addresses else emptyList()
         }
     }
 
