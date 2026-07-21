@@ -146,6 +146,10 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private val positionId by lazy {
         requireNotNull(requireArguments().getString(ARGS_POSITION_ID)) { "positionId is null" }
     }
+    private val isLong by lazy {
+        requireNotNull(requireArguments().getString(ARGS_SIDE)) { "side is null" }
+            .equals("long", ignoreCase = true)
+    }
 
     private val margin by lazy {
         requireNotNull(requireArguments().getString(ARGS_MARGIN)) { "margin is null" }
@@ -308,7 +312,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             id = when (step) {
                                 Step.Pending -> R.string.confirm_closing_position
                                 Step.Done -> R.string.Position_Closed
-                                Step.Error -> R.string.swap_failed
+                                Step.Error -> if (isLong) R.string.Closed_Long_Failed else R.string.Closed_Short_Failed
                                 Step.Sending -> R.string.Sending
                             }
                         ),

@@ -137,8 +137,11 @@ fun SwapContent(
     var inputText by remember {
         mutableStateOf(limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces))
     }
-    LaunchedEffect(lastOrderTime, fromMaxDecimalPlaces) {
+    LaunchedEffect(lastOrderTime) {
         inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
+    }
+    LaunchedEffect(fromMaxDecimalPlaces) {
+        inputText = limitTradeInputDecimalPlaces(inputText, fromMaxDecimalPlaces)
     }
 
     val shouldRefreshQuote = remember { MutableStateFlow(inputText) }

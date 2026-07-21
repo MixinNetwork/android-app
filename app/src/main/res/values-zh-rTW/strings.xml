@@ -267,6 +267,7 @@
     <string name="database_upgrade_tips">正在進行資料庫升級，可能需要幾分鐘，請不要強制關閉應用。</string>
     <string name="Date">日期</string>
     <string name="date_format_date">yyyy 年 MM 月 dd 日</string>
+    <string name="date_format_month_day">MM 月 dd 日</string>
     <string name="db_debug_warning">注意：如果執行了有侵害性的 SQL，結果不可逆！</string>
     <string name="Decline">結束通話</string>
     <string name="Declined">已拒絕</string>

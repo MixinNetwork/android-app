@@ -71,7 +71,9 @@ import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import one.mixin.android.ui.home.web3.trade.TradeFragment
+import one.mixin.android.ui.home.web3.trade.limitTradeInputDecimalPlaces
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -230,9 +232,13 @@ fun OpenPositionPage(
             isLiquidationLoading = true
             delay(200L)
             while (true) {
+                val normalizedAmount = amount
+                    .stripTrailingZeros()
+                    .toPlainString()
+                    .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
                 val result = viewModel.estimateLiquidationPrice(
                     marketId = currentMarket.marketId,
-                    amount = amount.stripTrailingZeros().toPlainString(),
+                    amount = normalizedAmount,
                     side = if (isLong) "long" else "short",
                     leverage = leverage.toInt(),
                 )
@@ -413,6 +419,7 @@ fun OpenPositionPage(
                         },
                         onInputChanged = { usdtAmount = it },
                         tokenIconSize = 25.dp,
+                        maxDecimalPlaces = TRADE_INPUT_MAX_DECIMAL_PLACES,
                     )
 
                     Row(
@@ -435,7 +442,7 @@ fun OpenPositionPage(
                             ),
                             modifier = Modifier.clickable {
                                 AnalyticsTracker.trackPerpsOpenAmountBalance()
-                                usdtAmount = currentToken?.balance ?: "0"
+                                usdtAmount = limitTradeInputDecimalPlaces(currentToken?.balance ?: "0", TRADE_INPUT_MAX_DECIMAL_PLACES)
                             }
                         )
                         if (showAddAction) {
@@ -758,11 +765,15 @@ fun OpenPositionPage(
                                 return@launch
                             }
 
+                            val normalizedAmount = amount
+                                .stripTrailingZeros()
+                                .toPlainString()
+                                .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
                             viewModel.openPerpsOrder(
                                 assetId = token.assetId,
                                 marketId = m.marketId,
                                 side = if (isLong) "long" else "short",
-                                amount = amount.stripTrailingZeros().toPlainString(),
+                                amount = normalizedAmount,
                                 leverage = leverage.toInt(),
                                 walletId = walletId,
                                 // Null means "leave TP/SL unset" when creating a new position.
@@ -777,6 +788,7 @@ fun OpenPositionPage(
                                         amount = response.payAmount,
                                         leverage = leverage.toInt(),
                                         entryPrice = m.last,
+                                        marginAssetPrice = token.priceUsd,
                                         tokenSymbol = token.symbol,
                                         takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
                                         stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
@@ -833,6 +845,7 @@ fun OpenPositionPage(
                                 .multiply(percent)
                                 .stripTrailingZeros()
                                 .toPlainString()
+                                .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
                         } else {
                             usdtAmount = ""
                         }

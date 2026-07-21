@@ -196,6 +196,7 @@
     <string name="database_upgrade_tips">Pangkalan data sedang ditingkatkan, mungkin memerlukan beberapa minit, jangan tutup Aplikasi ini.</string>
     <string name="Date">Tarikh</string>
     <string name="date_format_date">BBB hh, tttt</string>
+    <string name="date_format_month_day">BBB hh</string>
     <string name="db_debug_warning">Perhatian: Sekiranya pernyataan SQL berbahaya dijalankan, hasilnya tidak dapat dipulihkan!</string>
     <string name="Debug_database">Pangkalan data nyahpepijat</string>
     <string name="Decline">Tolak</string>

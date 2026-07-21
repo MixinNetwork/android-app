@@ -102,6 +102,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_AMOUNT = "args_amount"
         private const val ARGS_LEVERAGE = "args_leverage"
         private const val ARGS_ENTRY_PRICE = "args_entry_price"
+        private const val ARGS_MARGIN_ASSET_PRICE = "args_margin_asset_price"
         private const val ARGS_TOKEN_SYMBOL = "args_token_symbol"
         private const val ARGS_TAKE_PROFIT_PRICE = "args_take_profit_price"
         private const val ARGS_STOP_LOSS_PRICE = "args_stop_loss_price"
@@ -117,6 +118,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             amount: String,
             leverage: Int,
             entryPrice: String,
+            marginAssetPrice: String,
             tokenSymbol: String,
             takeProfitPrice: String? = null,
             stopLossPrice: String? = null,
@@ -132,6 +134,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 putString(ARGS_AMOUNT, amount)
                 putInt(ARGS_LEVERAGE, leverage)
                 putString(ARGS_ENTRY_PRICE, entryPrice)
+                putString(ARGS_MARGIN_ASSET_PRICE, marginAssetPrice)
                 putString(ARGS_TOKEN_SYMBOL, tokenSymbol)
                 putString(ARGS_TAKE_PROFIT_PRICE, takeProfitPrice)
                 putString(ARGS_STOP_LOSS_PRICE, stopLossPrice)
@@ -183,6 +186,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val amount by lazy { requireNotNull(requireArguments().getString(ARGS_AMOUNT)) }
     private val leverage by lazy { requireArguments().getInt(ARGS_LEVERAGE) }
     private val entryPrice by lazy { requireNotNull(requireArguments().getString(ARGS_ENTRY_PRICE)) }
+    private val marginAssetPrice by lazy { requireArguments().getString(ARGS_MARGIN_ASSET_PRICE) }
     private val tokenSymbol by lazy { requireNotNull(requireArguments().getString(ARGS_TOKEN_SYMBOL)) }
     private val takeProfitPrice by lazy { requireArguments().getString(ARGS_TAKE_PROFIT_PRICE).orEmpty() }
     private val stopLossPrice by lazy { requireArguments().getString(ARGS_STOP_LOSS_PRICE).orEmpty() }
@@ -280,7 +284,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             id = when (step) {
                                 Step.Pending -> if (isAddPosition) R.string.confirm_adding_position else R.string.confirm_opening_position
                                 Step.Done -> if (isAddPosition) R.string.Position_Add_Submitted else R.string.Position_Submitted
-                                Step.Error -> R.string.swap_failed
+                                Step.Error -> when {
+                                    isAddPosition && isLong -> R.string.Added_Long_Failed
+                                    isAddPosition -> R.string.Added_Short_Failed
+                                    isLong -> R.string.Opened_Long_Failed
+                                    else -> R.string.Opened_Short_Failed
+                                }
                                 Step.Sending -> R.string.Sending
                             }
                         ),
@@ -773,7 +782,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             AnalyticsTracker.trackPerpsOpenEnd(
                 leverage = leverage,
                 amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO,
-                price = entryPrice,
+                price = marginAssetPrice,
             )
         }
     }
