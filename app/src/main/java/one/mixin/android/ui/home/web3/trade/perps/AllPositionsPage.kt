@@ -484,13 +484,9 @@ private fun LazyListScope.closedPositionItems(
         } else {
             null
         }
-        val nextDate = if (index < positions.itemCount - 1) {
-            positions.peek(index + 1)?.createdAtDateLabel(context)
-        } else {
-            null
-        }
-        val isFirst = index == 0 || previousDate != date
-        val isLast = index == positions.itemCount - 1 || nextDate != date
+        val showDateHeader = index == 0 || previousDate != date
+        val isFirst = index == 0
+        val isLast = index == positions.itemCount - 1
         val shape = when {
             isFirst && isLast -> RoundedCornerShape(8.dp)
             isFirst -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
@@ -500,7 +496,6 @@ private fun LazyListScope.closedPositionItems(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = if (isFirst && index > 0) 16.dp else 0.dp)
                 .clip(shape)
                 .groupedItemBorder(
                     backgroundColor = MixinAppTheme.colors.background,
@@ -509,7 +504,7 @@ private fun LazyListScope.closedPositionItems(
                     isLast = isLast,
                 ),
         ) {
-            if (isFirst) {
+            if (showDateHeader) {
                 PerpsActivityDateHeader(
                     date = date,
                     modifier = Modifier.padding(
