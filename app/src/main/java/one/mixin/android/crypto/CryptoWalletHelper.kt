@@ -377,11 +377,12 @@ object CryptoWalletHelper {
                 SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
             }
             Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                BitcoinKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", derivationIndex)
+                BitcoinKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
             }
-            else -> {
+            in Constants.Web3EvmChainIds -> {
                 EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
             }
+            else -> throw IllegalArgumentException("Unsupported chainId: $chainId")
         }
 
     fun saveWeb3PrivateKey(context: Context, walletId: String, encryptedString: String) {
