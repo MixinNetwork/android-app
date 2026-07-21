@@ -36,7 +36,7 @@ suspend fun <T> ensureInitialClassicWallet(
     val syncedWallets = syncWallets() ?: return null
     if (syncedWallets.any(isClassicWallet)) return syncedWallets
     createClassicWallet(INITIAL_CLASSIC_WALLET_INDEX)
-    return syncWallets() ?: syncedWallets
+    return syncWallets()?.takeIf { it.any(isClassicWallet) }
 }
 
 suspend fun buildClassicWalletRequest(

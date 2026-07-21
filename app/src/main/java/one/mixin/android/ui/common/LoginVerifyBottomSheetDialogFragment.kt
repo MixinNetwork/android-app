@@ -191,7 +191,9 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
         val r = bottomViewModel.verifyPin(pin)
         if (r.isSuccess) {
-            tipFlowInteractor.ensureClassicWallet(requireContext(), pin)
+            if (tipFlowInteractor.ensureClassicWallet(requireContext(), pin) == null) {
+                return MixinResponse<Any>(IllegalStateException(getString(R.string.Save_failure)))
+            }
             MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
             addBtcAddressIfNeeded(pin)
             synchronizeSelectedWalletSigner()

@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class InitialClassicWalletProvisioningTest {
@@ -55,16 +56,42 @@ class InitialClassicWalletProvisioningTest {
     }
 
     @Test
-    fun failedWalletSyncDoesNotCreateClassicWallet() = runBlocking {
+    fun failedInitialSyncStopsBeforeCreation() = runBlocking {
+        var syncCount = 0
         var created = false
 
         val result = ensureInitialClassicWallet<String>(
-            syncWallets = { null },
+            syncWallets = {
+                syncCount++
+                null
+            },
             isClassicWallet = { it == "classic" },
             createClassicWallet = { created = true },
         )
 
         assertEquals(null, result)
+        assertEquals(1, syncCount)
         assertFalse(created)
+    }
+
+    @Test
+    fun postCreationSyncMustContainClassicWallet() = runBlocking {
+        var syncCount = 0
+        var created = false
+
+        val result = ensureInitialClassicWallet<String>(
+            syncWallets = {
+                syncCount++
+                if (syncCount == 1) emptyList() else null
+            },
+            isClassicWallet = { it == "classic" },
+            createClassicWallet = {
+                created = true
+            },
+        )
+
+        assertEquals(null, result)
+        assertEquals(2, syncCount)
+        assertTrue(created)
     }
 }

@@ -292,12 +292,12 @@ class TipFlowInteractor @Inject internal constructor(
         pin: String,
     ): Boolean {
         val activity = context.findFragmentActivityOrNull()
-        val syncedWallets = ensureClassicWallet(context, pin)
+        val syncedWallets = ensureClassicWallet(context, pin) ?: return false
         if (!hasPendingImportMnemonic(context)) {
             MainActivity.show(context)
             return true
         }
-        val wallets = syncedWallets ?: web3Repository.syncWalletsFromRoute()
+        val wallets = syncedWallets
         val pendingWords = runCatching { tip.getPendingImportMnemonic(context, pin) }
             .onFailure { Timber.e(it, "Failed to restore pending mnemonic from Safe") }
             .getOrNull()
@@ -329,7 +329,7 @@ class TipFlowInteractor @Inject internal constructor(
             },
         )
         Timber.i(
-            "LoginFlow pending_import_wallet_sync_result source=tip resolution=$resolution wallet_count=${wallets?.size ?: -1}"
+            "LoginFlow pending_import_wallet_sync_result source=tip resolution=$resolution wallet_count=${wallets.size}"
         )
         return when (resolution) {
             is PendingMnemonicResolution.WalletHome -> {
