@@ -24,8 +24,6 @@ import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
-import one.mixin.android.crypto.clearPendingImportMnemonic
-import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.databinding.FragmentLoadingBinding
@@ -43,7 +41,6 @@ import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.getSpendKeyFromPin
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
@@ -51,7 +48,7 @@ import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.tip.PendingMnemonicResolution
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
-import one.mixin.android.ui.tip.resolvePendingMnemonicAfterWalletFetch
+import one.mixin.android.ui.tip.resolvePendingMnemonicForWalletsOrNull
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.util.ErrorHandler
@@ -60,7 +57,6 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.isSimplifiedChineseLocale
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -200,40 +196,14 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
     private suspend fun openPendingMnemonicNext(pin: String?): Boolean {
         val context = requireContext()
         val wallets = web3Repository.syncWalletsFromRoute()
-        val pendingWords = if (pin == null) {
-            null
-        } else {
-            runCatching { tip.getPendingImportMnemonic(context, pin) }
-                .onFailure { Timber.e(it, "Failed to restore pending mnemonic from Safe") }
-                .getOrNull()
-                ?: return false
-        }
-        val resolution = resolvePendingMnemonicAfterWalletFetch(
+        val resolution = resolvePendingMnemonicForWalletsOrNull(
+            context = context,
+            tip = tip,
+            web3Repository = web3Repository,
             wallets = wallets,
             pin = pin,
-            pendingWords = pendingWords,
-            walletAddresses = { wallet -> web3Repository.getAddresses(wallet.id) },
-            save = { walletId, verifiedPin, words ->
-                CryptoWalletHelper.saveMnemonicWithSpendKey(
-                    context,
-                    tip.getSpendKeyFromPin(context, verifiedPin),
-                    walletId,
-                    words,
-                )
-            },
-            savePrivateKey = { walletId, verifiedPin, privateKey ->
-                CryptoWalletHelper.savePrivateKeyWithSpendKey(
-                    context,
-                    tip.getSpendKeyFromPin(context, verifiedPin),
-                    walletId,
-                    privateKey,
-                )
-            },
-            clear = {
-                clearPendingImportMnemonic(context)
-                Timber.e("LoginFlow pending_import_cleared source=loading")
-            },
-        )
+            source = "loading",
+        ) ?: return false
         Timber.i(
             "LoginFlow pending_import_wallet_sync_result source=loading resolution=$resolution wallet_count=${wallets?.size ?: -1}"
         )

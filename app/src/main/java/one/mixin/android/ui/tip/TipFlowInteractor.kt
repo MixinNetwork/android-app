@@ -22,9 +22,7 @@ import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.AccountService
 import one.mixin.android.api.service.TipNodeService
 import one.mixin.android.api.service.UtxoService
-import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
-import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.crypto.hasPendingImportMnemonicInMemory
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
@@ -298,36 +296,14 @@ class TipFlowInteractor @Inject internal constructor(
             return true
         }
         val wallets = syncedWallets
-        val pendingWords = runCatching { tip.getPendingImportMnemonic(context, pin) }
-            .onFailure { Timber.e(it, "Failed to restore pending mnemonic from Safe") }
-            .getOrNull()
-            ?: return false
-        val resolution = resolvePendingMnemonicAfterWalletFetch(
+        val resolution = resolvePendingMnemonicForWalletsOrNull(
+            context = context,
+            tip = tip,
+            web3Repository = web3Repository,
             wallets = wallets,
             pin = pin,
-            pendingWords = pendingWords,
-            walletAddresses = { wallet -> web3Repository.getAddresses(wallet.id) },
-            save = { walletId, verifiedPin, words ->
-                CryptoWalletHelper.saveMnemonicWithSpendKey(
-                    context,
-                    tip.getSpendKeyFromPin(context, verifiedPin),
-                    walletId,
-                    words,
-                )
-            },
-            savePrivateKey = { walletId, verifiedPin, privateKey ->
-                CryptoWalletHelper.savePrivateKeyWithSpendKey(
-                    context,
-                    tip.getSpendKeyFromPin(context, verifiedPin),
-                    walletId,
-                    privateKey,
-                )
-            },
-            clear = {
-                clearPendingImportMnemonic(context)
-                Timber.e("LoginFlow pending_import_cleared source=tip")
-            },
-        )
+            source = "tip",
+        ) ?: return false
         Timber.i(
             "LoginFlow pending_import_wallet_sync_result source=tip resolution=$resolution wallet_count=${wallets.size}"
         )

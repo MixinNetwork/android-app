@@ -9,6 +9,7 @@ import one.mixin.android.R
 import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -61,7 +62,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
                         FetchingWalletFragment.newInstance(
                             mnemonic = null,
                             pin = pin,
-                            importCategory = importWalletCategoryForMode(mode),
+                            importCategory = WalletCategory.IMPORTED_MNEMONIC.value,
                             fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,
                             importCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_IMPORT,
                             hideCloseButton = true,
@@ -71,7 +72,7 @@ class WalletSecurityActivity : BlazeBaseActivity() {
                 Mode.REGISTER_IMPORT_MNEMONIC -> FetchingWalletFragment.newInstance(
                     mnemonic = null,
                     pin = pin,
-                    importCategory = importWalletCategoryForMode(mode),
+                    importCategory = WalletCategory.IMPORTED_MNEMONIC.value,
                     fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,
                     importCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_IMPORT,
                     hideCloseButton = true,

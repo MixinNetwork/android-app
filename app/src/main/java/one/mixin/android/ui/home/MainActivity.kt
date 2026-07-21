@@ -68,10 +68,8 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
-import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
-import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
@@ -128,7 +126,6 @@ import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.getSpendKeyFromPin
 import one.mixin.android.tip.wc.WCErrorEvent
 import one.mixin.android.tip.wc.WCEvent
 import one.mixin.android.tip.wc.WalletConnect
@@ -167,7 +164,7 @@ import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
 import one.mixin.android.ui.tip.PendingMnemonicResolution
-import one.mixin.android.ui.tip.resolvePendingMnemonicAfterWalletFetch
+import one.mixin.android.ui.tip.resolvePendingMnemonicForWalletsOrNull
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
@@ -528,40 +525,14 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     private suspend fun openPendingMnemonicNext(pin: String? = null): Boolean {
         val wallets = web3Repository.syncWalletsFromRoute()
-        val pendingWords = if (pin == null) {
-            null
-        } else {
-            runCatching { tip.getPendingImportMnemonic(this, pin) }
-                .onFailure { Timber.e(it, "Failed to restore pending mnemonic from Safe") }
-                .getOrNull()
-                ?: return false
-        }
-        val resolution = resolvePendingMnemonicAfterWalletFetch(
+        val resolution = resolvePendingMnemonicForWalletsOrNull(
+            context = this,
+            tip = tip,
+            web3Repository = web3Repository,
             wallets = wallets,
             pin = pin,
-            pendingWords = pendingWords,
-            walletAddresses = { wallet -> web3Repository.getAddresses(wallet.id) },
-            save = { walletId, verifiedPin, words ->
-                CryptoWalletHelper.saveMnemonicWithSpendKey(
-                    this@MainActivity,
-                    tip.getSpendKeyFromPin(this@MainActivity, verifiedPin),
-                    walletId,
-                    words,
-                )
-            },
-            savePrivateKey = { walletId, verifiedPin, privateKey ->
-                CryptoWalletHelper.savePrivateKeyWithSpendKey(
-                    this@MainActivity,
-                    tip.getSpendKeyFromPin(this@MainActivity, verifiedPin),
-                    walletId,
-                    privateKey,
-                )
-            },
-            clear = {
-                clearPendingImportMnemonic(this)
-                Timber.e("LoginFlow pending_import_cleared source=main")
-            },
-        )
+            source = "main",
+        ) ?: return false
         return when (resolution) {
             is PendingMnemonicResolution.WalletHome -> {
                 Timber.e(

@@ -84,16 +84,31 @@ suspend fun buildClassicWalletRequest(
     )
 }
 
-fun nextCommonWalletName(names: List<String?>): String {
-    val walletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
-    val regex = """^$walletName (\d+)$""".toRegex()
-    val maxIndex = names
+fun nextWalletNameIndex(
+    names: List<String?>,
+    walletName: String,
+): Int {
+    val regex = """^${Regex.escape(walletName)} (\d+)$""".toRegex()
+    return names
         .filterNotNull()
         .mapNotNull { name ->
             regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
-        }.maxOrNull() ?: 0
-    return "$walletName ${maxIndex + 1}"
+        }.maxOrNull()?.plus(1) ?: 1
 }
+
+fun formatWalletName(walletName: String, index: Int): String = "$walletName $index"
+
+fun nextWalletName(names: List<String?>, walletName: String): String =
+    formatWalletName(walletName, nextWalletNameIndex(names, walletName))
+
+fun commonWalletName(index: Int): String =
+    formatWalletName(MixinApplication.appContext.getString(R.string.Common_Wallet), index)
+
+fun nextCommonWalletNameIndex(names: List<String?>): Int =
+    nextWalletNameIndex(names, MixinApplication.appContext.getString(R.string.Common_Wallet))
+
+fun nextCommonWalletName(names: List<String?>): String =
+    commonWalletName(nextCommonWalletNameIndex(names))
 
 fun createSignedWeb3AddressRequest(
     destination: String,

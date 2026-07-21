@@ -18,6 +18,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.VerifyPinBeforeImportWalletPage
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.vo.WalletCategory
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -122,7 +123,7 @@ class VerifyPinBeforeImportWalletFragment : BaseFragment(R.layout.fragment_compo
                                             FetchingWalletFragment.newInstance(
                                                 mnemonic = null,
                                                 pin = pin,
-                                                importCategory = importWalletCategoryForMode(mode),
+                                                importCategory = WalletCategory.IMPORTED_MNEMONIC.value,
                                                 fetchCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_FETCHING,
                                                 importCustomerServiceSource = AnalyticsTracker.CustomerServiceSource.LOGIN_WALLET_IMPORT,
                                                 hideCloseButton = true,

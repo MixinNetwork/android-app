@@ -23,7 +23,10 @@ import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.wallet.buildClassicWalletRequest
 import one.mixin.android.ui.wallet.classicWalletIndexForCreation
+import one.mixin.android.ui.wallet.commonWalletName
 import one.mixin.android.ui.wallet.createSignedWeb3AddressRequest
+import one.mixin.android.ui.wallet.nextCommonWalletNameIndex
+import one.mixin.android.ui.wallet.nextWalletName
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.IndexedWallet
@@ -86,6 +89,7 @@ class FetchWalletViewModel @Inject constructor(
     private var currentIndex = 0
     private var spendKey: ByteArray? = null
     private var importCategory: String = WalletCategory.IMPORTED_MNEMONIC.value
+    private var nextWalletNameIndex: Int? = null
 
     init {
         startFetching(0)
@@ -105,6 +109,7 @@ class FetchWalletViewModel @Inject constructor(
         _selectedWalletInfos.value = emptySet()
         _importedWalletDestination.value = null
         currentIndex = 0
+        nextWalletNameIndex = null
         startFetching(0)
     }
 
@@ -138,15 +143,7 @@ class FetchWalletViewModel @Inject constructor(
                 R.string.Common_Wallet
             }
         )
-        val regex = """^$walletName (\d+)$""".toRegex()
-        val maxIndex = names
-            .filterNotNull()
-            .mapNotNull { name ->
-                regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
-            }
-            .maxOrNull() ?: 0
-
-        return "$walletName ${maxIndex + 1}"
+        return nextWalletName(names, walletName)
     }
 
     fun findMoreWallets() {
@@ -166,8 +163,6 @@ class FetchWalletViewModel @Inject constructor(
         _state.value = fetchWalletFailureState(_wallets.value.isNotEmpty())
     }
 
-    private var localMaxIndex: Int = 0
-
     private fun startFetching(offset: Int) {
         viewModelScope.launch {
             _state.value = FetchWalletState.FETCHING
@@ -181,15 +176,9 @@ class FetchWalletViewModel @Inject constructor(
                     return@launch
                 }
                 Timber.i("LoginFlow wallet_fetch_start offset=$offset import_category=$importCategory")
-                if (localMaxIndex == 0) {
+                if (nextWalletNameIndex == null) {
                     val names = web3Repository.getAllWalletNames(listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
-                    val commonWalletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
-                    val regex = """^$commonWalletName (\d+)$""".toRegex()
-                    localMaxIndex = names
-                        .filterNotNull()
-                        .mapNotNull { name ->
-                            regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
-                        }.maxOrNull() ?: 0
+                    nextWalletNameIndex = nextCommonWalletNameIndex(names)
                 }
 
                 val wallets = (offset until offset + 10).map { index ->
@@ -199,7 +188,7 @@ class FetchWalletViewModel @Inject constructor(
                         CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index)
                     val btcWallet = CryptoWalletHelper.mnemonicToBitcoinSegwitWallet(mnemonic, index = index)
 
-                    val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${localMaxIndex + 1}"
+                    val name = commonWalletName(requireNotNull(nextWalletNameIndex))
                     IndexedWallet(
                         name = name,
                         ethereumWallet = ethereumWallet,
@@ -220,7 +209,7 @@ class FetchWalletViewModel @Inject constructor(
                     )
                     if (tokensMap.isEmpty()) {
                         if (offset == 0) {
-                            _wallets.value = listOf(wallets[0])
+                            _wallets.value = listOf(wallets[0].copy(name = takeNextCommonWalletName()))
                             _selectedWalletInfos.value = defaultWalletSelection(_wallets.value)
                         }
                         Timber.i("LoginFlow wallet_fetch_result success=true offset=$offset found_wallets=0 default_wallet=${offset == 0}")
@@ -237,13 +226,10 @@ class FetchWalletViewModel @Inject constructor(
                             }
                             wallet.copy(assets = allTokens)
                         }.filter { it.assets.isNotEmpty() }.map { wallet ->
-                            localMaxIndex ++
-                            val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} $localMaxIndex"
-                            wallet.copy(name = name)
+                            wallet.copy(name = takeNextCommonWalletName())
                         }
                         if (offset == 0 && walletInfos.isEmpty()) {
-                            localMaxIndex ++
-                            _wallets.value = listOf(wallets[0])
+                            _wallets.value = listOf(wallets[0].copy(name = takeNextCommonWalletName()))
                             _selectedWalletInfos.value = defaultWalletSelection(_wallets.value)
                         } else {
                             _wallets.value = _wallets.value + walletInfos
@@ -271,6 +257,12 @@ class FetchWalletViewModel @Inject constructor(
                 _state.value = fetchWalletFailureState(_wallets.value.isNotEmpty())
             }
         }
+    }
+
+    private fun takeNextCommonWalletName(): String {
+        val index = requireNotNull(nextWalletNameIndex)
+        nextWalletNameIndex = index + 1
+        return commonWalletName(index)
     }
 
     private suspend fun restoreExistingMnemonicWallets(mnemonic: String): Boolean {

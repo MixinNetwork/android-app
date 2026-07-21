@@ -1,7 +1,5 @@
 package one.mixin.android.ui.wallet
 
-import one.mixin.android.vo.WalletCategory
-
 enum class WalletSecurityStartRoute {
     Notice,
     VerifyPin,
@@ -35,15 +33,6 @@ fun walletSecurityStartRoute(
         }
         WalletSecurityActivity.Mode.VIEW_ADDRESS -> WalletSecurityStartRoute.ViewAddress
         WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC -> WalletSecurityStartRoute.FetchPendingMnemonic
-    }
-
-fun importWalletCategoryForMode(mode: WalletSecurityActivity.Mode): String =
-    when (mode) {
-        WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC,
-        WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC,
-        WalletSecurityActivity.Mode.IMPORT_MNEMONIC,
-        -> WalletCategory.IMPORTED_MNEMONIC.value
-        else -> WalletCategory.IMPORTED_MNEMONIC.value
     }
 
 fun shouldBlockWalletSecurityBack(

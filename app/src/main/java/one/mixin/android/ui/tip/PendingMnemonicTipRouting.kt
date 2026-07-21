@@ -1,9 +1,15 @@
 package one.mixin.android.ui.tip
 
+import android.content.Context
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Wallet
+import one.mixin.android.repository.Web3Repository
+import one.mixin.android.tip.Tip
+import one.mixin.android.tip.getSpendKeyFromPin
 import one.mixin.android.vo.WalletCategory
+import timber.log.Timber
 
 sealed class PendingMnemonicResolution {
     data class WalletHome(
@@ -22,6 +28,50 @@ private data class PendingMnemonicWalletMatch(
 )
 
 private const val WATCH_WALLET_DERIVATION_COUNT = 10
+
+suspend fun resolvePendingMnemonicForWalletsOrNull(
+    context: Context,
+    tip: Tip,
+    web3Repository: Web3Repository,
+    wallets: List<Web3Wallet>?,
+    pin: String?,
+    source: String,
+): PendingMnemonicResolution? {
+    val pendingWords = if (pin == null) {
+        null
+    } else {
+        runCatching { tip.getPendingImportMnemonic(context, pin) }
+            .onFailure { Timber.e(it, "Failed to restore pending mnemonic from Safe") }
+            .getOrNull()
+            ?: return null
+    }
+    return resolvePendingMnemonicAfterWalletFetch(
+        wallets = wallets,
+        pin = pin,
+        pendingWords = pendingWords,
+        walletAddresses = { wallet -> web3Repository.getAddresses(wallet.id) },
+        save = { walletId, verifiedPin, words ->
+            CryptoWalletHelper.saveMnemonicWithSpendKey(
+                context,
+                tip.getSpendKeyFromPin(context, verifiedPin),
+                walletId,
+                words,
+            )
+        },
+        savePrivateKey = { walletId, verifiedPin, privateKey ->
+            CryptoWalletHelper.savePrivateKeyWithSpendKey(
+                context,
+                tip.getSpendKeyFromPin(context, verifiedPin),
+                walletId,
+                privateKey,
+            )
+        },
+        clear = {
+            clearPendingImportMnemonic(context)
+            Timber.e("LoginFlow pending_import_cleared source=$source")
+        },
+    )
+}
 
 fun shouldCreateClassicWalletAfterTip(
     tipType: TipType,

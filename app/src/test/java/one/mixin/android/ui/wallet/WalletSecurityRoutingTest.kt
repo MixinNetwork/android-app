@@ -1,6 +1,5 @@
 package one.mixin.android.ui.wallet
 
-import one.mixin.android.vo.WalletCategory
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -26,30 +25,6 @@ class WalletSecurityRoutingTest {
         assertEquals(
             WalletSecurityStartRoute.FetchPendingMnemonic,
             walletSecurityStartRoute(WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC),
-        )
-    }
-
-    @Test
-    fun `pending mnemonic login imports an imported mnemonic wallet`() {
-        assertEquals(
-            WalletCategory.IMPORTED_MNEMONIC.value,
-            importWalletCategoryForMode(WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC),
-        )
-    }
-
-    @Test
-    fun `pending mnemonic registration imports an imported mnemonic wallet`() {
-        assertEquals(
-            WalletCategory.IMPORTED_MNEMONIC.value,
-            importWalletCategoryForMode(WalletSecurityActivity.Mode.REGISTER_IMPORT_MNEMONIC),
-        )
-    }
-
-    @Test
-    fun `manual mnemonic import remains imported mnemonic`() {
-        assertEquals(
-            WalletCategory.IMPORTED_MNEMONIC.value,
-            importWalletCategoryForMode(WalletSecurityActivity.Mode.IMPORT_MNEMONIC),
         )
     }
 
