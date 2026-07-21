@@ -181,7 +181,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
 
         LaunchedEffect(Unit) {
-            AnalyticsTracker.trackPerpsClosePreview()
             latestMarkPrice = markPrice
             latestUnrealizedPnl = unrealizedPnl
         }

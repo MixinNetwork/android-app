@@ -232,7 +232,10 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         AnalyticsTracker.trackPerpsAddMarginSelect(token.chainName, token.symbol)
                     }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                 },
-                onCancel = { dismiss() },
+                onCancel = {
+                    dismiss()
+                    AnalyticsTracker.trackPerpsAddCancel()
+                },
                 onAdd = { token, amount, liquidationPrice ->
                     onAddAction?.let { action ->
                         AnalyticsTracker.trackPerpsAddPreview()

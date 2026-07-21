@@ -655,17 +655,19 @@ object AnalyticsTracker {
         logEvent("trade_perps_add_end")
     }
 
+    fun trackPerpsAddCancel() {
+        logEvent("trade_perps_add_cancel")
+    }
+
     object PerpsAddType {
         const val ADD_POSITION = "add_position"
         const val ADD_MARGIN = "add_margin"
     }
 
-    fun trackPerpsCloseStart() {
-        logEvent("trade_perps_close_start")
-    }
-
-    fun trackPerpsClosePreview() {
-        logEvent("trade_perps_close_preview")
+    fun trackPerpsCloseStart(type: String) {
+        logEvent("trade_perps_close_start") {
+            putString("type", type)
+        }
     }
 
     fun trackPerpsClosePreviewConfirm() {
@@ -678,6 +680,11 @@ object AnalyticsTracker {
 
     fun trackPerpsCloseEnd() {
         logEvent("trade_perps_close_end")
+    }
+
+    object PerpsCloseType {
+        const val SINGLE = "single"
+        const val MULTIPLE = "multiple"
     }
 
     fun trackPerpsAllPositions(source: String) {
