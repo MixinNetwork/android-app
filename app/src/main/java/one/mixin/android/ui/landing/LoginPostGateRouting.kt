@@ -28,7 +28,6 @@ enum class LoginPostGateRoute {
 enum class PendingMnemonicStartupRoute {
     Continue,
     ResumeAccountSetup,
-    ImportMnemonic,
 }
 
 fun routePendingMnemonicStartup(
@@ -38,7 +37,7 @@ fun routePendingMnemonicStartup(
     when {
         !hasPendingImport -> PendingMnemonicStartupRoute.Continue
         !hasSafe -> PendingMnemonicStartupRoute.ResumeAccountSetup
-        else -> PendingMnemonicStartupRoute.ImportMnemonic
+        else -> PendingMnemonicStartupRoute.Continue
     }
 
 fun routeLoginPostGate(

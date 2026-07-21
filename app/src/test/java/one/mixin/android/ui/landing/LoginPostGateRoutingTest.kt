@@ -25,9 +25,9 @@ class LoginPostGateRoutingTest {
     }
 
     @Test
-    fun `imports pending mnemonic after Safe is ready`() {
+    fun `continues pending mnemonic in MainActivity after Safe is ready`() {
         assertEquals(
-            PendingMnemonicStartupRoute.ImportMnemonic,
+            PendingMnemonicStartupRoute.Continue,
             routePendingMnemonicStartup(hasPendingImport = true, hasSafe = true),
         )
     }
