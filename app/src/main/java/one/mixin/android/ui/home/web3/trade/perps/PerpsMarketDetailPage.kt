@@ -1,5 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.text.Layout
+import android.util.TypedValue
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -38,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -47,6 +50,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -76,11 +80,14 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.CandleChart
+import one.mixin.android.ui.wallet.MarketDescriptionTextView
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.ui.wallet.selectLocalizedMarketDescription
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
+import java.util.Locale
 
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
 private const val MARKET_REFRESH_INTERVAL_MS = 10_000L
@@ -426,6 +433,14 @@ fun PerpsMarketDetailPage(
                     )
                 }
 
+                val description = market?.descriptions?.let { descriptions ->
+                    selectLocalizedMarketDescription(descriptions, Locale.getDefault().language)
+                }
+                if (!description.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    MarketAboutSection(description)
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
@@ -639,6 +654,38 @@ fun PerpsMarketDetailPage(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MarketAboutSection(description: String) {
+    val textAssist = MixinAppTheme.colors.textAssist.toArgb()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.About),
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textMinor,
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        AndroidView(
+            modifier = Modifier.fillMaxWidth(),
+            factory = { context ->
+                MarketDescriptionTextView(context).apply {
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                    setTextColor(textAssist)
+                    breakStrategy = Layout.BREAK_STRATEGY_HIGH_QUALITY
+                    hyphenationFrequency = Layout.HYPHENATION_FREQUENCY_NONE
+                }
+            },
+            update = { view ->
+                view.setTextColor(textAssist)
+                view.setMarketDescription(description)
+            },
+        )
     }
 }
 
