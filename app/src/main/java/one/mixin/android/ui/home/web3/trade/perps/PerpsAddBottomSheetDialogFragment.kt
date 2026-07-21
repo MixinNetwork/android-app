@@ -91,6 +91,7 @@ import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
@@ -157,6 +158,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
 
     override fun onStart() {
         super.onStart()
+        AnalyticsTracker.trackPerpsAddStart(AnalyticsTracker.PerpsAddType.ADD_POSITION)
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
@@ -226,11 +228,13 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         currentAssetId = selectedToken?.assetId,
                     ).setOnAssetClick { token ->
                         selectedToken = token
+                        AnalyticsTracker.trackPerpsAddMarginSelect(token.chainName, token.symbol)
                     }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                 },
                 onCancel = { dismiss() },
                 onAdd = { token, amount, liquidationPrice ->
                     onAddAction?.let { action ->
+                        AnalyticsTracker.trackPerpsAddPreview()
                         action(token, amount, liquidationPrice)
                         dismiss()
                     }

@@ -577,75 +577,107 @@ object AnalyticsTracker {
         logEvent("buy_preview")
     }
 
-    fun trackPerpsOpenPositionStart(direction: String, source: String) {
-        logEvent("trade_perps_open_position_start") {
+    fun trackPerpsOpenStart(direction: String, source: String) {
+        logEvent("trade_perps_open_start") {
             putString("direction", direction)
             putString("source", source)
         }
     }
 
-    fun trackPerpsMarginTokenSelect(chain: String?, assetSymbol: String?) {
-        logEvent("trade_perps_margin_token_select") {
+    fun trackPerpsOpenMarginSelect(chain: String?, assetSymbol: String?) {
+        logEvent("trade_perps_open_margin_select") {
             putString("chain", chain)
             putString("asset_symbol", assetSymbol)
         }
     }
 
-    fun trackPerpsAmountInputPercent(percent: String) {
-        logEvent("trade_perps_amount_input_percent") {
+    fun trackPerpsOpenAmountPercent(percent: String) {
+        logEvent("trade_perps_open_amount_percent") {
             putString("percent", percent)
         }
     }
 
-    fun trackPerpsAmountInputBalance() {
-        logEvent("trade_perps_amount_input_balance")
+    fun trackPerpsOpenAmountBalance() {
+        logEvent("trade_perps_open_amount_balance")
     }
 
-    fun trackPerpsLeverageSelect(leverage: String) {
-        logEvent("trade_perps_leverage_select") {
+    fun trackPerpsOpenLeverageSelect(leverage: String) {
+        logEvent("trade_perps_open_leverage_select") {
             putString("leverage", leverage)
         }
     }
 
-    fun trackPerpsPreview(leverage: String) {
-        logEvent("trade_perps_preview") {
-            putString("leverage", leverage)
-        }
+    fun trackPerpsOpenPreview() {
+        logEvent("trade_perps_open_preview")
     }
 
-    fun trackPerpsPreviewConfirm() {
-        logEvent("trade_perps_preview_confirm")
+    fun trackPerpsOpenPreviewConfirm() {
+        logEvent("trade_perps_open_preview_confirm")
     }
 
-    fun trackPerpsPreviewCancel() {
-        logEvent("trade_perps_preview_cancel")
+    fun trackPerpsOpenPreviewCancel() {
+        logEvent("trade_perps_open_preview_cancel")
     }
 
-    fun trackPerpsOpenPositionEnd(leverage: Int, amountValue: BigDecimal, price: String?) {
-        logEvent("trade_perps_open_position_end") {
+    fun trackPerpsOpenEnd(leverage: Int, amountValue: BigDecimal, price: String?) {
+        logEvent("trade_perps_open_end") {
             putString("leverage", leverage.toString())
             putString("asset_level", getAssetLevel(amountValue, price))
         }
     }
 
-    fun trackPerpsClosePositionStart() {
-        logEvent("trade_perps_close_position_start")
+    fun trackPerpsAddStart(type: String) {
+        logEvent("trade_perps_add_start") {
+            putString("type", type)
+        }
     }
 
-    fun trackPerpsClosePositionPreview() {
-        logEvent("trade_perps_close_position_preview")
+    fun trackPerpsAddMarginSelect(chain: String?, assetSymbol: String?) {
+        logEvent("trade_perps_add_margin_select") {
+            putString("chain", chain)
+            putString("asset_symbol", assetSymbol)
+        }
     }
 
-    fun trackPerpsClosePositionPreviewConfirm() {
-        logEvent("trade_perps_close_position_preview_confirm")
+    fun trackPerpsAddPreview() {
+        logEvent("trade_perps_add_preview")
     }
 
-    fun trackPerpsClosePositionPreviewCancel() {
-        logEvent("trade_perps_close_position_preview_cancel")
+    fun trackPerpsAddPreviewConfirm() {
+        logEvent("trade_perps_add_preview_confirm")
     }
 
-    fun trackPerpsClosePositionEnd() {
-        logEvent("trade_perps_close_position_end")
+    fun trackPerpsAddPreviewCancel() {
+        logEvent("trade_perps_add_preview_cancel")
+    }
+
+    fun trackPerpsAddEnd() {
+        logEvent("trade_perps_add_end")
+    }
+
+    object PerpsAddType {
+        const val ADD_POSITION = "add_position"
+        const val ADD_MARGIN = "add_margin"
+    }
+
+    fun trackPerpsCloseStart() {
+        logEvent("trade_perps_close_start")
+    }
+
+    fun trackPerpsClosePreview() {
+        logEvent("trade_perps_close_preview")
+    }
+
+    fun trackPerpsClosePreviewConfirm() {
+        logEvent("trade_perps_close_preview_confirm")
+    }
+
+    fun trackPerpsClosePreviewCancel() {
+        logEvent("trade_perps_close_preview_cancel")
+    }
+
+    fun trackPerpsCloseEnd() {
+        logEvent("trade_perps_close_end")
     }
 
     fun trackPerpsAllPositions(source: String) {
@@ -654,8 +686,8 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackPerpsActivity(source: String) {
-        logEvent("trade_perps_activity") {
+    fun trackPerpsActivities(source: String) {
+        logEvent("trade_perps_activities") {
             putString("source", source)
         }
     }
@@ -680,12 +712,12 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackSpotSwitchSendReceive() {
-        logEvent("trade_spot_switch_send_receive")
+    fun trackSpotTokensSwitch() {
+        logEvent("trade_spot_tokens_switch")
     }
 
-    fun trackSpotSwitchQuoteDirection() {
-        logEvent("trade_spot_switch_quote_direction")
+    fun trackSpotQuoteDirectionSwitch() {
+        logEvent("trade_spot_quote_direction_switch")
     }
 
     fun trackSpotPreview(sendChain: String?, sendAssetSymbol: String?, receiveChain: String?, receiveAssetSymbol: String?) {
@@ -705,26 +737,26 @@ object AnalyticsTracker {
         logEvent("trade_spot_preview_cancel")
     }
 
-    fun trackSpotSendInputPercent(percent: String) {
-        logEvent("trade_spot_send_input_percent") {
+    fun trackSpotSendAmountPercent(percent: String) {
+        logEvent("trade_spot_send_amount_percent") {
             putString("percent", percent)
         }
     }
 
-    fun trackSpotSendInputBalance() {
-        logEvent("trade_spot_send_input_balance")
+    fun trackSpotSendAmountBalance() {
+        logEvent("trade_spot_send_amount_balance")
     }
 
-    fun trackSpotPriceInputPercent(percent: String) {
-        logEvent("trade_spot_price_input_percent") {
+    fun trackSpotPricePercent(percent: String) {
+        logEvent("trade_spot_price_percent") {
             putString("percent", percent)
         }
     }
 
-    fun trackSpotTokenSelect(method: String, type: String, chain: String?, assetSymbol: String?) {
+    fun trackSpotTokenSelect(method: String, side: String, chain: String?, assetSymbol: String?) {
         logEvent("trade_spot_token_select") {
             putString("method", method)
-            putString("type", type)
+            putString("side", side)
             putString("chain", chain)
             putString("asset_symbol", assetSymbol)
         }
@@ -757,14 +789,14 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackSpotTransactions(type: String) {
-        logEvent("trade_spot_transactions") {
+    fun trackSpotOrders(type: String) {
+        logEvent("trade_spot_orders") {
             putString("type", type)
         }
     }
 
-    fun trackSpotDetail(type: String) {
-        logEvent("trade_spot_detail") {
+    fun trackSpotOrderDetail(type: String) {
+        logEvent("trade_spot_order_detail") {
             putString("type", type)
         }
     }

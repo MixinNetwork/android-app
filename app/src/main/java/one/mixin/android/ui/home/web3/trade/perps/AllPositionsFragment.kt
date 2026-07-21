@@ -67,7 +67,7 @@ class AllPositionsFragment : BaseFragment() {
             AnalyticsTracker.trackPerpsAllPositions(source)
         }
         if (positionType == AllPositionsType.CLOSED) {
-            AnalyticsTracker.trackPerpsActivity(source)
+            AnalyticsTracker.trackPerpsActivities(source)
         }
 
         return ComposeView(inflater.context).apply {

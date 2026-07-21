@@ -408,7 +408,7 @@ fun OpenPositionPage(
                         token = currentToken?.toSwapToken(),
                         text = usdtAmount,
                         selectClick = {
-                            AnalyticsTracker.trackPerpsMarginTokenSelect(currentToken?.chainName, currentToken?.symbol)
+                            AnalyticsTracker.trackPerpsOpenMarginSelect(currentToken?.chainName, currentToken?.symbol)
                             onTokenSelect()
                         },
                         onInputChanged = { usdtAmount = it },
@@ -434,7 +434,7 @@ fun OpenPositionPage(
                                 textAlign = TextAlign.Start,
                             ),
                             modifier = Modifier.clickable {
-                                AnalyticsTracker.trackPerpsAmountInputBalance()
+                                AnalyticsTracker.trackPerpsOpenAmountBalance()
                                 usdtAmount = currentToken?.balance ?: "0"
                             }
                         )
@@ -501,7 +501,7 @@ fun OpenPositionPage(
                         ).setOnLeverageSelected { newLeverage ->
                             leverage = newLeverage
                             context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
-                            AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
+                            AnalyticsTracker.trackPerpsOpenLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                         }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                     }
                 }
@@ -535,7 +535,7 @@ fun OpenPositionPage(
                             ).setOnLeverageSelected { newLeverage ->
                                 leverage = newLeverage
                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
-                                AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
+                                AnalyticsTracker.trackPerpsOpenLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                         }.widthIn(min = 52.dp),
                         text = "${leverage.toInt()}x",
@@ -584,7 +584,7 @@ fun OpenPositionPage(
                                     )
                                     .clickable {
                                         if (lev == -1) {
-                                            AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_TAB)
+                                            AnalyticsTracker.trackPerpsOpenLeverageSelect(PERPS_LEVERAGE_CUSTOM_TAB)
                                             val activity = context as? FragmentActivity ?: return@clickable
                                             LeverageBottomSheetDialogFragment.newInstance(
                                                 currentLeverage = leverage,
@@ -594,12 +594,12 @@ fun OpenPositionPage(
                                             ).setOnLeverageSelected { newLeverage ->
                                                 leverage = newLeverage
                                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
-                                                AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
+                                                AnalyticsTracker.trackPerpsOpenLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                                         } else {
                                             leverage = lev.toFloat()
                                             context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), lev)
-                                            AnalyticsTracker.trackPerpsLeverageSelect(
+                                            AnalyticsTracker.trackPerpsOpenLeverageSelect(
                                                 if (lev == maxLeverage) {
                                                     PERPS_LEVERAGE_MAX
                                                 } else {
@@ -723,7 +723,7 @@ fun OpenPositionPage(
                     onClick = {
                         if (isProcessing) return@MixinButton
                         isProcessing = true
-                        AnalyticsTracker.trackPerpsPreview(leverage.toInt().toPerpsLeverageValue())
+                        AnalyticsTracker.trackPerpsOpenPreview()
                         errorInfo = null
                         val token = currentToken ?: run { isProcessing = false; return@MixinButton }
                         val amount = usdtAmount.toBigDecimalOrNull() ?: run { isProcessing = false; return@MixinButton }
@@ -846,15 +846,15 @@ fun OpenPositionPage(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         InputAction("25%", showBorder = true) {
-                            AnalyticsTracker.trackPerpsAmountInputPercent("25%")
+                            AnalyticsTracker.trackPerpsOpenAmountPercent("25%")
                             applyBalancePercent(BigDecimal("0.25"))
                         }
                         InputAction("50%", showBorder = true) {
-                            AnalyticsTracker.trackPerpsAmountInputPercent("50%")
+                            AnalyticsTracker.trackPerpsOpenAmountPercent("50%")
                             applyBalancePercent(BigDecimal("0.5"))
                         }
                         InputAction("100%", showBorder = true) {
-                            AnalyticsTracker.trackPerpsAmountInputPercent("max")
+                            AnalyticsTracker.trackPerpsOpenAmountPercent("max")
                             applyBalancePercent(BigDecimal.ONE)
                         }
                         InputAction(stringResource(R.string.Done), showBorder = false) {

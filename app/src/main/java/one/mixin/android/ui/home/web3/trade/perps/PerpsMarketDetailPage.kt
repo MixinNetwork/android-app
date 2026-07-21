@@ -557,7 +557,7 @@ fun PerpsMarketDetailPage(
                                     onClick = {
                                         val activity = context as? FragmentActivity ?: return@MixinButton
                                         val position = currentPosition.toPosition()
-                                        AnalyticsTracker.trackPerpsClosePositionStart()
+                                        AnalyticsTracker.trackPerpsCloseStart()
                                         PerpsCloseBottomSheetDialogFragment.newInstance(
                                             position = position,
                                         ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)

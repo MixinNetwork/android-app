@@ -485,11 +485,11 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
                                 cancelAction = {
-                                    AnalyticsTracker.trackPerpsPreviewCancel()
+                                    trackPreviewCancel()
                                     dismiss()
                                 },
                                 confirmAction = {
-                                    AnalyticsTracker.trackPerpsPreviewConfirm()
+                                    trackPreviewConfirm()
                                     showPin()
                                 },
                             )
@@ -501,11 +501,11 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Confirm),
                                 cancelAction = {
-                                    AnalyticsTracker.trackPerpsPreviewCancel()
+                                    trackPreviewCancel()
                                     dismiss()
                                 },
                                 confirmAction = {
-                                    AnalyticsTracker.trackPerpsPreviewConfirm()
+                                    trackPreviewConfirm()
                                     showPin()
                                 },
                             )
@@ -663,7 +663,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 )
                 context?.updatePinCheck()
                 step = Step.Done
-                trackOpenPositionSuccess()
+                trackPositionSuccess()
             }
         } catch (e: Exception) {
             handleException(e)
@@ -731,7 +731,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 )
                 context?.updatePinCheck()
                 step = Step.Done
-                trackOpenPositionSuccess()
+                trackPositionSuccess()
             } else {
                 errorInfo = paymentResponse.errorDescription
                 step = Step.Error
@@ -750,12 +750,32 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         step = Step.Error
     }
 
-    private fun trackOpenPositionSuccess() {
-        AnalyticsTracker.trackPerpsOpenPositionEnd(
-            leverage = leverage,
-            amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO,
-            price = entryPrice,
-        )
+    private fun trackPreviewConfirm() {
+        if (isAddPosition) {
+            AnalyticsTracker.trackPerpsAddPreviewConfirm()
+        } else {
+            AnalyticsTracker.trackPerpsOpenPreviewConfirm()
+        }
+    }
+
+    private fun trackPreviewCancel() {
+        if (isAddPosition) {
+            AnalyticsTracker.trackPerpsAddPreviewCancel()
+        } else {
+            AnalyticsTracker.trackPerpsOpenPreviewCancel()
+        }
+    }
+
+    private fun trackPositionSuccess() {
+        if (isAddPosition) {
+            AnalyticsTracker.trackPerpsAddEnd()
+        } else {
+            AnalyticsTracker.trackPerpsOpenEnd(
+                leverage = leverage,
+                amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+                price = entryPrice,
+            )
+        }
     }
 }
 
