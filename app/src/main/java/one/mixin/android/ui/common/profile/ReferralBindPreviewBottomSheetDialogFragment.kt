@@ -53,6 +53,7 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.tip.wc.compose.ItemContent
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
@@ -311,6 +312,13 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
         super.onDismiss(dialog)
         if (step == Step.Done) {
             onDoneAction?.invoke()
+        }
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        if (activity is UrlInterpreterActivity && parentFragmentManager.fragments.isEmpty()) {
+            activity?.finish()
         }
     }
 
