@@ -57,6 +57,7 @@ import com.tradingview.lightweightcharts.api.series.models.CandlestickData
 import com.tradingview.lightweightcharts.api.series.models.MouseEventParams
 import com.tradingview.lightweightcharts.api.series.models.PriceFormat
 import com.tradingview.lightweightcharts.api.series.models.Time
+import com.tradingview.lightweightcharts.runtime.plugins.DateTimeFormat
 import com.tradingview.lightweightcharts.view.ChartsView
 import com.tradingview.lightweightcharts.view.gesture.TouchDelegate
 import one.mixin.android.Constants
@@ -89,6 +90,8 @@ fun TradingViewCandleChart(
     val textColor = MixinAppTheme.colors.textAssist
     val gridColor = MixinAppTheme.colors.borderColor
     val crosshairColor = MixinAppTheme.colors.textAssist
+    val dateTimeFormat = remember(timeFrame) { tradingViewDateTimeFormat(timeFrame) }
+    val zoneId = remember { ZoneId.systemDefault() }
     val chartPriceFormat =
         remember(priceScale) {
             val precision = priceScale.coerceAtLeast(0)
@@ -110,7 +113,7 @@ fun TradingViewCandleChart(
                     val low = item.low.toFloatOrNull() ?: return@mapNotNull null
                     val close = item.close.toFloatOrNull() ?: return@mapNotNull null
                     CandlestickData(
-                        time = Time.Utc(item.timestamp),
+                        time = Time.Utc(tradingViewLocalTimestamp(item.timestamp, zoneId)),
                         open = open,
                         high = high,
                         low = low,
@@ -120,7 +123,9 @@ fun TradingViewCandleChart(
         }
     val candlesByTimestamp =
         remember(candles) {
-            candles.firstOrNull()?.items.orEmpty().associateBy(CandleItem::timestamp)
+            candles.firstOrNull()?.items.orEmpty().associateBy { item ->
+                tradingViewLocalTimestamp(item.timestamp, zoneId)
+            }
         }
     val latestCandlesByTimestamp = rememberUpdatedState(candlesByTimestamp)
     val currentPrice = marketPrice?.toFloatOrNull()
@@ -236,7 +241,8 @@ fun TradingViewCandleChart(
                             barSpacing = INITIAL_BAR_SPACING
                             minBarSpacing = MIN_BAR_SPACING
                             rightBarStaysOnScroll = true
-                            timeVisible = true
+                            timeVisible = dateTimeFormat == DateTimeFormat.TIME
+                            secondsVisible = false
                             borderColor = gridColor.toArgb().toIntColor()
                         }
                         rightPriceScale = priceScaleOptions {
@@ -328,14 +334,14 @@ private fun CandleDetailsTooltip(
     val changeColor = if (change == null || change >= BigDecimal.ZERO) upColor else downColor
 
     Surface(
-        modifier = modifier.width(220.dp),
-        shape = RoundedCornerShape(8.dp),
+        modifier = modifier.width(180.dp),
+        shape = RoundedCornerShape(6.dp),
         color = MixinAppTheme.colors.background,
         elevation = 3.dp,
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(2.dp),
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
+            verticalArrangement = Arrangement.spacedBy(1.dp),
         ) {
             CandleDetailsRow(
                 label = stringResource(R.string.Candle_Time),
@@ -386,14 +392,14 @@ private fun CandleDetailsRow(
         Text(
             text = "$label:",
             color = MixinAppTheme.colors.textAssist,
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             maxLines = 1,
-            modifier = Modifier.width(52.dp),
+            modifier = Modifier.width(48.dp),
         )
         Text(
             text = value,
             color = valueColor,
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             maxLines = 1,
             softWrap = false,
             overflow = TextOverflow.Clip,
@@ -455,6 +461,24 @@ private data class SelectedCandle(
     val candle: CandleItem,
     val pointX: Float,
 )
+
+internal fun normalizeTradingViewTimestamp(timestamp: Long): Long =
+    if (timestamp >= MILLIS_TIMESTAMP_THRESHOLD) timestamp / 1000 else timestamp
+
+internal fun tradingViewLocalTimestamp(
+    timestamp: Long,
+    zoneId: ZoneId = ZoneId.systemDefault(),
+): Long {
+    val utcTimestamp = normalizeTradingViewTimestamp(timestamp)
+    val offsetSeconds = Instant.ofEpochSecond(utcTimestamp).atZone(zoneId).offset.totalSeconds
+    return utcTimestamp + offsetSeconds
+}
+
+internal fun tradingViewDateTimeFormat(timeFrame: String): DateTimeFormat =
+    when (timeFrame.lowercase()) {
+        "1d", "1w" -> DateTimeFormat.DATE
+        else -> DateTimeFormat.TIME
+    }
 
 private class ChartTouchDelegate(
     context: Context,
