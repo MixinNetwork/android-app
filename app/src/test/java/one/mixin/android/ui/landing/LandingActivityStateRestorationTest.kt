@@ -16,12 +16,12 @@ class LandingActivityStateRestorationTest {
     }
 
     @Test
-    fun `does not retry failed anonymous login after state restoration`() {
-        assertFalse(shouldRequestAnonymousLogin(restoredErrorInfo = "ERROR 429: Rate limit exceeded"))
+    fun `preserves captcha failure without an error message`() {
+        assertFalse(shouldRequestAnonymousLogin(restoredRequestFailed = true))
     }
 
     @Test
-    fun `starts anonymous login without a restored failure`() {
-        assertTrue(shouldRequestAnonymousLogin(restoredErrorInfo = null))
+    fun `starts anonymous login when no failure was restored`() {
+        assertTrue(shouldRequestAnonymousLogin(restoredRequestFailed = false))
     }
 }
