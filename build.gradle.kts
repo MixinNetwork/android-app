@@ -154,6 +154,7 @@ val tweetnaclVersion by extra("0.1.6")
 val sol4kUtilitiesVersion by extra("0.1.0")
 val desugarJdkLibsVersion by extra("2.1.5")
 val bugsnagVersion by extra("6.26.0")
+val lightweightChartsVersion by extra("4.0.0")
 
 allprojects {
     repositories {

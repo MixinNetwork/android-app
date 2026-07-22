@@ -90,6 +90,33 @@
                         tools:ignore="RelativeOverlap" />
             </RelativeLayout>
 
+            <RelativeLayout
+                    android:id="@+id/trading_view_chart"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/bottom_button_height"
+                    android:background="?attr/bg_white"
+                    android:foreground="?android:attr/selectableItemBackground">
+
+                <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="@dimen/activity_horizontal_margin"
+                        android:text="@string/Use_TradingView_Candlestick_Chart"
+                        android:textColor="@color/colorBlue"
+                        android:textSize="16sp"
+                        tools:ignore="RelativeOverlap" />
+
+                <androidx.appcompat.widget.SwitchCompat
+                        android:id="@+id/trading_view_chart_sc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:layout_centerVertical="true"
+                        android:layout_marginEnd="@dimen/activity_horizontal_margin"
+                        tools:ignore="RelativeOverlap" />
+            </RelativeLayout>
+
             <TextView
                     android:id="@+id/database"
                     android:layout_width="match_parent"

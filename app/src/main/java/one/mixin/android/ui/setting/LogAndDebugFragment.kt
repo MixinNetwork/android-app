@@ -95,6 +95,17 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                 webDebug.setOnClickListener {
                     webDebugSc.performClick()
                 }
+                tradingViewChartSc.isChecked =
+                    defaultSharedPreferences.getBoolean(Constants.Account.PREF_USE_TRADING_VIEW_CANDLES, false)
+                tradingViewChartSc.setOnCheckedChangeListener { _, isChecked ->
+                    defaultSharedPreferences.putBoolean(
+                        Constants.Account.PREF_USE_TRADING_VIEW_CANDLES,
+                        isChecked,
+                    )
+                }
+                tradingViewChart.setOnClickListener {
+                    tradingViewChartSc.performClick()
+                }
 
                 diagnosis.setOnClickListener {
                     navTo(DiagnosisFragment.newInstance(), DiagnosisFragment.TAG)
