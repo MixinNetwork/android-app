@@ -6,8 +6,10 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.PREF_CASH_BOT_PK
 import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
+import one.mixin.android.Constants.MIXIN_CASH_USER_ID
 import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
@@ -366,6 +368,7 @@ class UserRepository
                 when (botId) {
                     ROUTE_BOT_USER_ID -> PREF_ROUTE_BOT_PK
                     REFERRAL_BOT_USER_ID -> PREF_REFERRAL_BOT_PK
+                    MIXIN_CASH_USER_ID -> PREF_CASH_BOT_PK
                     else -> return
                 }
 

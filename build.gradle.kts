@@ -6,10 +6,10 @@ buildscript {
         maven { url = uri("https://maven.sumsub.com/repository/maven-public/") }
     }
     dependencies {
-        classpath("com.android.tools.build:gradle:9.2.1")
+        classpath("com.android.tools.build:gradle:9.3.0")
         classpath("com.android.tools.build.jetifier:jetifier-processor:1.0.0-beta10")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.0")
-        classpath("com.google.dagger:hilt-android-gradle-plugin:2.60")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:2.4.10")
+        classpath("com.google.dagger:hilt-android-gradle-plugin:2.60.1")
         classpath("com.google.gms:google-services:4.5.0")
         classpath("com.google.firebase:firebase-crashlytics-gradle:3.0.7")
         classpath("com.google.firebase:perf-plugin:2.0.2")
@@ -18,14 +18,14 @@ buildscript {
 }
 
 plugins {
-    id("com.android.application") version "9.2.1" apply false
-    id("com.android.library") version "9.2.1" apply false
-    id("org.jetbrains.kotlin.plugin.parcelize") version "2.4.0" apply false
+    id("com.android.application") version "9.3.0" apply false
+    id("com.android.library") version "9.3.0" apply false
+    id("org.jetbrains.kotlin.plugin.parcelize") version "2.4.10" apply false
     id("de.undercouch.download") version "5.5.0" apply false
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") version "2.0.1" apply false
-    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.0" apply false
-    id("com.google.devtools.ksp") version "2.3.9" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.4.0" apply false
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.4.10" apply false
+    id("com.google.devtools.ksp") version "2.3.10" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.10" apply false
     id("com.google.firebase.firebase-perf") version "2.0.2" apply false
 }
 
@@ -114,7 +114,6 @@ val gsonVersion by extra("2.14.0")
 val serializationVersion by extra("1.11.0")
 val autodisposeVersion by extra("1.4.1")
 val jsoupVersion by extra("1.13.1")
-val isoparserVersion by extra("1.0.6")
 val largeImageViewVersion by extra("1.1.1")
 val webrtcVersion by extra("1.0.30039")
 val bitcoinPaymentURI by extra("1.0.3")

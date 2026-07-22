@@ -46,6 +46,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
@@ -86,6 +87,7 @@ class Web3ViewModel @Inject constructor(
     private val userRepository: UserRepository,
     private val assetRepository: AssetRepository,
     private val tokenRepository: TokenRepository,
+    private val referralRepository: ReferralRepository,
     private val jobManager: MixinJobManager,
     private val web3Repository: Web3Repository,
     private val rpc: Rpc,
@@ -97,7 +99,16 @@ class Web3ViewModel @Inject constructor(
 
     suspend fun findOrSyncApp(appId: String) = userRepository.findOrSyncApp(appId)
 
+    suspend fun walletHomeBanners(chains: List<String>) = referralRepository.fetchWalletHomeBanners(chains)
+
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
+
+    suspend fun web3Quote(
+        inputMint: String,
+        outputMint: String,
+        amount: String,
+        source: String,
+    ) = tokenRepository.web3Quote(inputMint, outputMint, amount, source)
 
     fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
 

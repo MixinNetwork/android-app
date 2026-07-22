@@ -154,6 +154,33 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    suspend fun getMarketById(marketId: String): PerpsMarket? {
+        val cachedMarket = withContext(Dispatchers.IO) {
+            perpsMarketDao.getMarket(marketId)
+        }
+        if (cachedMarket != null) return cachedMarket
+
+        return try {
+            val response = withContext(Dispatchers.IO) {
+                routeService.getPerpsMarket(marketId)
+            }
+            val data = response.data
+            if (response.isSuccess && data != null) {
+                val normalizedMarket = data.withDefaults()
+                withContext(Dispatchers.IO) {
+                    perpsMarketDao.insert(normalizedMarket)
+                }
+                normalizedMarket
+            } else {
+                Timber.e("Failed to load perps market for $marketId: ${response.errorDescription}")
+                null
+            }
+        } catch (e: Exception) {
+            Timber.e(e, "Error loading perps market for $marketId")
+            null
+        }
+    }
+
     fun observeMarkets(): Flow<List<PerpsMarket>> {
         return perpsMarketDao.observeAllMarkets()
     }

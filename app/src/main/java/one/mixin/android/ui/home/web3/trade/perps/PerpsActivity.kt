@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -57,6 +58,7 @@ class PerpsActivity : BaseActivity() {
         private const val EXTRA_MODE = "extra_mode"
         private const val EXTRA_IS_LONG = "extra_is_long"
         private const val EXTRA_SOURCE = "extra_source"
+        private const val EXTRA_RETURN_TO_DETAIL = "extra_return_to_detail"
         private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 
         const val MODE_DETAIL = "detail"
@@ -69,9 +71,15 @@ class PerpsActivity : BaseActivity() {
             marketDisplaySymbol: String,
             marketTokenSymbol: String = "",
             source: String? = null,
+            reuseCurrentActivity: Boolean = true,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                if (context !is Activity) {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                if (reuseCurrentActivity) {
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                }
                 putExtra(EXTRA_MARKET_ID, marketId)
                 putExtra(EXTRA_MARKET_SYMBOL, marketSymbol)
                 putExtra(EXTRA_MARKET_DISPLAY_SYMBOL, marketDisplaySymbol)
@@ -90,9 +98,12 @@ class PerpsActivity : BaseActivity() {
             marketTokenSymbol: String = "",
             isLong: Boolean,
             source: String,
+            returnToDetail: Boolean = false,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
-                addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
+                if (context !is Activity) {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
                 putExtra(EXTRA_MARKET_ID, marketId)
                 putExtra(EXTRA_MARKET_SYMBOL, marketSymbol)
                 putExtra(EXTRA_MARKET_DISPLAY_SYMBOL, marketDisplaySymbol)
@@ -100,6 +111,7 @@ class PerpsActivity : BaseActivity() {
                 putExtra(EXTRA_MODE, MODE_OPEN_POSITION)
                 putExtra(EXTRA_IS_LONG, isLong)
                 putExtra(EXTRA_SOURCE, source)
+                putExtra(EXTRA_RETURN_TO_DETAIL, returnToDetail)
             }
             context.startActivity(intent)
         }
@@ -127,6 +139,7 @@ class PerpsActivity : BaseActivity() {
         val mode = currentIntent.getStringExtra(EXTRA_MODE) ?: MODE_DETAIL
         val isLong = currentIntent.getBooleanExtra(EXTRA_IS_LONG, true)
         val source = currentIntent.getStringExtra(EXTRA_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL
+        val returnToDetail = currentIntent.getBooleanExtra(EXTRA_RETURN_TO_DETAIL, false)
 
         if (mode == MODE_OPEN_POSITION) {
             renderJob = lifecycleScope.launch {
@@ -151,7 +164,11 @@ class PerpsActivity : BaseActivity() {
                             source = source,
                             onBack = { finish() },
                             onOpenSuccess = { openedMarketId ->
-                                showDetail(this@PerpsActivity, openedMarketId, "", "", "")
+                                if (returnToDetail) {
+                                    finish()
+                                } else {
+                                    showDetail(this@PerpsActivity, openedMarketId, "", "", "")
+                                }
                             },
                             selectedToken = selectedToken,
                             onTokenSelect = { showTokenSelection() },

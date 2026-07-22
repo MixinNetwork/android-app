@@ -1778,7 +1778,7 @@ class BottomSheetViewModel
             return@withContext tokenRepository.refreshInscription(inscriptionHash)
         }
 
-        fun findAddressByDestination(receiver: String, tag: String, chainId: String?) = tokenRepository.findAddressByDestination(receiver, tag, chainId)
+        suspend fun findAddressByDestination(receiver: String, tag: String, chainId: String?) = tokenRepository.findAddressByDestination(receiver, tag, chainId)
 
         suspend fun checkMarketById(id: String): MarketItem? = withContext(Dispatchers.IO) {
             tokenRepository.checkMarketById(id)
