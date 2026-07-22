@@ -1,7 +1,9 @@
 package one.mixin.android.ui.home.web3.trade
 
 import android.content.Context
+import android.os.Build
 import android.view.GestureDetector
+import android.view.HapticFeedbackConstants
 import android.view.MotionEvent
 import android.view.ViewConfiguration
 import android.view.ViewGroup
@@ -142,8 +144,7 @@ fun TradingViewCandleChart(
         remember {
             { params: MouseEventParams ->
                 if (isLongPressActive) {
-                    val timestamp = (params.time as? Time.Utc)?.timestamp
-                    val candle = timestamp?.let(latestCandlesByTimestamp.value::get)
+                    val candle = candleForTradingViewTime(params.time, latestCandlesByTimestamp.value)
                     selectedCandle =
                         if (candle == null) {
                             null
@@ -214,17 +215,30 @@ fun TradingViewCandleChart(
             modifier = Modifier.fillMaxSize(),
             factory = { chartContext ->
                 ChartsView(chartContext).apply {
+                    val selectCandleAt: (Float) -> Unit = { pointX ->
+                        api.timeScale.coordinateToTime(pointX) { time ->
+                            if (isLongPressActive) {
+                                candleForTradingViewTime(time, latestCandlesByTimestamp.value)?.let { candle ->
+                                    selectedCandle = SelectedCandle(candle, pointX)
+                                }
+                            }
+                        }
+                    }
                     addTouchDelegate(
                         ChartTouchDelegate(
                             context = chartContext,
-                            onLongPress = {
-                                isLongPressActive = true
-                                api.setCrosshairVisible(true)
+                            onTouchStart = {
+                                isLongPressActive = false
+                                selectedCandle = null
                             },
+                            onLongPress = { pointX ->
+                                isLongPressActive = true
+                                selectCandleAt(pointX)
+                            },
+                            onLongPressMove = selectCandleAt,
                             onTouchEnd = {
                                 isLongPressActive = false
                                 selectedCandle = null
-                                api.setCrosshairVisible(false)
                             },
                         ),
                     )
@@ -411,21 +425,6 @@ private fun CandleDetailsRow(
     }
 }
 
-private fun ChartApi.setCrosshairVisible(isVisible: Boolean) {
-    applyOptions {
-        crosshair = crosshairOptions {
-            vertLine = crosshairLineOptions {
-                visible = isVisible
-                labelVisible = isVisible
-            }
-            horzLine = crosshairLineOptions {
-                visible = isVisible
-                labelVisible = isVisible
-            }
-        }
-    }
-}
-
 private fun formatCandlePrice(
     value: String,
     priceScale: Int,
@@ -482,14 +481,28 @@ internal fun tradingViewDateTimeFormat(timeFrame: String): DateTimeFormat =
         else -> DateTimeFormat.TIME
     }
 
+internal fun candleForTradingViewTime(
+    time: Time?,
+    candlesByTimestamp: Map<Long, CandleItem>,
+): CandleItem? = (time as? Time.Utc)?.timestamp?.let(candlesByTimestamp::get)
+
+internal fun tradingViewTouchCoordinate(
+    touchX: Float,
+    density: Float,
+): Float = if (density > 0f) touchX / density else touchX
+
 private class ChartTouchDelegate(
     context: Context,
-    private val onLongPress: () -> Unit,
+    private val onTouchStart: () -> Unit,
+    private val onLongPress: (Float) -> Unit,
+    private val onLongPressMove: (Float) -> Unit,
     private val onTouchEnd: () -> Unit,
 ) : TouchDelegate {
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
+    private val density = context.resources.displayMetrics.density
     private var downX = 0f
     private var downY = 0f
+    private var lastLongPressX = 0f
     private var longPressActive = false
     private var targetView: ViewGroup? = null
     private val gestureDetector =
@@ -500,8 +513,16 @@ private class ChartTouchDelegate(
 
                 override fun onLongPress(e: MotionEvent) {
                     longPressActive = true
+                    lastLongPressX = e.x
                     targetView?.requestDisallowInterceptTouchEvent(true)
-                    onLongPress()
+                    targetView?.performHapticFeedback(
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                            HapticFeedbackConstants.GESTURE_START
+                        } else {
+                            HapticFeedbackConstants.LONG_PRESS
+                        },
+                    )
+                    onLongPress(tradingViewTouchCoordinate(e.x, density))
                 }
             },
         )
@@ -517,6 +538,7 @@ private class ChartTouchDelegate(
         gestureDetector.onTouchEvent(event)
         when (event.actionMasked) {
             MotionEvent.ACTION_DOWN -> {
+                onTouchStart()
                 downX = event.x
                 downY = event.y
                 longPressActive = false
@@ -525,8 +547,14 @@ private class ChartTouchDelegate(
 
             MotionEvent.ACTION_POINTER_DOWN -> view.requestDisallowInterceptTouchEvent(true)
             MotionEvent.ACTION_MOVE -> {
-                if (event.pointerCount > 1 || longPressActive) {
+                if (event.pointerCount > 1) {
                     view.requestDisallowInterceptTouchEvent(true)
+                } else if (longPressActive) {
+                    view.requestDisallowInterceptTouchEvent(true)
+                    if (abs(event.x - lastLongPressX) >= touchSlop / 2f) {
+                        lastLongPressX = event.x
+                        onLongPressMove(tradingViewTouchCoordinate(event.x, density))
+                    }
                 } else {
                     val deltaX = abs(event.x - downX)
                     val deltaY = abs(event.y - downY)
