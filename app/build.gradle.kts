@@ -116,6 +116,7 @@ val tweetnaclVersion: String by rootProject.extra
 val sol4kUtilitiesVersion: String by rootProject.extra
 val desugarJdkLibsVersion: String by rootProject.extra
 val bugsnagVersion: String by rootProject.extra
+val lightweightChartsVersion: String by rootProject.extra
 val sumsubVersion: String by rootProject.extra
 val checkoutFramesVersion: String by rootProject.extra
 val checkoutSecureVersion: String by rootProject.extra
@@ -350,6 +351,7 @@ dependencies {
     implementation("androidx.biometric:biometric:$biometricVersion")
     implementation("androidx.security:security-crypto:1.1.0")
     implementation("androidx.webkit:webkit:1.16.0")
+    implementation("com.tradingview:lightweightcharts:$lightweightChartsVersion")
 
     implementation("org.sol4k:tweetnacl:$tweetnaclVersion")
     implementation("org.sol4k:utilities:$sol4kUtilitiesVersion")

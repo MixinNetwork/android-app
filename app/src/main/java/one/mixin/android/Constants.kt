@@ -130,6 +130,7 @@ object Constants {
         const val PREF_PERPS_ACCEPTED_ASSET_IDS_ORDERED = "pref_perps_accepted_asset_ids_ordered"
         const val PREF_PERPS_ACCEPTED_ASSET_IDS_V2 = "pref_perps_accepted_asset_ids_v2"
         const val PREF_LAST_SELECTED_PERPS_ASSET_ID = "pref_last_selected_perps_asset_id"
+        const val PREF_USE_TRADING_VIEW_CANDLES = "pref_use_trading_view_candles"
 
         const val PREF_USED_WALLET = "pref_used_wallet"
 

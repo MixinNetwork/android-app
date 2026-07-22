@@ -11,6 +11,14 @@
     <string name="a_transcript">一个聊天记录</string>
     <string name="a_video">一个视频</string>
     <string name="About">关于</string>
+    <string name="Use_TradingView_Candlestick_Chart">使用 TradingView 蜡烛图</string>
+    <string name="Candle_Time">时间</string>
+    <string name="Candle_Open">开</string>
+    <string name="Candle_High">高</string>
+    <string name="Candle_Low">低</string>
+    <string name="Candle_Close">收</string>
+    <string name="Candle_Change">涨跌</string>
+    <string name="Candle_Change_Percent">涨跌幅</string>
     <string name="about_version">版本 %1$s (%2$d)</string>
     <string name="Accept">接听</string>
     <string name="Access_denied">禁止访问</string>
