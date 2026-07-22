@@ -1,8 +1,10 @@
 package one.mixin.android.ui.home.web3.trade
 
+import com.tradingview.lightweightcharts.api.series.models.Time
 import com.tradingview.lightweightcharts.runtime.plugins.DateTimeFormat
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import one.mixin.android.api.response.perps.CandleItem
 import org.threeten.bp.ZoneOffset
 
 class TradingViewCandleChartTest {
@@ -48,5 +50,31 @@ class TradingViewCandleChartTest {
             1_721_600_000L + 8 * 60 * 60,
             tradingViewLocalTimestamp(utcTimestampMillis, ZoneOffset.ofHours(8)),
         )
+    }
+
+    @Test
+    fun `resolves candle for stationary long press`() {
+        val timestamp = 1_721_628_800L
+        val candle =
+            CandleItem(
+                timestamp = timestamp,
+                open = "1",
+                high = "2",
+                low = "0.5",
+                close = "1.5",
+                volume = "10",
+                amount = "15",
+                count = 2,
+            )
+
+        assertEquals(
+            candle,
+            candleForTradingViewTime(Time.Utc(timestamp), mapOf(timestamp to candle)),
+        )
+    }
+
+    @Test
+    fun `converts android touch position to chart coordinate`() {
+        assertEquals(100f, tradingViewTouchCoordinate(touchX = 300f, density = 3f))
     }
 }
