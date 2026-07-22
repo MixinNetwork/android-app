@@ -474,6 +474,7 @@ fun PerpsMarketDetailPage(
                                         isAddingProcessing = true
                                         val activity = context as? FragmentActivity ?: run { isAddingProcessing = false; return@MixinButton }
                                         val positionForAdd = currentPosition
+                                        AnalyticsTracker.trackPerpsAddStart(AnalyticsTracker.PerpsAddType.ADD_POSITION)
                                         PerpsAddBottomSheetDialogFragment.newInstance(positionForAdd)
                                             .setOnDestroy {
                                                 isAddingProcessing = false
@@ -504,6 +505,7 @@ fun PerpsMarketDetailPage(
                                                             amount = response.payAmount,
                                                             leverage = positionForAdd.leverage,
                                                             entryPrice = confirmEntryPrice,
+                                                            marginAssetPrice = token.priceUsd,
                                                             tokenSymbol = token.symbol,
                                                             takeProfitPrice = null,
                                                             stopLossPrice = null,
@@ -544,7 +546,7 @@ fun PerpsMarketDetailPage(
                                     onClick = {
                                         val activity = context as? FragmentActivity ?: return@MixinButton
                                         val position = currentPosition.toPosition()
-                                        AnalyticsTracker.trackPerpsClosePositionStart()
+                                        AnalyticsTracker.trackPerpsCloseStart(AnalyticsTracker.PerpsCloseType.SINGLE)
                                         PerpsCloseBottomSheetDialogFragment.newInstance(
                                             position = position,
                                         ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)

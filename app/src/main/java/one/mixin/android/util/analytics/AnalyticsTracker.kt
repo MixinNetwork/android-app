@@ -26,6 +26,9 @@ object AnalyticsTracker {
         }
     }
 
+    fun trackSignUpAccountCreated() {
+        logEvent("sign_up_account_created")
+    }
 
     fun trackSignUpCaptcha() {
         logEvent("sign_up_captcha")
@@ -55,8 +58,11 @@ object AnalyticsTracker {
         logEvent("sign_up_end")
     }
 
-    fun trackLoginStart() {
-        logEvent("login_start")
+    fun trackLoginStart(type: String, source: String) {
+        logEvent("login_start") {
+            putString("type", type)
+            putString("source", source)
+        }
     }
 
     fun trackLoginSmsSendConfirmed() {
@@ -192,8 +198,10 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackAssetReceiveEnd() {
-        logEvent("asset_receive_end")
+    fun trackAssetReceiveSuccess(price: String?) {
+        logEvent("asset_receive_success") {
+            putString("asset_level", getAssetLevel(BigDecimal.ONE, price))
+        }
     }
 
     fun trackAssetSendStart(wallet: String, source: String) {
@@ -412,11 +420,23 @@ object AnalyticsTracker {
         const val SIGN_UP_PHONE_NUMBER = "sign_up_phone_number"
         const val SIGN_UP_SMS_VERIFY = "sign_up_sms_verify"
         const val SIGN_UP_FULL_NAME = "sign_up_full_name"
+        const val SIGN_UP_SIGNAL_INIT = "sign_up_signal_init"
+        const val SIGN_UP_PIN_SET_1 = "sign_up_pin_set_1"
+        const val SIGN_UP_PIN_SET_2 = "sign_up_pin_set_2"
+        const val SIGN_UP_PIN_SET_3 = "sign_up_pin_set_3"
+        const val SIGN_UP_PIN_SET_QUIZ = "sign_up_pin_set_quiz"
+        const val SIGN_UP_PIN_SETTING = "sign_up_pin_setting"
+        const val LOGIN_BY = "login_by"
         const val LOGIN_PHONE_NUMER = "login_phone_numer"
         const val LOGIN_MNEMONIC_PHRASE = "login_mnemonic_phrase"
+        const val LOGIN_MNEMONIC_PHRASE_12 = "login_mnemonic_phrase_12"
+        const val LOGIN_MNEMONIC_PHRASE_13 = "login_mnemonic_phrase_13"
         const val LOGIN_MNEMONIC_PHRASE_SIGNING = "login_mnemonic_phrase_signing"
+        const val LOGIN_SIGNAL_INIT = "login_signal_init"
         const val LOGIN_SMS_VERIFY = "login_sms_verify"
         const val LOGIN_PIN_VERIFY = "login_pin_verify"
+        const val LOGIN_WALLET_FETCHING = "login_wallet_fetching"
+        const val LOGIN_WALLET_IMPORT = "login_wallet_import"
         const val PHONE_NUMBER_ADD = "phone_number_add"
         const val PHONE_NUMBER_ADD_SMS_VERIFY = "phone_number_add_sms_verify"
         const val PHONE_NUMBER_CHANGE = "phone_number_change"
@@ -526,20 +546,18 @@ object AnalyticsTracker {
     }
 
     fun trackTradeEnd(wallet: String, amountValue: BigDecimal, price: String?) {
-        val amountUsd = runCatching {
-            val priceValue = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            amountValue.multiply(priceValue).toDouble()
-        }.getOrDefault(0.0)
-        
-        val tradeAssetLevel = getTradeAssetLevel(amountUsd)
-        
         logEvent("trade_end") {
             putString("wallet", wallet)
-            putString("trade_asset_level", tradeAssetLevel)
+            putString("asset_level", getAssetLevel(amountValue, price))
         }
     }
 
-    private fun getTradeAssetLevel(amountUsd: Double): String {
+    private fun getAssetLevel(amountValue: BigDecimal, price: String?): String {
+        val priceValue = price?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return "N/A"
+        val amountUsd = runCatching {
+            amountValue.multiply(priceValue).toDouble()
+        }.getOrNull() ?: return "N/A"
+
         return when {
             amountUsd >= 1000000 -> "v1,000,000"
             amountUsd >= 100000 -> "v100,000"
@@ -577,79 +595,114 @@ object AnalyticsTracker {
         logEvent("buy_preview")
     }
 
-    fun trackPerpsOpenPositionStart(direction: String, source: String) {
-        logEvent("trade_perps_open_position_start") {
+    fun trackPerpsOpenStart(direction: String, source: String) {
+        logEvent("trade_perps_open_start") {
             putString("direction", direction)
             putString("source", source)
         }
     }
 
-    fun trackPerpsMarginTokenSelect(chain: String?, assetSymbol: String?) {
-        logEvent("trade_perps_margin_token_select") {
+    fun trackPerpsOpenMarginSelect(chain: String?, assetSymbol: String?) {
+        logEvent("trade_perps_open_margin_select") {
             putString("chain", chain)
             putString("asset_symbol", assetSymbol)
         }
     }
 
-    fun trackPerpsAmountInputPercent(percent: String) {
-        logEvent("trade_perps_amount_input_percent") {
+    fun trackPerpsOpenAmountPercent(percent: String) {
+        logEvent("trade_perps_open_amount_percent") {
             putString("percent", percent)
         }
     }
 
-    fun trackPerpsAmountInputBalance() {
-        logEvent("trade_perps_amount_input_balance")
+    fun trackPerpsOpenAmountBalance() {
+        logEvent("trade_perps_open_amount_balance")
     }
 
-    fun trackPerpsLeverageSelect(leverage: String) {
-        logEvent("trade_perps_leverage_select") {
+    fun trackPerpsOpenLeverageSelect(leverage: String) {
+        logEvent("trade_perps_open_leverage_select") {
             putString("leverage", leverage)
         }
     }
 
-    fun trackPerpsPreview(leverage: String) {
-        logEvent("trade_perps_preview") {
-            putString("leverage", leverage)
-        }
+    fun trackPerpsOpenPreview() {
+        logEvent("trade_perps_open_preview")
     }
 
-    fun trackPerpsPreviewConfirm() {
-        logEvent("trade_perps_preview_confirm")
+    fun trackPerpsOpenPreviewConfirm() {
+        logEvent("trade_perps_open_preview_confirm")
     }
 
-    fun trackPerpsPreviewCancel() {
-        logEvent("trade_perps_preview_cancel")
+    fun trackPerpsOpenPreviewCancel() {
+        logEvent("trade_perps_open_preview_cancel")
     }
 
-    fun trackPerpsOpenPositionEnd(leverage: Int, amountValue: BigDecimal, price: String?) {
-        val amountUsd = runCatching {
-            val priceValue = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            amountValue.multiply(priceValue).toDouble()
-        }.getOrDefault(0.0)
-        logEvent("trade_perps_open_position_end") {
+    fun trackPerpsOpenEnd(leverage: Int, amountValue: BigDecimal, price: String?) {
+        logEvent("trade_perps_open_end") {
             putString("leverage", leverage.toString())
-            putString("trade_asset_level", getTradeAssetLevel(amountUsd))
+            putString("asset_level", getAssetLevel(amountValue, price))
         }
     }
 
-    fun trackPerpsClosePositionStart() {
-        logEvent("trade_perps_close_position_start")
+    fun trackPerpsAddStart(type: String) {
+        logEvent("trade_perps_add_start") {
+            putString("type", type)
+        }
     }
 
-    fun trackPerpsClosePositionPreview() {
-        logEvent("trade_perps_close_position_preview")
+    fun trackPerpsAddMarginSelect(chain: String?, assetSymbol: String?) {
+        logEvent("trade_perps_add_margin_select") {
+            putString("chain", chain)
+            putString("asset_symbol", assetSymbol)
+        }
     }
 
-    fun trackPerpsClosePositionPreviewConfirm() {
-        logEvent("trade_perps_close_position_preview_confirm")
+    fun trackPerpsAddPreview() {
+        logEvent("trade_perps_add_preview")
     }
 
-    fun trackPerpsClosePositionPreviewCancel() {
-        logEvent("trade_perps_close_position_preview_cancel")
+    fun trackPerpsAddPreviewConfirm() {
+        logEvent("trade_perps_add_preview_confirm")
     }
 
-    fun trackPerpsClosePositionEnd() {
-        logEvent("trade_perps_close_position_end")
+    fun trackPerpsAddPreviewCancel() {
+        logEvent("trade_perps_add_preview_cancel")
+    }
+
+    fun trackPerpsAddEnd() {
+        logEvent("trade_perps_add_end")
+    }
+
+    fun trackPerpsAddCancel() {
+        logEvent("trade_perps_add_cancel")
+    }
+
+    object PerpsAddType {
+        const val ADD_POSITION = "add_position"
+        const val ADD_MARGIN = "add_margin"
+    }
+
+    fun trackPerpsCloseStart(type: String) {
+        logEvent("trade_perps_close_start") {
+            putString("type", type)
+        }
+    }
+
+    fun trackPerpsClosePreviewConfirm() {
+        logEvent("trade_perps_close_preview_confirm")
+    }
+
+    fun trackPerpsClosePreviewCancel() {
+        logEvent("trade_perps_close_preview_cancel")
+    }
+
+    fun trackPerpsCloseEnd() {
+        logEvent("trade_perps_close_end")
+    }
+
+    object PerpsCloseType {
+        const val SINGLE = "single"
+        const val MULTIPLE = "multiple"
     }
 
     fun trackPerpsAllPositions(source: String) {
@@ -658,8 +711,8 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackPerpsActivity(source: String) {
-        logEvent("trade_perps_activity") {
+    fun trackPerpsActivities(source: String) {
+        logEvent("trade_perps_activities") {
             putString("source", source)
         }
     }
@@ -684,12 +737,12 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackSpotSwitchSendReceive() {
-        logEvent("trade_spot_switch_send_receive")
+    fun trackSpotTokensSwitch() {
+        logEvent("trade_spot_tokens_switch")
     }
 
-    fun trackSpotSwitchQuoteDirection() {
-        logEvent("trade_spot_switch_quote_direction")
+    fun trackSpotQuoteDirectionSwitch() {
+        logEvent("trade_spot_quote_direction_switch")
     }
 
     fun trackSpotPreview(sendChain: String?, sendAssetSymbol: String?, receiveChain: String?, receiveAssetSymbol: String?) {
@@ -709,26 +762,26 @@ object AnalyticsTracker {
         logEvent("trade_spot_preview_cancel")
     }
 
-    fun trackSpotSendInputPercent(percent: String) {
-        logEvent("trade_spot_send_input_percent") {
+    fun trackSpotSendAmountPercent(percent: String) {
+        logEvent("trade_spot_send_amount_percent") {
             putString("percent", percent)
         }
     }
 
-    fun trackSpotSendInputBalance() {
-        logEvent("trade_spot_send_input_balance")
+    fun trackSpotSendAmountBalance() {
+        logEvent("trade_spot_send_amount_balance")
     }
 
-    fun trackSpotPriceInputPercent(percent: String) {
-        logEvent("trade_spot_price_input_percent") {
+    fun trackSpotPricePercent(percent: String) {
+        logEvent("trade_spot_price_percent") {
             putString("percent", percent)
         }
     }
 
-    fun trackSpotTokenSelect(method: String, type: String, chain: String?, assetSymbol: String?) {
+    fun trackSpotTokenSelect(method: String, side: String, chain: String?, assetSymbol: String?) {
         logEvent("trade_spot_token_select") {
             putString("method", method)
-            putString("type", type)
+            putString("side", side)
             putString("chain", chain)
             putString("asset_symbol", assetSymbol)
         }
@@ -749,13 +802,9 @@ object AnalyticsTracker {
     }
 
     fun trackSpotEnd(wallet: String, amountValue: BigDecimal, price: String?) {
-        val amountUsd = runCatching {
-            val priceValue = price?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-            amountValue.multiply(priceValue).toDouble()
-        }.getOrDefault(0.0)
         logEvent("trade_spot_end") {
             putString("wallet", wallet)
-            putString("trade_asset_level", getTradeAssetLevel(amountUsd))
+            putString("asset_level", getAssetLevel(amountValue, price))
         }
     }
 
@@ -765,14 +814,14 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackSpotTransactions(type: String) {
-        logEvent("trade_spot_transactions") {
+    fun trackSpotOrders(type: String) {
+        logEvent("trade_spot_orders") {
             putString("type", type)
         }
     }
 
-    fun trackSpotDetail(type: String) {
-        logEvent("trade_spot_detail") {
+    fun trackSpotOrderDetail(type: String) {
+        logEvent("trade_spot_order_detail") {
             putString("type", type)
         }
     }
@@ -893,5 +942,16 @@ object AnalyticsTracker {
         const val LANDING = "landing"
         const val LOGIN_MNEMONIC_PHRASE = "login_mnemonic_phrase"
         const val LOGIN_START = "login_start"
+    }
+
+    object LoginStartType {
+        const val PHONE_NUMBER = "phone_number"
+        const val LOGIN_MNEMONIC_PHRASE_12 = "login_mnemonic_phrase_12"
+        const val LOGIN_MNEMONIC_PHRASE_13 = "login_mnemonic_phrase_13"
+    }
+
+    object LoginStartSource {
+        const val LOGIN_METHODS = "login_methods"
+        const val SIGN_UP_INTRO_DIALOG = "sign_up_intro_dialog"
     }
 }

@@ -2,38 +2,49 @@ package one.mixin.android.ui.wallet
 
 import android.os.Bundle
 import android.view.View
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.fragment.app.activityViewModels
-import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.databinding.FragmentComposeBinding
-import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.ImportErrorContent
 import one.mixin.android.ui.wallet.components.ImportingContent
 import one.mixin.android.ui.wallet.viewmodel.FetchWalletViewModel
 import one.mixin.android.util.viewBinding
+import timber.log.Timber
 
 class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
     private val binding by viewBinding(FragmentComposeBinding::bind)
     private val viewModel by activityViewModels<FetchWalletViewModel>()
+    private val customerServiceSource: String? by lazy { arguments?.getString(ARG_CUSTOMER_SERVICE_SOURCE) }
+    private val hideCloseButton: Boolean by lazy { arguments?.getBoolean(ARG_HIDE_CLOSE_BUTTON, false) ?: false }
+    private val reuseExistingMnemonic: Boolean by lazy { arguments?.getBoolean(ARG_REUSE_EXISTING_MNEMONIC, false) ?: false }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
-        binding.titleView.leftIb.setImageResource(R.drawable.ic_close_black)
+        if (hideCloseButton) {
+            binding.titleView.leftIb.visibility = View.GONE
+        } else {
+            binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
+            binding.titleView.leftIb.setImageResource(R.drawable.ic_close_black)
+        }
         binding.titleView.rightIb.setImageResource(R.drawable.ic_support)
         binding.titleView.rightAnimator.visibility = View.VISIBLE
         binding.titleView.rightAnimator.displayedChild = 0
-        binding.titleView.rightAnimator.setOnClickListener { context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE) }
+        binding.titleView.rightAnimator.setOnClickListener { openCustomerService(source = customerServiceSource) }
         binding.compose.setContent {
             val state by viewModel.state.collectAsState()
             val errorCode by viewModel.errorCode.collectAsState()
             val errorMessage by viewModel.errorMessage.collectAsState()
             val partialSuccess by viewModel.partialSuccess.collectAsState()
+            val importedWalletDestination by viewModel.importedWalletDestination.collectAsState()
 
             when (state) {
                 FetchWalletState.IMPORTING -> {
@@ -42,7 +53,7 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                     }
                 }
                 FetchWalletState.IMPORT_ERROR -> {
-                    binding.titleView.leftIb.setImageResource(R.drawable.ic_close_black)
+                    Timber.i("LoginFlow wallet_import_result success=false partial_success=$partialSuccess code=$errorCode")
                     ImportErrorContent(
                         partialSuccess =partialSuccess,
                         errorCode = errorCode,
@@ -57,7 +68,16 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                     )
                 }
                 FetchWalletState.IMPORT_SUCCESS ->{
-                    requireActivity().finish()
+                    LaunchedEffect(importedWalletDestination) {
+                        Timber.i("LoginFlow wallet_import_result success=true has_destination=${importedWalletDestination != null}")
+                        clearPendingImportMnemonic(requireContext())
+                        Timber.i("LoginFlow pending_import_cleared source=wallet_import")
+                        MainActivity.showWallet(
+                            requireContext(),
+                            walletDestination = importedWalletDestination
+                        )
+                        requireActivity().finish()
+                    }
                 }
                 else -> {
                     ImportingContent {
@@ -81,7 +101,7 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
                     ?: WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY.ordinal
             val mode = WalletSecurityActivity.Mode.entries[modeOrdinal]
             viewModel.importWallet(key, chainId, mode, walletName)
-        } else {
+        } else if (!reuseExistingMnemonic) {
             viewModel.startImporting()
         }
     }
@@ -93,9 +113,22 @@ class ImportingWalletFragment : BaseFragment(R.layout.fragment_compose) {
         private const val ARG_WALLET_NAME = "arg_wallet_name"
         private const val ARG_MODE = "arg_mode"
         private const val ARG_FROM_DETAIL = "arg_from_detail"
+        private const val ARG_CUSTOMER_SERVICE_SOURCE = "arg_customer_service_source"
+        private const val ARG_HIDE_CLOSE_BUTTON = "arg_hide_close_button"
+        private const val ARG_REUSE_EXISTING_MNEMONIC = "arg_reuse_existing_mnemonic"
 
-        fun newInstance(): ImportingWalletFragment {
-            return ImportingWalletFragment()
+        fun newInstance(
+            customerServiceSource: String? = null,
+            hideCloseButton: Boolean = false,
+            reuseExistingMnemonic: Boolean = false,
+        ): ImportingWalletFragment {
+            return ImportingWalletFragment().apply {
+                arguments = Bundle().apply {
+                    customerServiceSource?.let { putString(ARG_CUSTOMER_SERVICE_SOURCE, it) }
+                    putBoolean(ARG_HIDE_CLOSE_BUTTON, hideCloseButton)
+                    putBoolean(ARG_REUSE_EXISTING_MNEMONIC, reuseExistingMnemonic)
+                }
+            }
         }
 
         fun newInstance(mode: WalletSecurityActivity.Mode): ImportingWalletFragment {

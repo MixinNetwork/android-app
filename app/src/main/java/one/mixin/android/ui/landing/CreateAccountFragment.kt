@@ -78,7 +78,10 @@ class CreateAccountFragment : Fragment(R.layout.fragment_compose) {
     private fun applySafeTopPadding(rootView: View) {
         val originalPaddingTop: Int = rootView.paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
-            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top
+            val topInset: Int = maxOf(
+                insets.getInsets(WindowInsetsCompat.Type.statusBars()).top,
+                insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top,
+            )
             v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
             insets
         }

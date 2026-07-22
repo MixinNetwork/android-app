@@ -2,6 +2,7 @@ package one.mixin.android.ui.landing.components
 
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -64,7 +65,7 @@ fun QuizPage(
                 IconButton(onClick = {
                     context.openUrl(
                         Constants.HelpLink.CUSTOMER_SERVICE,
-                        source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_MNEMONIC_PHRASE_CREATING,
+                        source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_PIN_SET_QUIZ,
                     )
                 }) {
                     Icon(
@@ -139,12 +140,14 @@ fun QuizPage(
 
 @Composable
 fun Answer(str: String, option: Int, selectedOption: Int, onOptionSelected: (Int) -> Unit) {
+    val shape = RoundedCornerShape(8.dp)
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(8.dp))
-            .background(MixinAppTheme.colors.backgroundWindow)
+            .clip(shape)
+            .background(MixinAppTheme.colors.background)
+            .border(1.dp, MixinAppTheme.colors.borderColor, shape)
             .clickable {
                 onOptionSelected(option)
             }
@@ -231,7 +234,7 @@ fun QuizResultBottomSheetContent(
             Text(
                 text = stringResource(if (isCorrect) R.string.Got_it else R.string.Try_Again),
                 color = Color.White,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 fontWeight = FontWeight.W500
             )
         }
