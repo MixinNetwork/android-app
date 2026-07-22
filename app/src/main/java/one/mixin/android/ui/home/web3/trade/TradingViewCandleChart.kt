@@ -334,14 +334,14 @@ private fun CandleDetailsTooltip(
     val changeColor = if (change == null || change >= BigDecimal.ZERO) upColor else downColor
 
     Surface(
-        modifier = modifier.width(180.dp),
-        shape = RoundedCornerShape(6.dp),
+        modifier = modifier.width(140.dp),
+        shape = RoundedCornerShape(4.dp),
         color = MixinAppTheme.colors.background,
-        elevation = 3.dp,
+        elevation = 2.dp,
     ) {
         Column(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 6.dp),
-            verticalArrangement = Arrangement.spacedBy(1.dp),
+            modifier = Modifier.padding(horizontal = 6.dp, vertical = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(0.dp),
         ) {
             CandleDetailsRow(
                 label = stringResource(R.string.Candle_Time),
@@ -392,14 +392,16 @@ private fun CandleDetailsRow(
         Text(
             text = "$label:",
             color = MixinAppTheme.colors.textAssist,
-            fontSize = 10.sp,
+            fontSize = 9.sp,
+            lineHeight = 12.sp,
             maxLines = 1,
-            modifier = Modifier.width(48.dp),
+            modifier = Modifier.width(40.dp),
         )
         Text(
             text = value,
             color = valueColor,
-            fontSize = 10.sp,
+            fontSize = 9.sp,
+            lineHeight = 12.sp,
             maxLines = 1,
             softWrap = false,
             overflow = TextOverflow.Clip,
