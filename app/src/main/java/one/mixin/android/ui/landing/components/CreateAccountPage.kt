@@ -2,6 +2,7 @@ package one.mixin.android.ui.landing.components
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.border
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -73,14 +74,16 @@ fun CreateAccountPage(
 
 @Composable
 fun CreateItem(@DrawableRes iconId: Int, @StringRes titleId: Int, @StringRes subTitleId: Int, @StringRes highlightTextId: Int, onClick: () -> Unit, highlightClick: (String) -> Unit) {
+    val shape = RoundedCornerShape(8.dp)
     ConstraintLayout(
         modifier = Modifier
             .clip(
-                RoundedCornerShape(8.dp)
+                shape
             )
             .clickable(onClick = onClick)
             .fillMaxWidth()
-            .background(MixinAppTheme.colors.backgroundWindow)
+            .background(MixinAppTheme.colors.background)
+            .border(1.dp, MixinAppTheme.colors.borderColor, shape)
             .padding(vertical = 20.dp)
     ) {
         val (starIcon, title, subtitle, endIcon) = createRefs()

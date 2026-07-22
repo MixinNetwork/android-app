@@ -23,7 +23,8 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -57,6 +58,7 @@ import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFr
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
 import one.mixin.android.ui.wallet.components.WalletDestination
 import one.mixin.android.ui.wallet.components.WalletDestinationTypeAdapter
+import one.mixin.android.ui.wallet.components.signerTarget
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.ui.web.reloadWebViewInClips
 import one.mixin.android.util.GsonHelper
@@ -66,6 +68,7 @@ import one.mixin.android.vo.generateConversationId
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
+import java.util.concurrent.atomic.AtomicLong
 import javax.inject.Inject
 import kotlin.math.hypot
 
@@ -125,6 +128,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
     private var _binding: FragmentWalletBinding? = null
     private val binding get() = requireNotNull(_binding)
     private val walletViewModel by viewModels<WalletViewModel>()
+    private val walletSignerMutex = Mutex()
+    private val walletSignerSelectionVersion = AtomicLong()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -168,7 +173,10 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 .commit()
         }
 
-        selectedWalletDestination = initialWalletDestination ?: WalletDestination.Privacy
+        applyWalletDestination(
+            destination = initialWalletDestination ?: WalletDestination.Privacy,
+            refresh = false,
+        )
 
         binding.apply {
             badge.isVisible = defaultSharedPreferences.getBoolean(Constants.Account.PREF_HAS_USED_WALLET_LIST, true)
@@ -414,27 +422,61 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             destination.url?.openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
             return
         }
+        selectWalletDestination(destination)
+        closeMenu()
+    }
+
+    fun selectWalletDestination(destination: WalletDestination) {
+        applyWalletDestination(destination, refresh = true)
+    }
+
+    private fun applyWalletDestination(
+        destination: WalletDestination,
+        refresh: Boolean,
+    ) {
         selectedWalletDestination = destination
-        update()
-        if (destination is WalletDestination.Classic || destination is WalletDestination.Import) {
-            val walletId = if (destination is WalletDestination.Classic) {
-                destination.walletId
-            } else {
-                (destination as WalletDestination.Import).walletId
+        synchronizeWalletSigner(destination)
+        if (refresh) {
+            update()
+        }
+    }
+
+    private fun synchronizeWalletSigner(destination: WalletDestination) {
+        val selectionVersion = walletSignerSelectionVersion.incrementAndGet()
+        val target = destination.signerTarget() ?: return
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            val addresses = walletViewModel.getAddresses(target.walletId)
+            walletSignerMutex.withLock {
+                if (selectionVersion != walletSignerSelectionVersion.get()) return@withLock
+                Web3Signer.setWallet(target.walletId, target.category) { queryWalletId ->
+                    if (queryWalletId == target.walletId) addresses else emptyList()
+                }
             }
-            lifecycleScope.launch(Dispatchers.IO) {
-                val wallet = walletViewModel.findWalletById(walletId)
-                if (wallet != null) {
-                    Web3Signer.setWallet(walletId, wallet.category) { queryWalletId ->
-                        runBlocking { walletViewModel.getAddresses(queryWalletId) }
-                    }
-                    withContext(Dispatchers.Main) {
+            if (selectionVersion == walletSignerSelectionVersion.get()) {
+                withContext(Dispatchers.Main) {
+                    if (!viewDestroyed()) {
                         reloadWebViewInClips()
                     }
                 }
             }
         }
-        closeMenu()
+    }
+
+    private fun clearWalletSigner() {
+        val selectionVersion = walletSignerSelectionVersion.incrementAndGet()
+        viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+            walletSignerMutex.withLock {
+                if (selectionVersion != walletSignerSelectionVersion.get()) return@withLock
+                Web3Signer.setWallet("", WalletCategory.CLASSIC.value) { emptyList() }
+            }
+            if (selectionVersion == walletSignerSelectionVersion.get()) {
+                withContext(Dispatchers.Main) {
+                    if (!viewDestroyed()) {
+                        reloadWebViewInClips()
+                    }
+                }
+            }
+        }
     }
 
     fun update() {
@@ -640,20 +682,28 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             Timber.e(error)
         }) {
             val dest = selectedWalletDestination
-            if (dest is WalletDestination.Import) {
-                walletViewModel.deleteWallet(dest.walletId)
-                selectedWalletDestination = WalletDestination.Classic(Web3Signer.classicWalletId)
-            } else if (dest is WalletDestination.Watch) {
-                walletViewModel.deleteWallet(dest.walletId)
-                selectedWalletDestination = WalletDestination.Classic(Web3Signer.classicWalletId)
+            val deletedSignerWallet = dest is WalletDestination.Import
+            val walletDeleted = when (dest) {
+                is WalletDestination.Import -> {
+                    walletViewModel.deleteWallet(dest.walletId)
+                    true
+                }
+                is WalletDestination.Watch -> {
+                    walletViewModel.deleteWallet(dest.walletId)
+                    true
+                }
+                else -> false
             }
             dialog.dismiss()
-            withContext(Dispatchers.IO) {
-                Web3Signer.setWallet(Web3Signer.classicWalletId, WalletCategory.CLASSIC.value) { queryWalletId ->
-                    runBlocking { walletViewModel.getAddresses(queryWalletId) }
-                }
-                withContext(Dispatchers.Main) {
-                    reloadWebViewInClips()
+            if (walletDeleted) {
+                val classicWalletId = walletViewModel.getClassicWalletId()
+                if (classicWalletId == null) {
+                    selectWalletDestination(WalletDestination.Privacy)
+                    if (deletedSignerWallet) {
+                        clearWalletSigner()
+                    }
+                } else {
+                    selectWalletDestination(WalletDestination.Classic(classicWalletId))
                 }
             }
         }

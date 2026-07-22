@@ -50,11 +50,17 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
     }
 
     private var onCreateAccount: (() -> Unit)? = null
+    private var onImportWallet: (() -> Unit)? = null
     private var onPrivacyPolicy: (() -> Unit)? = null
     private var onTermsOfService: (() -> Unit)? = null
 
     fun setOnCreateAccount(callback: () -> Unit): CreateAccountConfirmBottomSheetDialogFragment {
         onCreateAccount = callback
+        return this
+    }
+
+    fun setOnImportWallet(callback: () -> Unit): CreateAccountConfirmBottomSheetDialogFragment {
+        onImportWallet = callback
         return this
     }
 
@@ -131,15 +137,42 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
                 Spacer(modifier = Modifier.weight(1f))
                 MixinButton(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .height(48.dp),
                     onClick = {
                         onCreateAccount?.invoke()
                         dismiss()
                     },
                     shape = RoundedCornerShape(30.dp),
-                    contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                    contentPadding = PaddingValues(horizontal = 36.dp),
                 ) {
-                    Text(text = stringResource(R.string.create_account_confirm_action_create), fontSize = 16.sp, color = Color.White)
+                    Text(
+                        text = stringResource(R.string.create_account_confirm_action_create),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W500,
+                        color = Color.White,
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                MixinButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    onClick = {
+                        onImportWallet?.invoke()
+                        dismiss()
+                    },
+                    shape = RoundedCornerShape(30.dp),
+                    contentPadding = PaddingValues(horizontal = 36.dp),
+                    backgroundColor = MixinAppTheme.colors.backgroundWindow,
+                    contentColor = MixinAppTheme.colors.accent,
+                ) {
+                    Text(
+                        text = stringResource(R.string.import_from_another_wallet),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W500,
+                        color = MixinAppTheme.colors.accent,
+                    )
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 val privacyPolicyText = stringResource(R.string.Privacy_Policy)
