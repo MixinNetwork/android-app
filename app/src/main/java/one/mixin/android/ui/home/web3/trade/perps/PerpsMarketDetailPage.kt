@@ -1056,7 +1056,8 @@ private fun MarketDetailCard(
             CandleChart(
                 marketId = marketId,
                 timeFrame = timeFrameValues[selectedTimeFrame],
-                marketPrice = market.last
+                priceScale = market.priceScale,
+                marketPrice = market.last,
             )
         }
 

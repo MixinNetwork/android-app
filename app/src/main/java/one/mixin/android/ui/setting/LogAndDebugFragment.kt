@@ -91,6 +91,17 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                     BotSignAppBottomSheetDialogFragment.newInstance()
                         .show(parentFragmentManager, BotSignAppBottomSheetDialogFragment.TAG)
                 }
+                tradingViewChartSc.isChecked =
+                    defaultSharedPreferences.getBoolean(Constants.Account.PREF_USE_TRADING_VIEW_CANDLES, false)
+                tradingViewChartSc.setOnCheckedChangeListener { _, isChecked ->
+                    defaultSharedPreferences.putBoolean(
+                        Constants.Account.PREF_USE_TRADING_VIEW_CANDLES,
+                        isChecked,
+                    )
+                }
+                tradingViewChart.setOnClickListener {
+                    tradingViewChartSc.performClick()
+                }
 
                 diagnosis.setOnClickListener {
                     navTo(DiagnosisFragment.newInstance(), DiagnosisFragment.TAG)

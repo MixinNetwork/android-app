@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade
 
+import android.content.SharedPreferences
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -23,6 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -130,15 +132,33 @@ private fun PointerEvent.compatCalculateZoom(): Float {
 fun CandleChart(
     marketId: String,
     timeFrame: String,
+    priceScale: Int,
     marketPrice: String? = null,
 ) {
     val context = LocalContext.current
+    val preferences = context.defaultSharedPreferences
     val dataError = stringResource(R.string.Data_error)
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val lifecycleOwner = LocalLifecycleOwner.current
     var candles by remember { mutableStateOf<List<CandleView>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var useTradingView by remember {
+        mutableStateOf(preferences.getBoolean(Constants.Account.PREF_USE_TRADING_VIEW_CANDLES, false))
+    }
+
+    DisposableEffect(preferences) {
+        val listener =
+            SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+                if (key == Constants.Account.PREF_USE_TRADING_VIEW_CANDLES) {
+                    useTradingView = sharedPreferences.getBoolean(key, false)
+                }
+            }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            preferences.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
 
     LaunchedEffect(marketId, timeFrame, lifecycleOwner) {
         candles = emptyList()
@@ -194,12 +214,21 @@ fun CandleChart(
                 )
             }
             else -> {
-                ScrollableCandleChart(
-                    candles = candles,
-                    context = context,
-                    marketPrice = marketPrice?.toBigDecimalOrNull(),
-                    marketPriceText = marketPrice,
-                )
+                if (useTradingView) {
+                    TradingViewCandleChart(
+                        candles = candles,
+                        marketPrice = marketPrice,
+                        priceScale = priceScale,
+                        timeFrame = timeFrame,
+                    )
+                } else {
+                    ScrollableCandleChart(
+                        candles = candles,
+                        context = context,
+                        marketPrice = marketPrice?.toBigDecimalOrNull(),
+                        marketPriceText = marketPrice,
+                    )
+                }
             }
         }
     }
