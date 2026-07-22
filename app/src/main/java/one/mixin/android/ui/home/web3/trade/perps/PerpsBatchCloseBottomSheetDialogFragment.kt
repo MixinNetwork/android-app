@@ -146,7 +146,6 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
         LaunchedEffect(Unit) {
             remainingPositions = positions
             refreshPaymentDetails()
-            AnalyticsTracker.trackPerpsClosePositionPreview()
         }
 
         val displayPositions = if (step == Step.Done) positions else remainingPositions
@@ -269,11 +268,11 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
                             cancelTitle = stringResource(R.string.Cancel),
                             confirmTitle = stringResource(R.string.Retry),
                             cancelAction = {
-                                AnalyticsTracker.trackPerpsClosePositionPreviewCancel()
+                                AnalyticsTracker.trackPerpsClosePreviewCancel()
                                 dismiss()
                             },
                             confirmAction = {
-                                AnalyticsTracker.trackPerpsClosePositionPreviewConfirm()
+                                AnalyticsTracker.trackPerpsClosePreviewConfirm()
                                 showVerifyPinThenClose()
                             },
                         )
@@ -285,11 +284,11 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
                             cancelTitle = stringResource(R.string.Cancel),
                             confirmTitle = stringResource(R.string.Confirm),
                             cancelAction = {
-                                AnalyticsTracker.trackPerpsClosePositionPreviewCancel()
+                                AnalyticsTracker.trackPerpsClosePreviewCancel()
                                 dismiss()
                             },
                             confirmAction = {
-                                AnalyticsTracker.trackPerpsClosePositionPreviewConfirm()
+                                AnalyticsTracker.trackPerpsClosePreviewConfirm()
                                 showVerifyPinThenClose()
                             },
                         )
@@ -339,7 +338,7 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
         viewModel.closePerpsOrders(attemptedPositions) { result ->
             val successfulCount = attemptedPositions.size - result.failedPositions.size
             if (successfulCount > 0) {
-                AnalyticsTracker.trackPerpsClosePositionEnd()
+                AnalyticsTracker.trackPerpsCloseEnd()
                 step = Step.Done
             } else {
                 remainingPositions = result.failedPositions

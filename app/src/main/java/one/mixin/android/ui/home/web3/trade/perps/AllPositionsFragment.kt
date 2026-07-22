@@ -112,7 +112,7 @@ class AllPositionsFragment : BaseFragment() {
                             }
                         },
                         onCloseAllPositions = { positions ->
-                            AnalyticsTracker.trackPerpsClosePositionStart()
+                            AnalyticsTracker.trackPerpsCloseStart(AnalyticsTracker.PerpsCloseType.MULTIPLE)
                             PerpsBatchCloseBottomSheetDialogFragment.newInstance(positions)
                                 .show(parentFragmentManager, PerpsBatchCloseBottomSheetDialogFragment.TAG)
                         },
