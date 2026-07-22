@@ -108,7 +108,7 @@ class AllOrdersFragment : BaseTransactionsFragment(R.layout.fragment_all_orders)
         super.onViewCreated(view, savedInstanceState)
         AnalyticsTracker.trackTradeTransactions()
         val spotType = arguments?.getString(ARGS_SPOT_TYPE) ?: AnalyticsTracker.SpotTradeType.SIMPLE
-        AnalyticsTracker.trackSpotTransactions(spotType)
+        AnalyticsTracker.trackSpotOrders(spotType)
         val walletIds = arguments?.getStringArrayList(ARGS_WALLET_IDS)
         walletIds?.let { ids ->
             if (ids.isNotEmpty()) {

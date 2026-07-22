@@ -94,7 +94,7 @@ class OrderDetailFragment : BaseFragment() {
     ): View {
         AnalyticsTracker.trackTradeDetail()
         val spotTypeArg = arguments?.getString(ARGS_SPOT_TYPE)
-        spotTypeArg?.let(AnalyticsTracker::trackSpotDetail)
+        spotTypeArg?.let(AnalyticsTracker::trackSpotOrderDetail)
         val orderId: String = arguments?.getString(ARGS_ORDER_ID) ?: ""
         val walletId: String? = arguments?.getString(ARGS_WALLET_ID)
         return ComposeView(inflater.context).apply {

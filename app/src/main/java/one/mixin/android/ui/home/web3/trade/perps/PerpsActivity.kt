@@ -151,7 +151,7 @@ class PerpsActivity : BaseActivity() {
                     finish()
                     return@launch
                 }
-                AnalyticsTracker.trackPerpsOpenPositionStart(
+                AnalyticsTracker.trackPerpsOpenStart(
                     direction = if (isLong) AnalyticsTracker.PerpsDirection.LONG else AnalyticsTracker.PerpsDirection.SHORT,
                     source = source,
                 )

@@ -213,7 +213,7 @@ class PositionDetailFragment : BaseFragment() {
 
     private fun showCloseDialog(position: PerpsPositionItem) {
         val perpsPosition = position.toPosition()
-        AnalyticsTracker.trackPerpsClosePositionStart()
+        AnalyticsTracker.trackPerpsCloseStart(AnalyticsTracker.PerpsCloseType.SINGLE)
         PerpsCloseBottomSheetDialogFragment.newInstance(perpsPosition)
             .setOnDone {
                 openMarket(
