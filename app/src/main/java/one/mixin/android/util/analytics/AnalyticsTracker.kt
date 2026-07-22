@@ -26,6 +26,9 @@ object AnalyticsTracker {
         }
     }
 
+    fun trackSignUpAccountCreated() {
+        logEvent("sign_up_account_created")
+    }
 
     fun trackSignUpCaptcha() {
         logEvent("sign_up_captcha")
@@ -55,8 +58,11 @@ object AnalyticsTracker {
         logEvent("sign_up_end")
     }
 
-    fun trackLoginStart() {
-        logEvent("login_start")
+    fun trackLoginStart(type: String, source: String) {
+        logEvent("login_start") {
+            putString("type", type)
+            putString("source", source)
+        }
     }
 
     fun trackLoginSmsSendConfirmed() {
@@ -414,11 +420,23 @@ object AnalyticsTracker {
         const val SIGN_UP_PHONE_NUMBER = "sign_up_phone_number"
         const val SIGN_UP_SMS_VERIFY = "sign_up_sms_verify"
         const val SIGN_UP_FULL_NAME = "sign_up_full_name"
+        const val SIGN_UP_SIGNAL_INIT = "sign_up_signal_init"
+        const val SIGN_UP_PIN_SET_1 = "sign_up_pin_set_1"
+        const val SIGN_UP_PIN_SET_2 = "sign_up_pin_set_2"
+        const val SIGN_UP_PIN_SET_3 = "sign_up_pin_set_3"
+        const val SIGN_UP_PIN_SET_QUIZ = "sign_up_pin_set_quiz"
+        const val SIGN_UP_PIN_SETTING = "sign_up_pin_setting"
+        const val LOGIN_BY = "login_by"
         const val LOGIN_PHONE_NUMER = "login_phone_numer"
         const val LOGIN_MNEMONIC_PHRASE = "login_mnemonic_phrase"
+        const val LOGIN_MNEMONIC_PHRASE_12 = "login_mnemonic_phrase_12"
+        const val LOGIN_MNEMONIC_PHRASE_13 = "login_mnemonic_phrase_13"
         const val LOGIN_MNEMONIC_PHRASE_SIGNING = "login_mnemonic_phrase_signing"
+        const val LOGIN_SIGNAL_INIT = "login_signal_init"
         const val LOGIN_SMS_VERIFY = "login_sms_verify"
         const val LOGIN_PIN_VERIFY = "login_pin_verify"
+        const val LOGIN_WALLET_FETCHING = "login_wallet_fetching"
+        const val LOGIN_WALLET_IMPORT = "login_wallet_import"
         const val PHONE_NUMBER_ADD = "phone_number_add"
         const val PHONE_NUMBER_ADD_SMS_VERIFY = "phone_number_add_sms_verify"
         const val PHONE_NUMBER_CHANGE = "phone_number_change"
@@ -924,5 +942,16 @@ object AnalyticsTracker {
         const val LANDING = "landing"
         const val LOGIN_MNEMONIC_PHRASE = "login_mnemonic_phrase"
         const val LOGIN_START = "login_start"
+    }
+
+    object LoginStartType {
+        const val PHONE_NUMBER = "phone_number"
+        const val LOGIN_MNEMONIC_PHRASE_12 = "login_mnemonic_phrase_12"
+        const val LOGIN_MNEMONIC_PHRASE_13 = "login_mnemonic_phrase_13"
+    }
+
+    object LoginStartSource {
+        const val LOGIN_METHODS = "login_methods"
+        const val SIGN_UP_INTRO_DIALOG = "sign_up_intro_dialog"
     }
 }

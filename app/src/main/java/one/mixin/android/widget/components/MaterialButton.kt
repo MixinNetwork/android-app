@@ -11,8 +11,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import one.mixin.android.compose.theme.MixinAppTheme
 
 @Composable
@@ -37,7 +39,9 @@ fun MaterialWindowButton(onClick: () -> Unit, title: String) {
     ) {
         Text(
             text = title,
-            color = MixinAppTheme.colors.textBlue
+            color = MixinAppTheme.colors.textBlue,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.W500,
         )
     }
 }
