@@ -19,121 +19,121 @@ val versionMinor = 2
 val versionPatch = 1
 val versionBuild = 1
 
-val androidNdkVersion: String by rootProject.extra
-val jetifierVersion: String by rootProject.extra
-val kotlinVersion: String by rootProject.extra
-val tinkVersion: String by rootProject.extra
-val securityCryptoVersion: String by rootProject.extra
-val webkitVersion: String by rootProject.extra
-val mixinJwtVersion: String by rootProject.extra
-val alphabetIndexVersion: String by rootProject.extra
-val web3jVersion: String by rootProject.extra
-val entityExtractionVersion: String by rootProject.extra
-val bitcoinVersion: String by rootProject.extra
-val fragmentVersion: String by rootProject.extra
-val activityVersion: String by rootProject.extra
-val lifecycleVersion: String by rootProject.extra
-val appcompatVersion: String by rootProject.extra
-val pagingVersion: String by rootProject.extra
-val coilVersion: String by rootProject.extra
-val collectionVersion: String by rootProject.extra
-val roomVersion: String by rootProject.extra
-val navigationVersion: String by rootProject.extra
-val workManagerVersion: String by rootProject.extra
-val constraintLayoutVersion: String by rootProject.extra
-val constraintLayoutComposeVersion: String by rootProject.extra
-val supportLibVersion: String by rootProject.extra
-val recyclerViewVersion: String by rootProject.extra
-val browserVersion: String by rootProject.extra
-val biometricVersion: String by rootProject.extra
-val mdcVersion: String by rootProject.extra
-val exifinterfaceVersion: String by rootProject.extra
-val preferenceVersion: String by rootProject.extra
-val hiltVersion: String by rootProject.extra
-val hiltAndroidxVersion: String by rootProject.extra
-val androidxVersion: String by rootProject.extra
-val viewpagerVersion: String by rootProject.extra
-val sharetargetVersion: String by rootProject.extra
-val coordinatorVersion: String by rootProject.extra
-val espressoVersion: String by rootProject.extra
-val cameraxVersion: String by rootProject.extra
-val glideVersion: String by rootProject.extra
-val timberVersion: String by rootProject.extra
-val okhttpVersion: String by rootProject.extra
-val rxJavaVersion: String by rootProject.extra
-val rxAndroidVersion: String by rootProject.extra
-val rxbindingVersion: String by rootProject.extra
-val retrofitVersion: String by rootProject.extra
-val coroutineAdapterVersion: String by rootProject.extra
-val libphonenumberVersion: String by rootProject.extra
-val coroutinesVersion: String by rootProject.extra
-val mlkitBarcodeVersion: String by rootProject.extra
-val zxingVersion: String by rootProject.extra
-val ucropVersion: String by rootProject.extra
-val glideTransformationsVersion: String by rootProject.extra
-val jobqueueVersion: String by rootProject.extra
-val stickyHeadersRecyclerViewVersion: String by rootProject.extra
-val threetenabpVersion: String by rootProject.extra
-val signalVersion: String by rootProject.extra
-val playVersion: String by rootProject.extra
-val googlePlayServicesVersion: String by rootProject.extra
-val svgVersion: String by rootProject.extra
-val reboundVersion: String by rootProject.extra
-val shimmerVersion: String by rootProject.extra
-val composeShimmerVersion: String by rootProject.extra
-val media3Version: String by rootProject.extra
-val markwonVersion: String by rootProject.extra
-val prism4jVersion: String by rootProject.extra
-val swirlVersion: String by rootProject.extra
-val indicatorseekbarVersion: String by rootProject.extra
-val emojiVersion: String by rootProject.extra
-val cronetOkhttpVersion: String by rootProject.extra
-val diffUtilsVersion: String by rootProject.extra
-val argon2ktVersion: String by rootProject.extra
-val keccakVersion: String by rootProject.extra
-val streetMapVersion: String by rootProject.extra
-val junitVersion: String by rootProject.extra
-val testCoreVersion: String by rootProject.extra
-val mockitoVersion: String by rootProject.extra
-val androidxJunitVersion: String by rootProject.extra
-val robolectricVersion: String by rootProject.extra
-val gsonVersion: String by rootProject.extra
-val serializationVersion: String by rootProject.extra
-val autodisposeVersion: String by rootProject.extra
-val bitcoinPaymentUriVersion: String by rootProject.extra
-val startupVersion: String by rootProject.extra
-val dnsVersion: String by rootProject.extra
-val audioSwitchVersion: String by rootProject.extra
-val balloonVersion: String by rootProject.extra
-val markdownVersion: String by rootProject.extra
-val bcVersion: String by rootProject.extra
-val jsonVersion: String by rootProject.extra
-val composeVersion: String by rootProject.extra
-val accompanistVersion: String by rootProject.extra
-val sol4kVersion: String by rootProject.extra
-val protobufVersion: String by rootProject.extra
-val kotsonVersion: String by rootProject.extra
-val lottieComposeVersion: String by rootProject.extra
-val composeBomVersion: String by rootProject.extra
-val reownBomVersion: String by rootProject.extra
-val playServicesMapsVersion: String by rootProject.extra
-val playServicesLocationVersion: String by rootProject.extra
-val firebaseBomVersion: String by rootProject.extra
-val webpDecoderVersion: String by rootProject.extra
-val tweetnaclVersion: String by rootProject.extra
-val sol4kUtilitiesVersion: String by rootProject.extra
-val desugarJdkLibsVersion: String by rootProject.extra
-val bugsnagVersion: String by rootProject.extra
-val sumsubVersion: String by rootProject.extra
-val checkoutFramesVersion: String by rootProject.extra
-val checkoutSecureVersion: String by rootProject.extra
-val checkoutRiskVersion: String by rootProject.extra
-val playWalletVersion: String by rootProject.extra
-val playPayVersion: String by rootProject.extra
-val datastoreVersion: String by rootProject.extra
-val appsFlyerVersion: String by rootProject.extra
-val installReferrerVersion: String by rootProject.extra
-val billingVersion: String by rootProject.extra
+val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
+val jetifierVersion = rootProject.extra["jetifierVersion"] as String
+val kotlinVersion = rootProject.extra["kotlinVersion"] as String
+val tinkVersion = rootProject.extra["tinkVersion"] as String
+val securityCryptoVersion = rootProject.extra["securityCryptoVersion"] as String
+val webkitVersion = rootProject.extra["webkitVersion"] as String
+val mixinJwtVersion = rootProject.extra["mixinJwtVersion"] as String
+val alphabetIndexVersion = rootProject.extra["alphabetIndexVersion"] as String
+val web3jVersion = rootProject.extra["web3jVersion"] as String
+val entityExtractionVersion = rootProject.extra["entityExtractionVersion"] as String
+val bitcoinVersion = rootProject.extra["bitcoinVersion"] as String
+val fragmentVersion = rootProject.extra["fragmentVersion"] as String
+val activityVersion = rootProject.extra["activityVersion"] as String
+val lifecycleVersion = rootProject.extra["lifecycleVersion"] as String
+val appcompatVersion = rootProject.extra["appcompatVersion"] as String
+val pagingVersion = rootProject.extra["pagingVersion"] as String
+val coilVersion = rootProject.extra["coilVersion"] as String
+val collectionVersion = rootProject.extra["collectionVersion"] as String
+val roomVersion = rootProject.extra["roomVersion"] as String
+val navigationVersion = rootProject.extra["navigationVersion"] as String
+val workManagerVersion = rootProject.extra["workManagerVersion"] as String
+val constraintLayoutVersion = rootProject.extra["constraintLayoutVersion"] as String
+val constraintLayoutComposeVersion = rootProject.extra["constraintLayoutComposeVersion"] as String
+val supportLibVersion = rootProject.extra["supportLibVersion"] as String
+val recyclerViewVersion = rootProject.extra["recyclerViewVersion"] as String
+val browserVersion = rootProject.extra["browserVersion"] as String
+val biometricVersion = rootProject.extra["biometricVersion"] as String
+val mdcVersion = rootProject.extra["mdcVersion"] as String
+val exifinterfaceVersion = rootProject.extra["exifinterfaceVersion"] as String
+val preferenceVersion = rootProject.extra["preferenceVersion"] as String
+val hiltVersion = rootProject.extra["hiltVersion"] as String
+val hiltAndroidxVersion = rootProject.extra["hiltAndroidxVersion"] as String
+val androidxVersion = rootProject.extra["androidxVersion"] as String
+val viewpagerVersion = rootProject.extra["viewpagerVersion"] as String
+val sharetargetVersion = rootProject.extra["sharetargetVersion"] as String
+val coordinatorVersion = rootProject.extra["coordinatorVersion"] as String
+val espressoVersion = rootProject.extra["espressoVersion"] as String
+val cameraxVersion = rootProject.extra["cameraxVersion"] as String
+val glideVersion = rootProject.extra["glideVersion"] as String
+val timberVersion = rootProject.extra["timberVersion"] as String
+val okhttpVersion = rootProject.extra["okhttpVersion"] as String
+val rxJavaVersion = rootProject.extra["rxJavaVersion"] as String
+val rxAndroidVersion = rootProject.extra["rxAndroidVersion"] as String
+val rxbindingVersion = rootProject.extra["rxbindingVersion"] as String
+val retrofitVersion = rootProject.extra["retrofitVersion"] as String
+val coroutineAdapterVersion = rootProject.extra["coroutineAdapterVersion"] as String
+val libphonenumberVersion = rootProject.extra["libphonenumberVersion"] as String
+val coroutinesVersion = rootProject.extra["coroutinesVersion"] as String
+val mlkitBarcodeVersion = rootProject.extra["mlkitBarcodeVersion"] as String
+val zxingVersion = rootProject.extra["zxingVersion"] as String
+val ucropVersion = rootProject.extra["ucropVersion"] as String
+val glideTransformationsVersion = rootProject.extra["glideTransformationsVersion"] as String
+val jobqueueVersion = rootProject.extra["jobqueueVersion"] as String
+val stickyHeadersRecyclerViewVersion = rootProject.extra["stickyHeadersRecyclerViewVersion"] as String
+val threetenabpVersion = rootProject.extra["threetenabpVersion"] as String
+val signalVersion = rootProject.extra["signalVersion"] as String
+val playVersion = rootProject.extra["playVersion"] as String
+val googlePlayServicesVersion = rootProject.extra["googlePlayServicesVersion"] as String
+val svgVersion = rootProject.extra["svgVersion"] as String
+val reboundVersion = rootProject.extra["reboundVersion"] as String
+val shimmerVersion = rootProject.extra["shimmerVersion"] as String
+val composeShimmerVersion = rootProject.extra["composeShimmerVersion"] as String
+val media3Version = rootProject.extra["media3Version"] as String
+val markwonVersion = rootProject.extra["markwonVersion"] as String
+val prism4jVersion = rootProject.extra["prism4jVersion"] as String
+val swirlVersion = rootProject.extra["swirlVersion"] as String
+val indicatorseekbarVersion = rootProject.extra["indicatorseekbarVersion"] as String
+val emojiVersion = rootProject.extra["emojiVersion"] as String
+val cronetOkhttpVersion = rootProject.extra["cronetOkhttpVersion"] as String
+val diffUtilsVersion = rootProject.extra["diffUtilsVersion"] as String
+val argon2ktVersion = rootProject.extra["argon2ktVersion"] as String
+val keccakVersion = rootProject.extra["keccakVersion"] as String
+val streetMapVersion = rootProject.extra["streetMapVersion"] as String
+val junitVersion = rootProject.extra["junitVersion"] as String
+val testCoreVersion = rootProject.extra["testCoreVersion"] as String
+val mockitoVersion = rootProject.extra["mockitoVersion"] as String
+val androidxJunitVersion = rootProject.extra["androidxJunitVersion"] as String
+val robolectricVersion = rootProject.extra["robolectricVersion"] as String
+val gsonVersion = rootProject.extra["gsonVersion"] as String
+val serializationVersion = rootProject.extra["serializationVersion"] as String
+val autodisposeVersion = rootProject.extra["autodisposeVersion"] as String
+val bitcoinPaymentUriVersion = rootProject.extra["bitcoinPaymentUriVersion"] as String
+val startupVersion = rootProject.extra["startupVersion"] as String
+val dnsVersion = rootProject.extra["dnsVersion"] as String
+val audioSwitchVersion = rootProject.extra["audioSwitchVersion"] as String
+val balloonVersion = rootProject.extra["balloonVersion"] as String
+val markdownVersion = rootProject.extra["markdownVersion"] as String
+val bcVersion = rootProject.extra["bcVersion"] as String
+val jsonVersion = rootProject.extra["jsonVersion"] as String
+val composeVersion = rootProject.extra["composeVersion"] as String
+val accompanistVersion = rootProject.extra["accompanistVersion"] as String
+val sol4kVersion = rootProject.extra["sol4kVersion"] as String
+val protobufVersion = rootProject.extra["protobufVersion"] as String
+val kotsonVersion = rootProject.extra["kotsonVersion"] as String
+val lottieComposeVersion = rootProject.extra["lottieComposeVersion"] as String
+val composeBomVersion = rootProject.extra["composeBomVersion"] as String
+val reownBomVersion = rootProject.extra["reownBomVersion"] as String
+val playServicesMapsVersion = rootProject.extra["playServicesMapsVersion"] as String
+val playServicesLocationVersion = rootProject.extra["playServicesLocationVersion"] as String
+val firebaseBomVersion = rootProject.extra["firebaseBomVersion"] as String
+val webpDecoderVersion = rootProject.extra["webpDecoderVersion"] as String
+val tweetnaclVersion = rootProject.extra["tweetnaclVersion"] as String
+val sol4kUtilitiesVersion = rootProject.extra["sol4kUtilitiesVersion"] as String
+val desugarJdkLibsVersion = rootProject.extra["desugarJdkLibsVersion"] as String
+val bugsnagVersion = rootProject.extra["bugsnagVersion"] as String
+val sumsubVersion = rootProject.extra["sumsubVersion"] as String
+val checkoutFramesVersion = rootProject.extra["checkoutFramesVersion"] as String
+val checkoutSecureVersion = rootProject.extra["checkoutSecureVersion"] as String
+val checkoutRiskVersion = rootProject.extra["checkoutRiskVersion"] as String
+val playWalletVersion = rootProject.extra["playWalletVersion"] as String
+val playPayVersion = rootProject.extra["playPayVersion"] as String
+val datastoreVersion = rootProject.extra["datastoreVersion"] as String
+val appsFlyerVersion = rootProject.extra["appsFlyerVersion"] as String
+val installReferrerVersion = rootProject.extra["installReferrerVersion"] as String
+val billingVersion = rootProject.extra["billingVersion"] as String
 
 val includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false
 
