@@ -219,14 +219,14 @@ private fun SubTabs(
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
                 .padding(horizontal = 16.dp, vertical = 10.dp),
-        horizontalArrangement = Arrangement.spacedBy(20.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         tabs.forEach { tab ->
             Text(
                 text = subTabLabel(tab),
                 color = if (selected == tab) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
-                fontSize = 13.sp,
+                fontSize = 14.sp,
                 modifier =
                     Modifier
                         .clip(CircleShape)
@@ -284,7 +284,7 @@ private fun MarketListHeader(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
+                .padding(start = 16.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -302,11 +302,11 @@ private fun MarketListHeader(
                 modifier = Modifier.size(16.dp),
             )
         }
+        Spacer(modifier = Modifier.width(4.dp))
         SortLabel(
             text = "Vol",
             column = MarketSortColumn.VOLUME,
             sortState = sortState,
-            modifier = Modifier.width(64.dp),
             onSort = onSort,
         )
         Spacer(modifier = Modifier.weight(1f))
@@ -314,14 +314,21 @@ private fun MarketListHeader(
             text = stringResource(R.string.Price),
             column = MarketSortColumn.PRICE,
             sortState = sortState,
-            modifier = Modifier.width(88.dp),
             onSort = onSort,
         )
+        Spacer(modifier = Modifier.width(10.dp))
+        Box(
+            modifier =
+                Modifier
+                    .width(1.dp)
+                    .height(12.dp)
+                    .background(MixinAppTheme.colors.backgroundWindow),
+        )
+        Spacer(modifier = Modifier.width(10.dp))
         SortLabel(
             text = priceChangePeriodLabel(period),
             column = MarketSortColumn.CHANGE,
             sortState = sortState,
-            modifier = Modifier.width(92.dp),
             onSort = onSort,
         )
     }
@@ -332,7 +339,7 @@ private fun SortLabel(
     text: String,
     column: MarketSortColumn,
     sortState: MarketSortState,
-    modifier: Modifier,
+    modifier: Modifier = Modifier,
     onSort: (MarketSortColumn) -> Unit,
 ) {
     val icon =
@@ -347,16 +354,17 @@ private fun SortLabel(
             modifier
                 .clip(RoundedCornerShape(6.dp))
                 .clickable { onSort(column) }
-                .padding(vertical = 6.dp),
+                .padding(vertical = 4.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = text,
             color = MixinAppTheme.colors.textAssist,
-            fontSize = 11.sp,
+            fontSize = 12.sp,
             textAlign = TextAlign.Center,
         )
+        Spacer(modifier = Modifier.width(4.dp))
         Icon(
             painter = painterResource(icon),
             contentDescription = null,
@@ -432,7 +440,7 @@ private fun MarketRow(
             Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
-                .padding(horizontal = 12.dp, vertical = 10.dp),
+                .padding(start = 12.dp, end = 20.dp, top = 10.dp, bottom = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(
@@ -498,8 +506,9 @@ private fun RowScope.SpotMarketRowContent(
         color = MixinAppTheme.colors.textPrimary,
         fontSize = 12.sp,
         textAlign = TextAlign.End,
-        modifier = Modifier.width(88.dp),
+        maxLines = 1,
     )
+    Spacer(modifier = Modifier.width(16.dp))
     ChangeColumn(
         change = change,
         sparkline = market.sparkline(settings.priceChangePeriod),
@@ -530,7 +539,7 @@ private fun RowScope.PerpetualMarketRowContent(
             )
             Spacer(modifier = Modifier.width(5.dp))
             Text(
-                text = "${market.leverage}x",
+                text = stringResource(R.string.perps_badge),
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 10.sp,
                 modifier =
@@ -552,8 +561,9 @@ private fun RowScope.PerpetualMarketRowContent(
         color = MixinAppTheme.colors.textPrimary,
         fontSize = 12.sp,
         textAlign = TextAlign.End,
-        modifier = Modifier.width(88.dp),
+        maxLines = 1,
     )
+    Spacer(modifier = Modifier.width(16.dp))
     ChangeColumn(
         change = change,
         sparkline = null,
@@ -592,7 +602,7 @@ private fun ChangeColumn(
         Box(
             modifier =
                 Modifier
-                    .width(92.dp)
+                    .width(60.dp)
                     .height(36.dp),
             contentAlignment = Alignment.Center,
         ) {
@@ -605,7 +615,7 @@ private fun ChangeColumn(
         }
     } else {
         Column(
-            modifier = Modifier.width(92.dp),
+            modifier = Modifier.width(60.dp),
             horizontalAlignment = Alignment.End,
         ) {
             AndroidView(
@@ -872,12 +882,14 @@ private fun MarketDisplayDialog(
                 shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
                 modifier =
                     Modifier
-                        .fillMaxWidth()
-                        .height(360.dp),
+                        .fillMaxWidth(),
             ) {
-                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
+                Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                     Row(
-                        modifier = Modifier.fillMaxWidth(),
+                        modifier =
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 5.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
@@ -895,14 +907,13 @@ private fun MarketDisplayDialog(
                                     .background(MixinAppTheme.colors.backgroundGray, CircleShape),
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.ic_close_grey),
+                                painter = painterResource(R.drawable.ic_close),
                                 contentDescription = null,
                                 tint = Color.Unspecified,
                                 modifier = Modifier.size(16.dp),
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
                     DisplaySettingRow(
                         title = stringResource(R.string.quote_color),
                         value =
@@ -940,7 +951,7 @@ private fun MarketDisplayDialog(
                         selectedOption = pending.priceChangePeriod,
                         onSelect = { pending = pending.copy(priceChangePeriod = it) },
                     )
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.height(42.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.Center,
@@ -970,7 +981,7 @@ private fun MarketDisplayDialog(
                                     .height(44.dp),
                         )
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(20.dp))
                 }
             }
         }
@@ -1005,13 +1016,19 @@ private fun <T> DisplaySettingRow(
             modifier = Modifier.weight(1f),
         )
         Box(
+            modifier = Modifier.width(180.dp),
             contentAlignment = Alignment.CenterEnd,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
                 Text(
                     text = value,
                     color = MixinAppTheme.colors.textAssist,
                     fontSize = 12.sp,
+                    textAlign = TextAlign.End,
                 )
                 Icon(
                     painter = painterResource(R.drawable.ic_arrow_gray_right),

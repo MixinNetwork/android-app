@@ -2507,6 +2507,7 @@
     <string name="perps_markets">Trending</string>
     <string name="perps_top_movers">Top Movers</string>
     <string name="perps_market">Market</string>
+    <string name="perps_badge" translatable="false">Perp</string>
     <string name="perps_share_card_title">🚀 Perps %1$s</string>
     <string name="perps_share_card_market">- 📈 Market: %1$s</string>
     <string name="perps_share_card_side">- ↕️ Side: %1$s (%2$dx)</string>
