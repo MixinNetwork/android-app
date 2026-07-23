@@ -9,7 +9,7 @@
     <LinearLayout
         android:id="@+id/top_card"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:background="@drawable/bg_perps_position_share_card_loss"
         android:clipToOutline="true"
         android:orientation="vertical">
@@ -17,7 +17,8 @@
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/card_content"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="0dp"
+            android:layout_weight="1"
             android:paddingStart="20dp"
             android:paddingTop="16dp">
 
@@ -51,12 +52,7 @@
                 android:includeFontPadding="false"
                 android:maxLines="1"
                 android:textColor="@color/white"
-                android:textSize="32sp"
                 android:textStyle="bold"
-                app:autoSizeMaxTextSize="32sp"
-                app:autoSizeMinTextSize="16sp"
-                app:autoSizeStepGranularity="1sp"
-                app:autoSizeTextType="uniform"
                 app:layout_constraintEnd_toStartOf="@id/trend_image"
                 app:layout_constraintHorizontal_bias="0"
                 app:layout_constraintStart_toStartOf="parent"
@@ -93,7 +89,6 @@
                 android:textColor="@color/white"
                 android:paddingTop="3dp"
                 android:paddingBottom="3dp"
-                android:textSize="12sp"
                 app:layout_constraintStart_toEndOf="@id/asset_icon"
                 app:layout_constraintTop_toTopOf="@id/asset_icon"
                 app:layout_constraintBottom_toBottomOf="@id/asset_icon"
@@ -112,7 +107,6 @@
                 android:paddingTop="3dp"
                 android:paddingBottom="3dp"
                 android:textColor="@color/white"
-                android:textSize="12sp"
                 app:layout_constraintStart_toEndOf="@id/side_tag_tv"
                 app:layout_constraintTop_toTopOf="@id/side_tag_tv"
                 app:layout_constraintBottom_toBottomOf="@id/side_tag_tv"
@@ -135,8 +129,7 @@
                     android:layout_height="wrap_content"
                     android:includeFontPadding="false"
                     android:text="@string/Entry_Price"
-                    android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textColor="@color/white" />
 
                 <TextView
                     android:id="@+id/entry_value_tv"
@@ -145,7 +138,6 @@
                     android:layout_marginTop="2dp"
                     android:includeFontPadding="false"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
                     android:textFontWeight="600"
                     tools:text="$45,328.6" />
 
@@ -156,8 +148,7 @@
                     android:layout_marginTop="10dp"
                     android:includeFontPadding="false"
                     android:text="@string/perps_current_price"
-                    android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textColor="@color/white" />
 
                 <TextView
                     android:id="@+id/latest_value_tv"
@@ -166,7 +157,6 @@
                     android:layout_marginTop="2dp"
                     android:includeFontPadding="false"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
                     android:textFontWeight="600"
                     android:layout_marginBottom="8dp"
                     tools:text="$3,412.23" />
@@ -176,16 +166,14 @@
                 android:id="@+id/trend_image"
                 android:layout_width="0dp"
                 android:layout_height="0dp"
-                android:layout_marginBottom="24dp"
+                android:layout_marginEnd="16dp"
                 android:adjustViewBounds="true"
                 android:contentDescription="@null"
                 android:scaleType="fitCenter"
                 android:src="@drawable/ic_perps_position_share_loss_classic"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toBottomOf="@id/price_section"
                 app:layout_constraintDimensionRatio="1:1"
-                app:layout_constraintTop_toTopOf="@id/pnl_tv"
-                android:layout_marginTop="26dp"
-                android:layout_marginEnd="16dp"
+                app:layout_constraintTop_toTopOf="@id/price_section"
                 app:layout_constraintEnd_toEndOf="parent" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -215,7 +203,6 @@
                     android:includeFontPadding="false"
                     android:text="@string/mixin_messenger"
                     android:textColor="@color/white"
-                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -226,8 +213,7 @@
                     android:layout_marginEnd="18dp"
                     android:includeFontPadding="false"
                     android:text="@string/share_desc"
-                    android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textColor="@color/white" />
             </LinearLayout>
 
             <FrameLayout
@@ -245,6 +231,7 @@
                     android:contentDescription="@null" />
 
                 <ImageView
+                    android:id="@+id/qr_logo"
                     android:layout_width="16dp"
                     android:layout_height="16dp"
                     android:layout_gravity="center"

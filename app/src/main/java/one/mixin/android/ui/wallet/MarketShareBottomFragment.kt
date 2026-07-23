@@ -10,16 +10,25 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
+import android.util.TypedValue
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.doOnAttach
+import androidx.core.view.doOnLayout
 import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -71,6 +80,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.math.BigDecimal
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 @AndroidEntryPoint
 class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
@@ -80,6 +90,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         private const val ARGS_TYPE = "type"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
         private const val SHARE_CARD_COVER_URL = "https://dl.mixinpay.com/share-market-card.png"
+        private const val SHARE_CARD_MAX_SIZE_DP = 319
 
         fun newInstance(
             marketItem: MarketItem,
@@ -110,6 +121,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     private var isLoading = false
     private var isChartLoading = true
     private var isChartContentSet = false
+    private var appliedShareCardSize = 0
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
@@ -129,6 +141,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         selectedType = arguments?.getString(ARGS_TYPE) ?: "1D"
+        setupShareCardLayout()
         bindMarketCard()
         setupMarketChart()
         bindMixinContact()
@@ -197,6 +210,132 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
 
     private fun setupMarketChart() {
         binding.marketChart.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+    }
+
+    private fun setupShareCardLayout() {
+        applyShareCardScale(1f)
+        binding.content.doOnLayout {
+            updateShareCardLayout()
+        }
+        binding.content.addOnLayoutChangeListener { _, left, _, right, _, oldLeft, _, oldRight, _ ->
+            if (right - left != oldRight - oldLeft) {
+                updateShareCardLayout()
+            }
+        }
+    }
+
+    private fun updateShareCardLayout() {
+        val availableWidth = binding.content.width - binding.content.paddingStart - binding.content.paddingEnd
+        if (availableWidth <= 0) return
+
+        val maxCardSize = SHARE_CARD_MAX_SIZE_DP.dp
+        val cardSize = minOf(availableWidth, maxCardSize)
+        val scale = cardSize.toFloat() / maxCardSize
+        applyShareCardScale(scale)
+
+        if (cardSize != appliedShareCardSize) {
+            appliedShareCardSize = cardSize
+            binding.llMarketShare.updateLayoutParams<FrameLayout.LayoutParams> {
+                width = cardSize
+                height = ViewGroup.LayoutParams.WRAP_CONTENT
+                gravity = Gravity.CENTER_HORIZONTAL
+            }
+            binding.cardTop.updateLayoutParams<LinearLayout.LayoutParams> {
+                width = ViewGroup.LayoutParams.MATCH_PARENT
+                height = cardSize
+            }
+        }
+        binding.cardTop.post {
+            updateMarketChartHeight(cardSize, scale)
+        }
+    }
+
+    private fun updateMarketChartHeight(cardSize: Int, scale: Float) {
+        val headerHeight = binding.cardHeader.measuredHeight
+        val titleHeight = binding.marketTitleRl.measuredHeight
+        if (headerHeight <= 0 || titleHeight <= 0) return
+
+        val usedHeight = headerHeight +
+            binding.cardHeader.verticalMargins() +
+            titleHeight +
+            binding.marketChartContainer.verticalMargins() +
+            binding.marketCard.paddingTop +
+            binding.marketCard.paddingBottom
+        val chartHeight = (cardSize - usedHeight).coerceAtLeast(72.scaledDp(scale))
+        binding.marketChartContainer.updateLayoutParams<RelativeLayout.LayoutParams> {
+            height = chartHeight
+        }
+    }
+
+    private fun applyShareCardScale(scale: Float) {
+        binding.cardHeader.updateMargins(top = 16.scaledDp(scale), bottom = 20.scaledDp(scale))
+        binding.logo.updateMargins(start = 20.scaledDp(scale))
+        binding.logo.setScaledDrawableSize(scale)
+
+        binding.marketCard.setPaddingRelative(20.scaledDp(scale), 0, 20.scaledDp(scale), 18.scaledDp(scale))
+        binding.assetSymbol.setShareCardTextSize(14f, scale)
+        binding.assetRank.updateMargins(start = 4.scaledDp(scale))
+        binding.assetRank.setPaddingRelative(4.scaledDp(scale), 1.scaledDp(scale), 4.scaledDp(scale), 1.scaledDp(scale))
+        binding.assetRank.setShareCardTextSize(12f, scale)
+        binding.icon.updateLayoutParams<RelativeLayout.LayoutParams> {
+            width = 48.scaledDp(scale)
+            height = 48.scaledDp(scale)
+        }
+        binding.priceValue.updateMargins(top = 8.scaledDp(scale))
+        binding.priceValue.setShareCardTextSize(22f, scale)
+        binding.priceRise.updateMargins(top = 8.scaledDp(scale))
+        binding.priceRise.setPaddingRelative(6.scaledDp(scale), 3.scaledDp(scale), 6.scaledDp(scale), 3.scaledDp(scale))
+        binding.priceRise.setShareCardTextSize(14f, scale)
+        binding.marketChartContainer.updateMargins(top = 18.scaledDp(scale))
+
+        binding.footer.setPaddingRelative(20.scaledDp(scale), 12.scaledDp(scale), 20.scaledDp(scale), 12.scaledDp(scale))
+        binding.title.setShareCardTextSize(16f, scale)
+        binding.shareDesc.updateMargins(top = 6.scaledDp(scale), end = 18.scaledDp(scale))
+        binding.shareDesc.setShareCardTextSize(12f, scale)
+        binding.iconFl.updateLayoutParams<RelativeLayout.LayoutParams> {
+            width = 72.scaledDp(scale)
+            height = 72.scaledDp(scale)
+        }
+        binding.qrLogo.updateLayoutParams<FrameLayout.LayoutParams> {
+            width = 16.scaledDp(scale)
+            height = 16.scaledDp(scale)
+        }
+    }
+
+    private fun View.verticalMargins(): Int {
+        val params = layoutParams as? ViewGroup.MarginLayoutParams ?: return 0
+        return params.topMargin + params.bottomMargin
+    }
+
+    private fun Int.scaledDp(scale: Float): Int = (dp * scale).roundToInt().coerceAtLeast(1)
+
+    private fun TextView.setShareCardTextSize(size: Float, scale: Float) {
+        setTextSize(TypedValue.COMPLEX_UNIT_PX, size * resources.displayMetrics.density * scale)
+    }
+
+    private fun ImageView.setScaledDrawableSize(scale: Float) {
+        val drawable = drawable ?: return
+        if (drawable.intrinsicWidth <= 0 || drawable.intrinsicHeight <= 0) return
+        val width = (drawable.intrinsicWidth * scale).roundToInt().coerceAtLeast(1)
+        val height = (drawable.intrinsicHeight * scale).roundToInt().coerceAtLeast(1)
+        updateLayoutParams<ViewGroup.LayoutParams> {
+            this.width = width
+            this.height = height
+        }
+    }
+
+    private fun View.updateMargins(
+        start: Int? = null,
+        top: Int? = null,
+        end: Int? = null,
+        bottom: Int? = null,
+    ) {
+        updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            start?.let { marginStart = it }
+            top?.let { topMargin = it }
+            end?.let { marginEnd = it }
+            bottom?.let { bottomMargin = it }
+        }
     }
 
     override fun onStart() {
