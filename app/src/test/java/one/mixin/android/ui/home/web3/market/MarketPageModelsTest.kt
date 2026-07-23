@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.web3.market
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.vo.market.MarketItem
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -11,7 +12,7 @@ class MarketPageModelsTest {
     fun defaultSelectionStartsAtExpectedSubTabs() {
         val defaults = defaultMarketSubTabs()
 
-        assertEquals(MarketSubTab.ALL, defaults[MarketTopTab.WATCHLIST])
+        assertEquals(MarketSubTab.CRYPTO, defaults[MarketTopTab.WATCHLIST])
         assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.CRYPTO])
         assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.PERPETUAL])
         assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.STOCK])
@@ -33,44 +34,43 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun watchlistAllAddsLinkedPerpetualBeforeSpotAndKeepsStocks() {
+    fun watchlistLegacyAllDoesNotMixMarketTypes() {
         val crypto = market(coinId = "btc", perpsMarketId = "btc-perp", favored = true)
         val stock = market(coinId = "hood", favored = true)
         val perpetual = perpsMarket(marketId = "btc-perp")
 
         val result =
             MarketPageMapper.watchlist(
-                favorites = listOf(crypto, stock),
+                spotFavorites = listOf(crypto, stock),
+                perpetualFavorites = listOf(perpetual),
                 stockCoinIds = setOf("hood"),
-                perpetualById = mapOf(perpetual.marketId to perpetual),
                 subTab = MarketSubTab.ALL,
             )
 
-        assertTrue(result[0] is MarketListEntry.Perpetual)
-        assertEquals("spot:btc", result[1].stableId)
-        assertEquals(SpotMarketType.STOCK, (result[2] as MarketListEntry.Spot).type)
+        assertEquals(listOf("spot:btc"), result.map { it.stableId })
     }
 
     @Test
-    fun watchlistPerpetualContainsOnlyLinkedFavorites() {
-        val linked = market(coinId = "btc", perpsMarketId = "btc-perp", favored = true)
-        val unlinked = market(coinId = "eth", favored = true)
+    fun watchlistPerpetualUsesIndependentFavorites() {
+        val spotFavorite = market(coinId = "eth", perpsMarketId = "eth-perp", favored = true)
+        val perpetualFavorite = perpsMarket("btc-perp")
 
         val result =
             MarketPageMapper.watchlist(
-                favorites = listOf(linked, unlinked),
+                spotFavorites = listOf(spotFavorite),
+                perpetualFavorites = listOf(perpetualFavorite),
                 stockCoinIds = emptySet(),
-                perpetualById = mapOf("btc-perp" to perpsMarket("btc-perp")),
                 subTab = MarketSubTab.PERPETUAL,
             )
 
         assertEquals(listOf("perpetual:btc-perp"), result.map { it.stableId })
+        assertTrue(result.single().isFavored)
     }
 
     @Test
     fun perpetualChangeAlwaysUsesTwentyFourHourData() {
         val market = perpsMarket(marketId = "btc-perp", change = "0.12")
-        val entry = MarketListEntry.Perpetual(market, null)
+        val entry = MarketListEntry.Perpetual(market, false)
 
         assertEquals("12.00", entry.changePercent(MarketPriceChangePeriod.SEVEN_DAYS)?.toPlainString())
         assertEquals("12.00", entry.changePercent(MarketPriceChangePeriod.TWENTY_FOUR_HOURS)?.toPlainString())
@@ -89,6 +89,26 @@ class MarketPageModelsTest {
 
         assertTrue(state.showsOnlyPerpetualMarkets)
         assertEquals(MarketPriceChangePeriod.TWENTY_FOUR_HOURS, state.effectivePriceChangePeriod)
+    }
+
+    @Test
+    fun emptyPerpetualWatchlistShowsApiRecommendations() {
+        val recommendation = MarketListEntry.Perpetual(perpsMarket("btc-perp"), false)
+        val state =
+            MarketPageUiState(
+                selectedTopTab = MarketTopTab.WATCHLIST,
+                selectedSubTabs = defaultMarketSubTabs() + (MarketTopTab.WATCHLIST to MarketSubTab.PERPETUAL),
+                perpetualRecommendations = listOf(recommendation),
+                isLoading = false,
+            )
+
+        assertTrue(state.showsPerpetualRecommendations)
+        assertFalse(state.copy(entries = listOf(recommendation)).showsPerpetualRecommendations)
+        assertFalse(
+            state.copy(
+                selectedSubTabs = defaultMarketSubTabs() + (MarketTopTab.WATCHLIST to MarketSubTab.CRYPTO),
+            ).showsPerpetualRecommendations,
+        )
     }
 
     @Test

@@ -67,7 +67,7 @@ enum class SpotMarketType {
 
 sealed interface MarketListEntry {
     val stableId: String
-    val favoriteCoinId: String?
+    val favoriteId: String
     val isFavored: Boolean
 
     data class Spot(
@@ -75,17 +75,16 @@ sealed interface MarketListEntry {
         val type: SpotMarketType,
     ) : MarketListEntry {
         override val stableId: String = "spot:${market.coinId}"
-        override val favoriteCoinId: String = market.coinId
+        override val favoriteId: String = market.coinId
         override val isFavored: Boolean = market.isFavored == true
     }
 
     data class Perpetual(
         val market: PerpsMarket,
-        val backingMarket: MarketItem?,
+        override val isFavored: Boolean,
     ) : MarketListEntry {
         override val stableId: String = "perpetual:${market.marketId}"
-        override val favoriteCoinId: String? = backingMarket?.coinId
-        override val isFavored: Boolean = backingMarket?.isFavored == true
+        override val favoriteId: String = market.marketId
     }
 }
 
@@ -93,6 +92,10 @@ data class MarketPageUiState(
     val selectedTopTab: MarketTopTab = MarketTopTab.CRYPTO,
     val selectedSubTabs: Map<MarketTopTab, MarketSubTab> = defaultMarketSubTabs(),
     val entries: List<MarketListEntry> = emptyList(),
+    val perpetualRecommendations: List<MarketListEntry.Perpetual> = emptyList(),
+    val selectedRecommendationIds: Set<String> = emptySet(),
+    val isAddingRecommendations: Boolean = false,
+    val pendingAlertCoinId: String? = null,
     val displaySettings: MarketDisplaySettings = MarketDisplaySettings(),
     val sortState: MarketSortState = MarketSortState(),
     val indicator: GlobalMarket? = null,
@@ -114,11 +117,20 @@ data class MarketPageUiState(
             } else {
                 displaySettings.priceChangePeriod
             }
+
+    val showsPerpetualRecommendations: Boolean
+        get() =
+            selectedTopTab == MarketTopTab.WATCHLIST &&
+                selectedSubTab == MarketSubTab.PERPETUAL &&
+                entries.isEmpty() &&
+                perpetualRecommendations.isNotEmpty() &&
+                !isLoading &&
+                !hasError
 }
 
 fun defaultMarketSubTabs(): Map<MarketTopTab, MarketSubTab> =
     mapOf(
-        MarketTopTab.WATCHLIST to MarketSubTab.ALL,
+        MarketTopTab.WATCHLIST to MarketSubTab.CRYPTO,
         MarketTopTab.CRYPTO to MarketSubTab.TRENDING,
         MarketTopTab.PERPETUAL to MarketSubTab.TRENDING,
         MarketTopTab.STOCK to MarketSubTab.TRENDING,
@@ -148,39 +160,20 @@ object MarketPageMapper {
         }
 
     fun watchlist(
-        favorites: List<MarketItem>,
+        spotFavorites: List<MarketItem>,
+        perpetualFavorites: List<PerpsMarket>,
         stockCoinIds: Set<String>,
-        perpetualById: Map<String, PerpsMarket>,
         subTab: MarketSubTab,
     ): List<MarketListEntry> {
-        val favoriteMarkets = favorites.map { it.copy(isFavored = true) }
         return when (subTab) {
-            MarketSubTab.CRYPTO ->
-                favoriteMarkets
-                    .filterNot { it.coinId in stockCoinIds }
-                    .map { MarketListEntry.Spot(it, SpotMarketType.CRYPTO) }
-
             MarketSubTab.PERPETUAL ->
-                favoriteMarkets.mapNotNull { favorite ->
-                    favorite.perpsMarketId
-                        ?.let(perpetualById::get)
-                        ?.let { MarketListEntry.Perpetual(it, favorite) }
-                }
+                perpetualFavorites.map { MarketListEntry.Perpetual(it, true) }
 
             else ->
-                buildList {
-                    favoriteMarkets.forEach { favorite ->
-                        favorite.perpsMarketId
-                            ?.let(perpetualById::get)
-                            ?.let { add(MarketListEntry.Perpetual(it, favorite)) }
-                        add(
-                            MarketListEntry.Spot(
-                                market = favorite,
-                                type = if (favorite.coinId in stockCoinIds) SpotMarketType.STOCK else SpotMarketType.CRYPTO,
-                            )
-                        )
-                    }
-                }
+                spotFavorites
+                    .map { it.copy(isFavored = true) }
+                    .filterNot { it.coinId in stockCoinIds }
+                    .map { MarketListEntry.Spot(it, SpotMarketType.CRYPTO) }
         }
     }
 

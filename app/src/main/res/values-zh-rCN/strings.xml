@@ -1749,6 +1749,9 @@
     <string name="multisig_safe_state_signed">您已经批准了这笔交易，您无法再次批准。</string>
     <string name="multisig_safe_state_unlocked">这笔交易已经被其他人拒绝，您无法再次拒绝。</string>
     <string name="watchlist_empty">您的自选列表为空</string>
+    <string name="Add_to_Watchlist">添加到自选</string>
+    <string name="Keep">保留</string>
+    <string name="watchlist_remove_alert_prompt">自选已删除，是否同时删除相应的到价提醒？</string>
     <string name="Dominance">市占率</string>
     <string name="volume_24h">24 小时交易量</string>
     <string name="Watchlist">自选</string>

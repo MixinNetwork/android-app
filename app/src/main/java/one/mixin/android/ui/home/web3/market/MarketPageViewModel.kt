@@ -33,6 +33,7 @@ private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
 private const val PREF_MARKET_PAGE_TOP_TAB = "pref_market_page_top_tab"
 private const val PREF_MARKET_PAGE_SUB_TAB_PREFIX = "pref_market_page_sub_tab_"
 private const val CATEGORY_ALL = "all"
+private const val CATEGORY_FAVORITE = "favorite"
 private const val CATEGORY_STOCKS = "stocks"
 private const val CATEGORY_TRENDING = "trending"
 private const val CATEGORY_TOP_GAINERS = "top_gainers"
@@ -50,7 +51,8 @@ class MarketPageViewModel
         private val _uiState = MutableStateFlow(initialState())
         val uiState: StateFlow<MarketPageUiState> = _uiState.asStateFlow()
 
-        private var favoriteMarkets: List<MarketItem> = emptyList()
+        private var favoriteSpotMarkets: List<MarketItem> = emptyList()
+        private var favoritePerpetualMarkets: List<PerpsMarket> = emptyList()
         private var allMarkets: List<MarketItem> = emptyList()
         private var trendingMarkets: List<MarketItem> = emptyList()
         private var topGainerMarkets: List<MarketItem> = emptyList()
@@ -61,7 +63,7 @@ class MarketPageViewModel
         private var perpetualRefreshJob: Job? = null
 
         init {
-            observeFavorites()
+            observeSpotFavorites()
             observePerpetualMarkets()
             loadIndicator()
             refreshMarkets()
@@ -118,14 +120,99 @@ class MarketPageViewModel
         }
 
         fun toggleFavorite(entry: MarketListEntry) {
-            val coinId = entry.favoriteCoinId ?: return
-            val symbol =
-                when (entry) {
-                    is MarketListEntry.Spot -> entry.market.symbol
-                    is MarketListEntry.Perpetual -> entry.backingMarket?.symbol ?: entry.market.tokenSymbol
-                }
+            when (entry) {
+                is MarketListEntry.Spot ->
+                    viewModelScope.launch(Dispatchers.IO) {
+                        val updated =
+                            tokenRepository.updateMarketFavored(
+                                entry.market.symbol,
+                                entry.favoriteId,
+                                entry.isFavored,
+                            )
+                        if (updated && entry.isFavored && tokenRepository.hasAlertsByCoinId(entry.favoriteId)) {
+                            _uiState.value = _uiState.value.copy(pendingAlertCoinId = entry.favoriteId)
+                        }
+                    }
+
+                is MarketListEntry.Perpetual ->
+                    viewModelScope.launch {
+                        runCatching {
+                            val response =
+                                withContext(Dispatchers.IO) {
+                                    if (entry.isFavored) {
+                                        routeService.unfavoritePerpsMarket(entry.favoriteId)
+                                    } else {
+                                        routeService.favoritePerpsMarket(entry.favoriteId)
+                                    }
+                                }
+                            if (response.isSuccess) {
+                                favoritePerpetualMarkets =
+                                    if (entry.isFavored) {
+                                        favoritePerpetualMarkets.filterNot { it.marketId == entry.favoriteId }
+                                    } else {
+                                        (favoritePerpetualMarkets + entry.market).distinctBy { it.marketId }
+                                    }
+                                rebuildEntries()
+                            }
+                        }.onFailure { Timber.e(it, "Failed to update perpetual market favorite") }
+                    }
+            }
+        }
+
+        fun toggleRecommendation(marketId: String) {
+            val selectedIds = _uiState.value.selectedRecommendationIds
+            _uiState.value =
+                _uiState.value.copy(
+                    selectedRecommendationIds =
+                        if (marketId in selectedIds) {
+                            selectedIds - marketId
+                        } else {
+                            selectedIds + marketId
+                        },
+                )
+        }
+
+        fun addSelectedRecommendations() {
+            val selectedIds = _uiState.value.selectedRecommendationIds
+            if (selectedIds.isEmpty() || _uiState.value.isAddingRecommendations) return
+            val selectedMarkets =
+                _uiState.value.perpetualRecommendations
+                    .map(MarketListEntry.Perpetual::market)
+                    .filter { it.marketId in selectedIds }
+            if (selectedMarkets.isEmpty()) return
+
+            _uiState.value = _uiState.value.copy(isAddingRecommendations = true)
+            viewModelScope.launch {
+                val addedMarkets =
+                    withContext(Dispatchers.IO) {
+                        selectedMarkets.filter { market ->
+                            runCatching {
+                                routeService.favoritePerpsMarket(market.marketId).isSuccess
+                            }.onFailure {
+                                Timber.e(it, "Failed to add perpetual market recommendation")
+                            }.getOrDefault(false)
+                        }
+                    }
+                favoritePerpetualMarkets =
+                    (favoritePerpetualMarkets + addedMarkets).distinctBy(PerpsMarket::marketId)
+                _uiState.value =
+                    _uiState.value.copy(
+                        selectedRecommendationIds = selectedIds - addedMarkets.map(PerpsMarket::marketId).toSet(),
+                        isAddingRecommendations = false,
+                    )
+                rebuildEntries()
+            }
+        }
+
+        fun keepPriceAlerts() {
+            _uiState.value = _uiState.value.copy(pendingAlertCoinId = null)
+        }
+
+        fun deletePriceAlerts() {
+            val coinId = _uiState.value.pendingAlertCoinId ?: return
+            _uiState.value = _uiState.value.copy(pendingAlertCoinId = null)
             viewModelScope.launch(Dispatchers.IO) {
-                tokenRepository.updateMarketFavored(symbol, coinId, entry.isFavored)
+                tokenRepository.deleteAlertsByCoinId(coinId)
             }
         }
 
@@ -204,10 +291,10 @@ class MarketPageViewModel
             _uiState.value = _uiState.value.copy(indicator = indicator)
         }
 
-        private fun observeFavorites() {
+        private fun observeSpotFavorites() {
             viewModelScope.launch {
                 tokenRepository.observeFavoredMarkets().collect { markets ->
-                    favoriteMarkets = markets
+                    favoriteSpotMarkets = markets
                     rebuildEntries()
                 }
             }
@@ -224,19 +311,29 @@ class MarketPageViewModel
 
         private suspend fun refreshPerpetualMarkets() {
             runCatching {
-                val response = withContext(Dispatchers.IO) { routeService.getPerpsMarkets() }
-                val markets = response.data
-                if (response.isSuccess && markets != null) {
+                val (marketsResponse, favoritesResponse) =
+                    coroutineScope {
+                        val markets = async(Dispatchers.IO) { routeService.getPerpsMarkets() }
+                        val favorites = async(Dispatchers.IO) { routeService.getPerpsMarkets(CATEGORY_FAVORITE) }
+                        markets.await() to favorites.await()
+                    }
+                if (favoritesResponse.isSuccess) {
+                    favoritePerpetualMarkets = favoritesResponse.data.orEmpty().map(PerpsMarket::withDefaults)
+                }
+                val markets = marketsResponse.data
+                if (marketsResponse.isSuccess && markets != null) {
                     withContext(Dispatchers.IO) {
                         perpsMarketDao.upsertList(markets.map(PerpsMarket::withDefaults))
                     }
                 }
+                rebuildEntries()
             }.onFailure { Timber.e(it, "Failed to refresh market page perpetual markets") }
         }
 
         private fun rebuildEntries() {
             val state = _uiState.value
-            val favoriteCoinIds = favoriteMarkets.mapTo(mutableSetOf()) { it.coinId }
+            val favoriteCoinIds = favoriteSpotMarkets.mapTo(mutableSetOf()) { it.coinId }
+            val favoritePerpetualMarketIds = favoritePerpetualMarkets.mapTo(mutableSetOf()) { it.marketId }
             fun List<MarketItem>.withFavoriteState() =
                 map { market -> market.copy(isFavored = market.coinId in favoriteCoinIds) }
 
@@ -245,10 +342,10 @@ class MarketPageViewModel
                 when (state.selectedTopTab) {
                     MarketTopTab.WATCHLIST ->
                         MarketPageMapper.watchlist(
-                            favorites = favoriteMarkets,
+                            spotFavorites = favoriteSpotMarkets,
+                            perpetualFavorites = favoritePerpetualMarkets,
                             stockCoinIds = stockCoinIds,
-                            perpetualById = perpetualMarkets.associateBy { it.marketId },
-                            subTab = state.selectedSubTab ?: MarketSubTab.ALL,
+                            subTab = state.selectedSubTab ?: MarketSubTab.CRYPTO,
                         )
 
                     MarketTopTab.CRYPTO -> {
@@ -265,16 +362,14 @@ class MarketPageViewModel
                     }
 
                     MarketTopTab.PERPETUAL -> {
-                        val backingMarkets =
-                            (allMarkets + stockMarkets)
-                                .withFavoriteState()
-                                .mapNotNull { market -> market.perpsMarketId?.let { it to market } }
-                                .toMap()
                         MarketPageMapper.perpetualMarkets(
                             markets = perpetualMarkets,
                             subTab = state.selectedSubTab ?: MarketSubTab.TRENDING,
                         ).map { market ->
-                            MarketListEntry.Perpetual(market, backingMarkets[market.marketId])
+                            MarketListEntry.Perpetual(
+                                market = market,
+                                isFavored = market.marketId in favoritePerpetualMarketIds,
+                            )
                         }
                     }
 
@@ -296,6 +391,11 @@ class MarketPageViewModel
                             sortState = state.sortState,
                             period = state.effectivePriceChangePeriod,
                         ),
+                    perpetualRecommendations =
+                        perpetualMarkets
+                            .filterNot { it.marketId in favoritePerpetualMarketIds }
+                            .take(8)
+                            .map { MarketListEntry.Perpetual(it, false) },
                 )
         }
 
@@ -308,6 +408,7 @@ class MarketPageViewModel
                 defaultMarketSubTabs().mapValues { (tab, default) ->
                     preferences.getString("$PREF_MARKET_PAGE_SUB_TAB_PREFIX${tab.name}", null)
                         ?.let { stored -> MarketSubTab.entries.firstOrNull { it.name == stored } }
+                        ?.takeUnless { tab == MarketTopTab.WATCHLIST && it == MarketSubTab.ALL }
                         ?: default
                 }
             val priceChangePeriod =

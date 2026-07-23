@@ -384,12 +384,24 @@ interface RouteService {
 
     // Perps API
     @GET("perps/markets")
-    suspend fun getPerpsMarkets(): MixinResponse<List<PerpsMarket>>
+    suspend fun getPerpsMarkets(
+        @Query("category") category: String? = null,
+    ): MixinResponse<List<PerpsMarket>>
 
     @GET("perps/markets/{market_id}")
     suspend fun getPerpsMarket(
         @Path("market_id") marketId: String
     ): MixinResponse<PerpsMarket>
+
+    @POST("perps/markets/{market_id}/favorite")
+    suspend fun favoritePerpsMarket(
+        @Path("market_id") marketId: String,
+    ): MixinResponse<Unit>
+
+    @POST("perps/markets/{market_id}/unfavorite")
+    suspend fun unfavoritePerpsMarket(
+        @Path("market_id") marketId: String,
+    ): MixinResponse<Unit>
 
     @GET("perps/markets/candles")
     suspend fun getPerpsCandles(

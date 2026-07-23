@@ -1793,6 +1793,9 @@
     <string name="multisig_safe_state_signed">You have already approved this transaction; you cannot approve it again.</string>
     <string name="multisig_safe_state_unlocked">This transaction has already been rejected by someone else; you cannot reject it again.</string>
     <string name="watchlist_empty">Your watchlist is empty</string>
+    <string name="Add_to_Watchlist">Add to Watchlist</string>
+    <string name="Keep">Keep</string>
+    <string name="watchlist_remove_alert_prompt">Removed from your watchlist. Also delete the related price alerts?</string>
     <string name="Dominance">Dominance</string>
     <string name="volume_24h">24h Volume</string>
     <string name="Watchlist">Watchlist</string>

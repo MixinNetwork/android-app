@@ -12,6 +12,7 @@ import androidx.room.RoomRawQuery
 import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig.VERSION_NAME
 import one.mixin.android.Constants
@@ -1413,9 +1414,9 @@ class TokenRepository
         }
     }
 
-    suspend fun updateMarketFavored(symbol: String, coinId: String, isFavored: Boolean?) {
+    suspend fun updateMarketFavored(symbol: String, coinId: String, isFavored: Boolean?): Boolean {
         val now = nowInUtc()
-        if (isFavored == true) {
+        return if (isFavored == true) {
             requestRouteAPI(
                 invokeNetwork = { routeService.unfavorite(coinId) },
                 successBlock = { _ ->
@@ -1426,11 +1427,12 @@ class TokenRepository
                             now
                         )
                     )
+                    true
                 },
                 requestSession = {
                     userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
                 }
-            )
+            ) ?: false
         } else {
             requestRouteAPI(
                 invokeNetwork = { routeService.favorite(coinId) },
@@ -1445,11 +1447,12 @@ class TokenRepository
                     withContext(Dispatchers.Main) {
                         toast(MixinApplication.appContext.getString(R.string.watchlist_add_desc, symbol))
                     }
+                    true
                 },
                 requestSession = {
                     userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
                 }
-            )
+            ) ?: false
         }
     }
 
@@ -1527,6 +1530,17 @@ class TokenRepository
                 userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
             }
         )
+    }
+
+    fun hasAlertsByCoinId(coinId: String): Boolean = alertDao.getAlertCountByCoinId(coinId) > 0
+
+    suspend fun deleteAlertsByCoinId(coinId: String) {
+        alertDao.alertsByCoinId(coinId).first().forEach { alert ->
+            val response = updateAlert(alert.alertId, AlertUpdateRequest(action = "delete"))
+            if (response?.isSuccess == true) {
+                alertDao.deleteAlertById(alert.alertId)
+            }
+        }
     }
 
     fun deleteAlertById(alertId: String) = alertDao.deleteAlertById(alertId)

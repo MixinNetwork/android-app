@@ -11,6 +11,9 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -58,10 +61,83 @@ class PerpetualViewModel @Inject constructor(
     private val perpsMarketDao: PerpsMarketDao,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
+    private val _favoriteMarketIds = MutableStateFlow<Set<String>>(emptySet())
+    val favoriteMarketIds: StateFlow<Set<String>> = _favoriteMarketIds.asStateFlow()
+
     data class BatchCloseResult(
         val failedPositions: List<PerpsPositionItem>,
         val errors: List<String>,
     )
+
+    fun refreshFavoriteMarkets() {
+        viewModelScope.launch {
+            runCatching {
+                withContext(Dispatchers.IO) {
+                    routeService.getPerpsMarkets("favorite")
+                }
+            }.onSuccess { response ->
+                if (response.isSuccess) {
+                    _favoriteMarketIds.value = response.data.orEmpty().mapTo(mutableSetOf(), PerpsMarket::marketId)
+                }
+            }.onFailure {
+                Timber.e(it, "Failed to refresh perpetual market favorites")
+            }
+        }
+    }
+
+    fun updateMarketFavorite(
+        marketId: String,
+        isFavored: Boolean,
+        onComplete: (Boolean) -> Unit = {},
+    ) {
+        viewModelScope.launch {
+            val success =
+                runCatching {
+                    withContext(Dispatchers.IO) {
+                        if (isFavored) {
+                            routeService.unfavoritePerpsMarket(marketId)
+                        } else {
+                            routeService.favoritePerpsMarket(marketId)
+                        }
+                    }.isSuccess
+                }.onFailure {
+                    Timber.e(it, "Failed to update perpetual market favorite")
+                }.getOrDefault(false)
+            if (success) {
+                _favoriteMarketIds.value =
+                    if (isFavored) {
+                        _favoriteMarketIds.value - marketId
+                    } else {
+                        _favoriteMarketIds.value + marketId
+                    }
+            }
+            onComplete(success)
+        }
+    }
+
+    fun addFavoriteMarkets(
+        marketIds: Set<String>,
+        onComplete: (Set<String>) -> Unit = {},
+    ) {
+        if (marketIds.isEmpty()) {
+            onComplete(emptySet())
+            return
+        }
+        viewModelScope.launch {
+            val addedIds =
+                withContext(Dispatchers.IO) {
+                    marketIds.filterTo(mutableSetOf()) { marketId ->
+                        runCatching {
+                            routeService.favoritePerpsMarket(marketId).isSuccess
+                        }.onFailure {
+                            Timber.e(it, "Failed to add perpetual market favorite")
+                        }.getOrDefault(false)
+                    }
+                }
+            _favoriteMarketIds.value = _favoriteMarketIds.value + addedIds
+            onComplete(addedIds)
+        }
+    }
 
     fun refreshPositions(walletId: String) {
         jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))

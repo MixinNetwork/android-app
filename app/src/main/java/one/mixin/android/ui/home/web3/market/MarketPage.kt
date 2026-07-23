@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.market
 
 import android.widget.ImageView
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -22,6 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -29,6 +31,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
+import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -76,6 +79,10 @@ fun MarketPage(
     onSelectSubTab: (MarketSubTab) -> Unit,
     onSort: (MarketSortColumn) -> Unit,
     onFavorite: (MarketListEntry) -> Unit,
+    onToggleRecommendation: (String) -> Unit,
+    onAddRecommendations: () -> Unit,
+    onKeepPriceAlerts: () -> Unit,
+    onDeletePriceAlerts: () -> Unit,
     onEntryClick: (MarketListEntry) -> Unit,
 ) {
     Column(
@@ -99,15 +106,19 @@ fun MarketPage(
                 selected = state.selectedSubTab,
                 onSelect = onSelectSubTab,
             )
-            MarketListHeader(
-                period = state.effectivePriceChangePeriod,
-                sortState = state.sortState,
-                onSort = onSort,
-                onShowDisplaySettings = onShowDisplaySettings,
-            )
+            if (!state.showsPerpetualRecommendations) {
+                MarketListHeader(
+                    period = state.effectivePriceChangePeriod,
+                    sortState = state.sortState,
+                    onSort = onSort,
+                    onShowDisplaySettings = onShowDisplaySettings,
+                )
+            }
             MarketList(
                 state = state,
                 onFavorite = onFavorite,
+                onToggleRecommendation = onToggleRecommendation,
+                onAddRecommendations = onAddRecommendations,
                 onEntryClick = onEntryClick,
             )
         } else {
@@ -125,6 +136,30 @@ fun MarketPage(
             showPriceChange = !state.showsOnlyPerpetualMarkets,
             onDismiss = onDismissDisplaySettings,
             onApply = onApplyDisplaySettings,
+        )
+    }
+
+    if (state.pendingAlertCoinId != null) {
+        AlertDialog(
+            onDismissRequest = onKeepPriceAlerts,
+            text = {
+                Text(
+                    text = stringResource(R.string.watchlist_remove_alert_prompt),
+                    color = MixinAppTheme.colors.textPrimary,
+                    textAlign = TextAlign.Center,
+                )
+            },
+            dismissButton = {
+                TextButton(onClick = onKeepPriceAlerts) {
+                    Text(stringResource(R.string.Keep))
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = onDeletePriceAlerts) {
+                    Text(stringResource(R.string.Delete))
+                }
+            },
+            backgroundColor = MixinAppTheme.colors.background,
         )
     }
 }
@@ -205,7 +240,7 @@ private fun SubTabs(
 ) {
     val tabs =
         if (topTab == MarketTopTab.WATCHLIST) {
-            listOf(MarketSubTab.ALL, MarketSubTab.CRYPTO, MarketSubTab.PERPETUAL)
+            listOf(MarketSubTab.CRYPTO, MarketSubTab.PERPETUAL)
         } else {
             listOf(
                 MarketSubTab.TRENDING,
@@ -379,6 +414,8 @@ private fun SortLabel(
 private fun MarketList(
     state: MarketPageUiState,
     onFavorite: (MarketListEntry) -> Unit,
+    onToggleRecommendation: (String) -> Unit,
+    onAddRecommendations: () -> Unit,
     onEntryClick: (MarketListEntry) -> Unit,
 ) {
     when {
@@ -389,6 +426,16 @@ private fun MarketList(
             ) {
                 CircularProgressIndicator(color = MixinAppTheme.colors.accent)
             }
+        }
+
+        state.showsPerpetualRecommendations -> {
+            PerpetualRecommendations(
+                recommendations = state.perpetualRecommendations,
+                selectedIds = state.selectedRecommendationIds,
+                isAdding = state.isAddingRecommendations,
+                onToggle = onToggleRecommendation,
+                onAdd = onAddRecommendations,
+            )
         }
 
         state.entries.isEmpty() -> {
@@ -430,6 +477,121 @@ private fun MarketList(
 }
 
 @Composable
+private fun PerpetualRecommendations(
+    recommendations: List<MarketListEntry.Perpetual>,
+    selectedIds: Set<String>,
+    isAdding: Boolean,
+    onToggle: (String) -> Unit,
+    onAdd: () -> Unit,
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        items(
+            items = recommendations.chunked(2),
+            key = { row -> row.joinToString(separator = ":") { it.favoriteId } },
+        ) { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                row.forEach { entry ->
+                    PerpetualRecommendationCard(
+                        entry = entry,
+                        selected = entry.favoriteId in selectedIds,
+                        onClick = { onToggle(entry.favoriteId) },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+                if (row.size == 1) {
+                    Spacer(modifier = Modifier.weight(1f))
+                }
+            }
+        }
+        item {
+            Box(
+                modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 24.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                ActionButton(
+                    text = stringResource(R.string.Add_to_Watchlist),
+                    onClick = onAdd,
+                    backgroundColor = MixinAppTheme.colors.accent,
+                    contentColor = Color.White,
+                    enabled = selectedIds.isNotEmpty() && !isAdding,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PerpetualRecommendationCard(
+    entry: MarketListEntry.Perpetual,
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val change = entry.market.changePercentValue() ?: BigDecimal.ZERO
+    val changeColor =
+        if (change.signum() >= 0) {
+            MixinAppTheme.colors.marketGreen
+        } else {
+            MixinAppTheme.colors.marketRed
+        }
+    Surface(
+        modifier = modifier.clickable(onClick = onClick),
+        shape = RoundedCornerShape(8.dp),
+        color = MixinAppTheme.colors.background,
+        border = BorderStroke(1.dp, MixinAppTheme.colors.borderColor),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            MarketIcon(entry.market.iconUrl)
+            Spacer(modifier = Modifier.width(8.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = entry.market.tokenSymbol,
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 15.sp,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(R.string.Perpetual_Leverage_Format, entry.market.leverage),
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 10.sp,
+                    )
+                }
+                Text(
+                    text = formatPercent(change),
+                    color = changeColor,
+                    fontSize = 12.sp,
+                )
+            }
+            Icon(
+                painter =
+                    painterResource(
+                        if (selected) {
+                            R.drawable.ic_asset_favorites_checked
+                        } else {
+                            R.drawable.ic_asset_favorites
+                        },
+                    ),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(18.dp),
+            )
+        }
+    }
+}
+
+@Composable
 private fun MarketRow(
     entry: MarketListEntry,
     settings: MarketDisplaySettings,
@@ -446,7 +608,7 @@ private fun MarketRow(
     ) {
         IconButton(
             onClick = onFavorite,
-            enabled = entry.favoriteCoinId != null,
+            enabled = true,
             modifier = Modifier.size(32.dp),
         ) {
             Icon(

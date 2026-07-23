@@ -12,6 +12,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.SimpleItemAnimator
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,6 +47,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
     private enum class MarketCategory(val apiValues: Set<String>) {
         ALL(emptySet()),
+        WATCHLIST(emptySet()),
         CRYPTO(setOf("crypto")),
         STOCKS(setOf("stock", "stocks")),
         INDICES(setOf("index", "indices")),
@@ -79,7 +81,25 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     }
     private val adapter by lazy {
-        PerpsMarketListAdapter(isQuoteColorReversed) { market -> onMarketClick(market) }
+        PerpsMarketListAdapter(
+            isQuoteColorReversed = isQuoteColorReversed,
+            onMarketClick = { market -> onMarketClick(market) },
+            onFavoriteClick = { market, isFavored ->
+                viewModel.updateMarketFavorite(market.marketId, isFavored)
+            },
+        )
+    }
+    private val recommendationAdapter: PerpsRecommendationAdapter by lazy {
+        PerpsRecommendationAdapter(isQuoteColorReversed) { market, selected ->
+            selectedRecommendationIds =
+                if (selected) {
+                    selectedRecommendationIds + market.marketId
+                } else {
+                    selectedRecommendationIds - market.marketId
+                }
+            recommendationAdapter.selectedMarketIds = selectedRecommendationIds
+            binding.addWatchlistTv.isEnabled = selectedRecommendationIds.isNotEmpty()
+        }
     }
     private val viewModel by viewModels<PerpetualViewModel>()
 
@@ -102,6 +122,8 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     private var currentQuery = ""
     private var currentCategory = MarketCategory.ALL
     private var currentSort: MarketSort? = null
+    private var favoriteMarketIds: Set<String> = emptySet()
+    private var selectedRecommendationIds: Set<String> = emptySet()
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -127,6 +149,20 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             marketRv.layoutManager = LinearLayoutManager(requireContext())
             marketRv.adapter = adapter
             (marketRv.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
+            recommendationRv.layoutManager = GridLayoutManager(requireContext(), 2)
+            recommendationRv.adapter = recommendationAdapter
+            addWatchlistTv.isEnabled = false
+            addWatchlistTv.setOnClickListener {
+                val selectedIds = selectedRecommendationIds
+                if (selectedIds.isEmpty()) return@setOnClickListener
+                addWatchlistTv.isEnabled = false
+                viewModel.addFavoriteMarkets(selectedIds) { addedIds ->
+                    selectedRecommendationIds -= addedIds
+                    recommendationAdapter.selectedMarketIds = selectedRecommendationIds
+                    addWatchlistTv.isEnabled = selectedRecommendationIds.isNotEmpty()
+                    filterAndSortMarkets()
+                }
+            }
             applyInitialCategory()
             currentSort = initialSort
             categoryScroll.scrollToCenterCheckedRadio(categoryGroup)
@@ -142,6 +178,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
 
             categoryGroup.setOnCheckedChangeListener { group, checkedId ->
                 currentCategory = when (checkedId) {
+                    R.id.radio_favorites -> MarketCategory.WATCHLIST
                     R.id.radio_crypto -> MarketCategory.CRYPTO
                     R.id.radio_stocks -> MarketCategory.STOCKS
                     R.id.radio_indices -> MarketCategory.INDICES
@@ -199,8 +236,16 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                     }
                 }
                 launch {
+                    viewModel.favoriteMarketIds.collect { marketIds ->
+                        favoriteMarketIds = marketIds
+                        adapter.favoriteMarketIds = marketIds
+                        filterAndSortMarkets()
+                    }
+                }
+                launch {
                     while (isActive) {
                         viewModel.refreshMarkets()
+                        viewModel.refreshFavoriteMarkets()
                         delay(MARKET_REFRESH_INTERVAL_MS)
                     }
                 }
@@ -263,8 +308,12 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         val filtered = allMarkets
             .asSequence()
             .filter { market ->
-                currentCategory.apiValues.isEmpty() ||
-                    currentCategory.apiValues.any { category -> market.category.equals(category, ignoreCase = true) }
+                when (currentCategory) {
+                    MarketCategory.WATCHLIST -> market.marketId in favoriteMarketIds
+                    else ->
+                        currentCategory.apiValues.isEmpty() ||
+                            currentCategory.apiValues.any { category -> market.category.equals(category, ignoreCase = true) }
+                }
             }
             .filter { market ->
                 query.isEmpty() || market.matchesSearchQuery(query)
@@ -282,7 +331,23 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     }
 
     private fun updateList(markets: List<PerpsMarket>, scrollToTop: Boolean = false) {
-        binding.rvVa.displayedChild = if (markets.isEmpty()) 1 else 0
+        val showRecommendations =
+            markets.isEmpty() &&
+                currentCategory == MarketCategory.WATCHLIST &&
+                currentQuery.isBlank() &&
+                allMarkets.isNotEmpty()
+        binding.sortLayout.isVisible = !showRecommendations
+        binding.rvVa.displayedChild =
+            when {
+                showRecommendations -> 2
+                markets.isEmpty() -> 1
+                else -> 0
+            }
+        if (showRecommendations) {
+            val recommendations = allMarkets.filterNot { it.marketId in favoriteMarketIds }.take(8)
+            recommendationAdapter.submitList(recommendations)
+            recommendationAdapter.selectedMarketIds = selectedRecommendationIds
+        }
         adapter.submitList(markets) {
             if (scrollToTop && markets.isNotEmpty()) {
                 binding.marketRv.scrollToPosition(0)

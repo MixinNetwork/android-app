@@ -15,8 +15,15 @@ import java.math.BigDecimal
 
 class PerpsMarketListAdapter(
     private val isQuoteColorReversed: Boolean,
-    private val onMarketClick: (PerpsMarket) -> Unit
+    private val onMarketClick: (PerpsMarket) -> Unit,
+    private val onFavoriteClick: (PerpsMarket, Boolean) -> Unit,
 ) : ListAdapter<PerpsMarket, PerpsMarketListAdapter.MarketViewHolder>(PerpsMarketDiffCallback()) {
+    var favoriteMarketIds: Set<String> = emptySet()
+        set(value) {
+            if (field == value) return
+            field = value
+            notifyDataSetChanged()
+        }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MarketViewHolder {
         return MarketViewHolder(
@@ -41,6 +48,17 @@ class PerpsMarketListAdapter(
                 if (iconIv.tag != market.iconUrl) {
                     iconIv.tag = market.iconUrl
                     iconIv.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
+                }
+                val isFavored = market.marketId in favoriteMarketIds
+                favoriteIv.setImageResource(
+                    if (isFavored) {
+                        R.drawable.ic_asset_favorites_checked
+                    } else {
+                        R.drawable.ic_asset_favorites
+                    },
+                )
+                favoriteIv.setOnClickListener {
+                    onFavoriteClick(market, isFavored)
                 }
                 symbolTv.text = market.tokenSymbol
                 leverageTv.text = root.context.getString(R.string.Perpetual_Leverage_Format, market.leverage)

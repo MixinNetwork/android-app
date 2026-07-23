@@ -110,6 +110,9 @@ fun PerpsMarketDetailPage(
     val lifecycleOwner = LocalLifecycleOwner.current
     var market by remember(marketId, initialMarket) { mutableStateOf(initialMarket) }
     var isLoading by remember(marketId, initialMarket) { mutableStateOf(initialMarket == null) }
+    val favoriteMarketIds by viewModel.favoriteMarketIds.collectAsStateWithLifecycle()
+    var isUpdatingFavorite by remember(marketId) { mutableStateOf(false) }
+    val isFavored = marketId in favoriteMarketIds
     val timeFramePreferenceKey = PREF_MARKET_DETAIL_TIME_FRAME
     val walletId = Session.getAccountId().orEmpty()
     val openPositions by remember(walletId) {
@@ -149,6 +152,10 @@ fun PerpsMarketDetailPage(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+
+    LaunchedEffect(marketId) {
+        viewModel.refreshFavoriteMarkets()
+    }
 
     LaunchedEffect(marketId, walletId, lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
@@ -191,6 +198,29 @@ fun PerpsMarketDetailPage(
         verticalScrollable = false,
         pop = onBack,
         actions = {
+            IconButton(
+                onClick = {
+                    if (isUpdatingFavorite) return@IconButton
+                    isUpdatingFavorite = true
+                    viewModel.updateMarketFavorite(marketId, isFavored) {
+                        isUpdatingFavorite = false
+                    }
+                },
+                enabled = !isUpdatingFavorite,
+            ) {
+                Icon(
+                    painter =
+                        painterResource(
+                            if (isFavored) {
+                                R.drawable.ic_title_favorites_checked
+                            } else {
+                                R.drawable.ic_title_favorites
+                            },
+                        ),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                )
+            }
             IconButton(onClick = {
                 context.openUrl(
                     Constants.HelpLink.CUSTOMER_SERVICE,
