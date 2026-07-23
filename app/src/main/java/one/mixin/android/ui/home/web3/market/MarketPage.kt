@@ -100,7 +100,7 @@ fun MarketPage(
                 onSelect = onSelectSubTab,
             )
             MarketListHeader(
-                period = state.displaySettings.priceChangePeriod,
+                period = state.effectivePriceChangePeriod,
                 sortState = state.sortState,
                 onSort = onSort,
                 onShowDisplaySettings = onShowDisplaySettings,
@@ -122,6 +122,7 @@ fun MarketPage(
     if (showDisplaySettings) {
         MarketDisplayDialog(
             current = state.displaySettings,
+            showPriceChange = !state.showsOnlyPerpetualMarkets,
             onDismiss = onDismissDisplaySettings,
             onApply = onApplyDisplaySettings,
         )
@@ -521,12 +522,7 @@ private fun RowScope.PerpetualMarketRowContent(
     market: PerpsMarket,
     settings: MarketDisplaySettings,
 ) {
-    val change =
-        if (settings.priceChangePeriod == MarketPriceChangePeriod.TWENTY_FOUR_HOURS) {
-            market.changePercentValue()
-        } else {
-            null
-        }
+    val change = market.changePercentValue()
     MarketIcon(url = market.iconUrl)
     Spacer(modifier = Modifier.width(10.dp))
     Column(modifier = Modifier.weight(1f)) {
@@ -865,6 +861,7 @@ private fun DominanceLegendItem(
 @Composable
 private fun MarketDisplayDialog(
     current: MarketDisplaySettings,
+    showPriceChange: Boolean,
     onDismiss: () -> Unit,
     onApply: (MarketDisplaySettings) -> Unit,
 ) {
@@ -939,18 +936,20 @@ private fun MarketDisplayDialog(
                         },
                         onSelect = { pending = pending.copy(quoteColorReversed = it) },
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    DisplaySettingRow(
-                        title = stringResource(R.string.Price_Change),
-                        value = priceChangePeriodLabel(pending.priceChangePeriod),
-                        options =
-                            listOf(
-                                priceChangePeriodLabel(MarketPriceChangePeriod.TWENTY_FOUR_HOURS) to MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
-                                priceChangePeriodLabel(MarketPriceChangePeriod.SEVEN_DAYS) to MarketPriceChangePeriod.SEVEN_DAYS,
-                            ),
-                        selectedOption = pending.priceChangePeriod,
-                        onSelect = { pending = pending.copy(priceChangePeriod = it) },
-                    )
+                    if (showPriceChange) {
+                        Spacer(modifier = Modifier.height(8.dp))
+                        DisplaySettingRow(
+                            title = stringResource(R.string.Price_Change),
+                            value = priceChangePeriodLabel(pending.priceChangePeriod),
+                            options =
+                                listOf(
+                                    priceChangePeriodLabel(MarketPriceChangePeriod.TWENTY_FOUR_HOURS) to MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
+                                    priceChangePeriodLabel(MarketPriceChangePeriod.SEVEN_DAYS) to MarketPriceChangePeriod.SEVEN_DAYS,
+                                ),
+                            selectedOption = pending.priceChangePeriod,
+                            onSelect = { pending = pending.copy(priceChangePeriod = it) },
+                        )
+                    }
                     Spacer(modifier = Modifier.height(42.dp))
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -958,7 +957,17 @@ private fun MarketDisplayDialog(
                     ) {
                         ActionButton(
                             text = stringResource(R.string.Reset),
-                            onClick = { pending = MarketDisplaySettings() },
+                            onClick = {
+                                pending =
+                                    MarketDisplaySettings(
+                                        priceChangePeriod =
+                                            if (showPriceChange) {
+                                                MarketDisplaySettings().priceChangePeriod
+                                            } else {
+                                                current.priceChangePeriod
+                                            },
+                                    )
+                            },
                             backgroundColor = MixinAppTheme.colors.backgroundGray,
                             contentColor = MixinAppTheme.colors.textPrimary,
                             modifier =

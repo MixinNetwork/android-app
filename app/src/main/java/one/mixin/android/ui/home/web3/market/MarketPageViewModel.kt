@@ -273,7 +273,6 @@ class MarketPageViewModel
                         MarketPageMapper.perpetualMarkets(
                             markets = perpetualMarkets,
                             subTab = state.selectedSubTab ?: MarketSubTab.TRENDING,
-                            period = state.displaySettings.priceChangePeriod,
                         ).map { market ->
                             MarketListEntry.Perpetual(market, backingMarkets[market.marketId])
                         }
@@ -295,7 +294,7 @@ class MarketPageViewModel
                         MarketPageMapper.applySort(
                             entries = entries,
                             sortState = state.sortState,
-                            period = state.displaySettings.priceChangePeriod,
+                            period = state.effectivePriceChangePeriod,
                         ),
                 )
         }

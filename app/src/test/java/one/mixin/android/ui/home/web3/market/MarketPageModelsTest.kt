@@ -3,7 +3,6 @@ package one.mixin.android.ui.home.web3.market
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.vo.market.MarketItem
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -69,12 +68,27 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun perpetualSevenDayChangeStaysUnavailableUntilApiContractExists() {
+    fun perpetualChangeAlwaysUsesTwentyFourHourData() {
         val market = perpsMarket(marketId = "btc-perp", change = "0.12")
         val entry = MarketListEntry.Perpetual(market, null)
 
-        assertNull(entry.changePercent(MarketPriceChangePeriod.SEVEN_DAYS))
+        assertEquals("12.00", entry.changePercent(MarketPriceChangePeriod.SEVEN_DAYS)?.toPlainString())
         assertEquals("12.00", entry.changePercent(MarketPriceChangePeriod.TWENTY_FOUR_HOURS)?.toPlainString())
+    }
+
+    @Test
+    fun perpetualOnlySelectionForcesTwentyFourHourDisplay() {
+        val state =
+            MarketPageUiState(
+                selectedTopTab = MarketTopTab.PERPETUAL,
+                displaySettings =
+                    MarketDisplaySettings(
+                        priceChangePeriod = MarketPriceChangePeriod.SEVEN_DAYS,
+                    ),
+            )
+
+        assertTrue(state.showsOnlyPerpetualMarkets)
+        assertEquals(MarketPriceChangePeriod.TWENTY_FOUR_HOURS, state.effectivePriceChangePeriod)
     }
 
     @Test

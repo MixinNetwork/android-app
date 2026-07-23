@@ -101,6 +101,19 @@ data class MarketPageUiState(
 ) {
     val selectedSubTab: MarketSubTab?
         get() = selectedSubTabs[selectedTopTab]
+
+    val showsOnlyPerpetualMarkets: Boolean
+        get() =
+            selectedTopTab == MarketTopTab.PERPETUAL ||
+                (selectedTopTab == MarketTopTab.WATCHLIST && selectedSubTab == MarketSubTab.PERPETUAL)
+
+    val effectivePriceChangePeriod: MarketPriceChangePeriod
+        get() =
+            if (showsOnlyPerpetualMarkets) {
+                MarketPriceChangePeriod.TWENTY_FOUR_HOURS
+            } else {
+                displaySettings.priceChangePeriod
+            }
 }
 
 fun defaultMarketSubTabs(): Map<MarketTopTab, MarketSubTab> =
@@ -127,17 +140,12 @@ object MarketPageMapper {
     fun perpetualMarkets(
         markets: List<PerpsMarket>,
         subTab: MarketSubTab,
-        period: MarketPriceChangePeriod,
-    ): List<PerpsMarket> {
-        if (period == MarketPriceChangePeriod.SEVEN_DAYS) {
-            return markets
-        }
-        return when (subTab) {
+    ): List<PerpsMarket> =
+        when (subTab) {
             MarketSubTab.TOP_GAINERS -> markets.sortedByDescending { it.changePercentValue() ?: BigDecimal.ZERO }
             MarketSubTab.TOP_LOSERS -> markets.sortedBy { it.changePercentValue() ?: BigDecimal.ZERO }
             else -> markets
         }
-    }
 
     fun watchlist(
         favorites: List<MarketItem>,
@@ -229,10 +237,5 @@ fun MarketListEntry.price(): BigDecimal? =
 fun MarketListEntry.changePercent(period: MarketPriceChangePeriod): BigDecimal? =
     when (this) {
         is MarketListEntry.Spot -> market.changePercent(period)
-        is MarketListEntry.Perpetual ->
-            if (period == MarketPriceChangePeriod.TWENTY_FOUR_HOURS) {
-                market.changePercentValue()
-            } else {
-                null
-            }
+        is MarketListEntry.Perpetual -> market.changePercentValue()
     }
