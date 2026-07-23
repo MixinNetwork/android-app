@@ -32,8 +32,21 @@
             android:background="?android:attr/selectableItemBackground"
             android:contentDescription="@null"
             android:padding="14dp"
-            android:src="@drawable/ic_float_close" />
+            android:src="@drawable/ic_circle_close" />
     </FrameLayout>
+
+    <ScrollView
+        android:id="@+id/scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
     <LinearLayout
         android:id="@+id/content"
@@ -62,17 +75,18 @@
 
                     <LinearLayout
                         android:id="@+id/card_header"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginBottom="20dp"
                         android:layout_width="match_parent"
-                        android:layout_height="42dp"
+                        android:layout_height="wrap_content"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal"
-                        android:paddingStart="20dp"
-                        android:paddingEnd="20dp">
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:id="@+id/logo"
                             android:layout_width="wrap_content"
-                            android:layout_height="12dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="20dp"
                             android:contentDescription="@string/mixin_messenger"
                             android:src="?attr/market_logo" />
                     </LinearLayout>
@@ -302,6 +316,11 @@
         </LinearLayout>
     </LinearLayout>
 
+    <Space
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
     <LinearLayout
         android:id="@+id/bottom"
         android:layout_width="match_parent"
@@ -381,4 +400,6 @@
                 android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
 </LinearLayout>

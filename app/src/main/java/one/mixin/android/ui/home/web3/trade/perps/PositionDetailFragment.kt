@@ -213,44 +213,45 @@ class PositionDetailFragment : BaseFragment() {
 
     private fun showCloseDialog(position: PerpsPositionItem) {
         val perpsPosition = position.toPosition()
-        AnalyticsTracker.trackPerpsClosePositionStart()
+        AnalyticsTracker.trackPerpsCloseStart(AnalyticsTracker.PerpsCloseType.SINGLE)
         PerpsCloseBottomSheetDialogFragment.newInstance(perpsPosition)
             .setOnDone {
-                PerpsActivity.showDetail(
-                    requireContext(),
+                openMarket(
                     position.marketId,
                     position.displaySymbol.orEmpty(),
-                    position.displaySymbol.orEmpty(),
                     position.tokenSymbol.orEmpty(),
-                    AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
                 )
-                activity?.supportFragmentManager?.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
             }
             .showNow(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
     }
 
     private fun openTradeAgain(order: PerpsOrderItem) {
-        PerpsActivity.showDetail(
-            context = requireContext(),
-            marketId = order.marketId,
-            marketSymbol = order.displaySymbol.orEmpty(),
-            marketDisplaySymbol = order.displaySymbol.orEmpty(),
-            marketTokenSymbol = order.tokenSymbol.orEmpty(),
-            source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
-        )
-        activity?.supportFragmentManager?.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        openMarket(order.marketId, order.displaySymbol.orEmpty(), order.tokenSymbol.orEmpty())
     }
 
     private fun openViewMarket(order: PerpsOrderItem) {
+        openMarket(order.marketId, order.displaySymbol.orEmpty(), order.tokenSymbol.orEmpty())
+    }
+
+    private fun openMarket(
+        marketId: String,
+        displaySymbol: String,
+        tokenSymbol: String,
+    ) {
+        val host = activity ?: return
+        val reuseCurrentActivity = host is PerpsActivity
         PerpsActivity.showDetail(
-            context = requireContext(),
-            marketId = order.marketId,
-            marketSymbol = order.displaySymbol.orEmpty(),
-            marketDisplaySymbol = order.displaySymbol.orEmpty(),
-            marketTokenSymbol = order.tokenSymbol.orEmpty(),
+            context = host,
+            marketId = marketId,
+            marketSymbol = displaySymbol,
+            marketDisplaySymbol = displaySymbol,
+            marketTokenSymbol = tokenSymbol,
             source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_DETAIL,
+            reuseCurrentActivity = reuseCurrentActivity,
         )
-        activity?.supportFragmentManager?.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        if (reuseCurrentActivity) {
+            host.supportFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+        }
     }
 
     private fun sharePosition(position: PerpsPositionItem) {

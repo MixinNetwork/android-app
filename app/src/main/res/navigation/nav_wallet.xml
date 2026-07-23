@@ -81,6 +81,11 @@
             android:name="args_asset_id"
             app:argType="string" />
 
+        <argument
+            android:name="args_return_to_trade"
+            android:defaultValue="false"
+            app:argType="boolean" />
+
         <action
             android:id="@+id/action_market_details_to_alert"
             app:destination="@id/alert_fragment"
@@ -158,6 +163,11 @@
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right" />
     </fragment>
+
+    <fragment
+        android:id="@+id/wallet_home_all_tokens_fragment"
+        android:name="one.mixin.android.ui.wallet.WalletHomeAllTokensFragment"
+        tools:layout="@layout/fragment_wallet_home_all_tokens" />
 
     <fragment
         android:id="@+id/transaction_fragment"

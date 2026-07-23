@@ -120,7 +120,7 @@ class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
             }
 
             qr.doOnPreDraw {
-                Observable.create<Pair<Bitmap, Int>?> { e ->
+                Observable.create<Pair<Bitmap, Int>> { e ->
                     val code =
                         when (type) {
                             TYPE_TAG -> depositEntry.tag

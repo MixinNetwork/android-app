@@ -4,6 +4,7 @@ import android.os.Build
 import android.provider.Settings
 import android.util.Log
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
 import one.mixin.android.Constants.Account.PREF_LOGIN_VERIFY
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.copy
@@ -12,6 +13,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.session.Session
 import one.mixin.android.ui.landing.LandingActivity
 import one.mixin.android.ui.tip.TipActivity
+import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.util.ZipUtil
 import timber.log.Timber
 import java.io.File
@@ -27,8 +29,16 @@ class FileLogTree : Timber.Tree() {
     ) {
         val directory = MixinApplication.appContext.cacheDir
         val defaultSharedPreferences = MixinApplication.appContext.defaultSharedPreferences
-        // not logged in, safe not set, PIN verification not completed - record log
-        if (Session.getAccountId() == null || !Session.hasSafe() || MixinApplication.get().topActivity is LandingActivity || MixinApplication.get().topActivity is TipActivity || defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
+        val topActivity = MixinApplication.get().topActivity
+        val shouldRecordPreLoginLog =
+            Session.getAccountId() == null ||
+                !Session.hasSafe() ||
+                topActivity is LandingActivity ||
+                topActivity is TipActivity ||
+                topActivity is WalletSecurityActivity ||
+                defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false) ||
+                defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
+        if (shouldRecordPreLoginLog) {
             if (priority >= Log.INFO) {
                 try {
                     val file = File("${directory.absolutePath}${File.separator}$LOG_PRE_LOGIN_FILE_NAME")

@@ -5,8 +5,6 @@ import android.os.Bundle
 import android.os.CountDownTimer
 import android.view.View
 import android.view.View.GONE
-import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
@@ -31,7 +29,6 @@ import one.mixin.android.api.response.VerificationResponse
 import one.mixin.android.crypto.CryptoPreference
 import one.mixin.android.crypto.SignalProtocol
 import one.mixin.android.crypto.generateEd25519KeyPair
-import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.databinding.FragmentVerificationBinding
 import one.mixin.android.databinding.ViewVerificationBottomBinding
 import one.mixin.android.extension.alert
@@ -61,6 +58,7 @@ import one.mixin.android.ui.setting.delete.DeleteAccountPinBottomSheetDialogFrag
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.User
 import one.mixin.android.widget.BottomSheet
@@ -152,8 +150,13 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
         }
         binding.verificationResendTv.setOnClickListener { sendVerification() }
         binding.verificationNeedHelpTv.setOnClickListener {
-            if (isAddPhoneFlow()) {
-                AnalyticsTracker.trackCustomerServiceDialog(AnalyticsTracker.CustomerServiceSource.ADD_PHONE_SMS_VERIFY)
+            when {
+                isAddPhoneFlow() -> AnalyticsTracker.CustomerServiceSource.ADD_PHONE_SMS_VERIFY
+                from == FROM_LANDING_CREATE -> AnalyticsTracker.CustomerServiceSource.SIGN_UP_SMS_VERIFY
+                from == FROM_LANDING -> AnalyticsTracker.CustomerServiceSource.LOGIN_SMS_VERIFY
+                else -> null
+            }?.let { source ->
+                AnalyticsTracker.trackCustomerServiceDialog(source)
             }
             showBottom()
         }
@@ -172,7 +175,10 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     private fun applySafeTopPadding(rootView: View) {
         val originalPaddingTop: Int = rootView.paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
-            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top
+            val topInset: Int = maxOf(
+                insets.getInsets(WindowInsetsCompat.Type.statusBars()).top,
+                insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top,
+            )
             v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
             insets
         }
@@ -180,15 +186,13 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     }
 
     override fun onDestroyView() {
-        super.onDestroyView()
+        captchaView?.release()
+        captchaView = null
         mCountDownTimer?.cancel()
+        super.onDestroyView()
     }
 
     override fun onBackPressed(): Boolean {
-        if (captchaView?.isVisible() == true) {
-            hideLoading()
-            return true
-        }
         return false
     }
 
@@ -263,10 +267,12 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
     private fun handlePhoneModification() =
         lifecycleScope.launch {
             showLoading()
+            var tipPrivForSaltCheck: ByteArray? = null
             handleMixinResponse(
                 invokeNetwork = {
                     if (pin != null) {
                         val seed = tip.getOrRecoverTipPriv(requireContext(), pin!!).getOrThrow()
+                        tipPrivForSaltCheck = seed
                         tip.checkSalt(requireContext(), pin!!, seed)
                         val saltBase64 = if (Session.hasPhone()) {
                             tip.getEncryptSalt(requireContext(), pin!!, seed)
@@ -284,8 +290,15 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                     withContext(Dispatchers.IO) {
                         r.data?.let { u ->
                             userRepositoryProvider.get().updatePhone(u.userId, u.phone)
-                            removeValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC)
                             Session.storeAccount(u)
+                            val seed = tipPrivForSaltCheck
+                            if (pin != null && seed != null && Session.hasPhone()) {
+                                runCatching {
+                                    tip.removeLocalMnemonicIfSafeMatches(requireContext(), pin!!, seed)
+                                }.onFailure {
+                                    reportException(IllegalStateException("Failed to verify Safe mnemonic", it))
+                                }
+                            }
                         }
                     }
 
@@ -342,6 +355,9 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
             handleMixinResponse(
                 invokeNetwork = { viewModel.create(requireArguments().getString(ARGS_ID)!!, accountRequest) },
                 successBlock = { response ->
+                    if (response.isSuccess && response.data?.fullName.isNullOrBlank()) {
+                        AnalyticsTracker.trackSignUpAccountCreated()
+                    }
                     handleAccount(response, sessionKey) {
                         defaultSharedPreferences.putInt(PREF_LOGIN_FROM, FROM_LOGIN)
                     }
@@ -395,7 +411,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
 
     override fun hideLoading() {
         super.hideLoading()
-        captchaView?.webView?.visibility = GONE
+        captchaView?.hide()
     }
 
     private fun sendVerification(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
@@ -443,7 +459,7 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 { t: Throwable ->
                     handleError(t)
                     binding.verificationNextFab.visibility = GONE
-                    captchaView?.webView?.visibility = GONE
+                    captchaView?.hide()
                 },
             )
     }
@@ -464,7 +480,6 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                             }
                         },
                     )
-                (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
             val captchaType = if (errorDescription.containsIgnoreCase(gtCAPTCHA)) {
                 CaptchaView.CaptchaType.GTCaptcha

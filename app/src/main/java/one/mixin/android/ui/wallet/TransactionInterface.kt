@@ -21,6 +21,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionBinding
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.formatTransactionHash
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigateUp
@@ -398,7 +399,7 @@ interface TransactionInterface {
                     if (snapshot.deposit != null) {
                         hashLl.isVisible = true
                         hashTitle.text = fragment.getString(R.string.deposit_hash)
-                        hashTv.text = snapshot.deposit.depositHash
+                        hashTv.text = snapshot.deposit.depositHash.formatTransactionHash()
                         if (snapshot.deposit.sender.isNotBlank()) {
                             fromTv.text = snapshot.deposit.sender
                         } else {
@@ -439,7 +440,7 @@ interface TransactionInterface {
                                 val start = fullText.lastIndexOf(label)
                                 val end = start + label.length
 
-                                val backgroundColor: Int = Color.parseColor("#8DCC99")
+                                val backgroundColor = Color.parseColor(WalletTransferLabelStyle.backgroundColorHex(label))
                                 val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
                                 spannableString.setSpan(RelativeSizeSpan(0.8f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                                 spannableString.setSpan(backgroundColorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

@@ -119,6 +119,51 @@ class PerpsMigrationTest {
         }
     }
 
+    @Test
+    fun migrate_4_5_clearsOrders() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 4).apply {
+            insertOrderV4()
+            close()
+        }
+
+        val migratedDb = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME,
+            5,
+            true,
+            PerpsDatabase.MIGRATION_4_5,
+        )
+
+        migratedDb.query("SELECT COUNT(*) FROM perps_orders").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+    }
+
+    @Test
+    fun migrate_5_6_addsNullableDescriptions() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 5).close()
+
+        val migratedDb = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME,
+            6,
+            true,
+            PerpsDatabase.MIGRATION_5_6,
+        )
+
+        migratedDb.query("PRAGMA table_info(markets)").use { cursor ->
+            val nameIndex = cursor.getColumnIndexOrThrow("name")
+            val notNullIndex = cursor.getColumnIndexOrThrow("notnull")
+            var foundDescriptions = false
+            while (cursor.moveToNext()) {
+                if (cursor.getString(nameIndex) == "descriptions") {
+                    foundDescriptions = true
+                    assertEquals(0, cursor.getInt(notNullIndex))
+                }
+            }
+            assertTrue(foundDescriptions)
+        }
+    }
+
     private fun SupportSQLiteDatabase.insertMarketV2() {
         execSQL(
             """
@@ -161,6 +206,22 @@ class PerpsMigrationTest {
             ) VALUES (
                 'history-1', 'position-1', 'market-1', 'long', '1', '99000', '100000',
                 '1000', 20, 'cross', '2026-05-15T15:00:00Z', '2026-05-15T16:00:00Z'
+            )
+            """.trimIndent(),
+        )
+    }
+
+    private fun SupportSQLiteDatabase.insertOrderV4() {
+        execSQL(
+            """
+            INSERT INTO perps_orders (
+                order_id, position_id, market_id, side, order_type, status, leverage, quantity,
+                entry_price, close_price, realized_pnl, roe, close_reason, trigger_price,
+                created_at, updated_at
+            ) VALUES (
+                'order-1', 'position-1', 'market-1', 'long', 'open', 'filled', 10, '1',
+                '99000', '0', '0', '0', NULL, NULL,
+                '2026-05-15T15:00:00Z', '2026-05-15T15:00:00Z'
             )
             """.trimIndent(),
         )

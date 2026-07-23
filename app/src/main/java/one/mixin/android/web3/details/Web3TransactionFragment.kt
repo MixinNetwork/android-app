@@ -362,6 +362,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             } else {
                 titleView.setSubTitle(getString(R.string.Transaction), getString(R.string.Common_Wallet))
             }
+            titleView.setWalletNameSubTitleStyle()
             spamLl.isVisible = transaction.isNotVerified()
             transactionHashTv.text = transaction.transactionHash
             val amountColor = if (transaction.status == TransactionStatus.PENDING.value || transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value) {

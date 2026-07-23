@@ -7,7 +7,6 @@ import androidx.security.crypto.MasterKey
 import blockchain.Blockchain
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Tip.ENCRYPTED_WEB3_KEY
-import one.mixin.android.MixinApplication
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.putString
@@ -47,12 +46,17 @@ object CryptoWalletHelper {
         }.getOrNull()
     }
 
-    private val secureStorage by lazy {
-        getSecureStorage(MixinApplication.appContext)
+    private val secureStorageLock = Any()
+    private var secureStorage: SharedPreferences? = null
+
+    private fun secureStorage(context: Context): SharedPreferences? = synchronized(secureStorageLock) {
+        secureStorage ?: getSecureStorage(context).also {
+            secureStorage = it
+        }
     }
 
     fun hasPrivateKey(context: Context, walletId: String): Boolean {
-        return secureStorage?.contains(walletId) ?: false
+        return secureStorage(context)?.contains(walletId) ?: false
     }
 
     fun extractIndexFromPath(path: String): Int? {
@@ -191,6 +195,28 @@ object CryptoWalletHelper {
         }
     }
 
+    fun mnemonicToImportedPrivateKey(
+        mnemonic: String,
+        chainId: String,
+        index: Int,
+    ): String =
+        when (chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
+                val privateKey = Numeric.hexStringToByteArray(
+                    mnemonicToSolanaWallet(mnemonic, index = index).privateKey,
+                )
+                fromSecretKey(privateKey).secret.encodeToBase58String()
+            }
+            Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                val privateKey = Numeric.hexStringToByteArray(
+                    mnemonicToBitcoinSegwitWallet(mnemonic, index = index).privateKey,
+                )
+                ECKey.fromPrivate(privateKey, true).getPrivateKeyEncoded(BitcoinNetwork.MAINNET).toBase58()
+            }
+            in Constants.Web3EvmChainIds -> mnemonicToEthereumWallet(mnemonic, index = index).privateKey
+            else -> throw IllegalArgumentException("Unsupported chainId: $chainId")
+        }
+
     fun encryptPrivateKeyWithSpendKey(spendKey: ByteArray, privateKey: String): String {
         val sha256Digest = MessageDigest.getInstance("SHA-256")
         val aesKeyBytes = sha256Digest.digest(spendKey)
@@ -203,6 +229,38 @@ object CryptoWalletHelper {
         val aesKeyBytes = sha256Digest.digest(spendKey)
         val originalEntropy = toEntropy(mnemonicWords)
         return aesGcmEncrypt(originalEntropy, aesKeyBytes).base64RawURLEncode()
+    }
+
+    fun saveMnemonicWithSpendKey(
+        context: Context,
+        spendKey: ByteArray,
+        walletId: String,
+        mnemonicWords: List<String>,
+    ): Boolean {
+        return try {
+            val encryptedString = encryptMnemonicWithSpendKey(spendKey, mnemonicWords)
+            saveWeb3PrivateKey(context, walletId, encryptedString)
+            hasPrivateKey(context, walletId)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to save web3 mnemonic")
+            false
+        }
+    }
+
+    fun savePrivateKeyWithSpendKey(
+        context: Context,
+        spendKey: ByteArray,
+        walletId: String,
+        privateKey: String,
+    ): Boolean {
+        return try {
+            val encryptedString = encryptPrivateKeyWithSpendKey(spendKey, privateKey)
+            saveWeb3PrivateKey(context, walletId, encryptedString)
+            hasPrivateKey(context, walletId)
+        } catch (e: Exception) {
+            Timber.e(e, "Failed to save web3 private key")
+            false
+        }
     }
 
     fun decryptMnemonicWithSpendKey(
@@ -282,7 +340,14 @@ object CryptoWalletHelper {
                 currentCategory == WalletCategory.CLASSIC.value || currentWalletId.isEmpty() -> {
                     val derivationIndex = extractIndexFromPath(Web3Signer.path) ?: 0
                     Timber.d("currentWalletId: ${Web3Signer.currentWalletId}, currentWalletCategory: ${Web3Signer.currentWalletCategory}, evmAddress: ${Web3Signer.evmAddress}, solanaAddress: ${Web3Signer.solanaAddress} derivationIndex: $derivationIndex")
-                    tipPrivToPrivateKey(spendKey, chainId, derivationIndex)
+                    val mnemonic = currentWalletId.takeIf { it.isNotEmpty() }?.let {
+                        getWeb3Mnemonic(context, spendKey, it)
+                    }
+                    if (mnemonic != null) {
+                        getMnemonicPrivateKey(mnemonic, chainId, derivationIndex)
+                    } else {
+                        tipPrivToPrivateKey(spendKey, chainId, derivationIndex)
+                    }
                 }
 
                 currentCategory == WalletCategory.IMPORTED_PRIVATE_KEY.value -> {
@@ -293,18 +358,7 @@ object CryptoWalletHelper {
                     val mnemonic = getWeb3Mnemonic(context, spendKey, currentWalletId)
                         ?: return null
                     val derivationIndex = requireNotNull(extractIndexFromPath(Web3Signer.path))
-
-                    when (chainId) {
-                        Constants.ChainId.SOLANA_CHAIN_ID -> {
-                            SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
-                        }
-                        Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                            BitcoinKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, "", derivationIndex)
-                        }
-                        else -> {
-                            EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
-                        }
-                    }
+                    getMnemonicPrivateKey(mnemonic, chainId, derivationIndex)
                 }
             }
         } catch (e: Exception) {
@@ -313,18 +367,38 @@ object CryptoWalletHelper {
         }
     }
 
+    private fun getMnemonicPrivateKey(
+        mnemonic: String,
+        chainId: String,
+        derivationIndex: Int,
+    ): ByteArray? =
+        when (chainId) {
+            Constants.ChainId.SOLANA_CHAIN_ID -> {
+                SolanaKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
+            }
+            Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                BitcoinKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
+            }
+            in Constants.Web3EvmChainIds -> {
+                EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
+            }
+            else -> throw IllegalArgumentException("Unsupported chainId: $chainId")
+        }
+
     fun saveWeb3PrivateKey(context: Context, walletId: String, encryptedString: String) {
-        val secureStorage = getSecureStorage(context)
-        secureStorage?.putString(walletId, encryptedString)
+        secureStorage(context)?.putString(walletId, encryptedString)
     }
 
     fun removePrivate(context: Context, walletId: String) {
-        val encryptedPrefs = getSecureStorage(context)
-        encryptedPrefs?.remove(walletId)
+        secureStorage(context)?.remove(walletId)
     }
 
     fun clear(context: Context) {
-        context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
+        synchronized(secureStorageLock) {
+            secureStorage?.edit()?.clear()?.commit()
+            secureStorage = null
+            context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
+        }
     }
 
 }

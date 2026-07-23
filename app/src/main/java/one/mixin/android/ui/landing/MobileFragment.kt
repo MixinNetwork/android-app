@@ -8,9 +8,8 @@ import android.text.Selection
 import android.text.TextWatcher
 import android.view.View
 import android.view.View.AUTOFILL_HINT_PHONE
-import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.WindowManager
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
@@ -38,6 +37,7 @@ import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.session.Session
@@ -75,6 +75,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         const val ARGS_PHONE_NUM = "args_phone_num"
         const val ARGS_FROM = "args_from"
         const val ARGS_ADD_PHONE_SOURCE = "args_add_phone_source"
+        private const val ARGS_LOGIN_START_SOURCE = "args_login_start_source"
         const val FROM_LANDING = 0
         const val FROM_LANDING_CREATE = 1
         const val FROM_CHANGE_PHONE_ACCOUNT = 2
@@ -86,6 +87,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             from: Int = FROM_LANDING,
             phoneNumber: String? = null,
             addPhoneSource: String? = null,
+            loginStartSource: String = AnalyticsTracker.LoginStartSource.LOGIN_METHODS,
         ): MobileFragment =
             MobileFragment().apply {
                 val b =
@@ -98,6 +100,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                             putString(ARGS_PHONE_NUM, phoneNumber)
                         }
                         addPhoneSource?.let { putString(ARGS_ADD_PHONE_SOURCE, it) }
+                        putString(ARGS_LOGIN_START_SOURCE, loginStartSource)
                     }
                 arguments = b
             }
@@ -123,6 +126,11 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     private val addPhoneSource: String? by lazy {
         requireArguments().getString(ARGS_ADD_PHONE_SOURCE)
     }
+    private val loginStartSource: String by lazy {
+        requireArguments().getString(ARGS_LOGIN_START_SOURCE) ?: AnalyticsTracker.LoginStartSource.LOGIN_METHODS
+    }
+    private val useSystemKeyboard: Boolean
+        get() = from == FROM_LANDING
 
     private var captchaView: CaptchaView? = null
 
@@ -144,9 +152,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         if (activity is LandingActivity) {
             applySafeTopPadding(view)
         }
-        Timber.e("MobileFragment onViewCreated")
+        Timber.i("LoginFlow mobile_input_open from=$from")
         if (from == FROM_LANDING) {
-            AnalyticsTracker.trackLoginStart()
+            AnalyticsTracker.trackLoginStart(AnalyticsTracker.LoginStartType.PHONE_NUMBER, loginStartSource)
         }
         if (isAddPhoneFlow()) {
             AnalyticsTracker.trackAddPhoneInputPhone()
@@ -183,13 +191,15 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 policyWrapper,
                 arrayOf(policyUrl, termsUrl),
             )
-            binding.orLl.isVisible = from == FROM_LANDING
-            binding.mnemonicPhrase.isVisible = from == FROM_LANDING
-            binding.noAccount.isVisible = from == FROM_LANDING
+            binding.introductionTv.isVisible = from != FROM_LANDING
+            binding.mobileLoginTipTv.isVisible = from == FROM_LANDING
+            binding.orLl.isVisible = false
+            binding.mnemonicPhrase.isVisible = false
+            binding.noAccount.isVisible = false
 
             countryIconIv.setOnClickListener { showCountry() }
             countryCodeEt.addTextChangedListener(countryCodeWatcher)
-            countryCodeEt.showSoftInputOnFocus = false
+            countryCodeEt.showSoftInputOnFocus = useSystemKeyboard
             continueBn.setOnClickListener {
                 if (from == FROM_VERIFY_MOBILE_REMINDER
                     && presetPhoneNumber != null
@@ -199,10 +209,17 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                     showDialog()
                 }
             }
-            mobileEt.showSoftInputOnFocus = false
+            mobileEt.showSoftInputOnFocus = useSystemKeyboard
             mobileEt.addTextChangedListener(mWatcher)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 mobileEt.setAutofillHints(AUTOFILL_HINT_PHONE)
+            }
+            if (useSystemKeyboard) {
+                (continueBn.layoutParams as ConstraintLayout.LayoutParams).apply {
+                    topToBottom = R.id.mobile_login_tip_tv
+                    topMargin = 44.dp
+                }
+                continueBn.requestLayout()
             }
             mobileCover.isClickable = true
             countryPicker = CountryPicker.newInstance()
@@ -232,6 +249,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             keyboard.tipTitleEnabled = false
             keyboard.initPinKeys()
             keyboard.setOnClickKeyboardListener(mKeyboardListener)
+            keyboard.isVisible = !useSystemKeyboard
             mnemonicPhrase.setOnClickListener {
                 activity?.addFragment(
                     this@MobileFragment,
@@ -249,6 +267,13 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                             MnemonicPhraseFragment.TAG,
                         )
                     }
+                    .setOnImportWallet {
+                        activity?.addFragment(
+                            this@MobileFragment,
+                            LandingMnemonicPhraseFragment.newInstance(LoginMnemonicMode.TWELVE_OR_TWENTY_FOUR),
+                            LandingMnemonicPhraseFragment.TAG,
+                        )
+                    }
                     .setOnPrivacyPolicy {
                         activity?.openUrl(getString(R.string.landing_privacy_policy_url))
                     }
@@ -261,10 +286,19 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         setupFocusListeners()
     }
 
+    override fun onDestroyView() {
+        captchaView?.release()
+        captchaView = null
+        super.onDestroyView()
+    }
+
     private fun applySafeTopPadding(rootView: View) {
         val originalPaddingTop: Int = rootView.paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
-            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top
+            val topInset: Int = maxOf(
+                insets.getInsets(WindowInsetsCompat.Type.statusBars()).top,
+                insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top,
+            )
             v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
             insets
         }
@@ -304,11 +338,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     }
 
     override fun onBackPressed(): Boolean {
-        if (captchaView?.isVisible() == true) {
-            hideLoading()
-            return true
-        }
-        if (binding.keyboard.translationY == 0f) {
+        if (!useSystemKeyboard && binding.keyboard.translationY == 0f) {
             binding.mobileEt.clearFocus()
             binding.countryCodeEt.clearFocus()
             return true
@@ -343,10 +373,19 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
 
     override fun onResume() {
         super.onResume()
-        requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
-        requireActivity().currentFocus?.clearFocus()
-        requireActivity().hideKeyboard()
-        binding.mobileEt.hideKeyboard()
+        if (useSystemKeyboard) {
+            requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE)
+            binding.mobileEt.post {
+                if (!viewDestroyed()) {
+                    binding.mobileEt.showKeyboard()
+                }
+            }
+        } else {
+            requireActivity().window.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN)
+            requireActivity().currentFocus?.clearFocus()
+            requireActivity().hideKeyboard()
+            binding.mobileEt.hideKeyboard()
+        }
     }
 
     private fun requestSend(captchaResponse: Pair<CaptchaView.CaptchaType, String>? = null) {
@@ -396,8 +435,10 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                 { r: MixinResponse<VerificationResponse> ->
                     if (!r.isSuccess) {
                         if (r.errorCode == NEED_CAPTCHA) {
+                            Timber.i("LoginFlow mobile_verification_request_captcha_required from=$from")
                             initAndLoadCaptcha(r.errorDescription)
                         } else {
+                            Timber.i("LoginFlow mobile_verification_request_failed from=$from code=${r.errorCode}")
                             hideLoading()
                             ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
                         }
@@ -406,6 +447,9 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                     hideLoading()
 
                     val verificationResponse = r.data as VerificationResponse
+                    Timber.i(
+                        "LoginFlow mobile_verification_request_success from=$from deactivation_dialog=${!r.data?.deactivationEffectiveAt.isNullOrBlank()} emergency_contact=${verificationResponse.hasEmergencyContact}"
+                    )
                     if (!r.data?.deactivationEffectiveAt.isNullOrBlank() && from == FROM_LANDING) {
                         LandingDeleteAccountFragment.newInstance(r.data?.deactivationRequestedAt, r.data?.deactivationEffectiveAt)
                             .setContinueCallback {
@@ -466,7 +510,6 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                             }
                         },
                     )
-                (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
             val captchaType = if (errorDescription.containsIgnoreCase(gtCAPTCHA)) {
                 CaptchaView.CaptchaType.GTCaptcha
@@ -541,6 +584,11 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
         try {
             if (isAddPhoneFlow()) {
                 AnalyticsTracker.trackAddPhoneInputPhoneCountry()
+            }
+            if (useSystemKeyboard) {
+                binding.mobileEt.hideKeyboard()
+                binding.mobileEt.clearFocus()
+                binding.countryCodeEt.clearFocus()
             }
             activity?.supportFragmentManager?.inTransaction {
                 setCustomAnimations(R.anim.slide_in_bottom, 0, 0, R.anim.slide_out_bottom)
@@ -788,6 +836,7 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     }
 
     private fun handleFocusChange(hasFocus: Boolean) {
+        if (useSystemKeyboard) return
         if (hasFocus) {
             binding.orLl.isVisible = false
             binding.mnemonicPhrase.isVisible = false
@@ -802,6 +851,11 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
     }
 
     private fun handleTextChange(s: Editable?) {
+        if (useSystemKeyboard) {
+            binding.orLl.isVisible = false
+            binding.mnemonicPhrase.isVisible = false
+            return
+        }
         if (s.isNullOrEmpty() && !binding.mobileEt.hasFocus() && !binding.countryCodeEt.hasFocus()) {
             binding.orLl.isVisible = from == FROM_LANDING
             binding.mnemonicPhrase.isVisible = from == FROM_LANDING

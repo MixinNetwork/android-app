@@ -6,7 +6,7 @@ plugins {
     id("com.google.devtools.ksp")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("org.jetbrains.kotlin.plugin.serialization")
-    id("org.jetbrains.kotlin.plugin.compose") version "2.3.21"
+    id("org.jetbrains.kotlin.plugin.compose") version "2.4.10"
     id("com.google.firebase.firebase-perf")
     id("com.bugsnag.android.gradle")
 }
@@ -14,9 +14,15 @@ plugins {
 apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
+val versionMajor = 5
+val versionMinor = 2
+val versionPatch = 1
+val versionBuild = 1
+
+
 val bitcoinVersion: String by rootProject.extra
 val fragmentVersion: String by rootProject.extra
-val activity_version: String by rootProject.extra
+val activityVersion: String by rootProject.extra
 val lifecycleVersion: String by rootProject.extra
 val appcompatVersion: String by rootProject.extra
 val pagingVersion: String by rootProject.extra
@@ -85,7 +91,6 @@ val robolectricVersion: String by rootProject.extra
 val gsonVersion: String by rootProject.extra
 val serializationVersion: String by rootProject.extra
 val autodisposeVersion: String by rootProject.extra
-val isoparserVersion: String by rootProject.extra
 val bitcoinPaymentURI: String by rootProject.extra
 val startupVersion: String by rootProject.extra
 val dnsVersion: String by rootProject.extra
@@ -122,11 +127,6 @@ val appsFlyerVersion: String by rootProject.extra
 val installreferrerVersion: String by rootProject.extra
 val billingVersion: String by rootProject.extra
 
-val versionMajor = 4
-val versionMinor = 3
-val versionPatch = 0
-val versionBuild = 0
-
 val includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false
 
 android {
@@ -141,8 +141,11 @@ android {
         versionName = "$versionMajor.$versionMinor.$versionPatch"
         multiDexEnabled = true
         testInstrumentationRunner = "one.mixin.android.CustomTestRunner"
-        resourceConfigurations += listOf("en", "es", "in", "ja", "ms", "ru", "zh-rCN", "zh-rTW")
         vectorDrawables.useSupportLibrary = true
+    }
+
+    androidResources {
+        localeFilters += listOf("en", "es", "in", "ja", "ms", "ru", "zh-rCN", "zh-rTW")
     }
 
     packaging {
@@ -184,11 +187,11 @@ android {
     sourceSets {
         val sharedTestDir = "src/sharedTest/java"
         getByName("test") {
-            java.srcDirs(sharedTestDir)
+            java.directories.add(sharedTestDir)
         }
         getByName("androidTest") {
-            java.srcDirs(sharedTestDir)
-            assets.srcDirs(files("$projectDir/schemas"))
+            java.directories.add(sharedTestDir)
+            assets.directories.add("$projectDir/schemas")
         }
     }
 
@@ -302,6 +305,7 @@ android {
             force("org.bouncycastle:bcprov-jdk15to18:$bcVersion")
             force("org.bouncycastle:bcutil-jdk15to18:$bcVersion")
             force("org.bouncycastle:bcpkix-jdk15to18:$bcVersion")
+            force("org.jetbrains.kotlin:kotlin-metadata-jvm:2.4.10")
             dependencySubstitution {
                 substitute(module("org.bouncycastle:bcprov-jdk15on")).using(module("org.bouncycastle:bcprov-jdk15to18:$bcVersion"))
                 substitute(module("org.bouncycastle:bcutil-jdk15on")).using(module("org.bouncycastle:bcutil-jdk15to18:$bcVersion"))
@@ -329,7 +333,7 @@ dependencies {
     implementation("com.google.firebase:firebase-perf")
     implementation(fileTree(mapOf("include" to listOf("*.aar"), "dir" to "libs")))
     implementation("androidx.fragment:fragment-ktx:$fragmentVersion")
-    implementation("androidx.activity:activity-ktx:$activity_version")
+    implementation("androidx.activity:activity-ktx:$activityVersion")
     implementation("androidx.appcompat:appcompat:$appcompatVersion")
     implementation("androidx.legacy:legacy-support-v4:$supportLibVersion")
     implementation("com.google.android.material:material:$mdcVersion")
@@ -452,9 +456,10 @@ dependencies {
     implementation("com.google.zxing:core:$zxingVersion")
     implementation("com.github.tougee:sticky-headers-recyclerview:$stickyheadersrecyclerviewVersion")
     implementation("org.whispersystems:signal-protocol-android:$signalVersion")
-    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.3.21")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib:2.4.10")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:$coroutinesVersion")
     implementation("com.github.zjupure:webpdecoder:$webpdecoderVersion")
     implementation("com.github.bumptech.glide:glide:$glideVersion")
     implementation("com.github.bumptech.glide:okhttp3-integration:$glideVersion")
@@ -473,7 +478,6 @@ dependencies {
     implementation("com.uber.autodispose:autodispose-android:$autodisposeVersion")
     implementation("com.uber.autodispose:autodispose-android-archcomponents:$autodisposeVersion")
     implementation("com.uber.autodispose:autodispose-lifecycle:$autodisposeVersion")
-    implementation("com.googlecode.mp4parser:isoparser:$isoparserVersion")
     implementation("io.noties.markwon:core:$markwonVersion")
     implementation("io.noties.markwon:image:$markwonVersion")
     implementation("io.noties.markwon:image-glide:$markwonVersion")
@@ -553,6 +557,7 @@ dependencies {
     androidTestImplementation("androidx.test.espresso:espresso-contrib:$espressoVersion") {
         exclude(group = "com.android.support", module = "support-annotations")
         exclude(group = "org.checkerframework", module = "checker")
+        exclude(group = "com.google.protobuf", module = "protobuf-lite")
     }
     androidTestImplementation("androidx.test.espresso:espresso-idling-resource:$espressoVersion")
     androidTestImplementation("androidx.test.ext:junit:$androidxJunitVersion")
@@ -600,9 +605,8 @@ dependencies {
 }
 
 composeCompiler {
-    enableStrongSkippingMode = true
     reportsDestination = layout.buildDirectory.dir("compose_compiler")
-    stabilityConfigurationFile = rootProject.layout.projectDirectory.file("stability_config.conf")
+    stabilityConfigurationFiles.add(rootProject.layout.projectDirectory.file("stability_config.conf"))
 }
 
 secrets {

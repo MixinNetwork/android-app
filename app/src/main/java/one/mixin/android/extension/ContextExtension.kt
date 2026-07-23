@@ -23,6 +23,7 @@ import android.content.pm.PackageManager
 import android.content.res.Configuration
 import android.content.res.Resources
 import android.database.Cursor
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Point
 import android.graphics.Rect
@@ -91,8 +92,8 @@ import one.mixin.android.util.RomPermissionUtil
 import one.mixin.android.util.XiaomiUtilities
 import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.getChainName
-import one.mixin.android.util.video.MediaController
 import one.mixin.android.util.video.VideoEditedInfo
+import one.mixin.android.util.video.VideoTranscodeProfileFactory
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -111,7 +112,6 @@ import java.util.concurrent.Future
 import kotlin.compareTo
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.math.roundToInt
 
 private val uiHandler = Handler(Looper.getMainLooper())
 
@@ -779,59 +779,47 @@ fun Context.getAttachment(
     return null
 }
 
-private val maxVideoSize by lazy {
-    1280.0f
-}
-
 fun getVideoModel(uri: Uri): VideoEditedInfo? {
+    var retriever: MediaMetadataRetriever? = null
+    var image: Bitmap? = null
     try {
         @Suppress("DEPRECATION")
         val path = uri.getFilePath() ?: return null
-        val m =
+        retriever =
             MediaMetadataRetriever().apply {
                 setDataSource(path)
             }
         val fileName = File(path).name
-        val rotation = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION) ?: "0"
-        val image = m.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST) ?: return null
+        val rotation = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION) ?: "0"
+        image = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST) ?: return null
         val mediaWith = image.width
         val mediaHeight = image.height
-        val duration = m.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0
+        val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0
+        val originalBitrate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE)?.toIntOrNull() ?: 0
         val thumbnail = BlurHashEncoder.encode(image)
-        val scale = if (mediaWith > mediaHeight) maxVideoSize / mediaWith else maxVideoSize / mediaHeight
-        val resultWidth = ((mediaWith * scale / 2).toDouble().roundToInt() * 2)
-        val resultHeight = ((mediaHeight * scale / 2).toDouble().roundToInt() * 2)
-        return if (scale < 1) {
-            val bitrate = MediaController.getBitrate(path, scale)
-            VideoEditedInfo(
-                path,
-                duration,
-                rotation,
-                mediaWith,
-                mediaHeight,
-                resultWidth,
-                resultHeight,
-                thumbnail,
-                fileName,
-                bitrate,
-            )
-        } else {
-            VideoEditedInfo(
-                path,
-                duration,
-                rotation,
-                mediaWith,
-                mediaHeight,
-                mediaWith,
-                mediaHeight,
-                thumbnail,
-                fileName,
-                0,
-                false,
-            )
-        }
+        val profile = VideoTranscodeProfileFactory.create(mediaWith, mediaHeight, originalBitrate)
+        return VideoEditedInfo(
+            path,
+            duration,
+            rotation,
+            mediaWith,
+            mediaHeight,
+            profile.width,
+            profile.height,
+            thumbnail,
+            fileName,
+            profile.bitrate,
+            profile.needsResize(mediaWith, mediaHeight),
+        )
     } catch (e: Exception) {
         Timber.e(e)
+    } finally {
+        image?.recycle()
+        try {
+            retriever?.release()
+        } catch (e: Exception) {
+            Timber.e(e)
+        }
     }
     return null
 }
@@ -908,15 +896,8 @@ fun Context.openInBrowser(
     url: String,
     extraHeaders: Bundle? = null,
 ): Boolean {
-    val browserUrl = url.trim()
-    if (browserUrl.isBlank()) return false
-    var uri = browserUrl.toUri()
-    if (uri.scheme.isNullOrBlank()) {
-        uri = Uri.parse("http://$browserUrl")
-    }
-    if (!uri.scheme.equals("http", true) && !uri.scheme.equals("https", true)) {
-        return false
-    }
+    val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
+    val uri = browserUrl.toUri()
 
     try {
         val customTabsIntent =
@@ -1170,7 +1151,8 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
         Constants.ChainId.Optimism,
         Constants.ChainId.Polygon,
         Constants.ChainId.BitShares,
-        Constants.ChainId.Avalanche
+        Constants.ChainId.Avalanche,
+        Constants.ChainId.HyperEVM
             -> getString(R.string.deposit_tip_chain, asset.symbol, asset.chainName ?: getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
         else -> getString(R.string.deposit_tip_common, asset.symbol)
     }
@@ -1349,9 +1331,16 @@ fun Activity.showPipPermissionNotification(
 fun getStringDeviceId(resolver: ContentResolver): String {
     var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
     if (deviceId == null || deviceId == "9774d56d682e549c") {
-        deviceId = FirebaseInstallations.getInstance().id.result
+        deviceId = getFirebaseInstallationIdIfReady() ?: Build.FINGERPRINT
     }
     return UUID.nameUUIDFromBytes(deviceId.toByteArray()).toString()
+}
+
+private fun getFirebaseInstallationIdIfReady(): String? {
+    val task = FirebaseInstallations.getInstance().id
+    if (!task.isComplete) return null
+    task.exception?.let { Timber.w(it, "Firebase installation id unavailable for device id") }
+    return if (task.isSuccessful) task.result else null
 }
 
 fun Context.getStringDeviceId(): String {

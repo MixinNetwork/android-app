@@ -7,6 +7,7 @@ import androidx.compose.runtime.getValue
 import androidx.fragment.app.activityViewModels
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentComposeBinding
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.SelectContent
@@ -16,15 +17,36 @@ import one.mixin.android.util.viewBinding
 class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
         const val TAG = "select"
-        fun newInstance() = SelectWalletFragment()
+        private const val ARGS_CUSTOMER_SERVICE_SOURCE = "args_customer_service_source"
+        private const val ARGS_HIDE_CLOSE_BUTTON = "args_hide_close_button"
+        fun newInstance(
+            customerServiceSource: String? = null,
+            hideCloseButton: Boolean = false,
+        ) = SelectWalletFragment().apply {
+            arguments = Bundle().apply {
+                customerServiceSource?.let { putString(ARGS_CUSTOMER_SERVICE_SOURCE, it) }
+                putBoolean(ARGS_HIDE_CLOSE_BUTTON, hideCloseButton)
+            }
+        }
     }
 
     private val binding by viewBinding(FragmentComposeBinding::bind)
     private val viewModel by activityViewModels<FetchWalletViewModel>()
+    private val customerServiceSource: String? by lazy { arguments?.getString(ARGS_CUSTOMER_SERVICE_SOURCE) }
+    private val hideCloseButton: Boolean by lazy { arguments?.getBoolean(ARGS_HIDE_CLOSE_BUTTON, false) ?: false }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
+        if (hideCloseButton) {
+            binding.titleView.leftIb.visibility = View.GONE
+        } else {
+            binding.titleView.leftIb.setOnClickListener { requireActivity().finish() }
+        }
+        binding.titleView.rightIb.setImageResource(R.drawable.ic_support)
+        binding.titleView.rightAnimator.visibility = View.VISIBLE
+        binding.titleView.rightAnimator.displayedChild = 0
+        binding.titleView.rightAnimator.setOnClickListener { openCustomerService(source = customerServiceSource) }
+        binding.titleView.setSubTitle(getString(R.string.import_wallet_title), "")
         binding.compose.setContent {
             val wallets by viewModel.wallets.collectAsState()
             val selectedWalletInfos by viewModel.selectedWalletInfos.collectAsState()
@@ -37,12 +59,11 @@ class SelectWalletFragment : BaseFragment(R.layout.fragment_compose) {
                     parentFragmentManager.beginTransaction()
                         .replace(
                             R.id.container,
-                            ImportingWalletFragment.newInstance(),
+                            ImportingWalletFragment.newInstance(customerServiceSource, hideCloseButton),
                             ImportingWalletFragment.TAG
                         )
                         .commit()
                 },
-                onBackPressed = { requireActivity().finish() },
                 onSelectAll = viewModel::selectAll,
                 onFindMore = viewModel::findMoreWallets,
                 isLoadingMore = state == FetchWalletState.FETCHING && wallets.isNotEmpty(),

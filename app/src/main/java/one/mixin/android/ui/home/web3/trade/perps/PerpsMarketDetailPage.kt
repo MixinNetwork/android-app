@@ -1,5 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.text.Layout
+import android.util.TypedValue
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -13,6 +15,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -37,6 +40,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -46,6 +50,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -61,11 +66,13 @@ import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
@@ -73,14 +80,18 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.CandleChart
+import one.mixin.android.ui.wallet.MarketDescriptionTextView
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.ui.wallet.selectLocalizedMarketDescription
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
+import java.util.Locale
 
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
 private const val MARKET_REFRESH_INTERVAL_MS = 10_000L
+private const val PREF_MARKET_DETAIL_TIME_FRAME = "perps_market_detail_time_frame"
 
 @Composable
 fun PerpsMarketDetailPage(
@@ -99,7 +110,7 @@ fun PerpsMarketDetailPage(
     val lifecycleOwner = LocalLifecycleOwner.current
     var market by remember(marketId, initialMarket) { mutableStateOf(initialMarket) }
     var isLoading by remember(marketId, initialMarket) { mutableStateOf(initialMarket == null) }
-    var selectedTimeFrame by remember { mutableIntStateOf(0) }
+    val timeFramePreferenceKey = PREF_MARKET_DETAIL_TIME_FRAME
     val walletId = Session.getAccountId().orEmpty()
     val openPositions by remember(walletId) {
         if (walletId.isNotEmpty()) {
@@ -116,6 +127,7 @@ fun PerpsMarketDetailPage(
         }
     }.collectAsStateWithLifecycle(initialValue = emptyList())
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
+    var isAddingProcessing by remember { mutableStateOf(false) }
     val currentPosition = openPositions?.firstOrNull { it.marketId == marketId }
     val hasLoadedOpenPositions = openPositions != null
     val closedPositions = allClosedPositions.filter { it.marketId == marketId }
@@ -129,6 +141,10 @@ fun PerpsMarketDetailPage(
         stringResource(R.string.days_count_short, 1),
         stringResource(R.string.weeks_count_short, 1),
     )
+    var selectedTimeFrame by remember(timeFramePreferenceKey, timeFrameValues.size) {
+        val savedIndex = preferences.getInt(timeFramePreferenceKey, 0)
+        mutableIntStateOf(savedIndex.takeIf { it in timeFrameValues.indices } ?: 0)
+    }
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
@@ -217,6 +233,7 @@ fun PerpsMarketDetailPage(
                             timeFrameLabels = timeFrameLabels,
                             onTimeFrameChange = { index ->
                                 selectedTimeFrame = index
+                                preferences.putInt(timeFramePreferenceKey, index)
                             }
                         )
                     } else if (isLoading) {
@@ -370,6 +387,12 @@ fun PerpsMarketDetailPage(
                     }
                     MarketInfoCard(
                         market = market!!,
+                        onFundingRateTipClick = {
+                            val activity = context as? FragmentActivity ?: return@MarketInfoCard
+                            PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                PerpetualGuideBottomSheetDialogFragment.TAB_FUNDING_RATE
+                            ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                        }
                     )
                 }
 
@@ -379,33 +402,20 @@ fun PerpsMarketDetailPage(
                         positions = closedPositions,
                         onViewAll = {
                             val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
-                            activity.supportFragmentManager
-                                .beginTransaction()
-                                .add(
-                                    android.R.id.content,
-                                    AllPositionsFragment.newClosedInstance(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
-                                    AllPositionsFragment.TAG
-                                )
-                                .addToBackStack(null)
-                                .commit()
+                            activity.supportFragmentManager.navigateToPerpsRoute(
+                                AllPositionsFragment.newClosedInstance(AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
+                                AllPositionsFragment.TAG,
+                                android.R.id.content,
+                                animate = false,
+                            )
                         },
                         onPositionClick = { position ->
                             val activity = context as? FragmentActivity ?: return@ClosedPositionsSection
-                            activity.supportFragmentManager
-                                .beginTransaction()
-                                .setCustomAnimations(
-                                    R.anim.slide_in_right,
-                                    0,
-                                    0,
-                                    R.anim.slide_out_right
-                                )
-                                .add(
-                                    android.R.id.content,
-                                    PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
-                                    PositionDetailFragment.TAG
-                                )
-                                .addToBackStack(null)
-                                .commit()
+                            activity.supportFragmentManager.navigateToPerpsRoute(
+                                PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL),
+                                PositionDetailFragment.TAG,
+                                android.R.id.content,
+                            )
                         }
                     )
                 }
@@ -423,6 +433,14 @@ fun PerpsMarketDetailPage(
                     )
                 }
 
+                val description = market?.descriptions?.let { descriptions ->
+                    selectLocalizedMarketDescription(descriptions, Locale.getDefault().language)
+                }
+                if (!description.isNullOrBlank()) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    MarketAboutSection(description)
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
@@ -436,9 +454,9 @@ fun PerpsMarketDetailPage(
                         .padding(bottom = 20.dp, top = 20.dp)
                 ) {
                     if (currentPosition != null) {
-                        val isOpen = currentPosition.state == "open"
-                        val isAdding = currentPosition.state == "adding"
-                        val isPending = currentPosition.state == "processing" || isAdding
+                        val isOpen = currentPosition.state == PerpsPosition.STATE_OPEN
+                        val isAdding = currentPosition.state == PerpsPosition.STATE_ADDING
+                        val isPending = currentPosition.state == PerpsPosition.STATE_OPENING || isAdding
                         if (isPending) {
                             MixinButton(
                                 modifier = Modifier
@@ -465,12 +483,19 @@ fun PerpsMarketDetailPage(
                                     modifier = Modifier
                                         .weight(1f)
                                         .height(48.dp),
-                                    enabled = true,
+                                    enabled = !isAddingProcessing,
                                     onClick = {
-                                        val activity = context as? FragmentActivity ?: return@MixinButton
+                                        if (isAddingProcessing) return@MixinButton
+                                        isAddingProcessing = true
+                                        val activity = context as? FragmentActivity ?: run { isAddingProcessing = false; return@MixinButton }
                                         val positionForAdd = currentPosition
+                                        AnalyticsTracker.trackPerpsAddStart(AnalyticsTracker.PerpsAddType.ADD_POSITION)
                                         PerpsAddBottomSheetDialogFragment.newInstance(positionForAdd)
-                                            .setOnAdd { token, amount ->
+                                            .setOnDestroy {
+                                                isAddingProcessing = false
+                                            }
+                                            .setOnAdd { token, amount, liquidationPrice ->
+                                                isAddingProcessing = false
                                                 val referencePrice = market?.last
                                                     ?: positionForAdd.markPrice
                                                     ?: positionForAdd.entryPrice
@@ -495,14 +520,18 @@ fun PerpsMarketDetailPage(
                                                             amount = response.payAmount,
                                                             leverage = positionForAdd.leverage,
                                                             entryPrice = confirmEntryPrice,
+                                                            marginAssetPrice = token.priceUsd,
                                                             tokenSymbol = token.symbol,
                                                             takeProfitPrice = null,
                                                             stopLossPrice = null,
+                                                            liquidationPrice = liquidationPrice,
+                                                            priceScale = market?.priceScale ?: positionForAdd.priceScale,
                                                             payUrl = response.paymentUrl,
                                                             isAddPosition = true,
                                                         ).show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
                                                     },
                                                     onError = { errorCode, errorMessage ->
+                                                        isAddingProcessing = false
                                                         val message = if (errorCode > 0) {
                                                             context.getMixinErrorStringByCode(errorCode, errorMessage)
                                                         } else {
@@ -532,7 +561,7 @@ fun PerpsMarketDetailPage(
                                     onClick = {
                                         val activity = context as? FragmentActivity ?: return@MixinButton
                                         val position = currentPosition.toPosition()
-                                        AnalyticsTracker.trackPerpsClosePositionStart()
+                                        AnalyticsTracker.trackPerpsCloseStart(AnalyticsTracker.PerpsCloseType.SINGLE)
                                         PerpsCloseBottomSheetDialogFragment.newInstance(
                                             position = position,
                                         ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
@@ -584,6 +613,7 @@ fun PerpsMarketDetailPage(
                                         marketTokenSymbol = market?.tokenSymbol ?: "",
                                         isLong = true,
                                         source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
+                                        returnToDetail = true,
                                     )
                                 },
                                 backgroundColor = risingColor,
@@ -609,6 +639,7 @@ fun PerpsMarketDetailPage(
                                         marketTokenSymbol = market?.tokenSymbol ?: "",
                                         isLong = false,
                                         source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
+                                        returnToDetail = true,
                                     )
                                 },
                                 backgroundColor = fallingColor,
@@ -625,6 +656,38 @@ fun PerpsMarketDetailPage(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun MarketAboutSection(description: String) {
+    val textAssist = MixinAppTheme.colors.textAssist.toArgb()
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.About),
+            fontSize = 14.sp,
+            color = MixinAppTheme.colors.textMinor,
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        AndroidView(
+            modifier = Modifier.fillMaxWidth(),
+            factory = { context ->
+                MarketDescriptionTextView(context).apply {
+                    setTextSize(TypedValue.COMPLEX_UNIT_SP, 13f)
+                    setTextColor(textAssist)
+                    breakStrategy = Layout.BREAK_STRATEGY_HIGH_QUALITY
+                    hyphenationFrequency = Layout.HYPHENATION_FREQUENCY_NONE
+                }
+            },
+            update = { view ->
+                view.setTextColor(textAssist)
+                view.setMarketDescription(description)
+            },
+        )
     }
 }
 
@@ -667,6 +730,7 @@ private fun HowPerpsWorksCard(
 @Composable
 private fun MarketInfoCard(
     market: PerpsMarket,
+    onFundingRateTipClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -688,11 +752,22 @@ private fun MarketInfoCard(
         )
 
         Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = stringResource(R.string.Funding_Rate).uppercase(),
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textAssist
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.Funding_Rate).uppercase(),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_tip),
+                contentDescription = null,
+                modifier = Modifier
+                    .size(12.dp)
+                    .clickable(onClick = onFundingRateTipClick),
+                tint = MixinAppTheme.colors.textAssist
+            )
+        }
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = formatFundingRate(market.fundingRate),
@@ -955,11 +1030,10 @@ private fun OpenPositionCard(
         ) {
             Text(
                 text = stringResource(R.string.perps_position),
-                fontSize = 16.sp,
-                lineHeight = 16.sp,
+                fontSize = 14.sp,
                 style = compactTextStyle,
-                fontWeight = FontWeight.Medium,
-                color = MixinAppTheme.colors.textPrimary
+                fontWeight = FontWeight.W400,
+                color = MixinAppTheme.colors.textMinor
             )
             Spacer(modifier = Modifier.weight(1f))
             Icon(
@@ -1321,10 +1395,10 @@ private fun TpSlActionCell(
             } else if (!loading) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_arrow_right),
+                    painter = painterResource(id = R.drawable.ic_arrow_gray_right),
                     contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(16.dp)
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(16.dp).offset(x = 4.dp)
                 )
             }
         }
@@ -1345,6 +1419,7 @@ private fun ClosedPositionsSection(
     onViewAll: () -> Unit,
     onPositionClick: (PerpsOrderItem) -> Unit,
 ) {
+    val context = LocalContext.current
     val displayPositions = positions.take(3)
 
     Column(
@@ -1364,22 +1439,31 @@ private fun ClosedPositionsSection(
         ) {
             Text(
                 text = stringResource(R.string.perps_activity),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = MixinAppTheme.colors.textPrimary
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W400,
+                color = MixinAppTheme.colors.textMinor
             )
 
             Icon(
-                painter = painterResource(R.drawable.ic_arrow_right),
+                painter = painterResource(R.drawable.ic_arrow_gray_right),
                 contentDescription = null,
-                tint = MixinAppTheme.colors.textAssist,
-                modifier = Modifier.size(16.dp)
+                tint = Color.Unspecified,
+                modifier = Modifier.size(16.dp).offset(x = 4.dp)
             )
         }
 
         Spacer(modifier = Modifier.height(12.dp))
 
+        var previousDate: String? = null
         displayPositions.forEach { order ->
+            val date = order.createdAtDateLabel(context)
+            if (date != previousDate) {
+                PerpsActivityDateHeader(
+                    date = date,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+            }
             if (order.orderType == PerpsOrder.TYPE_CLOSE) {
                 ClosedActivityItem(
                     order = order,
@@ -1394,6 +1478,7 @@ private fun ClosedPositionsSection(
             if (order != displayPositions.last()) {
                 Spacer(modifier = Modifier.height(8.dp))
             }
+            previousDate = date
         }
     }
 }

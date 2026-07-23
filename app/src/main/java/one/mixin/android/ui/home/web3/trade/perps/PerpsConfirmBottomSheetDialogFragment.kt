@@ -80,6 +80,7 @@ import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.ItemUserContent
 import one.mixin.android.ui.wallet.components.WalletLabel
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.User
@@ -101,9 +102,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_AMOUNT = "args_amount"
         private const val ARGS_LEVERAGE = "args_leverage"
         private const val ARGS_ENTRY_PRICE = "args_entry_price"
+        private const val ARGS_MARGIN_ASSET_PRICE = "args_margin_asset_price"
         private const val ARGS_TOKEN_SYMBOL = "args_token_symbol"
         private const val ARGS_TAKE_PROFIT_PRICE = "args_take_profit_price"
         private const val ARGS_STOP_LOSS_PRICE = "args_stop_loss_price"
+        private const val ARGS_LIQUIDATION_PRICE = "args_liquidation_price"
+        private const val ARGS_PRICE_SCALE = "args_price_scale"
         private const val ARGS_PAY_URL = "args_pay_url"
         private const val ARGS_IS_ADD_POSITION = "args_is_add_position"
 
@@ -114,9 +118,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             amount: String,
             leverage: Int,
             entryPrice: String,
+            marginAssetPrice: String,
             tokenSymbol: String,
             takeProfitPrice: String? = null,
             stopLossPrice: String? = null,
+            liquidationPrice: String? = null,
+            priceScale: Int = 2,
             payUrl: String?,
             isAddPosition: Boolean = false,
         ): PerpsConfirmBottomSheetDialogFragment {
@@ -127,9 +134,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 putString(ARGS_AMOUNT, amount)
                 putInt(ARGS_LEVERAGE, leverage)
                 putString(ARGS_ENTRY_PRICE, entryPrice)
+                putString(ARGS_MARGIN_ASSET_PRICE, marginAssetPrice)
                 putString(ARGS_TOKEN_SYMBOL, tokenSymbol)
                 putString(ARGS_TAKE_PROFIT_PRICE, takeProfitPrice)
                 putString(ARGS_STOP_LOSS_PRICE, stopLossPrice)
+                putString(ARGS_LIQUIDATION_PRICE, liquidationPrice)
+                putInt(ARGS_PRICE_SCALE, priceScale)
                 putString(ARGS_PAY_URL, payUrl)
                 putBoolean(ARGS_IS_ADD_POSITION, isAddPosition)
             }
@@ -176,9 +186,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val amount by lazy { requireNotNull(requireArguments().getString(ARGS_AMOUNT)) }
     private val leverage by lazy { requireArguments().getInt(ARGS_LEVERAGE) }
     private val entryPrice by lazy { requireNotNull(requireArguments().getString(ARGS_ENTRY_PRICE)) }
+    private val marginAssetPrice by lazy { requireArguments().getString(ARGS_MARGIN_ASSET_PRICE) }
     private val tokenSymbol by lazy { requireNotNull(requireArguments().getString(ARGS_TOKEN_SYMBOL)) }
     private val takeProfitPrice by lazy { requireArguments().getString(ARGS_TAKE_PROFIT_PRICE).orEmpty() }
     private val stopLossPrice by lazy { requireArguments().getString(ARGS_STOP_LOSS_PRICE).orEmpty() }
+    private val rawLiquidationPrice by lazy { requireArguments().getString(ARGS_LIQUIDATION_PRICE) }
+    private val priceScale by lazy { requireArguments().getInt(ARGS_PRICE_SCALE, 2) }
     private val isAddPosition by lazy { requireArguments().getBoolean(ARGS_IS_ADD_POSITION) }
 
     private val payUrl by lazy { requireArguments().getString(ARGS_PAY_URL) }
@@ -190,28 +203,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val stopLossFiatPrice by lazy { formatOptionalPerpsPrice(stopLossPrice) }
 
     private val liquidationPrice by lazy {
-        try {
-            if (leverage <= 0) {
-                "${PERPS_USD_SYMBOL}0"
-            } else {
-                val price = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                if (price == BigDecimal.ZERO) {
-                    "${PERPS_USD_SYMBOL}0"
-                } else {
-                    val liquidationPercent = BigDecimal(100.0 / leverage)
-                    val liquidationRatio = liquidationPercent.divide(BigDecimal(100), 8, RoundingMode.HALF_UP)
-                    val liquidation = if (isLong) {
-                        price * (BigDecimal.ONE - liquidationRatio)
-                    } else {
-                        price * (BigDecimal.ONE + liquidationRatio)
-                    }
-                    "$PERPS_USD_SYMBOL${liquidation.priceFormat()}"
-                }
-            }
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to calculate liquidation price")
-            "${PERPS_USD_SYMBOL}0"
-        }
+        rawLiquidationPrice?.let { formatPerpsPrice(it, priceScale) } ?: "-"
     }
 
     private var step by mutableStateOf(Step.Pending)
@@ -292,7 +284,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             id = when (step) {
                                 Step.Pending -> if (isAddPosition) R.string.confirm_adding_position else R.string.confirm_opening_position
                                 Step.Done -> if (isAddPosition) R.string.Position_Add_Submitted else R.string.Position_Submitted
-                                Step.Error -> R.string.swap_failed
+                                Step.Error -> when {
+                                    isAddPosition && isLong -> R.string.Added_Long_Failed
+                                    isAddPosition -> R.string.Added_Short_Failed
+                                    isLong -> R.string.Opened_Long_Failed
+                                    else -> R.string.Opened_Short_Failed
+                                }
                                 Step.Sending -> R.string.Sending
                             }
                         ),
@@ -497,11 +494,11 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
                                 cancelAction = {
-                                    AnalyticsTracker.trackPerpsPreviewCancel()
+                                    trackPreviewCancel()
                                     dismiss()
                                 },
                                 confirmAction = {
-                                    AnalyticsTracker.trackPerpsPreviewConfirm()
+                                    trackPreviewConfirm()
                                     showPin()
                                 },
                             )
@@ -513,11 +510,11 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Confirm),
                                 cancelAction = {
-                                    AnalyticsTracker.trackPerpsPreviewCancel()
+                                    trackPreviewCancel()
                                     dismiss()
                                 },
                                 confirmAction = {
-                                    AnalyticsTracker.trackPerpsPreviewConfirm()
+                                    trackPreviewConfirm()
                                     showPin()
                                 },
                             )
@@ -675,7 +672,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 )
                 context?.updatePinCheck()
                 step = Step.Done
-                trackOpenPositionSuccess()
+                trackPositionSuccess()
             }
         } catch (e: Exception) {
             handleException(e)
@@ -684,7 +681,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
     private fun handleException(t: Throwable) {
         Timber.e(t)
-        errorInfo = t.message ?: t.toString()
+        errorInfo = ErrorHandler.getErrorMessage(t)
         step = Step.Error
     }
 
@@ -743,7 +740,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 )
                 context?.updatePinCheck()
                 step = Step.Done
-                trackOpenPositionSuccess()
+                trackPositionSuccess()
             } else {
                 errorInfo = paymentResponse.errorDescription
                 step = Step.Error
@@ -762,12 +759,32 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         step = Step.Error
     }
 
-    private fun trackOpenPositionSuccess() {
-        AnalyticsTracker.trackPerpsOpenPositionEnd(
-            leverage = leverage,
-            amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO,
-            price = entryPrice,
-        )
+    private fun trackPreviewConfirm() {
+        if (isAddPosition) {
+            AnalyticsTracker.trackPerpsAddPreviewConfirm()
+        } else {
+            AnalyticsTracker.trackPerpsOpenPreviewConfirm()
+        }
+    }
+
+    private fun trackPreviewCancel() {
+        if (isAddPosition) {
+            AnalyticsTracker.trackPerpsAddPreviewCancel()
+        } else {
+            AnalyticsTracker.trackPerpsOpenPreviewCancel()
+        }
+    }
+
+    private fun trackPositionSuccess() {
+        if (isAddPosition) {
+            AnalyticsTracker.trackPerpsAddEnd()
+        } else {
+            AnalyticsTracker.trackPerpsOpenEnd(
+                leverage = leverage,
+                amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO,
+                price = marginAssetPrice,
+            )
+        }
     }
 }
 

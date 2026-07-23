@@ -60,6 +60,8 @@ fun InputArea(
     displayBalanceOverride: String? = null,
     bottomCompose: (@Composable () -> Unit)? = null,
     inlineEndCompose: (@Composable () -> Unit)? = null,
+    maxDecimalPlaces: Int? = null,
+    onFocusChanged: ((Boolean) -> Unit)? = null,
 ) {
     val viewModel = hiltViewModel<SwapViewModel>()
     val balance = if (token == null) {
@@ -92,7 +94,16 @@ fun InputArea(
             }
         }
         Box(modifier = Modifier.height(10.dp))
-        InputContent(token = token, text = text, selectClick = selectClick, onInputChanged = onInputChanged, readOnly = readOnly, inlineEndCompose = inlineEndCompose)
+        InputContent(
+            token = token,
+            text = text,
+            selectClick = selectClick,
+            onInputChanged = onInputChanged,
+            readOnly = readOnly,
+            inlineEndCompose = inlineEndCompose,
+            maxDecimalPlaces = maxDecimalPlaces,
+            onFocusChanged = onFocusChanged,
+        )
         Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
             token?.let { t ->
                 val depositVisible = !readOnly && onDeposit != null && (balance?.toBigDecimalOrNull()?.compareTo(BigDecimal.ZERO) ?: 0) == 0

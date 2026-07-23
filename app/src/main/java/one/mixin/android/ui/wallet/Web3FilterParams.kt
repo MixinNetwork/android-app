@@ -106,7 +106,7 @@ class Web3FilterParams(
         }
 
         return SimpleSQLiteQuery(
-            "SELECT DISTINCT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, " +
+            "SELECT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, " +
                 "w.address, w.fee, w.sponsor_fee_asset_id, w.sponsor_fee_amount, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, " +
                 "w.transaction_at, w.updated_at, w.level, " +
                 "c.symbol as chain_symbol, " +
@@ -117,10 +117,10 @@ class Web3FilterParams(
                 "r.symbol as receive_asset_symbol, " +
                 "sf.symbol as sponsor_fee_asset_symbol " +
                 "FROM transactions w " +
-                "LEFT JOIN tokens c ON c.asset_id = w.chain_id " +
-                "LEFT JOIN tokens s ON s.asset_id = w.send_asset_id " +
-                "LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id " +
-                "LEFT JOIN tokens sf ON sf.asset_id = w.sponsor_fee_asset_id " +
+                "LEFT JOIN tokens c ON c.asset_id = w.chain_id AND c.wallet_id = '$walletId' " +
+                "LEFT JOIN tokens s ON s.asset_id = w.send_asset_id AND s.wallet_id = '$walletId' " +
+                "LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id AND r.wallet_id = '$walletId' " +
+                "LEFT JOIN tokens sf ON sf.asset_id = w.sponsor_fee_asset_id AND sf.wallet_id = '$walletId' " +
                 "$whereSql $orderSql"
         )
     }

@@ -1,9 +1,9 @@
 package one.mixin.android.ui.landing
 
+import android.content.ClipData
 import android.os.Bundle
+import android.os.Build
 import android.view.View
-import android.view.ViewGroup
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -27,27 +27,37 @@ import one.mixin.android.api.request.doAnonymousPOW
 import one.mixin.android.crypto.CryptoPreference
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.SignalProtocol
+import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.generateEd25519KeyPair
 import one.mixin.android.crypto.getValueFromEncryptedPreferences
 import one.mixin.android.crypto.initFromSeedAndSign
+import one.mixin.android.crypto.markPendingImportMnemonic
 import one.mixin.android.crypto.newKeyPairFromMnemonic
+import one.mixin.android.crypto.preparePendingImportMnemonic
 import one.mixin.android.crypto.storeValueInEncryptedPreferences
 import one.mixin.android.crypto.toEntropy
 import one.mixin.android.crypto.toMnemonic
+import one.mixin.android.crypto.toMnemonicWithChecksum
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.containsIgnoreCase
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.UserRepository
+import one.mixin.android.session.Session
 import one.mixin.android.session.initializeAccountSession
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
 import one.mixin.android.ui.landing.vo.MnemonicPhraseState
+import one.mixin.android.ui.logs.LogViewerBottomSheet
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -66,13 +76,19 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     companion object {
         const val TAG: String = "MnemonicPhraseFragment"
         const val ARGS_MNEMONIC_PHRASE = "mnemonic_phrase"
+        private const val ARGS_PENDING_IMPORT_MNEMONIC = "pending_import_mnemonic"
+        private const val ARGS_PASTED_MNEMONIC = "pasted_mnemonic"
 
         fun newInstance(
-            words: ArrayList<String>? = null
+            words: ArrayList<String>? = null,
+            pendingImportWords: ArrayList<String>? = null,
+            pastedMnemonicWords: ArrayList<String>? = null,
         ): MnemonicPhraseFragment =
             MnemonicPhraseFragment().apply {
                 withArgs {
                     putStringArrayList(ARGS_MNEMONIC_PHRASE, words)
+                    putStringArrayList(ARGS_PENDING_IMPORT_MNEMONIC, pendingImportWords)
+                    putStringArrayList(ARGS_PASTED_MNEMONIC, pastedMnemonicWords)
                 }
             }
     }
@@ -90,6 +106,12 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     private val words by lazy {
         requireArguments().getStringArrayList(ARGS_MNEMONIC_PHRASE)
     }
+    private val pendingImportWords by lazy {
+        requireArguments().getStringArrayList(ARGS_PENDING_IMPORT_MNEMONIC)
+    }
+    private val pastedMnemonicWords by lazy {
+        requireArguments().getStringArrayList(ARGS_PASTED_MNEMONIC)
+    }
 
     override fun onViewCreated(
         view: View,
@@ -99,9 +121,13 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         if (activity is LandingActivity) {
             applySafeTopPadding(view)
         }
-        Timber.e("MnemonicPhraseFragment onViewCreated")
+        Timber.i("LoginFlow account_creation_open source=${if (words.isNullOrEmpty()) "signup" else "mnemonic_login"} pending_import=${!pendingImportWords.isNullOrEmpty()}")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+        binding.titleView.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
         }
         binding.compose.setContent {
             MnemonicPhrasePage(!words.isNullOrEmpty(), errorInfo) {
@@ -114,7 +140,10 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     private fun applySafeTopPadding(rootView: View) {
         val originalPaddingTop: Int = rootView.paddingTop
         ViewCompat.setOnApplyWindowInsetsListener(rootView) { v: View, insets: WindowInsetsCompat ->
-            val topInset: Int = insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top
+            val topInset: Int = maxOf(
+                insets.getInsets(WindowInsetsCompat.Type.statusBars()).top,
+                insets.getInsets(WindowInsetsCompat.Type.displayCutout()).top,
+            )
             v.setPadding(v.paddingLeft, originalPaddingTop + topInset, v.paddingRight, v.paddingBottom)
             insets
         }
@@ -127,14 +156,21 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Creating)
             val sessionKey = generateEd25519KeyPair()
             val edKey = if (!words.isNullOrEmpty()) {
-                val w = words.let {
-                    when (words.size) {
+                val completedWords = runCatching {
+                    completeMnemonicForLogin(words) { sourceWords ->
+                        toMnemonicWithChecksum(sourceWords)
+                    }
+                }.onFailure {
+                    errorInfo = getString(R.string.invalid_mnemonic_phrase)
+                }.getOrNull() ?: return@launch
+                val w = completedWords.let {
+                    when (completedWords.size) {
                         13 -> {
-                            words.subList(0, 12)
+                            completedWords.subList(0, 12)
                         }
 
                         25 -> {
-                            words.subList(0, 24)
+                            completedWords.subList(0, 24)
                         }
 
                         else -> {
@@ -144,12 +180,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                     }
                 }
                 val mnemonic = w.joinToString(" ")
-                val entropy  = runCatching { toEntropy(w)}.onFailure { errorInfo = getString(R.string.invalid_mnemonic_phrase) }.getOrNull() ?: return@launch
-                storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, entropy)
-                if (getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy).not()) {
-                    errorInfo = getString(R.string.Save_failure) // Save entropy failure
-                    return@launch
-                }
+                runCatching { toEntropy(w) }.onFailure { errorInfo = getString(R.string.invalid_mnemonic_phrase) }.getOrNull() ?: return@launch
                 newKeyPairFromMnemonic(mnemonic)
             } else {
                 val entropy = tip.getMnemonicFromEncryptedPreferences(requireContext()) ?: tip.generateEntropyAndStore(requireContext())
@@ -165,7 +196,6 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 }
                 newKeyPairFromMnemonic(mnemonic)
             }
-            Timber.e("PublicKey:${edKey.publicKey.hexString()}")
             val (messageHex, signatureHex) = buildAnonymousRequestPayload(edKey)
             var needCaptcha = false
             val r = handleMixinResponse(
@@ -179,7 +209,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 exceptionBlock = { t ->
                     landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
-                    errorInfo = t.message
+                    errorInfo = ErrorHandler.getErrorMessage(t)
                     Timber.e(t)
                     true
                 },
@@ -219,6 +249,13 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
     }
 
     private var captchaView: CaptchaView? = null
+
+    override fun onDestroyView() {
+        captchaView?.release()
+        captchaView = null
+        super.onDestroyView()
+    }
+
     private fun initAndLoadCaptcha(sessionKey: EdKeyPair, edKey: EdKeyPair, errorDescription: String) =
         lifecycleScope.launch {
             errorInfo = null
@@ -231,6 +268,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                             override fun onStop() {
                                 if (viewDestroyed()) return
                                 binding.mobileCover.isVisible = false
+                                landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                             }
 
                             override fun onPostToken(value: Pair<CaptchaView.CaptchaType, String>) {
@@ -239,7 +277,6 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                             }
                         },
                     )
-                (view as ViewGroup).addView(captchaView?.webView, MATCH_PARENT, MATCH_PARENT)
             }
             captchaView?.loadCaptcha(
                 if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha
@@ -280,7 +317,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 exceptionBlock = { t ->
                     landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
-                    errorInfo = t.message
+                    errorInfo = ErrorHandler.getErrorMessage(t)
                     Timber.e(t)
                     true
                 },
@@ -316,6 +353,26 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         }
     }
 
+    private fun clearPastedMnemonicFromClipboard() {
+        val pastedWords = pastedMnemonicWords ?: return
+        val clipboard = requireContext().getClipboardManager()
+        val clipboardWords = clipboard.primaryClip
+            ?.takeIf { it.itemCount > 0 }
+            ?.getItemAt(0)
+            ?.text
+            ?.toString()
+            ?.trim()
+            ?.split(Regex("\\s+"))
+            ?.filter(String::isNotBlank)
+            ?: return
+        if (clipboardWords != pastedWords) return
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            clipboard.clearPrimaryClip()
+        } else {
+            clipboard.setPrimaryClip(ClipData.newPlainText("", ""))
+        }
+    }
+
     private fun createAccount(sessionKey: EdKeyPair, edKey: EdKeyPair, verificationId: String) {
         lifecycleScope.launch {
             SignalProtocol.initSignal(requireContext().applicationContext)
@@ -340,7 +397,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
 
                 exceptionBlock = { t ->
                     landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
-                    errorInfo = t.message
+                    errorInfo = ErrorHandler.getErrorMessage(t)
                     Timber.e(t)
                     true
                 },
@@ -353,16 +410,57 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             )
             if (r?.isSuccess == true) {
                 val account = r.data!!
+                Timber.i(
+                    "LoginFlow anonymous_account_success source=${if (words.isNullOrEmpty()) "signup" else "mnemonic_login"} has_full_name=${!account.fullName.isNullOrBlank()} pending_import=${!pendingImportWords.isNullOrEmpty()}"
+                )
+                if (words.isNullOrEmpty() || account.fullName.isNullOrBlank()) {
+                    AnalyticsTracker.trackSignUpAccountCreated()
+                }
                 initializeAccountSession(requireContext(), account, sessionKey)
-                when {
-                    account.fullName.isNullOrBlank() -> {
+                val importWords = pendingImportWords
+                val hasPendingWalletImport = !importWords.isNullOrEmpty()
+                if (shouldStoreLoginMnemonicForSafe(account.hasSafe, Session.hasPhone(), hasPendingWalletImport) && !words.isNullOrEmpty()) {
+                    val loginWords = words.orEmpty().dropLast(1)
+                    val entropy = runCatching { toEntropy(loginWords) }.getOrNull()
+                    if (entropy == null) {
+                        errorInfo = getString(R.string.invalid_mnemonic_phrase)
+                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                        return@launch
+                    }
+                    storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, entropy)
+                    if (!getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy)) {
+                        errorInfo = getString(R.string.Save_failure)
+                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                        return@launch
+                    }
+                }
+                if (hasPendingWalletImport) {
+                    preparePendingImportMnemonic(importWords.orEmpty())
+                    markPendingImportMnemonic(requireContext())
+                } else {
+                    clearPendingImportMnemonic(requireContext())
+                }
+                clearPastedMnemonicFromClipboard()
+                val hasFullName = !account.fullName.isNullOrBlank()
+                val localAccountDatabaseExists = hasLocalAccountDatabase(requireContext(), account.identityNumber)
+                val loginAccountRoute = routeLoginAccount(hasFullName, localAccountDatabaseExists)
+                Timber.i(
+                    "LoginFlow account_route source=mnemonic route=$loginAccountRoute has_full_name=$hasFullName has_local_database=$localAccountDatabaseExists pending_import=${!importWords.isNullOrEmpty()}"
+                )
+                when (loginAccountRoute) {
+                    LoginAccountRoute.SetupName -> {
                         withContext(Dispatchers.IO) {
                             userRepositoryProvider.get().insertUser(account.toUser())
                         }
                         InitializeActivity.showSetupName(requireContext())
                     }
 
-                    else -> {
+                    LoginAccountRoute.UseLocalDatabase -> {
+                        defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
+                        InitializeActivity.showLoading(requireContext(), source = InitializeActivity.SOURCE_LOGIN)
+                    }
+
+                    LoginAccountRoute.Restore -> {
                         RestoreActivity.show(requireContext())
                     }
                 }
