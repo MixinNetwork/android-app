@@ -12,8 +12,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
-import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
-import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -38,6 +36,7 @@ import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.BiometricLayout
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.SettingActivity
+import one.mixin.android.ui.tip.TipFlowInteractor
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
@@ -71,6 +70,9 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
 
     @Inject
     lateinit var web3Repository: Web3Repository
+
+    @Inject
+    lateinit var tipFlowInteractor: TipFlowInteractor
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(
@@ -189,16 +191,29 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
     override suspend fun invokeNetwork(pin: String): MixinResponse<*> {
         val r = bottomViewModel.verifyPin(pin)
         if (r.isSuccess) {
-            val solAddress = bottomViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
-            Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
-            val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
-            Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
-            bottomViewModel.ensureClassicWallet(pin)
+            if (tipFlowInteractor.ensureClassicWallet(requireContext(), pin) == null) {
+                return MixinResponse<Any>(IllegalStateException(getString(R.string.Save_failure)))
+            }
             MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
             addBtcAddressIfNeeded(pin)
+            synchronizeSelectedWalletSigner()
             AnalyticsTracker.trackLoginEnd()
         }
         return r
+    }
+
+    private suspend fun synchronizeSelectedWalletSigner() {
+        val expectedWalletId = Web3Signer.currentWalletIdSnapshot()
+        val selectedWallet = expectedWalletId
+            .takeIf(String::isNotBlank)
+            ?.let { walletId -> web3Repository.findWalletById(walletId) }
+        val wallet = selectedWallet ?: web3Repository.getClassicWalletId()
+            ?.let { walletId -> web3Repository.findWalletById(walletId) }
+            ?: return
+        val addresses = web3Repository.getAddresses(wallet.id)
+        Web3Signer.setWalletIfCurrent(expectedWalletId, wallet.id, wallet.category) { queryWalletId ->
+            if (queryWalletId == wallet.id) addresses else emptyList()
+        }
     }
 
     private suspend fun addBtcAddressIfNeeded(pin: String): Boolean {
@@ -278,19 +293,21 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
     }
 
     private var pinSuccess = false
-    var onDismissCallback: ((Boolean) -> Unit)? = null
+    private var verifiedPin: String? = null
+    var onDismissCallback: ((Boolean, String?) -> Unit)? = null
 
     override fun doWhenInvokeNetworkSuccess(
         response: MixinResponse<*>,
         pin: String,
     ): Boolean {
         pinSuccess = true
+        verifiedPin = pin
         return true
     }
 
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
-        onDismissCallback?.invoke(pinSuccess)
+        onDismissCallback?.invoke(pinSuccess, verifiedPin)
     }
 
     override fun getBiometricInfo() =

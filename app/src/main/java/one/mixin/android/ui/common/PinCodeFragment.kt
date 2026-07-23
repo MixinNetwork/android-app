@@ -7,23 +7,30 @@ import android.widget.TextView
 import androidx.annotation.LayoutRes
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.session.initializeAccountSession
+import one.mixin.android.ui.landing.LoginAccountRoute
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.RestoreActivity
+import one.mixin.android.ui.landing.hasLocalAccountDatabase
+import one.mixin.android.ui.landing.routeLoginAccount
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.VerificationCodeView
+import timber.log.Timber
 
 abstract class PinCodeFragment(
     @LayoutRes contentLayoutId: Int,
@@ -114,12 +121,22 @@ abstract class PinCodeFragment(
         hideLoading()
         action.invoke()
 
-        when {
-            account.fullName.isNullOrBlank() -> {
+        val hasFullName = !account.fullName.isNullOrBlank()
+        val localAccountDatabaseExists = hasLocalAccountDatabase(requireContext(), account.identityNumber)
+        val loginAccountRoute = routeLoginAccount(hasFullName, localAccountDatabaseExists)
+        Timber.i(
+            "LoginFlow account_route source=phone route=$loginAccountRoute has_full_name=$hasFullName has_local_database=$localAccountDatabaseExists"
+        )
+        when (loginAccountRoute) {
+            LoginAccountRoute.SetupName -> {
                 insertUser(account.toUser())
                 InitializeActivity.showSetupName(requireContext())
             }
-            else -> {
+            LoginAccountRoute.UseLocalDatabase -> {
+                defaultSharedPreferences.putBoolean(Constants.Account.PREF_RESTORE, false)
+                InitializeActivity.showLoading(requireContext(), source = InitializeActivity.SOURCE_LOGIN)
+            }
+            LoginAccountRoute.Restore -> {
                 RestoreActivity.show(requireContext())
             }
         }
