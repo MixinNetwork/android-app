@@ -31,7 +31,7 @@ plugins {
 
 val bitcoinVersion by extra("0.17.1")
 val fragmentVersion by extra("1.8.9")
-val activity_version by extra("1.13.0")
+val activityVersion by extra("1.13.0")
 val lifecycleVersion by extra("2.10.0")
 val appcompatVersion by extra("1.7.1")
 val pagingVersion by extra("3.5.0")

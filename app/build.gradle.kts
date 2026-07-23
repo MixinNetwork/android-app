@@ -22,7 +22,7 @@ val versionBuild = 1
 
 val bitcoinVersion: String by rootProject.extra
 val fragmentVersion: String by rootProject.extra
-val activity_version: String by rootProject.extra
+val activityVersion: String by rootProject.extra
 val lifecycleVersion: String by rootProject.extra
 val appcompatVersion: String by rootProject.extra
 val pagingVersion: String by rootProject.extra
@@ -333,7 +333,7 @@ dependencies {
     implementation("com.google.firebase:firebase-perf")
     implementation(fileTree(mapOf("include" to listOf("*.aar"), "dir" to "libs")))
     implementation("androidx.fragment:fragment-ktx:$fragmentVersion")
-    implementation("androidx.activity:activity-ktx:$activity_version")
+    implementation("androidx.activity:activity-ktx:$activityVersion")
     implementation("androidx.appcompat:appcompat:$appcompatVersion")
     implementation("androidx.legacy:legacy-support-v4:$supportLibVersion")
     implementation("com.google.android.material:material:$mdcVersion")
