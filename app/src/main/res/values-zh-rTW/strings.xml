@@ -914,6 +914,13 @@
     <string name="transfer_to">轉賬給 %1$s</string>
     <string name="transfer_without_pin">轉賬前請先設定 PIN</string>
     <string name="Trending">熱門資產</string>
+    <string name="Crypto">現貨</string>
+    <string name="market_stock">股票</string>
+    <string name="Indicator">指標</string>
+    <string name="market_display">行情顯示</string>
+    <string name="market_volume">交易量：%1$s</string>
+    <string name="change_percent_period_day">%1$d 天 %%</string>
+    <string name="change_percent_period_hour">%1$d 小時 %%</string>
     <string name="Try_Again">請重試</string>
     <string name="Tuesday">星期二</string>
     <string name="Turn_On_Notifications">開啟通知</string>

@@ -75,7 +75,7 @@ class SwapViewModel
         limit: Int? = null,
         sort: String? = null,
         duration: String? = null,
-    ): MixinResponse<List<Market>> = routeService.markets(category = category, limit = limit, sort = sort, duration = duration)
+    ): MixinResponse<List<Market>> = tokenRepository.markets(category = category, limit = limit, sort = sort, duration = duration)
 
     suspend fun web3Quote(
         inputMint: String,

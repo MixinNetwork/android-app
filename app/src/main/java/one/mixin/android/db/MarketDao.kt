@@ -7,6 +7,7 @@ import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
@@ -69,6 +70,17 @@ interface MarketDao : BaseDao<Market> {
         """
     )
     fun getFavoredWeb3Markets(sortValue: Int): PagingSource<Int, MarketItem>
+
+    @Query(
+        """
+        SELECT m.*, mf.is_favored
+        FROM markets m
+        INNER JOIN market_favored mf ON mf.coin_id = m.coin_id
+        WHERE mf.is_favored = 1
+        ORDER BY CAST(m.market_cap_rank AS INTEGER) ASC
+        """
+    )
+    fun observeFavoredMarkets(): Flow<List<MarketItem>>
 
     @Query("SELECT * FROM markets WHERE coin_id = :coinId")
     fun findMarketById(coinId: String): Market?

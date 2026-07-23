@@ -1796,6 +1796,11 @@
     <string name="Dominance">Dominance</string>
     <string name="volume_24h">24h Volume</string>
     <string name="Watchlist">Watchlist</string>
+    <string name="Crypto">Crypto</string>
+    <string name="market_stock">Stock</string>
+    <string name="Indicator">Indicator</string>
+    <string name="market_display">Market Display</string>
+    <string name="market_volume">VOL: %1$s</string>
     <string name="top_count">Top %1$d</string>
     <string name="change_percent_period_day">%1$dD %%</string>
     <string name="change_percent_period_hour">%1$dh %%</string>

@@ -1332,6 +1332,47 @@ class TokenRepository
 
     fun getFavoredWeb3Markets(sort: MarketSort): PagingSource<Int, MarketItem> = marketDao.getFavoredWeb3Markets(sort.value)
 
+    fun observeFavoredMarkets(): Flow<List<MarketItem>> = marketDao.observeFavoredMarkets()
+
+    suspend fun markets(
+        category: String? = null,
+        limit: Int? = null,
+        sort: String? = null,
+        duration: String? = null,
+    ) = routeService.markets(
+        category = category,
+        limit = limit,
+        sort = sort,
+        duration = duration,
+    )
+
+    suspend fun fetchMarkets(
+        category: String,
+        duration: String? = null,
+        limit: Int? = null,
+    ): List<MarketItem>? =
+        requestRouteAPI(
+            invokeNetwork = {
+                markets(
+                    category = category,
+                    duration = duration,
+                    limit = limit,
+                )
+            },
+            successBlock = { response ->
+                val markets = response.data.orEmpty()
+                marketDao.upsertList(markets)
+                markets.map(MarketItem::fromMarket)
+            },
+            failureBlock = { true },
+            exceptionBlock = { true },
+            defaultErrorHandle = {},
+            defaultExceptionHandle = {},
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+            },
+        )
+
     suspend fun findTokensByCoinId(coinId: String) = marketCoinDao.findTokensByCoinId(coinId)
 
     suspend fun findTokenIdsByCoinId(coinId: String) = marketCoinDao.findTokenIdsByCoinId(coinId)
