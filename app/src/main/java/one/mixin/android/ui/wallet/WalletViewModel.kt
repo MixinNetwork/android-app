@@ -116,6 +116,11 @@ internal constructor(
             cashRepository.account()
         }
 
+    suspend fun cachedCashAccount(): CashAccount? =
+        withContext(Dispatchers.IO) {
+            cashRepository.cachedAccount()
+        }
+
     suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){
         return@withContext tokenRepository.assetItemsNotHiddenRaw()
     }

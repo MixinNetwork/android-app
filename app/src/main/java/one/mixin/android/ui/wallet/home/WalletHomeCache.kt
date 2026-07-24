@@ -37,7 +37,7 @@ data class WalletHomeCache(
             showBanner = false,
             showReferral = false,
             hasPositions = false,
-            hasCashAccount = cashAccount != null,
+            hasCashAccount = false,
             hasTopMovers = false,
             hasTransactions = totalTransactionCount > 0,
             hasImportKeyAction = cachedImportKeyAction != null,
@@ -51,11 +51,10 @@ data class WalletHomeCache(
             fiatTotal = fiatTotal,
             btcTotal = btcTotal,
             fiatSymbol = fiatSymbol,
-            privacyTokens = privacyTokens,
-            web3Tokens = web3Tokens,
-            privacyTransactions = privacyTransactions,
-            web3Transactions = web3Transactions,
-            cashAccount = cashAccount,
+            privacyTokens = privacyTokens.orEmpty(),
+            web3Tokens = web3Tokens.orEmpty(),
+            privacyTransactions = privacyTransactions.orEmpty(),
+            web3Transactions = web3Transactions.orEmpty(),
             totalTokenCount = totalTokenCount,
             totalTransactionCount = totalTransactionCount,
             isWatchWallet = isWatchWallet,
@@ -96,7 +95,6 @@ fun SharedPreferences.putWalletHomeCache(
         state.totalTransactionCount == 0 &&
         state.pendingIndicator == null &&
         state.importKeyAction == null &&
-        state.cashAccount == null &&
         state.watchIndicator == null
     ) return
     val cache = WalletHomeCache(
@@ -110,7 +108,6 @@ fun SharedPreferences.putWalletHomeCache(
         web3Transactions = state.web3Transactions.take(WalletHomeSection.PREVIEW_LIMIT),
         totalTokenCount = state.totalTokenCount,
         totalTransactionCount = state.totalTransactionCount,
-        cashAccount = state.cashAccount,
         isWatchWallet = state.isWatchWallet,
         watchAddresses = watchAddresses,
         pendingIndicator = state.pendingIndicator,

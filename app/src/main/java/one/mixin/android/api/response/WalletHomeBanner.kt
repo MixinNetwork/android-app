@@ -1,6 +1,7 @@
 package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
+import org.threeten.bp.Instant
 
 data class WalletHomeBanner(
     @SerializedName(value = "banner_id", alternate = ["id"])
@@ -60,9 +61,17 @@ data class WalletHomeBanner(
     val isActive: Boolean
         get() = status.isBlank() || status.equals(BANNER_STATUS_ACTIVE, ignoreCase = true)
 
+    fun isExpired(now: Instant = Instant.now()): Boolean {
+        if (endAt.isBlank()) return false
+        return runCatching {
+            !now.isBefore(Instant.parse(endAt))
+        }.getOrDefault(false)
+    }
+
     companion object {
         const val BANNER_STATUS_ACTIVE = "active"
         const val BANNER_STATUS_INACTIVE = "inactive"
+        const val BANNER_PLACEMENT_WALLET = "wallet_banner"
     }
 }
 
@@ -73,14 +82,28 @@ data class WalletHomeBannerAction(
     val action: String = "",
 )
 
+fun List<WalletHomeBanner>.filterWalletHomeBannersByChains(chains: Collection<String>): List<WalletHomeBanner> {
+    val walletChains = chains.filterTo(mutableSetOf(), String::isNotBlank)
+    if (walletChains.isEmpty()) return this
+
+    return filter { banner ->
+        banner.chains.none(String::isNotBlank) || banner.chains.any(walletChains::contains)
+    }
+}
+
 fun Set<String>.syncedWalletHomeClosedBannerIds(remoteBanners: List<WalletHomeBanner>): Set<String> {
     return this
 }
 
-fun List<WalletHomeBanner>.visibleWalletHomeBanners(closedBannerIds: Set<String>): List<WalletHomeBanner> =
+fun List<WalletHomeBanner>.visibleWalletHomeBanners(
+    closedBannerIds: Set<String>,
+    now: Instant = Instant.now(),
+): List<WalletHomeBanner> =
     filter { banner ->
         banner.key.isNotBlank() &&
+            (banner.placement.isBlank() || banner.placement == WalletHomeBanner.BANNER_PLACEMENT_WALLET) &&
             banner.isActive &&
+            !banner.isExpired(now) &&
             banner.hasVisualContent &&
             (!banner.actionUrl.isNullOrBlank() || banner.visibleActions.isNotEmpty()) &&
             !closedBannerIds.contains(banner.key)
