@@ -71,6 +71,7 @@ data class WalletHomeBanner(
     companion object {
         const val BANNER_STATUS_ACTIVE = "active"
         const val BANNER_STATUS_INACTIVE = "inactive"
+        const val BANNER_PLACEMENT_WALLET = "wallet_banner"
     }
 }
 
@@ -100,6 +101,7 @@ fun List<WalletHomeBanner>.visibleWalletHomeBanners(
 ): List<WalletHomeBanner> =
     filter { banner ->
         banner.key.isNotBlank() &&
+            (banner.placement.isBlank() || banner.placement == WalletHomeBanner.BANNER_PLACEMENT_WALLET) &&
             banner.isActive &&
             !banner.isExpired(now) &&
             banner.hasVisualContent &&

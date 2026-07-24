@@ -118,11 +118,24 @@ class WalletHomeBannerTest {
         assertEquals(listOf("future", "open-ended"), banners.map { it.bannerId })
     }
 
+    @Test
+    fun visibleBannersOnlyIncludeWalletPlacements() {
+        val banners = listOf(
+            visibleBanner("legacy"),
+            visibleBanner("wallet", placement = WalletHomeBanner.BANNER_PLACEMENT_WALLET),
+            visibleBanner("other", placement = "home_banner"),
+        ).visibleWalletHomeBanners(emptySet())
+
+        assertEquals(listOf("legacy", "wallet"), banners.map { it.bannerId })
+    }
+
     private fun visibleBanner(
         id: String,
         endAt: String = "",
+        placement: String = "",
     ) = WalletHomeBanner(
         bannerId = id,
+        placement = placement,
         title = id,
         actionUrl = "mixin://$id",
         endAt = endAt,
