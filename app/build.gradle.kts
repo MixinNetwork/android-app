@@ -153,7 +153,7 @@ android {
     }
 
     androidResources {
-        localeFilters += listOf("en", "es", "in", "ja", "ms", "ru", "zh-rCN", "zh-rTW")
+        localeFilters += listOf("en", "es", "in", "ja", "ko", "ms", "ru", "zh-rCN", "zh-rTW")
     }
 
     packaging {

@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string-array name="backup_dialog_list">
+        <item>Tidak pernah</item>
+        <item>Harian</item>
+        <item>Mingguan</item>
+        <item>Bulanan</item>
+    </string-array>
+
     <string-array name="setting_night_array">
         <item>Cahaya</item>
         <item>Gelap</item>
@@ -9,4 +16,26 @@
         <item>Gelap</item>
         <item>Ikut sistem</item>
     </string-array>
+
+    <plurals name="time_interval_unit_second">
+        <item quantity="other">saat</item>
+    </plurals>
+    <plurals name="time_interval_unit_minute">
+        <item quantity="other">minit</item>
+    </plurals>
+    <plurals name="time_interval_unit_hour">
+        <item quantity="other">jam</item>
+    </plurals>
+    <plurals name="time_interval_unit_day">
+        <item quantity="other">hari</item>
+    </plurals>
+    <plurals name="time_interval_unit_week">
+        <item quantity="other">minggu</item>
+    </plurals>
+
+    <array name="database">
+        <item>Pangkalan Data Mixin</item>
+        <item>Pangkalan Data Tertunda</item>
+        <item>Pangkalan Data Dompet</item>
+    </array>
 </resources>
