@@ -231,20 +231,8 @@ class SharedMediaViewModel
         conversationId: String,
         index: Int,
         excludeLive: Boolean,
-    ): LiveData<PagedList<MessageItem>> {
-        val liveData = MutableLiveData<PagedList<MessageItem>>()
-        viewModelScope.launch(Dispatchers.IO) {
-            val list = if (excludeLive) {
-                conversationRepository.getMediaMessagesExcludeLiveList(conversationId)
-            } else {
-                conversationRepository.getMediaMessagesList(conversationId)
-            }
-            val filteredList = list.filter { !it.isAppCard() || it.isAppCardWithCover() }
-            val pagedList = createPagedList(filteredList, index)
-            liveData.postValue(pagedList)
-        }
-        return liveData
-    }
+    ): LiveData<PagedList<MessageItem>> =
+        conversationRepository.getMediaMessages(conversationId, index, excludeLive)
 
     suspend fun getMediaMessage(
         conversationId: String,
@@ -282,4 +270,3 @@ class ListDataSource<T : Any>(private val items: List<T>) : PositionalDataSource
         }
     }
 }
-

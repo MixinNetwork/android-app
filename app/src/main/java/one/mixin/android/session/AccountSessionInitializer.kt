@@ -7,6 +7,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EdKeyPair
+import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
@@ -48,6 +49,7 @@ suspend fun initializeAccountSession(
     if (!isSameUser) {
         context.defaultSharedPreferences.clear()
     }
+    clearPendingImportMnemonic(context)
 
     if (Session.hasPhone()) {
         removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)

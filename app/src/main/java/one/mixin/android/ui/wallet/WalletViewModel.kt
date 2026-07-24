@@ -27,6 +27,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.web3.WalletRequest
+import one.mixin.android.api.response.CashAccount
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.crypto.CryptoWalletHelper
@@ -44,6 +45,8 @@ import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.job.RefreshTopAssetsJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.repository.AccountRepository
+import one.mixin.android.repository.CashRepository
+import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
@@ -69,8 +72,10 @@ class WalletViewModel
 internal constructor(
     private val userRepository: UserRepository,
     private val accountRepository: AccountRepository,
+    private val cashRepository: CashRepository,
     private val web3Repository: Web3Repository,
     private val tokenRepository: TokenRepository,
+    private val referralRepository: ReferralRepository,
     private val assetRepository: AssetRepository,
     private val jobManager: MixinJobManager,
     private val pinCipher: PinCipher,
@@ -106,6 +111,11 @@ internal constructor(
 
     fun walletHomeTokenSummary() = tokenRepository.walletHomeTokenSummary()
 
+    suspend fun cashAccount(): MixinResponse<CashAccount> =
+        withContext(Dispatchers.IO) {
+            cashRepository.account()
+        }
+
     suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){
         return@withContext tokenRepository.assetItemsNotHiddenRaw()
     }
@@ -127,7 +137,7 @@ internal constructor(
 
     fun recentSnapshotsLimit() = tokenRepository.recentSnapshotsLimit()
 
-    fun findAddressByReceiver(receiver: String, tag: String, chainId: String?) = tokenRepository.findAddressByDestination(receiver, tag, chainId)
+    suspend fun findAddressByReceiver(receiver: String, tag: String, chainId: String?) = tokenRepository.findAddressByDestination(receiver, tag, chainId)
 
     suspend fun snapshotLocal(
         assetId: String,
@@ -332,6 +342,8 @@ internal constructor(
 
     suspend fun profile(): MixinResponse<ProfileResponse> = tokenRepository.profile()
 
+    suspend fun walletHomeBanners() = referralRepository.fetchWalletHomeBanners()
+
     suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
     suspend fun findBondBotUrl() = userRepository.findOrSyncApp(MIXIN_BOND_USER_ID)
@@ -471,6 +483,8 @@ internal constructor(
     }
 
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
+
+    suspend fun getClassicWalletId() = web3Repository.getClassicWalletId()
 
     suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, chainId, query)
 

@@ -17,6 +17,8 @@ import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
 import one.mixin.android.event.TradeMarketSelectedEvent
 import one.mixin.android.extension.colorAttr
@@ -37,12 +39,15 @@ import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketJob
+import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.DepositTokensBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_OUTPUT
+import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.wallet.alert.AlertFragment
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_GO_ALERT
@@ -75,6 +80,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     lateinit var jobManager: MixinJobManager
 
     private val walletViewModel by viewModels<WalletViewModel>()
+    private val perpetualViewModel by viewModels<PerpetualViewModel>()
 
     private val marketItem: MarketItem by lazy {
         requireNotNull(requireArguments().getParcelableCompat(ARGS_MARKET, MarketItem::class.java))
@@ -174,6 +180,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     }
                 }
             }
+            setupPerpsAction(marketItem)
             if (marketItem.coinId.isBlank()) {
                 walletViewModel.anyAlertByAssetId(marketItem.assetIds!!.first())
             } else {
@@ -320,6 +327,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         }.observe(this.viewLifecycleOwner) { info ->
             if (info != null) {
                 loadBalance(info)
+                setupPerpsAction(info)
                 binding.apply {
                     assetRank.isVisible = true
                     titleView.rightExtraIb.isVisible = true
@@ -409,6 +417,75 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     }
 
     private var isLoading = false
+    private var currentPerpsMarketId: String? = null
+
+    private fun setupPerpsAction(marketItem: MarketItem) {
+        val perpsMarketId = marketItem.perpsMarketId?.takeIf { it.isNotBlank() }
+        if (perpsMarketId == null) {
+            currentPerpsMarketId = null
+            binding.perpsAction.isVisible = false
+            return
+        }
+        if (perpsMarketId == currentPerpsMarketId && binding.perpsAction.isVisible) return
+        currentPerpsMarketId = perpsMarketId
+        binding.perpsAction.isVisible = false
+        viewLifecycleOwner.lifecycleScope.launch {
+            val perpsMarket = perpetualViewModel.getMarketById(perpsMarketId)
+            if (!isAdded || currentPerpsMarketId != perpsMarketId) return@launch
+            binding.perpsAction.isVisible = perpsMarket != null
+            if (perpsMarket != null) {
+                binding.perpsAction.setContent {
+                    MixinAppTheme {
+                        MarketPerpsAction(
+                            onLongClick = {
+                                openPerpsAction(perpsMarket, true)
+                            },
+                            onShortClick = {
+                                openPerpsAction(perpsMarket, false)
+                            },
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    private fun openPerpsAction(market: PerpsMarket, isLong: Boolean) {
+        if (!isAdded) return
+        viewLifecycleOwner.lifecycleScope.launch {
+            val walletId = Session.getAccountId()
+            val hasOpenPosition = if (walletId.isNullOrEmpty()) {
+                false
+            } else {
+                perpetualViewModel.getOpenPositionsFromDb(walletId).any { it.marketId == market.marketId }
+            }
+            if (!isAdded) return@launch
+            if (hasOpenPosition) {
+                PerpsActivity.showDetail(
+                    context = requireContext(),
+                    marketId = market.marketId,
+                    marketSymbol = market.displaySymbol,
+                    marketDisplaySymbol = market.displaySymbol,
+                    marketTokenSymbol = market.tokenSymbol,
+                    source = AnalyticsTracker.PerpsSource.SPOT_MARKET_DETAIL,
+                )
+            } else {
+                openPerpsPosition(market, isLong)
+            }
+        }
+    }
+
+    private fun openPerpsPosition(market: PerpsMarket, isLong: Boolean) {
+        PerpsActivity.showOpenPosition(
+            context = requireContext(),
+            marketId = market.marketId,
+            marketSymbol = market.displaySymbol,
+            marketDisplaySymbol = market.displaySymbol,
+            marketTokenSymbol = market.tokenSymbol,
+            isLong = isLong,
+            source = AnalyticsTracker.PerpsSource.SPOT_MARKET_DETAIL,
+        )
+    }
 
     private fun setBottomAlertLoading(loading: Boolean) {
         binding.bottomAlertIcon.isVisible = !loading

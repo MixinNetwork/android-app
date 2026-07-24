@@ -22,6 +22,7 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.textColor
 import one.mixin.android.extension.timeAgoDay
 import one.mixin.android.ui.common.recyclerview.NormalHolder
+import one.mixin.android.ui.wallet.WalletTransferLabelStyle
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.widget.linktext.RoundBackgroundColorSpan
@@ -126,7 +127,7 @@ open class SnapshotHolder(
                         val start = fullText.lastIndexOf(label)
                         val end = start + label.length
 
-                        val backgroundColor: Int = Color.parseColor("#8DCC99")
+                        val backgroundColor = Color.parseColor(WalletTransferLabelStyle.backgroundColorHex(label))
                         val backgroundColorSpan = RoundBackgroundColorSpan(backgroundColor, Color.WHITE)
                         spannableString.setSpan(RelativeSizeSpan(0.8f), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
                         spannableString.setSpan(backgroundColorSpan, start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)

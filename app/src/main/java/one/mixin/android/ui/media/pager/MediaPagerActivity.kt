@@ -89,7 +89,7 @@ import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
-import one.mixin.android.vo.appCardCoverUrl
+import one.mixin.android.vo.appCardMediaCoverUrl
 import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
@@ -465,7 +465,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     @OptIn(ExperimentalCoilApi::class)
     private suspend fun resolveLocalFile(item: MessageItem): File? {
-        val coverUrl = item.appCardCoverUrl()
+        val coverUrl = item.appCardMediaCoverUrl()
         if (coverUrl != null) {
             return try {
                 val loader = imageLoader
