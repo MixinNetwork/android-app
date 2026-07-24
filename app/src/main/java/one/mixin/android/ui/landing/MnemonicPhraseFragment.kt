@@ -413,10 +413,10 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 Timber.i(
                     "LoginFlow anonymous_account_success source=${if (words.isNullOrEmpty()) "signup" else "mnemonic_login"} has_full_name=${!account.fullName.isNullOrBlank()} pending_import=${!pendingImportWords.isNullOrEmpty()}"
                 )
+                initializeAccountSession(requireContext(), account, sessionKey)
                 if (words.isNullOrEmpty() || account.fullName.isNullOrBlank()) {
                     AnalyticsTracker.trackSignUpAccountCreated()
                 }
-                initializeAccountSession(requireContext(), account, sessionKey)
                 val importWords = pendingImportWords
                 val hasPendingWalletImport = !importWords.isNullOrEmpty()
                 if (shouldStoreLoginMnemonicForSafe(account.hasSafe, Session.hasPhone(), hasPendingWalletImport) && !words.isNullOrEmpty()) {

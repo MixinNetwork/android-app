@@ -9,6 +9,8 @@ import androidx.paging.cachedIn
 import androidx.room.withTransaction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.isActive
@@ -832,18 +834,21 @@ class PerpetualViewModel @Inject constructor(
         onComplete: (BatchCloseResult) -> Unit,
     ) {
         viewModelScope.launch {
-            val failedPositions = mutableListOf<PerpsPositionItem>()
-            val errors = mutableListOf<String>()
-
-            positions.forEach { position ->
-                closePerpsOrder(position.positionId, position.leverage)
-                    .onFailure { error ->
-                        failedPositions += position
-                        errors += error.message.orEmpty()
+            val failures = positions
+                .map { position ->
+                    async {
+                        position to closePerpsOrder(position.positionId, position.leverage)
                     }
-            }
+                }
+                .awaitAll()
+                .filter { (_, result) -> result.isFailure }
 
-            onComplete(BatchCloseResult(failedPositions, errors))
+            onComplete(
+                BatchCloseResult(
+                    failedPositions = failures.map { (position, _) -> position },
+                    errors = failures.map { (_, result) -> result.exceptionOrNull()?.message.orEmpty() },
+                ),
+            )
         }
     }
 

@@ -1,6 +1,5 @@
 package one.mixin.android.session
 
-import com.bugsnag.android.Bugsnag
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import ed25519.Ed25519
@@ -41,6 +40,7 @@ import one.mixin.android.extension.startsWithIgnoreCase
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.storeEncryptedSalt
 import one.mixin.android.util.reportException
+import one.mixin.android.util.analytics.ThirdPartyUserIdentity
 import one.mixin.android.util.xinDialCode
 import one.mixin.android.vo.Account
 import one.mixin.eddsa.Ed25519Sign
@@ -70,7 +70,7 @@ object Session {
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.putString(PREF_NAME_ACCOUNT, Gson().toJson(account.copy(salt = null)))
 
-        Bugsnag.setUser(account.userId, account.identityNumber, account.fullName)
+        ThirdPartyUserIdentity.setUser(account)
         val salt = account.salt
         if (salt.isNullOrEmpty()) {
             return
@@ -122,7 +122,7 @@ object Session {
         self = null
         val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
         preference.clear()
-        Bugsnag.setUser(null, null, null)
+        ThirdPartyUserIdentity.clearUser()
     }
 
     fun storeEd25519Seed(token: String) {

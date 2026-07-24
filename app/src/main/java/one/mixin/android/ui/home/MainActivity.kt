@@ -34,7 +34,6 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -184,6 +183,7 @@ import one.mixin.android.util.ErrorHandler.Companion.SERVER
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.ThirdPartyUserIdentity
 import one.mixin.android.util.database.databaseFile
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -377,7 +377,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
         val account = Session.getAccount()
         account?.let {
-            FirebaseCrashlytics.getInstance().setUserId(it.userId)
+            ThirdPartyUserIdentity.setUser(it)
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
