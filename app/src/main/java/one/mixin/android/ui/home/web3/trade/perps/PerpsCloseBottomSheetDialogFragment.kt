@@ -181,7 +181,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
 
         LaunchedEffect(Unit) {
-            AnalyticsTracker.trackPerpsClosePositionPreview()
             latestMarkPrice = markPrice
             latestUnrealizedPnl = unrealizedPnl
         }
@@ -499,11 +498,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
                                 cancelAction = {
-                                    AnalyticsTracker.trackPerpsClosePositionPreviewCancel()
+                                    AnalyticsTracker.trackPerpsClosePreviewCancel()
                                     dismiss()
                                 },
                                 confirmAction = {
-                                    AnalyticsTracker.trackPerpsClosePositionPreviewConfirm()
+                                    AnalyticsTracker.trackPerpsClosePreviewConfirm()
                                     showVerifyPinThenClose()
                                 },
                             )
@@ -515,11 +514,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Confirm),
                                 cancelAction = {
-                                    AnalyticsTracker.trackPerpsClosePositionPreviewCancel()
+                                    AnalyticsTracker.trackPerpsClosePreviewCancel()
                                     dismiss()
                                 },
                                 confirmAction = {
-                                    AnalyticsTracker.trackPerpsClosePositionPreviewConfirm()
+                                    AnalyticsTracker.trackPerpsClosePreviewConfirm()
                                     showVerifyPinThenClose()
                                 },
                             )
@@ -566,7 +565,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             leverage = leverage,
             onSuccess = {
                 step = Step.Done
-                AnalyticsTracker.trackPerpsClosePositionEnd()
+                AnalyticsTracker.trackPerpsCloseEnd()
             },
             onError = { error ->
                 errorInfo = error

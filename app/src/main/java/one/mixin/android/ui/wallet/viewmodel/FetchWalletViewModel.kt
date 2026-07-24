@@ -13,32 +13,37 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.WalletRequest
-import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Wallet
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
-import one.mixin.android.session.Session
 import one.mixin.android.tip.Tip
-import one.mixin.android.tip.bip44.Bip44Path
-import one.mixin.android.tip.privateKeyToAddress
-import one.mixin.android.tip.tipPrivToPrivateKey
+import one.mixin.android.ui.wallet.buildClassicWalletRequest
+import one.mixin.android.ui.wallet.classicWalletIndexForCreation
+import one.mixin.android.ui.wallet.commonWalletName
+import one.mixin.android.ui.wallet.createSignedWeb3AddressRequest
+import one.mixin.android.ui.wallet.nextCommonWalletNameIndex
+import one.mixin.android.ui.wallet.nextWalletName
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.FetchWalletState
 import one.mixin.android.ui.wallet.components.IndexedWallet
+import one.mixin.android.ui.wallet.components.WalletDestination
+import one.mixin.android.ui.wallet.components.defaultWalletSelection
+import one.mixin.android.ui.wallet.components.fetchWalletFailureState
+import one.mixin.android.ui.wallet.components.fetchWalletMissingMnemonicState
+import one.mixin.android.ui.wallet.components.shouldStartWalletFetch
+import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.ui.tip.matchesMnemonicWalletAddresses
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.WalletCategory
-import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import org.bitcoinj.base.BitcoinNetwork
-import org.bitcoinj.base.ScriptType
 import org.bitcoinj.crypto.DumpedPrivateKey
 import org.bitcoinj.crypto.ECKey
 import org.sol4k.Base58
@@ -46,8 +51,6 @@ import org.sol4k.Keypair
 import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
-import java.math.BigInteger
-import java.time.Instant
 import javax.inject.Inject
 
 @HiltViewModel
@@ -77,11 +80,16 @@ class FetchWalletViewModel @Inject constructor(
     private val _partialSuccess = MutableStateFlow<Boolean?>(null)
     val partialSuccess: StateFlow<Boolean?> = _partialSuccess.asStateFlow()
 
+    private val _importedWalletDestination = MutableStateFlow<WalletDestination?>(null)
+    val importedWalletDestination: StateFlow<WalletDestination?> = _importedWalletDestination.asStateFlow()
+
     suspend fun getAllNoKeyWallets() = web3Repository.getAllNoKeyWallets()
 
     private var mnemonic: String = ""
     private var currentIndex = 0
     private var spendKey: ByteArray? = null
+    private var importCategory: String = WalletCategory.IMPORTED_MNEMONIC.value
+    private var nextWalletNameIndex: Int? = null
 
     init {
         startFetching(0)
@@ -98,12 +106,19 @@ class FetchWalletViewModel @Inject constructor(
     fun setMnemonic(mnemonic: String) {
         this.mnemonic = mnemonic
         _wallets.value = emptyList()
+        _selectedWalletInfos.value = emptySet()
+        _importedWalletDestination.value = null
         currentIndex = 0
+        nextWalletNameIndex = null
         startFetching(0)
     }
 
     fun setSpendKey(spendKey: ByteArray) {
         this.spendKey = spendKey
+    }
+
+    fun setImportCategory(category: String) {
+        importCategory = category
     }
 
     fun getSpendKey(): ByteArray? {
@@ -128,15 +143,7 @@ class FetchWalletViewModel @Inject constructor(
                 R.string.Common_Wallet
             }
         )
-        val regex = """^$walletName (\d+)$""".toRegex()
-        val maxIndex = names
-            .filterNotNull()
-            .mapNotNull { name ->
-                regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
-            }
-            .maxOrNull() ?: 0
-
-        return "$walletName ${maxIndex + 1}"
+        return nextWalletName(names, walletName)
     }
 
     fun findMoreWallets() {
@@ -144,101 +151,175 @@ class FetchWalletViewModel @Inject constructor(
         startFetching(currentIndex)
     }
 
-    private var localMaxIndex: Int = 0
+    fun retryFetching() {
+        Timber.i("LoginFlow wallet_fetch_retry offset=$currentIndex")
+        startFetching(currentIndex)
+    }
+
+    fun failFetching(errorMessage: String?) {
+        Timber.i("LoginFlow wallet_fetch_failed source=prepare has_existing_wallets=${_wallets.value.isNotEmpty()}")
+        _errorCode.value = null
+        _errorMessage.value = errorMessage
+        _state.value = fetchWalletFailureState(_wallets.value.isNotEmpty())
+    }
 
     private fun startFetching(offset: Int) {
         viewModelScope.launch {
             _state.value = FetchWalletState.FETCHING
             try {
-                if (mnemonic.isNotBlank()) {
-                    if (localMaxIndex == 0) {
-                        val names = web3Repository.getAllWalletNames(listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
-                        val commonWalletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
-                        val regex = """^$commonWalletName (\d+)$""".toRegex()
-                        localMaxIndex = names
-                            .filterNotNull()
-                            .mapNotNull { name ->
-                                regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
-                            }.maxOrNull() ?: 0
-                        Timber.e("localMaxIndex $localMaxIndex")
-                    }
+                if (!shouldStartWalletFetch(mnemonic)) {
+                    Timber.i("LoginFlow wallet_fetch_skip reason=missing_mnemonic")
+                    _state.value = fetchWalletMissingMnemonicState()
+                    return@launch
+                }
+                if (restoreExistingMnemonicWallets(mnemonic)) {
+                    return@launch
+                }
+                Timber.i("LoginFlow wallet_fetch_start offset=$offset import_category=$importCategory")
+                if (nextWalletNameIndex == null) {
+                    val names = web3Repository.getAllWalletNames(listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
+                    nextWalletNameIndex = nextCommonWalletNameIndex(names)
+                }
 
-                    val wallets = (offset until offset + 10).map { index ->
-                        val ethereumWallet =
-                            CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)
-                        val solanaWallet =
-                            CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index)
-                        val btcWallet = CryptoWalletHelper.mnemonicToBitcoinSegwitWallet(mnemonic, index = index)
+                val wallets = (offset until offset + 10).map { index ->
+                    val ethereumWallet =
+                        CryptoWalletHelper.mnemonicToEthereumWallet(mnemonic, index = index)
+                    val solanaWallet =
+                        CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index)
+                    val btcWallet = CryptoWalletHelper.mnemonicToBitcoinSegwitWallet(mnemonic, index = index)
 
-                        val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${localMaxIndex + 1}"
-                        IndexedWallet(
-                            name = name,
-                            ethereumWallet = ethereumWallet,
-                            solanaWallet = solanaWallet,
-                            btcWallet = btcWallet,
-                            exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address, btcWallet.address)),
-                        )
-                    }
+                    val name = commonWalletName(requireNotNull(nextWalletNameIndex))
+                    IndexedWallet(
+                        name = name,
+                        ethereumWallet = ethereumWallet,
+                        solanaWallet = solanaWallet,
+                        btcWallet = btcWallet,
+                        exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address, btcWallet.address)),
+                    )
+                }
 
-                    val addresses = wallets.flatMap {
-                        listOf(it.ethereumWallet.address, it.solanaWallet.address, it.btcWallet.address)
-                    }
-                    val response = web3Repository.searchAssetsByAddresses(addresses)
-                    if (response.isSuccess && response.data != null) {
-                        val tokensMap = response.data!!.associateBy(
-                            { it.address },
-                            { it.assets }
-                        )
-                        if (tokensMap.isEmpty()) {
-                            if (offset == 0) {
-                                _wallets.value = listOf(wallets[0])
-                            }
-                        } else {
-                            val walletInfos = wallets.map { wallet ->
-                                val evmTokens =
-                                    tokensMap[wallet.ethereumWallet.address] ?: emptyList()
-                                val solanaTokens =
-                                    tokensMap[wallet.solanaWallet.address] ?: emptyList()
-                                val btcTokens =
-                                    tokensMap[wallet.btcWallet.address] ?: emptyList()
-                                val allTokens = (evmTokens + solanaTokens + btcTokens).sortedByDescending {
-                                    (it.priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (it.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO)
-                                }
-                                wallet.copy(assets = allTokens)
-                            }.filter { it.assets.isNotEmpty() }.map { wallet ->
-                                localMaxIndex ++
-                                val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} $localMaxIndex"
-                                wallet.copy(name = name)
-                            }
-                            if (offset == 0 && walletInfos.isEmpty()) {
-                                localMaxIndex ++
-                                _wallets.value = listOf(wallets[0])
-                            } else {
-                                _selectedWalletInfos.value = (walletInfos.filter { it.exists.not() } + _selectedWalletInfos.value).toSet()
-                                _wallets.value = _wallets.value + walletInfos
-                            }
-                        }
-                    } else {
+                val addresses = wallets.flatMap {
+                    listOf(it.ethereumWallet.address, it.solanaWallet.address, it.btcWallet.address)
+                }
+                val response = web3Repository.searchAssetsByAddresses(addresses)
+                if (response.isSuccess && response.data != null) {
+                    val tokensMap = response.data!!.associateBy(
+                        { it.address },
+                        { it.assets }
+                    )
+                    if (tokensMap.isEmpty()) {
                         if (offset == 0) {
-                            _wallets.value = listOf(wallets[0])
+                            _wallets.value = listOf(wallets[0].copy(name = takeNextCommonWalletName()))
+                            _selectedWalletInfos.value = defaultWalletSelection(_wallets.value)
                         }
+                        Timber.i("LoginFlow wallet_fetch_result success=true offset=$offset found_wallets=0 default_wallet=${offset == 0}")
+                    } else {
+                        val walletInfos = wallets.map { wallet ->
+                            val evmTokens =
+                                tokensMap[wallet.ethereumWallet.address] ?: emptyList()
+                            val solanaTokens =
+                                tokensMap[wallet.solanaWallet.address] ?: emptyList()
+                            val btcTokens =
+                                tokensMap[wallet.btcWallet.address] ?: emptyList()
+                            val allTokens = (evmTokens + solanaTokens + btcTokens).sortedByDescending {
+                                (it.priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (it.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+                            }
+                            wallet.copy(assets = allTokens)
+                        }.filter { it.assets.isNotEmpty() }.map { wallet ->
+                            wallet.copy(name = takeNextCommonWalletName())
+                        }
+                        if (offset == 0 && walletInfos.isEmpty()) {
+                            _wallets.value = listOf(wallets[0].copy(name = takeNextCommonWalletName()))
+                            _selectedWalletInfos.value = defaultWalletSelection(_wallets.value)
+                        } else {
+                            _wallets.value = _wallets.value + walletInfos
+                            _selectedWalletInfos.value = (
+                                walletInfos.filter { !it.exists } + _selectedWalletInfos.value
+                            ).toSet()
+                        }
+                        Timber.i(
+                            "LoginFlow wallet_fetch_result success=true offset=$offset found_wallets=${walletInfos.size} selected_count=${_selectedWalletInfos.value.size}"
+                        )
                     }
+                } else {
+                    Timber.i("LoginFlow wallet_fetch_result success=false offset=$offset code=${response.errorCode}")
+                    _errorCode.value = response.errorCode
+                    _errorMessage.value = MixinApplication.appContext.getMixinErrorStringByCode(response.errorCode, response.errorDescription)
+                    _state.value = fetchWalletFailureState(_wallets.value.isNotEmpty())
+                    return@launch
                 }
                 _state.value = FetchWalletState.SELECT
             } catch (e: Exception) {
+                Timber.i("LoginFlow wallet_fetch_result success=false offset=$offset exception=true")
                 Timber.e(e, "Failed to fetch wallet info")
-                _state.value = FetchWalletState.SELECT
+                _errorCode.value = null
+                _errorMessage.value = ErrorHandler.getErrorMessage(e)
+                _state.value = fetchWalletFailureState(_wallets.value.isNotEmpty())
             }
         }
+    }
+
+    private fun takeNextCommonWalletName(): String {
+        val index = requireNotNull(nextWalletNameIndex)
+        nextWalletNameIndex = index + 1
+        return commonWalletName(index)
+    }
+
+    private suspend fun restoreExistingMnemonicWallets(mnemonic: String): Boolean {
+        if (importCategory != WalletCategory.IMPORTED_MNEMONIC.value) return false
+
+        val matchingWallets = buildList {
+            web3Repository.getAllNoKeyWallets().forEach { wallet ->
+                if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value &&
+                    matchesMnemonicWalletAddresses(mnemonic, web3Repository.getAddresses(wallet.id))
+                ) {
+                    add(wallet)
+                }
+            }
+        }
+        if (matchingWallets.isEmpty()) return false
+
+        Timber.i("LoginFlow wallet_import_local_reuse matched_count=${matchingWallets.size}")
+        val currentSpendKey = spendKey
+        if (currentSpendKey == null) {
+            _errorCode.value = null
+            _errorMessage.value = MixinApplication.appContext.getString(R.string.Save_failure)
+            _state.value = FetchWalletState.IMPORT_ERROR
+            return true
+        }
+
+        for (wallet in matchingWallets) {
+            val saved = saveWeb3PrivateKey(
+                MixinApplication.appContext,
+                currentSpendKey,
+                wallet.id,
+                mnemonic.split(" "),
+            )
+            if (!saved) {
+                Timber.e("LoginFlow wallet_import_local_reuse_failed wallet_id=${wallet.id}")
+                _errorCode.value = null
+                _errorMessage.value = MixinApplication.appContext.getString(R.string.Save_failure)
+                _state.value = FetchWalletState.IMPORT_ERROR
+                return true
+            }
+            jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
+        }
+
+        val wallet = matchingWallets.first()
+        selectImportedWalletIfNeeded(wallet.id, wallet.category)
+        _state.value = FetchWalletState.IMPORT_SUCCESS
+        return true
     }
 
     // Start importing selected wallet infos
     fun startImporting() {
         viewModelScope.launch {
+            _importedWalletDestination.value = null
             _state.value = FetchWalletState.IMPORTING
             try {
+                Timber.i("LoginFlow wallet_import_viewmodel_start selected_count=${selectedWalletInfos.value.size} category=$importCategory")
                 val walletsToCreate = selectedWalletInfos.value.map {
-                    val category = WalletCategory.IMPORTED_MNEMONIC.value
+                    val category = importCategory
                     val addresses = listOf(
                         createSignedWeb3AddressRequest(
                             destination = it.btcWallet.address,
@@ -268,13 +349,14 @@ class FetchWalletViewModel @Inject constructor(
                 val expectedCount = walletsToCreate.size
                 val successCount = saveWallets(walletsToCreate)
 
-                Timber.d("Import completed: $successCount/$expectedCount wallets imported successfully")
+                Timber.i("LoginFlow wallet_import_viewmodel_result success_count=$successCount expected_count=$expectedCount")
                 if (expectedCount == successCount) {
                     _state.value = FetchWalletState.IMPORT_SUCCESS
                 } else {
                     _partialSuccess.value = successCount > 0
                 }
             } catch (e: Exception) {
+                Timber.i("LoginFlow wallet_import_viewmodel_exception")
                 Timber.e(e, "Failed to import wallets")
                 _errorCode.value = null
                 _errorMessage.value = e.message
@@ -286,6 +368,7 @@ class FetchWalletViewModel @Inject constructor(
     private suspend fun saveWallets(walletsToCreate: List<Pair<WalletRequest, List<String>>>): Int {
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
+            Timber.i("LoginFlow wallet_import_save_failed reason=missing_spend_key")
             Timber.e("Spend key is null, cannot save wallets.")
             return 0
         }
@@ -293,6 +376,7 @@ class FetchWalletViewModel @Inject constructor(
         var successCount = 0
 
         for ((walletRequest, words) in walletsToCreate) {
+            var privateKeySaveFailed = false
             val result = requestRouteAPI(
                 invokeNetwork = { web3Repository.createWallet(walletRequest) },
                 successBlock = { response ->
@@ -306,9 +390,26 @@ class FetchWalletViewModel @Inject constructor(
                                 updatedAt = wallet.updatedAt,
                             )
                         )
-                        saveWeb3PrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, words)
-                        jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
-                        successCount++
+                        wallet.addresses?.takeIf { it.isNotEmpty() }?.let { addresses ->
+                            web3Repository.insertAddressList(addresses)
+                        }
+                        val privateKeySaved = try {
+                            saveWeb3PrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, words)
+                        } catch (e: Exception) {
+                            Timber.e(e, "Failed to save imported wallet mnemonic")
+                            false
+                        }
+                        if (privateKeySaved) {
+                            selectImportedWalletIfNeeded(wallet.id, wallet.category)
+                            jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
+                            successCount++
+                        } else {
+                            Timber.e("LoginFlow wallet_import_save_failed reason=private_key wallet_id=${wallet.id}")
+                            _errorCode.value = null
+                            _errorMessage.value = MixinApplication.appContext.getString(R.string.Save_failure)
+                            _state.value = FetchWalletState.IMPORT_ERROR
+                            privateKeySaveFailed = true
+                        }
                     }
                 },
                 failureBlock = { response ->
@@ -325,7 +426,7 @@ class FetchWalletViewModel @Inject constructor(
                     true
                 }
             )
-            if (result == null) break
+            if (result == null || privateKeySaveFailed) break
         }
 
         return successCount
@@ -349,14 +450,7 @@ class FetchWalletViewModel @Inject constructor(
     }
 
     fun saveWeb3PrivateKey(context: Context, spendKey: ByteArray, walletId: String, words: List<String>): Boolean {
-        return try {
-            val encryptedString = CryptoWalletHelper.encryptMnemonicWithSpendKey(spendKey, words)
-            CryptoWalletHelper.saveWeb3PrivateKey(context, walletId, encryptedString)
-            true
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to save web3 private key")
-            false
-        }
+        return CryptoWalletHelper.saveMnemonicWithSpendKey(context, spendKey, walletId, words)
     }
 
     fun getWeb3Priva(context: Context, chainId: String?, walletId: String?): String? {
@@ -407,6 +501,7 @@ class FetchWalletViewModel @Inject constructor(
             try {
                 val address: String
                 val category: WalletCategory
+                _importedWalletDestination.value = null
                 _state.value = FetchWalletState.IMPORTING
                 when (mode) {
                     WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY -> {
@@ -485,6 +580,10 @@ class FetchWalletViewModel @Inject constructor(
                     if (privateKey.isNullOrEmpty().not()) {
                         saveWeb3ImportedPrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, privateKey)
                     }
+                    wallet.addresses?.takeIf { it.isNotEmpty() }?.let { addresses ->
+                        web3Repository.insertAddressList(addresses)
+                    }
+                    selectImportedWalletIfNeeded(wallet.id, wallet.category)
                     jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
                     Timber.d("Successfully imported wallet ${wallet.id}")
 
@@ -507,14 +606,7 @@ class FetchWalletViewModel @Inject constructor(
     }
 
     private fun saveWeb3ImportedPrivateKey(context: Context, spendKey: ByteArray, walletId: String, privateKey: String): Boolean {
-        return try {
-            val encryptedString = CryptoWalletHelper.encryptPrivateKeyWithSpendKey(spendKey, privateKey)
-            CryptoWalletHelper.saveWeb3PrivateKey(context, walletId, encryptedString)
-            true
-        } catch (e: Exception) {
-            Timber.e(e, "Failed to save web3 private key")
-            false
-        }
+        return CryptoWalletHelper.savePrivateKeyWithSpendKey(context, spendKey, walletId, privateKey)
     }
 
     fun savePrivateKey(walletId: String, chainId: String, privateKey: String) {
@@ -563,46 +655,14 @@ class FetchWalletViewModel @Inject constructor(
         }
         viewModelScope.launch {
             try {
+                _importedWalletDestination.value = null
                 _state.value = FetchWalletState.IMPORTING
-                val names = web3Repository.getAllWalletNames(listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value, WalletCategory.IMPORTED_MNEMONIC.value))
-                val classicIndex = web3Repository.getClassicWalletMaxIndex() + 1
-                val walletName = MixinApplication.appContext.getString(R.string.Common_Wallet)
-                val regex = """^$walletName (\d+)$""".toRegex()
-                val maxIndex = names
-                    .mapNotNull { name ->
-                        regex.find(name)?.groupValues?.get(1)?.toIntOrNull()
-                    }.maxOrNull() ?: 0
-                val name = "${MixinApplication.appContext.getString(R.string.Common_Wallet)} ${maxIndex + 1}"
-                val evmAddress = privateKeyToAddress(currentSpendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex)
-                val solAddress = privateKeyToAddress(currentSpendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex)
-                val btcAddress = privateKeyToAddress(currentSpendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex)
-                val walletRequest = WalletRequest(
-                    name = name,
-                    category = WalletCategory.CLASSIC.value,
-                    addresses = listOf(
-                        createSignedWeb3AddressRequest(
-                            destination = btcAddress,
-                            chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
-                            path = Bip44Path.bitcoinSegwitPathString(classicIndex),
-                            privateKey = tipPrivToPrivateKey(currentSpendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex),
-                            category = WalletCategory.CLASSIC.value
-                        ),
-                        createSignedWeb3AddressRequest(
-                            destination = evmAddress,
-                            chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
-                            path = Bip44Path.ethereumPathString(classicIndex),
-                            privateKey = tipPrivToPrivateKey(currentSpendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex),
-                            category = WalletCategory.CLASSIC.value
-                        ),
-                        createSignedWeb3AddressRequest(
-                            destination = solAddress,
-                            chainId = Constants.ChainId.SOLANA_CHAIN_ID,
-                            path = Bip44Path.solanaPathString(classicIndex),
-                            privateKey = tipPrivToPrivateKey(currentSpendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex),
-                            category = WalletCategory.CLASSIC.value
-                        )
-                    )
+                val hasClassicWallet = web3Repository.getClassicWalletId() != null
+                val classicIndex = classicWalletIndexForCreation(
+                    hasClassicWallet = hasClassicWallet,
+                    maxClassicIndex = web3Repository.getClassicWalletMaxIndex(),
                 )
+                val walletRequest = buildClassicWalletRequest(web3Repository, currentSpendKey, classicIndex)
                 saveImportedWallet(walletRequest, null)
             } catch (e: Exception) {
                 Timber.e(e, "Failed to import wallet")
@@ -611,66 +671,14 @@ class FetchWalletViewModel @Inject constructor(
         }
     }
 
-    private fun createSignedWeb3AddressRequest(
-        destination: String,
-        chainId: String,
-        path: String?,
-        privateKey: String,
-        category: String
-    ): Web3AddressRequest {
-        val privateKeyBytes = Numeric.hexStringToByteArray(privateKey)
-        return when (chainId) {
-            Constants.ChainId.SOLANA_CHAIN_ID -> {
-                createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
-            }
-            Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
-            }
-            in Constants.Web3EvmChainIds -> {
-                createSignedWeb3AddressRequest(destination, chainId, path, privateKeyBytes, category)
-            }
-            else -> {
-                throw IllegalArgumentException("Unsupported chainId: $chainId")
-            }
+    private suspend fun selectImportedWalletIfNeeded(walletId: String, category: String) {
+        if (_importedWalletDestination.value != null) return
+        _importedWalletDestination.value = walletDestinationForWallet(walletId, category)
+        if (category == WalletCategory.WATCH_ADDRESS.value) return
+        val addresses = web3Repository.getAddresses(walletId)
+        Web3Signer.setWallet(walletId, category) { queryWalletId ->
+            if (queryWalletId == walletId) addresses else emptyList()
         }
     }
 
-    private fun createSignedWeb3AddressRequest(
-        destination: String,
-        chainId: String,
-        path: String?,
-        privateKey: ByteArray?,
-        category: String
-    ): Web3AddressRequest {
-        val selfId = Session.getAccountId()
-        if (category == WalletCategory.WATCH_ADDRESS.value) {
-            return Web3AddressRequest(
-                destination = destination,
-                chainId = chainId,
-                path = path,
-            )
-        }
-        val now = Instant.now()
-        val signature = if (privateKey != null) {
-            val message = "$destination\n$selfId\n${now.epochSecond}"
-            if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
-                Numeric.prependHexPrefix(Web3Signer.signSolanaMessage(privateKey, message.toByteArray()))
-            } else if (chainId in Constants.Web3EvmChainIds) {
-                Web3Signer.signEthMessage(privateKey, message.toByteArray().toHexString(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
-            } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKey), true)
-                Numeric.toHexString(ecKey.signMessage(message, ScriptType.P2WPKH).decodeBase64())
-            } else {
-                null
-            }
-        } else null
-
-        return Web3AddressRequest(
-            destination = destination,
-            chainId = chainId,
-            path = path,
-            signature = signature,
-            timestamp = now.toString()
-        )
-    }
 }

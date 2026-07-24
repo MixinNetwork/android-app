@@ -489,6 +489,8 @@ internal constructor(
 
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
 
+    suspend fun getClassicWalletId() = web3Repository.getClassicWalletId()
+
     suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, chainId, query)
 
     suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)

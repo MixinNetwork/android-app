@@ -317,7 +317,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                                 AnalyticsTracker.trackTradeTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
                                 AnalyticsTracker.trackSpotTokenSelect(
                                     method = AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK,
-                                    type = spotTokenType(),
+                                    side = spotTokenType(),
                                     chain = it.chain.name,
                                     assetSymbol = it.symbol,
                                 )

@@ -249,7 +249,7 @@ fun SwapContent(
                                     .clip(CircleShape)
                                     .background(MixinAppTheme.colors.accent)
                                     .clickable {
-                                        AnalyticsTracker.trackSpotSwitchSendReceive()
+                                        AnalyticsTracker.trackSpotTokensSwitch()
                                         isLoading = true
                                         isReverse = !isReverse
                                         invalidFlag = !invalidFlag
@@ -295,7 +295,7 @@ fun SwapContent(
                                 maxDecimalPlaces = fromMaxDecimalPlaces,
                                 onFocusChanged = { isSendFocused = it },
                                 onMax = {
-                                    AnalyticsTracker.trackSpotSendInputBalance()
+                                    AnalyticsTracker.trackSpotSendAmountBalance()
                                     val balance = availableFromBalanceValue
                                     if (balance > BigDecimal.ZERO) {
                                         inputText = limitTradeInputDecimalPlaces(balance.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
@@ -388,7 +388,7 @@ fun SwapContent(
                 val balance = availableFromBalanceValue
 
                 InputAction("25%", showBorder = true) {
-                    AnalyticsTracker.trackSpotSendInputPercent("25%")
+                    AnalyticsTracker.trackSpotSendAmountPercent("25%")
                     if (balance > BigDecimal.ZERO) {
                         inputText = limitTradeInputDecimalPlaces((balance * BigDecimal("0.25")).stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                     } else {
@@ -396,7 +396,7 @@ fun SwapContent(
                     }
                 }
                 InputAction("50%", showBorder = true) {
-                    AnalyticsTracker.trackSpotSendInputPercent("50%")
+                    AnalyticsTracker.trackSpotSendAmountPercent("50%")
                     if (balance > BigDecimal.ZERO) {
                         inputText = limitTradeInputDecimalPlaces((balance * BigDecimal("0.5")).stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                     } else {
@@ -404,7 +404,7 @@ fun SwapContent(
                     }
                 }
                 InputAction(stringResource(R.string.Max), showBorder = true) {
-                    AnalyticsTracker.trackSpotSendInputPercent("max")
+                    AnalyticsTracker.trackSpotSendAmountPercent("max")
                     if (balance > BigDecimal.ZERO) {
                         inputText = limitTradeInputDecimalPlaces(balance.stripTrailingZeros().toPlainString(), fromMaxDecimalPlaces)
                     } else {
