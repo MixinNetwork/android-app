@@ -1,6 +1,6 @@
 package one.mixin.android.ui.wallet.alert.vo
 
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 
 class AlertGroup(
     @ColumnInfo("coin_id")

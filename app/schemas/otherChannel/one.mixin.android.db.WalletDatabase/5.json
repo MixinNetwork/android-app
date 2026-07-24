@@ -1,0 +1,629 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 5,
+    "identityHash": "662b6a08f46965a96f42bb75c7a3567a",
+    "entities": [
+      {
+        "tableName": "tokens",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `name` TEXT NOT NULL, `asset_key` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `precision` INTEGER NOT NULL, `kernel_asset_id` TEXT NOT NULL, `amount` TEXT NOT NULL, `price_usd` TEXT NOT NULL, `change_usd` TEXT NOT NULL, `level` INTEGER NOT NULL, PRIMARY KEY(`wallet_id`, `asset_id`))",
+        "fields": [
+          {
+            "fieldPath": "walletId",
+            "columnName": "wallet_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assetId",
+            "columnName": "asset_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assetKey",
+            "columnName": "asset_key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "symbol",
+            "columnName": "symbol",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "iconUrl",
+            "columnName": "icon_url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "precision",
+            "columnName": "precision",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kernelAssetId",
+            "columnName": "kernel_asset_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "balance",
+            "columnName": "amount",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "priceUsd",
+            "columnName": "price_usd",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "changeUsd",
+            "columnName": "change_usd",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "wallet_id",
+            "asset_id"
+          ]
+        }
+      },
+      {
+        "tableName": "transactions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`transaction_hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `status` TEXT NOT NULL, `block_number` INTEGER NOT NULL, `fee` TEXT NOT NULL, `senders` TEXT, `receivers` TEXT, `approvals` TEXT, `send_asset_id` TEXT, `receive_asset_id` TEXT, `transaction_at` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `level` INTEGER NOT NULL, PRIMARY KEY(`transaction_hash`, `chain_id`, `address`))",
+        "fields": [
+          {
+            "fieldPath": "transactionHash",
+            "columnName": "transaction_hash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "address",
+            "columnName": "address",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "transactionType",
+            "columnName": "transaction_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "status",
+            "columnName": "status",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "blockNumber",
+            "columnName": "block_number",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fee",
+            "columnName": "fee",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "senders",
+            "columnName": "senders",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "receivers",
+            "columnName": "receivers",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "approvals",
+            "columnName": "approvals",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sendAssetId",
+            "columnName": "send_asset_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "receiveAssetId",
+            "columnName": "receive_asset_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "transactionAt",
+            "columnName": "transaction_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "level",
+            "columnName": "level",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "transaction_hash",
+            "chain_id",
+            "address"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_transactions_address_transaction_at",
+            "unique": false,
+            "columnNames": [
+              "address",
+              "transaction_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_transactions_address_transaction_at` ON `${TABLE_NAME}` (`address`, `transaction_at`)"
+          },
+          {
+            "name": "index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at_level",
+            "unique": false,
+            "columnNames": [
+              "transaction_type",
+              "send_asset_id",
+              "receive_asset_id",
+              "transaction_at",
+              "level"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at_level` ON `${TABLE_NAME}` (`transaction_type`, `send_asset_id`, `receive_asset_id`, `transaction_at`, `level`)"
+          }
+        ]
+      },
+      {
+        "tableName": "wallets",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `category` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "wallet_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "wallet_id"
+          ]
+        }
+      },
+      {
+        "tableName": "addresses",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`address_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `destination` TEXT NOT NULL, `path` TEXT, `created_at` TEXT NOT NULL, PRIMARY KEY(`address_id`))",
+        "fields": [
+          {
+            "fieldPath": "addressId",
+            "columnName": "address_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "walletId",
+            "columnName": "wallet_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "destination",
+            "columnName": "destination",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "path",
+            "columnName": "path",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "address_id"
+          ]
+        }
+      },
+      {
+        "tableName": "tokens_extra",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`wallet_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `hidden` INTEGER, PRIMARY KEY(`wallet_id`, `asset_id`))",
+        "fields": [
+          {
+            "fieldPath": "walletId",
+            "columnName": "wallet_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "assetId",
+            "columnName": "asset_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hidden",
+            "columnName": "hidden",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "wallet_id",
+            "asset_id"
+          ]
+        }
+      },
+      {
+        "tableName": "chains",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`chain_id` TEXT NOT NULL, `name` TEXT NOT NULL, `symbol` TEXT NOT NULL, `icon_url` TEXT NOT NULL, `threshold` INTEGER NOT NULL, PRIMARY KEY(`chain_id`))",
+        "fields": [
+          {
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "name",
+            "columnName": "name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "symbol",
+            "columnName": "symbol",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "iconUrl",
+            "columnName": "icon_url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "threshold",
+            "columnName": "threshold",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "chain_id"
+          ]
+        }
+      },
+      {
+        "tableName": "raw_transactions",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `account` TEXT NOT NULL, `nonce` TEXT NOT NULL, `raw` TEXT NOT NULL, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`hash`))",
+        "fields": [
+          {
+            "fieldPath": "hash",
+            "columnName": "hash",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "chainId",
+            "columnName": "chain_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "account",
+            "columnName": "account",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nonce",
+            "columnName": "nonce",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "raw",
+            "columnName": "raw",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "hash"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_raw_transactions_chain_id",
+            "unique": false,
+            "columnNames": [
+              "chain_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_raw_transactions_chain_id` ON `${TABLE_NAME}` (`chain_id`)"
+          }
+        ]
+      },
+      {
+        "tableName": "properties",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`key` TEXT NOT NULL, `value` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`key`))",
+        "fields": [
+          {
+            "fieldPath": "key",
+            "columnName": "key",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "value",
+            "columnName": "value",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "updatedAt",
+            "columnName": "updated_at",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "key"
+          ]
+        }
+      },
+      {
+        "tableName": "orders",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`order_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `pay_asset_id` TEXT NOT NULL, `receive_asset_id` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `receive_amount` TEXT, `pay_trace_id` TEXT, `receive_trace_id` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_type` TEXT NOT NULL, `fund_status` TEXT, `price` TEXT, `pending_amount` TEXT, `filled_receive_amount` TEXT, `expected_receive_amount` TEXT, `expired_at` TEXT, PRIMARY KEY(`order_id`))",
+        "fields": [
+          {
+            "fieldPath": "orderId",
+            "columnName": "order_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "walletId",
+            "columnName": "wallet_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "userId",
+            "columnName": "user_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payAssetId",
+            "columnName": "pay_asset_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receiveAssetId",
+            "columnName": "receive_asset_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payAmount",
+            "columnName": "pay_amount",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "receiveAmount",
+            "columnName": "receive_amount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "payTraceId",
+            "columnName": "pay_trace_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "receiveTraceId",
+            "columnName": "receive_trace_id",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "state",
+            "columnName": "state",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "createdAt",
+            "columnName": "created_at",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "orderType",
+            "columnName": "order_type",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fundStatus",
+            "columnName": "fund_status",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "price",
+            "columnName": "price",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "pendingAmount",
+            "columnName": "pending_amount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "filledReceiveAmount",
+            "columnName": "filled_receive_amount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "expectedReceiveAmount",
+            "columnName": "expected_receive_amount",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "expiredAt",
+            "columnName": "expired_at",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "order_id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_orders_state_created_at",
+            "unique": false,
+            "columnNames": [
+              "state",
+              "created_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_orders_state_created_at` ON `${TABLE_NAME}` (`state`, `created_at`)"
+          },
+          {
+            "name": "index_orders_order_type_created_at",
+            "unique": false,
+            "columnNames": [
+              "order_type",
+              "created_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_orders_order_type_created_at` ON `${TABLE_NAME}` (`order_type`, `created_at`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '662b6a08f46965a96f42bb75c7a3567a')"
+    ]
+  }
+}

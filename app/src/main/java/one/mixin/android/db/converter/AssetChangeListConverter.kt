@@ -1,6 +1,6 @@
 package one.mixin.android.db.converter
 
-import androidx.room.TypeConverter
+import androidx.room3.ColumnTypeConverter
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import one.mixin.android.db.web3.vo.AssetChange
@@ -8,7 +8,7 @@ import one.mixin.android.db.web3.vo.AssetChange
 class AssetChangeListConverter {
     private val gson = Gson()
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun fromAssetChangeList(value: List<AssetChange>?): String {
         return if (value == null) {
             "[]"
@@ -17,7 +17,7 @@ class AssetChangeListConverter {
         }
     }
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun toAssetChangeList(value: String): List<AssetChange>? {
         val listType = object : TypeToken<List<AssetChange>>() {}.type
         return try {

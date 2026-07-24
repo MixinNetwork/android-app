@@ -1,17 +1,19 @@
 package one.mixin.android.crypto.db
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.room3.Database
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import androidx.room3.migration.Migration
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import one.mixin.android.crypto.vo.Identity
 import one.mixin.android.crypto.vo.PreKey
 import one.mixin.android.crypto.vo.RatchetSenderKey
 import one.mixin.android.crypto.vo.SenderKey
 import one.mixin.android.crypto.vo.Session
 import one.mixin.android.crypto.vo.SignedPreKey
+import one.mixin.android.db.datasource.execSQL
 
 @Database(
     entities = [
@@ -42,7 +44,7 @@ abstract class SignalDatabase : RoomDatabase() {
 
         private val MIGRATION_2_3: Migration =
             object : Migration(2, 3) {
-                override fun migrate(database: SupportSQLiteDatabase) {
+                override suspend fun migrate(database: SQLiteConnection) {
                     database.execSQL("DROP INDEX IF EXISTS index_sessions_address")
                     database.execSQL("ALTER TABLE sessions ADD COLUMN device INTEGER NOT NULL DEFAULT 1")
                     database.execSQL("CREATE UNIQUE INDEX index_sessions_address_device ON sessions (address, device)")
@@ -56,6 +58,7 @@ abstract class SignalDatabase : RoomDatabase() {
             if (INSTANCE == null) {
                 INSTANCE =
                     Room.databaseBuilder(context, SignalDatabase::class.java, "signal.db")
+                        .setDriver(AndroidSQLiteDriver())
                         .addMigrations(MIGRATION_2_3)
                         .addCallback(CALLBACK)
                         .build()

@@ -1,6 +1,7 @@
 package one.mixin.android.db.pending
 
-import androidx.room.InvalidationTracker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job as CoroutineJob
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.vo.FloodMessage
@@ -25,9 +26,11 @@ interface PendingDatabase {
 
     fun insertFloodMessage(floodMessage: FloodMessage)
 
-    fun addObserver(observer: InvalidationTracker.Observer)
-
-    fun removeObserver(observer: InvalidationTracker.Observer)
+    fun observeInvalidation(
+        scope: CoroutineScope,
+        tableName: String,
+        onInvalidated: () -> Unit,
+    ): CoroutineJob
 
     fun deleteFloodMessage(floodMessage: FloodMessage)
 

@@ -1,6 +1,6 @@
 package one.mixin.android.vo
 
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 
 data class UtxoItem(
     @ColumnInfo("output_id")

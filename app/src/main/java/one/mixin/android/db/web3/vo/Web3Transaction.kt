@@ -1,11 +1,11 @@
 package one.mixin.android.db.web3.vo
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Ignore
-import androidx.room.Index
-import androidx.room.TypeConverters
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.Ignore
+import androidx.room3.Index
+import androidx.room3.ColumnTypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
@@ -49,17 +49,17 @@ data class Web3Transaction(
     @SerializedName("fee")
     val fee: String,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @ColumnTypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "senders")
     @SerializedName("senders")
     val senders: List<AssetChange>?,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @ColumnTypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "receivers")
     @SerializedName("receivers")
     val receivers: List<AssetChange>?,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @ColumnTypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "approvals")
     @SerializedName("approvals")
     val approvals: List<AssetChange>? = null,

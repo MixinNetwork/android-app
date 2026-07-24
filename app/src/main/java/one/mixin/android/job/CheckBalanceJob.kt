@@ -1,8 +1,8 @@
 package one.mixin.android.job
 
-import androidx.room.withTransaction
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.db.withRoomTransaction
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.safe.TokensExtra
 import timber.log.Timber
@@ -29,7 +29,7 @@ class CheckBalanceJob(
             for (asset in assets) {
                 val tokensExtra = tokensExtraDao.findByAsset(asset)
                 val token = tokenDao.findTokenByAsset(asset) ?: continue
-                mixinDatabase.withTransaction {
+                mixinDatabase.withRoomTransaction {
                     val amount = calcBalanceByAssetId(asset)
                     if (tokensExtra == null) {
                         tokensExtraDao.insertSuspend(TokensExtra(token.assetId, token.asset, false, amount.toPlainString(), nowInUtc()))

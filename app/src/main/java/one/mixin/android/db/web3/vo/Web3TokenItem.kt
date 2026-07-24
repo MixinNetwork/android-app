@@ -1,7 +1,7 @@
 package one.mixin.android.db.web3.vo
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.Parcelize

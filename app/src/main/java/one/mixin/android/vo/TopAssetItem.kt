@@ -3,8 +3,8 @@ package one.mixin.android.vo
 import android.annotation.SuppressLint
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
-import androidx.room.ColumnInfo
-import androidx.room.PrimaryKey
+import androidx.room3.ColumnInfo
+import androidx.room3.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import java.math.BigDecimal

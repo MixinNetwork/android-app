@@ -1,8 +1,8 @@
 package one.mixin.android.db.web3
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
+import androidx.room3.Dao
+import androidx.room3.Query
 import one.mixin.android.db.BaseDao
 import one.mixin.android.db.web3.vo.Web3RawTransaction
 

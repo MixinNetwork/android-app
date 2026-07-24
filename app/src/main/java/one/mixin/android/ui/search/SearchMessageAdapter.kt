@@ -11,7 +11,7 @@ import one.mixin.android.databinding.ItemSearchMessageBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.timeAgoDate
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
+import one.mixin.android.ui.common.recyclerview.SafePagingDataAdapter
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.SearchMessageDetailItem
@@ -20,7 +20,7 @@ import one.mixin.android.vo.isContact
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.isTranscript
 
-class SearchMessageAdapter : SafePagedListAdapter<SearchMessageDetailItem, SearchMessageHolder>(SearchMessageDetailItem.DIFF_CALLBACK) {
+class SearchMessageAdapter : SafePagingDataAdapter<SearchMessageDetailItem, SearchMessageHolder>(SearchMessageDetailItem.DIFF_CALLBACK) {
     var query: String = ""
 
     override fun onCreateViewHolder(

@@ -1,17 +1,22 @@
 package one.mixin.android.db
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.TypeConverters
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import androidx.room3.Database
+import androidx.room3.DaoReturnTypeConverters
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import androidx.room3.ColumnTypeConverters
+import androidx.room3.livedata.LiveDataDaoReturnTypeConverter
+import androidx.room3.migration.Migration
+import androidx.room3.paging.PagingSourceDaoReturnTypeConverter
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.converter.AssetChangeListConverter
 import one.mixin.android.db.converter.Web3TypeConverters
+import one.mixin.android.db.datasource.RoomDatabaseCompat
+import one.mixin.android.db.datasource.execSQL
 import one.mixin.android.db.web3.SafeWalletsDao
 import one.mixin.android.db.web3.WalletOutputDao
 import one.mixin.android.db.web3.Web3AddressDao
@@ -29,11 +34,10 @@ import one.mixin.android.db.web3.vo.Web3Token
 import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3Wallet
-import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
-import one.mixin.android.util.reportException
 import one.mixin.android.vo.Property
 import one.mixin.android.vo.route.Order
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.io.File
 import java.util.concurrent.Executors
 import kotlin.math.max
@@ -55,7 +59,11 @@ import kotlin.math.min
     ],
     version = 7,
 )
-@TypeConverters(Web3TypeConverters::class, AssetChangeListConverter::class)
+@ColumnTypeConverters(Web3TypeConverters::class, AssetChangeListConverter::class)
+@DaoReturnTypeConverters(
+    LiveDataDaoReturnTypeConverter::class,
+    PagingSourceDaoReturnTypeConverter::class,
+)
 abstract class WalletDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE: WalletDatabase? = null
@@ -63,10 +71,8 @@ abstract class WalletDatabase : RoomDatabase() {
         private val lock = Any()
         private var currentIdentityNumber: String? = null
 
-        private lateinit var supportSQLiteDatabase: SupportSQLiteDatabase
-
         val MIGRATION_1_2 = object : Migration(1, 2) {
-            override fun migrate(db: SupportSQLiteDatabase) {
+            override suspend fun migrate(db: SQLiteConnection) {
                 db.execSQL("DROP TABLE IF EXISTS transactions")
                 db.execSQL("DELETE FROM properties") // delete old offset
                 db.execSQL(
@@ -80,7 +86,7 @@ abstract class WalletDatabase : RoomDatabase() {
         }
 
         val MIGRATION_2_3 = object : Migration(2, 3) {
-            override fun migrate(db: SupportSQLiteDatabase) {
+            override suspend fun migrate(db: SQLiteConnection) {
                 db.execSQL("ALTER TABLE tokens ADD COLUMN level INTEGER NOT NULL DEFAULT ${Constants.AssetLevel.VERIFIED}")
                 db.execSQL("ALTER TABLE transactions ADD COLUMN level INTEGER NOT NULL DEFAULT ${Constants.AssetLevel.UNKNOWN}")
                 db.execSQL("DELETE FROM properties WHERE `key` IN (SELECT DISTINCT destination FROM addresses)") // delete old offset
@@ -90,13 +96,13 @@ abstract class WalletDatabase : RoomDatabase() {
         }
 
         val MIGRATION_3_4 = object : Migration(3, 4) {
-            override fun migrate(db: SupportSQLiteDatabase) {
+            override suspend fun migrate(db: SQLiteConnection) {
                 db.execSQL("ALTER TABLE addresses ADD COLUMN path TEXT")
             }
         }
 
         val MIGRATION_4_5 = object : Migration(4, 5) {
-            override fun migrate(db: SupportSQLiteDatabase) {
+            override suspend fun migrate(db: SQLiteConnection) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `orders` (`order_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `pay_asset_id` TEXT NOT NULL, `receive_asset_id` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `receive_amount` TEXT, `pay_trace_id` TEXT, `receive_trace_id` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_type` TEXT NOT NULL, `fund_status` TEXT, `price` TEXT, `pending_amount` TEXT, `filled_receive_amount` TEXT, `expected_receive_amount` TEXT, `expired_at` TEXT, PRIMARY KEY(`order_id`))")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_state_created_at` ON `orders` (`state`, `created_at`)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_order_type_created_at` ON `orders` (`order_type`, `created_at`)")
@@ -104,13 +110,13 @@ abstract class WalletDatabase : RoomDatabase() {
         }
 
         val MIGRATION_5_6 = object : Migration(5, 6) {
-            override fun migrate(db: SupportSQLiteDatabase) {
+            override suspend fun migrate(db: SQLiteConnection) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `safe_wallets` (`wallet_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `role` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `url` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))")
             }
         }
 
         val MIGRATION_6_7 = object : Migration(6, 7) {
-            override fun migrate(db: SupportSQLiteDatabase) {
+            override suspend fun migrate(db: SQLiteConnection) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS `outputs` (`output_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `address` TEXT NOT NULL, `pubkey_hex` TEXT NOT NULL, `pubkey_type` TEXT NOT NULL, `status` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))")
             }
         }
@@ -133,38 +139,26 @@ abstract class WalletDatabase : RoomDatabase() {
                             context,
                             WalletDatabase::class.java,
                             File(dir, Constants.DataBase.WEB3_DB_NAME).absolutePath,
-                        ).openHelperFactory(
-                            MixinOpenHelperFactory(
-                                FrameworkSQLiteOpenHelperFactory(),
-                                listOf(
-                                    object : MixinCorruptionCallback {
-                                        override fun onCorruption(database: SupportSQLiteDatabase) {
-                                            val e = IllegalStateException("Wallet database is corrupted, current DB version: 7")
-                                            reportException(e)
-                                        }
-                                    },
-                                ),
-                            ),
-                        ).addCallback(
+                        ).setDriver(AndroidSQLiteDriver())
+                            .addCallback(
                             object : Callback() {
-                                override fun onOpen(db: SupportSQLiteDatabase) {
+                                override suspend fun onOpen(db: SQLiteConnection) {
                                     super.onOpen(db)
                                     db.execSQL("PRAGMA synchronous = NORMAL")
-                                    supportSQLiteDatabase = db
                                 }
                             },
                         ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                             .enableMultiInstanceInvalidation()
-                            .setQueryExecutor(
+                            .setQueryCoroutineContext(
                                 Executors.newFixedThreadPool(
                                     max(
                                         2,
                                         min(Runtime.getRuntime().availableProcessors() - 1, 4),
                                     ),
-                                ),
+                                ).asCoroutineDispatcher(),
                             )
-                            .setTransactionExecutor(SINGLE_DB_EXECUTOR)
-                    INSTANCE = builder.build()
+                    val database = builder.build()
+                    INSTANCE = database
                     currentIdentityNumber = scopedIdentity
                 }
             }
