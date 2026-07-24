@@ -90,7 +90,6 @@
     <string name="an_audio">un audio</string>
     <string name="ANSWER">RESPUESTA</string>
     <string name="app_card_shareable_false">La tarjeta se ha configurado para no permitir compartir</string>
-    <string name="app_name">Mixin</string>
     <string name="App_version">Versión de aplicación</string>
     <string name="Appearance">Apariencia</string>
     <string name="Apply">Aplicar</string>
@@ -578,9 +577,9 @@
         <item quantity="one">%d Minuto</item>
         <item quantity="other">%d Minutos</item>
     </plurals>
-    <string name="Mixin">Mixin</string>
-    <string name="Mixin_ID">ID de Mixin</string>
     <string name="Mixin_Locked">Mixin bloqueado</string>
+    <string name="Mixin_ID">ID de Mixin</string>
+    <string name="Mixin_One">Mixin One</string>
     <string name="Mixin_Messenger_Desktop">Mixin de Escritorio</string>
     <string name="Model">Modelo</string>
     <string name="Monday">Lunes</string>
@@ -1082,4 +1081,18 @@
     <string name="You_have_left_the_group">Te has ido del grupo</string>
     <string name="Your_emergency_contact_has_been_changed">Tu contacto de emergencia se ha cambiado</string>
     <string name="Receivers">receivers</string>
+    <string name="import_from_another_wallet">¿Importar desde otra billetera?</string>
+    <string name="login_method_from_other_wallets">Desde otras billeteras</string>
+    <string name="login_method_mnemonic_12_24_desc">Importa cuentas de otra billetera.</string>
+    <string name="login_method_mnemonic_12_24_title">12 o 24 palabras</string>
+    <string name="login_method_mnemonic_13_25_desc">Inicia sesión con tu frase de recuperación de Mixin.</string>
+    <string name="login_method_mnemonic_13_25_title">13 o 25 palabras</string>
+    <string name="login_method_mobile_desc">Inicia sesión con el número de teléfono vinculado a tu cuenta.</string>
+    <string name="login_method_mobile_title">Número de teléfono</string>
+    <string name="login_method_recovery_kit">Kit de recuperación de Mixin</string>
+    <string name="mnemonic_login_security_tip_1">· Mixin es de código abierto, reproducible y auditado de forma independiente.</string>
+    <string name="mnemonic_login_security_tip_2">· Tus datos se cifran de forma segura y se almacenan localmente en tu dispositivo.</string>
+    <string name="mnemonic_login_security_tip_3">· Mixin nunca accede a tu información privada ni la comparte con terceros.</string>
+    <string name="mnemonic_login_security_title">¿Es seguro importar a Mixin?</string>
+    <string name="mobile_number_description">Este es el número de teléfono vinculado a tu cuenta</string>
 </resources>

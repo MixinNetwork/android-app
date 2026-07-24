@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="backup_dialog_list">
+        <item>Никогда</item>
+        <item>Ежедневно</item>
+        <item>Еженедельно</item>
+        <item>Ежемесячно</item>
+    </string-array>
+
+    <string-array name="setting_night_array">
+        <item>Светлая</item>
+        <item>Тёмная</item>
+    </string-array>
+
+    <string-array name="setting_night_array_oreo">
+        <item>Светлая</item>
+        <item>Тёмная</item>
+        <item>Следовать системной теме</item>
+    </string-array>
+
+    <plurals name="time_interval_unit_second">
+        <item quantity="one">секунду</item>
+        <item quantity="few">секунды</item>
+        <item quantity="many">секунд</item>
+        <item quantity="other">секунды</item>
+    </plurals>
+    <plurals name="time_interval_unit_minute">
+        <item quantity="one">минуту</item>
+        <item quantity="few">минуты</item>
+        <item quantity="many">минут</item>
+        <item quantity="other">минуты</item>
+    </plurals>
+    <plurals name="time_interval_unit_hour">
+        <item quantity="one">час</item>
+        <item quantity="few">часа</item>
+        <item quantity="many">часов</item>
+        <item quantity="other">часа</item>
+    </plurals>
+    <plurals name="time_interval_unit_day">
+        <item quantity="one">день</item>
+        <item quantity="few">дня</item>
+        <item quantity="many">дней</item>
+        <item quantity="other">дня</item>
+    </plurals>
+    <plurals name="time_interval_unit_week">
+        <item quantity="one">неделю</item>
+        <item quantity="few">недели</item>
+        <item quantity="many">недель</item>
+        <item quantity="other">недели</item>
+    </plurals>
+
+    <array name="database">
+        <item>База данных Mixin</item>
+        <item>База данных ожидания</item>
+        <item>База данных кошелька</item>
+    </array>
+</resources>

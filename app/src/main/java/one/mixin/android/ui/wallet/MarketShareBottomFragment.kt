@@ -283,7 +283,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
             if (rebatePercent.isNullOrBlank()) {
                 binding.shareDesc.isVisible = true
                 binding.shareDesc.minLines = 1
-                binding.title.text = getString(R.string.mixin_messenger)
+                binding.title.text = getString(R.string.Mixin)
                 binding.shareDesc.text = getString(R.string.share_desc)
             } else {
                 binding.title.text = info.code
@@ -295,7 +295,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         } else {
             binding.shareDesc.isVisible = true
             binding.shareDesc.minLines = 1
-            binding.title.text = getString(R.string.mixin_messenger)
+            binding.title.text = getString(R.string.Mixin)
             binding.shareDesc.text = getString(R.string.share_desc)
         }
         binding.qr.setImageBitmap(qrCode)
