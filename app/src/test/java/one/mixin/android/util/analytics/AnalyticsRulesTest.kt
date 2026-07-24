@@ -50,6 +50,15 @@ class AnalyticsRulesTest {
     }
 
     @Test
+    fun receiveAndPerpsEventsSyncToAppsFlyer() {
+        assertEquals("asset_receive_success", AnalyticsRules.appsFlyerEventName("asset_receive_success"))
+        assertEquals("trade_perps_open_start", AnalyticsRules.appsFlyerEventName("trade_perps_open_start"))
+        assertEquals("trade_perps_open_end", AnalyticsRules.appsFlyerEventName("trade_perps_open_end"))
+        assertEquals("trade_perps_close_start", AnalyticsRules.appsFlyerEventName("trade_perps_close_start"))
+        assertEquals("trade_perps_close_end", AnalyticsRules.appsFlyerEventName("trade_perps_close_end"))
+    }
+
+    @Test
     fun spotOrdersEventUsesRenamedEventNameAndTypeParam() {
         val event = AnalyticsRules.spotOrdersEvent(AnalyticsTracker.SpotTradeType.ADVANCED)
 
