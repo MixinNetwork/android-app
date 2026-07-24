@@ -64,6 +64,7 @@ class GroupCallService : CallService() {
     private val scheduledExecutors = Executors.newScheduledThreadPool(1)
     private val scheduledFutures = mutableMapOf<String, ScheduledFuture<*>>()
     private var reconnectingTimeoutFuture: ScheduledFuture<*>? = null
+    private var initialMuteHandled = false
 
     @Inject
     lateinit var chatWebSocket: ChatWebSocket
@@ -603,14 +604,14 @@ class GroupCallService : CallService() {
     override fun needInitWebRtc(action: String) = action != ACTION_CHECK_PEER
 
     override fun onConnected() {
-        val fromReconnecting = callState.reconnecting
         super.onConnected()
         callExecutor.execute {
             reconnectTimeoutCount = 0
             reconnectingTimeoutFuture?.cancel(true)
 
-            if (fromReconnecting) return@execute
+            if (initialMuteHandled) return@execute
             val cid = callState.conversationId ?: return@execute
+            initialMuteHandled = true
             val needMute = callState.needMuteWhenJoin(cid)
             if (needMute) {
                 muteAudio<GroupCallService>(this, true)
@@ -749,6 +750,7 @@ class GroupCallService : CallService() {
     override fun onCallDisconnected() {
         disposable?.dispose()
         reconnectTimeoutCount = 0
+        initialMuteHandled = false
     }
 
     override fun onDestroyed() {
