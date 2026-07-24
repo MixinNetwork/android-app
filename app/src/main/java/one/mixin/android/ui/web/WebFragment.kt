@@ -193,8 +193,47 @@ import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.net.URI
 import java.net.URISyntaxException
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 import java.util.Locale
 import javax.inject.Inject
+
+internal fun String.shouldCloseWebContainerForMixinRedirect(): Boolean =
+    when {
+        startsWith(Constants.Scheme.MIXIN_MARKET, true) ||
+            startsWith(Constants.Scheme.HTTPS_MARKET, true) ||
+            startsWith(Constants.Scheme.MIXIN_SWAP, true) ||
+            startsWith(Constants.Scheme.HTTPS_SWAP, true) ||
+            startsWith(Constants.Scheme.MIXIN_TRADE, true) ||
+            startsWith(Constants.Scheme.HTTPS_TRADE, true) ||
+            startsWith(Constants.Scheme.CONVERSATIONS, true) ||
+            startsWith(Constants.Scheme.MIXIN_BUY, true) ||
+            startsWith(Constants.Scheme.HTTPS_BUY, true) ||
+            startsWith(Constants.Scheme.BUY, true) ||
+            startsWith(Constants.Scheme.HTTPS_INSCRIPTION, true) ||
+            startsWith(Constants.Scheme.CODES, true) ||
+            startsWith(Constants.Scheme.HTTPS_CODES, true) ||
+            startsWith(Constants.Scheme.MIXIN_SCHEME, true) ||
+            startsWith(Constants.Scheme.HTTPS_SCHEME, true) -> true
+        startsWith(Constants.Scheme.APPS, true) ||
+            startsWith(Constants.Scheme.HTTPS_APPS, true) -> queryParameter("action") == "open"
+        else -> false
+    }
+
+private fun String.queryParameter(name: String): String? =
+    runCatching { URI(this).rawQuery }
+        .getOrNull()
+        ?.split("&")
+        ?.firstNotNullOfOrNull { parameter ->
+            val parts = parameter.split("=", limit = 2)
+            val key = parts.getOrNull(0)?.urlDecode()
+            val value = parts.getOrNull(1)?.urlDecode()
+            if (key == name) value else null
+        }
+
+private fun String.urlDecode(): String =
+    runCatching { URLDecoder.decode(this, StandardCharsets.UTF_8.name()) }
+        .getOrDefault(this)
 
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
@@ -1903,6 +1942,7 @@ class WebFragment : BaseFragment() {
                     scope,
                     host = host,
                     currentConversation = conversationId,
+                    closeSourceOnOpenPage = request.isForMainFrame && url.shouldCloseWebContainerForMixinRedirect(),
                 ) {}
                 return true
             }

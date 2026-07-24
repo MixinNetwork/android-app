@@ -151,6 +151,7 @@ fun String.openAsUrl(
     currentConversation: String? = null,
     app: App? = null,
     host: String? = null,
+    closeSourceOnOpenPage: Boolean = false,
     extraAction: () -> Unit,
 ) {
     if (startsWith(Constants.Scheme.SEND, true) || startsWith(Constants.Scheme.MIXIN_SEND, true) || startsWith(Constants.Scheme.HTTPS_SEND, true)) {
@@ -204,16 +205,16 @@ BTC Address: ${Web3Signer.btcAddress}
     } else if (startsWith(Constants.Scheme.DEVICE, true)) {
         ConfirmBottomFragment.show(MixinApplication.appContext, supportFragmentManager, this)
     } else if (isUserScheme() || isAppScheme()) {
-        checkUserOrApp(context, supportFragmentManager, scope)
+        checkUserOrApp(context, supportFragmentManager, scope, closeSourceOnOpenPage)
     } else if (isTradeScheme()) {
         checkTradeUrl(context, supportFragmentManager, scope)
     } else if (isMembershipScheme()) {
         MixinMemberUpgradeBottomSheetDialogFragment.newInstance(Session.getAccount()?.membership?.plan).showNow(supportFragmentManager,
             MixinMemberUpgradeBottomSheetDialogFragment.TAG)
     } else if (isConversationScheme()) {
-        checkConversation(context, scope) {
+        checkConversation(context, scope, closeSourceOnOpenPage) {
             if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl() || isLightningUrl()) {
-                LinkBottomSheetDialogFragment.newInstance(this)
+                LinkBottomSheetDialogFragment.newInstance(this, closeSourceOnOpenPage = closeSourceOnOpenPage)
                     .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             } else {
                 extraAction()
@@ -221,7 +222,7 @@ BTC Address: ${Web3Signer.btcAddress}
         }
     } else {
         if (isMixinUrl() || isExternalScheme(context) || isExternalTransferUrl()) {
-            LinkBottomSheetDialogFragment.newInstance(this)
+            LinkBottomSheetDialogFragment.newInstance(this, closeSourceOnOpenPage = closeSourceOnOpenPage)
                 .showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else {
             extraAction()
@@ -238,12 +239,14 @@ fun Uri.checkUserOrApp(
     context: Context,
     supportFragmentManager: FragmentManager,
     scope: CoroutineScope,
-) = this.toString().checkUserOrApp(context, supportFragmentManager, scope)
+    closeSourceOnOpenPage: Boolean = false,
+) = this.toString().checkUserOrApp(context, supportFragmentManager, scope, closeSourceOnOpenPage)
 
 fun String.checkUserOrApp(
     context: Context,
     supportFragmentManager: FragmentManager,
     scope: CoroutineScope,
+    closeSourceOnOpenPage: Boolean = false,
 ) {
     val isAppScheme = isAppScheme()
     val ctx = MixinApplication.appContext
@@ -264,7 +267,7 @@ fun String.checkUserOrApp(
 
     val identityNumber = Session.getAccount()?.identityNumber
     if (identityNumber.isNullOrBlank()) {
-        val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
+        val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), closeSourceOnOpenPage = closeSourceOnOpenPage)
         bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         return
     }
@@ -274,7 +277,7 @@ fun String.checkUserOrApp(
     scope.launch {
         val user = userDao.suspendFindUserById(userId)
         if (user == null) {
-            val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
+            val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString(), closeSourceOnOpenPage = closeSourceOnOpenPage)
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else {
             val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
@@ -289,6 +292,9 @@ fun String.checkUserOrApp(
                         }
                     AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
                     WebActivity.show(context, url, null, app)
+                    if (closeSourceOnOpenPage) {
+                        closeSourceWebActivityIfNeeded(context)
+                    }
                     if (context is UrlInterpreterActivity) {
                         context.finish()
                     }
@@ -303,6 +309,7 @@ fun String.checkUserOrApp(
 fun String.checkConversation(
     context: Context,
     scope: CoroutineScope,
+    closeSourceOnOpenPage: Boolean = false,
     elseAction: () -> Unit,
 ) {
     val uri = Uri.parse(this)
@@ -325,6 +332,9 @@ fun String.checkConversation(
             val conversation = conversationDao.getConversationByIdSuspend(conversationId)
             if (conversation != null) {
                 ConversationActivity.show(context, conversation.conversationId, startParam = startParam)
+                if (closeSourceOnOpenPage) {
+                    closeSourceWebActivityIfNeeded(context)
+                }
                 return@launch
             }
         }
