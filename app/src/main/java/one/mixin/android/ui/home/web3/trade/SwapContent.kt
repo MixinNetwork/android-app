@@ -24,8 +24,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
+import one.mixin.android.widget.components.MixinButton
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -449,7 +448,17 @@ fun ReviewButton(
     val checkBalance = checkBalance(inputText, fromBalance)
     val isBusy = isLoading || reviewing
     val hasError = quoteError != null
-    Button(
+    val buttonBackgroundColor = if (quoteResult != null && !hasError && checkBalance == true) {
+        MixinAppTheme.colors.accent
+    } else {
+        MixinAppTheme.colors.backgroundGrayLight
+    }
+    val buttonContentColor = if (checkBalance != true || hasError) {
+        MixinAppTheme.colors.textAssist
+    } else {
+        Color.White
+    }
+    MixinButton(
         modifier = Modifier
             .padding(horizontal = 20.dp)
             .fillMaxWidth()
@@ -467,29 +476,15 @@ fun ReviewButton(
             }
         },
         enabled = quoteResult != null && !hasError && !isBusy && checkBalance == true,
-        colors = ButtonDefaults.outlinedButtonColors(
-            backgroundColor = if (quoteResult != null && !hasError && checkBalance == true) {
-                MixinAppTheme.colors.accent
-            } else {
-                MixinAppTheme.colors.backgroundGrayLight
-            },
-        ),
-        shape = RoundedCornerShape(32.dp),
-        elevation = ButtonDefaults.elevation(
-            pressedElevation = 0.dp,
-            defaultElevation = 0.dp,
-            hoveredElevation = 0.dp,
-            focusedElevation = 0.dp,
-        ),
+        backgroundColor = buttonBackgroundColor,
+        contentColor = buttonContentColor,
+        disabledBackgroundColor = MixinAppTheme.colors.backgroundGrayLight,
+        disabledContentColor = MixinAppTheme.colors.textAssist,
     ) {
         if (isBusy) {
             CircularProgressIndicator(
                 modifier = Modifier.size(18.dp),
-                color = if (quoteResult != null && !hasError && checkBalance == true) {
-                    Color.White
-                } else {
-                    MixinAppTheme.colors.textAssist
-                },
+                color = buttonContentColor,
             )
         } else {
             Text(
@@ -498,11 +493,7 @@ fun ReviewButton(
                 } else {
                     stringResource(R.string.Review_Order)
                 },
-                color = if (checkBalance != true || hasError) {
-                    MixinAppTheme.colors.textAssist
-                } else {
-                    Color.White
-                },
+                color = buttonContentColor,
             )
         }
     }
