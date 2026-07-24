@@ -63,6 +63,7 @@ object Constants {
     }
 
     object Account {
+        const val PREF_PENDING_MNEMONIC_IMPORT = "pref_pending_mnemonic_import"
         const val PREF_PIN_CHECK = "pref_pin_check"
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_RANDOM = "pref_random"

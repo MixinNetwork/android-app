@@ -48,6 +48,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.MixinSignalProtocolLogger
 import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
@@ -360,6 +361,7 @@ open class MixinApplication :
         Session.clearAccount()
         // Remove locally cached mnemonic from encrypted storage during logout.
         removeValueFromEncryptedPreferences(this, Constants.Tip.MNEMONIC)
+        clearPendingImportMnemonic(this)
     }
 
     private fun clearWebState() {
@@ -401,6 +403,7 @@ open class MixinApplication :
             SignalDatabase.getDatabase(this@MixinApplication).clearAllTables()
         }
         removeValueFromEncryptedPreferences(this, Constants.Tip.MNEMONIC)
+        clearPendingImportMnemonic(this)
     }
 
     var activityInForeground = true

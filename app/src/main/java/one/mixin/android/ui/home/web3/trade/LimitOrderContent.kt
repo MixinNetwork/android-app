@@ -177,9 +177,15 @@ fun LimitOrderContent(
     }
     var outputText by remember { mutableStateOf("") }
 
-    LaunchedEffect(lastOrderTime, fromMaxDecimalPlaces) {
+    LaunchedEffect(lastOrderTime) {
         inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
         outputText = ""
+    }
+    LaunchedEffect(fromMaxDecimalPlaces) {
+        inputText = limitTradeInputDecimalPlaces(inputText, fromMaxDecimalPlaces)
+    }
+    LaunchedEffect(toMaxDecimalPlaces) {
+        outputText = limitTradeInputDecimalPlaces(outputText, toMaxDecimalPlaces)
     }
 
     var isButtonEnabled by remember { mutableStateOf(true) }
@@ -275,16 +281,20 @@ fun LimitOrderContent(
                                     .clip(CircleShape)
                                     .background(MixinAppTheme.colors.accent)
                                     .clickable {
-                                        AnalyticsTracker.trackSpotSwitchSendReceive()
+                                        AnalyticsTracker.trackSpotTokensSwitch()
                                         isReverse = !isReverse
                                         val nextFromMaxDecimalPlaces = toToken.tradeInputMaxDecimalPlaces()
                                         inputText = limitTradeInputDecimalPlaces(outputText, nextFromMaxDecimalPlaces)
 
                                         val oldPrice = limitPriceText.toBigDecimalOrNull()
                                         if (oldPrice != null && oldPrice > BigDecimal.ZERO) {
-                                            limitPriceText = BigDecimal.ONE.divide(
-                                                oldPrice, 8, RoundingMode.HALF_UP
-                                            ).stripTrailingZeros().toPlainString()
+                                            val nextPriceMaxDecimalPlaces = fromToken.tradeInputMaxDecimalPlaces()
+                                            limitPriceText = limitTradeInputDecimalPlaces(
+                                                BigDecimal.ONE.divide(oldPrice, nextPriceMaxDecimalPlaces, RoundingMode.DOWN)
+                                                    .stripTrailingZeros()
+                                                    .toPlainString(),
+                                                nextPriceMaxDecimalPlaces,
+                                            )
                                         }
 
                                         fromToken?.let { f ->
@@ -333,7 +343,7 @@ fun LimitOrderContent(
                                     }
                                 }
                             }, onDeposit = onDeposit, displayBalanceOverride = if (it.isNativeSolAsset()) fromBalance else null, maxDecimalPlaces = fromMaxDecimalPlaces, onMax = {
-                                AnalyticsTracker.trackSpotSendInputBalance()
+                                AnalyticsTracker.trackSpotSendAmountBalance()
                                 inputText = limitTradeInputDecimalPlaces(formatBalanceInput(availableFromBalance, fromToken?.isWeb3 == true), fromMaxDecimalPlaces)
                                 if (inputText.isNotBlank()) {
                                     val fromAmount = inputText.toBigDecimalOrNull()
@@ -406,7 +416,7 @@ fun LimitOrderContent(
                                     priceMultiplier = priceMultiplier,
                                     isPriceInverted = isPriceInverted,
                                     onPriceInvertedChange = {
-                                        AnalyticsTracker.trackSpotSwitchQuoteDirection()
+                                        AnalyticsTracker.trackSpotQuoteDirectionSwitch()
                                         isPriceInverted = it
                                     },
                                     onStandardPriceChanged = { limitPriceText = it },
@@ -631,11 +641,11 @@ fun LimitOrderContent(
                 toToken = toToken,
                 isPriceInverted = isPriceInverted,
                 onInputQuickAction = {
-                    AnalyticsTracker.trackSpotSendInputPercent(it)
+                    AnalyticsTracker.trackSpotSendAmountPercent(it)
                 },
                 onSetPriceMultiplier = { label, multiplier ->
                     priceMultiplier = multiplier
-                    AnalyticsTracker.trackSpotPriceInputPercent(label)
+                    AnalyticsTracker.trackSpotPricePercent(label)
                 },
                 onSetInput = {
                     val limitedInput = limitTradeInputDecimalPlaces(it, fromMaxDecimalPlaces)

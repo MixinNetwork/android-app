@@ -30,7 +30,7 @@ import kotlin.math.min
         PerpsOrder::class,
         PerpsMarket::class,
     ],
-    version = 5,
+    version = 6,
 )
 @DaoReturnTypeConverters(PagingSourceDaoReturnTypeConverter::class)
 abstract class PerpsDatabase : RoomDatabase() {
@@ -89,6 +89,12 @@ abstract class PerpsDatabase : RoomDatabase() {
                     db.execSQL("DELETE FROM perps_orders")
                 }
             }
+        val MIGRATION_5_6 =
+            object : Migration(5, 6) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `descriptions` TEXT")
+                }
+            }
 
         fun getDatabase(
             context: Context,
@@ -107,15 +113,31 @@ abstract class PerpsDatabase : RoomDatabase() {
                         context,
                         PerpsDatabase::class.java,
                         File(dir, Constants.DataBase.PERPS_DB_NAME).absolutePath,
+<<<<<<< HEAD
                     ).setDriver(AndroidSQLiteDriver())
                         .addCallback(
+=======
+                    ).openHelperFactory(
+                        MixinOpenHelperFactory(
+                            FrameworkSQLiteOpenHelperFactory(),
+                            listOf(
+                                object : MixinCorruptionCallback {
+                                    override fun onCorruption(database: SupportSQLiteDatabase) {
+                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 6")
+                                        reportException(e)
+                                    }
+                                },
+                            ),
+                        ),
+                    ).addCallback(
+>>>>>>> origin/master
                         object : Callback() {
                             override suspend fun onOpen(db: SQLiteConnection) {
                                 super.onOpen(db)
                                 db.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                         .fallbackToDestructiveMigration()
                         .enableMultiInstanceInvalidation()
                         .setQueryCoroutineContext(
