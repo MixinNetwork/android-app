@@ -57,6 +57,7 @@ import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PENDING_DB_THREAD
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.cancelConversationNotifications
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.reportException
@@ -460,7 +461,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
                 jobManager.cancelJobByMixinJobId(msg.messageId)
                 if (messageDao.findLastMessageId(msg.conversationId) == msg.messageId) {
-                    notificationManager.cancel(msg.conversationId.hashCode())
+                    notificationManager.cancelConversationNotifications(msg.conversationId)
                 }
                 MessageFlow.update(msg.conversationId, msg.messageId)
                 conversationDao.updateLastMessageId(
@@ -520,7 +521,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             updateConversationList.forEach { cId ->
                                 remoteMessageStatusDao.updateConversationUnseen(cId)
                                 MessageFlow.update(cId, updateMessageIds)
-                                notificationManager.cancel(cId.hashCode())
+                                notificationManager.cancelConversationNotifications(cId)
                             }
                         }
 
