@@ -3,7 +3,6 @@ package one.mixin.android.ui.home.web3.market
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.vo.market.MarketItem
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -89,26 +88,6 @@ class MarketPageModelsTest {
 
         assertTrue(state.showsOnlyPerpetualMarkets)
         assertEquals(MarketPriceChangePeriod.TWENTY_FOUR_HOURS, state.effectivePriceChangePeriod)
-    }
-
-    @Test
-    fun emptyPerpetualWatchlistShowsApiRecommendations() {
-        val recommendation = MarketListEntry.Perpetual(perpsMarket("btc-perp"), false)
-        val state =
-            MarketPageUiState(
-                selectedTopTab = MarketTopTab.WATCHLIST,
-                selectedSubTabs = defaultMarketSubTabs() + (MarketTopTab.WATCHLIST to MarketSubTab.PERPETUAL),
-                perpetualRecommendations = listOf(recommendation),
-                isLoading = false,
-            )
-
-        assertTrue(state.showsPerpetualRecommendations)
-        assertFalse(state.copy(entries = listOf(recommendation)).showsPerpetualRecommendations)
-        assertFalse(
-            state.copy(
-                selectedSubTabs = defaultMarketSubTabs() + (MarketTopTab.WATCHLIST to MarketSubTab.CRYPTO),
-            ).showsPerpetualRecommendations,
-        )
     }
 
     @Test

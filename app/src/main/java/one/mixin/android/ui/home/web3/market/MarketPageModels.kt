@@ -92,9 +92,6 @@ data class MarketPageUiState(
     val selectedTopTab: MarketTopTab = MarketTopTab.CRYPTO,
     val selectedSubTabs: Map<MarketTopTab, MarketSubTab> = defaultMarketSubTabs(),
     val entries: List<MarketListEntry> = emptyList(),
-    val perpetualRecommendations: List<MarketListEntry.Perpetual> = emptyList(),
-    val selectedRecommendationIds: Set<String> = emptySet(),
-    val isAddingRecommendations: Boolean = false,
     val pendingAlertCoinId: String? = null,
     val displaySettings: MarketDisplaySettings = MarketDisplaySettings(),
     val sortState: MarketSortState = MarketSortState(),
@@ -118,14 +115,6 @@ data class MarketPageUiState(
                 displaySettings.priceChangePeriod
             }
 
-    val showsPerpetualRecommendations: Boolean
-        get() =
-            selectedTopTab == MarketTopTab.WATCHLIST &&
-                selectedSubTab == MarketSubTab.PERPETUAL &&
-                entries.isEmpty() &&
-                perpetualRecommendations.isNotEmpty() &&
-                !isLoading &&
-                !hasError
 }
 
 fun defaultMarketSubTabs(): Map<MarketTopTab, MarketSubTab> =

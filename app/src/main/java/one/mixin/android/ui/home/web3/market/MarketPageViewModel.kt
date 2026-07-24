@@ -33,7 +33,6 @@ private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
 private const val PREF_MARKET_PAGE_TOP_TAB = "pref_market_page_top_tab"
 private const val PREF_MARKET_PAGE_SUB_TAB_PREFIX = "pref_market_page_sub_tab_"
 private const val CATEGORY_ALL = "all"
-private const val CATEGORY_FAVORITE = "favorite"
 private const val CATEGORY_STOCKS = "stocks"
 private const val CATEGORY_TRENDING = "trending"
 private const val CATEGORY_TOP_GAINERS = "top_gainers"
@@ -159,51 +158,6 @@ class MarketPageViewModel
             }
         }
 
-        fun toggleRecommendation(marketId: String) {
-            val selectedIds = _uiState.value.selectedRecommendationIds
-            _uiState.value =
-                _uiState.value.copy(
-                    selectedRecommendationIds =
-                        if (marketId in selectedIds) {
-                            selectedIds - marketId
-                        } else {
-                            selectedIds + marketId
-                        },
-                )
-        }
-
-        fun addSelectedRecommendations() {
-            val selectedIds = _uiState.value.selectedRecommendationIds
-            if (selectedIds.isEmpty() || _uiState.value.isAddingRecommendations) return
-            val selectedMarkets =
-                _uiState.value.perpetualRecommendations
-                    .map(MarketListEntry.Perpetual::market)
-                    .filter { it.marketId in selectedIds }
-            if (selectedMarkets.isEmpty()) return
-
-            _uiState.value = _uiState.value.copy(isAddingRecommendations = true)
-            viewModelScope.launch {
-                val addedMarkets =
-                    withContext(Dispatchers.IO) {
-                        selectedMarkets.filter { market ->
-                            runCatching {
-                                routeService.favoritePerpsMarket(market.marketId).isSuccess
-                            }.onFailure {
-                                Timber.e(it, "Failed to add perpetual market recommendation")
-                            }.getOrDefault(false)
-                        }
-                    }
-                favoritePerpetualMarkets =
-                    (favoritePerpetualMarkets + addedMarkets).distinctBy(PerpsMarket::marketId)
-                _uiState.value =
-                    _uiState.value.copy(
-                        selectedRecommendationIds = selectedIds - addedMarkets.map(PerpsMarket::marketId).toSet(),
-                        isAddingRecommendations = false,
-                    )
-                rebuildEntries()
-            }
-        }
-
         fun keepPriceAlerts() {
             _uiState.value = _uiState.value.copy(pendingAlertCoinId = null)
         }
@@ -311,17 +265,9 @@ class MarketPageViewModel
 
         private suspend fun refreshPerpetualMarkets() {
             runCatching {
-                val (marketsResponse, favoritesResponse) =
-                    coroutineScope {
-                        val markets = async(Dispatchers.IO) { routeService.getPerpsMarkets() }
-                        val favorites = async(Dispatchers.IO) { routeService.getPerpsMarkets(CATEGORY_FAVORITE) }
-                        markets.await() to favorites.await()
-                    }
-                if (favoritesResponse.isSuccess) {
-                    favoritePerpetualMarkets = favoritesResponse.data.orEmpty().map(PerpsMarket::withDefaults)
-                }
-                val markets = marketsResponse.data
-                if (marketsResponse.isSuccess && markets != null) {
+                val response = withContext(Dispatchers.IO) { routeService.getPerpsMarkets() }
+                val markets = response.data
+                if (response.isSuccess && markets != null) {
                     withContext(Dispatchers.IO) {
                         perpsMarketDao.upsertList(markets.map(PerpsMarket::withDefaults))
                     }
@@ -391,11 +337,6 @@ class MarketPageViewModel
                             sortState = state.sortState,
                             period = state.effectivePriceChangePeriod,
                         ),
-                    perpetualRecommendations =
-                        perpetualMarkets
-                            .filterNot { it.marketId in favoritePerpetualMarketIds }
-                            .take(8)
-                            .map { MarketListEntry.Perpetual(it, false) },
                 )
         }
 

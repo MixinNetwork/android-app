@@ -1,7 +1,6 @@
 package one.mixin.android.ui.home.web3.market
 
 import android.widget.ImageView
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -23,7 +22,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.AlertDialog
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -31,7 +29,6 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
-import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +50,7 @@ import androidx.compose.ui.window.DialogProperties
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.MixinAlertDialog
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.loadSvgWithTint
 import one.mixin.android.extension.numberFormat2
@@ -79,8 +77,6 @@ fun MarketPage(
     onSelectSubTab: (MarketSubTab) -> Unit,
     onSort: (MarketSortColumn) -> Unit,
     onFavorite: (MarketListEntry) -> Unit,
-    onToggleRecommendation: (String) -> Unit,
-    onAddRecommendations: () -> Unit,
     onKeepPriceAlerts: () -> Unit,
     onDeletePriceAlerts: () -> Unit,
     onEntryClick: (MarketListEntry) -> Unit,
@@ -106,19 +102,15 @@ fun MarketPage(
                 selected = state.selectedSubTab,
                 onSelect = onSelectSubTab,
             )
-            if (!state.showsPerpetualRecommendations) {
-                MarketListHeader(
-                    period = state.effectivePriceChangePeriod,
-                    sortState = state.sortState,
-                    onSort = onSort,
-                    onShowDisplaySettings = onShowDisplaySettings,
-                )
-            }
+            MarketListHeader(
+                period = state.effectivePriceChangePeriod,
+                sortState = state.sortState,
+                onSort = onSort,
+                onShowDisplaySettings = onShowDisplaySettings,
+            )
             MarketList(
                 state = state,
                 onFavorite = onFavorite,
-                onToggleRecommendation = onToggleRecommendation,
-                onAddRecommendations = onAddRecommendations,
                 onEntryClick = onEntryClick,
             )
         } else {
@@ -140,26 +132,20 @@ fun MarketPage(
     }
 
     if (state.pendingAlertCoinId != null) {
-        AlertDialog(
+        MixinAlertDialog(
             onDismissRequest = onKeepPriceAlerts,
+            onConfirmClick = onDeletePriceAlerts,
+            onDismissClick = onKeepPriceAlerts,
+            confirmText = stringResource(R.string.Delete),
+            dismissText = stringResource(R.string.Keep),
             text = {
                 Text(
                     text = stringResource(R.string.watchlist_remove_alert_prompt),
                     color = MixinAppTheme.colors.textPrimary,
                     textAlign = TextAlign.Center,
+                    modifier = Modifier.fillMaxWidth(),
                 )
             },
-            dismissButton = {
-                TextButton(onClick = onKeepPriceAlerts) {
-                    Text(stringResource(R.string.Keep))
-                }
-            },
-            confirmButton = {
-                TextButton(onClick = onDeletePriceAlerts) {
-                    Text(stringResource(R.string.Delete))
-                }
-            },
-            backgroundColor = MixinAppTheme.colors.background,
         )
     }
 }
@@ -299,7 +285,10 @@ private fun MarketChip(
                 1.dp,
                 if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.borderPrimary,
             ),
-        modifier = Modifier.clickable(onClick = onClick),
+        modifier =
+            Modifier
+                .clip(CircleShape)
+                .clickable(onClick = onClick),
     ) {
         Text(
             text = text,
@@ -414,8 +403,6 @@ private fun SortLabel(
 private fun MarketList(
     state: MarketPageUiState,
     onFavorite: (MarketListEntry) -> Unit,
-    onToggleRecommendation: (String) -> Unit,
-    onAddRecommendations: () -> Unit,
     onEntryClick: (MarketListEntry) -> Unit,
 ) {
     when {
@@ -426,16 +413,6 @@ private fun MarketList(
             ) {
                 CircularProgressIndicator(color = MixinAppTheme.colors.accent)
             }
-        }
-
-        state.showsPerpetualRecommendations -> {
-            PerpetualRecommendations(
-                recommendations = state.perpetualRecommendations,
-                selectedIds = state.selectedRecommendationIds,
-                isAdding = state.isAddingRecommendations,
-                onToggle = onToggleRecommendation,
-                onAdd = onAddRecommendations,
-            )
         }
 
         state.entries.isEmpty() -> {
@@ -472,121 +449,6 @@ private fun MarketList(
                     )
                 }
             }
-        }
-    }
-}
-
-@Composable
-private fun PerpetualRecommendations(
-    recommendations: List<MarketListEntry.Perpetual>,
-    selectedIds: Set<String>,
-    isAdding: Boolean,
-    onToggle: (String) -> Unit,
-    onAdd: () -> Unit,
-) {
-    LazyColumn(
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        items(
-            items = recommendations.chunked(2),
-            key = { row -> row.joinToString(separator = ":") { it.favoriteId } },
-        ) { row ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                row.forEach { entry ->
-                    PerpetualRecommendationCard(
-                        entry = entry,
-                        selected = entry.favoriteId in selectedIds,
-                        onClick = { onToggle(entry.favoriteId) },
-                        modifier = Modifier.weight(1f),
-                    )
-                }
-                if (row.size == 1) {
-                    Spacer(modifier = Modifier.weight(1f))
-                }
-            }
-        }
-        item {
-            Box(
-                modifier = Modifier.fillMaxWidth().padding(top = 12.dp, bottom = 24.dp),
-                contentAlignment = Alignment.Center,
-            ) {
-                ActionButton(
-                    text = stringResource(R.string.Add_to_Watchlist),
-                    onClick = onAdd,
-                    backgroundColor = MixinAppTheme.colors.accent,
-                    contentColor = Color.White,
-                    enabled = selectedIds.isNotEmpty() && !isAdding,
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun PerpetualRecommendationCard(
-    entry: MarketListEntry.Perpetual,
-    selected: Boolean,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val change = entry.market.changePercentValue() ?: BigDecimal.ZERO
-    val changeColor =
-        if (change.signum() >= 0) {
-            MixinAppTheme.colors.marketGreen
-        } else {
-            MixinAppTheme.colors.marketRed
-        }
-    Surface(
-        modifier = modifier.clickable(onClick = onClick),
-        shape = RoundedCornerShape(8.dp),
-        color = MixinAppTheme.colors.background,
-        border = BorderStroke(1.dp, MixinAppTheme.colors.borderColor),
-    ) {
-        Row(
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            MarketIcon(entry.market.iconUrl)
-            Spacer(modifier = Modifier.width(8.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = entry.market.tokenSymbol,
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontSize = 15.sp,
-                        fontWeight = FontWeight.Medium,
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = stringResource(R.string.Perpetual_Leverage_Format, entry.market.leverage),
-                        color = MixinAppTheme.colors.textAssist,
-                        fontSize = 10.sp,
-                    )
-                }
-                Text(
-                    text = formatPercent(change),
-                    color = changeColor,
-                    fontSize = 12.sp,
-                )
-            }
-            Icon(
-                painter =
-                    painterResource(
-                        if (selected) {
-                            R.drawable.ic_asset_favorites_checked
-                        } else {
-                            R.drawable.ic_asset_favorites
-                        },
-                    ),
-                contentDescription = null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(18.dp),
-            )
         }
     }
 }
@@ -1060,17 +922,22 @@ private fun MarketDisplayDialog(
                         )
                         IconButton(
                             onClick = onDismiss,
-                            modifier =
-                                Modifier
-                                    .size(32.dp)
-                                    .background(MixinAppTheme.colors.backgroundGray, CircleShape),
+                            modifier = Modifier.size(48.dp),
                         ) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_close),
-                                contentDescription = null,
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(16.dp),
-                            )
+                            Box(
+                                modifier =
+                                    Modifier
+                                        .size(32.dp)
+                                        .background(MixinAppTheme.colors.backgroundGray, CircleShape),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_close),
+                                    contentDescription = null,
+                                    tint = Color.Unspecified,
+                                    modifier = Modifier.size(16.dp),
+                                )
+                            }
                         }
                     }
                     DisplaySettingRow(
@@ -1201,48 +1068,50 @@ private fun <T> DisplaySettingRow(
                     fontSize = 12.sp,
                     textAlign = TextAlign.End,
                 )
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_gray_right),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(16.dp),
-                )
-            }
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-            ) {
-                options.forEach { (label, option) ->
-                    DropdownMenuItem(
-                        onClick = {
-                            onSelect(option)
-                            expanded = false
-                        },
+                Box {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_arrow_gray_right),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(16.dp),
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
                     ) {
-                        if (option == selectedOption) {
-                            Icon(
-                                painter = painterResource(R.drawable.ic_check_black_24dp),
-                                contentDescription = null,
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(20.dp),
-                            )
-                        } else {
-                            Spacer(modifier = Modifier.size(20.dp))
-                        }
-                        Spacer(modifier = Modifier.width(5.dp))
-                        Text(
-                            text = label,
-                            color = MixinAppTheme.colors.textPrimary,
-                            modifier = Modifier.weight(1f),
-                        )
-                        optionIcon(option)?.let { icon ->
-                            Spacer(modifier = Modifier.width(5.dp))
-                            Icon(
-                                painter = painterResource(icon),
-                                contentDescription = null,
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(20.dp),
-                            )
+                        options.forEach { (label, option) ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    onSelect(option)
+                                    expanded = false
+                                },
+                            ) {
+                                if (option == selectedOption) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_check_black_24dp),
+                                        contentDescription = null,
+                                        tint = Color.Unspecified,
+                                        modifier = Modifier.size(20.dp),
+                                    )
+                                } else {
+                                    Spacer(modifier = Modifier.size(20.dp))
+                                }
+                                Spacer(modifier = Modifier.width(5.dp))
+                                Text(
+                                    text = label,
+                                    color = MixinAppTheme.colors.textPrimary,
+                                    modifier = Modifier.weight(1f),
+                                )
+                                optionIcon(option)?.let { icon ->
+                                    Spacer(modifier = Modifier.width(5.dp))
+                                    Icon(
+                                        painter = painterResource(icon),
+                                        contentDescription = null,
+                                        tint = Color.Unspecified,
+                                        modifier = Modifier.size(20.dp),
+                                    )
+                                }
+                            }
                         }
                     }
                 }
