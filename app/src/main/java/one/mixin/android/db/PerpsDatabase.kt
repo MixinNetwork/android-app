@@ -91,7 +91,7 @@ abstract class PerpsDatabase : RoomDatabase() {
             }
         val MIGRATION_5_6 =
             object : Migration(5, 6) {
-                override fun migrate(db: SupportSQLiteDatabase) {
+                override suspend fun migrate(db: SQLiteConnection) {
                     db.execSQL("ALTER TABLE `markets` ADD COLUMN `descriptions` TEXT")
                 }
             }
@@ -113,24 +113,8 @@ abstract class PerpsDatabase : RoomDatabase() {
                         context,
                         PerpsDatabase::class.java,
                         File(dir, Constants.DataBase.PERPS_DB_NAME).absolutePath,
-<<<<<<< HEAD
                     ).setDriver(AndroidSQLiteDriver())
                         .addCallback(
-=======
-                    ).openHelperFactory(
-                        MixinOpenHelperFactory(
-                            FrameworkSQLiteOpenHelperFactory(),
-                            listOf(
-                                object : MixinCorruptionCallback {
-                                    override fun onCorruption(database: SupportSQLiteDatabase) {
-                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 6")
-                                        reportException(e)
-                                    }
-                                },
-                            ),
-                        ),
-                    ).addCallback(
->>>>>>> origin/master
                         object : Callback() {
                             override suspend fun onOpen(db: SQLiteConnection) {
                                 super.onOpen(db)

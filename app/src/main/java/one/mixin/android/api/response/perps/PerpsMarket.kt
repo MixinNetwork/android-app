@@ -9,11 +9,7 @@ import one.mixin.android.db.converter.DescriptionsConverter
 import one.mixin.android.db.converter.ListConverter
 
 @Entity(tableName = "markets")
-<<<<<<< HEAD
-@ColumnTypeConverters(ListConverter::class)
-=======
-@TypeConverters(ListConverter::class, DescriptionsConverter::class)
->>>>>>> origin/master
+@ColumnTypeConverters(ListConverter::class, DescriptionsConverter::class)
 data class PerpsMarket(
     @PrimaryKey @SerializedName("market_id")
     @ColumnInfo(name = "market_id")

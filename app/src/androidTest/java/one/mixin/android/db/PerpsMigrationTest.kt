@@ -142,9 +142,6 @@ class PerpsMigrationTest {
         }
     }
 
-<<<<<<< HEAD
-    private fun SQLiteConnection.insertMarketV2() {
-=======
     @Test
     fun migrate_5_6_addsNullableDescriptions() {
         migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 5).close()
@@ -170,8 +167,7 @@ class PerpsMigrationTest {
         }
     }
 
-    private fun SupportSQLiteDatabase.insertMarketV2() {
->>>>>>> origin/master
+    private fun SQLiteConnection.insertMarketV2() {
         execSQL(
             """
             INSERT INTO markets (
