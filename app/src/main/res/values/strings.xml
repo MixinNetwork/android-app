@@ -1793,9 +1793,17 @@
     <string name="multisig_safe_state_signed">You have already approved this transaction; you cannot approve it again.</string>
     <string name="multisig_safe_state_unlocked">This transaction has already been rejected by someone else; you cannot reject it again.</string>
     <string name="watchlist_empty">Your watchlist is empty</string>
+    <string name="Add_to_Watchlist">Add to Watchlist</string>
+    <string name="Keep">Keep</string>
+    <string name="watchlist_remove_alert_prompt">Removed from your watchlist. Also delete the related price alerts?</string>
     <string name="Dominance">Dominance</string>
     <string name="volume_24h">24h Volume</string>
     <string name="Watchlist">Watchlist</string>
+    <string name="Crypto">Crypto</string>
+    <string name="market_stock">Stock</string>
+    <string name="Indicator">Indicator</string>
+    <string name="market_display">Market Display</string>
+    <string name="market_volume">VOL: %1$s</string>
     <string name="top_count">Top %1$d</string>
     <string name="change_percent_period_day">%1$dD %%</string>
     <string name="change_percent_period_hour">%1$dh %%</string>
@@ -2502,6 +2510,7 @@
     <string name="perps_markets">Trending</string>
     <string name="perps_top_movers">Top Movers</string>
     <string name="perps_market">Market</string>
+    <string name="perps_badge" translatable="false">Perp</string>
     <string name="perps_share_card_title">🚀 Perps %1$s</string>
     <string name="perps_share_card_market">- 📈 Market: %1$s</string>
     <string name="perps_share_card_side">- ↕️ Side: %1$s (%2$dx)</string>

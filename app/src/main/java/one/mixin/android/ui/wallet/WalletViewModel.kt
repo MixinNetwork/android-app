@@ -423,7 +423,24 @@ internal constructor(
 
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
-    fun updateMarketFavored(symbol: String, coinId: String, isFavored: Boolean?) = viewModelScope.launch(Dispatchers.IO) { tokenRepository.updateMarketFavored(symbol, coinId, isFavored) }
+    fun updateMarketFavored(
+        symbol: String,
+        coinId: String,
+        isFavored: Boolean?,
+        onRemovedWithAlerts: () -> Unit = {},
+    ) = viewModelScope.launch(Dispatchers.IO) {
+        val updated = tokenRepository.updateMarketFavored(symbol, coinId, isFavored)
+        if (updated && isFavored == true && tokenRepository.hasAlertsByCoinId(coinId)) {
+            withContext(Dispatchers.Main) {
+                onRemovedWithAlerts()
+            }
+        }
+    }
+
+    fun deletePriceAlerts(coinId: String) =
+        viewModelScope.launch(Dispatchers.IO) {
+            tokenRepository.deleteAlertsByCoinId(coinId)
+        }
 
     suspend fun simpleCoinItem(coinId: String) = tokenRepository.simpleCoinItem(coinId)
 
