@@ -2,12 +2,11 @@
 -optimizationpasses 5
 -allowaccessmodification
 
--dontobfuscate
-
 # prevent multi dex caused NoSuchProviderException
 -keep class org.whispersystems.** { *; }
 
--keep class one.mixin.android.** { *; }
+# Persistent jobs use Java serialization and must remain compatible across app updates.
+-keep,allowoptimization class one.mixin.android.** implements java.io.Serializable { *; }
 
 -keep class io.jsonwebtoken.** { *; }
 
