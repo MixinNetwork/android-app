@@ -7,5 +7,6 @@ data class AssetPrecision(
     val assetId: String,
     @SerializedName("chain_id")
     val chainId: String,
+    @SerializedName("precision")
     val precision: Int,
 )

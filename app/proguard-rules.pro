@@ -94,6 +94,9 @@
 #-dontwarn java.lang.SafeVarargs
 -dontwarn org.slf4j.**
 
+# MnemonicCode loads its BIP-39 word list relative to the class package.
+-keepnames class org.bitcoinj.crypto.MnemonicCode
+
 -keep public class com.reown.android.** { *; }
 -keep public class com.reown.walletkit.** { *; }
 

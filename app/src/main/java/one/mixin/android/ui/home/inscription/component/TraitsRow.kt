@@ -19,6 +19,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import one.mixin.android.R
 import one.mixin.android.util.GsonHelper
@@ -122,7 +123,9 @@ fun TraitsRow(json: String?) {
 }
 
 data class Trait(
+    @SerializedName("name")
     val name: String,
+    @SerializedName("value")
     val value: String
 )
 

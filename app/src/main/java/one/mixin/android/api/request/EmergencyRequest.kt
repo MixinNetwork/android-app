@@ -5,12 +5,17 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.BuildConfig
 
 data class EmergencyRequest(
+    @SerializedName("phone")
     val phone: String? = null,
     @SerializedName("identity_number")
     val identityNumber: String? = null,
+    @SerializedName("pin")
     val pin: String? = null,
+    @SerializedName("code")
     val code: String? = null,
+    @SerializedName("purpose")
     val purpose: String,
+    @SerializedName("platform")
     val platform: String = "Android",
     @SerializedName("platform_version")
     val platformVersion: String = Build.VERSION.RELEASE,
