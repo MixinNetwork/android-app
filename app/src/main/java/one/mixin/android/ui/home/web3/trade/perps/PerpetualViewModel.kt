@@ -9,6 +9,8 @@ import androidx.paging.cachedIn
 import androidx.room.withTransaction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -892,12 +894,11 @@ class PerpetualViewModel @Inject constructor(
 
     fun closePerpsOrder(
         positionId: String,
-        leverage: Int,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
-            closePerpsOrder(positionId, leverage)
+            closePerpsOrder(positionId)
                 .onSuccess { onSuccess() }
                 .onFailure { onError(it.message.orEmpty()) }
         }
@@ -908,24 +909,26 @@ class PerpetualViewModel @Inject constructor(
         onComplete: (BatchCloseResult) -> Unit,
     ) {
         viewModelScope.launch {
-            val failedPositions = mutableListOf<PerpsPositionItem>()
-            val errors = mutableListOf<String>()
-
-            positions.forEach { position ->
-                closePerpsOrder(position.positionId, position.leverage)
-                    .onFailure { error ->
-                        failedPositions += position
-                        errors += error.message.orEmpty()
+            val failures = positions
+                .map { position ->
+                    async {
+                        position to closePerpsOrder(position.positionId)
                     }
-            }
+                }
+                .awaitAll()
+                .filter { (_, result) -> result.isFailure }
 
-            onComplete(BatchCloseResult(failedPositions, errors))
+            onComplete(
+                BatchCloseResult(
+                    failedPositions = failures.map { (position, _) -> position },
+                    errors = failures.map { (_, result) -> result.exceptionOrNull()?.message.orEmpty() },
+                ),
+            )
         }
     }
 
     private suspend fun closePerpsOrder(
         positionId: String,
-        leverage: Int,
     ): Result<Unit> {
         return runCatching {
             val response = withContext(Dispatchers.IO) {
@@ -937,14 +940,6 @@ class PerpetualViewModel @Inject constructor(
             }
 
             withContext(Dispatchers.IO) {
-                perpsPositionDao.getPosition(positionId)?.let { position ->
-                    perpsOrderDao.insert(
-                        createCachedClosedOrder(
-                            position = position,
-                            leverage = leverage.takeIf { it > 0 } ?: position.leverage,
-                        )
-                    )
-                }
                 perpsPositionDao.deleteById(positionId)
             }
             Timber.d("Perps order closed: $positionId")
@@ -1111,35 +1106,5 @@ class PerpetualViewModel @Inject constructor(
                     closeOrder.updatedAt,
                 )
             }
-    }
-
-    private fun createCachedClosedOrder(
-        position: PerpsPositionItem,
-        leverage: Int,
-    ): PerpsOrder {
-        val closedAt = position.updatedAt?.takeIf { it.isNotBlank() }
-            ?: position.createdAt?.takeIf { it.isNotBlank() }
-            ?: SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
-        val entryPrice = position.entryPrice
-        val closePrice = position.markPrice?.takeIf { it.isNotBlank() } ?: entryPrice
-
-        return PerpsOrder(
-            orderId = "local_${position.positionId}",
-            positionId = position.positionId,
-            marketId = position.marketId,
-            side = position.side,
-            orderType = PerpsOrder.TYPE_CLOSE,
-            status = PerpsOrder.STATUS_FILLED,
-            leverage = leverage,
-            quantity = position.quantity,
-            entryPrice = entryPrice,
-            closePrice = closePrice,
-            realizedPnl = position.unrealizedPnl?.takeIf { it.isNotBlank() } ?: "0",
-            roe = position.roe ?: "0",
-            closeReason = null,
-            triggerPrice = null,
-            createdAt = position.createdAt?.takeIf { it.isNotBlank() } ?: closedAt,
-            updatedAt = closedAt,
-        )
     }
 }

@@ -13,9 +13,6 @@ import one.mixin.android.db.BaseDao
 @Dao
 interface PerpsOrderDao : BaseDao<PerpsOrder> {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(order: PerpsOrder)
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(orders: List<PerpsOrder>)
 
     @Query("""
