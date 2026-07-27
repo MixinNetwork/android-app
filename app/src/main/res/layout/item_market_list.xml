@@ -39,6 +39,7 @@
         android:maxLines="1"
         android:textColor="?attr/text_primary"
         android:textSize="16sp"
+        app:layout_constraintBottom_toBottomOf="@id/icon_iv"
         app:layout_constraintStart_toEndOf="@id/icon_iv"
         app:layout_constraintTop_toTopOf="@id/icon_iv"
         tools:text="BTC-PERP" />
@@ -61,38 +62,42 @@
         app:layout_constraintBottom_toBottomOf="@id/symbol_tv"
         tools:text="100x" />
 
-    <TextView
-        android:id="@+id/volume_tv"
+    <androidx.constraintlayout.widget.Guideline
+        android:id="@+id/price_sort_guideline"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:ellipsize="end"
-        android:maxLines="1"
-        android:textColor="?attr/text_assist"
-        android:textSize="14sp"
-        app:layout_constraintBottom_toBottomOf="@id/icon_iv"
-        app:layout_constraintStart_toStartOf="@id/symbol_tv"
-        app:layout_constraintTop_toBottomOf="@id/symbol_tv"
-        tools:text="Vol 1.2B" />
+        android:orientation="vertical"
+        app:layout_constraintGuide_percent="0.75" />
 
     <TextView
         android:id="@+id/price_tv"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="10dp"
+        android:ellipsize="start"
+        android:gravity="end"
+        android:maxLines="1"
         android:textColor="?attr/text_primary"
         android:textSize="14sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@id/symbol_tv"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/price_sort_guideline"
+        app:layout_constraintStart_toEndOf="@id/leverage_tv"
+        app:layout_constraintTop_toTopOf="parent"
         tools:text="$42,123.45" />
 
     <TextView
         android:id="@+id/change_tv"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_marginStart="10dp"
+        android:gravity="center"
+        android:maxLines="1"
         android:textSize="14sp"
-        app:layout_constraintEnd_toEndOf="@id/price_tv"
-        app:layout_constraintTop_toBottomOf="@id/price_tv"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="@id/price_sort_guideline"
+        app:layout_constraintTop_toTopOf="parent"
         tools:text="+2.34%"
         tools:textColor="@color/wallet_green" />
 
