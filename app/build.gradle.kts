@@ -167,7 +167,6 @@ android {
         }
         jniLibs {
             useLegacyPackaging = true
-            excludes += setOf("lib/x86_64/libcurve25519.so")
         }
     }
 
@@ -462,7 +461,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-cronet:$googlePlayServicesVersion")
     implementation("com.google.zxing:core:$zxingVersion")
     implementation("com.github.tougee:sticky-headers-recyclerview:$stickyHeadersRecyclerViewVersion")
-    implementation("org.whispersystems:signal-protocol-android:$signalVersion")
+    implementation("org.whispersystems:signal-protocol-java:$signalVersion")
     implementation("org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:$coroutinesVersion")
