@@ -13,6 +13,8 @@
     <string name="a_video">a video</string>
     <string name="About">About</string>
     <string name="Use_TradingView_Candlestick_Chart">Use TradingView candlestick chart</string>
+    <string name="trading_view_attribution" translatable="false">TradingView Lightweight Charts\nCopyright (с) 2022 TradingView, Inc. https://www.tradingview.com/</string>
+    <string name="trading_view_url" translatable="false">https://www.tradingview.com/</string>
     <string name="Candle_Time">Time</string>
     <string name="Candle_Open">Open</string>
     <string name="Candle_High">High</string>

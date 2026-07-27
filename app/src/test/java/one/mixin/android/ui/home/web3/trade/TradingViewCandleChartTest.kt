@@ -5,7 +5,6 @@ import com.tradingview.lightweightcharts.runtime.plugins.DateTimeFormat
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import one.mixin.android.api.response.perps.CandleItem
-import org.threeten.bp.ZoneOffset
 
 class TradingViewCandleChartTest {
     @Test
@@ -33,26 +32,6 @@ class TradingViewCandleChartTest {
     }
 
     @Test
-    fun `converts utc timestamp to local chart timestamp`() {
-        val utcTimestamp = 1_721_600_000L
-
-        assertEquals(
-            utcTimestamp + 8 * 60 * 60,
-            tradingViewLocalTimestamp(utcTimestamp, ZoneOffset.ofHours(8)),
-        )
-    }
-
-    @Test
-    fun `converts millisecond timestamp to local chart timestamp`() {
-        val utcTimestampMillis = 1_721_600_000_000L
-
-        assertEquals(
-            1_721_600_000L + 8 * 60 * 60,
-            tradingViewLocalTimestamp(utcTimestampMillis, ZoneOffset.ofHours(8)),
-        )
-    }
-
-    @Test
     fun `resolves candle for stationary long press`() {
         val timestamp = 1_721_628_800L
         val candle =
@@ -74,8 +53,13 @@ class TradingViewCandleChartTest {
     }
 
     @Test
-    fun `converts android touch position to chart coordinate`() {
-        assertEquals(100f, tradingViewTouchCoordinate(touchX = 300f, density = 3f))
+    fun `uses fallback for chart errors without a message`() {
+        assertEquals("Data error", tradingViewErrorMessage(Throwable(), "Data error"))
+    }
+
+    @Test
+    fun `keeps chart error details when available`() {
+        assertEquals("Chart failed", tradingViewErrorMessage(Throwable("Chart failed"), "Data error"))
     }
 
     @Test
@@ -89,11 +73,26 @@ class TradingViewCandleChartTest {
                     duplicate,
                     candle(timestamp = 2),
                 ),
-                ZoneOffset.UTC,
             )
 
         assertEquals(listOf(1L, 2L, 3L), candles.map { (it.data.time as Time.Utc).timestamp })
         assertEquals(duplicate, candles.first().item)
+    }
+
+    @Test
+    fun `preserves distinct utc timestamps across daylight saving fallback`() {
+        val candles =
+            tradingViewCandles(
+                listOf(
+                    candle(timestamp = 1_730_610_000L),
+                    candle(timestamp = 1_730_613_600L),
+                ),
+            )
+
+        assertEquals(
+            listOf(1_730_610_000L, 1_730_613_600L),
+            candles.map { (it.data.time as Time.Utc).timestamp },
+        )
     }
 
     @Test
@@ -105,7 +104,6 @@ class TradingViewCandleChartTest {
                     candle(timestamp = 2, high = "Infinity"),
                     candle(timestamp = 3),
                 ),
-                ZoneOffset.UTC,
             )
 
         assertEquals(listOf(3L), candles.map { it.item.timestamp })

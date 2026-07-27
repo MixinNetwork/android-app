@@ -51,6 +51,7 @@ import com.tradingview.lightweightcharts.api.options.models.gridOptions
 import com.tradingview.lightweightcharts.api.options.models.handleScaleOptions
 import com.tradingview.lightweightcharts.api.options.models.handleScrollOptions
 import com.tradingview.lightweightcharts.api.options.models.layoutOptions
+import com.tradingview.lightweightcharts.api.options.models.localizationOptions
 import com.tradingview.lightweightcharts.api.options.models.priceScaleOptions
 import com.tradingview.lightweightcharts.api.options.models.timeScaleOptions
 import com.tradingview.lightweightcharts.api.series.common.PriceLine
@@ -60,6 +61,8 @@ import com.tradingview.lightweightcharts.api.series.models.MouseEventParams
 import com.tradingview.lightweightcharts.api.series.models.PriceFormat
 import com.tradingview.lightweightcharts.api.series.models.Time
 import com.tradingview.lightweightcharts.runtime.plugins.DateTimeFormat
+import com.tradingview.lightweightcharts.runtime.plugins.Plugin
+import com.tradingview.lightweightcharts.runtime.plugins.TimeFormatter
 import com.tradingview.lightweightcharts.view.ChartsView
 import com.tradingview.lightweightcharts.view.gesture.TouchDelegate
 import one.mixin.android.Constants
@@ -70,6 +73,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.util.Locale
 import kotlin.math.abs
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
@@ -93,7 +97,21 @@ fun TradingViewCandleChart(
     val gridColor = MixinAppTheme.colors.borderColor
     val crosshairColor = MixinAppTheme.colors.textAssist
     val dateTimeFormat = remember(timeFrame) { tradingViewDateTimeFormat(timeFrame) }
-    val zoneId = remember { ZoneId.systemDefault() }
+    val locale = remember { Locale.getDefault().toLanguageTag() }
+    val chartTimeFormatter =
+        remember(locale, dateTimeFormat) {
+            TimeFormatter(
+                locale = locale,
+                dateTimeFormat =
+                    if (dateTimeFormat == DateTimeFormat.TIME) {
+                        DateTimeFormat.DATE_TIME
+                    } else {
+                        DateTimeFormat.DATE
+                    },
+            )
+        }
+    val tickMarkFormatter = remember { tradingViewLocalTimeTickMarkFormatter() }
+    val dataErrorMessage = stringResource(R.string.Data_error)
     val chartPriceFormat =
         remember(priceScale) {
             val precision = priceScale.coerceAtLeast(0)
@@ -105,7 +123,7 @@ fun TradingViewCandleChart(
         }
     val chartCandles =
         remember(candles) {
-            tradingViewCandles(candles.firstOrNull()?.items.orEmpty(), zoneId)
+            tradingViewCandles(candles.firstOrNull()?.items.orEmpty())
         }
     val candleData = chartCandles.map { it.data }
     val candlesByTimestamp =
@@ -228,12 +246,20 @@ fun TradingViewCandleChart(
                         ),
                     )
                     subscribeOnChartStateChange { state ->
-                        errorMessage = (state as? ChartsView.State.Error)?.exception?.localizedMessage
+                        errorMessage =
+                            tradingViewErrorMessage(
+                                (state as? ChartsView.State.Error)?.exception,
+                                dataErrorMessage,
+                            )
                     }
                     api.applyOptions {
                         layout = layoutOptions {
                             background = SolidColor(backgroundColor.toArgb())
                             this.textColor = textColor.toArgb().toIntColor()
+                        }
+                        localization = localizationOptions {
+                            this.locale = locale
+                            timeFormatter = chartTimeFormatter
                         }
                         timeScale = timeScaleOptions {
                             rightOffset = INITIAL_RIGHT_OFFSET
@@ -242,6 +268,7 @@ fun TradingViewCandleChart(
                             rightBarStaysOnScroll = true
                             timeVisible = dateTimeFormat == DateTimeFormat.TIME
                             secondsVisible = false
+                            this.tickMarkFormatter = tickMarkFormatter
                             borderColor = gridColor.toArgb().toIntColor()
                         }
                         rightPriceScale = priceScaleOptions {
@@ -451,15 +478,6 @@ private data class SelectedCandle(
 internal fun normalizeTradingViewTimestamp(timestamp: Long): Long =
     if (timestamp >= MILLIS_TIMESTAMP_THRESHOLD) timestamp / 1000 else timestamp
 
-internal fun tradingViewLocalTimestamp(
-    timestamp: Long,
-    zoneId: ZoneId = ZoneId.systemDefault(),
-): Long {
-    val utcTimestamp = normalizeTradingViewTimestamp(timestamp)
-    val offsetSeconds = Instant.ofEpochSecond(utcTimestamp).atZone(zoneId).offset.totalSeconds
-    return utcTimestamp + offsetSeconds
-}
-
 internal data class TradingViewCandle(
     val item: CandleItem,
     val data: CandlestickData,
@@ -467,7 +485,6 @@ internal data class TradingViewCandle(
 
 internal fun tradingViewCandles(
     items: List<CandleItem>,
-    zoneId: ZoneId = ZoneId.systemDefault(),
 ): List<TradingViewCandle> =
     items.mapNotNull { item ->
         val open = item.open.toFloatOrNull() ?: return@mapNotNull null
@@ -477,10 +494,7 @@ internal fun tradingViewCandles(
         if (!open.isFinite() || !high.isFinite() || !low.isFinite() || !close.isFinite()) {
             return@mapNotNull null
         }
-        val timestamp =
-            runCatching { tradingViewLocalTimestamp(item.timestamp, zoneId) }
-                .getOrNull()
-                ?: return@mapNotNull null
+        val timestamp = normalizeTradingViewTimestamp(item.timestamp)
         TradingViewCandle(
             item = item,
             data =
@@ -509,10 +523,16 @@ internal fun candleForTradingViewTime(
     candlesByTimestamp: Map<Long, CandleItem>,
 ): CandleItem? = (time as? Time.Utc)?.timestamp?.let(candlesByTimestamp::get)
 
-internal fun tradingViewTouchCoordinate(
-    touchX: Float,
-    density: Float,
-): Float = if (density > 0f) touchX / density else touchX
+internal fun tradingViewErrorMessage(
+    error: Throwable?,
+    fallback: String,
+): String? = error?.localizedMessage?.takeIf(String::isNotBlank) ?: error?.let { fallback }
+
+private fun tradingViewLocalTimeTickMarkFormatter() =
+    Plugin(
+        name = "localTimeTickMarkFormatter",
+        file = "/android_asset/trading_view_local_time_tick_mark_formatter.js",
+    )
 
 private class ChartTouchDelegate(
     context: Context,
@@ -522,7 +542,6 @@ private class ChartTouchDelegate(
     private val onTouchEnd: () -> Unit,
 ) : TouchDelegate {
     private val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
-    private val density = context.resources.displayMetrics.density
     private var downX = 0f
     private var downY = 0f
     private var lastLongPressX = 0f
@@ -545,7 +564,7 @@ private class ChartTouchDelegate(
                             HapticFeedbackConstants.LONG_PRESS
                         },
                     )
-                    onLongPress(tradingViewTouchCoordinate(e.x, density))
+                    onLongPress(e.x)
                 }
             },
         )
@@ -576,7 +595,7 @@ private class ChartTouchDelegate(
                     view.requestDisallowInterceptTouchEvent(true)
                     if (abs(event.x - lastLongPressX) >= touchSlop / 2f) {
                         lastLongPressX = event.x
-                        onLongPressMove(tradingViewTouchCoordinate(event.x, density))
+                        onLongPressMove(event.x)
                     }
                 } else {
                     val deltaX = abs(event.x - downX)

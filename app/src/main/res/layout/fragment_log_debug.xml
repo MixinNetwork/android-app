@@ -98,14 +98,20 @@
                     android:foreground="?android:attr/selectableItemBackground">
 
                 <TextView
+                        android:id="@+id/trading_view_chart_label"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_alignParentStart="true"
                         android:layout_centerVertical="true"
                         android:layout_marginStart="@dimen/activity_horizontal_margin"
+                        android:layout_marginEnd="@dimen/padding8"
+                        android:layout_toStartOf="@id/trading_view_chart_sc"
+                        android:ellipsize="end"
+                        android:labelFor="@id/trading_view_chart_sc"
+                        android:maxLines="1"
                         android:text="@string/Use_TradingView_Candlestick_Chart"
                         android:textColor="@color/colorBlue"
-                        android:textSize="16sp"
-                        tools:ignore="RelativeOverlap" />
+                        android:textSize="16sp" />
 
                 <androidx.appcompat.widget.SwitchCompat
                         android:id="@+id/trading_view_chart_sc"
@@ -114,7 +120,7 @@
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
                         android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                        tools:ignore="RelativeOverlap" />
+                        android:contentDescription="@string/Use_TradingView_Candlestick_Chart" />
             </RelativeLayout>
 
             <TextView
