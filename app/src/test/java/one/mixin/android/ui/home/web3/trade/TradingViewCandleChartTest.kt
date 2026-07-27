@@ -77,4 +77,54 @@ class TradingViewCandleChartTest {
     fun `converts android touch position to chart coordinate`() {
         assertEquals(100f, tradingViewTouchCoordinate(touchX = 300f, density = 3f))
     }
+
+    @Test
+    fun `sorts and deduplicates candle timestamps`() {
+        val duplicate = candle(timestamp = 1, close = "9")
+        val candles =
+            tradingViewCandles(
+                listOf(
+                    candle(timestamp = 3),
+                    candle(timestamp = 1),
+                    duplicate,
+                    candle(timestamp = 2),
+                ),
+                ZoneOffset.UTC,
+            )
+
+        assertEquals(listOf(1L, 2L, 3L), candles.map { (it.data.time as Time.Utc).timestamp })
+        assertEquals(duplicate, candles.first().item)
+    }
+
+    @Test
+    fun `drops non-finite candle prices`() {
+        val candles =
+            tradingViewCandles(
+                listOf(
+                    candle(timestamp = 1, open = "NaN"),
+                    candle(timestamp = 2, high = "Infinity"),
+                    candle(timestamp = 3),
+                ),
+                ZoneOffset.UTC,
+            )
+
+        assertEquals(listOf(3L), candles.map { it.item.timestamp })
+    }
+
+    private fun candle(
+        timestamp: Long,
+        open: String = "1",
+        high: String = "2",
+        low: String = "0.5",
+        close: String = "1.5",
+    ) = CandleItem(
+        timestamp = timestamp,
+        open = open,
+        high = high,
+        low = low,
+        close = close,
+        volume = "10",
+        amount = "15",
+        count = 2,
+    )
 }
