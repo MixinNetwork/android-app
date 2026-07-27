@@ -28,6 +28,8 @@ object Constants {
         const val WS_URL = "wss://blaze.mixin.one"
         const val Mixin_URL = "https://mixin-api.zeromesh.net/"
         const val Mixin_WS_URL = "wss://mixin-blaze.zeromesh.net"
+        const val CASH_URL = "https://api.cash.mixin.one/"
+        const val CASH_HOME_URL = "https://cash.mixin.one"
 
         const val GIPHY_URL = "https://api.giphy.com/v1/"
         const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
@@ -61,6 +63,7 @@ object Constants {
     }
 
     object Account {
+        const val PREF_PENDING_MNEMONIC_IMPORT = "pref_pending_mnemonic_import"
         const val PREF_PIN_CHECK = "pref_pin_check"
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_RANDOM = "pref_random"
@@ -106,6 +109,8 @@ object Constants {
         const val PREF_MARKET_ORDER = "pref_market_order"
         const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
+        const val PREF_CASH_BOT_PK = "pref_cash_bot_pk"
+        const val PREF_CASH_ACCOUNT = "pref_cash_account"
 
         const val PREF_REFERRAL_BOT_PK = "pref_referral_bot_pk"
 
@@ -216,7 +221,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 70
+        const val CURRENT_VERSION = 71
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"

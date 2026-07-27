@@ -28,6 +28,7 @@ data class WalletHomeState(
     val web3Transactions: List<Web3TransactionItem> = emptyList(),
     val positions: List<PerpsPositionItem> = emptyList(),
     val positionSummary: WalletHomePositionSummary? = null,
+    val cashAccount: WalletHomeCashAccount? = null,
     val totalTokenCount: Int = 0,
     val totalTransactionCount: Int = 0,
     val totalPositionCount: Int = 0,
@@ -70,6 +71,7 @@ interface WalletHomeCallbacks {
     fun onDynamicBannerClosed(banner: WalletHomeBanner) = Unit
     fun onReferralClicked()
     fun onReferralClosed()
+    fun onCashClicked()
     fun onSupportClicked()
     fun onHelpCenterClicked()
     fun onBuyClicked()

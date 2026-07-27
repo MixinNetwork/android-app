@@ -265,6 +265,7 @@
     <string name="database_upgrade_tips">データベースをアップグレードしています。アプリを閉じないでください。</string>
     <string name="Date">日付</string>
     <string name="date_format_date">MMM dd, yyyy</string>
+    <string name="date_format_month_day">MMM dd</string>
     <string name="db_debug_warning">注意：有害なSQL文書が実行された場合、結果を元に戻せません</string>
     <string name="Debug_database">データベースdebag</string>
     <string name="Decline">拒否</string>

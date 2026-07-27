@@ -99,9 +99,16 @@ class Web3ViewModel @Inject constructor(
 
     suspend fun findOrSyncApp(appId: String) = userRepository.findOrSyncApp(appId)
 
-    suspend fun walletHomeBanners(chains: List<String>) = referralRepository.fetchWalletHomeBanners(chains)
+    suspend fun walletHomeBanners() = referralRepository.fetchWalletHomeBanners()
 
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
+
+    suspend fun web3Quote(
+        inputMint: String,
+        outputMint: String,
+        amount: String,
+        source: String,
+    ) = tokenRepository.web3Quote(inputMint, outputMint, amount, source)
 
     fun web3TokensExcludeHidden(walletId: String) = web3Repository.web3TokensExcludeHidden(walletId)
 

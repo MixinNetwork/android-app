@@ -1,5 +1,7 @@
 package one.mixin.android.ui.wallet.home.components
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,8 +22,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -34,6 +40,7 @@ import one.mixin.android.ui.wallet.home.PrivacyTokenRecycler
 import one.mixin.android.ui.wallet.home.PrivacyTransactionRecycler
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeCardType
+import one.mixin.android.ui.wallet.home.WalletHomeCashAccount
 import one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction
 import one.mixin.android.ui.wallet.home.WalletHomePositionSummary
 import one.mixin.android.ui.wallet.home.WalletHomeSection
@@ -55,6 +62,7 @@ internal fun WalletHomeCard(
             return
         }
     }
+    if (card == WalletHomeCardType.CASH && state.cashAccount == null) return
 
     val contentPadding = when {
         card.hasSelfPaddedItems() -> Modifier
@@ -67,6 +75,13 @@ internal fun WalletHomeCard(
             .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .then(
+                if (card == WalletHomeCardType.CASH && state.cashAccount != null) {
+                    Modifier.clickable { callbacks.onCashClicked() }
+                } else {
+                    Modifier
+                },
+            )
             .then(contentPadding),
     ) {
         when (card) {
@@ -77,6 +92,10 @@ internal fun WalletHomeCard(
                 contentHorizontalPadding = 20.dp,
             )
             WalletHomeCardType.BANNER -> Unit
+            WalletHomeCardType.CASH -> CashAccountCard(
+                cashAccount = state.cashAccount,
+                callbacks = callbacks,
+            )
             WalletHomeCardType.POSITIONS -> SectionCard(
                 title = stringResource(R.string.positions_count, state.totalPositionCount),
                 showViewAll = WalletHomeSection.hasMore(state.totalPositionCount),
@@ -168,6 +187,78 @@ internal fun WalletHomeCard(
             }
             WalletHomeCardType.REFERRAL -> ReferralBannerCard(callbacks)
             WalletHomeCardType.SUPPORT -> Unit
+        }
+    }
+}
+
+@Composable
+private fun CashAccountCard(
+    cashAccount: WalletHomeCashAccount?,
+    callbacks: WalletHomeCallbacks,
+) {
+    if (cashAccount == null) return
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Image(
+            painter = painterResource(R.drawable.ic_wallet_home_cash),
+            contentDescription = null,
+            modifier = Modifier.size(42.dp),
+        )
+        Spacer(modifier = Modifier.width(14.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = stringResource(R.string.cash_balance),
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 14.sp,
+                    lineHeight = 17.sp,
+                    fontWeight = FontWeight.W400,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                Spacer(modifier = Modifier.width(10.dp))
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_gray_right),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(16.dp).offset(x = 4.dp),
+                )
+            }
+            Spacer(modifier = Modifier.height(6.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = buildAnnotatedString {
+                        withStyle(SpanStyle(fontSize = 18.sp, fontWeight = FontWeight.W600)) {
+                            append(cashAccount.balanceAmountText)
+                        }
+                        append(" ")
+                        withStyle(SpanStyle(fontSize = 12.sp, fontWeight = FontWeight.W500)) {
+                            append("USD")
+                        }
+                    },
+                    color = MixinAppTheme.colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f),
+                )
+                cashAccount.apyText?.let { apyText ->
+                    Spacer(modifier = Modifier.width(10.dp))
+                    Text(
+                        text = stringResource(R.string.cash_account_apy, apyText),
+                        color = Color(0xFF5ECF72),
+                        fontSize = 14.sp,
+                        lineHeight = 16.sp,
+                        fontWeight = FontWeight.W400,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
         }
     }
 }

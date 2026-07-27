@@ -50,11 +50,19 @@ import java.text.NumberFormat
 
 enum class FetchWalletState {
     FETCHING,
+    FETCH_ERROR,
     SELECT,
     IMPORTING,
     IMPORT_ERROR,
     IMPORT_SUCCESS
 }
+
+fun fetchWalletFailureState(hasExistingWallets: Boolean): FetchWalletState =
+    if (hasExistingWallets) FetchWalletState.SELECT else FetchWalletState.FETCH_ERROR
+
+fun fetchWalletMissingMnemonicState(): FetchWalletState = FetchWalletState.FETCHING
+
+fun shouldStartWalletFetch(mnemonic: String): Boolean = mnemonic.isNotBlank()
 
 data class AssetInfo(
     val symbol: String,
@@ -76,6 +84,9 @@ data class IndexedWallet(
                 ?: BigDecimal.ZERO)
         }
 }
+
+fun defaultWalletSelection(wallets: List<IndexedWallet>): Set<IndexedWallet> =
+    wallets.filter { !it.exists }.toSet()
 
 @Composable
 private fun LoadingState(title: String, subtitle: String) {
@@ -124,6 +135,68 @@ fun FetchingContent() {
         title = stringResource(R.string.fetching_in_to_your_wallet),
         subtitle = stringResource(R.string.fetching_shouldnt_take_long)
     )
+}
+
+@Composable
+fun FetchErrorContent(
+    errorMessage: String?,
+    onRetry: () -> Unit,
+) {
+    MixinAppTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 20.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Spacer(modifier = Modifier.height(132.dp))
+            Icon(
+                painter = painterResource(id = R.drawable.ic_wallet_warning),
+                contentDescription = null,
+                tint = Color.Unspecified,
+                modifier = Modifier.size(64.dp),
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = stringResource(R.string.Fetch_Failed),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.W600,
+                color = MixinAppTheme.colors.textPrimary,
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = errorMessage ?: stringResource(R.string.error_connection_error),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.red,
+                textAlign = TextAlign.Center,
+            )
+            Spacer(modifier = Modifier.weight(1f))
+            Button(
+                onClick = onRetry,
+                colors = ButtonDefaults.buttonColors(
+                    backgroundColor = MixinAppTheme.colors.accent,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(30.dp),
+                contentPadding = PaddingValues(vertical = 12.dp),
+                elevation =
+                    ButtonDefaults.elevation(
+                        pressedElevation = 0.dp,
+                        defaultElevation = 0.dp,
+                        hoveredElevation = 0.dp,
+                        focusedElevation = 0.dp,
+                    ),
+            ) {
+                Text(
+                    text = stringResource(R.string.Retry),
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
+            Spacer(modifier = Modifier.height(30.dp))
+        }
+    }
 }
 
 @Composable

@@ -89,6 +89,7 @@ import one.mixin.android.ui.home.web3.trade.perps.PerpetualGuideBottomSheetDialo
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.home.web3.trade.perps.PerpsMarketListBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.perps.PositionDetailFragment
+import one.mixin.android.ui.home.web3.trade.perps.navigateToPerpsRoute
 import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.ui.wallet.DepositFragment
 import one.mixin.android.ui.wallet.LimitTransferBottomSheetDialogFragment
@@ -578,18 +579,27 @@ class TradeFragment : BaseFragment() {
                                     PerpsMarketListBottomSheetDialogFragment.newInstance(initialCategory, initialSort).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
                                 },
                                 onShowAllOpenPositions = {
-                                    navTo(AllPositionsFragment.newOpenInstance(), AllPositionsFragment.TAG)
+                                    requireActivity().supportFragmentManager.navigateToPerpsRoute(
+                                        AllPositionsFragment.newOpenInstance(),
+                                        AllPositionsFragment.TAG,
+                                        R.id.container,
+                                    )
                                 },
                                 onShowAllClosedPositions = {
-                                    navTo(AllPositionsFragment.newClosedInstance(), AllPositionsFragment.TAG)
+                                    requireActivity().supportFragmentManager.navigateToPerpsRoute(
+                                        AllPositionsFragment.newClosedInstance(),
+                                        AllPositionsFragment.TAG,
+                                        R.id.container,
+                                    )
                                 },
                                 onOpenPositionClick = { position ->
-                                    navTo(
+                                    requireActivity().supportFragmentManager.navigateToPerpsRoute(
                                         PositionDetailFragment.newInstance(
                                             position,
                                             AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
                                         ),
                                         PositionDetailFragment.TAG,
+                                        R.id.container,
                                     )
                                 },
                                 onMarketItemClick = { market ->
@@ -603,12 +613,13 @@ class TradeFragment : BaseFragment() {
                                     )
                                 },
                                 onClosedPositionClick = { position ->
-                                    navTo(
+                                    requireActivity().supportFragmentManager.navigateToPerpsRoute(
                                         PositionDetailFragment.newInstance(
                                             position,
                                             AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
                                         ),
                                         PositionDetailFragment.TAG,
+                                        R.id.container,
                                     )
                                 }
                             )

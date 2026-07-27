@@ -146,6 +146,10 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private val positionId by lazy {
         requireNotNull(requireArguments().getString(ARGS_POSITION_ID)) { "positionId is null" }
     }
+    private val isLong by lazy {
+        requireNotNull(requireArguments().getString(ARGS_SIDE)) { "side is null" }
+            .equals("long", ignoreCase = true)
+    }
 
     private val margin by lazy {
         requireNotNull(requireArguments().getString(ARGS_MARGIN)) { "margin is null" }
@@ -177,7 +181,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
 
         LaunchedEffect(Unit) {
-            AnalyticsTracker.trackPerpsClosePositionPreview()
             latestMarkPrice = markPrice
             latestUnrealizedPnl = unrealizedPnl
         }
@@ -308,7 +311,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             id = when (step) {
                                 Step.Pending -> R.string.confirm_closing_position
                                 Step.Done -> R.string.Position_Closed
-                                Step.Error -> R.string.swap_failed
+                                Step.Error -> if (isLong) R.string.Closed_Long_Failed else R.string.Closed_Short_Failed
                                 Step.Sending -> R.string.Sending
                             }
                         ),
@@ -495,11 +498,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
                                 cancelAction = {
-                                    AnalyticsTracker.trackPerpsClosePositionPreviewCancel()
+                                    AnalyticsTracker.trackPerpsClosePreviewCancel()
                                     dismiss()
                                 },
                                 confirmAction = {
-                                    AnalyticsTracker.trackPerpsClosePositionPreviewConfirm()
+                                    AnalyticsTracker.trackPerpsClosePreviewConfirm()
                                     showVerifyPinThenClose()
                                 },
                             )
@@ -511,11 +514,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Confirm),
                                 cancelAction = {
-                                    AnalyticsTracker.trackPerpsClosePositionPreviewCancel()
+                                    AnalyticsTracker.trackPerpsClosePreviewCancel()
                                     dismiss()
                                 },
                                 confirmAction = {
-                                    AnalyticsTracker.trackPerpsClosePositionPreviewConfirm()
+                                    AnalyticsTracker.trackPerpsClosePreviewConfirm()
                                     showVerifyPinThenClose()
                                 },
                             )
@@ -562,7 +565,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             leverage = leverage,
             onSuccess = {
                 step = Step.Done
-                AnalyticsTracker.trackPerpsClosePositionEnd()
+                AnalyticsTracker.trackPerpsCloseEnd()
             },
             onError = { error ->
                 errorInfo = error

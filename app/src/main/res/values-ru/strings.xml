@@ -270,6 +270,7 @@
     <string name="database_upgrade_tips">База данных обновляется, это может занять несколько минут, пожалуйста, не закрывайте это приложение.</string>
     <string name="Date">Дата</string>
     <string name="date_format_date">dd.MM.yyyy</string>
+    <string name="date_format_month_day">dd.MM</string>
     <string name="db_debug_warning">Внимание: Если выполняется вредоносная инструкция SQL, результат необратим!</string>
     <string name="Debug_database">Отладка базы данных</string>
     <string name="Decline">Отклонить</string>

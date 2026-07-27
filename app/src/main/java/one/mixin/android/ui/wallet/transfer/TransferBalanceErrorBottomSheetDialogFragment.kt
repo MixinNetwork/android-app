@@ -20,7 +20,6 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AssetBiometricItem
 import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
-import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -84,7 +83,7 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                     binding.contentTv.text = getString(R.string.swap_usdt_hint, u.symbol)
                     binding.positive.setOnClickListener {
                         AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.BALANCE)
-                        SwapActivity.show(requireActivity(), input = u.assetId, output = asset.assetId, null, null)
+                        BalanceErrorTradeNavigator.showSwapTrade(requireActivity(), input = u.assetId, output = asset.assetId)
                         dismiss()
                     }
                     binding.negative.setOnClickListener {
@@ -104,12 +103,10 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                             onAction = { type, fee ->
                                 if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
                                     AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.BALANCE)
-                                    SwapActivity.show(
+                                    BalanceErrorTradeNavigator.showSwapTrade(
                                         requireActivity(),
                                         input = Constants.AssetId.USDT_ASSET_ETH_ID,
                                         output = fee.assetId,
-                                        null,
-                                        null
                                     )
                                     this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
@@ -132,12 +129,10 @@ class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                             onAction = { type, asset ->
                                 if (type == AddFeeBottomSheetDialogFragment.ActionType.SWAP) {
                                     AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.BALANCE)
-                                    SwapActivity.show(
+                                    BalanceErrorTradeNavigator.showSwapTrade(
                                         requireActivity(),
                                         input = Constants.AssetId.USDT_ASSET_ETH_ID,
                                         output = asset.assetId,
-                                        null,
-                                        null
                                     )
                                     this@TransferBalanceErrorBottomSheetDialogFragment.dismiss()
                                 } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
