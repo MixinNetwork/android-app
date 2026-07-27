@@ -103,30 +103,15 @@ fun TradingViewCandleChart(
                 minMove = BigDecimal.ONE.movePointLeft(precision).toFloat(),
             )
         }
-    val candleData =
+    val chartCandles =
         remember(candles) {
-            candles
-                .firstOrNull()
-                ?.items
-                .orEmpty()
-                .mapNotNull { item ->
-                    val open = item.open.toFloatOrNull() ?: return@mapNotNull null
-                    val high = item.high.toFloatOrNull() ?: return@mapNotNull null
-                    val low = item.low.toFloatOrNull() ?: return@mapNotNull null
-                    val close = item.close.toFloatOrNull() ?: return@mapNotNull null
-                    CandlestickData(
-                        time = Time.Utc(tradingViewLocalTimestamp(item.timestamp, zoneId)),
-                        open = open,
-                        high = high,
-                        low = low,
-                        close = close,
-                    )
-                }
+            tradingViewCandles(candles.firstOrNull()?.items.orEmpty(), zoneId)
         }
+    val candleData = chartCandles.map { it.data }
     val candlesByTimestamp =
-        remember(candles) {
-            candles.firstOrNull()?.items.orEmpty().associateBy { item ->
-                tradingViewLocalTimestamp(item.timestamp, zoneId)
+        remember(chartCandles) {
+            chartCandles.associate { candle ->
+                (candle.data.time as Time.Utc).timestamp to candle.item
             }
         }
     val latestCandlesByTimestamp = rememberUpdatedState(candlesByTimestamp)
@@ -474,6 +459,44 @@ internal fun tradingViewLocalTimestamp(
     val offsetSeconds = Instant.ofEpochSecond(utcTimestamp).atZone(zoneId).offset.totalSeconds
     return utcTimestamp + offsetSeconds
 }
+
+internal data class TradingViewCandle(
+    val item: CandleItem,
+    val data: CandlestickData,
+)
+
+internal fun tradingViewCandles(
+    items: List<CandleItem>,
+    zoneId: ZoneId = ZoneId.systemDefault(),
+): List<TradingViewCandle> =
+    items.mapNotNull { item ->
+        val open = item.open.toFloatOrNull() ?: return@mapNotNull null
+        val high = item.high.toFloatOrNull() ?: return@mapNotNull null
+        val low = item.low.toFloatOrNull() ?: return@mapNotNull null
+        val close = item.close.toFloatOrNull() ?: return@mapNotNull null
+        if (!open.isFinite() || !high.isFinite() || !low.isFinite() || !close.isFinite()) {
+            return@mapNotNull null
+        }
+        val timestamp =
+            runCatching { tradingViewLocalTimestamp(item.timestamp, zoneId) }
+                .getOrNull()
+                ?: return@mapNotNull null
+        TradingViewCandle(
+            item = item,
+            data =
+                CandlestickData(
+                    time = Time.Utc(timestamp),
+                    open = open,
+                    high = high,
+                    low = low,
+                    close = close,
+                ),
+        )
+    }.associateBy { candle ->
+        (candle.data.time as Time.Utc).timestamp
+    }.values.sortedBy { candle ->
+        (candle.data.time as Time.Utc).timestamp
+    }
 
 internal fun tradingViewDateTimeFormat(timeFrame: String): DateTimeFormat =
     when (timeFrame.lowercase()) {
