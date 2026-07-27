@@ -1,6 +1,41 @@
 cmake_minimum_required(VERSION 3.4.1)
 set(CMAKE_CXX_STANDARD 14)
 
+set(curve25519_DIR ${CMAKE_SOURCE_DIR}/curve25519)
+
+file(GLOB curve25519_ED25519_SOURCES
+        ${curve25519_DIR}/ed25519/*.c
+        ${curve25519_DIR}/ed25519/additions/*.c
+        ${curve25519_DIR}/ed25519/additions/generalized/*.c
+        ${curve25519_DIR}/ed25519/nacl_sha512/*.c)
+
+add_library(curve25519
+        SHARED
+        ${curve25519_DIR}/curve25519-jni.c
+        ${curve25519_DIR}/curve25519-donna.c
+        ${curve25519_ED25519_SOURCES}
+        ${curve25519_DIR}/ed25519/tests/internal_fast_tests.c)
+
+set_target_properties(curve25519 PROPERTIES
+        C_STANDARD 99
+        C_STANDARD_REQUIRED ON)
+
+target_compile_options(curve25519 PRIVATE
+        -Wno-pointer-sign)
+
+target_include_directories(curve25519 PRIVATE
+        ${curve25519_DIR}
+        ${curve25519_DIR}/ed25519
+        ${curve25519_DIR}/ed25519/additions
+        ${curve25519_DIR}/ed25519/additions/generalized
+        ${curve25519_DIR}/ed25519/nacl_includes
+        ${curve25519_DIR}/ed25519/nacl_sha512
+        ${curve25519_DIR}/ed25519/tests)
+
+target_link_options(curve25519 PRIVATE
+        -Wl,-z,max-page-size=16384
+        -Wl,-z,common-page-size=16384)
+
 set(distribution_OPUS_DIR ${CMAKE_SOURCE_DIR}/opus)
 
 add_library(lib_opus STATIC IMPORTED)

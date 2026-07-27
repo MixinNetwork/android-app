@@ -33,7 +33,7 @@ plugins {
 }
 
 
-extra.set("androidNdkVersion", "27.0.12077973")
+extra.set("androidNdkVersion", "28.2.13676358")
 extra.set("jetifierVersion", "1.0.0-beta10")
 extra.set("kotlinVersion", "2.4.10")
 extra.set("tinkVersion", "0.0.13")
