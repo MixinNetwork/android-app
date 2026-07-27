@@ -1,5 +1,7 @@
 package one.mixin.android.web3.js
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import okio.Buffer
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
@@ -64,6 +66,7 @@ object Web3Signer {
 
     private const val TAG = "Web3Signer"
     private const val GASLESS_EIP7702_AUTHORIZED_ADDRESS = "0xe6cae83bde06e4c305530e199d7217f42808555b"
+    private val walletSelectionMutex = Mutex()
 
     private val sp by lazy {
         MixinApplication.appContext.defaultSharedPreferences
@@ -178,19 +181,46 @@ object Web3Signer {
         persist()
     }
 
-    suspend fun init(classicQuery: () -> String?, queryAddress: (String) -> List<Web3Address>, queryWallet: (String) -> WalletItem?) {
-        classicWalletId = PropertyHelper.findValueByKey(Keys.CLASSIC_WALLET_ID, classicQuery() ?: "")
-        currentWalletId = PropertyHelper.findValueByKey(
-            Keys.SELECTED_WEB3_WALLET_ID,
-            classicWalletId
-        )
-        currentWalletCategory = PropertyHelper.findValueByKey(Keys.CURRENT_WALLET_CATEGORY, queryWallet(currentWalletId)?.category ?: WalletCategory.CLASSIC.value)
-        updateAddressesAndPaths(currentWalletId, queryAddress)
-        persist()
-    }
+    suspend fun init(classicQuery: () -> String?, queryAddress: (String) -> List<Web3Address>, queryWallet: (String) -> WalletItem?) =
+        walletSelectionMutex.withLock {
+            classicWalletId = PropertyHelper.findValueByKey(Keys.CLASSIC_WALLET_ID, classicQuery() ?: "")
+            currentWalletId = PropertyHelper.findValueByKey(
+                Keys.SELECTED_WEB3_WALLET_ID,
+                classicWalletId
+            )
+            currentWalletCategory = PropertyHelper.findValueByKey(Keys.CURRENT_WALLET_CATEGORY, queryWallet(currentWalletId)?.category ?: WalletCategory.CLASSIC.value)
+            updateAddressesAndPaths(currentWalletId, queryAddress)
+            persist()
+        }
 
     suspend fun setWallet(walletId: String, category: String, queryAddress: (String) -> List<Web3Address>) {
         if (category == WalletCategory.WATCH_ADDRESS.value) return
+        walletSelectionMutex.withLock {
+            setWalletLocked(walletId, category, queryAddress)
+        }
+    }
+
+    suspend fun currentWalletIdSnapshot(): String = walletSelectionMutex.withLock { currentWalletId }
+
+    suspend fun setWalletIfCurrent(
+        expectedWalletId: String,
+        walletId: String,
+        category: String,
+        queryAddress: (String) -> List<Web3Address>,
+    ): Boolean {
+        if (category == WalletCategory.WATCH_ADDRESS.value) return false
+        return walletSelectionMutex.withLock {
+            if (currentWalletId != expectedWalletId) return@withLock false
+            setWalletLocked(walletId, category, queryAddress)
+            true
+        }
+    }
+
+    private suspend fun setWalletLocked(
+        walletId: String,
+        category: String,
+        queryAddress: (String) -> List<Web3Address>,
+    ) {
         currentWalletId = walletId
         PropertyHelper.updateKeyValue(Keys.SELECTED_WEB3_WALLET_ID, walletId)
         currentWalletCategory = category

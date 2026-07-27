@@ -6,6 +6,7 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
+import androidx.room.withTransaction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -29,6 +30,7 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.service.RouteService
+import one.mixin.android.db.PerpsDatabase
 import one.mixin.android.db.TokenDao
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsOrderDao
@@ -50,13 +52,48 @@ import javax.inject.Inject
 class PerpetualViewModel @Inject constructor(
     private val routeService: RouteService,
     private val tokenDao: TokenDao,
+    private val perpsDatabase: PerpsDatabase,
     private val perpsPositionDao: PerpsPositionDao,
     private val perpsOrderDao: PerpsOrderDao,
     private val perpsMarketDao: PerpsMarketDao,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
+    data class BatchCloseResult(
+        val failedPositions: List<PerpsPositionItem>,
+        val errors: List<String>,
+    )
+
     fun refreshPositions(walletId: String) {
         jobManager.addJobInBackground(RefreshPerpsPositionsJob(walletId))
+    }
+
+    suspend fun refreshPositionsForBatchClose(walletId: String): Result<List<PerpsPositionItem>> {
+        return runCatching {
+            val response = withContext(Dispatchers.IO) {
+                routeService.getPerpsPositions(walletId = walletId)
+            }
+            val positions = response.data?.map { it.copy(walletId = walletId) }
+            if (!response.isSuccess || positions == null) {
+                error("Failed to refresh perps positions: ${response.errorDescription}")
+            }
+
+            withContext(Dispatchers.IO) {
+                perpsDatabase.withTransaction {
+                    if (positions.isEmpty()) {
+                        perpsPositionDao.deleteOpenByWallet(walletId)
+                    } else {
+                        perpsPositionDao.deleteOpenByWalletAndNotIn(
+                            walletId,
+                            positions.map { it.positionId },
+                        )
+                        perpsPositionDao.insertAll(positions)
+                    }
+                }
+                perpsPositionDao.getOpenPositions(walletId)
+            }
+        }.onFailure { error ->
+            Timber.e(error, "Failed to refresh positions before batch close")
+        }
     }
 
     private var refreshOrdersJob: kotlinx.coroutines.Job? = null
@@ -784,40 +821,59 @@ class PerpetualViewModel @Inject constructor(
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
-            try {
-                val request = CloseOrderRequest(
-                    positionId = positionId
-                )
-                
-                val response = withContext(Dispatchers.IO) {
-                    routeService.closePerpsOrder(request)
-                }
-                
-                if (response.isSuccess) {
-                    val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
-                    withContext(Dispatchers.IO) {
-                        perpsPositionDao.getPosition(positionId)?.let { position ->
-                            perpsOrderDao.insert(
-                                createCachedClosedOrder(
-                                    position = position,
-                                    leverage = leverage.takeIf { it > 0 } ?: position.leverage,
-                                )
-                            )
-                        }
-                        perpsPositionDao.deleteById(positionId)
+            closePerpsOrder(positionId, leverage)
+                .onSuccess { onSuccess() }
+                .onFailure { onError(it.message.orEmpty()) }
+        }
+    }
+
+    fun closePerpsOrders(
+        positions: List<PerpsPositionItem>,
+        onComplete: (BatchCloseResult) -> Unit,
+    ) {
+        viewModelScope.launch {
+            val failedPositions = mutableListOf<PerpsPositionItem>()
+            val errors = mutableListOf<String>()
+
+            positions.forEach { position ->
+                closePerpsOrder(position.positionId, position.leverage)
+                    .onFailure { error ->
+                        failedPositions += position
+                        errors += error.message.orEmpty()
                     }
-                    Timber.d("Perps order closed: $positionId")
-                    onSuccess()
-                } else {
-                    val error = "Failed to close perps order: ${response.errorDescription}"
-                    Timber.e(error)
-                    onError(error)
-                }
-            } catch (e: Exception) {
-                val error = "Error closing perps order: ${e.message}"
-                Timber.e(e, error)
-                onError(error)
             }
+
+            onComplete(BatchCloseResult(failedPositions, errors))
+        }
+    }
+
+    private suspend fun closePerpsOrder(
+        positionId: String,
+        leverage: Int,
+    ): Result<Unit> {
+        return runCatching {
+            val response = withContext(Dispatchers.IO) {
+                routeService.closePerpsOrder(CloseOrderRequest(positionId = positionId))
+            }
+
+            if (!response.isSuccess) {
+                error("Failed to close perps order: ${response.errorDescription}")
+            }
+
+            withContext(Dispatchers.IO) {
+                perpsPositionDao.getPosition(positionId)?.let { position ->
+                    perpsOrderDao.insert(
+                        createCachedClosedOrder(
+                            position = position,
+                            leverage = leverage.takeIf { it > 0 } ?: position.leverage,
+                        )
+                    )
+                }
+                perpsPositionDao.deleteById(positionId)
+            }
+            Timber.d("Perps order closed: $positionId")
+        }.onFailure { error ->
+            Timber.e(error, "Error closing perps order: $positionId")
         }
     }
 

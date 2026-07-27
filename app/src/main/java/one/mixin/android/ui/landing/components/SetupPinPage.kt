@@ -126,7 +126,11 @@ fun SetupPinPage(
             IconButton(onClick = {
                 context.openUrl(
                     Constants.HelpLink.CUSTOMER_SERVICE,
-                    source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_MNEMONIC_PHRASE_CREATING,
+                    source = when (pinCodeAttempts) {
+                        0 -> AnalyticsTracker.CustomerServiceSource.SIGN_UP_PIN_SET_1
+                        1 -> AnalyticsTracker.CustomerServiceSource.SIGN_UP_PIN_SET_2
+                        else -> AnalyticsTracker.CustomerServiceSource.SIGN_UP_PIN_SET_3
+                    },
                 )
             }) {
                 Icon(
@@ -317,7 +321,9 @@ fun SetupPinPage(
                     text = stringResource(
                         if (errorMessage.isNotEmpty()) R.string.Retry else R.string.Next
                     ),
-                    color = Color.White
+                    color = Color.White,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W500,
                 )
             }
         }

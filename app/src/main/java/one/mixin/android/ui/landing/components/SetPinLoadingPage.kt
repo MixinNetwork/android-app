@@ -111,7 +111,7 @@ fun SetPinLoadingPage(
             IconButton(onClick = {
                 context.openUrl(
                     Constants.HelpLink.CUSTOMER_SERVICE,
-                    source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_MNEMONIC_PHRASE_CREATING,
+                    source = AnalyticsTracker.CustomerServiceSource.SIGN_UP_PIN_SETTING,
                 )
             }) {
                 Icon(
@@ -182,7 +182,9 @@ fun SetPinLoadingPage(
                     ) {
                         Text(
                             text = stringResource(R.string.Retry),
-                            color = Color.White
+                            color = Color.White,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.W500,
                         )
                     }
                     Spacer(modifier = Modifier.height(16.dp))

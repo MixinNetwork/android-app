@@ -116,6 +116,11 @@ internal constructor(
             cashRepository.account()
         }
 
+    suspend fun cachedCashAccount(): CashAccount? =
+        withContext(Dispatchers.IO) {
+            cashRepository.cachedAccount()
+        }
+
     suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){
         return@withContext tokenRepository.assetItemsNotHiddenRaw()
     }
@@ -483,6 +488,8 @@ internal constructor(
     }
 
     suspend fun findWalletById(walletId: String) = web3Repository.findWalletById(walletId)
+
+    suspend fun getClassicWalletId() = web3Repository.getClassicWalletId()
 
     suspend fun getWalletsExcluding(excludeWalletId: String, chainId: String, query: String) = web3Repository.getWalletsExcluding(excludeWalletId, chainId, query)
 

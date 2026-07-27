@@ -21,16 +21,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.Font
@@ -39,8 +33,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.fragment.app.FragmentActivity
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
@@ -48,12 +40,9 @@ import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.toast
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.tip.wc.compose.ItemWalletContent
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.util.getMixinErrorStringByCode
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
@@ -69,8 +58,6 @@ fun PositionDetailPage(
     onShare: (() -> Unit)? = null,
     onSupport: (() -> Unit)? = null,
 ) {
-    val context = LocalContext.current
-    val preferences = remember(context) { context.defaultSharedPreferences }
     val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
     
     fun formatDate(dateStr: String?): String {
@@ -108,36 +95,6 @@ fun PositionDetailPage(
         ?.takeIf { it.isNotBlank() }
         ?.let { formatPerpsPrice(it, position.priceScale) }
         ?: "--"
-    val hasTakeProfit = !position.takeProfitPrice.isNullOrBlank()
-    val hasStopLoss = !position.stopLossPrice.isNullOrBlank()
-    var hideTakeProfitGuideUntil by remember(preferences) {
-        mutableStateOf(preferences.getTpSlGuideHideUntil(TpSlGuideType.TAKE_PROFIT))
-    }
-    var hideStopLossGuideUntil by remember(preferences) {
-        mutableStateOf(preferences.getTpSlGuideHideUntil(TpSlGuideType.STOP_LOSS))
-    }
-    var guideType by remember(position.positionId) {
-        mutableStateOf(
-            resolveTpSlGuideType(
-                pnl = pnl,
-                hasTakeProfit = hasTakeProfit,
-                hasStopLoss = hasStopLoss,
-                hideTakeProfitGuideUntil = hideTakeProfitGuideUntil,
-                hideStopLossGuideUntil = hideStopLossGuideUntil,
-                now = System.currentTimeMillis(),
-            )
-        )
-    }
-    val viewModel = hiltViewModel<PerpetualViewModel>()
-
-    LaunchedEffect(hasTakeProfit, hasStopLoss, guideType) {
-        if ((guideType == TpSlGuideType.TAKE_PROFIT && hasTakeProfit) ||
-            (guideType == TpSlGuideType.STOP_LOSS && hasStopLoss)
-        ) {
-            guideType = null
-        }
-    }
-
     val isAdding = position.state == PerpsPosition.STATE_ADDING
     val isPending = position.state == PerpsPosition.STATE_OPENING || isAdding
     val leverageTextColor = if (isPending) MixinAppTheme.colors.textAssist else sideColor
@@ -145,51 +102,6 @@ fun PositionDetailPage(
         MixinAppTheme.colors.backgroundGrayLight
     } else {
         sideColor.copy(alpha = 0.1f)
-    }
-
-    fun showTpSlBottomSheetFromGuide(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
-        val activity = context as? FragmentActivity ?: return
-        val existingPrice = when (mode) {
-            PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> position.takeProfitPrice.orEmpty()
-            PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> position.stopLossPrice.orEmpty()
-        }
-        val currentPrice = position.markPrice.orEmpty().ifBlank { position.entryPrice }
-        val requestMarginAmount = position.margin ?: position.openPayAmount.orEmpty()
-        PerpsTpSlBottomSheetDialogFragment.newInstance(
-            mode = mode,
-            price = existingPrice,
-            currentPrice = currentPrice,
-            isLong = position.side.equals("long", ignoreCase = true),
-            marketIconUrl = position.iconUrl.orEmpty(),
-            marketSymbol = position.displaySymbol ?: position.tokenSymbol.orEmpty(),
-            marginAmount = requestMarginAmount,
-            leverage = position.leverage,
-            entryPrice = position.entryPrice,
-            marketId = position.marketId,
-            priceScale = position.priceScale,
-            liquidationPrice = position.liquidationPrice,
-        ).setOnApply { value ->
-            val normalizedValue = value?.trim().orEmpty()
-            if (normalizedValue == existingPrice) return@setOnApply
-            if (normalizedValue.isEmpty() && existingPrice.isEmpty()) return@setOnApply
-            val requestedValue = normalizedValue.ifEmpty { "" }
-            // TP/SL update API treats null as "keep existing value" and empty string as "clear this side".
-            viewModel.setPositionTpSl(
-                positionId = position.positionId,
-                takeProfitPrice = when (mode) {
-                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> requestedValue
-                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> null
-                },
-                stopLossPrice = when (mode) {
-                    PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT -> null
-                    PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS -> requestedValue
-                },
-                onSuccess = {},
-                onError = { errorCode, errorMessage ->
-                    toast(context.getMixinErrorStringByCode(errorCode, errorMessage))
-                },
-            )
-        }.show(activity.supportFragmentManager, PerpsTpSlBottomSheetDialogFragment.TAG)
     }
 
     fun formatFiat(value: BigDecimal): String {
@@ -362,32 +274,6 @@ fun PositionDetailPage(
                     valueColor = pnlColor,
                     subtitle = formatSignedPercent(roe),
                 )
-
-                guideType?.let { currentGuideType ->
-                    Spacer(modifier = Modifier.height(16.dp))
-                    PerpsTpSlGuideCard(
-                        guideType = currentGuideType,
-                        onClose = {
-                            val until = preferences.hideTpSlGuide(currentGuideType)
-                            if (currentGuideType == TpSlGuideType.TAKE_PROFIT) {
-                                hideTakeProfitGuideUntil = until
-                            } else {
-                                hideStopLossGuideUntil = until
-                            }
-                            guideType = null
-                        },
-                        actionText = stringResource(
-                            if (currentGuideType == TpSlGuideType.TAKE_PROFIT) R.string.Take_Profit else R.string.Stop_Loss
-                        ),
-                        onActionClick = {
-                            showTpSlBottomSheetFromGuide(
-                                if (currentGuideType == TpSlGuideType.TAKE_PROFIT) PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT
-                                else PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS
-                            )
-                        },
-                        layout = PerpsTpSlGuideCardLayout.DETAIL,
-                    )
-                }
 
                 Spacer(modifier = Modifier.height(20.dp))
 
@@ -583,6 +469,7 @@ fun PositionDetailPage(
                     modifier = Modifier
                         .size(70.dp)
                         .clip(CircleShape)
+                        .clickable(enabled = onTradeAgain != null) { onTradeAgain?.invoke() }
                         .align(Alignment.CenterHorizontally)
                 )
 
@@ -831,6 +718,7 @@ fun OpenedOrderDetailPage(
                     modifier = Modifier
                         .size(70.dp)
                         .clip(CircleShape)
+                        .clickable(enabled = onViewMarket != null) { onViewMarket?.invoke() }
                         .align(Alignment.CenterHorizontally)
                 )
 
