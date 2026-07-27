@@ -1,12 +1,15 @@
 package one.mixin.android.ui.home.reminder
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Text
@@ -19,6 +22,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
@@ -32,7 +36,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isBatteryOptimizationRestricted
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openBatteryOptimizationSetting
-import one.mixin.android.extension.openNotificationSetting
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -40,6 +44,7 @@ import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 @AndroidEntryPoint
 class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -132,6 +137,17 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         }
     }
 
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            context?.let { context ->
+                AnalyticsTracker.setNotificationAuthStatus(context)
+                if (!granted) {
+                    postponeNotificationReminder(context)
+                }
+            }
+            dismissAllowingStateLoss()
+        }
+
     private val popupType by lazy {
         val typeName = requireArguments().getString(ARGS_POPUP_TYPE)
         when (typeName) {
@@ -207,22 +223,33 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                 }
 
                 is PopupType.NotificationPermissionReminder -> {
+                    val action = notificationPermissionAction()
                     ReminderPage(
                         contentImage = languageBasedImage(
                             R.drawable.bg_reminder_notifaction,
                             R.drawable.bg_reminder_notifaction_cn,
                         ),
                         title = R.string.Turn_On_Notifications,
-                        actionStr = R.string.Enable_Notifications,
+                        actionStr =
+                            when (action) {
+                                NotificationPermissionAction.RequestPermission -> R.string.Continue
+                                NotificationPermissionAction.OpenSettings -> R.string.Go_settings
+                            },
                         action = {
-                            requireContext().openNotificationSetting()
-                            dismissAllowingStateLoss()
+                            when (action) {
+                                NotificationPermissionAction.RequestPermission -> {
+                                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
+                                NotificationPermissionAction.OpenSettings -> {
+                                    val context = requireContext()
+                                    postponeNotificationReminder(context)
+                                    context.openPermissionSetting(false)
+                                    dismissAllowingStateLoss()
+                                }
+                            }
                         },
                         dismiss = {
-                            requireContext().defaultSharedPreferences.putLong(
-                                PREF_NOTIFICATION_ON,
-                                System.currentTimeMillis(),
-                            )
+                            postponeNotificationReminder(requireContext())
                             dismissAllowingStateLoss()
                         },
                         contentSlot = {
@@ -282,12 +309,52 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         return batteryOptimizationAnnotatedContent(getString(getBatteryOptimizationContentResId()))
     }
 
+    private fun notificationPermissionAction(): NotificationPermissionAction {
+        val permissionGranted =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.POST_NOTIFICATIONS,
+                ) == PackageManager.PERMISSION_GRANTED
+        val shouldShowRationale =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                requireActivity().shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
+        return notificationPermissionAction(
+            sdkInt = Build.VERSION.SDK_INT,
+            permissionGranted = permissionGranted,
+            shouldShowRationale = shouldShowRationale,
+        )
+    }
+
+    private fun postponeNotificationReminder(context: Context) {
+        context.defaultSharedPreferences.putLong(
+            PREF_NOTIFICATION_ON,
+            System.currentTimeMillis(),
+        )
+    }
+
     sealed class PopupType {
         object NewVersionReminder : PopupType()
         object NotificationPermissionReminder : PopupType()
         object BatteryOptimizationReminder : PopupType()
     }
 }
+
+internal enum class NotificationPermissionAction {
+    RequestPermission,
+    OpenSettings,
+}
+
+internal fun notificationPermissionAction(
+    sdkInt: Int,
+    permissionGranted: Boolean,
+    shouldShowRationale: Boolean,
+): NotificationPermissionAction =
+    if (sdkInt >= Build.VERSION_CODES.TIRAMISU && !permissionGranted && shouldShowRationale) {
+        NotificationPermissionAction.RequestPermission
+    } else {
+        NotificationPermissionAction.OpenSettings
+    }
 
 internal fun batteryOptimizationAnnotatedContent(content: String): AnnotatedString {
     return buildAnnotatedString {
