@@ -31,4 +31,7 @@ data class CircleOrder(
     val orderedAt: String,
 )
 
-data class CircleName(val name: String)
+data class CircleName(
+    @SerializedName("name")
+    val name: String,
+)

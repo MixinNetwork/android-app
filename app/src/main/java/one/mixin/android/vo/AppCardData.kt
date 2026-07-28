@@ -144,8 +144,11 @@ fun String.getSendText(): String? {
 
 @Parcelize
 data class ActionButtonData(
+    @SerializedName("label")
     val label: String,
+    @SerializedName("color")
     val color: String,
+    @SerializedName("action")
     val action: String,
 ) : Parcelable {
     @IgnoredOnParcel
