@@ -4,6 +4,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.LimitOrderRequest
+import one.mixin.android.api.request.MarketFavoritesRequest
 import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.RampWebUrlRequest
 import one.mixin.android.api.request.RouteInstrumentRequest
@@ -260,6 +261,11 @@ interface RouteService {
     @GET("markets/globals")
     suspend fun globalMarket():MixinResponse<GlobalMarket>
 
+    @POST("markets/favorites")
+    suspend fun updateMarketFavorites(
+        @Body request: MarketFavoritesRequest,
+    ): MixinResponse<Unit>
+
     @POST("markets/{id}/favorite")
     suspend fun favorite(@Path("id") coinId: String): MixinResponse<Unit>
 
@@ -392,6 +398,11 @@ interface RouteService {
     suspend fun getPerpsMarket(
         @Path("market_id") marketId: String
     ): MixinResponse<PerpsMarket>
+
+    @POST("perps/markets/favorites")
+    suspend fun updatePerpsMarketFavorites(
+        @Body request: MarketFavoritesRequest,
+    ): MixinResponse<Unit>
 
     @POST("perps/markets/{market_id}/favorite")
     suspend fun favoritePerpsMarket(

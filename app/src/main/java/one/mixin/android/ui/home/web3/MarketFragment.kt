@@ -19,10 +19,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.CompositeDisposable
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.event.GlobalMarketEvent
+import one.mixin.android.event.MarketPageRefreshEvent
+import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openPermissionSetting
@@ -31,6 +34,7 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.market.MarketListEntry
 import one.mixin.android.ui.home.web3.market.MarketPage
 import one.mixin.android.ui.home.web3.market.MarketPageViewModel
+import one.mixin.android.ui.home.web3.market.MarketTopTab
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.search.SearchExploreFragment
 import one.mixin.android.ui.wallet.WalletActivity
@@ -45,6 +49,7 @@ class MarketFragment : Web3Fragment() {
     }
 
     private val viewModel by viewModels<MarketPageViewModel>()
+    private val viewDisposables = CompositeDisposable()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -92,7 +97,7 @@ class MarketFragment : Web3Fragment() {
                         onFavorite = viewModel::toggleFavorite,
                         onKeepPriceAlerts = viewModel::keepPriceAlerts,
                         onDeletePriceAlerts = viewModel::deletePriceAlerts,
-                        onEntryClick = ::openMarket,
+                        onEntryClick = { entry -> openMarket(entry, state.selectedTopTab) },
                     )
                 }
             }
@@ -105,9 +110,22 @@ class MarketFragment : Web3Fragment() {
         super.onViewCreated(view, savedInstanceState)
         RxBus.listen(GlobalMarketEvent::class.java)
             .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
             .subscribe { viewModel.loadIndicator() }
+            .let(viewDisposables::add)
+        RxBus.listen(QuoteColorEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe { viewModel.reloadQuoteColor() }
+            .let(viewDisposables::add)
+        RxBus.listen(MarketPageRefreshEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(viewModel::onRefreshCompleted)
+            .let(viewDisposables::add)
         updateUI()
+    }
+
+    override fun onDestroyView() {
+        viewDisposables.clear()
+        super.onDestroyView()
     }
 
     override fun updateUI() {
@@ -139,14 +157,17 @@ class MarketFragment : Web3Fragment() {
             }
     }
 
-    private fun openMarket(entry: MarketListEntry) {
+    private fun openMarket(
+        entry: MarketListEntry,
+        sourceTab: MarketTopTab,
+    ) {
         when (entry) {
             is MarketListEntry.Spot ->
                 WalletActivity.showWithMarket(
                     requireActivity(),
                     entry.market,
                     Destination.Market,
-                    if (entry.isFavored) {
+                    if (sourceTab == MarketTopTab.WATCHLIST) {
                         AnalyticsTracker.MarketSource.MORE_FAVORITES
                     } else {
                         AnalyticsTracker.MarketSource.MORE_MARKET_CAP

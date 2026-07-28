@@ -174,14 +174,14 @@ private fun MarketToolbar(
         IconButton(onClick = onSearch) {
             Icon(
                 painter = painterResource(R.drawable.ic_search_home),
-                contentDescription = null,
+                contentDescription = stringResource(R.string.Search),
                 tint = MixinAppTheme.colors.icon,
             )
         }
         IconButton(onClick = onScan) {
             Icon(
                 painter = painterResource(R.drawable.ic_bot_category_scan),
-                contentDescription = null,
+                contentDescription = stringResource(R.string.Scan),
                 tint = Color.Unspecified,
             )
         }
@@ -226,7 +226,7 @@ private fun SubTabs(
 ) {
     val tabs =
         if (topTab == MarketTopTab.WATCHLIST) {
-            listOf(MarketSubTab.CRYPTO, MarketSubTab.PERPETUAL)
+            listOf(MarketSubTab.CRYPTO, MarketSubTab.PERPETUAL, MarketSubTab.STOCK)
         } else {
             listOf(
                 MarketSubTab.TRENDING,
@@ -316,7 +316,7 @@ private fun MarketListHeader(
             contentAlignment = Alignment.Center,
             modifier =
                 Modifier
-                    .size(24.dp)
+                    .size(48.dp)
                     .clip(CircleShape)
                     .clickable(onClick = onShowDisplaySettings),
         ) {
@@ -329,7 +329,7 @@ private fun MarketListHeader(
         }
         Spacer(modifier = Modifier.width(4.dp))
         SortLabel(
-            text = "Vol",
+            text = stringResource(R.string.volume_24h),
             column = MarketSortColumn.VOLUME,
             sortState = sortState,
             onSort = onSort,
@@ -471,7 +471,7 @@ private fun MarketRow(
         IconButton(
             onClick = onFavorite,
             enabled = true,
-            modifier = Modifier.size(32.dp),
+            modifier = Modifier.size(48.dp),
         ) {
             Icon(
                 painter =
@@ -482,7 +482,14 @@ private fun MarketRow(
                             R.drawable.ic_asset_favorites
                         },
                     ),
-                contentDescription = null,
+                contentDescription =
+                    stringResource(
+                        if (entry.isFavored) {
+                            R.string.Remove_from_Watchlist
+                        } else {
+                            R.string.Add_to_Watchlist
+                        },
+                    ),
                 tint = Color.Unspecified,
                 modifier = Modifier.size(18.dp),
             )
@@ -933,7 +940,7 @@ private fun MarketDisplayDialog(
                             ) {
                                 Icon(
                                     painter = painterResource(R.drawable.ic_close),
-                                    contentDescription = null,
+                                    contentDescription = stringResource(R.string.Close),
                                     tint = Color.Unspecified,
                                     modifier = Modifier.size(16.dp),
                                 )
@@ -1142,6 +1149,7 @@ private fun subTabLabel(tab: MarketSubTab): String =
             MarketSubTab.ALL -> R.string.All
             MarketSubTab.CRYPTO -> R.string.Crypto
             MarketSubTab.PERPETUAL -> R.string.Perpetual
+            MarketSubTab.STOCK -> R.string.market_stock
         },
     )
 

@@ -13,10 +13,13 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsMarketCategory
+import one.mixin.android.event.MarketPageDataSource
+import one.mixin.android.event.MarketPageRefreshEvent
 import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketPageJob
@@ -30,6 +33,7 @@ import timber.log.Timber
 import javax.inject.Inject
 
 private const val MARKET_REFRESH_INTERVAL_MS = 30_000L
+private const val REFRESH_REQUEUE_DELAY_MS = 250L
 private const val PREF_MARKET_PAGE_TOP_TAB = "pref_market_page_top_tab"
 private const val PREF_MARKET_PAGE_SUB_TAB_PREFIX = "pref_market_page_sub_tab_"
 
@@ -52,9 +56,13 @@ class MarketPageViewModel
         private var topGainerMarkets: List<MarketItem> = emptyList()
         private var topLoserMarkets: List<MarketItem> = emptyList()
         private var stockMarkets: List<MarketItem> = emptyList()
+        private var featuredSpotMarkets: List<MarketItem> = emptyList()
         private var perpetualMarkets: List<PerpsMarket> = emptyList()
         private var trendingPerpetualMarkets: List<PerpsMarket> = emptyList()
+        private var featuredPerpetualMarkets: List<PerpsMarket> = emptyList()
         private var refreshLoopJob: Job? = null
+        private var failedSources: Set<MarketPageDataSource> = emptySet()
+        private var hasCompletedRefresh = false
 
         init {
             observeSpotMarkets()
@@ -115,14 +123,20 @@ class MarketPageViewModel
         fun toggleFavorite(entry: MarketListEntry) {
             when (entry) {
                 is MarketListEntry.Spot ->
-                    viewModelScope.launch(Dispatchers.IO) {
-                        val updated =
-                            tokenRepository.updateMarketFavored(
-                                entry.market.symbol,
-                                entry.favoriteId,
-                                entry.isFavored,
-                            )
-                        if (updated && entry.isFavored && tokenRepository.hasAlertsByCoinId(entry.favoriteId)) {
+                    viewModelScope.launch {
+                        val shouldPromptForAlerts =
+                            withContext(Dispatchers.IO) {
+                                val updated =
+                                    tokenRepository.updateMarketFavored(
+                                        entry.market.symbol,
+                                        entry.favoriteId,
+                                        entry.isFavored,
+                                    )
+                                updated &&
+                                    entry.isFavored &&
+                                    tokenRepository.hasAlertsByCoinId(entry.favoriteId)
+                            }
+                        if (shouldPromptForAlerts) {
                             _uiState.value = _uiState.value.copy(pendingAlertCoinId = entry.favoriteId)
                         }
                     }
@@ -166,13 +180,44 @@ class MarketPageViewModel
         }
 
         fun refreshNow() {
-            val duration =
-                if (_uiState.value.displaySettings.priceChangePeriod == MarketPriceChangePeriod.SEVEN_DAYS) {
-                    "7d"
-                } else {
-                    "24h"
+            if (!hasCompletedRefresh) {
+                _uiState.value = _uiState.value.copy(isLoading = true, hasError = false)
+            }
+            jobManager.addJobInBackground(RefreshMarketPageJob(selectedDuration()))
+        }
+
+        fun onRefreshCompleted(event: MarketPageRefreshEvent) {
+            if (event.duration != selectedDuration()) {
+                viewModelScope.launch {
+                    delay(REFRESH_REQUEUE_DELAY_MS)
+                    refreshNow()
                 }
-            jobManager.addJobInBackground(RefreshMarketPageJob(duration))
+                return
+            }
+            failedSources = event.failedSources
+            hasCompletedRefresh = true
+            _uiState.value = _uiState.value.copy(isLoading = false)
+            rebuildEntries()
+        }
+
+        private fun selectedDuration(): String =
+            if (_uiState.value.displaySettings.priceChangePeriod == MarketPriceChangePeriod.SEVEN_DAYS) {
+                "7d"
+            } else {
+                "24h"
+            }
+
+        fun reloadQuoteColor() {
+            val quoteColorReversed =
+                preferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+            if (_uiState.value.displaySettings.quoteColorReversed == quoteColorReversed) return
+            _uiState.value =
+                _uiState.value.copy(
+                    displaySettings =
+                        _uiState.value.displaySettings.copy(
+                            quoteColorReversed = quoteColorReversed,
+                        ),
+                )
         }
 
         fun loadIndicator() {
@@ -193,6 +238,7 @@ class MarketPageViewModel
                     tokenRepository.observeMarketsByCategory(MarketCategory.TOP_GAINER),
                     tokenRepository.observeMarketsByCategory(MarketCategory.TOP_LOSER),
                     tokenRepository.observeMarketsByCategory(MarketCategory.STOCK),
+                    tokenRepository.observeMarketsByCategory(MarketCategory.FEATURED),
                 ) { values ->
                     allMarkets = values[0]
                     favoriteSpotMarkets = values[1]
@@ -200,7 +246,7 @@ class MarketPageViewModel
                     topGainerMarkets = values[3]
                     topLoserMarkets = values[4]
                     stockMarkets = values[5]
-                    _uiState.value = _uiState.value.copy(isLoading = false)
+                    featuredSpotMarkets = values[6]
                     rebuildEntries()
                 }.collect {}
             }
@@ -212,11 +258,12 @@ class MarketPageViewModel
                     perpsMarketRepository.observeAllMarkets(),
                     perpsMarketRepository.observeFavoriteMarkets(),
                     perpsMarketRepository.observeMarketsByCategory(PerpsMarketCategory.TRENDING),
+                    perpsMarketRepository.observeMarketsByCategory(PerpsMarketCategory.FEATURED),
                 ) { values ->
                     perpetualMarkets = values[0]
                     favoritePerpetualMarkets = values[1]
                     trendingPerpetualMarkets = values[2]
-                    _uiState.value = _uiState.value.copy(isLoading = false)
+                    featuredPerpetualMarkets = values[3]
                     rebuildEntries()
                 }.collect {}
             }
@@ -238,6 +285,8 @@ class MarketPageViewModel
                             perpetualFavorites = favoritePerpetualMarkets,
                             stockCoinIds = stockCoinIds,
                             subTab = state.selectedSubTab ?: MarketSubTab.CRYPTO,
+                            spotFeatured = featuredSpotMarkets,
+                            perpetualFeatured = featuredPerpetualMarkets,
                         )
 
                     MarketTopTab.CRYPTO -> {
@@ -291,8 +340,57 @@ class MarketPageViewModel
                             sortState = state.sortState,
                             period = state.effectivePriceChangePeriod,
                         ),
+                    hasError = entries.isEmpty() && selectedDataSource(state) in failedSources,
                 )
         }
+
+        private fun selectedDataSource(state: MarketPageUiState): MarketPageDataSource =
+            when (state.selectedTopTab) {
+                MarketTopTab.WATCHLIST ->
+                    when (state.selectedSubTab) {
+                        MarketSubTab.PERPETUAL ->
+                            if (favoritePerpetualMarkets.isEmpty()) {
+                                MarketPageDataSource.PERPETUAL_FEATURED
+                            } else {
+                                MarketPageDataSource.PERPETUAL_FAVORITE
+                            }
+
+                        MarketSubTab.STOCK -> {
+                            val stockCoinIds = stockMarkets.mapTo(mutableSetOf()) { it.coinId }
+                            if (favoriteSpotMarkets.none { it.coinId in stockCoinIds }) {
+                                MarketPageDataSource.SPOT_FEATURED
+                            } else {
+                                MarketPageDataSource.SPOT_FAVORITE
+                            }
+                        }
+                        else -> {
+                            val stockCoinIds = stockMarkets.mapTo(mutableSetOf()) { it.coinId }
+                            if (favoriteSpotMarkets.none { it.coinId !in stockCoinIds }) {
+                                MarketPageDataSource.SPOT_FEATURED
+                            } else {
+                                MarketPageDataSource.SPOT_FAVORITE
+                            }
+                        }
+                    }
+
+                MarketTopTab.CRYPTO ->
+                    when (state.selectedSubTab) {
+                        MarketSubTab.TOP_GAINERS -> MarketPageDataSource.SPOT_TOP_GAINER
+                        MarketSubTab.TOP_LOSERS -> MarketPageDataSource.SPOT_TOP_LOSER
+                        MarketSubTab.ALL -> MarketPageDataSource.SPOT_ALL
+                        else -> MarketPageDataSource.SPOT_TRENDING
+                    }
+
+                MarketTopTab.PERPETUAL ->
+                    if (state.selectedSubTab == MarketSubTab.TRENDING) {
+                        MarketPageDataSource.PERPETUAL_TRENDING
+                    } else {
+                        MarketPageDataSource.PERPETUAL_ALL
+                    }
+
+                MarketTopTab.STOCK -> MarketPageDataSource.SPOT_STOCK
+                MarketTopTab.INDICATOR -> MarketPageDataSource.GLOBAL
+            }
 
         private fun initialState(): MarketPageUiState {
             val topTab =

@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import one.mixin.android.Constants
+import one.mixin.android.api.request.MarketFavoritesRequest
 import one.mixin.android.api.response.perps.PerpsFavorite
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsMarketCategory
@@ -136,13 +137,38 @@ class PerpsMarketRepository
                 },
             ) ?: false
 
-        suspend fun addFavoriteMarkets(marketIds: Set<String>): Set<String> =
-            marketIds.filterTo(mutableSetOf()) { marketId ->
-                updateFavorite(
-                    marketId = marketId,
-                    isFavored = false,
-                )
-            }
+        suspend fun addFavoriteMarkets(marketIds: Set<String>): Set<String> {
+            val favoriteMarketIds = favoriteDao.favoriteMarketIds().toSet()
+            val addedMarketIds = marketIds - favoriteMarketIds
+            if (addedMarketIds.isEmpty()) return emptySet()
+            return requestRouteAPI(
+                invokeNetwork = {
+                    routeService.updatePerpsMarketFavorites(
+                        MarketFavoritesRequest(addedMarketIds.toList()),
+                    )
+                },
+                successBlock = {
+                    val createdAt = nowInUtc()
+                    favoriteDao.upsertList(
+                        addedMarketIds.map { marketId ->
+                            PerpsFavorite(
+                                marketId = marketId,
+                                isFavored = true,
+                                createdAt = createdAt,
+                            )
+                        },
+                    )
+                    addedMarketIds
+                },
+                failureBlock = { true },
+                exceptionBlock = { true },
+                defaultErrorHandle = {},
+                defaultExceptionHandle = {},
+                requestSession = {
+                    userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+                },
+            ) ?: emptySet()
+        }
 
         private suspend fun fetchMarkets(category: String? = null): List<PerpsMarket>? =
             requestRouteAPI(

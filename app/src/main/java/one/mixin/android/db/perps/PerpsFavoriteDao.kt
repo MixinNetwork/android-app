@@ -10,6 +10,9 @@ import one.mixin.android.db.BaseDao
 
 @Dao
 interface PerpsFavoriteDao : BaseDao<PerpsFavorite> {
+    @Query("SELECT market_id FROM favorites WHERE is_favored = 1")
+    suspend fun favoriteMarketIds(): List<String>
+
     @Query("DELETE FROM favorites")
     suspend fun deleteAll()
 

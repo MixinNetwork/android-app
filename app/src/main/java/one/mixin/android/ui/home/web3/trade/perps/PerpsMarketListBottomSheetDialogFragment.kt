@@ -119,6 +119,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             ?.let { MarketSort.fromValueOrNull(it) }
     }
     private var allMarkets = listOf<PerpsMarket>()
+    private var featuredMarkets = listOf<PerpsMarket>()
     private var currentQuery = ""
     private var currentCategory = MarketCategory.ALL
     private var currentSort: MarketSort? = null
@@ -243,9 +244,16 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                     }
                 }
                 launch {
+                    viewModel.observeFeaturedMarkets().collect { markets ->
+                        featuredMarkets = markets
+                        filterAndSortMarkets()
+                    }
+                }
+                launch {
                     while (isActive) {
                         viewModel.refreshMarkets()
                         viewModel.refreshFavoriteMarkets()
+                        viewModel.refreshFeaturedMarkets()
                         delay(MARKET_REFRESH_INTERVAL_MS)
                     }
                 }
@@ -331,11 +339,12 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     }
 
     private fun updateList(markets: List<PerpsMarket>, scrollToTop: Boolean = false) {
+        val recommendations = featuredMarkets.filterNot { it.marketId in favoriteMarketIds }.take(8)
         val showRecommendations =
             markets.isEmpty() &&
                 currentCategory == MarketCategory.WATCHLIST &&
                 currentQuery.isBlank() &&
-                allMarkets.isNotEmpty()
+                recommendations.isNotEmpty()
         binding.sortLayout.isVisible = !showRecommendations
         binding.rvVa.displayedChild =
             when {
@@ -344,7 +353,6 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 else -> 0
             }
         if (showRecommendations) {
-            val recommendations = allMarkets.filterNot { it.marketId in favoriteMarketIds }.take(8)
             recommendationAdapter.submitList(recommendations)
             recommendationAdapter.selectedMarketIds = selectedRecommendationIds
         }

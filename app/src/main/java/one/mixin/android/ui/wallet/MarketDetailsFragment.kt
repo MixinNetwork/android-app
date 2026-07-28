@@ -126,7 +126,8 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         marketItem.coinId,
                         marketItem.isFavored,
                     ) {
-                        requireContext()
+                        val context = context ?: return@updateMarketFavored
+                        context
                             .alertDialogBuilder()
                             .setMessage(R.string.watchlist_remove_alert_prompt)
                             .setNegativeButton(R.string.Keep) { dialog, _ ->

@@ -6,19 +6,18 @@
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
     android:paddingHorizontal="20dp"
-    android:paddingVertical="12dp">
+    android:paddingVertical="8dp">
 
     <ImageView
         android:id="@+id/favorite_iv"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:padding="3dp"
+        android:padding="15dp"
         android:src="@drawable/ic_asset_favorites"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="ContentDescription" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <one.mixin.android.widget.CircleImageView
         android:id="@+id/icon_iv"
@@ -39,7 +38,6 @@
         android:maxLines="1"
         android:textColor="?attr/text_primary"
         android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="@id/icon_iv"
         app:layout_constraintStart_toEndOf="@id/icon_iv"
         app:layout_constraintTop_toTopOf="@id/icon_iv"
         tools:text="BTC-PERP" />
@@ -61,6 +59,20 @@
         app:layout_constraintTop_toTopOf="@id/symbol_tv"
         app:layout_constraintBottom_toBottomOf="@id/symbol_tv"
         tools:text="100x" />
+
+    <TextView
+        android:id="@+id/volume_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="?attr/text_assist"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toBottomOf="@id/icon_iv"
+        app:layout_constraintStart_toStartOf="@id/symbol_tv"
+        app:layout_constraintTop_toBottomOf="@id/symbol_tv"
+        tools:text="Vol 1.2B" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/price_sort_guideline"

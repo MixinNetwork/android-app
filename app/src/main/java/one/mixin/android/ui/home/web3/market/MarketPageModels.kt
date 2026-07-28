@@ -20,6 +20,7 @@ enum class MarketSubTab {
     ALL,
     CRYPTO,
     PERPETUAL,
+    STOCK,
 }
 
 enum class MarketPriceChangePeriod {
@@ -153,16 +154,45 @@ object MarketPageMapper {
         perpetualFavorites: List<PerpsMarket>,
         stockCoinIds: Set<String>,
         subTab: MarketSubTab,
+        spotFeatured: List<MarketItem> = emptyList(),
+        perpetualFeatured: List<PerpsMarket> = emptyList(),
     ): List<MarketListEntry> {
         return when (subTab) {
             MarketSubTab.PERPETUAL ->
-                perpetualFavorites.map { MarketListEntry.Perpetual(it, true) }
+                if (perpetualFavorites.isNotEmpty()) {
+                    perpetualFavorites.map { MarketListEntry.Perpetual(it, true) }
+                } else {
+                    perpetualFeatured.map { MarketListEntry.Perpetual(it, false) }
+                }
 
-            else ->
-                spotFavorites
-                    .map { it.copy(isFavored = true) }
-                    .filterNot { it.coinId in stockCoinIds }
+            MarketSubTab.STOCK -> {
+                val stockFavorites = spotFavorites.filter { it.coinId in stockCoinIds }
+                val markets =
+                    if (stockFavorites.isNotEmpty()) {
+                        stockFavorites.map { it.copy(isFavored = true) }
+                    } else {
+                        spotFeatured
+                            .filter { it.coinId in stockCoinIds }
+                            .map { it.copy(isFavored = false) }
+                    }
+                markets.map { MarketListEntry.Spot(it, SpotMarketType.STOCK) }
+            }
+
+            else -> {
+                val cryptoFavorites =
+                    spotFavorites
+                        .filterNot { it.coinId in stockCoinIds }
+                val markets =
+                    if (cryptoFavorites.isNotEmpty()) {
+                        cryptoFavorites.map { it.copy(isFavored = true) }
+                    } else {
+                        spotFeatured
+                            .filterNot { it.coinId in stockCoinIds }
+                            .map { it.copy(isFavored = false) }
+                    }
+                markets
                     .map { MarketListEntry.Spot(it, SpotMarketType.CRYPTO) }
+            }
         }
     }
 

@@ -5,4 +5,5 @@ enum class PerpsMarketCategory(
     val apiValue: String,
 ) {
     TRENDING(1, "trending"),
+    FEATURED(2, "featured"),
 }

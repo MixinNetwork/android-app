@@ -64,6 +64,15 @@ class PerpsRecommendationAdapter(
                         R.drawable.ic_asset_favorites
                     },
                 )
+                root.isSelected = isSelected
+                root.contentDescription =
+                    root.context.getString(
+                        if (isSelected) {
+                            R.string.Remove_from_Watchlist
+                        } else {
+                            R.string.Add_to_Watchlist
+                        },
+                    )
                 root.setOnClickListener {
                     onSelectionChanged(market, !isSelected)
                 }

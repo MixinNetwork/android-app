@@ -8,6 +8,7 @@ enum class MarketCategory(
     TOP_GAINER(2, "top_gainers"),
     TOP_LOSER(3, "top_losers"),
     STOCK(4, "stocks"),
+    FEATURED(5, "featured"),
     ;
 
     companion object {

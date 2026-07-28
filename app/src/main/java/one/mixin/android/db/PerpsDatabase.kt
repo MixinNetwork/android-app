@@ -106,6 +106,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("CREATE TABLE IF NOT EXISTS `favorites` (`market_id` TEXT NOT NULL, `is_favored` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))")
                     db.execSQL("CREATE TABLE IF NOT EXISTS `ranks` (`market_id` TEXT NOT NULL, `rank` INTEGER NOT NULL, PRIMARY KEY(`market_id`))")
+                    db.execSQL("INSERT OR IGNORE INTO `ranks` (`market_id`, `rank`) SELECT `market_id`, `rowid` FROM `markets`")
                     db.execSQL("CREATE TABLE IF NOT EXISTS `market_categories` (`market_id` TEXT NOT NULL, `category` INTEGER NOT NULL, PRIMARY KEY(`market_id`, `category`))")
                     db.execSQL("CREATE INDEX IF NOT EXISTS `index_market_categories_category` ON `market_categories` (`category`)")
                 }

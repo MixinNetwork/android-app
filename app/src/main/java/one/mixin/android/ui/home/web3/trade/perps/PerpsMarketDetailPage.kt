@@ -217,7 +217,14 @@ fun PerpsMarketDetailPage(
                                 R.drawable.ic_title_favorites
                             },
                         ),
-                    contentDescription = null,
+                    contentDescription =
+                        stringResource(
+                            if (isFavored) {
+                                R.string.Remove_from_Watchlist
+                            } else {
+                                R.string.Add_to_Watchlist
+                            },
+                        ),
                     tint = Color.Unspecified,
                 )
             }
@@ -230,7 +237,7 @@ fun PerpsMarketDetailPage(
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.Contact_Support),
                     tint = MixinAppTheme.colors.icon,
                 )
             }

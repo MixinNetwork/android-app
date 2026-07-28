@@ -914,6 +914,14 @@
     <string name="transfer_to">轉賬給 %1$s</string>
     <string name="transfer_without_pin">轉賬前請先設定 PIN</string>
     <string name="Trending">熱門資產</string>
+    <string name="watchlist_empty">您的自選列表為空</string>
+    <string name="Add_to_Watchlist">加入自選</string>
+    <string name="Remove_from_Watchlist">從自選中移除</string>
+    <string name="Keep">保留</string>
+    <string name="watchlist_remove_alert_prompt">已從自選移除。是否同時刪除相關價格提醒？</string>
+    <string name="Dominance">市佔率</string>
+    <string name="volume_24h">24 小時交易量</string>
+    <string name="Watchlist">自選</string>
     <string name="Crypto">現貨</string>
     <string name="market_stock">股票</string>
     <string name="Indicator">指標</string>

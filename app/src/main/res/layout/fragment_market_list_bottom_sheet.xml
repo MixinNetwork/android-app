@@ -98,6 +98,7 @@
                 android:layout_marginEnd="12dp"
                 android:background="@drawable/selector_radio"
                 android:button="@null"
+                android:contentDescription="@string/Watchlist"
                 android:drawableStart="@drawable/selector_market_favorites"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp" />
