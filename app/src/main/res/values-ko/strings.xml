@@ -1398,7 +1398,7 @@
     <string name="Additional_Verification">추가 확인</string>
     <string name="identity_additional_verification_tip">규제 요건을 충족하려면 추가 정보를 제출해야 합니다. 이해와 지원에 감사드립니다.</string>
     <string name="Price">가격</string>
-    <string name="Google_Pay" translatable="false">Google 페이</string>
+    <string name="Google_Pay" translatable="false">Google Pay</string>
     <string name="Debit_Credit_Card">직불/신용카드</string>
     <string name="Add_debit_or_credit_card">신용카드 또는 직불카드 추가</string>
     <string name="user_deleted_hint">사용자가 계정을 삭제했습니다.</string>
@@ -1610,7 +1610,7 @@
     <string name="From_address_desc">다른 지갑이나 거래소에서</string>
     <string name="NO_COLLECTIBLES">수집품 없음</string>
     <string name="HASH">해시</string>
-    <string name="ID" translatable="false">아이디</string>
+    <string name="ID" translatable="false">ID</string>
     <string name="Collection">컬렉션</string>
     <string name="Collectible">수집품</string>
     <string name="Collectible_Hash">수집 가능한 해시</string>
