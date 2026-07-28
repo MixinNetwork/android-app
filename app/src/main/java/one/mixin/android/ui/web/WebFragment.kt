@@ -971,7 +971,7 @@ class WebFragment : BaseFragment() {
                     },
                     onWalletActionError = { id ->
                         lifecycleScope.launch {
-                            webView.evaluateJavascript("window.${Web3Signer.currentNetwork}.sendResponse($id, null)") {}
+                            webView.evaluateJavascript("mixinwallet.${Web3Signer.currentNetwork}.sendResponse($id, null)") {}
                         }
                     },
                     onBrowserSign = { message ->
@@ -985,7 +985,7 @@ class WebFragment : BaseFragment() {
                                 currentTitle = currentTitle,
                                 onReject = {
                                     lifecycleScope.launch {
-                                        webView.evaluateJavascript("window.${Web3Signer.currentNetwork}.sendResponse(${message.callbackId}, null)") {}
+                                        webView.evaluateJavascript("mixinwallet.${Web3Signer.currentNetwork}.sendResponse(${message.callbackId}, null)") {}
                                     }
                                 },
                                 onDone = { callback ->
@@ -1995,8 +1995,10 @@ class WebFragment : BaseFragment() {
             }
             when (method) {
                 DAppMethod.REQUESTACCOUNTS -> {
-                    onWalletActionSuccessful("window.$network.setAddress(\"${Web3Signer.address}\");")
-                    onWalletActionSuccessful("window.$network.sendResponse($id, [\"${Web3Signer.address}\"]);")
+                    if (network == Web3Signer.JsSignerNetwork.Ethereum.name) {
+                        onWalletActionSuccessful("mixinwallet.$network.setAddress(\"${Web3Signer.address}\");")
+                    }
+                    onWalletActionSuccessful("mixinwallet.$network.sendResponse($id, [\"${Web3Signer.address}\"]);")
                 }
 
                 DAppMethod.SWITCHETHEREUMCHAIN -> {
@@ -2005,13 +2007,11 @@ class WebFragment : BaseFragment() {
 
                 DAppMethod.SIGNMESSAGE -> {
                     val o = obj.getJSONObject("object")
-                    val data =
-                        if (network == Web3Signer.JsSignerNetwork.Solana.name) {
-                            o.getString("data")
-                        } else {
-                            o.toString()
-                        }
-                    signMessage(id, data)
+                    if (network == Web3Signer.JsSignerNetwork.Solana.name) {
+                        signMessage(id, o.getString("data"))
+                    } else {
+                        signEvmMessage(id, o)
+                    }
                 }
 
                 DAppMethod.SIGNPERSONALMESSAGE -> {
@@ -2111,6 +2111,21 @@ class WebFragment : BaseFragment() {
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
         }
 
+        private fun signEvmMessage(
+            callbackId: Long,
+            data: JSONObject,
+        ) {
+            try {
+                val address = data.optString("address")
+                if (address.isNotBlank() && !address.equals(Web3Signer.address, true)) {
+                    throw IllegalArgumentException("Address unequal")
+                }
+                signMessage(callbackId, data.getString("data"))
+            } catch (e: Exception) {
+                onWalletActionError(callbackId)
+            }
+        }
+
         private fun signPersonalMessage(
             callbackId: Long,
             data: JSONObject,
@@ -2168,16 +2183,16 @@ class WebFragment : BaseFragment() {
                     var config = {
                     ethereum: {
                         address: "${Web3Signer.address}",
-                        chainId: ${Web3Signer.currentChain.chainReference},
+                        chainId: "${Web3Signer.currentChain.hexReference}",
                         rpcUrl: "${Web3Signer.currentChain.rpcUrl}"
                     }
                 };
                 mixinwallet.${Web3Signer.currentNetwork}.setConfig(config);
                 """,
                 )
-                onWalletActionSuccessful("window.${Web3Signer.currentNetwork}.emitChainChanged('${Web3Signer.currentChain.hexReference}');")
+                onWalletActionSuccessful("mixinwallet.${Web3Signer.currentNetwork}.emitChainChanged('${Web3Signer.currentChain.hexReference}');")
             }
-            onWalletActionSuccessful("window.${Web3Signer.currentNetwork}.sendResponse($callbackId, null);")
+            onWalletActionSuccessful("mixinwallet.${Web3Signer.currentNetwork}.sendResponse($callbackId, null);")
         }
     }
 
