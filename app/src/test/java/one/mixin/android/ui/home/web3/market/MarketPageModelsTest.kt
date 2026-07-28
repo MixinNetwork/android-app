@@ -76,6 +76,22 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun perpetualGainersAndLosersSortAllMarketsLocally() {
+        val markets =
+            listOf(
+                perpsMarket(marketId = "unchanged", change = "0"),
+                perpsMarket(marketId = "loser", change = "-0.08"),
+                perpsMarket(marketId = "gainer", change = "0.12"),
+            )
+
+        val gainers = MarketPageMapper.perpetualMarkets(markets, MarketSubTab.TOP_GAINERS)
+        val losers = MarketPageMapper.perpetualMarkets(markets, MarketSubTab.TOP_LOSERS)
+
+        assertEquals(listOf("gainer", "unchanged", "loser"), gainers.map { it.marketId })
+        assertEquals(listOf("loser", "unchanged", "gainer"), losers.map { it.marketId })
+    }
+
+    @Test
     fun perpetualOnlySelectionForcesTwentyFourHourDisplay() {
         val state =
             MarketPageUiState(

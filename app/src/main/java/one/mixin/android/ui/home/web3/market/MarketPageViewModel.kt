@@ -54,8 +54,6 @@ class MarketPageViewModel
         private var stockMarkets: List<MarketItem> = emptyList()
         private var perpetualMarkets: List<PerpsMarket> = emptyList()
         private var trendingPerpetualMarkets: List<PerpsMarket> = emptyList()
-        private var topGainerPerpetualMarkets: List<PerpsMarket> = emptyList()
-        private var topLoserPerpetualMarkets: List<PerpsMarket> = emptyList()
         private var refreshLoopJob: Job? = null
 
         init {
@@ -214,14 +212,10 @@ class MarketPageViewModel
                     perpsMarketRepository.observeAllMarkets(),
                     perpsMarketRepository.observeFavoriteMarkets(),
                     perpsMarketRepository.observeMarketsByCategory(PerpsMarketCategory.TRENDING),
-                    perpsMarketRepository.observeMarketsByCategory(PerpsMarketCategory.TOP_GAINER),
-                    perpsMarketRepository.observeMarketsByCategory(PerpsMarketCategory.TOP_LOSER),
                 ) { values ->
                     perpetualMarkets = values[0]
                     favoritePerpetualMarkets = values[1]
                     trendingPerpetualMarkets = values[2]
-                    topGainerPerpetualMarkets = values[3]
-                    topLoserPerpetualMarkets = values[4]
                     _uiState.value = _uiState.value.copy(isLoading = false)
                     rebuildEntries()
                 }.collect {}
@@ -262,9 +256,10 @@ class MarketPageViewModel
                     MarketTopTab.PERPETUAL -> {
                         val source =
                             when (state.selectedSubTab) {
-                                MarketSubTab.TOP_GAINERS -> topGainerPerpetualMarkets
-                                MarketSubTab.TOP_LOSERS -> topLoserPerpetualMarkets
-                                MarketSubTab.ALL -> perpetualMarkets
+                                MarketSubTab.TOP_GAINERS,
+                                MarketSubTab.TOP_LOSERS,
+                                MarketSubTab.ALL
+                                -> perpetualMarkets
                                 else -> trendingPerpetualMarkets
                             }
                         MarketPageMapper.perpetualMarkets(

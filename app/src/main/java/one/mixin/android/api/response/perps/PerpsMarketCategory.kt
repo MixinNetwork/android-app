@@ -5,7 +5,4 @@ enum class PerpsMarketCategory(
     val apiValue: String,
 ) {
     TRENDING(1, "trending"),
-    TOP_GAINER(2, "top_gainer"),
-    TOP_LOSER(3, "top_loser"),
-    ;
 }

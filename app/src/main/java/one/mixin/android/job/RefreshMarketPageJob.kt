@@ -46,8 +46,6 @@ class RefreshMarketPageJob(
                     async { perpsMarketRepository.syncAllMarkets() },
                     async { perpsMarketRepository.syncFavoriteMarkets() },
                     async { perpsMarketRepository.syncCategory(PerpsMarketCategory.TRENDING) },
-                    async { perpsMarketRepository.syncCategory(PerpsMarketCategory.TOP_GAINER) },
-                    async { perpsMarketRepository.syncCategory(PerpsMarketCategory.TOP_LOSER) },
                     async { refreshGlobalMarket() },
                 ).awaitAll()
             }
