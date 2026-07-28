@@ -24,6 +24,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
+import one.mixin.android.api.request.MarketFavoritesRequest
 import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.RampWebUrlRequest
@@ -1532,6 +1533,37 @@ class TokenRepository
                 }
             ) ?: false
         }
+    }
+
+    suspend fun addFavoriteMarkets(marketIds: Set<String>): Set<String> {
+        if (marketIds.isEmpty()) return emptySet()
+        return requestRouteAPI(
+            invokeNetwork = {
+                routeService.updateMarketFavorites(
+                    MarketFavoritesRequest(marketIds.toList()),
+                )
+            },
+            successBlock = {
+                val createdAt = nowInUtc()
+                marketFavoredDao.insertListSuspend(
+                    marketIds.map { coinId ->
+                        MarketFavored(
+                            coinId = coinId,
+                            isFavored = true,
+                            createdAt = createdAt,
+                        )
+                    },
+                )
+                marketIds
+            },
+            failureBlock = { true },
+            exceptionBlock = { true },
+            defaultErrorHandle = {},
+            defaultExceptionHandle = {},
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+            },
+        ) ?: emptySet()
     }
 
     suspend fun addAlert(alert: AlertRequest): MixinResponse<Alert>? {

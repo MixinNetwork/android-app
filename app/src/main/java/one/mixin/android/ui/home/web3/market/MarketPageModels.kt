@@ -99,6 +99,8 @@ data class MarketPageUiState(
     val indicator: GlobalMarket? = null,
     val isLoading: Boolean = true,
     val hasError: Boolean = false,
+    val isShowingRecommendations: Boolean = false,
+    val isAddingRecommendations: Boolean = false,
 ) {
     val selectedSubTab: MarketSubTab?
         get() = selectedSubTabs[selectedTopTab]

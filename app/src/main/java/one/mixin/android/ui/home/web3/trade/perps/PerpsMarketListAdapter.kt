@@ -10,7 +10,6 @@ import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.databinding.ItemMarketListBinding
 import one.mixin.android.extension.loadImage
-import one.mixin.android.extension.numberFormatCompact
 import java.math.BigDecimal
 
 class PerpsMarketListAdapter(
@@ -70,9 +69,6 @@ class PerpsMarketListAdapter(
                 }
                 symbolTv.text = market.tokenSymbol
                 leverageTv.text = root.context.getString(R.string.Perpetual_Leverage_Format, market.leverage)
-                val formattedVolume =
-                    market.volume.toBigDecimalOrNull()?.numberFormatCompact() ?: market.volume
-                volumeTv.text = root.context.getString(R.string.Vol, formattedVolume)
 
                 priceTv.text = "$PERPS_USD_SYMBOL${market.last}"
 

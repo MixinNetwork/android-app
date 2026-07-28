@@ -151,6 +151,29 @@ class MarketPageViewModel
             }
         }
 
+        fun addRecommendations(entries: List<MarketListEntry>) {
+            if (entries.isEmpty() || _uiState.value.isAddingRecommendations) return
+            _uiState.value = _uiState.value.copy(isAddingRecommendations = true)
+            viewModelScope.launch {
+                try {
+                    withContext(Dispatchers.IO) {
+                        val spotMarketIds =
+                            entries
+                                .filterIsInstance<MarketListEntry.Spot>()
+                                .mapTo(mutableSetOf()) { it.favoriteId }
+                        val perpetualMarketIds =
+                            entries
+                                .filterIsInstance<MarketListEntry.Perpetual>()
+                                .mapTo(mutableSetOf()) { it.favoriteId }
+                        tokenRepository.addFavoriteMarkets(spotMarketIds)
+                        perpsMarketRepository.addFavoriteMarkets(perpetualMarketIds)
+                    }
+                } finally {
+                    _uiState.value = _uiState.value.copy(isAddingRecommendations = false)
+                }
+            }
+        }
+
         fun keepPriceAlerts() {
             _uiState.value = _uiState.value.copy(pendingAlertCoinId = null)
         }
@@ -331,6 +354,14 @@ class MarketPageViewModel
 
                     MarketTopTab.INDICATOR -> emptyList()
                 }
+            val isShowingRecommendations =
+                state.selectedTopTab == MarketTopTab.WATCHLIST &&
+                    entries.isNotEmpty() &&
+                    when (state.selectedSubTab) {
+                        MarketSubTab.PERPETUAL -> favoritePerpetualMarkets.isEmpty()
+                        MarketSubTab.STOCK -> favoriteSpotMarkets.none { it.coinId in stockCoinIds }
+                        else -> favoriteSpotMarkets.none { it.coinId !in stockCoinIds }
+                    }
 
             _uiState.value =
                 state.copy(
@@ -341,6 +372,7 @@ class MarketPageViewModel
                             period = state.effectivePriceChangePeriod,
                         ),
                     hasError = entries.isEmpty() && selectedDataSource(state) in failedSources,
+                    isShowingRecommendations = isShowingRecommendations,
                 )
         }
 
