@@ -90,7 +90,7 @@ class ReferralRepository
             )
         }
 
-        suspend fun fetchWalletHomeBanners(chains: List<String> = emptyList()): List<WalletHomeBanner>? {
+        suspend fun fetchWalletHomeBanners(): List<WalletHomeBanner>? {
             runCatching {
                 userRepository.getBotPublicKey(REFERRAL_BOT_USER_ID, false)
             }.onFailure {
@@ -98,7 +98,7 @@ class ReferralRepository
             }
 
             return requestReferralMixinAPI(
-                invokeNetwork = { referralService.walletHomeBanners(chains.takeIf { it.isNotEmpty() }) },
+                invokeNetwork = { referralService.walletHomeBanners() },
                 successBlock = { response -> response.data.orEmpty() },
                 failureBlock = { response ->
                     Timber.d(
