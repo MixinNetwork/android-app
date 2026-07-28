@@ -57,11 +57,13 @@ import one.mixin.android.db.DepositDao
 import one.mixin.android.db.HistoryPriceDao
 import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
+import one.mixin.android.db.MarketCapRankDao
+import one.mixin.android.db.MarketCategoryDao
 import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MarketDao
-import one.mixin.android.db.OrderDao
 import one.mixin.android.db.MarketFavoredDao
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.OrderDao
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
@@ -125,6 +127,8 @@ import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.market.Market
+import one.mixin.android.vo.market.MarketCapRank
+import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
@@ -159,6 +163,9 @@ import kotlin.String
 import org.bitcoinj.core.Transaction
 import org.sol4kt.VersionedTransactionCompat
 
+private const val CATEGORY_ALL = "all"
+private const val CATEGORY_FAVORITE = "favorite"
+
 class TokenRepository
     @Inject
     constructor(
@@ -186,6 +193,8 @@ class TokenRepository
         private val marketDao: MarketDao,
         private val marketCoinDao: MarketCoinDao,
         private val marketFavoredDao: MarketFavoredDao,
+        private val marketCapRankDao: MarketCapRankDao,
+        private val marketCategoryDao: MarketCategoryDao,
         private val alertDao: AlertDao,
         private val orderDao: OrderDao,
         private val web3TokenDao: Web3TokenDao,
@@ -1335,6 +1344,11 @@ class TokenRepository
 
     fun observeFavoredMarkets(): Flow<List<MarketItem>> = marketDao.observeFavoredMarkets()
 
+    fun observeAllMarkets(): Flow<List<MarketItem>> = marketDao.observeAllMarkets()
+
+    fun observeMarketsByCategory(category: MarketCategory): Flow<List<MarketItem>> =
+        marketCategoryDao.observeMarketsByCategory(category.value)
+
     suspend fun markets(
         category: String? = null,
         limit: Int? = null,
@@ -1362,7 +1376,44 @@ class TokenRepository
             },
             successBlock = { response ->
                 val markets = response.data.orEmpty()
-                marketDao.upsertList(markets)
+                val now = nowInUtc()
+                appDatabase.withTransaction {
+                    marketDao.upsertList(markets)
+                    when (category) {
+                        CATEGORY_ALL ->
+                            marketCapRankDao.replaceAll(
+                                markets.map { market ->
+                                    MarketCapRank(
+                                        coinId = market.coinId,
+                                        marketCapRank = market.marketCapRank,
+                                        updatedAt = market.updatedAt,
+                                    )
+                                },
+                            )
+
+                        CATEGORY_FAVORITE ->
+                            marketFavoredDao.replaceAll(
+                                markets.map { market ->
+                                    MarketFavored(
+                                        coinId = market.coinId,
+                                        isFavored = true,
+                                        createdAt = now,
+                                    )
+                                },
+                            )
+
+                        else ->
+                            MarketCategory.fromApiValue(category)?.let { marketCategory ->
+                                marketCategoryDao.replaceCategory(
+                                    category = marketCategory.value,
+                                    marketIds = markets.map(Market::coinId),
+                                )
+                            }
+                    }
+                    if (category == CATEGORY_ALL) {
+                        syncMarketCoins(markets, now)
+                    }
+                }
                 markets.map(MarketItem::fromMarket)
             },
             failureBlock = { true },
@@ -1373,6 +1424,33 @@ class TokenRepository
                 userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
             },
         )
+
+    private suspend fun syncMarketCoins(
+        markets: List<Market>,
+        createdAt: String,
+    ) {
+        val marketCoins =
+            markets.flatMap { market ->
+                market.assetIds.orEmpty().map { assetId ->
+                    MarketCoin(
+                        coinId = market.coinId,
+                        assetId = assetId,
+                        createdAt = createdAt,
+                    )
+                }
+            }
+        markets.forEach { market ->
+            val remoteAssetIds = market.assetIds.orEmpty()
+            val localAssetIds = marketCoinDao.findTokenIdsByCoinId(market.coinId)
+            val removedAssetIds = localAssetIds.filterNot(remoteAssetIds::contains)
+            if (removedAssetIds.isNotEmpty()) {
+                marketCoinDao.deleteByCoinIdAndAssetIds(market.coinId, removedAssetIds)
+            }
+        }
+        if (marketCoins.isNotEmpty()) {
+            marketCoinDao.insertIgnoreList(marketCoins)
+        }
+    }
 
     suspend fun findTokensByCoinId(coinId: String) = marketCoinDao.findTokensByCoinId(coinId)
 

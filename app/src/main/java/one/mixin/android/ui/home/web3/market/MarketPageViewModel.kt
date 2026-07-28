@@ -6,45 +6,40 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.api.response.perps.withDefaults
-import one.mixin.android.api.service.RouteService
-import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.api.response.perps.PerpsMarketCategory
 import one.mixin.android.event.QuoteColorEvent
+import one.mixin.android.job.MixinJobManager
+import one.mixin.android.job.RefreshMarketPageJob
+import one.mixin.android.repository.PerpsMarketRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.market.GlobalMarket
+import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
 import timber.log.Timber
 import javax.inject.Inject
 
-private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
+private const val MARKET_REFRESH_INTERVAL_MS = 30_000L
 private const val PREF_MARKET_PAGE_TOP_TAB = "pref_market_page_top_tab"
 private const val PREF_MARKET_PAGE_SUB_TAB_PREFIX = "pref_market_page_sub_tab_"
-private const val CATEGORY_ALL = "all"
-private const val CATEGORY_STOCKS = "stocks"
-private const val CATEGORY_TRENDING = "trending"
-private const val CATEGORY_TOP_GAINERS = "top_gainers"
-private const val CATEGORY_TOP_LOSERS = "top_losers"
 
 @HiltViewModel
 class MarketPageViewModel
     @Inject
     constructor(
         private val tokenRepository: TokenRepository,
-        private val perpsMarketDao: PerpsMarketDao,
-        private val routeService: RouteService,
+        private val perpsMarketRepository: PerpsMarketRepository,
+        private val jobManager: MixinJobManager,
         private val preferences: SharedPreferences,
     ) : ViewModel() {
         private val _uiState = MutableStateFlow(initialState())
@@ -58,14 +53,15 @@ class MarketPageViewModel
         private var topLoserMarkets: List<MarketItem> = emptyList()
         private var stockMarkets: List<MarketItem> = emptyList()
         private var perpetualMarkets: List<PerpsMarket> = emptyList()
-        private var marketRefreshJob: Job? = null
-        private var perpetualRefreshJob: Job? = null
+        private var trendingPerpetualMarkets: List<PerpsMarket> = emptyList()
+        private var topGainerPerpetualMarkets: List<PerpsMarket> = emptyList()
+        private var topLoserPerpetualMarkets: List<PerpsMarket> = emptyList()
+        private var refreshLoopJob: Job? = null
 
         init {
-            observeSpotFavorites()
+            observeSpotMarkets()
             observePerpetualMarkets()
             loadIndicator()
-            refreshMarkets()
         }
 
         fun selectTopTab(tab: MarketTopTab) {
@@ -114,7 +110,7 @@ class MarketPageViewModel
                 RxBus.publish(QuoteColorEvent())
             }
             if (oldSettings.priceChangePeriod != settings.priceChangePeriod) {
-                refreshMarkets()
+                refreshNow()
             }
         }
 
@@ -135,25 +131,10 @@ class MarketPageViewModel
 
                 is MarketListEntry.Perpetual ->
                     viewModelScope.launch {
-                        runCatching {
-                            val response =
-                                withContext(Dispatchers.IO) {
-                                    if (entry.isFavored) {
-                                        routeService.unfavoritePerpsMarket(entry.favoriteId)
-                                    } else {
-                                        routeService.favoritePerpsMarket(entry.favoriteId)
-                                    }
-                                }
-                            if (response.isSuccess) {
-                                favoritePerpetualMarkets =
-                                    if (entry.isFavored) {
-                                        favoritePerpetualMarkets.filterNot { it.marketId == entry.favoriteId }
-                                    } else {
-                                        (favoritePerpetualMarkets + entry.market).distinctBy { it.marketId }
-                                    }
-                                rebuildEntries()
-                            }
-                        }.onFailure { Timber.e(it, "Failed to update perpetual market favorite") }
+                        perpsMarketRepository.updateFavorite(
+                            marketId = entry.favoriteId,
+                            isFavored = entry.isFavored,
+                        )
                     }
             }
         }
@@ -170,70 +151,30 @@ class MarketPageViewModel
             }
         }
 
-        fun refreshAll() {
-            loadIndicator()
-            refreshMarkets()
-            viewModelScope.launch {
-                refreshPerpetualMarkets()
-            }
-        }
-
-        fun refreshMarkets() {
-            if (marketRefreshJob?.isActive == true) return
-            marketRefreshJob =
-                viewModelScope.launch {
-                    if (allMarkets.isEmpty() && trendingMarkets.isEmpty()) {
-                        _uiState.value = _uiState.value.copy(isLoading = true)
-                    }
-                    val duration =
-                        if (_uiState.value.displaySettings.priceChangePeriod == MarketPriceChangePeriod.SEVEN_DAYS) {
-                            "7d"
-                        } else {
-                            "24h"
-                        }
-                    val results =
-                        coroutineScope {
-                            val all = async { tokenRepository.fetchMarkets(CATEGORY_ALL, duration) }
-                            val trending = async { tokenRepository.fetchMarkets(CATEGORY_TRENDING, duration) }
-                            val gainers = async { tokenRepository.fetchMarkets(CATEGORY_TOP_GAINERS, duration) }
-                            val losers = async { tokenRepository.fetchMarkets(CATEGORY_TOP_LOSERS, duration) }
-                            val stocks = async { tokenRepository.fetchMarkets(CATEGORY_STOCKS, duration) }
-                            MarketFetchResult(
-                                all = all.await(),
-                                trending = trending.await(),
-                                gainers = gainers.await(),
-                                losers = losers.await(),
-                                stocks = stocks.await(),
-                            )
-                        }
-                    results.all?.let { allMarkets = it }
-                    results.trending?.let { trendingMarkets = it }
-                    results.gainers?.let { topGainerMarkets = it }
-                    results.losers?.let { topLoserMarkets = it }
-                    results.stocks?.let { stockMarkets = it }
-                    _uiState.value =
-                        _uiState.value.copy(
-                            isLoading = false,
-                            hasError = results.allFailed,
-                        )
-                    rebuildEntries()
-                }
-        }
-
-        fun startPerpetualRefresh() {
-            if (perpetualRefreshJob?.isActive == true) return
-            perpetualRefreshJob =
+        fun startRefresh() {
+            if (refreshLoopJob?.isActive == true) return
+            refreshLoopJob =
                 viewModelScope.launch {
                     while (isActive) {
-                        refreshPerpetualMarkets()
+                        refreshNow()
                         delay(MARKET_REFRESH_INTERVAL_MS)
                     }
                 }
         }
 
-        fun stopPerpetualRefresh() {
-            perpetualRefreshJob?.cancel()
-            perpetualRefreshJob = null
+        fun stopRefresh() {
+            refreshLoopJob?.cancel()
+            refreshLoopJob = null
+        }
+
+        fun refreshNow() {
+            val duration =
+                if (_uiState.value.displaySettings.priceChangePeriod == MarketPriceChangePeriod.SEVEN_DAYS) {
+                    "7d"
+                } else {
+                    "24h"
+                }
+            jobManager.addJobInBackground(RefreshMarketPageJob(duration))
         }
 
         fun loadIndicator() {
@@ -245,35 +186,46 @@ class MarketPageViewModel
             _uiState.value = _uiState.value.copy(indicator = indicator)
         }
 
-        private fun observeSpotFavorites() {
+        private fun observeSpotMarkets() {
             viewModelScope.launch {
-                tokenRepository.observeFavoredMarkets().collect { markets ->
-                    favoriteSpotMarkets = markets
+                combine(
+                    tokenRepository.observeAllMarkets(),
+                    tokenRepository.observeFavoredMarkets(),
+                    tokenRepository.observeMarketsByCategory(MarketCategory.TRENDING),
+                    tokenRepository.observeMarketsByCategory(MarketCategory.TOP_GAINER),
+                    tokenRepository.observeMarketsByCategory(MarketCategory.TOP_LOSER),
+                    tokenRepository.observeMarketsByCategory(MarketCategory.STOCK),
+                ) { values ->
+                    allMarkets = values[0]
+                    favoriteSpotMarkets = values[1]
+                    trendingMarkets = values[2]
+                    topGainerMarkets = values[3]
+                    topLoserMarkets = values[4]
+                    stockMarkets = values[5]
+                    _uiState.value = _uiState.value.copy(isLoading = false)
                     rebuildEntries()
-                }
+                }.collect {}
             }
         }
 
         private fun observePerpetualMarkets() {
             viewModelScope.launch {
-                perpsMarketDao.observeAllMarkets().collect { markets ->
-                    perpetualMarkets = markets
+                combine(
+                    perpsMarketRepository.observeAllMarkets(),
+                    perpsMarketRepository.observeFavoriteMarkets(),
+                    perpsMarketRepository.observeMarketsByCategory(PerpsMarketCategory.TRENDING),
+                    perpsMarketRepository.observeMarketsByCategory(PerpsMarketCategory.TOP_GAINER),
+                    perpsMarketRepository.observeMarketsByCategory(PerpsMarketCategory.TOP_LOSER),
+                ) { values ->
+                    perpetualMarkets = values[0]
+                    favoritePerpetualMarkets = values[1]
+                    trendingPerpetualMarkets = values[2]
+                    topGainerPerpetualMarkets = values[3]
+                    topLoserPerpetualMarkets = values[4]
+                    _uiState.value = _uiState.value.copy(isLoading = false)
                     rebuildEntries()
-                }
+                }.collect {}
             }
-        }
-
-        private suspend fun refreshPerpetualMarkets() {
-            runCatching {
-                val response = withContext(Dispatchers.IO) { routeService.getPerpsMarkets() }
-                val markets = response.data
-                if (response.isSuccess && markets != null) {
-                    withContext(Dispatchers.IO) {
-                        perpsMarketDao.upsertList(markets.map(PerpsMarket::withDefaults))
-                    }
-                }
-                rebuildEntries()
-            }.onFailure { Timber.e(it, "Failed to refresh market page perpetual markets") }
         }
 
         private fun rebuildEntries() {
@@ -308,8 +260,15 @@ class MarketPageViewModel
                     }
 
                     MarketTopTab.PERPETUAL -> {
+                        val source =
+                            when (state.selectedSubTab) {
+                                MarketSubTab.TOP_GAINERS -> topGainerPerpetualMarkets
+                                MarketSubTab.TOP_LOSERS -> topLoserPerpetualMarkets
+                                MarketSubTab.ALL -> perpetualMarkets
+                                else -> trendingPerpetualMarkets
+                            }
                         MarketPageMapper.perpetualMarkets(
-                            markets = perpetualMarkets,
+                            markets = source,
                             subTab = state.selectedSubTab ?: MarketSubTab.TRENDING,
                         ).map { market ->
                             MarketListEntry.Perpetual(
@@ -371,18 +330,7 @@ class MarketPageViewModel
         }
 
         override fun onCleared() {
-            stopPerpetualRefresh()
+            stopRefresh()
             super.onCleared()
-        }
-
-        private data class MarketFetchResult(
-            val all: List<MarketItem>?,
-            val trending: List<MarketItem>?,
-            val gainers: List<MarketItem>?,
-            val losers: List<MarketItem>?,
-            val stocks: List<MarketItem>?,
-        ) {
-            val allFailed: Boolean
-                get() = all == null && trending == null && gainers == null && losers == null && stocks == null
         }
     }

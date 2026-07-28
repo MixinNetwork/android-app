@@ -5,9 +5,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import one.mixin.android.db.PerpsDatabase
+import one.mixin.android.db.perps.PerpsFavoriteDao
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.db.perps.PerpsMarketCategoryDao
 import one.mixin.android.db.perps.PerpsOrderDao
 import one.mixin.android.db.perps.PerpsPositionDao
+import one.mixin.android.db.perps.PerpsRankDao
 import one.mixin.android.session.CurrentUserScopeManager
 import javax.inject.Provider
 
@@ -32,5 +35,20 @@ object PerpsModule {
     @Provides
     fun providePerpsMarketDao(database: PerpsDatabase): PerpsMarketDao {
         return database.perpsMarketDao()
+    }
+
+    @Provides
+    fun providePerpsFavoriteDao(database: PerpsDatabase): PerpsFavoriteDao {
+        return database.perpsFavoriteDao()
+    }
+
+    @Provides
+    fun providePerpsRankDao(database: PerpsDatabase): PerpsRankDao {
+        return database.perpsRankDao()
+    }
+
+    @Provides
+    fun providePerpsMarketCategoryDao(database: PerpsDatabase): PerpsMarketCategoryDao {
+        return database.perpsMarketCategoryDao()
     }
 }

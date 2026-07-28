@@ -76,11 +76,24 @@ interface MarketDao : BaseDao<Market> {
         SELECT m.*, mf.is_favored
         FROM markets m
         INNER JOIN market_favored mf ON mf.coin_id = m.coin_id
+        LEFT JOIN market_cap_ranks mr ON mr.coin_id = m.coin_id
         WHERE mf.is_favored = 1
-        ORDER BY CAST(m.market_cap_rank AS INTEGER) ASC
+        ORDER BY CASE WHEN mr.market_cap_rank IS NULL THEN 1 ELSE 0 END,
+            CAST(mr.market_cap_rank AS INTEGER) ASC
         """
     )
     fun observeFavoredMarkets(): Flow<List<MarketItem>>
+
+    @Query(
+        """
+        SELECT m.*, mf.is_favored
+        FROM market_cap_ranks mr
+        INNER JOIN markets m ON m.coin_id = mr.coin_id
+        LEFT JOIN market_favored mf ON mf.coin_id = m.coin_id
+        ORDER BY CAST(mr.market_cap_rank AS INTEGER) ASC
+        """,
+    )
+    fun observeAllMarkets(): Flow<List<MarketItem>>
 
     @Query("SELECT * FROM markets WHERE coin_id = :coinId")
     fun findMarketById(coinId: String): Market?

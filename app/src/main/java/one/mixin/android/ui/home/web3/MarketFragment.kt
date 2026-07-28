@@ -26,9 +26,6 @@ import one.mixin.android.event.GlobalMarketEvent
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshGlobalWeb3MarketJob
-import one.mixin.android.job.RefreshMarketsJob
 import one.mixin.android.ui.common.Web3Fragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.market.MarketListEntry
@@ -40,16 +37,12 @@ import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.rxpermission.RxPermissions
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MarketFragment : Web3Fragment() {
     companion object {
         const val TAG = "MarketFragment"
     }
-
-    @Inject
-    lateinit var jobManager: MixinJobManager
 
     private val viewModel by viewModels<MarketPageViewModel>()
 
@@ -70,15 +63,18 @@ class MarketFragment : Web3Fragment() {
                         val observer =
                             LifecycleEventObserver { _, event ->
                                 when (event) {
-                                    Lifecycle.Event.ON_RESUME -> viewModel.startPerpetualRefresh()
-                                    Lifecycle.Event.ON_PAUSE -> viewModel.stopPerpetualRefresh()
+                                    Lifecycle.Event.ON_RESUME -> viewModel.startRefresh()
+                                    Lifecycle.Event.ON_PAUSE -> viewModel.stopRefresh()
                                     else -> Unit
                                 }
                             }
                         lifecycleOwner.lifecycle.addObserver(observer)
+                        if (lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                            viewModel.startRefresh()
+                        }
                         onDispose {
                             lifecycleOwner.lifecycle.removeObserver(observer)
-                            viewModel.stopPerpetualRefresh()
+                            viewModel.stopRefresh()
                         }
                     }
 
@@ -115,11 +111,10 @@ class MarketFragment : Web3Fragment() {
     }
 
     override fun updateUI() {
-        if (!::jobManager.isInitialized) return
-        jobManager.addJobInBackground(RefreshMarketsJob())
-        jobManager.addJobInBackground(RefreshMarketsJob("favorite"))
-        jobManager.addJobInBackground(RefreshGlobalWeb3MarketJob())
-        viewModel.refreshAll()
+        viewModel.loadIndicator()
+        if (viewLifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+            viewModel.refreshNow()
+        }
     }
 
     private fun showSearch() {
