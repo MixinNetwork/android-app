@@ -48,11 +48,32 @@ internal object ImageUtil {
         reqWidth: Int,
         reqHeight: Int,
     ): Bitmap {
-        val imageInputStream = MixinApplication.get().contentResolver.openInputStream(imageUri)!!
-        val options = BitmapFactory.Options()
-        var bitmap = requireNotNull(BitmapFactory.decodeStream(imageInputStream, null, options))
+        val resolver = MixinApplication.get().contentResolver
+        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+        resolver.openInputStream(imageUri)?.use {
+            BitmapFactory.decodeStream(it, null, bounds)
+        } ?: throw IOException("Unable to open image")
+        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) {
+            throw IOException("Invalid image dimensions")
+        }
+        var sampleSize = 1
+        while (
+            bounds.outWidth / sampleSize > MAX_DECODED_DIMENSION ||
+            bounds.outHeight / sampleSize > MAX_DECODED_DIMENSION ||
+            bounds.outWidth.toLong() / sampleSize * (bounds.outHeight / sampleSize) > MAX_DECODED_PIXELS
+        ) {
+            sampleSize *= 2
+        }
+        val options = BitmapFactory.Options().apply { inSampleSize = sampleSize }
+        var bitmap =
+            resolver.openInputStream(imageUri)?.use {
+                BitmapFactory.decodeStream(it, null, options)
+            } ?: throw IOException("Unable to decode image")
         val scale = calculateInScale(bitmap.width, bitmap.height, reqWidth, reqHeight)
-        val exif = ExifInterface(MixinApplication.get().contentResolver.openInputStream(imageUri)!!)
+        val exif =
+            resolver.openInputStream(imageUri)?.use {
+                ExifInterface(it)
+            } ?: throw IOException("Unable to read image metadata")
         val orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
         val matrix = Matrix()
         when (orientation) {
@@ -61,7 +82,9 @@ internal object ImageUtil {
             ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
         }
         matrix.postScale(scale, scale)
-        bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+        val source = bitmap
+        bitmap = Bitmap.createBitmap(source, 0, 0, source.width, source.height, matrix, true)
+        if (bitmap !== source) source.recycle()
         return bitmap
     }
 
@@ -80,4 +103,7 @@ internal object ImageUtil {
             reqHeight / height.toFloat()
         }
     }
+
+    private const val MAX_DECODED_DIMENSION = 8192
+    private const val MAX_DECODED_PIXELS = 16_000_000L
 }

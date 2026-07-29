@@ -243,6 +243,11 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         autoLinkItems: MutableList<AutoLinkItem>,
     ): List<AutoLinkItem> {
         for (anAutoLinkMode in autoLinkModes.orEmpty()) {
+            if (text.length > MAX_LINKIFY_TEXT_LENGTH &&
+                (anAutoLinkMode == AutoLinkMode.MODE_EMAIL || anAutoLinkMode == AutoLinkMode.MODE_URL)
+            ) {
+                continue
+            }
             val pattern = Utils.getPatternByAutoLinkMode(anAutoLinkMode, customRegex)
             val matcher = pattern.matcher(text)
 
@@ -375,6 +380,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         internal val TAG = AutoLinkTextView::class.java.simpleName
 
         private const val MIN_PHONE_NUMBER_LENGTH = 6
+        private const val MAX_LINKIFY_TEXT_LENGTH = 4096
 
         private const val DEFAULT_COLOR = Color.RED
 
