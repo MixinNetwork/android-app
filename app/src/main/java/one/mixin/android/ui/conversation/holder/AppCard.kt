@@ -53,6 +53,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.vo.AppCardData
+import one.mixin.android.vo.safeAppCardImageUrl
 import java.util.regex.Pattern
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -89,9 +90,11 @@ fun AppCard(
                 interactionSource = remember { MutableInteractionSource() },
                 onClick = contentClick, onLongClick = contentLongClick
             )) {
-            if (!appCardData.coverUrl.isNullOrBlank()) {
+            val mediaCoverUrl = appCardData.coverUrl.safeAppCardImageUrl()
+            val nestedCoverUrl = appCardData.cover?.url.safeAppCardImageUrl()
+            if (mediaCoverUrl != null) {
                 CoilImage(
-                    model = appCardData.coverUrl,
+                    model = mediaCoverUrl,
                     placeholder = R.drawable.bot_default,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -115,9 +118,9 @@ fun AppCard(
                             }
                         )
                 )
-            } else if (appCardData.cover != null) {
+            } else if (appCardData.cover != null && nestedCoverUrl != null) {
                 CoilImage(
-                    model = appCardData.cover.url,
+                    model = nestedCoverUrl,
                     placeholder = appCardData.cover.thumbnailDrawable,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier

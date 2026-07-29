@@ -15,6 +15,9 @@ import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.toDrawable
 import one.mixin.android.util.GsonHelper
 import timber.log.Timber
+import java.net.Inet4Address
+import java.net.InetAddress
+import java.net.URI
 import kotlin.math.max
 
 @Parcelize
@@ -59,11 +62,11 @@ data class AppCardData(
     val hashCover: Boolean
         get() {
             if (oldVersion) return false
-            return !coverUrl.isNullOrBlank() || !cover?.url.isNullOrBlank()
+            return coverUrl.safeAppCardImageUrl() != null || cover?.url.safeAppCardImageUrl() != null
         }
 
     val hasMediaCover: Boolean
-        get() = !coverUrl.isNullOrBlank()
+        get() = coverUrl.safeAppCardImageUrl() != null
 
     val hasValidCoverSize: Boolean
         get() {
@@ -182,7 +185,7 @@ data class Cover(
 
 fun MessageItem.appCardCoverUrl(): String? =
     if (isAppCard()) {
-        appCardData?.let { it.coverUrl?.takeIf(String::isNotBlank) ?: it.cover?.url?.takeIf(String::isNotBlank) }
+        appCardData?.let { it.coverUrl.safeAppCardImageUrl() ?: it.cover?.url.safeAppCardImageUrl() }
     } else {
         null
     }
@@ -194,7 +197,49 @@ fun MessageItem.isAppCardWithMediaCover(): Boolean {
 
 fun MessageItem.appCardMediaCoverUrl(): String? =
     if (isAppCard()) {
-        appCardData?.coverUrl?.takeIf(String::isNotBlank)
+        appCardData?.coverUrl.safeAppCardImageUrl()
     } else {
         null
     }
+
+internal fun String?.safeAppCardImageUrl(): String? {
+    val value = this?.takeIf { it.isNotBlank() && it.length <= APP_CARD_IMAGE_URL_MAX_LENGTH } ?: return null
+    val uri = runCatching { URI(value) }.getOrNull() ?: return null
+    if (!uri.scheme.equals("https", ignoreCase = true) || uri.rawUserInfo != null) return null
+    val host = uri.host?.lowercase()?.takeIf(String::isNotBlank) ?: return null
+    if (host == "localhost" ||
+        host.endsWith(".localhost") ||
+        host.endsWith(".local") ||
+        host.endsWith(".internal") ||
+        (!host.contains('.') && !host.contains(':')) ||
+        host.isBlockedIpLiteral()
+    ) {
+        return null
+    }
+    return value
+}
+
+private fun String.isBlockedIpLiteral(): Boolean {
+    val isLiteral = contains(':') || all { it.isDigit() || it == '.' }
+    if (!isLiteral) return false
+    val address = runCatching { InetAddress.getByName(this) }.getOrNull() ?: return true
+    if (address.isAnyLocalAddress ||
+        address.isLoopbackAddress ||
+        address.isLinkLocalAddress ||
+        address.isSiteLocalAddress ||
+        address.isMulticastAddress
+    ) {
+        return true
+    }
+    if (address is Inet4Address) {
+        val bytes = address.address.map(Byte::toInt).map { it and 0xff }
+        return bytes[0] == 0 ||
+            bytes[0] == 100 && bytes[1] in 64..127 ||
+            bytes[0] == 192 && bytes[1] == 0 ||
+            bytes[0] == 198 && bytes[1] in 18..19 ||
+            bytes[0] >= 224
+    }
+    return false
+}
+
+private const val APP_CARD_IMAGE_URL_MAX_LENGTH = 2048
