@@ -165,7 +165,7 @@ class PerpsMigrationTest {
     }
 
     @Test
-    fun migrate_6_7_preservesMarketsAndBackfillsRanks() {
+    fun migrate_6_7_preservesMarkets() {
         migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 6).apply {
             insertMarket()
             close()
@@ -181,10 +181,8 @@ class PerpsMigrationTest {
 
         migratedDb.query(
             """
-            SELECT markets.market_id
-            FROM ranks
-            INNER JOIN markets ON markets.market_id = ranks.market_id
-            ORDER BY ranks.rank
+            SELECT market_id
+            FROM markets
             """.trimIndent(),
         ).use { cursor ->
             assertTrue(cursor.moveToFirst())

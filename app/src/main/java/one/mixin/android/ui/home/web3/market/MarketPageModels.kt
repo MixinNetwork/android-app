@@ -97,6 +97,7 @@ data class MarketPageUiState(
     val sortState: MarketSortState = MarketSortState(),
     val indicator: GlobalMarket? = null,
     val isLoading: Boolean = true,
+    val hasLoadedLocalData: Boolean = false,
     val hasError: Boolean = false,
     val isShowingRecommendations: Boolean = false,
     val isAddingRecommendations: Boolean = false,
@@ -117,6 +118,8 @@ data class MarketPageUiState(
                 displaySettings.priceChangePeriod
             }
 
+    val showsMarketLoading: Boolean
+        get() = isLoading && hasLoadedLocalData && entries.isEmpty()
 }
 
 fun defaultMarketSubTabs(): Map<MarketTopTab, MarketSubTab> =
@@ -127,6 +130,17 @@ fun defaultMarketSubTabs(): Map<MarketTopTab, MarketSubTab> =
     )
 
 object MarketPageMapper {
+    fun spotMarkets(
+        markets: List<MarketItem>,
+        subTab: MarketSubTab,
+        period: MarketPriceChangePeriod,
+    ): List<MarketItem> =
+        when (subTab) {
+            MarketSubTab.TOP_GAINERS -> markets.sortedByDescending { it.changePercent(period) ?: BigDecimal.ZERO }
+            MarketSubTab.TOP_LOSERS -> markets.sortedBy { it.changePercent(period) ?: BigDecimal.ZERO }
+            else -> markets
+        }
+
     fun perpetualMarkets(
         markets: List<PerpsMarket>,
         subTab: MarketSubTab,
@@ -216,7 +230,7 @@ fun PerpsMarket.changePercentValue(): BigDecimal? {
 
 fun MarketListEntry.volume(): BigDecimal? =
     when (this) {
-        is MarketListEntry.Spot -> market.totalVolume.toBigDecimalOrNull()
+        is MarketListEntry.Spot -> market.marketCap.toBigDecimalOrNull()
         is MarketListEntry.Perpetual -> market.volume.toBigDecimalOrNull()
     }
 

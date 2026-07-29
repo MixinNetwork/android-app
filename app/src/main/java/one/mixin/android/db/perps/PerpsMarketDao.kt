@@ -18,22 +18,20 @@ interface PerpsMarketDao : BaseDao<PerpsMarket> {
 
     @Query(
         """
-        SELECT m.*
-        FROM ranks r
-        INNER JOIN markets m ON m.market_id = r.market_id
-        WHERE CAST(m.volume AS REAL) > 0
-        ORDER BY r.`rank` ASC
+        SELECT *
+        FROM markets
+        WHERE CAST(volume AS REAL) > 0
+        ORDER BY CAST(volume AS REAL) DESC, token_symbol COLLATE NOCASE ASC, market_id ASC
         """,
     )
     suspend fun getAllMarkets(): List<PerpsMarket>
 
     @Query(
         """
-        SELECT m.*
-        FROM ranks r
-        INNER JOIN markets m ON m.market_id = r.market_id
-        WHERE CAST(m.volume AS REAL) > 0
-        ORDER BY r.`rank` ASC
+        SELECT *
+        FROM markets
+        WHERE CAST(volume AS REAL) > 0
+        ORDER BY CAST(volume AS REAL) DESC, token_symbol COLLATE NOCASE ASC, market_id ASC
         """,
     )
     fun observeAllMarkets(): Flow<List<PerpsMarket>>

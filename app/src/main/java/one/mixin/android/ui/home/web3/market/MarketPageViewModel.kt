@@ -15,11 +15,14 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.event.MarketPageDataSource
 import one.mixin.android.event.MarketPageRefreshEvent
 import one.mixin.android.event.QuoteColorEvent
+import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketPageJob
 import one.mixin.android.repository.PerpsMarketRepository
@@ -61,6 +64,8 @@ class MarketPageViewModel
         private var refreshLoopJob: Job? = null
         private var failedSources: Set<MarketPageDataSource> = emptySet()
         private var hasCompletedRefresh = false
+        private var hasLoadedSpotMarkets = false
+        private var hasLoadedPerpetualMarkets = false
 
         init {
             observeSpotMarkets()
@@ -141,10 +146,23 @@ class MarketPageViewModel
 
                 is MarketListEntry.Perpetual ->
                     viewModelScope.launch {
-                        perpsMarketRepository.updateFavorite(
-                            marketId = entry.favoriteId,
-                            isFavored = entry.isFavored,
-                        )
+                        val updated =
+                            perpsMarketRepository.updateFavorite(
+                                marketId = entry.favoriteId,
+                                isFavored = entry.isFavored,
+                            )
+                        if (updated) {
+                            toast(
+                                MixinApplication.appContext.getString(
+                                    if (entry.isFavored) {
+                                        R.string.watchlist_remove_desc
+                                    } else {
+                                        R.string.watchlist_add_desc
+                                    },
+                                    entry.market.tokenSymbol,
+                                ),
+                            )
+                        }
                     }
             }
         }
@@ -154,17 +172,30 @@ class MarketPageViewModel
             _uiState.value = _uiState.value.copy(isAddingRecommendations = true)
             viewModelScope.launch {
                 try {
-                    withContext(Dispatchers.IO) {
-                        val spotMarketIds =
+                    val addedMarketIds =
+                        withContext(Dispatchers.IO) {
+                            val spotMarketIds =
+                                entries
+                                    .filterIsInstance<MarketListEntry.Spot>()
+                                    .mapTo(mutableSetOf()) { it.favoriteId }
+                            val perpetualMarketIds =
+                                entries
+                                    .filterIsInstance<MarketListEntry.Perpetual>()
+                                    .mapTo(mutableSetOf()) { it.favoriteId }
+                            tokenRepository.addFavoriteMarkets(spotMarketIds) +
+                                perpsMarketRepository.addFavoriteMarkets(perpetualMarketIds)
+                        }
+                    if (addedMarketIds.isNotEmpty()) {
+                        val symbols =
                             entries
-                                .filterIsInstance<MarketListEntry.Spot>()
-                                .mapTo(mutableSetOf()) { it.favoriteId }
-                        val perpetualMarketIds =
-                            entries
-                                .filterIsInstance<MarketListEntry.Perpetual>()
-                                .mapTo(mutableSetOf()) { it.favoriteId }
-                        tokenRepository.addFavoriteMarkets(spotMarketIds)
-                        perpsMarketRepository.addFavoriteMarkets(perpetualMarketIds)
+                                .filter { it.favoriteId in addedMarketIds }
+                                .joinToString(", ") { entry ->
+                                    when (entry) {
+                                        is MarketListEntry.Spot -> entry.market.symbol
+                                        is MarketListEntry.Perpetual -> entry.market.tokenSymbol
+                                    }
+                                }
+                        toast(MixinApplication.appContext.getString(R.string.watchlist_add_desc, symbols))
                     }
                 } finally {
                     _uiState.value = _uiState.value.copy(isAddingRecommendations = false)
@@ -268,6 +299,7 @@ class MarketPageViewModel
                     topLoserMarkets = values[4]
                     stockMarkets = values[5]
                     featuredSpotMarkets = values[6]
+                    hasLoadedSpotMarkets = true
                     rebuildEntries()
                 }.collect {}
             }
@@ -283,6 +315,7 @@ class MarketPageViewModel
                     perpetualMarkets = all
                     favoritePerpetualMarkets = favorites
                     featuredPerpetualMarkets = featured
+                    hasLoadedPerpetualMarkets = true
                     rebuildEntries()
                 }.collect {}
             }
@@ -321,7 +354,12 @@ class MarketPageViewModel
                                 MarketSubTab.ALL -> allMarkets
                                 else -> trendingMarkets
                             }
-                        source.withFavoriteState()
+                        MarketPageMapper
+                            .spotMarkets(
+                                markets = source.withFavoriteState(),
+                                subTab = state.selectedSubTab ?: MarketSubTab.TRENDING,
+                                period = state.effectivePriceChangePeriod,
+                            )
                             .filterNot { it.coinId in stockCoinIds }
                             .map { MarketListEntry.Spot(it, SpotMarketType.CRYPTO) }
                     }
@@ -381,9 +419,23 @@ class MarketPageViewModel
                             period = state.effectivePriceChangePeriod,
                         ),
                     hasError = entries.isEmpty() && selectedDataSource(state) in failedSources,
+                    hasLoadedLocalData = hasLoadedSelectedLocalData(state),
                     isShowingRecommendations = isShowingRecommendations,
                 )
         }
+
+        private fun hasLoadedSelectedLocalData(state: MarketPageUiState): Boolean =
+            when (state.selectedTopTab) {
+                MarketTopTab.WATCHLIST ->
+                    if (state.selectedSubTab == MarketSubTab.PERPETUAL) {
+                        hasLoadedPerpetualMarkets
+                    } else {
+                        hasLoadedSpotMarkets
+                    }
+                MarketTopTab.CRYPTO -> hasLoadedSpotMarkets
+                MarketTopTab.PERPETUAL -> hasLoadedPerpetualMarkets
+                MarketTopTab.INDICATOR -> true
+            }
 
         private fun selectedDataSource(state: MarketPageUiState): MarketPageDataSource =
             when (state.selectedTopTab) {

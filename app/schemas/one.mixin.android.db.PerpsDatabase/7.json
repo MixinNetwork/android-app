@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 7,
-    "identityHash": "5d1934aa503fae8ef5b8559e1f400a3e",
+    "identityHash": "bea33de770f862388fa42faaf1225201",
     "entities": [
       {
         "tableName": "positions",
@@ -438,30 +438,6 @@
         }
       },
       {
-        "tableName": "ranks",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `rank` INTEGER NOT NULL, PRIMARY KEY(`market_id`))",
-        "fields": [
-          {
-            "fieldPath": "marketId",
-            "columnName": "market_id",
-            "affinity": "TEXT",
-            "notNull": true
-          },
-          {
-            "fieldPath": "rank",
-            "columnName": "rank",
-            "affinity": "INTEGER",
-            "notNull": true
-          }
-        ],
-        "primaryKey": {
-          "autoGenerate": false,
-          "columnNames": [
-            "market_id"
-          ]
-        }
-      },
-      {
         "tableName": "market_categories",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `category` INTEGER NOT NULL, PRIMARY KEY(`market_id`, `category`))",
         "fields": [
@@ -500,7 +476,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5d1934aa503fae8ef5b8559e1f400a3e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'bea33de770f862388fa42faaf1225201')"
     ]
   }
 }

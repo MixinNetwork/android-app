@@ -29,6 +29,7 @@ import one.mixin.android.db.perps.PerpsPositionDao
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.toast
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.extension.scrollToCenterCheckedRadio
 import one.mixin.android.extension.withArgs
@@ -85,7 +86,20 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             isQuoteColorReversed = isQuoteColorReversed,
             onMarketClick = { market -> onMarketClick(market) },
             onFavoriteClick = { market, isFavored ->
-                viewModel.updateMarketFavorite(market.marketId, isFavored)
+                viewModel.updateMarketFavorite(market.marketId, isFavored) { success ->
+                    if (success) {
+                        toast(
+                            getString(
+                                if (isFavored) {
+                                    R.string.watchlist_remove_desc
+                                } else {
+                                    R.string.watchlist_add_desc
+                                },
+                                market.tokenSymbol,
+                            ),
+                        )
+                    }
+                }
             },
         )
     }
@@ -158,6 +172,13 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 if (selectedIds.isEmpty()) return@setOnClickListener
                 addWatchlistTv.isEnabled = false
                 viewModel.addFavoriteMarkets(selectedIds) { addedIds ->
+                    if (addedIds.isNotEmpty()) {
+                        val symbols =
+                            allMarkets
+                                .filter { it.marketId in addedIds }
+                                .joinToString(", ") { it.tokenSymbol }
+                        toast(getString(R.string.watchlist_add_desc, symbols))
+                    }
                     selectedRecommendationIds -= addedIds
                     recommendationAdapter.selectedMarketIds = selectedRecommendationIds
                     addWatchlistTv.isEnabled = selectedRecommendationIds.isNotEmpty()

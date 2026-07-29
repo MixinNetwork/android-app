@@ -10,7 +10,6 @@ import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsMarketCategoryDao
 import one.mixin.android.db.perps.PerpsOrderDao
 import one.mixin.android.db.perps.PerpsPositionDao
-import one.mixin.android.db.perps.PerpsRankDao
 import one.mixin.android.session.CurrentUserScopeManager
 import javax.inject.Provider
 
@@ -40,11 +39,6 @@ object PerpsModule {
     @Provides
     fun providePerpsFavoriteDao(database: PerpsDatabase): PerpsFavoriteDao {
         return database.perpsFavoriteDao()
-    }
-
-    @Provides
-    fun providePerpsRankDao(database: PerpsDatabase): PerpsRankDao {
-        return database.perpsRankDao()
     }
 
     @Provides

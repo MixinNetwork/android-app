@@ -1799,6 +1799,7 @@
     <string name="watchlist_remove_alert_prompt">Removed from your watchlist. Also delete the related price alerts?</string>
     <string name="Dominance">Dominance</string>
     <string name="volume_24h">24h Volume</string>
+    <string name="market_volume_short">Vol</string>
     <string name="Watchlist">Watchlist</string>
     <string name="Crypto">Crypto</string>
     <string name="market_stock">Stock</string>
@@ -1812,6 +1813,7 @@
     <string name="Choose_Token">Choose %1$s Network</string>
     <string name="choose_token_desc">%1$s is issued on multiple networks</string>
     <string name="watchlist_add_desc">%1$s is now on your watchlist</string>
+    <string name="watchlist_remove_desc">%1$s has been removed from your watchlist</string>
     <string name="Stats">Stats</string>
     <string name="share_desc">Visit mixin.one/mm or scan the QR code to install.</string>
     <string name="referral_share_desc">Scan to install Mixin, use this referral code for %1$s rebate.</string>

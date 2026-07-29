@@ -13,13 +13,11 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsMarketCategoryRelation
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsPosition
-import one.mixin.android.api.response.perps.PerpsRank
 import one.mixin.android.db.perps.PerpsFavoriteDao
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsMarketCategoryDao
 import one.mixin.android.db.perps.PerpsOrderDao
 import one.mixin.android.db.perps.PerpsPositionDao
-import one.mixin.android.db.perps.PerpsRankDao
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
 import one.mixin.android.util.reportException
@@ -34,7 +32,6 @@ import kotlin.math.min
         PerpsOrder::class,
         PerpsMarket::class,
         PerpsFavorite::class,
-        PerpsRank::class,
         PerpsMarketCategoryRelation::class,
     ],
     version = 7,
@@ -105,8 +102,6 @@ abstract class PerpsDatabase : RoomDatabase() {
             object : Migration(6, 7) {
                 override fun migrate(db: SupportSQLiteDatabase) {
                     db.execSQL("CREATE TABLE IF NOT EXISTS `favorites` (`market_id` TEXT NOT NULL, `is_favored` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))")
-                    db.execSQL("CREATE TABLE IF NOT EXISTS `ranks` (`market_id` TEXT NOT NULL, `rank` INTEGER NOT NULL, PRIMARY KEY(`market_id`))")
-                    db.execSQL("INSERT OR IGNORE INTO `ranks` (`market_id`, `rank`) SELECT `market_id`, `rowid` FROM `markets`")
                     db.execSQL("CREATE TABLE IF NOT EXISTS `market_categories` (`market_id` TEXT NOT NULL, `category` INTEGER NOT NULL, PRIMARY KEY(`market_id`, `category`))")
                     db.execSQL("CREATE INDEX IF NOT EXISTS `index_market_categories_category` ON `market_categories` (`category`)")
                 }
@@ -169,7 +164,6 @@ abstract class PerpsDatabase : RoomDatabase() {
     abstract fun perpsOrderDao(): PerpsOrderDao
     abstract fun perpsMarketDao(): PerpsMarketDao
     abstract fun perpsFavoriteDao(): PerpsFavoriteDao
-    abstract fun perpsRankDao(): PerpsRankDao
     abstract fun perpsMarketCategoryDao(): PerpsMarketCategoryDao
 
     override fun close() {

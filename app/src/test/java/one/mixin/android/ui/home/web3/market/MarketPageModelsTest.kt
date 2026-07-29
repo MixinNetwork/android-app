@@ -132,6 +132,32 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun spotGainersAndLosersSortBySelectedPeriod() {
+        val markets =
+            listOf(
+                market(coinId = "middle", change24h = "2", change7d = "-2"),
+                market(coinId = "winner", change24h = "8", change7d = "-8"),
+                market(coinId = "loser", change24h = "-4", change7d = "4"),
+            )
+
+        val gainers =
+            MarketPageMapper.spotMarkets(
+                markets = markets,
+                subTab = MarketSubTab.TOP_GAINERS,
+                period = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
+            )
+        val losers =
+            MarketPageMapper.spotMarkets(
+                markets = markets,
+                subTab = MarketSubTab.TOP_LOSERS,
+                period = MarketPriceChangePeriod.SEVEN_DAYS,
+            )
+
+        assertEquals(listOf("winner", "middle", "loser"), gainers.map { it.coinId })
+        assertEquals(listOf("winner", "middle", "loser"), losers.map { it.coinId })
+    }
+
+    @Test
     fun perpetualOnlySelectionForcesTwentyFourHourDisplay() {
         val state =
             MarketPageUiState(
@@ -157,21 +183,72 @@ class MarketPageModelsTest {
         assertEquals(MarketSortState(), reset)
     }
 
+    @Test
+    fun spotVolumeColumnSortsByMarketCap() {
+        val lowerMarketCap =
+            MarketListEntry.Spot(
+                market(coinId = "higher-volume", marketCap = "100", totalVolume = "1000"),
+                SpotMarketType.CRYPTO,
+            )
+        val higherMarketCap =
+            MarketListEntry.Spot(
+                market(coinId = "lower-volume", marketCap = "200", totalVolume = "10"),
+                SpotMarketType.CRYPTO,
+            )
+
+        val result =
+            MarketPageMapper.applySort(
+                entries = listOf(lowerMarketCap, higherMarketCap),
+                sortState = MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                period = MarketPriceChangePeriod.SEVEN_DAYS,
+            )
+
+        assertEquals(listOf("spot:lower-volume", "spot:higher-volume"), result.map { it.stableId })
+    }
+
+    @Test
+    fun initialLoadingWaitsForLocalDatabaseResult() {
+        val state = MarketPageUiState(isLoading = true, hasLoadedLocalData = false)
+
+        assertTrue(!state.showsMarketLoading)
+    }
+
+    @Test
+    fun initialLoadingShowsWhenLocalDatabaseIsEmpty() {
+        val state = MarketPageUiState(isLoading = true, hasLoadedLocalData = true)
+
+        assertTrue(state.showsMarketLoading)
+    }
+
+    @Test
+    fun initialLoadingSkipsSpinnerWhenLocalDatabaseHasEntries() {
+        val state =
+            MarketPageUiState(
+                entries = listOf(MarketListEntry.Spot(market("btc"), SpotMarketType.CRYPTO)),
+                isLoading = true,
+                hasLoadedLocalData = true,
+            )
+
+        assertTrue(!state.showsMarketLoading)
+    }
+
     private fun market(
         coinId: String,
         change24h: String = "0",
         change7d: String = "0",
         perpsMarketId: String? = null,
         favored: Boolean = false,
+        marketCap: String = "100",
+        totalVolume: String = "10",
     ) = MarketItem(
         coinId = coinId,
         name = coinId,
         symbol = coinId.uppercase(),
         iconUrl = "",
         currentPrice = "1",
-        marketCap = "100",
+        marketCap = marketCap,
         marketCapRank = "1",
-        totalVolume = "10",
+        totalVolume = totalVolume,
         high24h = "1",
         low24h = "1",
         priceChange24h = "0",

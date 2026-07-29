@@ -1506,6 +1506,9 @@ class TokenRepository
                             now
                         )
                     )
+                    withContext(Dispatchers.Main) {
+                        toast(MixinApplication.appContext.getString(R.string.watchlist_remove_desc, symbol))
+                    }
                     true
                 },
                 requestSession = {

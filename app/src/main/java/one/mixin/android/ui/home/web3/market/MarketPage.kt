@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
@@ -27,6 +28,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
@@ -47,6 +50,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
@@ -64,9 +69,9 @@ import one.mixin.android.extension.loadSvgWithTint
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat
-import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.ui.wallet.components.AssetDistribution
 import one.mixin.android.ui.wallet.components.MultiColorProgressBar
+import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.MarketItem
@@ -115,6 +120,7 @@ fun MarketPage(
             if (!state.isShowingRecommendations && state.entries.isNotEmpty()) {
                 MarketListHeader(
                     period = state.effectivePriceChangePeriod,
+                    isPerpetual = state.showsOnlyPerpetualMarkets,
                     sortState = state.sortState,
                     onSort = onSort,
                     onShowDisplaySettings = onShowDisplaySettings,
@@ -254,43 +260,39 @@ private fun SubTabs(
             Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp),
+                .padding(start = 14.dp, end = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         tabs.forEach { tab ->
             if (tab == MarketSubTab.FAVORITE) {
                 Box(
-                    modifier = Modifier.padding(horizontal = 4.dp),
+                    contentAlignment = Alignment.Center,
+                    modifier =
+                        Modifier
+                            .size(28.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (selected == tab) {
+                                    MixinAppTheme.colors.accent.copy(alpha = 0.10f)
+                                } else {
+                                    Color.Transparent
+                                },
+                            ).clickable { onSelect(tab) },
                 ) {
-                    Box(
-                        contentAlignment = Alignment.Center,
-                        modifier =
-                            Modifier
-                                .size(28.dp)
-                                .clip(CircleShape)
-                                .background(
-                                    if (selected == tab) {
-                                        MixinAppTheme.colors.accent.copy(alpha = 0.10f)
-                                    } else {
-                                        Color.Transparent
-                                    },
-                                ).clickable { onSelect(tab) },
-                    ) {
-                        Icon(
-                            painter =
-                                painterResource(
-                                    if (selected == tab) {
-                                        R.drawable.ic_market_favorites_checked
-                                    } else {
-                                        R.drawable.ic_market_favorites
-                                    },
-                                ),
-                            contentDescription = stringResource(R.string.Watchlist),
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(16.dp),
-                        )
-                    }
+                    Icon(
+                        painter =
+                            painterResource(
+                                if (selected == tab) {
+                                    R.drawable.ic_market_favorites_checked
+                                } else {
+                                    R.drawable.ic_market_favorites
+                                },
+                            ),
+                        contentDescription = stringResource(R.string.Watchlist),
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(16.dp),
+                    )
                 }
             } else {
                 Text(
@@ -307,7 +309,7 @@ private fun SubTabs(
                                     Color.Transparent
                                 },
                             ).clickable { onSelect(tab) }
-                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                            .padding(horizontal = 8.dp, vertical = 2.dp),
                 )
             }
         }
@@ -350,6 +352,7 @@ private fun MarketChip(
 @Composable
 private fun MarketListHeader(
     period: MarketPriceChangePeriod,
+    isPerpetual: Boolean,
     sortState: MarketSortState,
     onSort: (MarketSortColumn) -> Unit,
     onShowDisplaySettings: () -> Unit,
@@ -365,7 +368,7 @@ private fun MarketListHeader(
             contentAlignment = Alignment.Center,
             modifier =
                 Modifier
-                    .size(48.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
                     .clickable(onClick = onShowDisplaySettings),
         ) {
@@ -376,18 +379,28 @@ private fun MarketListHeader(
                 modifier = Modifier.size(16.dp),
             )
         }
-        Spacer(modifier = Modifier.width(4.dp))
+        Spacer(modifier = Modifier.width(6.dp))
         SortLabel(
-            text = stringResource(R.string.volume_24h),
+            text =
+                stringResource(
+                    if (isPerpetual) {
+                        R.string.market_volume_short
+                    } else {
+                        R.string.Market_Cap
+                    },
+                ),
             column = MarketSortColumn.VOLUME,
             sortState = sortState,
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.Start,
             onSort = onSort,
         )
-        Spacer(modifier = Modifier.weight(1f))
         SortLabel(
             text = stringResource(R.string.Price),
             column = MarketSortColumn.PRICE,
             sortState = sortState,
+            modifier = Modifier.width(96.dp),
+            horizontalArrangement = Arrangement.End,
             onSort = onSort,
         )
         Spacer(modifier = Modifier.width(10.dp))
@@ -403,6 +416,8 @@ private fun MarketListHeader(
             text = priceChangePeriodLabel(period),
             column = MarketSortColumn.CHANGE,
             sortState = sortState,
+            modifier = Modifier.width(84.dp),
+            horizontalArrangement = Arrangement.End,
             onSort = onSort,
         )
     }
@@ -414,6 +429,7 @@ private fun SortLabel(
     column: MarketSortColumn,
     sortState: MarketSortState,
     modifier: Modifier = Modifier,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     onSort: (MarketSortColumn) -> Unit,
 ) {
     val icon =
@@ -429,14 +445,16 @@ private fun SortLabel(
                 .clip(RoundedCornerShape(6.dp))
                 .clickable { onSort(column) }
                 .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.Center,
+        horizontalArrangement = horizontalArrangement,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
             text = text,
             color = MixinAppTheme.colors.textAssist,
             fontSize = 14.sp,
-            textAlign = TextAlign.Center,
+            textAlign = if (horizontalArrangement == Arrangement.End) TextAlign.End else TextAlign.Start,
+            maxLines = 1,
+            softWrap = false,
         )
         Spacer(modifier = Modifier.width(4.dp))
         Icon(
@@ -456,7 +474,7 @@ private fun MarketList(
     onEntryClick: (MarketListEntry) -> Unit,
 ) {
     when {
-        state.isLoading && state.entries.isEmpty() -> {
+        state.showsMarketLoading -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
@@ -517,50 +535,62 @@ private fun MarketRecommendations(
     isAdding: Boolean,
     onAdd: (List<MarketListEntry>) -> Unit,
 ) {
-    val recommendationIds = entries.map(MarketListEntry::stableId)
+    val recommendations = entries.take(8)
+    val recommendationIds = recommendations.map(MarketListEntry::stableId)
     var selectedIds by remember(recommendationIds) { mutableStateOf(recommendationIds.toSet()) }
-    Box(modifier = Modifier.fillMaxSize()) {
-        LazyVerticalGrid(
-            columns = GridCells.Fixed(2),
-            modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 92.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp),
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-            gridItems(
-                items = entries,
-                key = MarketListEntry::stableId,
-            ) { entry ->
-                val selected = entry.stableId in selectedIds
-                RecommendationCard(
-                    entry = entry,
-                    selected = selected,
-                    onSelect = {
-                        selectedIds =
-                            if (selected) {
-                                selectedIds - entry.stableId
-                            } else {
-                                selectedIds + entry.stableId
-                            }
-                    },
-                )
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(2),
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        gridItems(
+            items = recommendations,
+            key = MarketListEntry::stableId,
+        ) { entry ->
+            val selected = entry.stableId in selectedIds
+            RecommendationCard(
+                entry = entry,
+                selected = selected,
+                onSelect = {
+                    selectedIds =
+                        if (selected) {
+                            selectedIds - entry.stableId
+                        } else {
+                            selectedIds + entry.stableId
+                        }
+                },
+            )
+        }
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Box(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(top = 20.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                MixinButton(
+                    onClick = { onAdd(recommendations.filter { it.stableId in selectedIds }) },
+                    backgroundColor = MixinAppTheme.colors.accent,
+                    contentColor = Color.White,
+                    enabled = selectedIds.isNotEmpty() && !isAdding,
+                    disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
+                    disabledContentColor = MixinAppTheme.colors.textAssist,
+                    modifier =
+                        Modifier
+                            .width(172.dp)
+                            .height(42.dp),
+                ) {
+                    Text(
+                        text = stringResource(R.string.Add_to_Watchlist),
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.W400,
+                    )
+                }
             }
         }
-        ActionButton(
-            text = stringResource(R.string.Add_to_Watchlist),
-            onClick = { onAdd(entries.filter { it.stableId in selectedIds }) },
-            backgroundColor = MixinAppTheme.colors.accent,
-            contentColor = Color.White,
-            enabled = selectedIds.isNotEmpty() && !isAdding,
-            disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
-            disabledContentColor = MixinAppTheme.colors.textAssist,
-            modifier =
-                Modifier
-                    .align(Alignment.BottomCenter)
-                    .padding(bottom = 20.dp)
-                    .width(220.dp)
-                    .height(52.dp),
-        )
     }
 }
 
@@ -590,7 +620,6 @@ private fun RecommendationCard(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .height(64.dp)
                 .border(1.dp, MixinAppTheme.colors.borderColor, shape)
                 .clip(shape)
                 .selectable(
@@ -598,7 +627,8 @@ private fun RecommendationCard(
                     role = Role.Checkbox,
                     onClick = onSelect,
                 )
-                .padding(horizontal = 10.dp),
+                .padding(vertical = 10.dp)
+                .padding(start = 12.dp, end = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MarketIcon(url = iconUrl, size = 24.dp)
@@ -614,16 +644,7 @@ private fun RecommendationCard(
                 )
                 if (entry is MarketListEntry.Perpetual) {
                     Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "${entry.market.leverage}x",
-                        color = MixinAppTheme.colors.textAssist,
-                        fontSize = 10.sp,
-                        modifier =
-                            Modifier
-                                .clip(RoundedCornerShape(4.dp))
-                                .background(MixinAppTheme.colors.backgroundGrayLight)
-                                .padding(horizontal = 3.dp, vertical = 1.dp),
-                    )
+                    MarketPerpBadge()
                 }
             }
             Text(
@@ -668,23 +689,21 @@ private fun MarketRow(
             Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
-                .padding(start = 12.dp, end = 20.dp, top = 10.dp, bottom = 10.dp),
+                .padding(start = 16.dp, end = 20.dp, top = 12.dp, bottom = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        IconButton(
-            onClick = onFavorite,
-            enabled = true,
-            modifier = Modifier.size(48.dp),
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier =
+                Modifier
+                    .size(24.dp)
+                    .clip(CircleShape)
+                    .clickable(onClick = onFavorite),
         ) {
-            Icon(
-                painter =
-                    painterResource(
-                        if (entry.isFavored) {
-                            R.drawable.ic_asset_favorites_checked
-                        } else {
-                            R.drawable.ic_asset_favorites
-                        },
-                    ),
+            MarketFavoriteIcon(
+                isFavored = entry.isFavored,
+                unselectedIconRes = R.drawable.ic_asset_favorites,
+                selectedIconRes = R.drawable.ic_asset_favorites_checked,
                 contentDescription =
                     stringResource(
                         if (entry.isFavored) {
@@ -693,11 +712,10 @@ private fun MarketRow(
                             R.string.Add_to_Watchlist
                         },
                     ),
-                tint = Color.Unspecified,
-                modifier = Modifier.size(18.dp),
+                modifier = Modifier.size(16.dp),
             )
         }
-        Spacer(modifier = Modifier.width(4.dp))
+        Spacer(modifier = Modifier.width(10.dp))
         when (entry) {
             is MarketListEntry.Spot ->
                 SpotMarketRowContent(
@@ -720,22 +738,57 @@ private fun RowScope.SpotMarketRowContent(
     settings: MarketDisplaySettings,
 ) {
     val change = market.changePercent(settings.priceChangePeriod)
-    MarketIcon(url = market.iconUrl)
+    MarketIcon(url = market.iconUrl, size = 38.dp)
     Spacer(modifier = Modifier.width(10.dp))
-    Column(modifier = Modifier.weight(1f)) {
+    Column {
         Text(
             text = market.symbol,
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 14.sp,
-            fontWeight = FontWeight.Medium,
         )
+        Spacer(modifier = Modifier.height(2.dp))
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = market.marketCapRank,
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 12.sp,
+                lineHeight = 14.sp,
+                style =
+                    TextStyle(
+                        platformStyle = PlatformTextStyle(includeFontPadding = false),
+                    ),
+                modifier =
+                    Modifier
+                        .background(MixinAppTheme.colors.backgroundGrayLight, RoundedCornerShape(4.dp))
+                        .padding(horizontal = 4.dp),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            Text(
+                text = formatSpotVolume(market.marketCap),
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 12.sp,
+                maxLines = 1,
+            )
+        }
     }
-    Text(
+    BasicText(
         text = formatSpotPrice(market.currentPrice),
-        color = MixinAppTheme.colors.textPrimary,
-        fontSize = 12.sp,
-        textAlign = TextAlign.End,
+        style =
+            TextStyle(
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.End,
+            ),
         maxLines = 1,
+        softWrap = false,
+        autoSize =
+            TextAutoSize.StepBased(
+                minFontSize = 8.sp,
+                maxFontSize = 14.sp,
+                stepSize = 0.5.sp,
+            ),
+        modifier = Modifier.weight(1f),
     )
     Spacer(modifier = Modifier.width(16.dp))
     ChangeColumn(
@@ -751,41 +804,58 @@ private fun RowScope.PerpetualMarketRowContent(
     settings: MarketDisplaySettings,
 ) {
     val change = market.changePercentValue()
-    MarketIcon(url = market.iconUrl)
+    MarketIcon(url = market.iconUrl, size = 38.dp)
     Spacer(modifier = Modifier.width(10.dp))
-    Column(modifier = Modifier.weight(1f)) {
+    Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = market.tokenSymbol,
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
             )
             Spacer(modifier = Modifier.width(5.dp))
-            Text(
-                text = stringResource(R.string.perps_badge),
-                color = MixinAppTheme.colors.textAssist,
-                fontSize = 10.sp,
-                modifier =
-                    Modifier
-                        .clip(RoundedCornerShape(4.dp))
-                        .background(MixinAppTheme.colors.backgroundGrayLight)
-                        .padding(horizontal = 3.dp, vertical = 1.dp),
-            )
+            MarketPerpBadge()
         }
     }
-    Text(
+    BasicText(
         text = "$${market.last}",
-        color = MixinAppTheme.colors.textPrimary,
-        fontSize = 12.sp,
-        textAlign = TextAlign.End,
+        style =
+            TextStyle(
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.SemiBold,
+                textAlign = TextAlign.End,
+            ),
         maxLines = 1,
+        softWrap = false,
+        autoSize =
+            TextAutoSize.StepBased(
+                minFontSize = 8.sp,
+                maxFontSize = 14.sp,
+                stepSize = 0.5.sp,
+            ),
+        modifier = Modifier.weight(1f),
     )
     Spacer(modifier = Modifier.width(16.dp))
     ChangeColumn(
         change = change,
         sparkline = null,
         quoteColorReversed = settings.quoteColorReversed,
+    )
+}
+
+@Composable
+private fun MarketPerpBadge() {
+    Text(
+        text = "Perp",
+        fontSize = 12.sp,
+        color = MixinAppTheme.colors.textAssist,
+        lineHeight = 14.sp,
+        modifier =
+            Modifier
+                .clip(RoundedCornerShape(4.dp))
+                .background(MixinAppTheme.colors.backgroundGrayLight)
+                .padding(horizontal = 3.dp, vertical = 1.dp),
     )
 }
 
@@ -823,20 +893,21 @@ private fun ChangeColumn(
         Box(
             modifier =
                 Modifier
-                    .width(60.dp)
+                    .width(84.dp)
                     .height(36.dp),
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.CenterEnd,
         ) {
             Text(
                 text = change?.let(::formatPercent) ?: "--",
                 color = changeColor,
-                fontSize = 11.sp,
-                textAlign = TextAlign.Center,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.End,
             )
         }
     } else {
         Column(
-            modifier = Modifier.width(60.dp),
+            modifier = Modifier.width(84.dp),
             horizontalAlignment = Alignment.End,
         ) {
             AndroidView(
@@ -850,13 +921,14 @@ private fun ChangeColumn(
                 },
                 modifier =
                     Modifier
-                        .width(54.dp)
+                        .width(60.dp)
                         .height(20.dp),
             )
             Text(
                 text = change?.let(::formatPercent) ?: "--",
                 color = changeColor,
-                fontSize = 11.sp,
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.End,
             )
         }
@@ -1130,20 +1202,12 @@ private fun MarketDisplayDialog(
                             onClick = onDismiss,
                             modifier = Modifier.size(48.dp),
                         ) {
-                            Box(
-                                modifier =
-                                    Modifier
-                                        .size(32.dp)
-                                        .background(MixinAppTheme.colors.backgroundGray, CircleShape),
-                                contentAlignment = Alignment.Center,
-                            ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_close),
-                                    contentDescription = stringResource(R.string.Close),
-                                    tint = Color.Unspecified,
-                                    modifier = Modifier.size(16.dp),
-                                )
-                            }
+                            Icon(
+                                painter = painterResource(R.drawable.ic_circle_close),
+                                contentDescription = stringResource(R.string.Close),
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(26.dp),
+                            )
                         }
                     }
                     DisplaySettingRow(
@@ -1189,7 +1253,7 @@ private fun MarketDisplayDialog(
                             },
                         )
                     }
-                    Spacer(modifier = Modifier.height(20.dp))
+                    Spacer(modifier = Modifier.height(120.dp))
                 }
             }
         }

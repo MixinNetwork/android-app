@@ -93,15 +93,17 @@
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_favorites"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="44dp"
+                android:layout_height="36dp"
                 android:layout_marginEnd="12dp"
-                android:background="@drawable/selector_radio"
+                android:background="@drawable/selector_radio_icon"
                 android:button="@null"
                 android:contentDescription="@string/Watchlist"
-                android:drawableStart="@drawable/selector_market_favorites"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp" />
+                android:foreground="@drawable/selector_market_favorites"
+                android:foregroundGravity="center"
+                android:gravity="center"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="6dp" />
 
             <androidx.appcompat.widget.AppCompatRadioButton
                 android:id="@+id/radio_crypto"
@@ -341,26 +343,25 @@
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recommendation_rv"
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
                 android:clipToPadding="false"
+                android:nestedScrollingEnabled="false"
                 android:paddingTop="8dp"
-                android:paddingBottom="8dp"
                 tools:listitem="@layout/item_perps_watchlist_recommendation" />
 
-            <androidx.appcompat.widget.AppCompatTextView
+            <Button
                 android:id="@+id/add_watchlist_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="48dp"
+                style="@style/AppTheme.MaterialButton"
+                android:layout_width="172dp"
+                android:layout_height="42dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="25dp"
                 android:layout_marginBottom="24dp"
-                android:background="@drawable/bg_round_blue_btn_40"
                 android:gravity="center"
-                android:minWidth="200dp"
-                android:paddingHorizontal="24dp"
+                android:includeFontPadding="false"
                 android:text="@string/Add_to_Watchlist"
                 android:textColor="@color/white"
+                android:textAllCaps="false"
                 android:textSize="16sp" />
         </LinearLayout>
     </ViewAnimator>

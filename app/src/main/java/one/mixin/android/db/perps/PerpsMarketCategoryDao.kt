@@ -36,9 +36,9 @@ interface PerpsMarketCategoryDao : BaseDao<PerpsMarketCategoryRelation> {
         SELECT m.*
         FROM market_categories mc
         INNER JOIN markets m ON m.market_id = mc.market_id
-        LEFT JOIN ranks r ON r.market_id = m.market_id
         WHERE mc.category = :category
-        ORDER BY CASE WHEN r.`rank` IS NULL THEN 1 ELSE 0 END, r.`rank` ASC, m.rowid ASC
+            AND CAST(m.volume AS REAL) > 0
+        ORDER BY CAST(m.volume AS REAL) DESC, m.token_symbol COLLATE NOCASE ASC, m.market_id ASC
         """,
     )
     fun observeMarketsByCategory(category: Int): Flow<List<PerpsMarket>>

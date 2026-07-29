@@ -89,16 +89,7 @@ fun PerpsMarketItem(
                         color = MixinAppTheme.colors.textPrimary,
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "${market.leverage}x",
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist,
-                        lineHeight = 14.sp,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(MixinAppTheme.colors.backgroundGrayLight)
-                            .padding(horizontal = 3.dp, vertical = 1.dp)
-                    )
+                    PerpsLeverageBadge(leverage = market.leverage)
                 }
                 Text(
                     text = "$PERPS_USD_SYMBOL$displayPrice",
@@ -124,4 +115,22 @@ fun PerpsMarketItem(
             }
         }
     }
+}
+
+@Composable
+fun PerpsLeverageBadge(
+    leverage: Int,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = "${leverage}x",
+        fontSize = 12.sp,
+        color = MixinAppTheme.colors.textAssist,
+        lineHeight = 14.sp,
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(4.dp))
+                .background(MixinAppTheme.colors.backgroundGrayLight)
+                .padding(horizontal = 3.dp, vertical = 1.dp),
+    )
 }

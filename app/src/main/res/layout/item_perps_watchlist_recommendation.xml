@@ -6,13 +6,13 @@
     android:layout_height="wrap_content"
     android:layout_margin="5dp"
     android:background="@drawable/bg_round_8_border"
-    android:minHeight="72dp"
-    android:padding="12dp">
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="10dp">
 
     <one.mixin.android.widget.CircleImageView
         android:id="@+id/icon_iv"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -26,7 +26,7 @@
         android:ellipsize="end"
         android:maxLines="1"
         android:textColor="?attr/text_primary"
-        android:textSize="15sp"
+        android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@id/icon_iv"
         app:layout_constraintTop_toTopOf="@id/icon_iv"
         tools:text="BTC" />
@@ -41,7 +41,7 @@
         android:paddingHorizontal="3dp"
         android:paddingVertical="1dp"
         android:textColor="?attr/text_assist"
-        android:textSize="10sp"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@id/symbol_tv"
         app:layout_constraintStart_toEndOf="@id/symbol_tv"
         app:layout_constraintTop_toTopOf="@id/symbol_tv"
@@ -60,8 +60,8 @@
 
     <ImageView
         android:id="@+id/selected_iv"
-        android:layout_width="18dp"
-        android:layout_height="18dp"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
         android:src="@drawable/ic_asset_favorites"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

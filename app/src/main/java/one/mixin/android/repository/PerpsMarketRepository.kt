@@ -7,7 +7,6 @@ import one.mixin.android.Constants
 import one.mixin.android.api.request.MarketFavoritesRequest
 import one.mixin.android.api.response.perps.PerpsFavorite
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.api.response.perps.PerpsRank
 import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.UserService
@@ -15,7 +14,6 @@ import one.mixin.android.db.PerpsDatabase
 import one.mixin.android.db.perps.PerpsFavoriteDao
 import one.mixin.android.db.perps.PerpsMarketCategoryDao
 import one.mixin.android.db.perps.PerpsMarketDao
-import one.mixin.android.db.perps.PerpsRankDao
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.market.MarketCategory
@@ -29,7 +27,6 @@ class PerpsMarketRepository
         private val database: PerpsDatabase,
         private val marketDao: PerpsMarketDao,
         private val favoriteDao: PerpsFavoriteDao,
-        private val rankDao: PerpsRankDao,
         private val categoryDao: PerpsMarketCategoryDao,
     ) {
         fun observeAllMarkets(): Flow<List<PerpsMarket>> = marketDao.observeAllMarkets()
@@ -48,17 +45,7 @@ class PerpsMarketRepository
 
         suspend fun syncAllMarkets(): List<PerpsMarket>? {
             val markets = fetchMarkets() ?: return null
-            database.withTransaction {
-                marketDao.upsertList(markets)
-                rankDao.replaceAll(
-                    markets.mapIndexed { index, market ->
-                        PerpsRank(
-                            marketId = market.marketId,
-                            rank = index,
-                        )
-                    },
-                )
-            }
+            marketDao.upsertList(markets)
             return markets
         }
 

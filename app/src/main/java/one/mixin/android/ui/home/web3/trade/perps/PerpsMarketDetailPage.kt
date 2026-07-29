@@ -79,6 +79,7 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
+import one.mixin.android.ui.home.web3.market.MarketFavoriteIcon
 import one.mixin.android.ui.home.web3.trade.CandleChart
 import one.mixin.android.ui.wallet.MarketDescriptionTextView
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -202,21 +203,28 @@ fun PerpsMarketDetailPage(
                 onClick = {
                     if (isUpdatingFavorite) return@IconButton
                     isUpdatingFavorite = true
-                    viewModel.updateMarketFavorite(marketId, isFavored) {
+                    viewModel.updateMarketFavorite(marketId, isFavored) { success ->
                         isUpdatingFavorite = false
+                        if (success) {
+                            toast(
+                                context.getString(
+                                    if (isFavored) {
+                                        R.string.watchlist_remove_desc
+                                    } else {
+                                        R.string.watchlist_add_desc
+                                    },
+                                    tokenSymbol,
+                                ),
+                            )
+                        }
                     }
                 },
                 enabled = !isUpdatingFavorite,
             ) {
-                Icon(
-                    painter =
-                        painterResource(
-                            if (isFavored) {
-                                R.drawable.ic_title_favorites_checked
-                            } else {
-                                R.drawable.ic_title_favorites
-                            },
-                        ),
+                MarketFavoriteIcon(
+                    isFavored = isFavored,
+                    unselectedIconRes = R.drawable.ic_title_favorites,
+                    selectedIconRes = R.drawable.ic_title_favorites_checked,
                     contentDescription =
                         stringResource(
                             if (isFavored) {
@@ -225,7 +233,7 @@ fun PerpsMarketDetailPage(
                                 R.string.Add_to_Watchlist
                             },
                         ),
-                    tint = Color.Unspecified,
+                    modifier = Modifier.size(24.dp),
                 )
             }
             IconButton(onClick = {
