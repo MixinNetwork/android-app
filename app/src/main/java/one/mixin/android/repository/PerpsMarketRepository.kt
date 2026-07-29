@@ -7,7 +7,6 @@ import one.mixin.android.Constants
 import one.mixin.android.api.request.MarketFavoritesRequest
 import one.mixin.android.api.response.perps.PerpsFavorite
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.api.response.perps.PerpsMarketCategory
 import one.mixin.android.api.response.perps.PerpsRank
 import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.service.RouteService
@@ -19,6 +18,7 @@ import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsRankDao
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.vo.market.MarketCategory
 import javax.inject.Inject
 
 class PerpsMarketRepository
@@ -39,7 +39,7 @@ class PerpsMarketRepository
         fun observeFavoriteMarketIds(): Flow<Set<String>> =
             favoriteDao.observeFavoriteMarketIds().map { marketIds -> marketIds.toSet() }
 
-        fun observeMarketsByCategory(category: PerpsMarketCategory): Flow<List<PerpsMarket>> =
+        fun observeMarketsByCategory(category: MarketCategory): Flow<List<PerpsMarket>> =
             categoryDao.observeMarketsByCategory(category.value)
 
         suspend fun getAllMarkets(): List<PerpsMarket> = marketDao.getAllMarkets()
@@ -74,7 +74,7 @@ class PerpsMarketRepository
             return markets
         }
 
-        suspend fun syncCategory(category: PerpsMarketCategory): List<PerpsMarket>? {
+        suspend fun syncCategory(category: MarketCategory): List<PerpsMarket>? {
             val markets = fetchMarkets(category.apiValue) ?: return null
             database.withTransaction {
                 marketDao.upsertList(markets)

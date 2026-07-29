@@ -28,7 +28,6 @@ import one.mixin.android.api.request.perps.OpenOrderResponse
 import one.mixin.android.api.request.perps.PositionTpSlRequest
 import one.mixin.android.api.response.perps.CandleView
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.api.response.perps.PerpsMarketCategory
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPosition
@@ -45,6 +44,7 @@ import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.repository.PerpsMarketRepository
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
 import java.math.BigDecimal
@@ -242,7 +242,7 @@ class PerpetualViewModel @Inject constructor(
     }
 
     fun observeFeaturedMarkets(): Flow<List<PerpsMarket>> {
-        return perpsMarketRepository.observeMarketsByCategory(PerpsMarketCategory.FEATURED)
+        return perpsMarketRepository.observeMarketsByCategory(MarketCategory.FEATURED)
     }
 
     fun refreshMarkets(
@@ -268,7 +268,7 @@ class PerpetualViewModel @Inject constructor(
 
     fun refreshFeaturedMarkets() {
         viewModelScope.launch {
-            if (perpsMarketRepository.syncCategory(PerpsMarketCategory.FEATURED) == null) {
+            if (perpsMarketRepository.syncCategory(MarketCategory.FEATURED) == null) {
                 Timber.e("Failed to refresh featured perpetual markets")
             }
         }

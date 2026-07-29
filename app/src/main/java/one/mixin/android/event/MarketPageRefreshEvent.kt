@@ -16,6 +16,5 @@ enum class MarketPageDataSource {
     PERPETUAL_ALL,
     PERPETUAL_FAVORITE,
     PERPETUAL_FEATURED,
-    PERPETUAL_TRENDING,
     GLOBAL,
 }

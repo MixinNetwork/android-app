@@ -49,6 +49,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -104,13 +105,14 @@ fun MarketPage(
             selected = state.selectedTopTab,
             onSelect = onSelectTopTab,
         )
+        Spacer(modifier = Modifier.height(16.dp))
         if (state.selectedTopTab != MarketTopTab.INDICATOR) {
             SubTabs(
                 topTab = state.selectedTopTab,
                 selected = state.selectedSubTab,
                 onSelect = onSelectSubTab,
             )
-            if (!state.isShowingRecommendations) {
+            if (!state.isShowingRecommendations && state.entries.isNotEmpty()) {
                 MarketListHeader(
                     period = state.effectivePriceChangePeriod,
                     sortState = state.sortState,
@@ -216,7 +218,7 @@ private fun TopTabs(
             Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp, vertical = 4.dp),
+                .padding(horizontal = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         MarketTopTab.entries.forEach { tab ->
@@ -237,9 +239,10 @@ private fun SubTabs(
 ) {
     val tabs =
         if (topTab == MarketTopTab.WATCHLIST) {
-            listOf(MarketSubTab.CRYPTO, MarketSubTab.PERPETUAL, MarketSubTab.STOCK)
+            listOf(MarketSubTab.CRYPTO, MarketSubTab.PERPETUAL)
         } else {
             listOf(
+                MarketSubTab.FAVORITE,
                 MarketSubTab.TRENDING,
                 MarketSubTab.TOP_GAINERS,
                 MarketSubTab.TOP_LOSERS,
@@ -251,27 +254,62 @@ private fun SubTabs(
             Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 16.dp, vertical = 10.dp),
+                .padding(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         tabs.forEach { tab ->
-            Text(
-                text = subTabLabel(tab),
-                color = if (selected == tab) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
-                fontSize = 14.sp,
-                modifier =
-                    Modifier
-                        .clip(CircleShape)
-                        .background(
-                            if (selected == tab) {
-                                MixinAppTheme.colors.accent.copy(alpha = 0.10f)
-                            } else {
-                                Color.Transparent
-                            },
-                        ).clickable { onSelect(tab) }
-                        .padding(horizontal = 8.dp, vertical = 4.dp),
-            )
+            if (tab == MarketSubTab.FAVORITE) {
+                Box(
+                    modifier = Modifier.padding(horizontal = 4.dp),
+                ) {
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier =
+                            Modifier
+                                .size(28.dp)
+                                .clip(CircleShape)
+                                .background(
+                                    if (selected == tab) {
+                                        MixinAppTheme.colors.accent.copy(alpha = 0.10f)
+                                    } else {
+                                        Color.Transparent
+                                    },
+                                ).clickable { onSelect(tab) },
+                    ) {
+                        Icon(
+                            painter =
+                                painterResource(
+                                    if (selected == tab) {
+                                        R.drawable.ic_market_favorites_checked
+                                    } else {
+                                        R.drawable.ic_market_favorites
+                                    },
+                                ),
+                            contentDescription = stringResource(R.string.Watchlist),
+                            tint = Color.Unspecified,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                }
+            } else {
+                Text(
+                    text = subTabLabel(tab),
+                    color = if (selected == tab) MixinAppTheme.colors.accent else MixinAppTheme.colors.textAssist,
+                    fontSize = 14.sp,
+                    modifier =
+                        Modifier
+                            .clip(CircleShape)
+                            .background(
+                                if (selected == tab) {
+                                    MixinAppTheme.colors.accent.copy(alpha = 0.10f)
+                                } else {
+                                    Color.Transparent
+                                },
+                            ).clickable { onSelect(tab) }
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                )
+            }
         }
     }
 }
@@ -303,8 +341,8 @@ private fun MarketChip(
     ) {
         Text(
             text = text,
-            fontSize = 13.sp,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+            fontSize = 14.sp,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
         )
     }
 }
@@ -320,7 +358,7 @@ private fun MarketListHeader(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
+                .padding(start = 12.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -430,7 +468,6 @@ private fun MarketList(
         state.isShowingRecommendations -> {
             MarketRecommendations(
                 entries = state.entries,
-                settings = state.displaySettings,
                 isAdding = state.isAddingRecommendations,
                 onAdd = onAddRecommendations,
             )
@@ -441,18 +478,42 @@ private fun MarketList(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                Text(
-                    text =
-                        stringResource(
-                            when {
-                                state.hasError -> R.string.Network_error
-                                state.selectedTopTab == MarketTopTab.WATCHLIST -> R.string.watchlist_empty
-                                else -> R.string.No_Markets
-                            },
-                        ),
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 14.sp,
-                )
+                if (
+                    !state.hasError &&
+                    state.selectedTopTab == MarketTopTab.STOCK &&
+                    state.selectedSubTab == MarketSubTab.FAVORITE
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_watchlist_empty),
+                            contentDescription = null,
+                            tint = Color.Unspecified,
+                            modifier =
+                                Modifier
+                                    .width(58.dp)
+                                    .height(78.dp),
+                        )
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = stringResource(R.string.watchlist_empty),
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 12.sp,
+                        )
+                    }
+                } else {
+                    Text(
+                        text =
+                            stringResource(
+                                when {
+                                    state.hasError -> R.string.Network_error
+                                    state.selectedTopTab == MarketTopTab.WATCHLIST -> R.string.watchlist_empty
+                                    else -> R.string.No_Markets
+                                },
+                            ),
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp,
+                    )
+                }
             }
         }
 
@@ -477,17 +538,16 @@ private fun MarketList(
 @Composable
 private fun MarketRecommendations(
     entries: List<MarketListEntry>,
-    settings: MarketDisplaySettings,
     isAdding: Boolean,
     onAdd: (List<MarketListEntry>) -> Unit,
 ) {
     val recommendationIds = entries.map(MarketListEntry::stableId)
-    var selectedIds by remember(recommendationIds) { mutableStateOf(emptySet<String>()) }
+    var selectedIds by remember(recommendationIds) { mutableStateOf(recommendationIds.toSet()) }
     Box(modifier = Modifier.fillMaxSize()) {
         LazyVerticalGrid(
             columns = GridCells.Fixed(2),
             modifier = Modifier.fillMaxSize(),
-            contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 92.dp),
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 92.dp),
             horizontalArrangement = Arrangement.spacedBy(10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
@@ -498,7 +558,6 @@ private fun MarketRecommendations(
                 val selected = entry.stableId in selectedIds
                 RecommendationCard(
                     entry = entry,
-                    settings = settings,
                     selected = selected,
                     onSelect = {
                         selectedIds =
@@ -532,21 +591,10 @@ private fun MarketRecommendations(
 @Composable
 private fun RecommendationCard(
     entry: MarketListEntry,
-    settings: MarketDisplaySettings,
     selected: Boolean,
     onSelect: () -> Unit,
 ) {
     val shape = RoundedCornerShape(8.dp)
-    val change = entry.changePercent(settings.priceChangePeriod)
-    val isRising = change?.let { it >= BigDecimal.ZERO } ?: true
-    val changeColor =
-        if (change == null) {
-            MixinAppTheme.colors.textAssist
-        } else if (isRising) {
-            if (settings.quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-        } else {
-            if (settings.quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-        }
     val symbol =
         when (entry) {
             is MarketListEntry.Spot -> entry.market.symbol
@@ -557,11 +605,16 @@ private fun RecommendationCard(
             is MarketListEntry.Spot -> entry.market.iconUrl
             is MarketListEntry.Perpetual -> entry.market.iconUrl
         }
+    val marketValue =
+        when (entry) {
+            is MarketListEntry.Spot -> entry.market.marketCap
+            is MarketListEntry.Perpetual -> entry.market.volume
+        }
     Row(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .height(82.dp)
+                .height(64.dp)
                 .border(1.dp, MixinAppTheme.colors.borderColor, shape)
                 .clip(shape)
                 .selectable(
@@ -569,11 +622,11 @@ private fun RecommendationCard(
                     role = Role.Checkbox,
                     onClick = onSelect,
                 )
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MarketIcon(url = iconUrl)
-        Spacer(modifier = Modifier.width(8.dp))
+        MarketIcon(url = iconUrl, size = 24.dp)
+        Spacer(modifier = Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -598,9 +651,9 @@ private fun RecommendationCard(
                 }
             }
             Text(
-                text = change?.let(::formatPercent) ?: "--",
-                color = changeColor,
-                fontSize = 12.sp,
+                text = formatSpotVolume(marketValue),
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 13.sp,
                 maxLines = 1,
             )
         }
@@ -608,9 +661,9 @@ private fun RecommendationCard(
             painter =
                 painterResource(
                     if (selected) {
-                        R.drawable.ic_asset_favorites_checked
+                        R.drawable.ic_asset_add_checked
                     } else {
-                        R.drawable.ic_asset_favorites
+                        R.drawable.ic_asset_add_unchecked
                     },
                 ),
             contentDescription =
@@ -622,7 +675,7 @@ private fun RecommendationCard(
                     },
                 ),
             tint = Color.Unspecified,
-            modifier = Modifier.size(20.dp),
+            modifier = Modifier.size(30.dp),
         )
     }
 }
@@ -761,13 +814,16 @@ private fun RowScope.PerpetualMarketRowContent(
 }
 
 @Composable
-private fun MarketIcon(url: String) {
+private fun MarketIcon(
+    url: String,
+    size: Dp = 34.dp,
+) {
     CoilImage(
         model = url,
         placeholder = R.drawable.ic_avatar_place_holder,
         modifier =
             Modifier
-                .size(34.dp)
+                .size(size)
                 .clip(CircleShape),
     )
 }
@@ -1305,13 +1361,13 @@ private fun topTabLabel(tab: MarketTopTab): String =
 private fun subTabLabel(tab: MarketSubTab): String =
     stringResource(
         when (tab) {
+            MarketSubTab.FAVORITE -> R.string.Watchlist
             MarketSubTab.TRENDING -> R.string.Trending
             MarketSubTab.TOP_GAINERS -> R.string.top_gainers
             MarketSubTab.TOP_LOSERS -> R.string.top_losers
             MarketSubTab.ALL -> R.string.All
             MarketSubTab.CRYPTO -> R.string.Crypto
             MarketSubTab.PERPETUAL -> R.string.Perpetual
-            MarketSubTab.STOCK -> R.string.market_stock
         },
     )
 

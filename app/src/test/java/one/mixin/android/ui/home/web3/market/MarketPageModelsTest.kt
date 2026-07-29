@@ -33,7 +33,7 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun watchlistLegacyAllDoesNotMixMarketTypes() {
+    fun watchlistSpotIncludesAllSpotMarketTypes() {
         val crypto = market(coinId = "btc", perpsMarketId = "btc-perp", favored = true)
         val stock = market(coinId = "hood", favored = true)
         val perpetual = perpsMarket(marketId = "btc-perp")
@@ -46,7 +46,11 @@ class MarketPageModelsTest {
                 subTab = MarketSubTab.ALL,
             )
 
-        assertEquals(listOf("spot:btc"), result.map { it.stableId })
+        assertEquals(listOf("spot:btc", "spot:hood"), result.map { it.stableId })
+        assertEquals(
+            listOf(SpotMarketType.CRYPTO, SpotMarketType.STOCK),
+            result.map { (it as MarketListEntry.Spot).type },
+        )
     }
 
     @Test
@@ -64,22 +68,6 @@ class MarketPageModelsTest {
 
         assertEquals(listOf("perpetual:btc-perp"), result.map { it.stableId })
         assertTrue(result.single().isFavored)
-    }
-
-    @Test
-    fun watchlistStockIncludesStockFavorites() {
-        val cryptoFavorite = market(coinId = "btc", favored = true)
-        val stockFavorite = market(coinId = "hood", favored = true)
-
-        val result =
-            MarketPageMapper.watchlist(
-                spotFavorites = listOf(cryptoFavorite, stockFavorite),
-                perpetualFavorites = emptyList(),
-                stockCoinIds = setOf("hood"),
-                subTab = MarketSubTab.STOCK,
-            )
-
-        assertEquals(listOf("spot:hood"), result.map { it.stableId })
     }
 
     @Test
@@ -117,24 +105,6 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun emptyStockWatchlistUsesFeaturedStocks() {
-        val featuredStock = market(coinId = "hood")
-        val featuredCrypto = market(coinId = "btc")
-
-        val result =
-            MarketPageMapper.watchlist(
-                spotFavorites = emptyList(),
-                perpetualFavorites = emptyList(),
-                stockCoinIds = setOf("hood"),
-                subTab = MarketSubTab.STOCK,
-                spotFeatured = listOf(featuredCrypto, featuredStock),
-            )
-
-        assertEquals(listOf("spot:hood"), result.map { it.stableId })
-        assertTrue(!result.single().isFavored)
-    }
-
-    @Test
     fun perpetualChangeAlwaysUsesTwentyFourHourData() {
         val market = perpsMarket(marketId = "btc-perp", change = "0.12")
         val entry = MarketListEntry.Perpetual(market, false)
@@ -157,6 +127,20 @@ class MarketPageModelsTest {
 
         assertEquals(listOf("gainer", "unchanged", "loser"), gainers.map { it.marketId })
         assertEquals(listOf("loser", "unchanged", "gainer"), losers.map { it.marketId })
+    }
+
+    @Test
+    fun perpetualTrendingPreservesApiRankOrder() {
+        val markets =
+            listOf(
+                perpsMarket(marketId = "first"),
+                perpsMarket(marketId = "second"),
+                perpsMarket(marketId = "third"),
+            )
+
+        val trending = MarketPageMapper.perpetualMarkets(markets, MarketSubTab.TRENDING)
+
+        assertEquals(listOf("first", "second", "third"), trending.map { it.marketId })
     }
 
     @Test

@@ -10,7 +10,6 @@ import one.mixin.android.Constants.Account.PREF_GLOBAL_MARKET
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
-import one.mixin.android.api.response.perps.PerpsMarketCategory
 import one.mixin.android.event.GlobalMarketEvent
 import one.mixin.android.event.MarketPageDataSource
 import one.mixin.android.event.MarketPageRefreshEvent
@@ -88,12 +87,7 @@ class RefreshMarketPageJob(
                         },
                         async {
                             refresh(MarketPageDataSource.PERPETUAL_FEATURED) {
-                                perpsMarketRepository.syncCategory(PerpsMarketCategory.FEATURED) != null
-                            }
-                        },
-                        async {
-                            refresh(MarketPageDataSource.PERPETUAL_TRENDING) {
-                                perpsMarketRepository.syncCategory(PerpsMarketCategory.TRENDING) != null
+                                perpsMarketRepository.syncCategory(MarketCategory.FEATURED) != null
                             }
                         },
                         async {

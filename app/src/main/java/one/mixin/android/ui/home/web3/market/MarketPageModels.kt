@@ -14,13 +14,13 @@ enum class MarketTopTab {
 }
 
 enum class MarketSubTab {
+    FAVORITE,
     TRENDING,
     TOP_GAINERS,
     TOP_LOSERS,
     ALL,
     CRYPTO,
     PERPETUAL,
-    STOCK,
 }
 
 enum class MarketPriceChangePeriod {
@@ -167,33 +167,25 @@ object MarketPageMapper {
                     perpetualFeatured.map { MarketListEntry.Perpetual(it, false) }
                 }
 
-            MarketSubTab.STOCK -> {
-                val stockFavorites = spotFavorites.filter { it.coinId in stockCoinIds }
-                val markets =
-                    if (stockFavorites.isNotEmpty()) {
-                        stockFavorites.map { it.copy(isFavored = true) }
-                    } else {
-                        spotFeatured
-                            .filter { it.coinId in stockCoinIds }
-                            .map { it.copy(isFavored = false) }
-                    }
-                markets.map { MarketListEntry.Spot(it, SpotMarketType.STOCK) }
-            }
-
             else -> {
-                val cryptoFavorites =
-                    spotFavorites
-                        .filterNot { it.coinId in stockCoinIds }
                 val markets =
-                    if (cryptoFavorites.isNotEmpty()) {
-                        cryptoFavorites.map { it.copy(isFavored = true) }
+                    if (spotFavorites.isNotEmpty()) {
+                        spotFavorites.map { it.copy(isFavored = true) }
                     } else {
-                        spotFeatured
-                            .filterNot { it.coinId in stockCoinIds }
-                            .map { it.copy(isFavored = false) }
+                        spotFeatured.map { it.copy(isFavored = false) }
                     }
                 markets
-                    .map { MarketListEntry.Spot(it, SpotMarketType.CRYPTO) }
+                    .map { market ->
+                        MarketListEntry.Spot(
+                            market = market,
+                            type =
+                                if (market.coinId in stockCoinIds) {
+                                    SpotMarketType.STOCK
+                                } else {
+                                    SpotMarketType.CRYPTO
+                                },
+                        )
+                    }
             }
         }
     }
