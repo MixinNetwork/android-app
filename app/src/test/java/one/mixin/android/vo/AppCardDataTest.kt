@@ -102,4 +102,37 @@ class AppCardDataTest {
         assertTrue(coverUrlOnly.hasMediaCover)
         assertFalse(nestedCover.hasMediaCover)
     }
+
+    @Test
+    fun `safe image url accepts public https url`() {
+        assertTrue("https://cdn.example.com/cover.jpg".safeAppCardImageUrl() != null)
+    }
+
+    @Test
+    fun `safe image url rejects non-https and local targets`() {
+        assertFalse("http://cdn.example.com/cover.jpg".safeAppCardImageUrl() != null)
+        assertFalse("https://localhost/cover.jpg".safeAppCardImageUrl() != null)
+        assertFalse("https://127.0.0.1/cover.jpg".safeAppCardImageUrl() != null)
+        assertFalse("https://10.0.0.1/cover.jpg".safeAppCardImageUrl() != null)
+        assertFalse("https://[::1]/cover.jpg".safeAppCardImageUrl() != null)
+        assertFalse("https://router.local/cover.jpg".safeAppCardImageUrl() != null)
+    }
+
+    @Test
+    fun `unsafe media cover is not exposed`() {
+        val appCardData = AppCardData(
+            appId = "app-id",
+            iconUrl = null,
+            coverUrl = "https://127.0.0.1/cover.jpg",
+            cover = null,
+            title = "title",
+            description = null,
+            action = null,
+            updatedAt = null,
+            shareable = null,
+        )
+
+        assertFalse(appCardData.hasMediaCover)
+        assertFalse(appCardData.hashCover)
+    }
 }

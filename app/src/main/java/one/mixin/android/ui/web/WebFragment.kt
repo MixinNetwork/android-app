@@ -196,9 +196,28 @@ import org.json.JSONObject
 import timber.log.Timber
 import java.io.ByteArrayInputStream
 import java.net.URI
-import java.net.URISyntaxException
 import java.util.Locale
 import javax.inject.Inject
+
+internal fun secureWebOrigin(url: String?): String? {
+    if (url == null) return null
+    return try {
+        val uri = URI(url)
+        val host = uri.host ?: return null
+        if (!uri.scheme.equals("https", true)) return null
+        val port = if (uri.port == -1) 443 else uri.port
+        "https://${host.lowercase(Locale.US)}:$port"
+    } catch (_: Exception) {
+        null
+    }
+}
+
+internal fun isTrustedWebUrl(
+    url: String?,
+    trustedOrigin: String?,
+): Boolean {
+    return trustedOrigin != null && secureWebOrigin(url) == trustedOrigin
+}
 
 @AndroidEntryPoint
 class WebFragment : BaseFragment() {
@@ -254,6 +273,9 @@ class WebFragment : BaseFragment() {
 
     private val injectable: Boolean by lazy {
         requireArguments().getBoolean(ARGS_INJECTABLE, true)
+    }
+    private val trustedWebOrigin: String? by lazy {
+        secureWebOrigin(url)
     }
     private val fixedTitle: String? by lazy {
         requireArguments().getString(ARGS_FIXED_TITLE)
@@ -556,7 +578,7 @@ class WebFragment : BaseFragment() {
         webView.settings.loadWithOverviewMode = true
         webView.settings.textZoom = 100
         webView.settings.mixedContentMode =
-            WebSettings.MIXED_CONTENT_COMPATIBILITY_MODE
+            WebSettings.MIXED_CONTENT_NEVER_ALLOW
         webView.settings.mediaPlaybackRequiresUserGesture = false
         webView.settings.userAgentString =
             webView.settings.userAgentString + " Mixin/" + BuildConfig.VERSION_NAME + " GOOGLE_PAY_SUPPORTED"
@@ -577,6 +599,7 @@ class WebFragment : BaseFragment() {
                 this.parentFragmentManager,
                 requireActivity().activityResultRegistry,
                 injectable,
+                trustedWebOrigin,
                 lifecycleScope,
                 { url ->
                     currentUrl = url
@@ -915,6 +938,11 @@ class WebFragment : BaseFragment() {
 
     private fun loadWebView() {
         _binding?.let { binding ->
+            if (trustedWebOrigin == null) {
+                openInBrowser(url)
+                closeSelf()
+                return
+            }
             binding.pb.isVisible = false
             var immersive = false
             app?.capabilities?.let {
@@ -965,66 +993,68 @@ class WebFragment : BaseFragment() {
                         openInBrowser(url)
                     },
                 )
-            webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
-            webView.addJavascriptInterface(
-                Web3Interface(
-                    onWalletActionSuccessful = { e ->
-                        lifecycleScope.launch {
-                            webView.evaluateJavascript(e, Timber::d)
-                        }
-                    },
-                    onWalletActionError = { id, code, message ->
-                        lifecycleScope.launch {
-                            webView.evaluateJavascript(walletErrorScript(id, code, message)) {}
-                        }
-                    },
-                    onBrowserSign = { message ->
-                        lifecycleScope.launch {
-                            if (viewDestroyed()) return@launch
-
-                            showGasCheckAndBrowserBottomSheetDialogFragment(
-                                requireActivity(),
-                                message,
-                                currentUrl = currentUrl,
-                                currentTitle = currentTitle,
-                                onReject = {
-                                    lifecycleScope.launch {
-                                        webView.evaluateJavascript(
-                                            walletErrorScript(
-                                                message.callbackId,
-                                                WalletErrorCode.USER_REJECTED_REQUEST,
-                                                "User rejected the request",
-                                            ),
-                                        ) {}
-                                    }
-                                },
-                                onDone = { callback ->
-                                    lifecycleScope.launch {
-                                        if (callback != null) webView.evaluateJavascript(callback) {}
-                                    }
-                                },
-                            )
-                        }
-                    },
-                    onEmptyAddress = { network ->
-                        lifecycleScope.launch {
-                            if (viewDestroyed()) return@launch
-                            if (network.equals("solana", true)) {
-                                if (Web3Signer.solanaAddress.isEmpty()) {
-                                    toast(getString(R.string.not_support_network, network))
-                                }
-                            } else if (network.equals("ethereum", true)) {
-                                if (Web3Signer.evmAddress.isEmpty()) {
-                                    toast(getString(R.string.not_support_network, network))
-                                }
-                            } else {
-                                return@launch
+            if (injectable) {
+                webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
+                webView.addJavascriptInterface(
+                    Web3Interface(
+                        onWalletActionSuccessful = { e ->
+                            lifecycleScope.launch {
+                                webView.evaluateJavascript(e, Timber::d)
                             }
-                        }
-                    },
-                ),
-                "_mw_",
-            )
+                        },
+                        onWalletActionError = { id, code, message ->
+                            lifecycleScope.launch {
+                                webView.evaluateJavascript(walletErrorScript(id, code, message)) {}
+                            }
+                        },
+                        onBrowserSign = { message ->
+                            lifecycleScope.launch {
+                                if (viewDestroyed()) return@launch
+
+                                showGasCheckAndBrowserBottomSheetDialogFragment(
+                                    requireActivity(),
+                                    message,
+                                    currentUrl = currentUrl,
+                                    currentTitle = currentTitle,
+                                    onReject = {
+                                        lifecycleScope.launch {
+                                            webView.evaluateJavascript(
+                                                walletErrorScript(
+                                                    message.callbackId,
+                                                    WalletErrorCode.USER_REJECTED_REQUEST,
+                                                    "User rejected the request",
+                                                ),
+                                            ) {}
+                                        }
+                                    },
+                                    onDone = { callback ->
+                                        lifecycleScope.launch {
+                                            if (callback != null) webView.evaluateJavascript(callback) {}
+                                        }
+                                    },
+                                )
+                            }
+                        },
+                        onEmptyAddress = { network ->
+                            lifecycleScope.launch {
+                                if (viewDestroyed()) return@launch
+                                if (network.equals("solana", true)) {
+                                    if (Web3Signer.solanaAddress.isEmpty()) {
+                                        toast(getString(R.string.not_support_network, network))
+                                    }
+                                } else if (network.equals("ethereum", true)) {
+                                    if (Web3Signer.evmAddress.isEmpty()) {
+                                        toast(getString(R.string.not_support_network, network))
+                                    }
+                                } else {
+                                    return@launch
+                                }
+                            }
+                        },
+                    ),
+                    "_mw_",
+                )
+            }
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
                 extraHeaders[Mixin_Conversation_ID_HEADER] = it
@@ -1159,11 +1189,7 @@ class WebFragment : BaseFragment() {
             }
 
             val sameHost =
-                try {
-                    Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
-                } catch (e: Exception) {
-                    false
-                }
+                secureWebOrigin(webView.url) == secureWebOrigin(app?.homeUri)
             if (!sameHost) {
                 webView.evaluateJavascript("$callbackFunction('[]')") {}
                 return@launch
@@ -1810,6 +1836,7 @@ class WebFragment : BaseFragment() {
         private val fragmentManager: FragmentManager,
         private val registry: ActivityResultRegistry,
         private val inject: Boolean = true,
+        private val trustedOrigin: String?,
         private val scope: CoroutineScope,
         private val onFinished: (url: String?) -> Unit,
         private val onWebpageLoaded: (title: String?, url: String?) -> Unit,
@@ -1819,6 +1846,11 @@ class WebFragment : BaseFragment() {
         private var loadingError = false
         private val jsInjectorClient by lazy {
             JsInjectorClient()
+        }
+
+        private fun canLoadUrl(url: String?): Boolean {
+            val origin = secureWebOrigin(url) ?: return false
+            return !inject || origin == trustedOrigin
         }
 
         private fun closeWebContainer() {
@@ -1832,6 +1864,11 @@ class WebFragment : BaseFragment() {
         ) {
             super.onPageStarted(view, url, favicon)
             view ?: return
+            if (!canLoadUrl(url)) {
+                view.stopLoading()
+                url?.let { context.openInBrowser(it) }
+                return
+            }
             view.clearCache(true)
             Timber.e("onPageStarted ${Web3Signer.currentChain.name}")
             if (!redirect && inject) {
@@ -1901,6 +1938,11 @@ class WebFragment : BaseFragment() {
                 return super.shouldOverrideUrlLoading(view, request)
             }
             val url = request.url.toString()
+
+            if (url.isWebUrl() && !canLoadUrl(url)) {
+                context.openInBrowser(url)
+                return true
+            }
 
             if (url.startsWith(Constants.Scheme.WALLET_CONNECT_PREFIX, true) ||
                 url.startsWith(Constants.Scheme.MIXIN_WC) ||
@@ -1977,18 +2019,7 @@ class WebFragment : BaseFragment() {
         }
 
         private fun isFallbackUrlValid(fallbackUrl: String): Boolean {
-            try {
-                val anyCaseScheme = URI(fallbackUrl).scheme
-                val scheme = anyCaseScheme?.lowercase(Locale.US)
-                if ("http" == scheme || "https" == scheme) {
-                    return true
-                } else {
-                    Timber.w("Fallback URI uses unsupported scheme: $scheme. Try http or https.")
-                }
-            } catch (e: URISyntaxException) {
-                Timber.w("URISyntaxException parsing fallback URI")
-            }
-            return false
+            return canLoadUrl(fallbackUrl)
         }
 
         interface OnPageFinishedListener {
