@@ -1031,6 +1031,10 @@ class WebFragment : BaseFragment() {
                                 if (Web3Signer.evmAddress.isEmpty()) {
                                     toast(getString(R.string.not_support_network, network))
                                 }
+                            } else if (network.equals("tron", true)) {
+                                if (Web3Signer.tronAddress.isEmpty()) {
+                                    toast(getString(R.string.not_support_network, network))
+                                }
                             } else {
                                 return@launch
                             }
@@ -2057,10 +2061,10 @@ class WebFragment : BaseFragment() {
             try {
                 val method = DAppMethod.fromValue(obj.getString("name"))
                 val network = obj.getString("network")
-                if (network == Web3Signer.JsSignerNetwork.Solana.name) {
-                    Web3Signer.useSolana()
-                } else {
-                    Web3Signer.useEvm()
+                when (network) {
+                    Web3Signer.JsSignerNetwork.Solana.name -> Web3Signer.useSolana()
+                    Web3Signer.JsSignerNetwork.Tron.name -> Web3Signer.useTron()
+                    else -> Web3Signer.useEvm()
                 }
                 if (isAddressEmpty(network, id)) {
                     return
@@ -2085,6 +2089,18 @@ class WebFragment : BaseFragment() {
                     val o = obj.getJSONObject("object")
                     if (network == Web3Signer.JsSignerNetwork.Solana.name) {
                         signMessage(id, o.getString("data"))
+                    } else if (network == Web3Signer.JsSignerNetwork.Tron.name) {
+                        val tronData = o.get("data")
+                        val bytes = tronMessageBytes(tronData)
+                        val reviewData = if (tronData is String) tronData else tronData.toString()
+                        onBrowserSign(
+                            JsSignMessage(
+                                id,
+                                JsSignMessage.TYPE_TRON_MESSAGE,
+                                data = reviewData,
+                                tronMessageBytes = bytes,
+                            )
+                        )
                     } else {
                         signEvmMessage(id, o)
                     }
@@ -2099,6 +2115,11 @@ class WebFragment : BaseFragment() {
                 }
 
                 DAppMethod.SIGNTRANSACTION -> {
+                    if (network == Web3Signer.JsSignerNetwork.Tron.name) {
+                        val transaction = obj.getJSONObject("object").getJSONObject("transaction")
+                        onBrowserSign(JsSignMessage(id, JsSignMessage.TYPE_TRON_TRANSACTION, data = transaction.toString()))
+                        return
+                    }
                     val transaction = obj.getJSONObject("object")
                     val to = transaction.getString("to")
                     val from = transaction.getString("from")
@@ -2195,6 +2216,18 @@ class WebFragment : BaseFragment() {
         ) {
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
         }
+
+        private fun tronMessageBytes(data: Any): ByteArray =
+            when (data) {
+                is String -> data.toByteArray(Charsets.UTF_8)
+                is org.json.JSONArray -> ByteArray(data.length()) { index -> data.getInt(index).toByte() }
+                is JSONObject -> data.keys().asSequence()
+                    .sortedBy { it.toInt() }
+                    .map { data.getInt(it).toByte() }
+                    .toList()
+                    .toByteArray()
+                else -> throw IllegalArgumentException("Unsupported Tron message data")
+            }
 
         private fun signEvmMessage(
             callbackId: Long,

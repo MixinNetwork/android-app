@@ -26,6 +26,7 @@ import one.mixin.android.Constants.AssetId.USDT_ASSET_BEP_ID
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.USDT_ASSET_POL_ID
 import one.mixin.android.Constants.AssetId.USDT_ASSET_SOL_ID
+import one.mixin.android.Constants.AssetId.USDT_ASSET_TRC_ID
 import one.mixin.android.R
 import one.mixin.android.compose.InputAmountBottomSheetDialogFragment
 import one.mixin.android.databinding.FragmentWeb3AddressBinding
@@ -155,27 +156,23 @@ class Web3AddressFragment : BaseFragment() {
             if (!hideNetworkSwitch) {
                 if (Constants.AssetId.usdtAssets.containsKey(web3Token.assetId)) {
                     binding.networkChipGroup.isVisible = true
-                    initChips(
-                        if (Web3Signer.evmAddress.isBlank()) {
-                            mapOf(
-                                USDT_ASSET_SOL_ID to "Solana",
+                    initChips(buildMap {
+                        if (Web3Signer.evmAddress.isNotBlank()) {
+                            putAll(
+                                mapOf(
+                                    USDT_ASSET_ETH_ID to "Ethereum",
+                                    USDT_ASSET_POL_ID to "Polygon",
+                                    USDT_ASSET_BEP_ID to "BSC",
                                 )
-                        } else if (Web3Signer.solanaAddress.isBlank()) {
-                            mapOf(
-                                USDT_ASSET_ETH_ID to "Ethereum",
-                                USDT_ASSET_POL_ID to "Polygon",
-                                USDT_ASSET_BEP_ID to "BSC",
-                            )
-
-                        } else {
-                            mapOf(
-                                USDT_ASSET_ETH_ID to "Ethereum",
-                                USDT_ASSET_SOL_ID to "Solana",
-                                USDT_ASSET_POL_ID to "Polygon",
-                                USDT_ASSET_BEP_ID to "BSC",
                             )
                         }
-                    )
+                        if (Web3Signer.solanaAddress.isNotBlank()) {
+                            put(USDT_ASSET_SOL_ID, "Solana")
+                        }
+                        if (Web3Signer.tronAddress.isNotBlank()) {
+                            put(USDT_ASSET_TRC_ID, "TRON")
+                        }
+                    })
                 } else if (Constants.AssetId.usdcAssets.containsKey(web3Token.assetId)) {
                     initChips(
                         if (Web3Signer.evmAddress.isBlank()) {
@@ -238,6 +235,7 @@ class Web3AddressFragment : BaseFragment() {
                     Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
                     Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
                     Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
+                    Constants.ChainId.TRON_CHAIN_ID -> Web3Signer.tronAddress
                     else -> Web3Signer.evmAddress
                 }
             updateUI()

@@ -71,12 +71,29 @@ object Bip44Path {
             0 or HARDENED_BIT,
         )
 
+    /**
+     * Generate Tron derivation path with variable index
+     * Tron path: m/44'/195'/0'/0/{index}
+     */
+    fun tron(index: Int = 0): IntArray =
+        intArrayOf(
+            44 or HARDENED_BIT,
+            195 or HARDENED_BIT,
+            0 or HARDENED_BIT,
+            0,
+            index,
+        )
+
     fun ethereumPathString(index: Int = 0): String {
         return "m/44'/60'/0'/0/$index"
     }
 
     fun solanaPathString(index: Int = 0): String {
         return "m/44'/501'/${index}'/0'"
+    }
+
+    fun tronPathString(index: Int = 0): String {
+        return "m/44'/195'/0'/0/$index"
     }
 
     fun bitcoinSegwitPathString(index: Int = 0): String {

@@ -905,9 +905,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     }
 
     private suspend fun initWalletConnect() {
-        if (!WalletConnect.isEnabled()) return
         try {
-            WalletConnectV2
+            if (WalletConnect.isEnabled()) {
+                WalletConnectV2
+            }
             val classicWalletId = web3Repository.getClassicWalletId()
             Web3Signer.init(
                 { classicWalletId },

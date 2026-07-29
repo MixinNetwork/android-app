@@ -77,6 +77,10 @@ object CryptoWalletHelper {
                         .removeSuffix("'/0'")
                         .toIntOrNull()
                 }
+                // Tron path: m/44'/195'/0'/0/{index}
+                path.startsWith("m/44'/195'/") -> {
+                    path.removePrefix("m/44'/195'/0'/0/").toIntOrNull()
+                }
                 // Bitcoin SegWit path: m/84'/0'/0'/0/{index}
                 path.startsWith("m/84'/0'/") -> {
                     path.removePrefix("m/84'/0'/0'/0/").toIntOrNull()
@@ -162,6 +166,21 @@ object CryptoWalletHelper {
         }
     }
 
+    fun mnemonicToTronWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
+        try {
+            val path = Bip44Path.tronPathString(index)
+            val privateKey = TronKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+            return CryptoWallet(
+                mnemonic = mnemonic,
+                privateKey = Numeric.toHexString(privateKey),
+                address = TronKeyGenerator.privateKeyToAddress(privateKey),
+                path = path,
+            )
+        } catch (e: Exception) {
+            throw RuntimeException("Tron wallet generation failed: ${e.message}", e)
+        }
+    }
+
     fun mnemonicToEthereumWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
         try {
             val path = Bip44Path.ethereumPathString(index)
@@ -214,6 +233,10 @@ object CryptoWalletHelper {
                 UtxoKeyGenerator.privateKeyToAddress(privateKey, chainId)
             }
 
+            Constants.ChainId.TRON_CHAIN_ID -> {
+                TronKeyGenerator.privateKeyToAddress(Numeric.hexStringToByteArray(privateKey))
+            }
+
             in Constants.Web3EvmChainIds -> {
                 val privateKeyBytes: ByteArray = Numeric.hexStringToByteArray(privateKey)
                 EthKeyGenerator.privateKeyToAddress(privateKeyBytes)
@@ -239,6 +262,10 @@ object CryptoWalletHelper {
             Constants.ChainId.BITCOIN_CHAIN_ID,
             Constants.ChainId.PEARL_CHAIN_ID -> {
                 UtxoKeyGenerator.mnemonicToAddress(mnemonic, chainId, passphrase, index)
+            }
+            Constants.ChainId.TRON_CHAIN_ID -> {
+                val privateKey = TronKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+                TronKeyGenerator.privateKeyToAddress(privateKey)
             }
             in Constants.Web3EvmChainIds -> {
                 val privateKey: ByteArray =
@@ -276,6 +303,7 @@ object CryptoWalletHelper {
                 )
                 ECKey.fromPrivate(privateKey, true).getPrivateKeyEncoded(BitcoinNetwork.MAINNET).toBase58()
             }
+            Constants.ChainId.TRON_CHAIN_ID -> mnemonicToTronWallet(mnemonic, index = index).privateKey
             in Constants.Web3EvmChainIds -> mnemonicToEthereumWallet(mnemonic, index = index).privateKey
             else -> throw IllegalArgumentException("Unsupported chainId: $chainId")
         }
@@ -373,6 +401,9 @@ object CryptoWalletHelper {
                         Numeric.hexStringToByteArray(privateKeyStr)
                     }
                 }
+                Constants.ChainId.TRON_CHAIN_ID -> {
+                    Numeric.hexStringToByteArray(privateKeyStr)
+                }
                 in Constants.Web3EvmChainIds -> {
                     Numeric.hexStringToByteArray(privateKeyStr)
                 }
@@ -447,6 +478,9 @@ object CryptoWalletHelper {
                     chainId = chainId,
                     index = derivationIndex,
                 )
+            }
+            Constants.ChainId.TRON_CHAIN_ID -> {
+                TronKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
             }
             in Constants.Web3EvmChainIds -> {
                 EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)

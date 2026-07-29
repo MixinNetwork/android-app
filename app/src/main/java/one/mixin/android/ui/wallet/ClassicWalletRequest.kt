@@ -56,6 +56,7 @@ suspend fun buildClassicWalletRequest(
     val name = nextCommonWalletName(names)
     val evmAddress = privateKeyToAddress(spendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex)
     val solAddress = privateKeyToAddress(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex)
+    val tronAddress = privateKeyToAddress(spendKey, Constants.ChainId.TRON_CHAIN_ID, classicIndex)
     return WalletRequest(
         name = name,
         category = WalletCategory.CLASSIC.value,
@@ -73,6 +74,13 @@ suspend fun buildClassicWalletRequest(
                 chainId = Constants.ChainId.SOLANA_CHAIN_ID,
                 path = Bip44Path.solanaPathString(classicIndex),
                 privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex),
+                category = WalletCategory.CLASSIC.value,
+            ))
+            add(createSignedWeb3AddressRequest(
+                destination = tronAddress,
+                chainId = Constants.ChainId.TRON_CHAIN_ID,
+                path = Bip44Path.tronPathString(classicIndex),
+                privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.TRON_CHAIN_ID, classicIndex),
                 category = WalletCategory.CLASSIC.value,
             ))
         }
@@ -194,6 +202,9 @@ fun createSignedWeb3AddressRequest(
             }
             chainId == Constants.ChainId.BITCOIN_CHAIN_ID || chainId == Constants.ChainId.PEARL_CHAIN_ID -> {
                 signUtxoAddressMessage(privateKey, message, chainId)
+            }
+            chainId == Constants.ChainId.TRON_CHAIN_ID -> {
+                one.mixin.android.crypto.TronKeyGenerator.signMessageV2(privateKey, message)
             }
             else -> null
         }
