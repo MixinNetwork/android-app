@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 72,
-    "identityHash": "c4639efd1bb95f787d94ad8cde203b7e",
+    "identityHash": "046b653eceef4cf38f4ced295de6aa3b",
     "entities": [
       {
         "tableName": "users",
@@ -3256,11 +3256,11 @@
       },
       {
         "tableName": "market_categories",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `category` INTEGER NOT NULL, PRIMARY KEY(`market_id`, `category`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `category` INTEGER NOT NULL, PRIMARY KEY(`coin_id`, `category`))",
         "fields": [
           {
-            "fieldPath": "marketId",
-            "columnName": "market_id",
+            "fieldPath": "coinId",
+            "columnName": "coin_id",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -3274,7 +3274,7 @@
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "market_id",
+            "coin_id",
             "category"
           ]
         },
@@ -3386,7 +3386,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c4639efd1bb95f787d94ad8cde203b7e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '046b653eceef4cf38f4ced295de6aa3b')"
     ]
   }
 }

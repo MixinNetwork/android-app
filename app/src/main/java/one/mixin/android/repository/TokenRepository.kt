@@ -1407,7 +1407,7 @@ class TokenRepository
                             MarketCategory.fromApiValue(category)?.let { marketCategory ->
                                 marketCategoryDao.replaceCategory(
                                     category = marketCategory.value,
-                                    marketIds = markets.map(Market::coinId),
+                                    coinIds = markets.map(Market::coinId),
                                 )
                             }
                     }

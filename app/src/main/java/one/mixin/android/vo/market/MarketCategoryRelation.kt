@@ -6,12 +6,12 @@ import androidx.room.Index
 
 @Entity(
     tableName = "market_categories",
-    primaryKeys = ["market_id", "category"],
+    primaryKeys = ["coin_id", "category"],
     indices = [Index(value = ["category"])],
 )
 data class MarketCategoryRelation(
-    @ColumnInfo(name = "market_id")
-    val marketId: String,
+    @ColumnInfo(name = "coin_id")
+    val coinId: String,
     @ColumnInfo(name = "category")
     val category: Int,
 )

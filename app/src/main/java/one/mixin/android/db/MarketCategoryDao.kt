@@ -12,23 +12,23 @@ interface MarketCategoryDao : BaseDao<MarketCategoryRelation> {
     @Query("DELETE FROM market_categories WHERE category = :category")
     suspend fun deleteByCategory(category: Int)
 
-    @Query("DELETE FROM market_categories WHERE market_id = :marketId AND category = :category")
-    suspend fun deleteByMarketIdAndCategory(
-        marketId: String,
+    @Query("DELETE FROM market_categories WHERE coin_id = :coinId AND category = :category")
+    suspend fun deleteByCoinIdAndCategory(
+        coinId: String,
         category: Int,
     )
 
     @Transaction
     suspend fun replaceCategory(
         category: Int,
-        marketIds: List<String>,
+        coinIds: List<String>,
     ) {
         deleteByCategory(category)
-        if (marketIds.isNotEmpty()) {
+        if (coinIds.isNotEmpty()) {
             insertListSuspend(
-                marketIds.map { marketId ->
+                coinIds.map { coinId ->
                     MarketCategoryRelation(
-                        marketId = marketId,
+                        coinId = coinId,
                         category = category,
                     )
                 },
@@ -40,7 +40,7 @@ interface MarketCategoryDao : BaseDao<MarketCategoryRelation> {
         """
         SELECT m.*, mf.is_favored
         FROM market_categories mc
-        INNER JOIN markets m ON m.coin_id = mc.market_id
+        INNER JOIN markets m ON m.coin_id = mc.coin_id
         LEFT JOIN market_favored mf ON mf.coin_id = m.coin_id
         LEFT JOIN market_cap_ranks mr ON mr.coin_id = m.coin_id
         WHERE mc.category = :category
@@ -54,7 +54,7 @@ interface MarketCategoryDao : BaseDao<MarketCategoryRelation> {
         """
         SELECT m.*, mf.is_favored
         FROM market_categories mc
-        INNER JOIN markets m ON m.coin_id = mc.market_id
+        INNER JOIN markets m ON m.coin_id = mc.coin_id
         LEFT JOIN market_favored mf ON mf.coin_id = m.coin_id
         LEFT JOIN market_cap_ranks mr ON mr.coin_id = m.coin_id
         WHERE mc.category = :category
