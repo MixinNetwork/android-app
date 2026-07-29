@@ -9,7 +9,6 @@ enum class MarketTopTab {
     WATCHLIST,
     CRYPTO,
     PERPETUAL,
-    STOCK,
     INDICATOR,
 }
 
@@ -125,22 +124,9 @@ fun defaultMarketSubTabs(): Map<MarketTopTab, MarketSubTab> =
         MarketTopTab.WATCHLIST to MarketSubTab.CRYPTO,
         MarketTopTab.CRYPTO to MarketSubTab.TRENDING,
         MarketTopTab.PERPETUAL to MarketSubTab.TRENDING,
-        MarketTopTab.STOCK to MarketSubTab.TRENDING,
     )
 
 object MarketPageMapper {
-    fun stockMarkets(
-        markets: List<MarketItem>,
-        subTab: MarketSubTab,
-        period: MarketPriceChangePeriod,
-    ): List<MarketItem> =
-        when (subTab) {
-            MarketSubTab.TOP_GAINERS -> markets.sortedByDescending { it.changePercent(period) ?: BigDecimal.ZERO }
-            MarketSubTab.TOP_LOSERS -> markets.sortedBy { it.changePercent(period) ?: BigDecimal.ZERO }
-            MarketSubTab.ALL -> markets.sortedBy { it.marketCapRank.toIntOrNull() ?: Int.MAX_VALUE }
-            else -> markets
-        }
-
     fun perpetualMarkets(
         markets: List<PerpsMarket>,
         subTab: MarketSubTab,

@@ -350,20 +350,6 @@ class MarketPageViewModel
                         }
                     }
 
-                    MarketTopTab.STOCK -> {
-                        val source =
-                            if (state.selectedSubTab == MarketSubTab.FAVORITE) {
-                                favoriteSpotMarkets.filter { it.coinId in stockCoinIds }
-                            } else {
-                                stockMarkets
-                            }
-                        MarketPageMapper.stockMarkets(
-                            markets = source.withFavoriteState(),
-                            subTab = state.selectedSubTab ?: MarketSubTab.TRENDING,
-                            period = state.displaySettings.priceChangePeriod,
-                        ).map { MarketListEntry.Spot(it, SpotMarketType.STOCK) }
-                    }
-
                     MarketTopTab.INDICATOR -> emptyList()
                 }
             val isShowingRecommendations =
@@ -446,12 +432,6 @@ class MarketPageViewModel
                         else -> MarketPageDataSource.PERPETUAL_ALL
                     }
 
-                MarketTopTab.STOCK ->
-                    if (state.selectedSubTab == MarketSubTab.FAVORITE) {
-                        MarketPageDataSource.SPOT_FAVORITE
-                    } else {
-                        MarketPageDataSource.SPOT_STOCK
-                    }
                 MarketTopTab.INDICATOR -> MarketPageDataSource.GLOBAL
             }
 

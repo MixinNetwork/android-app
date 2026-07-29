@@ -71,11 +71,6 @@ class RefreshMarketPageJob(
                             }
                         },
                         async {
-                            refresh(MarketPageDataSource.SPOT_STOCK) {
-                                assetRepo.fetchMarkets(MarketCategory.STOCK.apiValue, duration, SPOT_MARKET_LIMIT) != null
-                            }
-                        },
-                        async {
                             refresh(MarketPageDataSource.PERPETUAL_ALL) {
                                 perpsMarketRepository.syncAllMarkets() != null
                             }

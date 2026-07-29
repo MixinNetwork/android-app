@@ -14,22 +14,10 @@ class MarketPageModelsTest {
         assertEquals(MarketSubTab.CRYPTO, defaults[MarketTopTab.WATCHLIST])
         assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.CRYPTO])
         assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.PERPETUAL])
-        assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.STOCK])
-    }
-
-    @Test
-    fun stockGainersUseSelectedPriceChangePeriod() {
-        val first = market(coinId = "first", change24h = "10", change7d = "-5")
-        val second = market(coinId = "second", change24h = "-2", change7d = "20")
-
-        val result =
-            MarketPageMapper.stockMarkets(
-                markets = listOf(first, second),
-                subTab = MarketSubTab.TOP_GAINERS,
-                period = MarketPriceChangePeriod.SEVEN_DAYS,
-            )
-
-        assertEquals(listOf("second", "first"), result.map { it.coinId })
+        assertEquals(
+            listOf(MarketTopTab.WATCHLIST, MarketTopTab.CRYPTO, MarketTopTab.PERPETUAL, MarketTopTab.INDICATOR),
+            MarketTopTab.entries,
+        )
     }
 
     @Test

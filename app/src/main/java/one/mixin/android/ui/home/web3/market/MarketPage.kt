@@ -435,7 +435,7 @@ private fun SortLabel(
         Text(
             text = text,
             color = MixinAppTheme.colors.textAssist,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
             textAlign = TextAlign.Center,
         )
         Spacer(modifier = Modifier.width(4.dp))
@@ -478,42 +478,18 @@ private fun MarketList(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                if (
-                    !state.hasError &&
-                    state.selectedTopTab == MarketTopTab.STOCK &&
-                    state.selectedSubTab == MarketSubTab.FAVORITE
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_watchlist_empty),
-                            contentDescription = null,
-                            tint = Color.Unspecified,
-                            modifier =
-                                Modifier
-                                    .width(58.dp)
-                                    .height(78.dp),
-                        )
-                        Spacer(modifier = Modifier.height(12.dp))
-                        Text(
-                            text = stringResource(R.string.watchlist_empty),
-                            color = MixinAppTheme.colors.textAssist,
-                            fontSize = 12.sp,
-                        )
-                    }
-                } else {
-                    Text(
-                        text =
-                            stringResource(
-                                when {
-                                    state.hasError -> R.string.Network_error
-                                    state.selectedTopTab == MarketTopTab.WATCHLIST -> R.string.watchlist_empty
-                                    else -> R.string.No_Markets
-                                },
-                            ),
-                        color = MixinAppTheme.colors.textAssist,
-                        fontSize = 14.sp,
-                    )
-                }
+                Text(
+                    text =
+                        stringResource(
+                            when {
+                                state.hasError -> R.string.Network_error
+                                state.selectedTopTab == MarketTopTab.WATCHLIST -> R.string.watchlist_empty
+                                else -> R.string.No_Markets
+                            },
+                        ),
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 14.sp,
+                )
             }
         }
 
@@ -996,20 +972,21 @@ private fun IndicatorMetric(
         Text(
             text = title,
             color = MixinAppTheme.colors.textAssist,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = value,
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 22.sp,
-            fontWeight = FontWeight.Medium,
+            fontWeight = FontWeight.W500,
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = change?.let(::formatPercent) ?: "--",
             color = changeColor,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.W500,
         )
     }
 }
@@ -1040,14 +1017,14 @@ private fun BitcoinDominanceCard(indicator: GlobalMarket) {
             Text(
                 text = "${stringResource(R.string.Bitcoin)} ${stringResource(R.string.Dominance)}",
                 color = MixinAppTheme.colors.textAssist,
-                fontSize = 12.sp,
+                fontSize = 14.sp,
             )
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = "${dominance?.numberFormat2() ?: indicator.dominancePercentage}%",
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 22.sp,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.W500,
             )
             Spacer(modifier = Modifier.height(12.dp))
             MultiColorProgressBar(
@@ -1115,6 +1092,10 @@ private fun MarketDisplayDialog(
     onApply: (MarketDisplaySettings) -> Unit,
 ) {
     var pending by remember(current) { mutableStateOf(current) }
+    fun applySettings(settings: MarketDisplaySettings) {
+        pending = settings
+        onApply(settings)
+    }
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false),
@@ -1188,7 +1169,9 @@ private fun MarketDisplayDialog(
                                 R.drawable.ic_queto_color_green
                             }
                         },
-                        onSelect = { pending = pending.copy(quoteColorReversed = it) },
+                        onSelect = {
+                            applySettings(pending.copy(quoteColorReversed = it))
+                        },
                     )
                     if (showPriceChange) {
                         Spacer(modifier = Modifier.height(8.dp))
@@ -1201,47 +1184,9 @@ private fun MarketDisplayDialog(
                                     priceChangePeriodLabel(MarketPriceChangePeriod.SEVEN_DAYS) to MarketPriceChangePeriod.SEVEN_DAYS,
                                 ),
                             selectedOption = pending.priceChangePeriod,
-                            onSelect = { pending = pending.copy(priceChangePeriod = it) },
-                        )
-                    }
-                    Spacer(modifier = Modifier.height(42.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                    ) {
-                        ActionButton(
-                            text = stringResource(R.string.Reset),
-                            onClick = {
-                                pending =
-                                    MarketDisplaySettings(
-                                        priceChangePeriod =
-                                            if (showPriceChange) {
-                                                MarketDisplaySettings().priceChangePeriod
-                                            } else {
-                                                current.priceChangePeriod
-                                            },
-                                    )
+                            onSelect = {
+                                applySettings(pending.copy(priceChangePeriod = it))
                             },
-                            backgroundColor = MixinAppTheme.colors.backgroundGray,
-                            contentColor = MixinAppTheme.colors.textPrimary,
-                            modifier =
-                                Modifier
-                                    .width(120.dp)
-                                    .height(44.dp),
-                        )
-                        Spacer(modifier = Modifier.width(16.dp))
-                        ActionButton(
-                            text = stringResource(R.string.Apply),
-                            onClick = {
-                                onApply(pending)
-                                onDismiss()
-                            },
-                            backgroundColor = MixinAppTheme.colors.accent,
-                            contentColor = Color.White,
-                            modifier =
-                                Modifier
-                                    .width(120.dp)
-                                    .height(44.dp),
                         )
                     }
                     Spacer(modifier = Modifier.height(20.dp))
@@ -1352,7 +1297,6 @@ private fun topTabLabel(tab: MarketTopTab): String =
             MarketTopTab.WATCHLIST -> R.string.Watchlist
             MarketTopTab.CRYPTO -> R.string.Crypto
             MarketTopTab.PERPETUAL -> R.string.Perpetual
-            MarketTopTab.STOCK -> R.string.market_stock
             MarketTopTab.INDICATOR -> R.string.Indicator
         },
     )
