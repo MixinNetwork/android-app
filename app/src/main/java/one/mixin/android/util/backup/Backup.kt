@@ -593,7 +593,7 @@ private fun copyFileToDirectory(
     if (!sourceFile.exists()) {
         return
     }
-    val targetFile = File(parentDir, fileName)
+    val targetFile = parentDir.safeRestoreChild(fileName) ?: return
     if (sourceFile.isFile) {
         if (!targetFile.exists()) {
             val inputStream = context.contentResolver.openInputStream(sourceFile.uri) ?: return
@@ -611,7 +611,7 @@ private fun copyDirectoryToDirectory(
     if (!sourceFile.exists()) {
         return
     }
-    val targetFile = File(parentDir, fileName)
+    val targetFile = parentDir.safeRestoreChild(fileName) ?: return
     if (sourceFile.isDirectory) {
         if (!targetFile.exists()) {
             targetFile.mkdirs()
@@ -624,4 +624,11 @@ private fun copyDirectoryToDirectory(
             }
         }
     }
+}
+
+private fun File.safeRestoreChild(name: String): File? {
+    if (name.isBlank() || name == "." || name == "..") return null
+    val parent = canonicalFile
+    val child = File(parent, name).canonicalFile
+    return child.takeIf { it.parentFile == parent }
 }
