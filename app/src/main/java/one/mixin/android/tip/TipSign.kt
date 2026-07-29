@@ -4,6 +4,7 @@ import blockchain.Blockchain
 import one.mixin.android.Constants
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
+import one.mixin.android.crypto.TronKeyGenerator
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.toHex
 import one.mixin.android.tip.bip44.Bip44Path
@@ -142,6 +143,10 @@ fun tipPrivToPrivateKey(
             }
             return kp.secret
         }
+        Constants.ChainId.TRON_CHAIN_ID -> {
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.tron(index))
+            return Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
+        }
         else -> {
             val addressFromGo = Blockchain.generateEthereumAddress(priv.hexString(), Bip44Path.ethereumPathString(index))
             val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.ethereum(index))
@@ -193,6 +198,11 @@ fun privateKeyToAddress(
                 throw IllegalArgumentException("Generate illegal Solana Address")
             }
             return address
+        }
+        Constants.ChainId.TRON_CHAIN_ID -> {
+            val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.tron(index))
+            val privateKey = Numeric.toBytesPadded(bip44KeyPair.privateKey, 32)
+            return TronKeyGenerator.privateKeyToAddress(privateKey)
         }
         else -> throw IllegalArgumentException("Not supported chainId")
     }

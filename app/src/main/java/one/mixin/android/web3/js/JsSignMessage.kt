@@ -17,6 +17,7 @@ class JsSignMessage(
     val type: Int,
     val wcEthereumTransaction: WCEthereumTransaction? = null,
     val data: String? = null,
+    val tronMessageBytes: ByteArray? = null,
     val solanaTxSource: SolanaTxSource = SolanaTxSource.InnerTransfer,
     val isSpeedUp: Boolean = false,
     val isCancelTx: Boolean = false,
@@ -33,9 +34,12 @@ class JsSignMessage(
 
         const val TYPE_BTC_TRANSACTION = 6
         const val TYPE_GASLESS_TRANSFER = 7
+        const val TYPE_TRON_MESSAGE = 8
+        const val TYPE_TRON_TRANSACTION = 9
 
         fun isSignMessage(type: Int): Boolean =
-            type == TYPE_MESSAGE || type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_SIGN_IN
+            type == TYPE_MESSAGE || type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE ||
+                type == TYPE_SIGN_IN || type == TYPE_TRON_MESSAGE
     }
 
     val rate: BigDecimal?
@@ -52,6 +56,7 @@ class JsSignMessage(
     fun isBtcMessage() = type == TYPE_BTC_TRANSACTION
     fun isSolMessage() = type == TYPE_RAW_TRANSACTION || type == TYPE_SIGN_IN
     fun isEvmMessage() = type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_TRANSACTION
+    fun isTronMessage() = type == TYPE_TRON_MESSAGE || type == TYPE_TRON_TRANSACTION
     fun isGaslessTransfer() = type == TYPE_GASLESS_TRANSFER
 
     val reviewData: String?

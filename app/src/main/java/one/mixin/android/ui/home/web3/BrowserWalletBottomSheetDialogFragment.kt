@@ -27,6 +27,7 @@ import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.WalletOutput
+import one.mixin.android.crypto.TronKeyGenerator
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.extension.base64Encode
@@ -77,6 +78,7 @@ import org.bitcoinj.core.TransactionWitness
 import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
+import org.json.JSONObject
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
 import org.sol4k.exception.RpcException
@@ -163,7 +165,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
     private val isFeeWaived by lazy { requireArguments().getBoolean(ARGS_IS_FEE_FREE, false) }
     private val currentChain by lazy {
-        token?.getChainFromName() ?: Web3Signer.currentChain
+        if (signMessage.isTronMessage()) Chain.Tron else token?.getChainFromName() ?: Web3Signer.currentChain
     }
 
     var step by mutableStateOf(Step.Input)
@@ -189,6 +191,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         if (address.isBlank()) {
             lifecycleScope.launch {
                 address = when {
+                    signMessage.isTronMessage() -> Web3Signer.tronAddress
                     signMessage.type == JsSignMessage.TYPE_MESSAGE -> Web3Signer.address
                     signMessage.isEvmMessage() -> Web3Signer.evmAddress
                     signMessage.isSolMessage() -> Web3Signer.solanaAddress
@@ -206,6 +209,9 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     @Composable
     override fun ComposeContent() {
         if (signMessage.type == JsSignMessage.TYPE_MESSAGE && Web3Signer.address.isBlank()) {
+            toast(getString(R.string.not_support_network, currentChain.symbol))
+            dismiss()
+        } else if (signMessage.isTronMessage() && Web3Signer.tronAddress.isBlank()) {
             toast(getString(R.string.not_support_network, currentChain.symbol))
             dismiss()
         } else if ((signMessage.isSolMessage() || (signMessage.isGaslessTransfer() && currentChain == Chain.Solana)) && Web3Signer.solanaAddress.isBlank()) {
@@ -308,6 +314,12 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private fun refreshEstimatedGasAndAsset(chain: Chain) {
+        if (signMessage.isTronMessage()) {
+            lifecycleScope.launch {
+                asset = viewModel.refreshAsset(Constants.ChainId.TRON_CHAIN_ID)
+            }
+            return
+        }
         if (signMessage.isGaslessTransfer()) {
             lifecycleScope.launch {
                 asset = viewModel.refreshAsset(feeToken?.assetId ?: chain.getWeb3ChainId())
@@ -411,7 +423,25 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     }
                     return@launch
                 }
-                if (signMessage.type == JsSignMessage.TYPE_BTC_TRANSACTION) {
+                if (signMessage.type == JsSignMessage.TYPE_TRON_TRANSACTION) {
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, Constants.ChainId.TRON_CHAIN_ID)
+                    val signedTransaction = TronKeyGenerator.signTransaction(priv, requireNotNull(signMessage.data))
+                    onDone?.invoke(
+                        "mixinwallet.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, $signedTransaction);"
+                    )
+                } else if (signMessage.type == JsSignMessage.TYPE_TRON_MESSAGE) {
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, Constants.ChainId.TRON_CHAIN_ID)
+                    require(
+                        TronKeyGenerator.privateKeyToAddress(priv).equals(Web3Signer.tronAddress, ignoreCase = true)
+                    ) { "Tron signing key does not match the selected wallet" }
+                    val signature = TronKeyGenerator.signMessageV2(
+                        priv,
+                        signMessage.tronMessageBytes ?: requireNotNull(signMessage.data).toByteArray(Charsets.UTF_8),
+                    )
+                    onDone?.invoke(
+                        "mixinwallet.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, ${JSONObject.quote(signature)});"
+                    )
+                } else if (signMessage.type == JsSignMessage.TYPE_BTC_TRANSACTION) {
                     val rawHex = signMessage.data ?: throw IllegalArgumentException("empty btc transaction hex")
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Constants.ChainId.BITCOIN_CHAIN_ID)
                     val key: ECKey = ECKey.fromPrivate(priv, true)

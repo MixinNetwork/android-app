@@ -187,6 +187,7 @@ class FetchWalletViewModel @Inject constructor(
                     val solanaWallet =
                         CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index)
                     val btcWallet = CryptoWalletHelper.mnemonicToBitcoinSegwitWallet(mnemonic, index = index)
+                    val tronWallet = CryptoWalletHelper.mnemonicToTronWallet(mnemonic, index = index)
 
                     val name = commonWalletName(requireNotNull(nextWalletNameIndex))
                     IndexedWallet(
@@ -194,12 +195,13 @@ class FetchWalletViewModel @Inject constructor(
                         ethereumWallet = ethereumWallet,
                         solanaWallet = solanaWallet,
                         btcWallet = btcWallet,
-                        exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address, btcWallet.address)),
+                        tronWallet = tronWallet,
+                        exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address, btcWallet.address, tronWallet.address)),
                     )
                 }
 
                 val addresses = wallets.flatMap {
-                    listOf(it.ethereumWallet.address, it.solanaWallet.address, it.btcWallet.address)
+                    listOf(it.ethereumWallet.address, it.solanaWallet.address, it.btcWallet.address, it.tronWallet.address)
                 }
                 val response = web3Repository.searchAssetsByAddresses(addresses)
                 if (response.isSuccess && response.data != null) {
@@ -221,7 +223,9 @@ class FetchWalletViewModel @Inject constructor(
                                 tokensMap[wallet.solanaWallet.address] ?: emptyList()
                             val btcTokens =
                                 tokensMap[wallet.btcWallet.address] ?: emptyList()
-                            val allTokens = (evmTokens + solanaTokens + btcTokens).sortedByDescending {
+                            val tronTokens =
+                                tokensMap[wallet.tronWallet.address] ?: emptyList()
+                            val allTokens = (evmTokens + solanaTokens + btcTokens + tronTokens).sortedByDescending {
                                 (it.priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (it.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                             }
                             wallet.copy(assets = allTokens)
@@ -340,6 +344,13 @@ class FetchWalletViewModel @Inject constructor(
                             chainId = Constants.ChainId.SOLANA_CHAIN_ID,
                             path = it.solanaWallet.path,
                             privateKey = it.solanaWallet.privateKey,
+                            category = category
+                        ),
+                        createSignedWeb3AddressRequest(
+                            destination = it.tronWallet.address,
+                            chainId = Constants.ChainId.TRON_CHAIN_ID,
+                            path = it.tronWallet.path,
+                            privateKey = it.tronWallet.privateKey,
                             category = category
                         )
                     )

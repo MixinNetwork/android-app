@@ -5,6 +5,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
+import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.extension.defaultSharedPreferences
 
@@ -47,6 +48,8 @@ sealed class Chain(
 
     object Bitcoin : Chain(BITCOIN_CHAIN_ID, "bip122", "000000000019d6689c085ae165831e93", "000000000019d6689c085ae165831e93", "Bitcoin", "BTC", listOf(""))
 
+    object Tron : Chain(TRON_CHAIN_ID, "tron", "mainnet", "mainnet", "Tron", "TRX", listOf("https://api.trongrid.io"))
+
     val chainId: String
         get() {
             return "$chainNamespace:$chainReference"
@@ -75,6 +78,7 @@ sealed class Chain(
             HyperEVM -> Constants.ChainId.HyperEVM
             Solana -> Constants.ChainId.Solana
             Bitcoin -> BITCOIN_CHAIN_ID
+            Tron -> TRON_CHAIN_ID
         }
 }
 // Chain.Blast
@@ -91,6 +95,7 @@ internal fun WalletConnectAddresses.accountFor(chain: Chain): String =
     when (chain) {
         Chain.Solana -> solana
         Chain.Bitcoin -> bitcoin
+        Chain.Tron -> ""
         else -> evm
     }
 
