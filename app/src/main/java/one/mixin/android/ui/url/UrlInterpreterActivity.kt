@@ -119,7 +119,13 @@ class UrlInterpreterActivity : BaseActivity() {
     private fun interpretIntent(uri: Uri) {
         when (uri.host) {
             REFERRALS -> {
-                InputReferralBottomSheetDialogFragment.newInstance(uri.pathSegments.first()).showNow(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                val referral = uri.pathSegments.firstOrNull()
+                if (referral == null) {
+                    toast(R.string.Invalid_Link)
+                    finish()
+                    return
+                }
+                InputReferralBottomSheetDialogFragment.newInstance(referral).showNow(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
             }
             USER, APPS -> uri.checkUserOrApp(this, supportFragmentManager, lifecycleScope)
             CODE, PAY, ADDRESS, SNAPSHOTS, CONVERSATIONS, TIP, SWAP -> {
@@ -159,7 +165,12 @@ class UrlInterpreterActivity : BaseActivity() {
                 finish()
             }
             MIXIN -> {
-                val path = uri.pathSegments.first()
+                val path = uri.pathSegments.firstOrNull()
+                if (path == null) {
+                    toast(R.string.Invalid_Link)
+                    finish()
+                    return
+                }
                 if (path.equals(REFERRALS,true)) {
                     InputReferralBottomSheetDialogFragment.newInstance(uri.pathSegments.last()).showNow(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
                 } else if (path.equals(BUY, true)) {

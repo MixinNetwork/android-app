@@ -947,7 +947,11 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     fun handlerCode(intent: Intent) {
         if (intent.hasExtra(SCAN)) {
-            val scan = intent.getStringExtra(SCAN)!!
+            val scan = intent.getStringExtra(SCAN)
+            if (scan == null) {
+                clearCodeAfterConsume(intent, SCAN)
+                return
+            }
             bottomSheet?.dismiss()
             showScanBottom(scan)
             clearCodeAfterConsume(intent, SCAN)
@@ -1116,7 +1120,11 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     },
                 )
         } else if (intent.hasExtra(WALLET_CONNECT)) {
-            val wcUrl = requireNotNull(intent.getStringExtra(WALLET_CONNECT))
+            val wcUrl = intent.getStringExtra(WALLET_CONNECT)
+            if (wcUrl == null) {
+                clearCodeAfterConsume(intent, WALLET_CONNECT)
+                return
+            }
             WalletConnect.connect(wcUrl)
         }
     }
