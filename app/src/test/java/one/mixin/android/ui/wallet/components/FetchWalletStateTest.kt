@@ -58,6 +58,7 @@ class FetchWalletStateTest {
             ethereumWallet = wallet,
             solanaWallet = wallet,
             btcWallet = wallet,
+            tronWallet = wallet,
             exists = exists,
         )
     }

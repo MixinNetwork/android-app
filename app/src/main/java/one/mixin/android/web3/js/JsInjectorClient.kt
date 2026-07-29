@@ -16,6 +16,7 @@ class JsInjectorClient {
             Chain.Ethereum.rpcUrl,
             Web3Signer.evmAddress,
             Chain.Solana.rpcUrl,
+            Chain.Tron.rpcUrl,
         )
     }
 

@@ -31,6 +31,7 @@ import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
+import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.Constants.Web3EvmChainIds
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
@@ -107,7 +108,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioAll.isVisible = true
             radioBtc.isVisible = true
             radioEth.isVisible = true
-            radioTron.isVisible = false
+            radioTron.isVisible = true
             radioToncoin.isVisible = false
             radioBase.isVisible = true
             radioBsc.isVisible = true
@@ -125,6 +126,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                     R.id.radio_solana -> {
                         SOLANA_CHAIN_ID
+                    }
+
+                    R.id.radio_tron -> {
+                        TRON_CHAIN_ID
                     }
 
                     R.id.radio_base -> {
@@ -371,7 +376,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.pb.isVisible = true
         val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
         val remoteAssets = fuzzyResults.filter {
-            it.chainId in Web3EvmChainIds || it.chainId == BITCOIN_CHAIN_ID || it.chainId == SOLANA_CHAIN_ID
+            it.chainId in Web3EvmChainIds ||
+                it.chainId == BITCOIN_CHAIN_ID ||
+                it.chainId == SOLANA_CHAIN_ID ||
+                it.chainId == TRON_CHAIN_ID
         }.map { item ->
             bottomViewModel.web3TokenItemById(walletId ?: "", item.assetId).let { local ->
                 if (local != null && (local.level >= 10 || local.hidden == false)) {
