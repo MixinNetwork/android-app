@@ -79,6 +79,7 @@ import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.widget.HomeToolbarView
 import java.math.BigDecimal
 
 @Composable
@@ -165,7 +166,7 @@ fun MarketPage(
                 Text(
                     text = stringResource(R.string.watchlist_remove_alert_prompt),
                     color = MixinAppTheme.colors.textPrimary,
-                    textAlign = TextAlign.Center,
+                    textAlign = TextAlign.Start,
                     modifier = Modifier.fillMaxWidth(),
                 )
             },
@@ -179,43 +180,27 @@ private fun MarketToolbar(
     onScan: () -> Unit,
     onShowDisplaySettings: () -> Unit,
 ) {
-    Row(
+    val title = stringResource(R.string.Markets)
+    AndroidView(
+        factory = { context ->
+            HomeToolbarView(context).apply {
+                setTitle(title)
+                setOnSearchClickListener { onSearch() }
+                setOnScanClickListener { onScan() }
+                setOnSettingsClickListener { onShowDisplaySettings() }
+            }
+        },
+        update = { toolbar ->
+            toolbar.setTitle(title)
+            toolbar.setOnSearchClickListener { onSearch() }
+            toolbar.setOnScanClickListener { onScan() }
+            toolbar.setOnSettingsClickListener { onShowDisplaySettings() }
+        },
         modifier =
             Modifier
                 .fillMaxWidth()
-                .height(56.dp)
-                .padding(start = 16.dp, end = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Text(
-            text = stringResource(R.string.Markets),
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.weight(1f),
-        )
-        IconButton(onClick = onSearch) {
-            Icon(
-                painter = painterResource(R.drawable.ic_search_home),
-                contentDescription = stringResource(R.string.Search),
-                tint = MixinAppTheme.colors.icon,
-            )
-        }
-        IconButton(onClick = onScan) {
-            Icon(
-                painter = painterResource(R.drawable.ic_bot_category_scan),
-                contentDescription = stringResource(R.string.Scan),
-                tint = Color.Unspecified,
-            )
-        }
-        IconButton(onClick = onShowDisplaySettings) {
-            Icon(
-                painter = painterResource(R.drawable.ic_home_setting),
-                contentDescription = stringResource(R.string.market_display),
-                tint = Color.Unspecified,
-            )
-        }
-    }
+                .height(56.dp),
+    )
 }
 
 @Composable
@@ -750,7 +735,6 @@ private fun RowScope.SpotMarketRowContent(
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 14.sp,
         )
-        Spacer(modifier = Modifier.height(2.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = market.marketCapRank,
@@ -813,13 +797,23 @@ private fun RowScope.PerpetualMarketRowContent(
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = market.tokenSymbol,
+                text = market.displaySymbol,
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,
             )
             Spacer(modifier = Modifier.width(5.dp))
             MarketPerpBadge()
         }
+        Text(
+            text =
+                stringResource(
+                    R.string.market_volume,
+                    runCatching { BigDecimal(market.volume).numberFormatCompact() }.getOrDefault(market.volume),
+                ),
+            color = MixinAppTheme.colors.textAssist,
+            fontSize = 12.sp,
+            maxLines = 1,
+        )
     }
     BasicText(
         text = "$${market.last}",

@@ -181,7 +181,7 @@
         android:background="?attr/bg_white"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
-        android:paddingStart="16dp"
+        android:paddingStart="20dp"
         android:paddingEnd="20dp">
 
         <RelativeLayout

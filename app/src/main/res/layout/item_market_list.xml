@@ -40,8 +40,10 @@
         android:maxLines="1"
         android:textColor="?attr/text_primary"
         android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@id/volume_tv"
         app:layout_constraintStart_toEndOf="@id/icon_iv"
-        app:layout_constraintTop_toTopOf="@id/icon_iv"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_chainStyle="packed"
         tools:text="BTC-PERP" />
 
     <TextView
@@ -66,12 +68,12 @@
         android:id="@+id/volume_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
+        android:layout_marginTop="4dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:textColor="?attr/text_assist"
         android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="@id/icon_iv"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="@id/symbol_tv"
         app:layout_constraintTop_toBottomOf="@id/symbol_tv"
         tools:text="VOL: $410.23M" />
@@ -94,7 +96,7 @@
         android:maxLines="1"
         android:textColor="?attr/text_primary"
         android:textFontWeight="500"
-        android:textSize="14sp"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/price_sort_guideline"
         app:layout_constraintStart_toEndOf="@id/leverage_tv"
@@ -108,6 +110,7 @@
         android:layout_marginStart="10dp"
         android:gravity="end"
         android:maxLines="1"
+        android:textFontWeight="500"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
