@@ -47,6 +47,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.safe.TokenItem
+import retrofit2.HttpException
 import timber.log.Timber
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
@@ -368,13 +369,13 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
-    suspend fun estimateLiquidationPrice(
+    internal suspend fun estimateLiquidationPrice(
         amount: String,
         marketId: String? = null,
         side: String? = null,
         leverage: Int? = null,
         positionId: String? = null,
-    ): String? {
+    ): LiquidationPriceResult {
         return try {
             val response = withContext(Dispatchers.IO) {
                 routeService.getPerpsLiquidationPrice(
@@ -386,14 +387,25 @@ class PerpetualViewModel @Inject constructor(
                 )
             }
             if (response.isSuccess) {
-                response.data?.liquidationPrice?.takeIf { it.isNotBlank() }
+                liquidationPriceResult(
+                    price = response.data?.liquidationPrice,
+                    errorCode = null,
+                )
             } else {
                 Timber.e("Failed to estimate liquidation price: ${response.errorDescription}")
-                null
+                liquidationPriceResult(
+                    price = null,
+                    errorCode = response.errorCode,
+                )
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: HttpException) {
+            Timber.e(e, "HTTP error estimating liquidation price")
+            liquidationPriceResult(price = null, errorCode = e.code())
         } catch (e: Exception) {
             Timber.e(e, "Error estimating liquidation price")
-            null
+            LiquidationPriceResult.Failure
         }
     }
 
