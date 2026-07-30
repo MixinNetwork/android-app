@@ -115,6 +115,7 @@ class AppCardDataTest {
         assertFalse("https://127.0.0.1/cover.jpg".safeAppCardImageUrl() != null)
         assertFalse("https://10.0.0.1/cover.jpg".safeAppCardImageUrl() != null)
         assertFalse("https://[::1]/cover.jpg".safeAppCardImageUrl() != null)
+        assertFalse("https://[fd00::1]/cover.jpg".safeAppCardImageUrl() != null)
         assertFalse("https://router.local/cover.jpg".safeAppCardImageUrl() != null)
     }
 
