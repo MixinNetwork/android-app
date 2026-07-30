@@ -1908,14 +1908,18 @@ class WebFragment : BaseFragment() {
             view: WebView?,
             request: WebResourceRequest?,
         ): Boolean {
-            redirect = true
             if (view == null || request == null) {
                 return super.shouldOverrideUrlLoading(view, request)
+            }
+            if (request.isForMainFrame) {
+                redirect = true
             }
             val url = request.url.toString()
 
             if (url.isWebUrl() && !canLoadUrl(url)) {
-                context.openInBrowser(url)
+                if (request.isForMainFrame) {
+                    context.openInBrowser(url)
+                }
                 return true
             }
 
