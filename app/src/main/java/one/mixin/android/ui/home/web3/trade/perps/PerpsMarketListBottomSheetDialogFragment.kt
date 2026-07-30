@@ -46,14 +46,15 @@ private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
 @AndroidEntryPoint
 class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
-    private enum class MarketCategory(val apiValues: Set<String>) {
-        ALL(emptySet()),
-        WATCHLIST(emptySet()),
-        CRYPTO(setOf("crypto")),
-        STOCKS(setOf("stock", "stocks")),
-        INDICES(setOf("index", "indices")),
-        COMMODITIES(setOf("commodity", "commodities")),
-        FOREX(setOf("forex", "fx")),
+    private enum class MarketCategory(val databaseValue: String?) {
+        ALL(null),
+        WATCHLIST(null),
+        CRYPTO("crypto"),
+        STOCKS("stocks"),
+        INDICES("indices"),
+        COMMODITIES("commodities"),
+        FOREX("forex"),
+        MEME("memes"),
     }
 
     companion object {
@@ -205,6 +206,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                     R.id.radio_indices -> MarketCategory.INDICES
                     R.id.radio_commodities -> MarketCategory.COMMODITIES
                     R.id.radio_forex -> MarketCategory.FOREX
+                    R.id.radio_meme -> MarketCategory.MEME
                     else -> MarketCategory.ALL
                 }
                 currentSort = null
@@ -339,8 +341,8 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 when (currentCategory) {
                     MarketCategory.WATCHLIST -> market.marketId in favoriteMarketIds
                     else ->
-                        currentCategory.apiValues.isEmpty() ||
-                            currentCategory.apiValues.any { category -> market.category.equals(category, ignoreCase = true) }
+                        currentCategory.databaseValue == null ||
+                            market.category == currentCategory.databaseValue
                 }
             }
             .filter { market ->

@@ -85,7 +85,7 @@ import java.math.BigDecimal
 private val MarketChangeColumnWidth = 66.dp
 private val MarketPriceChangeGap = 4.dp
 private val MarketHeaderPriceWidth = 96.dp
-private val MarketHeaderPriceChangeMinGap = 16.dp
+private val MarketHeaderPriceChangeMinGap = 20.dp
 
 @Composable
 fun MarketPage(
@@ -1459,6 +1459,10 @@ private fun subTabLabel(tab: MarketSubTab): String =
             MarketSubTab.ALL -> R.string.All
             MarketSubTab.CRYPTO -> R.string.Crypto
             MarketSubTab.PERPETUAL -> R.string.Perpetual
+            MarketSubTab.INDICES -> R.string.perps_category_indices
+            MarketSubTab.COMMODITIES -> R.string.perps_category_commodities
+            MarketSubTab.FOREX -> R.string.perps_category_forex
+            MarketSubTab.MEME -> R.string.perps_category_meme
         },
     )
 

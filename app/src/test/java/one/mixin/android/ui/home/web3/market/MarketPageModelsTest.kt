@@ -28,6 +28,10 @@ class MarketPageModelsTest {
                 MarketSubTab.TRENDING,
                 MarketSubTab.TOP_GAINERS,
                 MarketSubTab.TOP_LOSERS,
+                MarketSubTab.INDICES,
+                MarketSubTab.COMMODITIES,
+                MarketSubTab.FOREX,
+                MarketSubTab.MEME,
             ),
             marketSubTabs(MarketTopTab.PERPETUAL),
         )
@@ -142,6 +146,35 @@ class MarketPageModelsTest {
         val trending = MarketPageMapper.perpetualMarkets(markets, MarketSubTab.TRENDING)
 
         assertEquals(listOf("first", "second", "third"), trending.map { it.marketId })
+    }
+
+    @Test
+    fun perpetualCategoriesUseDatabaseValues() {
+        val markets =
+            listOf(
+                perpsMarket(marketId = "indices", category = "indices"),
+                perpsMarket(marketId = "commodities", category = "commodities"),
+                perpsMarket(marketId = "forex", category = "forex"),
+                perpsMarket(marketId = "memes", category = "memes"),
+                perpsMarket(marketId = "crypto", category = "crypto"),
+            )
+
+        assertEquals(
+            listOf("indices"),
+            MarketPageMapper.perpetualMarkets(markets, MarketSubTab.INDICES).map { it.marketId },
+        )
+        assertEquals(
+            listOf("commodities"),
+            MarketPageMapper.perpetualMarkets(markets, MarketSubTab.COMMODITIES).map { it.marketId },
+        )
+        assertEquals(
+            listOf("forex"),
+            MarketPageMapper.perpetualMarkets(markets, MarketSubTab.FOREX).map { it.marketId },
+        )
+        assertEquals(
+            listOf("memes"),
+            MarketPageMapper.perpetualMarkets(markets, MarketSubTab.MEME).map { it.marketId },
+        )
     }
 
     @Test
@@ -315,6 +348,7 @@ class MarketPageModelsTest {
     private fun perpsMarket(
         marketId: String,
         change: String = "0",
+        category: String = "",
     ) = PerpsMarket(
         marketId = marketId,
         displaySymbol = marketId,
@@ -323,6 +357,7 @@ class MarketPageModelsTest {
         markPrice = "1",
         leverage = 10,
         iconUrl = "",
+        category = category,
         fundingRate = "0",
         minAmount = "0",
         maxAmount = "0",

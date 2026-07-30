@@ -20,6 +20,10 @@ enum class MarketSubTab {
     ALL,
     CRYPTO,
     PERPETUAL,
+    INDICES,
+    COMMODITIES,
+    FOREX,
+    MEME,
 }
 
 enum class MarketPriceChangePeriod {
@@ -149,6 +153,10 @@ fun marketSubTabs(topTab: MarketTopTab): List<MarketSubTab> =
                 MarketSubTab.TRENDING,
                 MarketSubTab.TOP_GAINERS,
                 MarketSubTab.TOP_LOSERS,
+                MarketSubTab.INDICES,
+                MarketSubTab.COMMODITIES,
+                MarketSubTab.FOREX,
+                MarketSubTab.MEME,
             )
         MarketTopTab.INDICATOR -> emptyList()
     }
@@ -172,6 +180,10 @@ object MarketPageMapper {
         when (subTab) {
             MarketSubTab.TOP_GAINERS -> markets.sortedByDescending { it.changePercentValue() ?: BigDecimal.ZERO }
             MarketSubTab.TOP_LOSERS -> markets.sortedBy { it.changePercentValue() ?: BigDecimal.ZERO }
+            MarketSubTab.INDICES -> markets.filter { it.category == "indices" }
+            MarketSubTab.COMMODITIES -> markets.filter { it.category == "commodities" }
+            MarketSubTab.FOREX -> markets.filter { it.category == "forex" }
+            MarketSubTab.MEME -> markets.filter { it.category == "memes" }
             else -> markets
         }
 
