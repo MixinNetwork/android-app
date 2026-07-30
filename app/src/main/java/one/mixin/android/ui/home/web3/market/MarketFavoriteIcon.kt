@@ -95,7 +95,8 @@ fun ImageView.setMarketFavoriteIcon(
     @DrawableRes unselectedIconRes: Int = R.drawable.ic_title_favorites,
     @DrawableRes selectedIconRes: Int = R.drawable.ic_title_favorites_checked,
 ) {
-    val iconPadding = 8.viewDp
+    val animationPadding = 8.viewDp
+    val iconPadding = 9.viewDp
     layoutParams =
         layoutParams.apply {
             width = 40.viewDp
@@ -107,7 +108,7 @@ fun ImageView.setMarketFavoriteIcon(
         setImageResource(if (isFavored) selectedIconRes else unselectedIconRes)
         return
     }
-    setPadding(0, 0, 0, 0)
+    setPadding(animationPadding, animationPadding, animationPadding, animationPadding)
     val composition =
         LottieCompositionFactory.fromRawResSync(context, R.raw.market_watchlist).value
             ?: run {
