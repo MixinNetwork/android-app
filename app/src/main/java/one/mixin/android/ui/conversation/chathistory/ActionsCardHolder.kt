@@ -15,6 +15,7 @@ import one.mixin.android.ui.conversation.chathistory.holder.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.AppCard
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.mention.MentionRenderCache
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
@@ -49,6 +50,11 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
         }
         val actionCard =
             GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
+        val mentionUserMap =
+            messageItem.mentions
+                ?.takeIf { it.isNotBlank() }
+                ?.let { MentionRenderCache.singleton.getMentionRenderContext(it)?.userMap }
+                .orEmpty()
         binding.chatContentLayout.setContent {
             AppCard(
                 actionCard,
@@ -71,6 +77,7 @@ class ActionsCardHolder(val binding: ItemChatActionsCardBinding) :
                 false,
                 isRepresentative = false,
                 isSecret = false,
+                mentionUserMap = mentionUserMap,
             )
         }
         binding.chatGroupLayout.removeAllViews()

@@ -10,6 +10,8 @@ import one.mixin.android.extension.loadRoundImage
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.mention.MentionRenderCache
+import one.mixin.android.util.mention.rendMentionContent
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageStatus
@@ -47,9 +49,13 @@ class ActionCardHolder(val binding: ItemChatActionCardBinding) :
             }
             val actionCard =
                 GsonHelper.customGson.fromJson(messageItem.content, AppCardData::class.java)
+            val mentionUserMap =
+                messageItem.mentions
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { MentionRenderCache.singleton.getMentionRenderContext(it)?.userMap }
             binding.chatIcon.loadRoundImage(actionCard.iconUrl, radius, R.drawable.holder_bot)
             binding.chatTitle.text = actionCard.title
-            binding.chatDescription.text = actionCard.description
+            binding.chatDescription.text = rendMentionContent(actionCard.description, mentionUserMap)
             binding.chatContentLayout.setOnClickListener {
                 onItemListener.onAppCardClick(actionCard, messageItem.userId)
             }
