@@ -88,6 +88,7 @@ import one.mixin.android.util.CursorWindowFixer
 import one.mixin.android.util.MemoryCallback
 import one.mixin.android.util.analytics.ThirdPartyUserIdentity
 import one.mixin.android.util.debug.FileLogTree
+import one.mixin.android.util.image.enforcePublicImageTargets
 import one.mixin.android.util.initNativeLibs
 import one.mixin.android.util.mlkit.entityInitialize
 import one.mixin.android.util.reportException
@@ -552,15 +553,17 @@ open class MixinApplication :
         return ImageLoader.Builder(this)
             .components {
                 add(OkHttpNetworkFetcherFactory(callFactory = {
-                    OkHttpClient.Builder().addInterceptor { chain ->
-                        val original = chain.request()
-                        val requestBuilder =
-                            original.newBuilder()
-                                .header("User-Agent", API_UA)
-                                .method(original.method, original.body)
-                        val request = requestBuilder.build()
-                        chain.proceed(request)
-                    }.build()
+                    OkHttpClient.Builder()
+                        .enforcePublicImageTargets()
+                        .addInterceptor { chain ->
+                            val original = chain.request()
+                            val requestBuilder =
+                                original.newBuilder()
+                                    .header("User-Agent", API_UA)
+                                    .method(original.method, original.body)
+                            val request = requestBuilder.build()
+                            chain.proceed(request)
+                        }.build()
                 }, cacheStrategy = { CacheControlCacheStrategy() }))
                 if (SDK_INT >= Build.VERSION_CODES.P) {
                     add(AnimatedImageDecoder.Factory())

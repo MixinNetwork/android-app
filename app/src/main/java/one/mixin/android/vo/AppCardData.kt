@@ -14,8 +14,9 @@ import one.mixin.android.crypto.Base64
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.toDrawable
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.image.isBlockedImageAddress
+import one.mixin.android.util.image.isBlockedImageHostname
 import timber.log.Timber
-import java.net.Inet4Address
 import java.net.InetAddress
 import java.net.URI
 import kotlin.math.max
@@ -207,13 +208,7 @@ internal fun String?.safeAppCardImageUrl(): String? {
     val uri = runCatching { URI(value) }.getOrNull() ?: return null
     if (!uri.scheme.equals("https", ignoreCase = true) || uri.rawUserInfo != null) return null
     val host = uri.host?.lowercase()?.takeIf(String::isNotBlank) ?: return null
-    if (host == "localhost" ||
-        host.endsWith(".localhost") ||
-        host.endsWith(".local") ||
-        host.endsWith(".internal") ||
-        (!host.contains('.') && !host.contains(':')) ||
-        host.isBlockedIpLiteral()
-    ) {
+    if (host.isBlockedImageHostname() || host.isBlockedIpLiteral()) {
         return null
     }
     return value
@@ -223,23 +218,7 @@ private fun String.isBlockedIpLiteral(): Boolean {
     val isLiteral = contains(':') || all { it.isDigit() || it == '.' }
     if (!isLiteral) return false
     val address = runCatching { InetAddress.getByName(this) }.getOrNull() ?: return true
-    if (address.isAnyLocalAddress ||
-        address.isLoopbackAddress ||
-        address.isLinkLocalAddress ||
-        address.isSiteLocalAddress ||
-        address.isMulticastAddress
-    ) {
-        return true
-    }
-    if (address is Inet4Address) {
-        val bytes = address.address.map(Byte::toInt).map { it and 0xff }
-        return bytes[0] == 0 ||
-            bytes[0] == 100 && bytes[1] in 64..127 ||
-            bytes[0] == 192 && bytes[1] == 0 ||
-            bytes[0] == 198 && bytes[1] in 18..19 ||
-            bytes[0] >= 224
-    }
-    return false
+    return address.isBlockedImageAddress()
 }
 
 private const val APP_CARD_IMAGE_URL_MAX_LENGTH = 2048
