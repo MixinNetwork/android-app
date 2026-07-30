@@ -20,6 +20,11 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.market.MarketCategory
 import timber.log.Timber
 
+internal data class SpotMarketRefreshRequest(
+    val source: MarketPageDataSource,
+    val category: String,
+)
+
 class RefreshMarketPageJob(
     private val duration: String,
 ) : BaseJob(
@@ -32,63 +37,51 @@ class RefreshMarketPageJob(
         private const val SPOT_MARKET_LIMIT = 500
         private const val CATEGORY_ALL = "all"
         private const val CATEGORY_FAVORITE = "favorite"
+        internal val SPOT_MARKET_REFRESH_REQUESTS =
+            listOf(
+                SpotMarketRefreshRequest(MarketPageDataSource.SPOT_ALL, CATEGORY_ALL),
+                SpotMarketRefreshRequest(MarketPageDataSource.SPOT_FAVORITE, CATEGORY_FAVORITE),
+                SpotMarketRefreshRequest(MarketPageDataSource.SPOT_FEATURED, MarketCategory.FEATURED.apiValue),
+                SpotMarketRefreshRequest(MarketPageDataSource.SPOT_TRENDING, MarketCategory.TRENDING.apiValue),
+                SpotMarketRefreshRequest(MarketPageDataSource.SPOT_TOP_GAINER, MarketCategory.TOP_GAINER.apiValue),
+                SpotMarketRefreshRequest(MarketPageDataSource.SPOT_TOP_LOSER, MarketCategory.TOP_LOSER.apiValue),
+                SpotMarketRefreshRequest(MarketPageDataSource.SPOT_ALL, MarketCategory.STOCK.apiValue),
+            )
     }
 
     override fun onRun(): Unit =
         runBlocking {
             val perpsMarketRepository = perpsMarketRepositoryProvider.get()
             supervisorScope {
-                val results =
-                    listOf(
-                        async {
-                            refresh(MarketPageDataSource.SPOT_ALL) {
-                                assetRepo.fetchMarkets(CATEGORY_ALL, duration, SPOT_MARKET_LIMIT) != null
+                val requests =
+                    SPOT_MARKET_REFRESH_REQUESTS
+                        .map { request ->
+                            async {
+                                refresh(request.source) {
+                                    assetRepo.fetchMarkets(request.category, duration, SPOT_MARKET_LIMIT) != null
+                                }
                             }
-                        },
-                        async {
-                            refresh(MarketPageDataSource.SPOT_FAVORITE) {
-                                assetRepo.fetchMarkets(CATEGORY_FAVORITE, duration, SPOT_MARKET_LIMIT) != null
-                            }
-                        },
-                        async {
-                            refresh(MarketPageDataSource.SPOT_FEATURED) {
-                                assetRepo.fetchMarkets(MarketCategory.FEATURED.apiValue, duration, SPOT_MARKET_LIMIT) != null
-                            }
-                        },
-                        async {
-                            refresh(MarketPageDataSource.SPOT_TRENDING) {
-                                assetRepo.fetchMarkets(MarketCategory.TRENDING.apiValue, duration, SPOT_MARKET_LIMIT) != null
-                            }
-                        },
-                        async {
-                            refresh(MarketPageDataSource.SPOT_TOP_GAINER) {
-                                assetRepo.fetchMarkets(MarketCategory.TOP_GAINER.apiValue, duration, SPOT_MARKET_LIMIT) != null
-                            }
-                        },
-                        async {
-                            refresh(MarketPageDataSource.SPOT_TOP_LOSER) {
-                                assetRepo.fetchMarkets(MarketCategory.TOP_LOSER.apiValue, duration, SPOT_MARKET_LIMIT) != null
-                            }
-                        },
-                        async {
-                            refresh(MarketPageDataSource.PERPETUAL_ALL) {
-                                perpsMarketRepository.syncAllMarkets() != null
-                            }
-                        },
-                        async {
-                            refresh(MarketPageDataSource.PERPETUAL_FAVORITE) {
-                                perpsMarketRepository.syncFavoriteMarkets() != null
-                            }
-                        },
-                        async {
-                            refresh(MarketPageDataSource.PERPETUAL_FEATURED) {
-                                perpsMarketRepository.syncCategory(MarketCategory.FEATURED) != null
-                            }
-                        },
-                        async {
-                            refresh(MarketPageDataSource.GLOBAL, ::refreshGlobalMarket)
-                        },
-                    ).awaitAll()
+                        }.toMutableList()
+                requests +=
+                    async {
+                        refresh(MarketPageDataSource.PERPETUAL_ALL) {
+                            perpsMarketRepository.syncAllMarkets() != null
+                        }
+                    }
+                requests +=
+                    async {
+                        refresh(MarketPageDataSource.PERPETUAL_FAVORITE) {
+                            perpsMarketRepository.syncFavoriteMarkets() != null
+                        }
+                    }
+                requests +=
+                    async {
+                        refresh(MarketPageDataSource.PERPETUAL_FEATURED) {
+                            perpsMarketRepository.syncCategory(MarketCategory.FEATURED) != null
+                        }
+                    }
+                requests += async { refresh(MarketPageDataSource.GLOBAL, ::refreshGlobalMarket) }
+                val results = requests.awaitAll()
                 RxBus.publish(
                     MarketPageRefreshEvent(
                         duration = duration,
@@ -136,5 +129,4 @@ class RefreshMarketPageJob(
                 userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
             },
         ) ?: false
-
 }

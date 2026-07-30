@@ -8,6 +8,7 @@ import androidx.paging.PagingData
 import androidx.paging.cachedIn
 import androidx.room.withTransaction
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -79,11 +80,9 @@ class PerpetualViewModel @Inject constructor(
         val errors: List<String>,
     )
 
-    fun refreshFavoriteMarkets() {
-        viewModelScope.launch {
-            if (perpsMarketRepository.syncFavoriteMarkets() == null) {
-                Timber.e("Failed to refresh perpetual market favorites")
-            }
+    suspend fun refreshFavoriteMarkets() {
+        if (perpsMarketRepository.syncFavoriteMarkets() == null) {
+            Timber.e("Failed to refresh perpetual market favorites")
         }
     }
 
@@ -245,32 +244,30 @@ class PerpetualViewModel @Inject constructor(
         return perpsMarketRepository.observeMarketsByCategory(MarketCategory.FEATURED)
     }
 
-    fun refreshMarkets(
-        onError: ((String) -> Unit)? = null
+    suspend fun refreshMarkets(
+        onError: ((String) -> Unit)? = null,
     ) {
-        viewModelScope.launch {
-            try {
-                val markets = perpsMarketRepository.syncAllMarkets()
-                if (markets != null) {
-                    Timber.d("Perps markets refreshed: ${markets.size} markets")
-                } else {
-                    val error = "Failed to refresh markets"
-                    Timber.e(error)
-                    onError?.invoke(error)
-                }
-            } catch (e: Exception) {
-                val error = "Error refreshing markets: ${e.message}"
-                Timber.e(e, error)
+        try {
+            val markets = perpsMarketRepository.syncAllMarkets()
+            if (markets != null) {
+                Timber.d("Perps markets refreshed: ${markets.size} markets")
+            } else {
+                val error = "Failed to refresh markets"
+                Timber.e(error)
                 onError?.invoke(error)
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            val error = "Error refreshing markets: ${e.message}"
+            Timber.e(e, error)
+            onError?.invoke(error)
         }
     }
 
-    fun refreshFeaturedMarkets() {
-        viewModelScope.launch {
-            if (perpsMarketRepository.syncCategory(MarketCategory.FEATURED) == null) {
-                Timber.e("Failed to refresh featured perpetual markets")
-            }
+    suspend fun refreshFeaturedMarkets() {
+        if (perpsMarketRepository.syncCategory(MarketCategory.FEATURED) == null) {
+            Timber.e("Failed to refresh featured perpetual markets")
         }
     }
 
