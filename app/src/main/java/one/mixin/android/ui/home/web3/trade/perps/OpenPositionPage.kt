@@ -220,35 +220,33 @@ fun OpenPositionPage(
         }
     }
 
-    LaunchedEffect(usdtAmount, leverage) {
+    LaunchedEffect(usdtAmount, leverage, currentMarket.minAmount) {
         val amount = usdtAmount.toBigDecimalOrNull()
-        if (amount == null || amount <= BigDecimal.ZERO) {
+        val minimumAmount = currentMarket.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        if (!shouldRequestLiquidationPrice(amount, minimumAmount)) {
             remoteLiquidationPrice = null
             isLiquidationLoading = false
             return@LaunchedEffect
         }
+        val requestAmount = amount ?: return@LaunchedEffect
         liquidationJob?.cancel()
         liquidationJob = launch {
+            remoteLiquidationPrice = null
             isLiquidationLoading = true
             delay(200L)
-            while (true) {
-                val normalizedAmount = amount
-                    .stripTrailingZeros()
-                    .toPlainString()
-                    .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
-                val result = viewModel.estimateLiquidationPrice(
+            val normalizedAmount = requestAmount
+                .stripTrailingZeros()
+                .toPlainString()
+                .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
+            remoteLiquidationPrice = requestLiquidationPrice {
+                viewModel.estimateLiquidationPrice(
                     marketId = currentMarket.marketId,
                     amount = normalizedAmount,
                     side = if (isLong) "long" else "short",
                     leverage = leverage.toInt(),
                 )
-                if (result != null) {
-                    remoteLiquidationPrice = result
-                    isLiquidationLoading = false
-                    break
-                }
-                delay(1000L)
             }
+            isLiquidationLoading = false
         }
     }
 
