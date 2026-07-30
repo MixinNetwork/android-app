@@ -85,7 +85,7 @@ import java.math.BigDecimal
 private val MarketChangeColumnWidth = 66.dp
 private val MarketPriceChangeGap = 4.dp
 private val MarketHeaderPriceWidth = 96.dp
-private val MarketHeaderPriceChangeMinGap = 26.dp
+private val MarketHeaderPriceChangeMinGap = 16.dp
 
 @Composable
 fun MarketPage(
@@ -397,14 +397,18 @@ private fun MarketHeaderSortLabels(
                 horizontalArrangement = Arrangement.Start,
                 onSort = onSort,
             )
-            SortLabel(
-                text = stringResource(R.string.Price),
-                column = MarketSortColumn.PRICE,
-                sortState = sortState,
+            Box(
                 modifier = Modifier.width(MarketHeaderPriceWidth),
-                horizontalArrangement = Arrangement.End,
-                onSort = onSort,
-            )
+                contentAlignment = Alignment.CenterEnd,
+            ) {
+                SortLabel(
+                    text = stringResource(R.string.Price),
+                    column = MarketSortColumn.PRICE,
+                    sortState = sortState,
+                    horizontalArrangement = Arrangement.End,
+                    onSort = onSort,
+                )
+            }
             SortLabel(
                 text = priceChangePeriodLabel(period),
                 column = MarketSortColumn.CHANGE,
@@ -431,13 +435,11 @@ private fun MarketHeaderSortLabels(
                 looseConstraints.copy(maxWidth = priceX),
             )
         val height =
-            constraints.constrainHeight(
-                maxOf(
-                    volumePlaceable.height,
-                    pricePlaceable.height,
-                    changePlaceable.height,
-                ),
-            )
+            maxOf(
+                volumePlaceable.height,
+                pricePlaceable.height,
+                changePlaceable.height,
+            ).coerceIn(constraints.minHeight, constraints.maxHeight)
 
         layout(width, height) {
             volumePlaceable.placeRelative(
