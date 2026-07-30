@@ -865,7 +865,7 @@ private fun RowScope.PerpetualMarketRowContent(
         Text(
             text =
                 stringResource(
-                    R.string.market_volume,
+                    R.string.volume_label,
                     runCatching { BigDecimal(market.volume).numberFormatCompact() }.getOrDefault(market.volume),
                 ),
             color = MixinAppTheme.colors.textAssist,

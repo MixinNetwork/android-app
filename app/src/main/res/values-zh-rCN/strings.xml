@@ -1762,7 +1762,7 @@
     <string name="market_stock">股票</string>
     <string name="Indicator">指标</string>
     <string name="market_display">行情显示</string>
-    <string name="market_volume">交易量：%1$s</string>
+    <string name="volume_label">交易量：%1$s</string>
     <string name="top_count">前 %1$d</string>
     <string name="change_percent_period_day">%1$d天 %%</string>
     <string name="change_percent_period_hour">%1$dh %%</string>

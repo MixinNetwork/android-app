@@ -72,7 +72,7 @@ class PerpsMarketListAdapter(
                 leverageTv.text = root.context.getString(R.string.Perpetual_Leverage_Format, market.leverage)
                 volumeTv.text =
                     root.context.getString(
-                        R.string.market_volume,
+                        R.string.volume_label,
                         runCatching { BigDecimal(market.volume).numberFormatCompact() }.getOrDefault(market.volume),
                     )
 

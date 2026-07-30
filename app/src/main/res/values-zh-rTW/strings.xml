@@ -928,7 +928,7 @@
     <string name="market_stock">股票</string>
     <string name="Indicator">指標</string>
     <string name="market_display">行情顯示</string>
-    <string name="market_volume">交易量：%1$s</string>
+    <string name="volume_label">交易量：%1$s</string>
     <string name="change_percent_period_day">%1$d 天 %%</string>
     <string name="change_percent_period_hour">%1$dh %%</string>
     <string name="Try_Again">請重試</string>
