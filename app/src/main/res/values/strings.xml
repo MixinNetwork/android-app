@@ -1800,6 +1800,7 @@
     <string name="Dominance">Dominance</string>
     <string name="volume_24h">24h Volume</string>
     <string name="market_volume_short">Vol</string>
+    <string name="market_change_short">Change</string>
     <string name="Watchlist">Watchlist</string>
     <string name="Crypto">Crypto</string>
     <string name="market_stock">Stock</string>

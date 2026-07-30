@@ -199,7 +199,7 @@
                 android:id="@+id/volume_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/perps_sort_volume_24"
+                android:text="@string/market_volume_short"
                 android:textColor="?attr/text_assist"
                 android:textSize="12sp" />
 
@@ -214,23 +214,16 @@
                 android:src="@drawable/ic_perps_sort_default" />
         </RelativeLayout>
 
-        <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/price_sort_guideline"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:layout_constraintGuide_percent="0.75" />
-
         <RelativeLayout
             android:id="@+id/change_sort"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="10dp"
+            android:layout_marginEnd="26dp"
             android:background="?android:attr/selectableItemBackground"
             android:paddingTop="4dp"
             android:paddingBottom="4dp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@id/price_sort_guideline"
+            app:layout_constraintEnd_toStartOf="@id/price_sort"
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
@@ -252,32 +245,23 @@
                 android:src="@drawable/ic_perps_sort_default" />
         </RelativeLayout>
 
-        <View
-            android:id="@+id/price_sort_divider"
-            android:layout_width="1dp"
-            android:layout_height="12dp"
-            android:background="?attr/bg_window"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="@id/price_sort_guideline"
-            app:layout_constraintTop_toTopOf="parent" />
-
         <RelativeLayout
             android:id="@+id/price_sort"
-            android:layout_width="wrap_content"
+            android:layout_width="66dp"
             android:layout_height="wrap_content"
-            android:layout_marginStart="10dp"
             android:background="?android:attr/selectableItemBackground"
+            android:gravity="end"
             android:paddingTop="4dp"
             android:paddingBottom="4dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@id/price_sort_divider"
             app:layout_constraintTop_toTopOf="parent">
 
             <TextView
                 android:id="@+id/price_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:text="@string/market_change_short"
                 android:textColor="?attr/text_assist"
                 android:textSize="12sp" />
 

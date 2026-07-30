@@ -78,19 +78,12 @@
         app:layout_constraintTop_toBottomOf="@id/symbol_tv"
         tools:text="VOL: $410.23M" />
 
-    <androidx.constraintlayout.widget.Guideline
-        android:id="@+id/price_sort_guideline"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        app:layout_constraintGuide_percent="0.75" />
-
     <TextView
         android:id="@+id/price_tv"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginEnd="10dp"
+        android:layout_marginEnd="26dp"
         android:ellipsize="start"
         android:gravity="end"
         android:maxLines="1"
@@ -98,23 +91,21 @@
         android:textFontWeight="500"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/price_sort_guideline"
+        app:layout_constraintEnd_toStartOf="@id/change_tv"
         app:layout_constraintStart_toEndOf="@id/leverage_tv"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="$42,123.45" />
 
     <TextView
         android:id="@+id/change_tv"
-        android:layout_width="0dp"
+        android:layout_width="66dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="10dp"
         android:gravity="end"
         android:maxLines="1"
         android:textFontWeight="500"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="@id/price_sort_guideline"
         app:layout_constraintTop_toTopOf="parent"
         tools:text="+2.34%"
         tools:textColor="@color/wallet_green" />

@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -50,6 +49,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -81,6 +81,11 @@ import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.widget.HomeToolbarView
 import java.math.BigDecimal
+
+private val MarketChangeColumnWidth = 66.dp
+private val MarketPriceChangeGap = 4.dp
+private val MarketHeaderPriceWidth = 96.dp
+private val MarketHeaderPriceChangeMinGap = 26.dp
 
 @Composable
 fun MarketPage(
@@ -357,47 +362,97 @@ private fun MarketListHeader(
                 modifier = Modifier.size(16.dp),
             )
         }
-        Spacer(modifier = Modifier.width(10.dp))
-        SortLabel(
-            text =
-                stringResource(
-                    if (showMarketCap) {
-                        R.string.Market_Cap
-                    } else {
-                        R.string.market_volume_short
-                    },
-                ),
-            column = MarketSortColumn.VOLUME,
+        Spacer(modifier = Modifier.width(8.dp))
+        MarketHeaderSortLabels(
+            period = period,
+            showMarketCap = showMarketCap,
             sortState = sortState,
+            onSort = onSort,
             modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.Start,
-            onSort = onSort,
         )
-        SortLabel(
-            text = stringResource(R.string.Price),
-            column = MarketSortColumn.PRICE,
-            sortState = sortState,
-            modifier = Modifier.width(96.dp),
-            horizontalArrangement = Arrangement.End,
-            onSort = onSort,
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        Box(
-            modifier =
-                Modifier
-                    .width(1.dp)
-                    .height(12.dp)
-                    .background(MixinAppTheme.colors.backgroundWindow),
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        SortLabel(
-            text = priceChangePeriodLabel(period),
-            column = MarketSortColumn.CHANGE,
-            sortState = sortState,
-            modifier = Modifier.width(84.dp).offset(x = 4.dp),
-            horizontalArrangement = Arrangement.End,
-            onSort = onSort,
-        )
+    }
+}
+
+@Composable
+private fun MarketHeaderSortLabels(
+    period: MarketPriceChangePeriod,
+    showMarketCap: Boolean,
+    sortState: MarketSortState,
+    onSort: (MarketSortColumn) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Layout(
+        content = {
+            SortLabel(
+                text =
+                    stringResource(
+                        if (showMarketCap) {
+                            R.string.Market_Cap
+                        } else {
+                            R.string.market_volume_short
+                        },
+                    ),
+                column = MarketSortColumn.VOLUME,
+                sortState = sortState,
+                horizontalArrangement = Arrangement.Start,
+                onSort = onSort,
+            )
+            SortLabel(
+                text = stringResource(R.string.Price),
+                column = MarketSortColumn.PRICE,
+                sortState = sortState,
+                modifier = Modifier.width(MarketHeaderPriceWidth),
+                horizontalArrangement = Arrangement.End,
+                onSort = onSort,
+            )
+            SortLabel(
+                text = priceChangePeriodLabel(period),
+                column = MarketSortColumn.CHANGE,
+                sortState = sortState,
+                horizontalArrangement = Arrangement.End,
+                onSort = onSort,
+            )
+        },
+        modifier = modifier,
+    ) { measurables, constraints ->
+        val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0)
+        val pricePlaceable = measurables[1].measure(looseConstraints)
+        val changePlaceable = measurables[2].measure(looseConstraints)
+        val width = constraints.maxWidth
+        val changeX = (width - changePlaceable.width).coerceAtLeast(0)
+        val preferredPriceRight =
+            width - (MarketChangeColumnWidth + MarketPriceChangeGap).roundToPx()
+        val fallbackPriceRight =
+            changeX - MarketHeaderPriceChangeMinGap.roundToPx()
+        val priceRight = minOf(preferredPriceRight, fallbackPriceRight)
+        val priceX = (priceRight - pricePlaceable.width).coerceAtLeast(0)
+        val volumePlaceable =
+            measurables[0].measure(
+                looseConstraints.copy(maxWidth = priceX),
+            )
+        val height =
+            constraints.constrainHeight(
+                maxOf(
+                    volumePlaceable.height,
+                    pricePlaceable.height,
+                    changePlaceable.height,
+                ),
+            )
+
+        layout(width, height) {
+            volumePlaceable.placeRelative(
+                x = 0,
+                y = (height - volumePlaceable.height) / 2,
+            )
+            pricePlaceable.placeRelative(
+                x = priceX,
+                y = (height - pricePlaceable.height) / 2,
+            )
+            changePlaceable.placeRelative(
+                x = changeX,
+                y = (height - changePlaceable.height) / 2,
+            )
+        }
     }
 }
 
@@ -702,7 +757,7 @@ private fun MarketRow(
                 animationTrigger = favoriteAnimationTrigger,
             )
         }
-        Spacer(modifier = Modifier.width(10.dp))
+        Spacer(modifier = Modifier.width(8.dp))
         when (entry) {
             is MarketListEntry.Spot ->
                 SpotMarketRowContent(
@@ -778,11 +833,12 @@ private fun RowScope.SpotMarketRowContent(
             ),
         modifier = Modifier.weight(1f),
     )
-    Spacer(modifier = Modifier.width(16.dp))
+    Spacer(modifier = Modifier.width(MarketPriceChangeGap))
     ChangeColumn(
         change = change,
         sparkline = market.sparkline(settings.priceChangePeriod),
         quoteColorReversed = settings.quoteColorReversed,
+        modifier = Modifier.width(MarketChangeColumnWidth),
     )
 }
 
@@ -797,7 +853,7 @@ private fun RowScope.PerpetualMarketRowContent(
     Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = market.displaySymbol,
+                text = market.tokenSymbol,
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,
             )
@@ -834,12 +890,13 @@ private fun RowScope.PerpetualMarketRowContent(
             ),
         modifier = Modifier.weight(1f),
     )
-    Spacer(modifier = Modifier.width(16.dp))
+    Spacer(modifier = Modifier.width(MarketPriceChangeGap))
     ChangeColumn(
         change = change,
         sparkline = null,
         quoteColorReversed = settings.quoteColorReversed,
         fontSize = 14.sp,
+        modifier = Modifier.width(MarketChangeColumnWidth),
     )
 }
 
@@ -879,6 +936,7 @@ private fun ChangeColumn(
     sparkline: String?,
     quoteColorReversed: Boolean,
     fontSize: TextUnit = 12.sp,
+    modifier: Modifier = Modifier,
 ) {
     val isRising = change?.let { it >= BigDecimal.ZERO } ?: true
     val changeColor =
@@ -892,22 +950,33 @@ private fun ChangeColumn(
     if (sparkline.isNullOrBlank()) {
         Box(
             modifier =
-                Modifier
-                    .width(60.dp)
+                modifier
                     .height(36.dp),
             contentAlignment = Alignment.CenterEnd,
         ) {
-            Text(
+            BasicText(
                 text = change?.let(::formatPercent) ?: "--",
-                color = changeColor,
-                fontSize = fontSize,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.End,
+                style =
+                    TextStyle(
+                        color = changeColor,
+                        fontSize = fontSize,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.End,
+                    ),
+                maxLines = 1,
+                softWrap = false,
+                autoSize =
+                    TextAutoSize.StepBased(
+                        minFontSize = 8.sp,
+                        maxFontSize = fontSize,
+                        stepSize = 0.5.sp,
+                    ),
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     } else {
         Column(
-            modifier = Modifier.width(60.dp),
+            modifier = modifier,
             horizontalAlignment = Alignment.End,
         ) {
             AndroidView(
@@ -924,12 +993,24 @@ private fun ChangeColumn(
                         .width(60.dp)
                         .height(20.dp),
             )
-            Text(
+            BasicText(
                 text = change?.let(::formatPercent) ?: "--",
-                color = changeColor,
-                fontSize = fontSize,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.End,
+                style =
+                    TextStyle(
+                        color = changeColor,
+                        fontSize = fontSize,
+                        fontWeight = FontWeight.Medium,
+                        textAlign = TextAlign.End,
+                    ),
+                maxLines = 1,
+                softWrap = false,
+                autoSize =
+                    TextAutoSize.StepBased(
+                        minFontSize = 8.sp,
+                        maxFontSize = fontSize,
+                        stepSize = 0.5.sp,
+                    ),
+                modifier = Modifier.fillMaxWidth(),
             )
         }
     }
