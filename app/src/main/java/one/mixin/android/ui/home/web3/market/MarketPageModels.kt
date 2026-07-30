@@ -110,6 +110,9 @@ data class MarketPageUiState(
             selectedTopTab == MarketTopTab.PERPETUAL ||
                 (selectedTopTab == MarketTopTab.WATCHLIST && selectedSubTab == MarketSubTab.PERPETUAL)
 
+    val showsMarketCapColumn: Boolean
+        get() = selectedTopTab == MarketTopTab.CRYPTO && selectedSubTab == MarketSubTab.ALL
+
     val effectivePriceChangePeriod: MarketPriceChangePeriod
         get() =
             if (showsOnlyPerpetualMarkets) {
@@ -128,6 +131,27 @@ fun defaultMarketSubTabs(): Map<MarketTopTab, MarketSubTab> =
         MarketTopTab.CRYPTO to MarketSubTab.TRENDING,
         MarketTopTab.PERPETUAL to MarketSubTab.TRENDING,
     )
+
+fun marketSubTabs(topTab: MarketTopTab): List<MarketSubTab> =
+    when (topTab) {
+        MarketTopTab.WATCHLIST -> listOf(MarketSubTab.CRYPTO, MarketSubTab.PERPETUAL)
+        MarketTopTab.CRYPTO ->
+            listOf(
+                MarketSubTab.FAVORITE,
+                MarketSubTab.TRENDING,
+                MarketSubTab.TOP_GAINERS,
+                MarketSubTab.TOP_LOSERS,
+                MarketSubTab.ALL,
+            )
+        MarketTopTab.PERPETUAL ->
+            listOf(
+                MarketSubTab.FAVORITE,
+                MarketSubTab.TRENDING,
+                MarketSubTab.TOP_GAINERS,
+                MarketSubTab.TOP_LOSERS,
+            )
+        MarketTopTab.INDICATOR -> emptyList()
+    }
 
 object MarketPageMapper {
     fun spotMarkets(
@@ -194,12 +218,13 @@ object MarketPageMapper {
         entries: List<MarketListEntry>,
         sortState: MarketSortState,
         period: MarketPriceChangePeriod,
+        useMarketCapForSpot: Boolean,
     ): List<MarketListEntry> {
         val column = sortState.column ?: return entries
         if (sortState.direction == MarketSortDirection.DEFAULT) return entries
         val comparator = compareBy<MarketListEntry> { entry ->
             when (column) {
-                MarketSortColumn.VOLUME -> entry.volume()
+                MarketSortColumn.VOLUME -> entry.volume(useMarketCapForSpot)
                 MarketSortColumn.PRICE -> entry.price()
                 MarketSortColumn.CHANGE -> entry.changePercent(period)
             } ?: BigDecimal.ZERO
@@ -228,9 +253,14 @@ fun PerpsMarket.changePercentValue(): BigDecimal? {
     return change.toBigDecimalOrNull()?.multiply(BigDecimal(100))
 }
 
-fun MarketListEntry.volume(): BigDecimal? =
+fun MarketListEntry.volume(useMarketCapForSpot: Boolean): BigDecimal? =
     when (this) {
-        is MarketListEntry.Spot -> market.marketCap.toBigDecimalOrNull()
+        is MarketListEntry.Spot ->
+            if (useMarketCapForSpot) {
+                market.marketCap.toBigDecimalOrNull()
+            } else {
+                market.totalVolume.toBigDecimalOrNull()
+            }
         is MarketListEntry.Perpetual -> market.volume.toBigDecimalOrNull()
     }
 

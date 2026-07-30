@@ -21,6 +21,19 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun perpetualSubTabsDoNotIncludeAll() {
+        assertEquals(
+            listOf(
+                MarketSubTab.FAVORITE,
+                MarketSubTab.TRENDING,
+                MarketSubTab.TOP_GAINERS,
+                MarketSubTab.TOP_LOSERS,
+            ),
+            marketSubTabs(MarketTopTab.PERPETUAL),
+        )
+    }
+
+    @Test
     fun watchlistSpotIncludesAllSpotMarketTypes() {
         val crypto = market(coinId = "btc", perpsMarketId = "btc-perp", favored = true)
         val stock = market(coinId = "hood", favored = true)
@@ -184,7 +197,7 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun spotVolumeColumnSortsByMarketCap() {
+    fun spotAllVolumeColumnSortsByMarketCap() {
         val lowerMarketCap =
             MarketListEntry.Spot(
                 market(coinId = "higher-volume", marketCap = "100", totalVolume = "1000"),
@@ -201,9 +214,34 @@ class MarketPageModelsTest {
                 entries = listOf(lowerMarketCap, higherMarketCap),
                 sortState = MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
                 period = MarketPriceChangePeriod.SEVEN_DAYS,
+                useMarketCapForSpot = true,
             )
 
         assertEquals(listOf("spot:lower-volume", "spot:higher-volume"), result.map { it.stableId })
+    }
+
+    @Test
+    fun spotNonAllVolumeColumnSortsByTradingVolume() {
+        val higherVolume =
+            MarketListEntry.Spot(
+                market(coinId = "higher-volume", marketCap = "100", totalVolume = "1000"),
+                SpotMarketType.CRYPTO,
+            )
+        val lowerVolume =
+            MarketListEntry.Spot(
+                market(coinId = "lower-volume", marketCap = "200", totalVolume = "10"),
+                SpotMarketType.CRYPTO,
+            )
+
+        val result =
+            MarketPageMapper.applySort(
+                entries = listOf(lowerVolume, higherVolume),
+                sortState = MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                period = MarketPriceChangePeriod.SEVEN_DAYS,
+                useMarketCapForSpot = false,
+            )
+
+        assertEquals(listOf("spot:higher-volume", "spot:lower-volume"), result.map { it.stableId })
     }
 
     @Test

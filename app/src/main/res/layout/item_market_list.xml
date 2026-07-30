@@ -5,15 +5,18 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="?attr/selectableItemBackground"
-    android:paddingHorizontal="20dp"
+    android:paddingStart="16dp"
+    android:paddingEnd="20dp"
     android:paddingVertical="8dp">
 
     <ImageView
         android:id="@+id/favorite_iv"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="28dp"
+        android:layout_height="32dp"
         android:background="?android:attr/selectableItemBackgroundBorderless"
-        android:padding="15dp"
+        android:paddingTop="8dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="8dp"
         android:src="@drawable/ic_asset_favorites"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,9 +24,8 @@
 
     <one.mixin.android.widget.CircleImageView
         android:id="@+id/icon_iv"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:layout_marginStart="8dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/favorite_iv"
         app:layout_constraintTop_toTopOf="parent"
@@ -33,14 +35,13 @@
         android:id="@+id/symbol_tv"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="12dp"
+        android:layout_marginStart="10dp"
         android:ellipsize="end"
         android:maxLines="1"
         android:textColor="?attr/text_primary"
-        android:textSize="16sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:textSize="14sp"
         app:layout_constraintStart_toEndOf="@id/icon_iv"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toTopOf="@id/icon_iv"
         tools:text="BTC-PERP" />
 
     <TextView
@@ -61,6 +62,20 @@
         app:layout_constraintBottom_toBottomOf="@id/symbol_tv"
         tools:text="100x" />
 
+    <TextView
+        android:id="@+id/volume_tv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="?attr/text_assist"
+        android:textSize="12sp"
+        app:layout_constraintBottom_toBottomOf="@id/icon_iv"
+        app:layout_constraintStart_toStartOf="@id/symbol_tv"
+        app:layout_constraintTop_toBottomOf="@id/symbol_tv"
+        tools:text="VOL: $410.23M" />
+
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/price_sort_guideline"
         android:layout_width="wrap_content"
@@ -78,6 +93,7 @@
         android:gravity="end"
         android:maxLines="1"
         android:textColor="?attr/text_primary"
+        android:textFontWeight="500"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/price_sort_guideline"
@@ -90,7 +106,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="10dp"
-        android:gravity="center"
+        android:gravity="end"
         android:maxLines="1"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"

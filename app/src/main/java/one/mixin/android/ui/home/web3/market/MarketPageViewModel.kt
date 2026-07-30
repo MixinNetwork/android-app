@@ -417,6 +417,7 @@ class MarketPageViewModel
                             entries = entries,
                             sortState = state.sortState,
                             period = state.effectivePriceChangePeriod,
+                            useMarketCapForSpot = state.showsMarketCapColumn,
                         ),
                     hasError = entries.isEmpty() && selectedDataSource(state) in failedSources,
                     hasLoadedLocalData = hasLoadedSelectedLocalData(state),
@@ -496,7 +497,7 @@ class MarketPageViewModel
                 defaultMarketSubTabs().mapValues { (tab, default) ->
                     preferences.getString("$PREF_MARKET_PAGE_SUB_TAB_PREFIX${tab.name}", null)
                         ?.let { stored -> MarketSubTab.entries.firstOrNull { it.name == stored } }
-                        ?.takeUnless { tab == MarketTopTab.WATCHLIST && it == MarketSubTab.ALL }
+                        ?.takeIf { it in marketSubTabs(tab) }
                         ?: default
                 }
             val priceChangePeriod =

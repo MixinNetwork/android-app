@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -35,12 +34,18 @@ fun MarketFavoriteIcon(
     @DrawableRes selectedIconRes: Int,
     contentDescription: String,
     modifier: Modifier = Modifier,
+    animationTrigger: Int = 0,
 ) {
-    var previousIsFavored by remember { mutableStateOf(isFavored) }
-    var isPlaying by remember(isFavored) { mutableStateOf(isFavored && !previousIsFavored) }
-    SideEffect {
-        previousIsFavored = isFavored
-    }
+    val animationState =
+        remember {
+            MarketFavoriteAnimationState(
+                initialAnimationTrigger = animationTrigger,
+            )
+        }
+    var isPlaying by
+        remember(animationTrigger) {
+            mutableStateOf(animationState.shouldPlay(animationTrigger))
+        }
     if (!isPlaying) {
         Icon(
             painter = painterResource(if (isFavored) selectedIconRes else unselectedIconRes),
@@ -72,20 +77,33 @@ fun MarketFavoriteIcon(
     )
 }
 
+internal class MarketFavoriteAnimationState(
+    initialAnimationTrigger: Int,
+) {
+    private var previousAnimationTrigger = initialAnimationTrigger
+
+    fun shouldPlay(animationTrigger: Int): Boolean {
+        val shouldPlay = animationTrigger != previousAnimationTrigger
+        previousAnimationTrigger = animationTrigger
+        return shouldPlay
+    }
+}
+
 fun ImageView.setMarketFavoriteIcon(
     isFavored: Boolean,
     animate: Boolean = false,
     @DrawableRes unselectedIconRes: Int = R.drawable.ic_title_favorites,
     @DrawableRes selectedIconRes: Int = R.drawable.ic_title_favorites_checked,
 ) {
+    val iconPadding = 8.viewDp
     layoutParams =
         layoutParams.apply {
             width = 40.viewDp
             height = 40.viewDp
-    }
+        }
     scaleType = ImageView.ScaleType.FIT_CENTER
     if (!isFavored || !animate) {
-        setPadding(1.viewDp, 1.viewDp, 1.viewDp, 1.viewDp)
+        setPadding(iconPadding, iconPadding, iconPadding, iconPadding)
         setImageResource(if (isFavored) selectedIconRes else unselectedIconRes)
         return
     }
@@ -93,7 +111,7 @@ fun ImageView.setMarketFavoriteIcon(
     val composition =
         LottieCompositionFactory.fromRawResSync(context, R.raw.market_watchlist).value
             ?: run {
-                setPadding(1.viewDp, 1.viewDp, 1.viewDp, 1.viewDp)
+                setPadding(iconPadding, iconPadding, iconPadding, iconPadding)
                 setImageResource(selectedIconRes)
                 return
             }
@@ -106,7 +124,12 @@ fun ImageView.setMarketFavoriteIcon(
                 object : AnimatorListenerAdapter() {
                     override fun onAnimationEnd(animation: Animator) {
                         if (this@setMarketFavoriteIcon.drawable === this@apply) {
-                            this@setMarketFavoriteIcon.setPadding(1.viewDp, 1.viewDp, 1.viewDp, 1.viewDp)
+                            this@setMarketFavoriteIcon.setPadding(
+                                iconPadding,
+                                iconPadding,
+                                iconPadding,
+                                iconPadding,
+                            )
                             this@setMarketFavoriteIcon.setImageResource(selectedIconRes)
                         }
                     }

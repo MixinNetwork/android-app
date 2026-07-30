@@ -15,9 +15,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
@@ -40,6 +42,7 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -55,6 +58,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -110,7 +114,7 @@ fun MarketPage(
             selected = state.selectedTopTab,
             onSelect = onSelectTopTab,
         )
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(20.dp))
         if (state.selectedTopTab != MarketTopTab.INDICATOR) {
             SubTabs(
                 topTab = state.selectedTopTab,
@@ -120,7 +124,7 @@ fun MarketPage(
             if (!state.isShowingRecommendations && state.entries.isNotEmpty()) {
                 MarketListHeader(
                     period = state.effectivePriceChangePeriod,
-                    isPerpetual = state.showsOnlyPerpetualMarkets,
+                    showMarketCap = state.showsMarketCapColumn,
                     sortState = state.sortState,
                     onSort = onSort,
                     onShowDisplaySettings = onShowDisplaySettings,
@@ -243,18 +247,7 @@ private fun SubTabs(
     selected: MarketSubTab?,
     onSelect: (MarketSubTab) -> Unit,
 ) {
-    val tabs =
-        if (topTab == MarketTopTab.WATCHLIST) {
-            listOf(MarketSubTab.CRYPTO, MarketSubTab.PERPETUAL)
-        } else {
-            listOf(
-                MarketSubTab.FAVORITE,
-                MarketSubTab.TRENDING,
-                MarketSubTab.TOP_GAINERS,
-                MarketSubTab.TOP_LOSERS,
-                MarketSubTab.ALL,
-            )
-        }
+    val tabs = marketSubTabs(topTab)
     Row(
         modifier =
             Modifier
@@ -352,7 +345,7 @@ private fun MarketChip(
 @Composable
 private fun MarketListHeader(
     period: MarketPriceChangePeriod,
-    isPerpetual: Boolean,
+    showMarketCap: Boolean,
     sortState: MarketSortState,
     onSort: (MarketSortColumn) -> Unit,
     onShowDisplaySettings: () -> Unit,
@@ -361,14 +354,14 @@ private fun MarketListHeader(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(start = 12.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
+                .padding(start = 16.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.CenterStart,
             modifier =
                 Modifier
-                    .size(32.dp)
+                    .size(24.dp)
                     .clip(CircleShape)
                     .clickable(onClick = onShowDisplaySettings),
         ) {
@@ -379,14 +372,14 @@ private fun MarketListHeader(
                 modifier = Modifier.size(16.dp),
             )
         }
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(10.dp))
         SortLabel(
             text =
                 stringResource(
-                    if (isPerpetual) {
-                        R.string.market_volume_short
-                    } else {
+                    if (showMarketCap) {
                         R.string.Market_Cap
+                    } else {
+                        R.string.market_volume_short
                     },
                 ),
             column = MarketSortColumn.VOLUME,
@@ -416,7 +409,7 @@ private fun MarketListHeader(
             text = priceChangePeriodLabel(period),
             column = MarketSortColumn.CHANGE,
             sortState = sortState,
-            modifier = Modifier.width(84.dp),
+            modifier = Modifier.width(84.dp).offset(x = 4.dp),
             horizontalArrangement = Arrangement.End,
             onSort = onSort,
         )
@@ -451,7 +444,7 @@ private fun SortLabel(
         Text(
             text = text,
             color = MixinAppTheme.colors.textAssist,
-            fontSize = 14.sp,
+            fontSize = 12.sp,
             textAlign = if (horizontalArrangement == Arrangement.End) TextAlign.End else TextAlign.Start,
             maxLines = 1,
             softWrap = false,
@@ -520,6 +513,7 @@ private fun MarketList(
                     MarketRow(
                         entry = entry,
                         settings = state.displaySettings,
+                        showMarketCap = state.showsMarketCapColumn,
                         onFavorite = { onFavorite(entry) },
                         onClick = { onEntryClick(entry) },
                     )
@@ -580,7 +574,7 @@ private fun MarketRecommendations(
                     disabledContentColor = MixinAppTheme.colors.textAssist,
                     modifier =
                         Modifier
-                            .width(172.dp)
+                            .wrapContentWidth()
                             .height(42.dp),
                 ) {
                     Text(
@@ -681,9 +675,11 @@ private fun RecommendationCard(
 private fun MarketRow(
     entry: MarketListEntry,
     settings: MarketDisplaySettings,
+    showMarketCap: Boolean,
     onFavorite: () -> Unit,
     onClick: () -> Unit,
 ) {
+    var favoriteAnimationTrigger by remember(entry.stableId) { mutableIntStateOf(0) }
     Row(
         modifier =
             Modifier
@@ -693,12 +689,17 @@ private fun MarketRow(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            contentAlignment = Alignment.Center,
+            contentAlignment = Alignment.CenterStart,
             modifier =
                 Modifier
                     .size(24.dp)
                     .clip(CircleShape)
-                    .clickable(onClick = onFavorite),
+                    .clickable {
+                        if (!entry.isFavored) {
+                            favoriteAnimationTrigger++
+                        }
+                        onFavorite()
+                    },
         ) {
             MarketFavoriteIcon(
                 isFavored = entry.isFavored,
@@ -713,6 +714,7 @@ private fun MarketRow(
                         },
                     ),
                 modifier = Modifier.size(16.dp),
+                animationTrigger = favoriteAnimationTrigger,
             )
         }
         Spacer(modifier = Modifier.width(10.dp))
@@ -721,6 +723,7 @@ private fun MarketRow(
                 SpotMarketRowContent(
                     market = entry.market,
                     settings = settings,
+                    showMarketCap = showMarketCap,
                 )
 
             is MarketListEntry.Perpetual ->
@@ -736,6 +739,7 @@ private fun MarketRow(
 private fun RowScope.SpotMarketRowContent(
     market: MarketItem,
     settings: MarketDisplaySettings,
+    showMarketCap: Boolean,
 ) {
     val change = market.changePercent(settings.priceChangePeriod)
     MarketIcon(url = market.iconUrl, size = 38.dp)
@@ -764,7 +768,7 @@ private fun RowScope.SpotMarketRowContent(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = formatSpotVolume(market.marketCap),
+                text = formatSpotVolume(if (showMarketCap) market.marketCap else market.totalVolume),
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 12.sp,
                 maxLines = 1,
@@ -777,7 +781,7 @@ private fun RowScope.SpotMarketRowContent(
             TextStyle(
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.End,
             ),
         maxLines = 1,
@@ -823,7 +827,7 @@ private fun RowScope.PerpetualMarketRowContent(
             TextStyle(
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.End,
             ),
         maxLines = 1,
@@ -841,6 +845,7 @@ private fun RowScope.PerpetualMarketRowContent(
         change = change,
         sparkline = null,
         quoteColorReversed = settings.quoteColorReversed,
+        fontSize = 14.sp,
     )
 }
 
@@ -879,6 +884,7 @@ private fun ChangeColumn(
     change: BigDecimal?,
     sparkline: String?,
     quoteColorReversed: Boolean,
+    fontSize: TextUnit = 12.sp,
 ) {
     val isRising = change?.let { it >= BigDecimal.ZERO } ?: true
     val changeColor =
@@ -893,21 +899,21 @@ private fun ChangeColumn(
         Box(
             modifier =
                 Modifier
-                    .width(84.dp)
+                    .width(60.dp)
                     .height(36.dp),
             contentAlignment = Alignment.CenterEnd,
         ) {
             Text(
                 text = change?.let(::formatPercent) ?: "--",
                 color = changeColor,
-                fontSize = 12.sp,
+                fontSize = fontSize,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.End,
             )
         }
     } else {
         Column(
-            modifier = Modifier.width(84.dp),
+            modifier = Modifier.width(60.dp),
             horizontalAlignment = Alignment.End,
         ) {
             AndroidView(
@@ -927,7 +933,7 @@ private fun ChangeColumn(
             Text(
                 text = change?.let(::formatPercent) ?: "--",
                 color = changeColor,
-                fontSize = 12.sp,
+                fontSize = fontSize,
                 fontWeight = FontWeight.Medium,
                 textAlign = TextAlign.End,
             )
