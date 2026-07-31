@@ -13,8 +13,11 @@ data class TipConfig(
 
 @Parcelize
 data class TipSigner(
+    @SerializedName("identity")
     val identity: String,
+    @SerializedName("index")
     val index: Int,
+    @SerializedName("api")
     val api: String,
 ) : Parcelable {
     fun info() = "TipSigner(index: $index, node: ${api.split("/").lastOrNull() ?: ""})"

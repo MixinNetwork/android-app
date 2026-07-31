@@ -8,6 +8,7 @@ import android.media.MediaRecorder
 import android.telephony.PhoneStateListener
 import android.telephony.TelephonyManager
 import androidx.core.content.getSystemService
+import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
@@ -83,9 +84,13 @@ class OpusAudioRecorder private constructor(private val ctx: Context) {
     }
 
     data class AudioPreview(
+        @SerializedName("messageId")
         val messageId: String,
+        @SerializedName("path")
         val path: String,
+        @SerializedName("duration")
         val duration: Long,
+        @SerializedName("waveForm")
         val waveForm: ByteArray,
     )
 

@@ -8,12 +8,15 @@ data class GaslessSponsorTransactionResponse(
     val sponsorTxId: String,
     @SerializedName("chain_id")
     val chainId: String,
+    @SerializedName("account")
     val account: String,
     @SerializedName("web3_chain_id")
     val web3ChainId: Int,
+    @SerializedName("state")
     val state: String,
     @SerializedName("broadcast_tx_hash")
     val broadcastTxHash: String? = null,
+    @SerializedName("reason")
     val reason: String? = null,
     @SerializedName("created_at")
     val createdAt: String,

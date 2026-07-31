@@ -17,13 +17,16 @@ data class TopAsset(
     @SerializedName("asset_id")
     val assetId: String,
     @ColumnInfo(name = "symbol")
+    @SerializedName("symbol")
     val symbol: String,
     @ColumnInfo(name = "name")
+    @SerializedName("name")
     val name: String,
     @ColumnInfo(name = "icon_url")
     @SerializedName("icon_url")
     val iconUrl: String,
     @ColumnInfo(name = "balance")
+    @SerializedName("balance")
     val balance: String,
     @SerializedName("destination")
     @ColumnInfo(name = "destination")
@@ -47,6 +50,7 @@ data class TopAsset(
     @ColumnInfo(name = "change_btc")
     val changeBtc: String,
     @ColumnInfo(name = "confirmations")
+    @SerializedName("confirmations")
     val confirmations: Int,
 ) : Parcelable
 

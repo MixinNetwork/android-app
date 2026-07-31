@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.BuildConfig
 
 data class SessionRequest(
+    @SerializedName("platform")
     val platform: String = "Android",
     @SerializedName("platform_version")
     val platformVersion: String = Build.VERSION.RELEASE,

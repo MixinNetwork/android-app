@@ -58,6 +58,7 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PENDING_DB_THREAD
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.mention.resolveMentionUsers
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCap
@@ -274,6 +275,18 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 data.status,
             )
         val appCardData = gson.fromJson(message.content, AppCardData::class.java)
+        appCardData.description?.let { description ->
+            parseMentionData(
+                description,
+                data.messageId,
+                data.conversationId,
+                userDao,
+                messageMentionDao,
+                data.userId,
+            ) { identityNumbers ->
+                resolveMentionUsers(identityNumbers, userApi, userDao, appDao)
+            }
+        }
         appCardData.appId?.let { id ->
             runBlocking {
                 var app = appDao.findAppById(id)

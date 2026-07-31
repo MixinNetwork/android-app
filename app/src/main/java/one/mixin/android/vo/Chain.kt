@@ -12,13 +12,16 @@ data class Chain(
     @SerializedName("chain_id")
     val chainId: String,
     @ColumnInfo(name = "name")
+    @SerializedName("name")
     val name: String,
     @ColumnInfo(name = "symbol")
+    @SerializedName("symbol")
     val symbol: String,
     @ColumnInfo(name = "icon_url")
     @SerializedName("icon_url")
     val iconUrl: String,
     @ColumnInfo(name = "threshold")
+    @SerializedName("threshold")
     val threshold: Int,
     @ColumnInfo(name = "withdrawal_memo_possibility")
     @SerializedName("withdrawal_memo_possibility")

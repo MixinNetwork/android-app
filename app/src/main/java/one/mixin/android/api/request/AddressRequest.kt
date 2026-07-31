@@ -11,6 +11,8 @@ data class AddressRequest(
     val destination: String?,
     @SerializedName("tag")
     val tag: String?,
+    @SerializedName("label")
     val label: String?,
+    @SerializedName("pin")
     val pin: String,
 )

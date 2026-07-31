@@ -12,6 +12,7 @@ data class ParsedTx(
     val instructions: List<ParsedInstruction>? = null,
     @SerializedName("approves")
     val approves: List<Approve>? = null,
+    @SerializedName("code")
     val code: Int? = null
 ) {
     fun noBalanceChange(): Boolean = instructions?.isNotEmpty() == true && balanceChanges.isNullOrEmpty()
@@ -78,6 +79,7 @@ data class ParsedInstruction(
     val items: List<Item>? = null,
     @SerializedName("token_changes")
     val tokenChanges: List<TokenChange>? = null,
+    @SerializedName("info")
     val info: String? = null,
 )
 

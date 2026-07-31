@@ -9,5 +9,6 @@ class AttachmentExtra(
     var messageId: String?,
     @SerializedName("created_at")
     var createdAt: String? = null,
+    @SerializedName("shareable")
     var shareable: Boolean? = null,
 )
