@@ -2325,7 +2325,7 @@
     <string name="perps_funding_rate_key_point_2">资金费率为负时，空头向多头支付资金费。</string>
     <string name="perps_funding_rate_key_point_3">实际资金费取决于您的仓位价值和当前资金费率。</string>
     <string name="perps_funding_frequency">频率</string>
-    <string name="perps_funding_frequency_value">8 小时</string>
+    <string name="perps_funding_frequency_value">1/4/8 小时</string>
     <string name="perps_receive">收到</string>
     <string name="perps_liquidation_price_short">强平价格</string>
     <string name="Take_Profit_When">止盈条件</string>
