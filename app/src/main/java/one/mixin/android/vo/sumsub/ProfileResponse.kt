@@ -7,6 +7,7 @@ data class ProfileResponse(
     val kycState: String,
     @SerializedName("asset_ids")
     val assetIds: ArrayList<String>,
+    @SerializedName("currencies")
     val currencies: ArrayList<String>,
     @SerializedName("support_payments")
     val supportPayments: ArrayList<String>,

@@ -1,3 +1,8 @@
 package one.mixin.android.api.request
 
-data class Pin(val pin: String)
+import com.google.gson.annotations.SerializedName
+
+data class Pin(
+    @SerializedName("pin")
+    val pin: String,
+)

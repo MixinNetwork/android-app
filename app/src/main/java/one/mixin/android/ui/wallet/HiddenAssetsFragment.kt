@@ -21,6 +21,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.wallet.adapter.AssetItemCallback
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
+import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 import kotlin.math.abs
@@ -67,6 +69,7 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
                             val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
                             val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
                             lifecycleScope.launch {
+                                AnalyticsTracker.trackAssetVisibility(false, TradeWallet.MAIN, AnalyticsTracker.AssetSource.WALLET_HOME)
                                 walletViewModel.updateAssetHidden(asset.assetId, false)
                                 val anchorView = assetsRv
 
@@ -75,6 +78,7 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
                                         .setAction(R.string.UNDO) {
                                             assetsAdapter.restoreItem(deleteItem, hiddenPos)
                                             lifecycleScope.launch(Dispatchers.IO) {
+                                                AnalyticsTracker.trackAssetVisibility(true, TradeWallet.MAIN, AnalyticsTracker.AssetSource.WALLET_HOME)
                                                 walletViewModel.updateAssetHidden(asset.assetId, true)
                                             }
                                         }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {

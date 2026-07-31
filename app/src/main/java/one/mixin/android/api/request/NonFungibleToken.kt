@@ -4,6 +4,7 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.api.response.Metadata
 
 data class NonFungibleToken(
+    @SerializedName("type")
     val type: String,
     @SerializedName("token_id")
     val tokenId: String,

@@ -61,11 +61,15 @@ data class PerpsOrderItem(
     @ColumnInfo(name = "updated_at")
     val updatedAt: String,
     @ColumnInfo(name = "display_symbol")
+    @SerializedName("displaySymbol")
     val displaySymbol: String? = null,
     @ColumnInfo(name = "icon_url")
+    @SerializedName("iconUrl")
     val iconUrl: String? = null,
     @ColumnInfo(name = "token_symbol")
+    @SerializedName("tokenSymbol")
     val tokenSymbol: String? = null,
     @ColumnInfo(name = "price_scale")
+    @SerializedName("priceScale")
     val priceScale: Int = 2,
 ) : Parcelable

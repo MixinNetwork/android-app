@@ -99,7 +99,7 @@ class Web3ViewModel @Inject constructor(
 
     suspend fun findOrSyncApp(appId: String) = userRepository.findOrSyncApp(appId)
 
-    suspend fun walletHomeBanners(chains: List<String>) = referralRepository.fetchWalletHomeBanners(chains)
+    suspend fun walletHomeBanners() = referralRepository.fetchWalletHomeBanners()
 
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 

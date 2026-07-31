@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet.home
 
 import android.content.SharedPreferences
+import com.google.gson.annotations.SerializedName
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.putString
@@ -11,21 +12,37 @@ import one.mixin.android.vo.safe.TokenItem
 private const val PREF_WALLET_HOME_CACHE_PREFIX = "pref_wallet_home_cache"
 
 data class WalletHomeCache(
+    @SerializedName("walletType")
     val walletType: WalletHomeType,
+    @SerializedName("fiatTotal")
     val fiatTotal: String,
+    @SerializedName("btcTotal")
     val btcTotal: String,
+    @SerializedName("fiatSymbol")
     val fiatSymbol: String,
+    @SerializedName("privacyTokens")
     val privacyTokens: List<TokenItem> = emptyList(),
+    @SerializedName("web3Tokens")
     val web3Tokens: List<Web3TokenItem> = emptyList(),
+    @SerializedName("privacyTransactions")
     val privacyTransactions: List<SnapshotItem> = emptyList(),
+    @SerializedName("web3Transactions")
     val web3Transactions: List<Web3TransactionItem> = emptyList(),
+    @SerializedName("totalTokenCount")
     val totalTokenCount: Int,
+    @SerializedName("totalTransactionCount")
     val totalTransactionCount: Int,
+    @SerializedName("cashAccount")
     val cashAccount: WalletHomeCashAccount? = null,
+    @SerializedName("isWatchWallet")
     val isWatchWallet: Boolean = false,
+    @SerializedName("watchAddresses")
     val watchAddresses: List<String>? = null,
+    @SerializedName("pendingIndicator")
     val pendingIndicator: WalletHomePendingIndicator? = null,
+    @SerializedName("importKeyAction")
     val importKeyAction: WalletHomeImportKeyAction? = null,
+    @SerializedName("importKeyChainId")
     val importKeyChainId: String? = null,
 ) {
 
@@ -37,7 +54,7 @@ data class WalletHomeCache(
             showBanner = false,
             showReferral = false,
             hasPositions = false,
-            hasCashAccount = cashAccount != null,
+            hasCashAccount = false,
             hasTopMovers = false,
             hasTransactions = totalTransactionCount > 0,
             hasImportKeyAction = cachedImportKeyAction != null,
@@ -51,11 +68,10 @@ data class WalletHomeCache(
             fiatTotal = fiatTotal,
             btcTotal = btcTotal,
             fiatSymbol = fiatSymbol,
-            privacyTokens = privacyTokens,
-            web3Tokens = web3Tokens,
-            privacyTransactions = privacyTransactions,
-            web3Transactions = web3Transactions,
-            cashAccount = cashAccount,
+            privacyTokens = privacyTokens.orEmpty(),
+            web3Tokens = web3Tokens.orEmpty(),
+            privacyTransactions = privacyTransactions.orEmpty(),
+            web3Transactions = web3Transactions.orEmpty(),
             totalTokenCount = totalTokenCount,
             totalTransactionCount = totalTransactionCount,
             isWatchWallet = isWatchWallet,
@@ -96,7 +112,6 @@ fun SharedPreferences.putWalletHomeCache(
         state.totalTransactionCount == 0 &&
         state.pendingIndicator == null &&
         state.importKeyAction == null &&
-        state.cashAccount == null &&
         state.watchIndicator == null
     ) return
     val cache = WalletHomeCache(
@@ -110,7 +125,6 @@ fun SharedPreferences.putWalletHomeCache(
         web3Transactions = state.web3Transactions.take(WalletHomeSection.PREVIEW_LIMIT),
         totalTokenCount = state.totalTokenCount,
         totalTransactionCount = state.totalTransactionCount,
-        cashAccount = state.cashAccount,
         isWatchWallet = state.isWatchWallet,
         watchAddresses = watchAddresses,
         pendingIndicator = state.pendingIndicator,

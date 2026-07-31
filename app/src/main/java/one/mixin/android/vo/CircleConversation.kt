@@ -24,6 +24,7 @@ data class CircleConversation(
     val createdAt: String,
     @Expose
     @ColumnInfo(name = "pin_time")
+    @SerializedName("pinTime")
     val pinTime: String?,
 )
 

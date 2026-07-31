@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class AppMetadata(
+    @SerializedName("name")
     val name: String,
     @SerializedName("icon_url") val iconUrl: String,
     @SerializedName("contract_address") val contractAddress: String,

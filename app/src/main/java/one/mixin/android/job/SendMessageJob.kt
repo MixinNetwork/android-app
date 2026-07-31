@@ -20,9 +20,11 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.mention.resolveMentionUsers
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ExpiredMessage
+import one.mixin.android.vo.ICategory
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -40,6 +42,7 @@ import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
+import one.mixin.android.vo.toAppCardDataOrNull
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.KrakenParam
@@ -85,13 +88,24 @@ open class SendMessageJob(
             if (message.isRecall()) {
                 recallMessage(message.conversationId)
             } else if (!message.isPin()) {
-                if (message.isText()) {
-                    message.content?.let { content ->
+                message.content?.let { content ->
+                    if (message.isText()) {
                         content.findLastUrl()?.let {
                             message.hyperlink = it
                             parseHyperlink(it, hyperlinkDao)
                         }
-                        parseMentionData(content, message.messageId, message.conversationId, userDao, messageMentionDao, message.userId)
+                    }
+                    outgoingMentionContent(message, content)?.let { mentionContent ->
+                        parseMentionData(
+                            mentionContent,
+                            message.messageId,
+                            message.conversationId,
+                            userDao,
+                            messageMentionDao,
+                            message.userId,
+                        ) { identityNumbers ->
+                            resolveMentionUsers(identityNumbers, userService, userDao, appDao)
+                        }
                     }
                 }
                 if (!message.isTranscript()) {
@@ -360,3 +374,13 @@ open class SendMessageJob(
         }
     }
 }
+
+internal fun outgoingMentionContent(
+    category: ICategory,
+    content: String?,
+): String? =
+    when {
+        category.isText() -> content
+        category.type == MessageCategory.APP_CARD.name -> content?.toAppCardDataOrNull()?.description
+        else -> null
+    }

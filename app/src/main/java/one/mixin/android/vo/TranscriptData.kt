@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class TranscriptData(
+    @SerializedName("chatUri")
     val chatUri: String,
     @SerializedName("document_uris")
     val documentUris: List<String>,

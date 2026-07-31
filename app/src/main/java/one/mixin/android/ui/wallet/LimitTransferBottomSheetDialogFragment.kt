@@ -230,6 +230,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     private var web3Transaction: JsSignMessage? by mutableStateOf(null)
     private var gaslessPrepareResponse: GaslessTxResponse? by mutableStateOf(null)
+    private var gaslessFeeAmount: String? by mutableStateOf(null)
     private var tipGas: TipGas? by mutableStateOf(null)
     private var solanaFee: BigDecimal? by mutableStateOf(null)
     private var solanaTx: VersionedTransactionCompat? by mutableStateOf(null)
@@ -815,6 +816,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         gaslessPrepareResponse = previewData.gaslessPrepareResponseJson?.let {
             GsonHelper.customGson.fromJson(it, GaslessTxResponse::class.java)
         }
+        gaslessFeeAmount = previewData.feeAmount
 
         val previewFee = previewData.feeAmount.toBigDecimalOrNull()
         when (token.chainId) {
@@ -876,6 +878,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 amount = amount,
                 chainId = preparedResponse.chainId,
                 payload = preparedResponse.payload,
+                fee = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
                 privateKey = privateKey,
             )
             else -> throw IllegalArgumentException("Gasless is not supported for ${transferToken.chainId}")
@@ -936,6 +939,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         amount: String,
         chainId: String,
         payload: JsonElement,
+        fee: String,
         privateKey: ByteArray,
     ) {
         if (!payload.isJsonObject) {
@@ -968,7 +972,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = "",
+            fee = fee,
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,

@@ -298,32 +298,29 @@ private fun PerpsAddContent(
 
     LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin) {
         val addMargin = amount.toBigDecimalOrNull()
-        if (addMargin == null || addMargin <= BigDecimal.ZERO || belowMinimumMargin || aboveMaximumMargin) {
+        if (!shouldRequestLiquidationPrice(addMargin, minimumMargin) || aboveMaximumMargin) {
             liquidationJob?.cancel()
             remoteLiquidationPrice = null
             isLiquidationLoading = false
             return@LaunchedEffect
         }
+        val requestAmount = addMargin ?: return@LaunchedEffect
         liquidationJob?.cancel()
         liquidationJob = launch {
+            remoteLiquidationPrice = null
             isLiquidationLoading = true
             delay(200L)
-            while (true) {
-                val normalizedAmount = addMargin
-                    .stripTrailingZeros()
-                    .toPlainString()
-                    .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
-                val result = viewModel.estimateLiquidationPrice(
+            val normalizedAmount = requestAmount
+                .stripTrailingZeros()
+                .toPlainString()
+                .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
+            remoteLiquidationPrice = requestLiquidationPrice {
+                viewModel.estimateLiquidationPrice(
                     amount = normalizedAmount,
                     positionId = position.positionId,
                 )
-                if (result != null) {
-                    remoteLiquidationPrice = result
-                    isLiquidationLoading = false
-                    break
-                }
-                delay(1000L)
-            }
+            } ?: "-"
+            isLiquidationLoading = false
         }
     }
 

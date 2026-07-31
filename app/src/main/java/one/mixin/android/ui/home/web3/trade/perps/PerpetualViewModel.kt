@@ -6,9 +6,11 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.room.withTransaction
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.isActive
@@ -32,6 +34,7 @@ import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.PerpsDatabase
 import one.mixin.android.db.TokenDao
+import one.mixin.android.db.withRoomTransaction
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsOrderDao
 import one.mixin.android.db.perps.PerpsPositionDao
@@ -41,6 +44,7 @@ import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
+import retrofit2.HttpException
 import timber.log.Timber
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
@@ -78,7 +82,7 @@ class PerpetualViewModel @Inject constructor(
             }
 
             withContext(Dispatchers.IO) {
-                perpsDatabase.withTransaction {
+                perpsDatabase.withRoomTransaction {
                     if (positions.isEmpty()) {
                         perpsPositionDao.deleteOpenByWallet(walletId)
                     } else {
@@ -353,13 +357,13 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
-    suspend fun estimateLiquidationPrice(
+    internal suspend fun estimateLiquidationPrice(
         amount: String,
         marketId: String? = null,
         side: String? = null,
         leverage: Int? = null,
         positionId: String? = null,
-    ): String? {
+    ): LiquidationPriceResult {
         return try {
             val response = withContext(Dispatchers.IO) {
                 routeService.getPerpsLiquidationPrice(
@@ -371,14 +375,25 @@ class PerpetualViewModel @Inject constructor(
                 )
             }
             if (response.isSuccess) {
-                response.data?.liquidationPrice?.takeIf { it.isNotBlank() }
+                liquidationPriceResult(
+                    price = response.data?.liquidationPrice,
+                    errorCode = null,
+                )
             } else {
                 Timber.e("Failed to estimate liquidation price: ${response.errorDescription}")
-                null
+                liquidationPriceResult(
+                    price = null,
+                    errorCode = response.errorCode,
+                )
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: HttpException) {
+            Timber.e(e, "HTTP error estimating liquidation price")
+            liquidationPriceResult(price = null, errorCode = e.code())
         } catch (e: Exception) {
             Timber.e(e, "Error estimating liquidation price")
-            null
+            LiquidationPriceResult.Failure
         }
     }
 
@@ -816,12 +831,11 @@ class PerpetualViewModel @Inject constructor(
 
     fun closePerpsOrder(
         positionId: String,
-        leverage: Int,
         onSuccess: () -> Unit,
         onError: (String) -> Unit
     ) {
         viewModelScope.launch {
-            closePerpsOrder(positionId, leverage)
+            closePerpsOrder(positionId)
                 .onSuccess { onSuccess() }
                 .onFailure { onError(it.message.orEmpty()) }
         }
@@ -832,24 +846,26 @@ class PerpetualViewModel @Inject constructor(
         onComplete: (BatchCloseResult) -> Unit,
     ) {
         viewModelScope.launch {
-            val failedPositions = mutableListOf<PerpsPositionItem>()
-            val errors = mutableListOf<String>()
-
-            positions.forEach { position ->
-                closePerpsOrder(position.positionId, position.leverage)
-                    .onFailure { error ->
-                        failedPositions += position
-                        errors += error.message.orEmpty()
+            val failures = positions
+                .map { position ->
+                    async {
+                        position to closePerpsOrder(position.positionId)
                     }
-            }
+                }
+                .awaitAll()
+                .filter { (_, result) -> result.isFailure }
 
-            onComplete(BatchCloseResult(failedPositions, errors))
+            onComplete(
+                BatchCloseResult(
+                    failedPositions = failures.map { (position, _) -> position },
+                    errors = failures.map { (_, result) -> result.exceptionOrNull()?.message.orEmpty() },
+                ),
+            )
         }
     }
 
     private suspend fun closePerpsOrder(
         positionId: String,
-        leverage: Int,
     ): Result<Unit> {
         return runCatching {
             val response = withContext(Dispatchers.IO) {
@@ -861,14 +877,6 @@ class PerpetualViewModel @Inject constructor(
             }
 
             withContext(Dispatchers.IO) {
-                perpsPositionDao.getPosition(positionId)?.let { position ->
-                    perpsOrderDao.insert(
-                        createCachedClosedOrder(
-                            position = position,
-                            leverage = leverage.takeIf { it > 0 } ?: position.leverage,
-                        )
-                    )
-                }
                 perpsPositionDao.deleteById(positionId)
             }
             Timber.d("Perps order closed: $positionId")
@@ -1035,35 +1043,5 @@ class PerpetualViewModel @Inject constructor(
                     closeOrder.updatedAt,
                 )
             }
-    }
-
-    private fun createCachedClosedOrder(
-        position: PerpsPositionItem,
-        leverage: Int,
-    ): PerpsOrder {
-        val closedAt = position.updatedAt?.takeIf { it.isNotBlank() }
-            ?: position.createdAt?.takeIf { it.isNotBlank() }
-            ?: SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
-        val entryPrice = position.entryPrice
-        val closePrice = position.markPrice?.takeIf { it.isNotBlank() } ?: entryPrice
-
-        return PerpsOrder(
-            orderId = "local_${position.positionId}",
-            positionId = position.positionId,
-            marketId = position.marketId,
-            side = position.side,
-            orderType = PerpsOrder.TYPE_CLOSE,
-            status = PerpsOrder.STATUS_FILLED,
-            leverage = leverage,
-            quantity = position.quantity,
-            entryPrice = entryPrice,
-            closePrice = closePrice,
-            realizedPnl = position.unrealizedPnl?.takeIf { it.isNotBlank() } ?: "0",
-            roe = position.roe ?: "0",
-            closeReason = null,
-            triggerPrice = null,
-            createdAt = position.createdAt?.takeIf { it.isNotBlank() } ?: closedAt,
-            updatedAt = closedAt,
-        )
     }
 }

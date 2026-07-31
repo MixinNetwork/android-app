@@ -20,6 +20,7 @@ data class Circle(
     val createdAt: String,
     @Expose
     @ColumnInfo(name = "ordered_at")
+    @SerializedName("orderedAt")
     val orderedAt: String?,
 )
 
@@ -30,4 +31,7 @@ data class CircleOrder(
     val orderedAt: String,
 )
 
-data class CircleName(val name: String)
+data class CircleName(
+    @SerializedName("name")
+    val name: String,
+)
