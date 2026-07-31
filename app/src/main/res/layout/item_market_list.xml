@@ -57,6 +57,7 @@
         android:paddingEnd="4dp"
         android:paddingBottom="2dp"
         android:textColor="?attr/text_assist"
+        android:textFontWeight="500"
         android:textSize="12sp"
         android:includeFontPadding="false"
         app:layout_constraintStart_toEndOf="@id/symbol_tv"

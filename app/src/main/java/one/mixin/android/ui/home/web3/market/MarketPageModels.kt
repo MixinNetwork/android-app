@@ -59,6 +59,19 @@ data class MarketSortState(
     }
 }
 
+fun defaultMarketSortState(
+    topTab: MarketTopTab,
+    subTab: MarketSubTab?,
+): MarketSortState =
+    if (
+        (topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.ALL) ||
+        (topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.TRENDING)
+    ) {
+        MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+    } else {
+        MarketSortState()
+    }
+
 data class MarketDisplaySettings(
     val quoteColorReversed: Boolean = false,
     val priceChangePeriod: MarketPriceChangePeriod = MarketPriceChangePeriod.SEVEN_DAYS,
@@ -153,10 +166,10 @@ fun marketSubTabs(topTab: MarketTopTab): List<MarketSubTab> =
                 MarketSubTab.TRENDING,
                 MarketSubTab.TOP_GAINERS,
                 MarketSubTab.TOP_LOSERS,
+                MarketSubTab.MEME,
                 MarketSubTab.INDICES,
                 MarketSubTab.COMMODITIES,
                 MarketSubTab.FOREX,
-                MarketSubTab.MEME,
             )
         MarketTopTab.INDICATOR -> emptyList()
     }

@@ -76,10 +76,11 @@ class MarketPageViewModel
         fun selectTopTab(tab: MarketTopTab) {
             if (_uiState.value.selectedTopTab == tab) return
             preferences.edit().putString(PREF_MARKET_PAGE_TOP_TAB, tab.name).apply()
+            val selectedSubTab = _uiState.value.selectedSubTabs[tab]
             _uiState.value =
                 _uiState.value.copy(
                     selectedTopTab = tab,
-                    sortState = MarketSortState(),
+                    sortState = defaultMarketSortState(tab, selectedSubTab),
                 )
             rebuildEntries()
         }
@@ -94,7 +95,7 @@ class MarketPageViewModel
             _uiState.value =
                 _uiState.value.copy(
                     selectedSubTabs = selectedSubTabs,
-                    sortState = MarketSortState(),
+                    sortState = defaultMarketSortState(topTab, subTab),
                 )
             rebuildEntries()
         }
@@ -509,6 +510,7 @@ class MarketPageViewModel
             return MarketPageUiState(
                 selectedTopTab = topTab,
                 selectedSubTabs = subTabs,
+                sortState = defaultMarketSortState(topTab, subTabs[topTab]),
                 displaySettings =
                     MarketDisplaySettings(
                         quoteColorReversed =

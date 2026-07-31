@@ -28,10 +28,10 @@ class MarketPageModelsTest {
                 MarketSubTab.TRENDING,
                 MarketSubTab.TOP_GAINERS,
                 MarketSubTab.TOP_LOSERS,
+                MarketSubTab.MEME,
                 MarketSubTab.INDICES,
                 MarketSubTab.COMMODITIES,
                 MarketSubTab.FOREX,
-                MarketSubTab.MEME,
             ),
             marketSubTabs(MarketTopTab.PERPETUAL),
         )
@@ -227,6 +227,26 @@ class MarketPageModelsTest {
         assertEquals(MarketSortDirection.DESCENDING, descending.direction)
         assertEquals(MarketSortDirection.ASCENDING, ascending.direction)
         assertEquals(MarketSortState(), reset)
+    }
+
+    @Test
+    fun defaultVolumeSortMatchesMarketCategory() {
+        assertEquals(
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+            defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL),
+        )
+        assertEquals(
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+            defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING),
+        )
+        assertEquals(
+            MarketSortState(),
+            defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TRENDING),
+        )
+        assertEquals(
+            MarketSortState(),
+            defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.MEME),
+        )
     }
 
     @Test

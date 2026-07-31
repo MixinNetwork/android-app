@@ -51,10 +51,10 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         WATCHLIST(null),
         CRYPTO("crypto"),
         STOCKS("stocks"),
+        MEME("memes"),
         INDICES("indices"),
         COMMODITIES("commodities"),
         FOREX("forex"),
-        MEME("memes"),
     }
 
     companion object {

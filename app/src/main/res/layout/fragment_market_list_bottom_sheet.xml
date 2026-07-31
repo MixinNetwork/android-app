@@ -99,8 +99,9 @@
                 android:background="@drawable/selector_radio_icon"
                 android:button="@null"
                 android:contentDescription="@string/Watchlist"
-                android:foreground="@drawable/selector_market_favorites"
+                android:foreground="@drawable/ic_market_favorites"
                 android:foregroundGravity="center"
+                android:foregroundTint="@drawable/radio_button_text_selector"
                 android:gravity="center"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="6dp" />
@@ -128,6 +129,19 @@
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:text="@string/perps_category_stocks"
+                android:textColor="@drawable/radio_button_text_selector"
+                android:textSize="14sp" />
+
+            <androidx.appcompat.widget.AppCompatRadioButton
+                android:id="@+id/radio_meme"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/selector_radio"
+                android:button="@null"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/perps_category_meme"
                 android:textColor="@drawable/radio_button_text_selector"
                 android:textSize="14sp" />
 
@@ -161,24 +175,11 @@
                 android:id="@+id/radio_forex"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginEnd="12dp"
                 android:background="@drawable/selector_radio"
                 android:button="@null"
                 android:paddingStart="16dp"
                 android:paddingEnd="16dp"
                 android:text="@string/perps_category_forex"
-                android:textColor="@drawable/radio_button_text_selector"
-                android:textSize="14sp" />
-
-            <androidx.appcompat.widget.AppCompatRadioButton
-                android:id="@+id/radio_meme"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/selector_radio"
-                android:button="@null"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:text="@string/perps_category_meme"
                 android:textColor="@drawable/radio_button_text_selector"
                 android:textSize="14sp" />
         </RadioGroup>

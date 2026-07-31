@@ -41,6 +41,7 @@
         android:paddingHorizontal="3dp"
         android:paddingVertical="1dp"
         android:textColor="?attr/text_assist"
+        android:textFontWeight="500"
         android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="@id/symbol_tv"
         app:layout_constraintStart_toEndOf="@id/symbol_tv"

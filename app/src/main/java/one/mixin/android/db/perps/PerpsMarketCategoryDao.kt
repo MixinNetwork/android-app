@@ -38,7 +38,7 @@ interface PerpsMarketCategoryDao : BaseDao<PerpsMarketCategoryRelation> {
         INNER JOIN markets m ON m.market_id = mc.market_id
         WHERE mc.category = :category
             AND CAST(m.volume AS REAL) > 0
-        ORDER BY CAST(m.volume AS REAL) DESC, m.token_symbol COLLATE NOCASE ASC, m.market_id ASC
+        ORDER BY mc.rowid ASC
         """,
     )
     fun observeMarketsByCategory(category: Int): Flow<List<PerpsMarket>>

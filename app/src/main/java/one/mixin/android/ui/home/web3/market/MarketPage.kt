@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -86,6 +88,9 @@ private val MarketChangeColumnWidth = 66.dp
 private val MarketPriceChangeGap = 4.dp
 private val MarketHeaderPriceWidth = 96.dp
 private val MarketHeaderPriceChangeMinGap = 20.dp
+private val MarketHorizontalPadding = 16.dp
+private val MarketLeadingGap = 4.dp
+private val MarketSortIconRightOffset = 5.dp
 
 @Composable
 fun MarketPage(
@@ -265,15 +270,14 @@ private fun SubTabs(
                 ) {
                     Icon(
                         painter =
-                            painterResource(
-                                if (selected == tab) {
-                                    R.drawable.ic_market_favorites_checked
-                                } else {
-                                    R.drawable.ic_market_favorites
-                                },
-                            ),
+                            painterResource(R.drawable.ic_market_favorites),
                         contentDescription = stringResource(R.string.Watchlist),
-                        tint = Color.Unspecified,
+                        tint =
+                            if (selected == tab) {
+                                MixinAppTheme.colors.accent
+                            } else {
+                                MixinAppTheme.colors.textAssist
+                            },
                         modifier = Modifier.size(16.dp),
                     )
                 }
@@ -344,11 +348,11 @@ private fun MarketListHeader(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(start = 16.dp, end = 20.dp, top = 4.dp, bottom = 4.dp),
+                .padding(horizontal = MarketHorizontalPadding, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            contentAlignment = Alignment.CenterStart,
+            contentAlignment = Alignment.Center,
             modifier =
                 Modifier
                     .size(24.dp)
@@ -362,7 +366,7 @@ private fun MarketListHeader(
                 modifier = Modifier.size(16.dp),
             )
         }
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(MarketLeadingGap))
         MarketHeaderSortLabels(
             period = period,
             showMarketCap = showMarketCap,
@@ -413,6 +417,7 @@ private fun MarketHeaderSortLabels(
                 text = priceChangePeriodLabel(period),
                 column = MarketSortColumn.CHANGE,
                 sortState = sortState,
+                iconOffset = MarketSortIconRightOffset,
                 horizontalArrangement = Arrangement.End,
                 onSort = onSort,
             )
@@ -464,6 +469,7 @@ private fun SortLabel(
     column: MarketSortColumn,
     sortState: MarketSortState,
     modifier: Modifier = Modifier,
+    iconOffset: Dp = 0.dp,
     horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
     onSort: (MarketSortColumn) -> Unit,
 ) {
@@ -496,7 +502,10 @@ private fun SortLabel(
             painter = painterResource(icon),
             contentDescription = null,
             tint = Color.Unspecified,
-            modifier = Modifier.size(16.dp),
+            modifier =
+                Modifier
+                    .size(16.dp)
+                    .offset(x = iconOffset),
         )
     }
 }
@@ -675,7 +684,6 @@ private fun RecommendationCard(
                     text = symbol,
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 15.sp,
-                    fontWeight = FontWeight.Medium,
                     maxLines = 1,
                 )
                 if (entry is MarketListEntry.Perpetual) {
@@ -727,11 +735,11 @@ private fun MarketRow(
             Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
-                .padding(start = 16.dp, end = 20.dp, top = 12.dp, bottom = 12.dp),
+                .padding(horizontal = MarketHorizontalPadding, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            contentAlignment = Alignment.CenterStart,
+            contentAlignment = Alignment.Center,
             modifier =
                 Modifier
                     .size(24.dp)
@@ -756,10 +764,11 @@ private fun MarketRow(
                         },
                     ),
                 modifier = Modifier.size(16.dp),
+                unselectedTint = MixinAppTheme.colors.textAssist,
                 animationTrigger = favoriteAnimationTrigger,
             )
         }
-        Spacer(modifier = Modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(MarketLeadingGap))
         when (entry) {
             is MarketListEntry.Spot ->
                 SpotMarketRowContent(
@@ -907,6 +916,7 @@ private fun MarketPerpBadge() {
     Text(
         text = "Perp",
         fontSize = 12.sp,
+        fontWeight = FontWeight.W500,
         color = MixinAppTheme.colors.textAssist,
         lineHeight = 14.sp,
         modifier =
@@ -962,7 +972,6 @@ private fun ChangeColumn(
                     TextStyle(
                         color = changeColor,
                         fontSize = fontSize,
-                        fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.End,
                     ),
                 maxLines = 1,
@@ -1001,7 +1010,6 @@ private fun ChangeColumn(
                     TextStyle(
                         color = changeColor,
                         fontSize = fontSize,
-                        fontWeight = FontWeight.Medium,
                         textAlign = TextAlign.End,
                     ),
                 maxLines = 1,
@@ -1255,10 +1263,18 @@ private fun MarketDisplayDialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter,
-        ) {
+        Column(modifier = Modifier.fillMaxSize()) {
+            Spacer(
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .clickable(
+                            interactionSource = remember { MutableInteractionSource() },
+                            indication = null,
+                            onClick = onDismiss,
+                        ),
+            )
             Surface(
                 color = MixinAppTheme.colors.backgroundWindow,
                 shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),

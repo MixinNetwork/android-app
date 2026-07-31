@@ -34,6 +34,7 @@ fun MarketFavoriteIcon(
     @DrawableRes selectedIconRes: Int,
     contentDescription: String,
     modifier: Modifier = Modifier,
+    unselectedTint: Color = Color.Unspecified,
     animationTrigger: Int = 0,
 ) {
     val animationState =
@@ -50,7 +51,7 @@ fun MarketFavoriteIcon(
         Icon(
             painter = painterResource(if (isFavored) selectedIconRes else unselectedIconRes),
             contentDescription = contentDescription,
-            tint = Color.Unspecified,
+            tint = if (isFavored) Color.Unspecified else unselectedTint,
             modifier = modifier.padding(1.dp),
         )
         return
