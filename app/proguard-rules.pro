@@ -2,14 +2,12 @@
 -optimizationpasses 5
 -allowaccessmodification
 
-# Keep third-party libraries out of obfuscation while still allowing shrinking and optimization.
--keep,allowshrinking,allowoptimization class !one.mixin.android.**,** { *; }
+-dontobfuscate
 
 # prevent multi dex caused NoSuchProviderException
 -keep class org.whispersystems.** { *; }
 
-# Persistent jobs use Java serialization and must remain compatible across app updates.
--keep,allowoptimization class one.mixin.android.** implements java.io.Serializable { *; }
+-keep class one.mixin.android.** { *; }
 
 -keep class io.jsonwebtoken.** { *; }
 
@@ -54,7 +52,6 @@
 -keep class com.birbit.android.jobqueue.** { *; }
 
 -keepclassmembers enum * {
-    <fields>;
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
@@ -75,14 +72,6 @@
 -keepattributes Signature
 -keep class com.google.gson.reflect.TypeToken { *; }
 -keep class * extends com.google.gson.reflect.TypeToken
-
-# Wallet Home cache models are persisted with Gson and must remain compatible across app updates.
--keepclassmembers,allowoptimization class one.mixin.android.vo.safe.TokenItem { <fields>; }
--keepclassmembers,allowoptimization class one.mixin.android.db.web3.vo.Web3TokenItem { <fields>; }
--keepclassmembers,allowoptimization class one.mixin.android.db.web3.vo.Web3TransactionItem { <fields>; }
--keepclassmembers,allowoptimization class one.mixin.android.db.web3.vo.AssetChange { <fields>; }
--keepclassmembers,allowoptimization class one.mixin.android.ui.wallet.home.WalletHomePendingIndicator { <fields>; }
--keepclassmembers,allowoptimization class one.mixin.android.ui.wallet.home.WalletHomeImportKeyAction { <fields>; }
 
 -keep class kotlin.coroutines.Continuation
 
@@ -105,9 +94,6 @@
 -keep interface com.fasterxml.jackson.annotation.** { *; }
 #-dontwarn java.lang.SafeVarargs
 -dontwarn org.slf4j.**
-
-# MnemonicCode loads its BIP-39 word list relative to the class package.
--keepnames class org.bitcoinj.crypto.MnemonicCode
 
 -keep public class com.reown.android.** { *; }
 -keep public class com.reown.walletkit.** { *; }
