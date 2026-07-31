@@ -1,12 +1,15 @@
 package one.mixin.android.ui.wallet.home
 
+import com.google.gson.annotations.SerializedName
 import one.mixin.android.api.response.CashAccount
 import one.mixin.android.api.response.WalletHomeBanner
 import one.mixin.android.extension.numberFormat2
 import java.math.BigDecimal
 
 data class WalletHomeCashAccount(
+    @SerializedName("balanceUsd")
     val balanceUsd: BigDecimal = BigDecimal.ZERO,
+    @SerializedName("rewardApy")
     val rewardApy: String? = null,
 ) {
     val balanceAmountText: String

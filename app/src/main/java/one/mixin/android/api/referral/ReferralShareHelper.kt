@@ -1,11 +1,14 @@
 package one.mixin.android.api.referral
 
+import com.google.gson.annotations.SerializedName
 import one.mixin.android.Constants.Scheme.HTTPS_REFERRALS
 import java.io.Serializable
 import java.math.BigDecimal
 
 data class ReferralShareInfo(
+    @SerializedName("code")
     val code: String,
+    @SerializedName("rebatePercent")
     val rebatePercent: String?,
 ) : Serializable
 
