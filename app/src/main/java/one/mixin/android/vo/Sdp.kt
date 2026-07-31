@@ -6,6 +6,7 @@ import one.mixin.android.util.GsonHelper
 import org.webrtc.SessionDescription
 
 data class KrakenData(
+    @SerializedName("jsep")
     val jsep: String,
     @SerializedName("track_id") val trackId: String,
 ) {
@@ -15,7 +16,12 @@ data class KrakenData(
     }
 }
 
-data class Sdp(val sdp: String, val type: String)
+data class Sdp(
+    @SerializedName("sdp")
+    val sdp: String,
+    @SerializedName("type")
+    val type: String,
+)
 
 fun getSdp(json: ByteArray): SessionDescription? {
     val sdp = GsonHelper.customGson.fromJson(String(json), Sdp::class.java) ?: return null

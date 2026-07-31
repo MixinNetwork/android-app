@@ -53,8 +53,10 @@ data class Output(
     @SerializedName("receivers_threshold")
     val receiversThreshold: Int,
     @ColumnInfo(name = "extra")
+    @SerializedName("extra")
     val extra: String,
     @ColumnInfo(name = "state")
+    @SerializedName("state")
     val state: String,
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
