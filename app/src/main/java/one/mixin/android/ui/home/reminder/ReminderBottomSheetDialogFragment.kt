@@ -37,6 +37,7 @@ import one.mixin.android.extension.isBatteryOptimizationRestricted
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openBatteryOptimizationSetting
 import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -51,6 +52,7 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
     companion object {
         const val TAG = "ReminderBottomSheetDialogFragment"
         private const val PREF_NOTIFICATION_ON = "pref_notification_on"
+        private const val PREF_NOTIFICATION_PERMISSION_REQUESTED = "pref_notification_permission_requested"
         const val PREF_NEW_VERSION = "pref_new_version"
         private const val PREF_NEW_VERSION_DEBUG_ALLOW_ONCE = "pref_new_version_debug_allow_once"
         const val ARGS_POPUP_TYPE = "args_popup_type"
@@ -238,6 +240,10 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         action = {
                             when (action) {
                                 NotificationPermissionAction.RequestPermission -> {
+                                    requireContext().defaultSharedPreferences.putBoolean(
+                                        PREF_NOTIFICATION_PERMISSION_REQUESTED,
+                                        true,
+                                    )
                                     notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                                 }
                                 NotificationPermissionAction.OpenSettings -> {
@@ -319,9 +325,15 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         val shouldShowRationale =
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                 requireActivity().shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
+        val permissionRequested =
+            requireContext().defaultSharedPreferences.getBoolean(
+                PREF_NOTIFICATION_PERMISSION_REQUESTED,
+                false,
+            )
         return notificationPermissionAction(
             sdkInt = Build.VERSION.SDK_INT,
             permissionGranted = permissionGranted,
+            permissionRequested = permissionRequested,
             shouldShowRationale = shouldShowRationale,
         )
     }
@@ -348,9 +360,13 @@ internal enum class NotificationPermissionAction {
 internal fun notificationPermissionAction(
     sdkInt: Int,
     permissionGranted: Boolean,
+    permissionRequested: Boolean,
     shouldShowRationale: Boolean,
 ): NotificationPermissionAction =
-    if (sdkInt >= Build.VERSION_CODES.TIRAMISU && !permissionGranted && shouldShowRationale) {
+    if (sdkInt >= Build.VERSION_CODES.TIRAMISU &&
+        !permissionGranted &&
+        (!permissionRequested || shouldShowRationale)
+    ) {
         NotificationPermissionAction.RequestPermission
     } else {
         NotificationPermissionAction.OpenSettings

@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home
 
-import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Dialog
@@ -181,7 +180,6 @@ import one.mixin.android.util.RootUtil
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.database.databaseFile
 import one.mixin.android.util.reportException
-import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
@@ -461,18 +459,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         jobManager.addJobInBackground(SyncOutputJob())
         jobManager.addJobInBackground(RefreshDappJob())
         jobManager.addJobInBackground(RestoreTransactionJob())
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            RxPermissions(this)
-                .request(Manifest.permission.POST_NOTIFICATIONS)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { _ -> 
-                        AnalyticsTracker.setNotificationAuthStatus(this)
-                    },
-                    {},
-                )
-        }
     }
 
     private fun showPendingMnemonicPinGate() {

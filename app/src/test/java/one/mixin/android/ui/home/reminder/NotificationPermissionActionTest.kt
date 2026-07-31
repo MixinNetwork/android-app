@@ -10,6 +10,7 @@ class NotificationPermissionActionTest {
             notificationPermissionAction(
                 sdkInt = 33,
                 permissionGranted = false,
+                permissionRequested = true,
                 shouldShowRationale = true,
             )
 
@@ -17,11 +18,25 @@ class NotificationPermissionActionTest {
     }
 
     @Test
-    fun deniedPermissionWithoutRationaleOpensSettings() {
+    fun firstRequestWithoutRationaleRequestsPermission() {
         val action =
             notificationPermissionAction(
                 sdkInt = 33,
                 permissionGranted = false,
+                permissionRequested = false,
+                shouldShowRationale = false,
+            )
+
+        assertEquals(NotificationPermissionAction.RequestPermission, action)
+    }
+
+    @Test
+    fun permanentlyDeniedPermissionOpensSettings() {
+        val action =
+            notificationPermissionAction(
+                sdkInt = 33,
+                permissionGranted = false,
+                permissionRequested = true,
                 shouldShowRationale = false,
             )
 
@@ -34,6 +49,7 @@ class NotificationPermissionActionTest {
             notificationPermissionAction(
                 sdkInt = 32,
                 permissionGranted = true,
+                permissionRequested = false,
                 shouldShowRationale = false,
             )
 
