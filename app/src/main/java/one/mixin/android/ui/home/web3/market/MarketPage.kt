@@ -804,7 +804,7 @@ private fun RowScope.SpotMarketRowContent(
                     ),
                 modifier =
                     Modifier
-                        .background(MixinAppTheme.colors.backgroundGrayLight, RoundedCornerShape(4.dp))
+                        .background(MixinAppTheme.colors.borderPrimary, RoundedCornerShape(4.dp))
                         .padding(horizontal = 4.dp),
             )
             Spacer(modifier = Modifier.width(4.dp))
@@ -912,7 +912,7 @@ private fun MarketPerpBadge() {
         modifier =
             Modifier
                 .clip(RoundedCornerShape(4.dp))
-                .background(MixinAppTheme.colors.backgroundGrayLight)
+                .background(MixinAppTheme.colors.borderPrimary)
                 .padding(horizontal = 3.dp, vertical = 1.dp),
     )
 }
