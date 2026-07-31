@@ -60,7 +60,6 @@ class AboutFragment : BaseFragment(R.layout.fragment_about) {
             terms.setOnClickListener { context?.openUrl(getString(R.string.landing_terms_url)) }
             privacy.setOnClickListener { context?.openUrl(getString(R.string.landing_privacy_policy_url)) }
             checkUpdates.setOnClickListener { context?.openMarket() }
-            tradingViewAttribution.setOnClickListener { context?.openUrl(getString(R.string.trading_view_url)) }
             openSource.setOnClickListener { context?.openUrl("https://github.com/MixinNetwork/android-app") }
             logAndDebug.setOnClickListener {
                 navTo(LogAndDebugFragment.newInstance(), LogAndDebugFragment.TAG)

@@ -103,21 +103,6 @@
                 android:textSize="16sp" />
 
             <TextView
-                android:id="@+id/trading_view_attribution"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:foreground="?android:attr/selectableItemBackground"
-                android:gravity="center_vertical"
-                android:minHeight="@dimen/bottom_button_height"
-                android:paddingStart="@dimen/activity_horizontal_margin"
-                android:paddingTop="@dimen/padding8"
-                android:paddingEnd="@dimen/activity_horizontal_margin"
-                android:paddingBottom="@dimen/padding8"
-                android:text="@string/trading_view_attribution"
-                android:textColor="?attr/text_assist"
-                android:textSize="13sp" />
-
-            <TextView
                 android:id="@+id/logAndDebug"
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/bottom_button_height"

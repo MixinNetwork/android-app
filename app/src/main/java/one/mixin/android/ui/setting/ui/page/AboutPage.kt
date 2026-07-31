@@ -155,12 +155,6 @@ fun AboutPage() {
                     context.openMarket()
                 },
             )
-            AboutTile(
-                text = stringResource(id = R.string.trading_view_attribution),
-                onClick = {
-                    context.openUrl(context.getString(R.string.trading_view_url))
-                },
-            )
             if (showLogDebug.value) {
                 AboutTile(
                     text = stringResource(id = R.string.LogAndDebug),
