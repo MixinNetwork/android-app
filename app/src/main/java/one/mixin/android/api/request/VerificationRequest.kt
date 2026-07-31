@@ -4,7 +4,9 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.BuildConfig
 
 data class VerificationRequest(
+    @SerializedName("phone")
     val phone: String? = null,
+    @SerializedName("purpose")
     val purpose: String,
     @SerializedName("g_recaptcha_response")
     var gRecaptchaResponse: String? = null,
@@ -26,6 +28,7 @@ data class VerificationRequest(
     var passToken: String? = null,
     @SerializedName("gt4_gen_time")
     var genTime: String? = null,
+    @SerializedName("platform")
     val platform: String = "Android",
 )
 

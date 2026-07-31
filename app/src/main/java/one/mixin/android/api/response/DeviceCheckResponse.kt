@@ -1,3 +1,8 @@
 package one.mixin.android.api.response
 
-class DeviceCheckResponse(val nonce: String)
+import com.google.gson.annotations.SerializedName
+
+class DeviceCheckResponse(
+    @SerializedName("nonce")
+    val nonce: String,
+)

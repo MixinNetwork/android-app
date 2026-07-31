@@ -27,12 +27,17 @@ data class AppCardData(
     val coverUrl: String?,
     @SerializedName("cover")
     val cover: Cover?,
+    @SerializedName("title")
     var title: String?,
+    @SerializedName("description")
     var description: String?,
+    @SerializedName("action")
     val action: String?,
     @SerializedName("updated_at")
     val updatedAt: String?,
+    @SerializedName("shareable")
     val shareable: Boolean?,
+    @SerializedName("actions")
     val actions: List<ActionButtonData>? = null,
 ) : Parcelable {
     init {
@@ -139,8 +144,11 @@ fun String.getSendText(): String? {
 
 @Parcelize
 data class ActionButtonData(
+    @SerializedName("label")
     val label: String,
+    @SerializedName("color")
     val color: String,
+    @SerializedName("action")
     val action: String,
 ) : Parcelable {
     @IgnoredOnParcel
@@ -158,11 +166,15 @@ data class ActionButtonData(
 
 @Parcelize
 data class Cover(
+    @SerializedName("height")
     val height: Int,
+    @SerializedName("width")
     val width: Int,
     @SerializedName("mime_type")
     val mimeType: String,
+    @SerializedName("url")
     val url: String?,
+    @SerializedName("thumbnail")
     val thumbnail: String?,
 ) : Parcelable {
     @IgnoredOnParcel
