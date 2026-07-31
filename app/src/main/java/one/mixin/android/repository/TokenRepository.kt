@@ -24,7 +24,6 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
-import one.mixin.android.api.request.MarketFavoritesRequest
 import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.RampWebUrlRequest
@@ -1542,9 +1541,7 @@ class TokenRepository
         if (marketIds.isEmpty()) return emptySet()
         return requestRouteAPI(
             invokeNetwork = {
-                routeService.updateMarketFavorites(
-                    MarketFavoritesRequest(marketIds.toList()),
-                )
+                routeService.updateMarketFavorites(marketIds.toList())
             },
             successBlock = {
                 val createdAt = nowInUtc()

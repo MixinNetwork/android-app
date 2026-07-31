@@ -4,7 +4,6 @@ import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import one.mixin.android.Constants
-import one.mixin.android.api.request.MarketFavoritesRequest
 import one.mixin.android.api.response.perps.PerpsFavorite
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.withDefaults
@@ -130,9 +129,7 @@ class PerpsMarketRepository
             if (addedMarketIds.isEmpty()) return emptySet()
             return requestRouteAPI(
                 invokeNetwork = {
-                    routeService.updatePerpsMarketFavorites(
-                        MarketFavoritesRequest(addedMarketIds.toList()),
-                    )
+                    routeService.updatePerpsMarketFavorites(addedMarketIds.toList())
                 },
                 successBlock = {
                     val createdAt = nowInUtc()

@@ -4,7 +4,6 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.request.LimitOrderRequest
-import one.mixin.android.api.request.MarketFavoritesRequest
 import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.RampWebUrlRequest
 import one.mixin.android.api.request.RouteInstrumentRequest
@@ -263,7 +262,7 @@ interface RouteService {
 
     @POST("markets/favorites")
     suspend fun updateMarketFavorites(
-        @Body request: MarketFavoritesRequest,
+        @Body coinIds: List<String>,
     ): MixinResponse<Unit>
 
     @POST("markets/{id}/favorite")
@@ -401,7 +400,7 @@ interface RouteService {
 
     @POST("perps/markets/favorites")
     suspend fun updatePerpsMarketFavorites(
-        @Body request: MarketFavoritesRequest,
+        @Body marketIds: List<String>,
     ): MixinResponse<Unit>
 
     @POST("perps/markets/{market_id}/favorite")
