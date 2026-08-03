@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.web3.market
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.widget.ImageView
+import androidx.annotation.AttrRes
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
@@ -25,6 +26,7 @@ import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.animateLottieCompositionAsState
 import com.airbnb.lottie.compose.rememberLottieComposition
 import one.mixin.android.R
+import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp as viewDp
 
 @Composable
@@ -96,9 +98,16 @@ fun ImageView.setMarketFavoriteIcon(
     @DrawableRes unselectedIconRes: Int = R.drawable.ic_title_favorites,
     @DrawableRes selectedIconRes: Int = R.drawable.ic_title_favorites_checked,
     resizeToTouchTarget: Boolean = true,
+    @AttrRes unselectedTintAttr: Int? = null,
 ) {
     val animationPadding = if (resizeToTouchTarget) 8.viewDp else 4.viewDp
-    val iconPadding = if (resizeToTouchTarget) 8.viewDp else 4.viewDp
+    val iconPadding = animationPadding + 1.5f.viewDp
+    imageTintList =
+        if (isFavored || unselectedTintAttr == null) {
+            null
+        } else {
+            android.content.res.ColorStateList.valueOf(context.colorFromAttribute(unselectedTintAttr))
+        }
     if (resizeToTouchTarget) {
         layoutParams =
             layoutParams.apply {

@@ -88,7 +88,7 @@ private val MarketPriceChangeGap = 4.dp
 private val MarketHeaderPriceWidth = 96.dp
 private val MarketHeaderPriceChangeMinGap = 20.dp
 private val MarketHorizontalPadding = 16.dp
-private val MarketLeadingGap = 4.dp
+private val MarketLeadingGap = 6.dp
 private val MarketSortIconRightOffset = 5.dp
 
 @Composable
@@ -734,7 +734,12 @@ private fun MarketRow(
             Modifier
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
-                .padding(horizontal = MarketHorizontalPadding, vertical = 12.dp),
+                .padding(
+                    start = MarketHorizontalPadding,
+                    top = 10.dp,
+                    end = MarketHorizontalPadding,
+                    bottom = 14.dp,
+                ),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(

@@ -56,6 +56,7 @@ class PerpsMarketListAdapter(
                     unselectedIconRes = R.drawable.ic_asset_favorites,
                     selectedIconRes = R.drawable.ic_asset_favorites_checked,
                     resizeToTouchTarget = false,
+                    unselectedTintAttr = R.attr.text_assist,
                 )
                 favoriteIv.contentDescription =
                     root.context.getString(
@@ -72,6 +73,7 @@ class PerpsMarketListAdapter(
                         unselectedIconRes = R.drawable.ic_asset_favorites,
                         selectedIconRes = R.drawable.ic_asset_favorites_checked,
                         resizeToTouchTarget = false,
+                        unselectedTintAttr = R.attr.text_assist,
                     )
                     onFavoriteClick(market, isFavored)
                 }
@@ -90,9 +92,9 @@ class PerpsMarketListAdapter(
                 val changeColor = ContextCompat.getColor(
                     root.context,
                     if (isPositive) {
-                        if (isQuoteColorReversed) R.color.wallet_red else R.color.wallet_green
+                        if (isQuoteColorReversed) R.color.wallet_pink else R.color.wallet_green
                     } else {
-                        if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_red
+                        if (isQuoteColorReversed) R.color.wallet_green else R.color.wallet_pink
                     }
                 )
                 val changeText = formatPerpsSignedPercent(changePercent)

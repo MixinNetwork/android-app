@@ -7,7 +7,8 @@
     android:background="?attr/selectableItemBackground"
     android:paddingStart="16dp"
     android:paddingEnd="16dp"
-    android:paddingVertical="12dp">
+    android:paddingTop="10dp"
+    android:paddingBottom="14dp">
 
     <ImageView
         android:id="@+id/favorite_iv"
@@ -22,9 +23,9 @@
 
     <one.mixin.android.widget.CircleImageView
         android:id="@+id/icon_iv"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_marginStart="4dp"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_marginStart="6dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/favorite_iv"
         app:layout_constraintTop_toTopOf="parent"
@@ -88,7 +89,7 @@
         android:gravity="end"
         android:maxLines="1"
         android:textColor="?attr/text_primary"
-        android:textFontWeight="500"
+        android:textFontWeight="600"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/change_tv"
@@ -102,7 +103,7 @@
         android:layout_height="wrap_content"
         android:gravity="end"
         android:maxLines="1"
-        android:textFontWeight="500"
+        android:textFontWeight="600"
         android:textSize="14sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

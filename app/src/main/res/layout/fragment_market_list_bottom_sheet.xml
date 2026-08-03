@@ -192,7 +192,7 @@
         android:layout_below="@id/category_scroll"
         android:background="?attr/bg_white"
         android:paddingTop="8dp"
-        android:paddingBottom="8dp"
+        android:paddingBottom="0dp"
         android:paddingStart="20dp"
         android:paddingEnd="16dp">
 
