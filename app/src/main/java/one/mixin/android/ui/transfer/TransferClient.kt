@@ -72,6 +72,7 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.PinMessage
+import one.mixin.android.vo.RecallMessage
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
@@ -406,6 +407,16 @@ class TransferClient
                     val expiredMessage =
                         serializationJson.decodeFromJsonElement<ExpiredMessage>(transferData.data)
                     transferInserter.insertIgnore(expiredMessage)
+                }
+
+                TransferDataType.RECALL_MESSAGE.value -> {
+                    if (mutableList.isNotEmpty()) {
+                        transferInserter.insertMessages(mutableList)
+                        mutableList.clear()
+                    }
+                    val recallMessage =
+                        serializationJson.decodeFromJsonElement<RecallMessage>(transferData.data)
+                    transferInserter.insertIgnore(recallMessage)
                 }
 
                 else -> {

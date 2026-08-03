@@ -205,6 +205,8 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     val cursorIndexOfExpireAt = cursor.getColumnIndexOrThrow("expireAt")
     val cursorIndexOfCaption = cursor.getColumnIndexOrThrow("caption")
     val cursorIndexOfMembership = cursor.getColumnIndexOrThrow("membership")
+    val cursorIndexOfRecallUserId = cursor.getColumnIndexOrThrow("recallUserId")
+    val cursorIndexOfRecallUserFullName = cursor.getColumnIndexOrThrow("recallUserFullName")
     val res = ArrayList<MessageItem>(cursor.count)
     while (cursor.moveToNext()) {
         val item: MessageItem
@@ -348,6 +350,8 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             } else {
                 cursor.getString(cursorIndexOfMembership)
             }
+        val tempRecallUserId: String? = cursor.getString(cursorIndexOfRecallUserId)
+        val tempRecallUserFullName: String? = cursor.getString(cursorIndexOfRecallUserFullName)
         item =
             MessageItem(
                 tmpMessageId,
@@ -410,7 +414,9 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
                 tempExpireIn,
                 tempExpireAt,
                 tempCaption,
-                membershipConverter.revertData(tempMembership)
+                membershipConverter.revertData(tempMembership),
+                tempRecallUserId,
+                tempRecallUserFullName,
             )
         res.add(item)
     }

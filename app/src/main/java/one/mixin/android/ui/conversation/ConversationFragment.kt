@@ -127,7 +127,6 @@ import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.isVideo
 import one.mixin.android.extension.isWebp
-import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openAsUrlOrWeb
@@ -243,7 +242,7 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.absolutePath
-import one.mixin.android.vo.canRecall
+import one.mixin.android.vo.canRecallBy
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getEncryptedCategory
 import one.mixin.android.vo.getSendText
@@ -1862,37 +1861,49 @@ class ConversationFragment() :
     private var deleteDialog: AlertDialog? = null
 
     private fun deleteMessage(messages: List<MessageItem>) {
-        deleteDialog?.dismiss()
-        val showRecall =
-            messages.all { item ->
-                item.userId == sender.userId && item.status != MessageStatus.SENDING.name && !item.createdAt.lateOneHours() && item.canRecall()
-            }
-        val deleteDialogLayoutBinding = generateDeleteDialogLayout()
-        deleteDialog =
-            alertDialogBuilder()
-                .setMessage(requireContext().resources.getQuantityString(R.plurals.chat_delete_message, messages.size, messages.size))
-                .setView(deleteDialogLayoutBinding.root)
-                .create()
-        if (showRecall) {
-            deleteDialogLayoutBinding.deleteEveryone.setOnClickListener {
-                if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RECALL_SHOW, true)) {
-                    deleteDialog?.dismiss()
-                    deleteAlert(messages)
-                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_RECALL_SHOW, false)
+        lifecycleScope.launch {
+            val canRecallOthers =
+                if (isGroup) {
+                    val role =
+                        withContext(Dispatchers.IO) {
+                            chatViewModel.findParticipantById(conversationId, sender.userId)?.role
+                        }
+                    role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
                 } else {
-                    chatViewModel.sendRecallMessage(conversationId, sender, messages)
-                    deleteDialog?.dismiss()
+                    true
                 }
-            }
-            deleteDialogLayoutBinding.deleteEveryone.visibility = VISIBLE
-        } else {
-            deleteDialogLayoutBinding.deleteEveryone.visibility = GONE
-        }
-        deleteDialogLayoutBinding.deleteMe.setOnClickListener {
-            chatViewModel.deleteMessages(messages)
             deleteDialog?.dismiss()
+            val showRecall =
+                messages.all { item ->
+                    item.canRecallBy(sender.userId, isGroup, canRecallOthers)
+                }
+            val deleteDialogLayoutBinding = generateDeleteDialogLayout()
+            deleteDialog =
+                alertDialogBuilder()
+                    .setMessage(requireContext().resources.getQuantityString(R.plurals.chat_delete_message, messages.size, messages.size))
+                    .setView(deleteDialogLayoutBinding.root)
+                    .create()
+            if (showRecall) {
+                deleteDialogLayoutBinding.deleteEveryone.setOnClickListener {
+                    if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RECALL_SHOW, true)) {
+                        deleteDialog?.dismiss()
+                        deleteAlert(messages)
+                        defaultSharedPreferences.putBoolean(Constants.Account.PREF_RECALL_SHOW, false)
+                    } else {
+                        chatViewModel.sendRecallMessage(conversationId, sender, messages)
+                        deleteDialog?.dismiss()
+                    }
+                }
+                deleteDialogLayoutBinding.deleteEveryone.visibility = VISIBLE
+            } else {
+                deleteDialogLayoutBinding.deleteEveryone.visibility = GONE
+            }
+            deleteDialogLayoutBinding.deleteMe.setOnClickListener {
+                chatViewModel.deleteMessages(messages)
+                deleteDialog?.dismiss()
+            }
+            deleteDialog?.show()
         }
-        deleteDialog?.show()
     }
 
     private var permissionAlert: AlertDialog? = null

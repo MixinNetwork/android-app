@@ -44,7 +44,8 @@ interface MessageDao : BaseDao<Message> {
         st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
         h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
         su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions, mm.has_read as mentionRead, 
-        pm.message_id IS NOT NULL as isPin, c.name AS groupName, em.expire_in AS expireIn, em.expire_at AS expireAt 
+        pm.message_id IS NOT NULL as isPin, c.name AS groupName, em.expire_in AS expireIn, em.expire_at AS expireAt,
+        rm.user_id AS recallUserId, ru.full_name AS recallUserFullName
         FROM messages m
         INNER JOIN users u ON m.user_id = u.user_id
         LEFT JOIN users u1 ON m.participant_id = u1.user_id
@@ -59,6 +60,8 @@ interface MessageDao : BaseDao<Message> {
         LEFT JOIN message_mentions mm ON m.id = mm.message_id 
         LEFT JOIN pin_messages pm ON m.id = pm.message_id
         LEFT JOIN expired_messages em ON m.id = em.message_id
+        LEFT JOIN recall_messages rm ON m.id = rm.message_id
+        LEFT JOIN users ru ON rm.user_id = ru.user_id
         """
         private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'ENCRYPTED_TEXT', 'ENCRYPTED_IMAGE', 'ENCRYPTED_VIDEO', 'ENCRYPTED_STICKER', 'ENCRYPTED_DATA', 'ENCRYPTED_CONTACT', 'ENCRYPTED_AUDIO', 'ENCRYPTED_LIVE', 'ENCRYPTED_POST', 'ENCRYPTED_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT', 'SYSTEM_SAFE_SNAPSHOT')"
         private const val APP_CARD_COVER_MEDIA = "category = 'APP_CARD' AND content LIKE '%\"cover_url\":\"%' AND content NOT LIKE '%\"cover_url\":\"\"%'"
