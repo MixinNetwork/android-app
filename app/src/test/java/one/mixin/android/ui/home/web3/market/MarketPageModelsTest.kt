@@ -12,7 +12,7 @@ class MarketPageModelsTest {
         val defaults = defaultMarketSubTabs()
 
         assertEquals(MarketSubTab.CRYPTO, defaults[MarketTopTab.WATCHLIST])
-        assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.CRYPTO])
+        assertEquals(MarketSubTab.TOP_LOSERS, defaults[MarketTopTab.CRYPTO])
         assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.PERPETUAL])
         assertEquals(
             listOf(MarketTopTab.WATCHLIST, MarketTopTab.CRYPTO, MarketTopTab.PERPETUAL, MarketTopTab.INDICATOR),
@@ -240,13 +240,31 @@ class MarketPageModelsTest {
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING),
         )
         assertEquals(
-            MarketSortState(),
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
             defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TRENDING),
         )
         assertEquals(
-            MarketSortState(),
+            MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.DESCENDING),
+            defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TOP_GAINERS),
+        )
+        assertEquals(
+            MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.ASCENDING),
+            defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TOP_LOSERS),
+        )
+        assertEquals(
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.MEME),
         )
+        listOf(
+            MarketSubTab.INDICES,
+            MarketSubTab.COMMODITIES,
+            MarketSubTab.FOREX,
+        ).forEach { subTab ->
+            assertEquals(
+                MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                defaultMarketSortState(MarketTopTab.PERPETUAL, subTab),
+            )
+        }
     }
 
     @Test

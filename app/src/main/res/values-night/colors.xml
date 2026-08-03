@@ -2,4 +2,5 @@
 <resources>
     <color name="bg_splash">#2c3136</color>
     <color name="border_primary">#33FFFFFF</color>
+    <color name="market_badge_background">#6E7073</color>
 </resources>

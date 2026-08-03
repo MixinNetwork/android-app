@@ -1805,11 +1805,13 @@
     <string name="market_stock">Stock</string>
     <string name="Indicator">Indicator</string>
     <string name="market_display">Market Display</string>
+    <string name="market_perpetual_badge">Perp</string>
     <string name="volume_label">VOL: %1$s</string>
     <string name="top_count">Top %1$d</string>
     <string name="change_percent_period_day">%1$dD %%</string>
     <string name="change_percent_period_hour">%1$dh %%</string>
     <string name="change_24h">%1$dH %%</string>
+    <string name="market_change_percent_period_hour">%1$d h</string>
     <string name="Choose_Token">Choose %1$s Network</string>
     <string name="choose_token_desc">%1$s is issued on multiple networks</string>
     <string name="watchlist_add_desc">%1$s is now on your watchlist</string>

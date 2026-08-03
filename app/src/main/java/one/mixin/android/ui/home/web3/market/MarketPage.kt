@@ -27,6 +27,7 @@ import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.CircleShape
@@ -34,7 +35,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.Divider
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
@@ -42,6 +42,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -88,6 +89,8 @@ private val MarketPriceChangeGap = 4.dp
 private val MarketHeaderPriceWidth = 96.dp
 private val MarketHeaderPriceChangeMinGap = 20.dp
 private val MarketHorizontalPadding = 16.dp
+private val MarketLeadingIconInset = 6.dp
+private val MarketRowStartPadding = MarketHorizontalPadding - MarketLeadingIconInset
 private val MarketLeadingGap = 6.dp
 private val MarketSortIconRightOffset = 5.dp
 
@@ -97,6 +100,7 @@ fun MarketPage(
     showDisplaySettings: Boolean,
     onSearch: () -> Unit,
     onScan: () -> Unit,
+    onShowSettings: () -> Unit,
     onShowDisplaySettings: () -> Unit,
     onDismissDisplaySettings: () -> Unit,
     onApplyDisplaySettings: (MarketDisplaySettings) -> Unit,
@@ -116,7 +120,7 @@ fun MarketPage(
         MarketToolbar(
             onSearch = onSearch,
             onScan = onScan,
-            onShowDisplaySettings = onShowDisplaySettings,
+            onShowSettings = onShowSettings,
         )
         TopTabs(
             selected = state.selectedTopTab,
@@ -169,7 +173,7 @@ fun MarketPage(
 private fun MarketToolbar(
     onSearch: () -> Unit,
     onScan: () -> Unit,
-    onShowDisplaySettings: () -> Unit,
+    onShowSettings: () -> Unit,
 ) {
     val title = stringResource(R.string.Markets)
     AndroidView(
@@ -178,14 +182,14 @@ private fun MarketToolbar(
                 setTitle(title)
                 setOnSearchClickListener { onSearch() }
                 setOnScanClickListener { onScan() }
-                setOnSettingsClickListener { onShowDisplaySettings() }
+                setOnSettingsClickListener { onShowSettings() }
             }
         },
         update = { toolbar ->
             toolbar.setTitle(title)
             toolbar.setOnSearchClickListener { onSearch() }
             toolbar.setOnScanClickListener { onScan() }
-            toolbar.setOnSettingsClickListener { onShowDisplaySettings() }
+            toolbar.setOnSettingsClickListener { onShowSettings() }
         },
         modifier =
             Modifier
@@ -344,7 +348,7 @@ private fun MarketListHeader(
                 painter = painterResource(R.drawable.ic_config),
                 contentDescription = stringResource(R.string.market_display),
                 tint = Color.Unspecified,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(16.dp).offset(x = -MarketLeadingIconInset),
             )
         }
         Spacer(modifier = Modifier.width(MarketLeadingGap))
@@ -498,6 +502,10 @@ private fun MarketList(
     onAddRecommendations: (List<MarketListEntry>) -> Unit,
     onEntryClick: (MarketListEntry) -> Unit,
 ) {
+    val listState = rememberLazyListState()
+    LaunchedEffect(state.selectedTopTab, state.selectedSubTab) {
+        listState.scrollToItem(0)
+    }
     when {
         state.showsMarketLoading -> {
             Box(
@@ -538,7 +546,10 @@ private fun MarketList(
         }
 
         else -> {
-            LazyColumn(modifier = Modifier.fillMaxSize()) {
+            LazyColumn(
+                state = listState,
+                modifier = Modifier.fillMaxSize(),
+            ) {
                 items(
                     items = state.entries,
                     key = MarketListEntry::stableId,
@@ -735,7 +746,7 @@ private fun MarketRow(
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
                 .padding(
-                    start = MarketHorizontalPadding,
+                    start = MarketRowStartPadding,
                     top = 10.dp,
                     end = MarketHorizontalPadding,
                     bottom = 14.dp,
@@ -799,11 +810,13 @@ private fun RowScope.SpotMarketRowContent(
     val change = market.changePercent(settings.priceChangePeriod)
     MarketIcon(url = market.iconUrl, size = 38.dp)
     Spacer(modifier = Modifier.width(10.dp))
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(
             text = market.symbol,
             color = MixinAppTheme.colors.textPrimary,
             fontSize = 14.sp,
+            lineHeight = 14.sp,
+            style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
@@ -817,7 +830,10 @@ private fun RowScope.SpotMarketRowContent(
                     ),
                 modifier =
                     Modifier
-                        .background(MixinAppTheme.colors.borderPrimary, RoundedCornerShape(4.dp))
+                        .background(
+                            MixinAppTheme.colors.marketBadgeBackground,
+                            RoundedCornerShape(4.dp),
+                        )
                         .padding(horizontal = 4.dp),
             )
             Spacer(modifier = Modifier.width(4.dp))
@@ -825,6 +841,8 @@ private fun RowScope.SpotMarketRowContent(
                 text = formatSpotVolume(if (showMarketCap) market.marketCap else market.totalVolume),
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 12.sp,
+                lineHeight = 12.sp,
+                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 maxLines = 1,
             )
         }
@@ -865,12 +883,14 @@ private fun RowScope.PerpetualMarketRowContent(
     val change = market.changePercentValue()
     MarketIcon(url = market.iconUrl, size = 38.dp)
     Spacer(modifier = Modifier.width(10.dp))
-    Column {
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = market.tokenSymbol,
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,
+                lineHeight = 14.sp,
+                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             )
             Spacer(modifier = Modifier.width(5.dp))
             MarketPerpBadge()
@@ -883,6 +903,8 @@ private fun RowScope.PerpetualMarketRowContent(
                 ),
             color = MixinAppTheme.colors.textAssist,
             fontSize = 12.sp,
+            lineHeight = 12.sp,
+            style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             maxLines = 1,
         )
     }
@@ -918,16 +940,17 @@ private fun RowScope.PerpetualMarketRowContent(
 @Composable
 private fun MarketPerpBadge() {
     Text(
-        text = "Perp",
+        text = stringResource(R.string.market_perpetual_badge),
         fontSize = 12.sp,
         fontWeight = FontWeight.W400,
         color = MixinAppTheme.colors.textAssist,
         lineHeight = 14.sp,
+        style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
         modifier =
             Modifier
                 .clip(RoundedCornerShape(4.dp))
-                .background(MixinAppTheme.colors.borderPrimary)
-                .padding(horizontal = 3.dp, vertical = 1.dp),
+                .background(MixinAppTheme.colors.marketBadgeBackground)
+                .padding(horizontal = 2.dp, vertical = 0.dp),
     )
 }
 
@@ -1489,7 +1512,7 @@ private fun subTabLabel(tab: MarketSubTab): String =
 @Composable
 private fun priceChangePeriodLabel(period: MarketPriceChangePeriod): String =
     when (period) {
-        MarketPriceChangePeriod.TWENTY_FOUR_HOURS -> stringResource(R.string.change_percent_period_hour, 24)
+        MarketPriceChangePeriod.TWENTY_FOUR_HOURS -> stringResource(R.string.market_change_percent_period_hour, 24)
         MarketPriceChangePeriod.SEVEN_DAYS -> stringResource(R.string.change_percent_period_day, 7)
     }
 

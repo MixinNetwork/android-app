@@ -63,13 +63,26 @@ fun defaultMarketSortState(
     topTab: MarketTopTab,
     subTab: MarketSubTab?,
 ): MarketSortState =
-    if (
-        (topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.ALL) ||
-        (topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.TRENDING)
-    ) {
-        MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
-    } else {
-        MarketSortState()
+    when {
+        subTab == MarketSubTab.TOP_GAINERS ->
+            MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.DESCENDING)
+        subTab == MarketSubTab.TOP_LOSERS ->
+            MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.ASCENDING)
+        topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.ALL ->
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+        topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.TRENDING ->
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.TRENDING ->
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.MEME ->
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.INDICES ->
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.COMMODITIES ->
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.FOREX ->
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+        else -> MarketSortState()
     }
 
 data class MarketDisplaySettings(
@@ -144,7 +157,7 @@ data class MarketPageUiState(
 fun defaultMarketSubTabs(): Map<MarketTopTab, MarketSubTab> =
     mapOf(
         MarketTopTab.WATCHLIST to MarketSubTab.CRYPTO,
-        MarketTopTab.CRYPTO to MarketSubTab.TRENDING,
+        MarketTopTab.CRYPTO to MarketSubTab.TOP_LOSERS,
         MarketTopTab.PERPETUAL to MarketSubTab.TRENDING,
     )
 

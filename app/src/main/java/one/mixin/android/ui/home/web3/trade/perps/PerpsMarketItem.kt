@@ -130,7 +130,7 @@ fun PerpsLeverageBadge(
         modifier =
             modifier
                 .clip(RoundedCornerShape(4.dp))
-                .background(MixinAppTheme.colors.borderPrimary)
+                .background(MixinAppTheme.colors.marketBadgeBackground)
                 .padding(horizontal = 3.dp, vertical = 1.dp),
     )
 }

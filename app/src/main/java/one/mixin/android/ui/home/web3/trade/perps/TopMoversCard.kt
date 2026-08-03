@@ -153,7 +153,7 @@ private fun TopMoverGridItem(
                     .offset(y = 32.dp)
                     .topMoverLeverageShadow()
                     .clip(RoundedCornerShape(4.dp))
-                    .background(MixinAppTheme.colors.borderPrimary)
+                    .background(MixinAppTheme.colors.background)
                     .padding(horizontal = 3.dp, vertical = 1.dp),
             )
         }

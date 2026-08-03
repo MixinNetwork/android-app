@@ -140,6 +140,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
     private var currentSort: MarketSort? = null
     private var favoriteMarketIds: Set<String> = emptySet()
     private var selectedRecommendationIds: Set<String> = emptySet()
+    private var recommendationSelectionInitialized = false
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(dialog: Dialog, style: Int) {
@@ -157,6 +158,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         }
 
         binding.apply {
+            priceTitle.text = getString(R.string.market_change_percent_period_hour, 24)
             closeIb.setOnClickListener {
                 dismiss()
             }
@@ -209,7 +211,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                     R.id.radio_meme -> MarketCategory.MEME
                     else -> MarketCategory.ALL
                 }
-                currentSort = null
+                currentSort = MarketSort.RANK_DESCENDING
                 renderSortState()
                 categoryScroll.scrollToCenterCheckedRadio(group)
                 filterAndSortMarkets(scrollToTop = true)
@@ -367,6 +369,10 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 currentCategory == MarketCategory.WATCHLIST &&
                 currentQuery.isBlank() &&
                 recommendations.isNotEmpty()
+        if (!showRecommendations) {
+            recommendationSelectionInitialized = false
+            selectedRecommendationIds = emptySet()
+        }
         binding.sortLayout.isVisible = !showRecommendations
         binding.rvVa.displayedChild =
             when {
@@ -375,8 +381,16 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 else -> 0
             }
         if (showRecommendations) {
+            val recommendationIds = recommendations.mapTo(mutableSetOf()) { it.marketId }
+            if (!recommendationSelectionInitialized) {
+                selectedRecommendationIds = recommendationIds
+                recommendationSelectionInitialized = true
+            } else {
+                selectedRecommendationIds = selectedRecommendationIds intersect recommendationIds
+            }
             recommendationAdapter.submitList(recommendations)
             recommendationAdapter.selectedMarketIds = selectedRecommendationIds
+            binding.addWatchlistTv.isEnabled = selectedRecommendationIds.isNotEmpty()
         }
         adapter.submitList(markets) {
             if (scrollToTop && markets.isNotEmpty()) {
