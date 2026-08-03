@@ -375,6 +375,7 @@ class TradeFragment : BaseFragment() {
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
+                                autoFocusAmount = shouldAutoFocusAmount(),
                             initialTabIndex = initialTabIndex,
                             source = getSource(),
                             entrySource = getEntrySource(),
@@ -1600,6 +1601,11 @@ class TradeFragment : BaseFragment() {
 
     private fun initAmount() {
         initialAmount = arguments?.getString(ARGS_AMOUNT)
+    }
+
+    private fun shouldAutoFocusAmount(): Boolean {
+        return !arguments?.getString(ARGS_INPUT).isNullOrBlank() ||
+            !arguments?.getString(ARGS_OUTPUT).isNullOrBlank()
     }
 
     private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
