@@ -69,7 +69,6 @@ import androidx.compose.ui.window.DialogProperties
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
-import one.mixin.android.compose.MixinAlertDialog
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.loadSvgWithTint
 import one.mixin.android.extension.numberFormat2
@@ -106,8 +105,6 @@ fun MarketPage(
     onSort: (MarketSortColumn) -> Unit,
     onFavorite: (MarketListEntry) -> Unit,
     onAddRecommendations: (List<MarketListEntry>) -> Unit,
-    onKeepPriceAlerts: () -> Unit,
-    onDeletePriceAlerts: () -> Unit,
     onEntryClick: (MarketListEntry) -> Unit,
 ) {
     Column(
@@ -125,7 +122,7 @@ fun MarketPage(
             selected = state.selectedTopTab,
             onSelect = onSelectTopTab,
         )
-        Spacer(modifier = Modifier.height(20.dp))
+        Spacer(modifier = Modifier.height(16.dp))
         if (state.selectedTopTab != MarketTopTab.INDICATOR) {
             SubTabs(
                 topTab = state.selectedTopTab,
@@ -133,6 +130,7 @@ fun MarketPage(
                 onSelect = onSelectSubTab,
             )
             if (!state.isShowingRecommendations && state.entries.isNotEmpty()) {
+                Spacer(modifier = Modifier.height(12.dp))
                 MarketListHeader(
                     period = state.effectivePriceChangePeriod,
                     showMarketCap = state.showsMarketCapColumn,
@@ -165,23 +163,6 @@ fun MarketPage(
         )
     }
 
-    if (state.pendingAlertCoinId != null) {
-        MixinAlertDialog(
-            onDismissRequest = onKeepPriceAlerts,
-            onConfirmClick = onDeletePriceAlerts,
-            onDismissClick = onKeepPriceAlerts,
-            confirmText = stringResource(R.string.Delete),
-            dismissText = stringResource(R.string.Keep),
-            text = {
-                Text(
-                    text = stringResource(R.string.watchlist_remove_alert_prompt),
-                    color = MixinAppTheme.colors.textPrimary,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            },
-        )
-    }
 }
 
 @Composable
@@ -531,6 +512,7 @@ private fun MarketList(
             MarketRecommendations(
                 entries = state.entries,
                 isAdding = state.isAddingRecommendations,
+                quoteColorReversed = state.displaySettings.quoteColorReversed,
                 onAdd = onAddRecommendations,
             )
         }
@@ -578,6 +560,7 @@ private fun MarketList(
 private fun MarketRecommendations(
     entries: List<MarketListEntry>,
     isAdding: Boolean,
+    quoteColorReversed: Boolean,
     onAdd: (List<MarketListEntry>) -> Unit,
 ) {
     val recommendations = entries.take(8)
@@ -598,6 +581,7 @@ private fun MarketRecommendations(
             RecommendationCard(
                 entry = entry,
                 selected = selected,
+                quoteColorReversed = quoteColorReversed,
                 onSelect = {
                     selectedIds =
                         if (selected) {
@@ -643,6 +627,7 @@ private fun MarketRecommendations(
 private fun RecommendationCard(
     entry: MarketListEntry,
     selected: Boolean,
+    quoteColorReversed: Boolean,
     onSelect: () -> Unit,
 ) {
     val shape = RoundedCornerShape(8.dp)
@@ -656,10 +641,24 @@ private fun RecommendationCard(
             is MarketListEntry.Spot -> entry.market.iconUrl
             is MarketListEntry.Perpetual -> entry.market.iconUrl
         }
-    val marketValue =
+    val change =
+        if (entry is MarketListEntry.Perpetual) {
+            entry.market.changePercentValue()
+        } else {
+            null
+        }
+    val subtitle =
         when (entry) {
-            is MarketListEntry.Spot -> entry.market.marketCap
-            is MarketListEntry.Perpetual -> entry.market.volume
+            is MarketListEntry.Spot -> formatSpotVolume(entry.market.marketCap)
+            is MarketListEntry.Perpetual -> change?.let(::formatPercent) ?: "--"
+        }
+    val subtitleColor =
+        if (change == null) {
+            MixinAppTheme.colors.textAssist
+        } else if (change >= BigDecimal.ZERO) {
+            if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+        } else {
+            if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
         }
     Row(
         modifier =
@@ -692,8 +691,8 @@ private fun RecommendationCard(
                 }
             }
             Text(
-                text = formatSpotVolume(marketValue),
-                color = MixinAppTheme.colors.textAssist,
+                text = subtitle,
+                color = subtitleColor,
                 fontSize = 13.sp,
                 maxLines = 1,
             )
@@ -916,7 +915,7 @@ private fun MarketPerpBadge() {
     Text(
         text = "Perp",
         fontSize = 12.sp,
-        fontWeight = FontWeight.W500,
+        fontWeight = FontWeight.W400,
         color = MixinAppTheme.colors.textAssist,
         lineHeight = 14.sp,
         modifier =

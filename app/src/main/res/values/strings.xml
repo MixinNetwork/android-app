@@ -1796,7 +1796,6 @@
     <string name="Add_to_Watchlist">Add to Watchlist</string>
     <string name="Remove_from_Watchlist">Remove from Watchlist</string>
     <string name="Keep">Keep</string>
-    <string name="watchlist_remove_alert_prompt">Removed from your watchlist. Also delete the related price alerts?</string>
     <string name="Dominance">Dominance</string>
     <string name="volume_24h">24h Volume</string>
     <string name="market_volume_short">Vol</string>
@@ -2514,7 +2513,6 @@
     <string name="perps_markets">Trending</string>
     <string name="perps_top_movers">Top Movers</string>
     <string name="perps_market">Market</string>
-    <string name="perps_badge" translatable="false">Perp</string>
     <string name="perps_share_card_title">🚀 Perps %1$s</string>
     <string name="perps_share_card_market">- 📈 Market: %1$s</string>
     <string name="perps_share_card_side">- ↕️ Side: %1$s (%2$dx)</string>

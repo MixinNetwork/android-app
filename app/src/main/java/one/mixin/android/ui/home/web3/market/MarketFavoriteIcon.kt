@@ -52,7 +52,7 @@ fun MarketFavoriteIcon(
             painter = painterResource(if (isFavored) selectedIconRes else unselectedIconRes),
             contentDescription = contentDescription,
             tint = if (isFavored) Color.Unspecified else unselectedTint,
-            modifier = modifier.padding(1.dp),
+            modifier = modifier.padding(1.5.dp),
         )
         return
     }
@@ -95,14 +95,17 @@ fun ImageView.setMarketFavoriteIcon(
     animate: Boolean = false,
     @DrawableRes unselectedIconRes: Int = R.drawable.ic_title_favorites,
     @DrawableRes selectedIconRes: Int = R.drawable.ic_title_favorites_checked,
+    resizeToTouchTarget: Boolean = true,
 ) {
-    val animationPadding = 8.viewDp
-    val iconPadding = 9.viewDp
-    layoutParams =
-        layoutParams.apply {
-            width = 40.viewDp
-            height = 40.viewDp
-        }
+    val animationPadding = if (resizeToTouchTarget) 8.viewDp else 4.viewDp
+    val iconPadding = if (resizeToTouchTarget) 8.viewDp else 4.viewDp
+    if (resizeToTouchTarget) {
+        layoutParams =
+            layoutParams.apply {
+                width = 40.viewDp
+                height = 40.viewDp
+            }
+    }
     scaleType = ImageView.ScaleType.FIT_CENTER
     if (!isFavored || !animate) {
         setPadding(iconPadding, iconPadding, iconPadding, iconPadding)

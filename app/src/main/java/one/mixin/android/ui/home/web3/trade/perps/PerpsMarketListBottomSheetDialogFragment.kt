@@ -186,7 +186,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                 }
             }
             applyInitialCategory()
-            currentSort = initialSort
+            currentSort = initialSort ?: MarketSort.RANK_DESCENDING
             categoryScroll.scrollToCenterCheckedRadio(categoryGroup)
 
             searchEt.listener = object : SearchView.OnSearchViewListener {

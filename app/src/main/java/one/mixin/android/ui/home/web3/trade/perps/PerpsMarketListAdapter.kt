@@ -11,6 +11,7 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.databinding.ItemMarketListBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.ui.home.web3.market.setMarketFavoriteIcon
 import java.math.BigDecimal
 
 class PerpsMarketListAdapter(
@@ -50,12 +51,11 @@ class PerpsMarketListAdapter(
                     iconIv.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
                 }
                 val isFavored = market.marketId in favoriteMarketIds
-                favoriteIv.setImageResource(
-                    if (isFavored) {
-                        R.drawable.ic_asset_favorites_checked
-                    } else {
-                        R.drawable.ic_asset_favorites
-                    },
+                favoriteIv.setMarketFavoriteIcon(
+                    isFavored = isFavored,
+                    unselectedIconRes = R.drawable.ic_asset_favorites,
+                    selectedIconRes = R.drawable.ic_asset_favorites_checked,
+                    resizeToTouchTarget = false,
                 )
                 favoriteIv.contentDescription =
                     root.context.getString(
@@ -66,6 +66,13 @@ class PerpsMarketListAdapter(
                         },
                     )
                 favoriteIv.setOnClickListener {
+                    favoriteIv.setMarketFavoriteIcon(
+                        isFavored = !isFavored,
+                        animate = !isFavored,
+                        unselectedIconRes = R.drawable.ic_asset_favorites,
+                        selectedIconRes = R.drawable.ic_asset_favorites_checked,
+                        resizeToTouchTarget = false,
+                    )
                     onFavoriteClick(market, isFavored)
                 }
                 symbolTv.text = market.tokenSymbol

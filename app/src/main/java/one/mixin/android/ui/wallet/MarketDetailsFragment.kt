@@ -21,7 +21,6 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentDetailsMarketBinding
 import one.mixin.android.event.TradeMarketSelectedEvent
-import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.defaultSharedPreferences
@@ -126,18 +125,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         marketItem.symbol,
                         marketItem.coinId,
                         marketItem.isFavored,
-                    ) {
-                        val context = context ?: return@updateMarketFavored
-                        context
-                            .alertDialogBuilder()
-                            .setMessage(R.string.watchlist_remove_alert_prompt)
-                            .setNegativeButton(R.string.Keep) { dialog, _ ->
-                                dialog.dismiss()
-                            }.setPositiveButton(R.string.Delete) { dialog, _ ->
-                                walletViewModel.deletePriceAlerts(marketItem.coinId)
-                                dialog.dismiss()
-                            }.show()
-                    }
+                    )
                     marketItem.isFavored = marketItem.isFavored != true
                     if (addingFavorite) {
                         AnalyticsTracker.trackMarketFavoriteAdd(marketFavoriteSource())

@@ -127,22 +127,12 @@ class MarketPageViewModel
         fun toggleFavorite(entry: MarketListEntry) {
             when (entry) {
                 is MarketListEntry.Spot ->
-                    viewModelScope.launch {
-                        val shouldPromptForAlerts =
-                            withContext(Dispatchers.IO) {
-                                val updated =
-                                    tokenRepository.updateMarketFavored(
-                                        entry.market.symbol,
-                                        entry.favoriteId,
-                                        entry.isFavored,
-                                    )
-                                updated &&
-                                    entry.isFavored &&
-                                    tokenRepository.hasAlertsByCoinId(entry.favoriteId)
-                            }
-                        if (shouldPromptForAlerts) {
-                            _uiState.value = _uiState.value.copy(pendingAlertCoinId = entry.favoriteId)
-                        }
+                    viewModelScope.launch(Dispatchers.IO) {
+                        tokenRepository.updateMarketFavored(
+                            entry.market.symbol,
+                            entry.favoriteId,
+                            entry.isFavored,
+                        )
                     }
 
                 is MarketListEntry.Perpetual ->
@@ -201,18 +191,6 @@ class MarketPageViewModel
                 } finally {
                     _uiState.value = _uiState.value.copy(isAddingRecommendations = false)
                 }
-            }
-        }
-
-        fun keepPriceAlerts() {
-            _uiState.value = _uiState.value.copy(pendingAlertCoinId = null)
-        }
-
-        fun deletePriceAlerts() {
-            val coinId = _uiState.value.pendingAlertCoinId ?: return
-            _uiState.value = _uiState.value.copy(pendingAlertCoinId = null)
-            viewModelScope.launch(Dispatchers.IO) {
-                tokenRepository.deleteAlertsByCoinId(coinId)
             }
         }
 

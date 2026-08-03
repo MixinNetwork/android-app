@@ -12,7 +12,6 @@ import androidx.room.RoomRawQuery
 import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig.VERSION_NAME
 import one.mixin.android.Constants
@@ -1640,17 +1639,6 @@ class TokenRepository
                 userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
             }
         )
-    }
-
-    fun hasAlertsByCoinId(coinId: String): Boolean = alertDao.getAlertCountByCoinId(coinId) > 0
-
-    suspend fun deleteAlertsByCoinId(coinId: String) {
-        alertDao.alertsByCoinId(coinId).first().forEach { alert ->
-            val response = updateAlert(alert.alertId, AlertUpdateRequest(action = "delete"))
-            if (response?.isSuccess == true) {
-                alertDao.deleteAlertById(alert.alertId)
-            }
-        }
     }
 
     fun deleteAlertById(alertId: String) = alertDao.deleteAlertById(alertId)

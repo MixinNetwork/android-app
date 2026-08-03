@@ -109,7 +109,6 @@ data class MarketPageUiState(
     val selectedTopTab: MarketTopTab = MarketTopTab.CRYPTO,
     val selectedSubTabs: Map<MarketTopTab, MarketSubTab> = defaultMarketSubTabs(),
     val entries: List<MarketListEntry> = emptyList(),
-    val pendingAlertCoinId: String? = null,
     val displaySettings: MarketDisplaySettings = MarketDisplaySettings(),
     val sortState: MarketSortState = MarketSortState(),
     val indicator: GlobalMarket? = null,

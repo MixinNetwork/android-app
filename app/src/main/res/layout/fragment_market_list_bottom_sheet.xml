@@ -194,7 +194,7 @@
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
         android:paddingStart="20dp"
-        android:paddingEnd="20dp">
+        android:paddingEnd="16dp">
 
         <RelativeLayout
             android:id="@+id/volume_sort"

@@ -96,8 +96,6 @@ class MarketFragment : Web3Fragment() {
                         onSort = viewModel::updateSort,
                         onFavorite = viewModel::toggleFavorite,
                         onAddRecommendations = viewModel::addRecommendations,
-                        onKeepPriceAlerts = viewModel::keepPriceAlerts,
-                        onDeletePriceAlerts = viewModel::deletePriceAlerts,
                         onEntryClick = { entry -> openMarket(entry, state.selectedTopTab) },
                     )
                 }
