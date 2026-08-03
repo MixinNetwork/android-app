@@ -1026,6 +1026,7 @@
     <string name="you">你</string>
     <string name="You">你</string>
     <string name="You_deleted_this_message">你撤回了一條訊息</string>
+    <string name="User_deleted_this_message">%1$s 撤回了這條訊息</string>
     <string name="You_have_left_the_group">你不在此群組</string>
     <string name="Migration_and_Restore">聊天記錄遷移和恢復</string>
     <string name="Transfer_to_Another_Phone">備份到另一台手機</string>

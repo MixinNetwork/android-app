@@ -1246,6 +1246,7 @@
     <string name="you">你</string>
     <string name="You">你</string>
     <string name="You_deleted_this_message">你撤回了一条消息</string>
+    <string name="User_deleted_this_message">%1$s 撤回了这条消息</string>
     <string name="You_have_left_the_group">你不在此群组</string>
     <string name="Your_emergency_contact_has_been_changed">恢复联系人已更改</string>
     <string name="text_size">字体大小</string>

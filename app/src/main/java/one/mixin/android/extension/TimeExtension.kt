@@ -185,6 +185,11 @@ fun String.lateOneHours(): Boolean {
     return offset > 3600000L
 }
 
+fun String.lateThirtyDays(): Boolean {
+    val offset = ZonedDateTime.now().toInstant().toEpochMilli() - ZonedDateTime.parse(this).withZoneSameInstant(localeZone()).toInstant().toEpochMilli()
+    return offset > DateUtils.DAY_IN_MILLIS * 30
+}
+
 fun String.hashForDate(): Long {
     var hashForDate = TimeCache.singleton.getHashForDate(this)
     if (hashForDate == null) {

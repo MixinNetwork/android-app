@@ -73,6 +73,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_67_68
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_68_69
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_69_70
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_70_71
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_71_72
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.FiatOrderConverter
  
@@ -121,6 +122,7 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.Property
+import one.mixin.android.vo.RecallMessage
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.ResendSessionMessage
@@ -201,6 +203,7 @@ import kotlin.math.min
         (MarketFavored::class),
         (Alert::class),
         (MarketCapRank::class),
+        (RecallMessage::class),
         (MembershipOrder::class)
     ],
     version = CURRENT_VERSION,
@@ -284,6 +287,8 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun propertyDao(): PropertyDao
 
     abstract fun expiredMessageDao(): ExpiredMessageDao
+
+    abstract fun recallMessageDao(): RecallMessageDao
 
     abstract fun chainDao(): ChainDao
 
@@ -432,6 +437,7 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_68_69,
                                 MIGRATION_69_70,
                                 MIGRATION_70_71,
+                                MIGRATION_71_72,
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(
