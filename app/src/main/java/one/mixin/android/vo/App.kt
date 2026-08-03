@@ -99,4 +99,4 @@ data class App(
     override fun getBotId() = appId
 }
 
-enum class AppCap { GROUP, CONTACT, IMMERSIVE, ENCRYPTED }
+enum class AppCap { GROUP, CONTACT, IMMERSIVE, ENCRYPTED, WALLET_PROVISIONING }

@@ -1,3 +1,4 @@
 /build
 /.externalNativeBuild
 /.cxx
+libs/tapandpay*.aar

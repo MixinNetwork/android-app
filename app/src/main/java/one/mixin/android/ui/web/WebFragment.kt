@@ -260,6 +260,7 @@ class WebFragment : BaseFragment() {
     private var isFinished: Boolean = false
     private val processor = QRCodeProcessor()
     private var webAppInterface: WebAppInterface? = null
+    private var pendingGoogleWalletProvisioningRequestId: String? = null
     private var index: Int = -1
 
     fun resetIndex(index: Int) {
@@ -890,7 +891,13 @@ class WebFragment : BaseFragment() {
         resultCode: Int,
         data: Intent?,
     ) {
-        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CAMERA) {
+        GoogleWalletProvisioning.resultFor(requestCode, resultCode, data)?.let { result ->
+            val requestId = pendingGoogleWalletProvisioningRequestId
+            pendingGoogleWalletProvisioningRequestId = null
+            if (requestId != null) {
+                emitWalletProvisioningEvent(requestId, result)
+            }
+        } ?: if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CAMERA) {
             imageUri?.let {
                 uploadMessage?.onReceiveValue(arrayOf(it))
                 imageUri = null
@@ -919,6 +926,8 @@ class WebFragment : BaseFragment() {
                 }
             }
             app?.name?.let { binding.titleTv.text = it }
+            val walletProvisioningSupported =
+                app?.capabilities?.contains(AppCap.WALLET_PROVISIONING.name) == true && GoogleWalletProvisioning.isAvailable()
             fixedTitle?.let {
                 binding.titleTv.text = it
                 binding.iconIv.isVisible = false
@@ -959,6 +968,10 @@ class WebFragment : BaseFragment() {
                     },
                     openInBrowserAction = { url ->
                         openInBrowser(url)
+                    },
+                    walletProvisioningSupported = walletProvisioningSupported,
+                    startGoogleWalletProvisioningAction = { payload ->
+                        startGoogleWalletProvisioning(payload)
                     },
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
@@ -1205,6 +1218,45 @@ class WebFragment : BaseFragment() {
         }
     }
 
+    private fun startGoogleWalletProvisioning(payload: String) {
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+
+            val request = runCatching { Gson().fromJson(payload, GoogleWalletProvisioningRequest::class.java) }.getOrNull()
+            if (request == null || !request.isValid()) return@launch
+
+            val currentApp = app ?: run {
+                emitWalletProvisioningEvent(request.requestId, GoogleWalletProvisioningResult.Error)
+                return@launch
+            }
+            if (currentApp.capabilities?.contains(AppCap.WALLET_PROVISIONING.name) != true || webView.url?.matchResourcePattern(currentApp.resourcePatterns) != true) {
+                emitWalletProvisioningEvent(request.requestId, GoogleWalletProvisioningResult.Error)
+                return@launch
+            }
+            if (!GoogleWalletProvisioning.isAvailable() || pendingGoogleWalletProvisioningRequestId != null) {
+                emitWalletProvisioningEvent(request.requestId, GoogleWalletProvisioningResult.Error)
+                return@launch
+            }
+
+            pendingGoogleWalletProvisioningRequestId = request.requestId
+            if (!GoogleWalletProvisioning.start(requireActivity(), request)) {
+                pendingGoogleWalletProvisioningRequestId = null
+                emitWalletProvisioningEvent(request.requestId, GoogleWalletProvisioningResult.Error)
+            }
+        }
+    }
+
+    private fun emitWalletProvisioningEvent(requestId: String, result: GoogleWalletProvisioningResult) {
+        val status =
+            when (result) {
+                GoogleWalletProvisioningResult.Success -> "success"
+                GoogleWalletProvisioningResult.Cancelled -> "cancelled"
+                GoogleWalletProvisioningResult.Error -> "error"
+            }
+        val detail = Gson().toJson(mapOf("requestId" to requestId, "status" to status))
+        webView.evaluateJavascript("window.dispatchEvent(new CustomEvent('mixin:wallet-provisioning', { detail: $detail }))", null)
+    }
+
     private fun tipSign(
         chainId: String,
         message: String,
@@ -1285,6 +1337,7 @@ class WebFragment : BaseFragment() {
 
         webAppInterface?.reloadThemeAction = null
         webAppInterface?.playlistAction = null
+        webAppInterface?.startGoogleWalletProvisioningAction = null
         webAppInterface = null
         webView.removeJavascriptInterface("MixinContext")
         webView.removeJavascriptInterface("mixin")
@@ -1334,6 +1387,7 @@ class WebFragment : BaseFragment() {
         unregisterForContextMenu(webView)
         binding.webLl.removeView(webView)
         processor.close()
+        pendingGoogleWalletProvisioningRequestId = null
         if (requireActivity().requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
             requireActivity().window.decorView.systemUiVisibility = originalSystemUiVisibility
             requireActivity().requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
@@ -2193,6 +2247,8 @@ class WebFragment : BaseFragment() {
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
         var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
         var openInBrowserAction: ((String) -> Boolean)? = null,
+        val walletProvisioningSupported: Boolean = false,
+        var startGoogleWalletProvisioningAction: ((String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -2211,6 +2267,7 @@ class WebFragment : BaseFragment() {
                         } else {
                             "light"
                         },
+                    walletProvisioningSupported = walletProvisioningSupported,
                 ),
             )
 
@@ -2240,6 +2297,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun openInBrowser(url: String): Boolean {
             return openInBrowserAction?.invoke(url) ?: false
+        }
+
+        @JavascriptInterface
+        fun startGoogleWalletProvisioning(payload: String) {
+            startGoogleWalletProvisioningAction?.invoke(payload)
         }
 
         @JavascriptInterface
@@ -2291,6 +2353,8 @@ class WebFragment : BaseFragment() {
         val currency: String = Session.getFiatCurrency(),
         @SerializedName("locale")
         val locale: String = getLocale(),
+        @SerializedName("wallet_provisioning_supported")
+        val walletProvisioningSupported: Boolean = false,
     ) {
         companion object {
             private fun getLocale(): String {

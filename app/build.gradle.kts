@@ -136,6 +136,12 @@ val installReferrerVersion = rootProject.extra["installReferrerVersion"] as Stri
 val billingVersion = rootProject.extra["billingVersion"] as String
 
 val includeDebugX86_64 = project.findProperty("includeDebugX86_64")?.toString()?.toBoolean() ?: false
+val tapAndPaySourceDir =
+    if (fileTree("libs") { include("tapandpay*.aar") }.files.isNotEmpty()) {
+        "src/tapAndPay/java"
+    } else {
+        "src/noTapAndPay/java"
+    }
 
 android {
     compileSdk = 37
@@ -193,6 +199,9 @@ android {
     }
 
     sourceSets {
+        getByName("main") {
+            java.srcDir(tapAndPaySourceDir)
+        }
         val sharedTestDir = "src/sharedTest/java"
         getByName("test") {
             java.directories.add(sharedTestDir)
