@@ -53,7 +53,7 @@ import kotlin.math.min
         SafeWallets::class,
         WalletOutput::class,
     ],
-    version = 7,
+    version = 8,
 )
 @TypeConverters(Web3TypeConverters::class, AssetChangeListConverter::class)
 abstract class WalletDatabase : RoomDatabase() {
@@ -115,6 +115,13 @@ abstract class WalletDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE transactions ADD COLUMN sponsor_fee_asset_id TEXT")
+                db.execSQL("ALTER TABLE transactions ADD COLUMN sponsor_fee_amount TEXT")
+            }
+        }
+
         fun getDatabase(
             context: Context,
             identityNumber: String,
@@ -139,7 +146,7 @@ abstract class WalletDatabase : RoomDatabase() {
                                 listOf(
                                     object : MixinCorruptionCallback {
                                         override fun onCorruption(database: SupportSQLiteDatabase) {
-                                            val e = IllegalStateException("Wallet database is corrupted, current DB version: 7")
+                                            val e = IllegalStateException("Wallet database is corrupted, current DB version: 8")
                                             reportException(e)
                                         }
                                     },
@@ -153,7 +160,7 @@ abstract class WalletDatabase : RoomDatabase() {
                                     supportSQLiteDatabase = db
                                 }
                             },
-                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                             .enableMultiInstanceInvalidation()
                             .setQueryExecutor(
                                 Executors.newFixedThreadPool(
