@@ -95,13 +95,17 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     setIcon()
                 }
                 quoteMessageItem.type == MessageCategory.MESSAGE_RECALL.name -> {
-                    binding.replyContentTv.setText(
-                        if (quoteMessageItem.userId == Session.getAccountId()) {
-                            R.string.You_deleted_this_message
-                        } else {
-                            R.string.This_message_was_deleted
-                        },
-                    )
+                    binding.replyContentTv.text =
+                        when {
+                            quoteMessageItem.recallUserId == Session.getAccountId() ->
+                                context.getString(R.string.You_deleted_this_message)
+                            !quoteMessageItem.recallUserFullName.isNullOrBlank() ->
+                                context.getString(
+                                    R.string.User_deleted_this_message,
+                                    quoteMessageItem.recallUserFullName,
+                                )
+                            else -> context.getString(R.string.This_message_was_deleted)
+                        }
                     binding.replyIv.visibility = View.GONE
                     binding.replyAvatar.visibility = View.GONE
                     (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =

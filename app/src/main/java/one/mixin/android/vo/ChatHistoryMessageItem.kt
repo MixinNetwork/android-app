@@ -66,7 +66,9 @@ class ChatHistoryMessageItem(
     val quoteId: String? = null,
     val quoteContent: String? = null,
     val mentions: String? = null,
-    val membership: Membership? = null
+    val membership: Membership? = null,
+    val recallUserId: String? = null,
+    val recallUserFullName: String? = null,
 ) : ICategory {
     companion object {
         val DIFF_CALLBACK =
@@ -203,7 +205,10 @@ fun ChatHistoryMessageItem.toMessageItem(conversationId: String? = null): Messag
         quoteContent,
         null,
         mentions = null,
-        null,
+        isPin = null,
+        membership = membership,
+        recallUserId = recallUserId,
+        recallUserFullName = recallUserFullName,
     )
 }
 
