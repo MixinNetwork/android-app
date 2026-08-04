@@ -1326,6 +1326,8 @@
     <string name="minutes_count_short">%1$d分鐘</string>
     <string name="hours_count_short">%1$d小時</string>
     <string name="days_count_short">%1$d天</string>
+    <string name="hours_count_long">%1$d 小時</string>
+    <string name="days_count_long">%1$d 天</string>
     <string name="weeks_count_short">%1$d周</string>
     <string name="months_count_short">%1$d月</string>
     <string name="ytd">1年</string>
@@ -1891,13 +1893,7 @@
     <string name="SAFE">金庫</string>
     <string name="multisig_safe_state_signed">您已批准此交易；您不能再次批准它。</string>
     <string name="multisig_safe_state_unlocked">此交易已被其他人拒絕；你不能再拒絕它。</string>
-    <string name="watchlist_empty">您的自選列表為空</string>
-    <string name="Dominance">市佔率</string>
-    <string name="volume_24h">24 小時交易量</string>
-    <string name="Watchlist">自選</string>
     <string name="top_count">前 %1$d</string>
-    <string name="change_percent_period_day">%1$d天 %%</string>
-    <string name="change_percent_period_hour">%1$d小時 %%</string>
     <string name="change_24h">%1$dH %%</string>
     <string name="Choose_Token">選擇 %1$s 網路</string>
     <string name="choose_token_desc">%1$s 在多個網路上釋出</string>

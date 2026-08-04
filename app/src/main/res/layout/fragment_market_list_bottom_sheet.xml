@@ -259,13 +259,13 @@
 
         <RelativeLayout
             android:id="@+id/price_sort"
-            android:layout_width="66dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"
-            android:gravity="end"
             android:paddingTop="4dp"
             android:paddingEnd="2dp"
             android:paddingBottom="4dp"
+            android:translationX="5dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent">
@@ -286,7 +286,6 @@
                 android:layout_alignTop="@id/price_title"
                 android:layout_toEndOf="@id/price_title"
                 android:layout_marginStart="4dp"
-                android:translationX="5dp"
                 android:src="@drawable/ic_perps_sort_default" />
         </RelativeLayout>
 

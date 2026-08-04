@@ -402,7 +402,7 @@ private fun MarketHeaderSortLabels(
                 text = priceChangePeriodLabel(period),
                 column = MarketSortColumn.CHANGE,
                 sortState = sortState,
-                iconOffset = MarketSortIconRightOffset,
+                modifier = Modifier.offset(x = MarketSortIconRightOffset),
                 horizontalArrangement = Arrangement.End,
                 onSort = onSort,
             )
@@ -1370,8 +1370,8 @@ private fun MarketDisplayDialog(
                             value = priceChangePeriodLabel(pending.priceChangePeriod),
                             options =
                                 listOf(
-                                    priceChangePeriodLabel(MarketPriceChangePeriod.TWENTY_FOUR_HOURS) to MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
-                                    priceChangePeriodLabel(MarketPriceChangePeriod.SEVEN_DAYS) to MarketPriceChangePeriod.SEVEN_DAYS,
+                                    priceChangePeriodMenuLabel(MarketPriceChangePeriod.TWENTY_FOUR_HOURS) to MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
+                                    priceChangePeriodMenuLabel(MarketPriceChangePeriod.SEVEN_DAYS) to MarketPriceChangePeriod.SEVEN_DAYS,
                                 ),
                             selectedOption = pending.priceChangePeriod,
                             onSelect = {
@@ -1425,7 +1425,7 @@ private fun <T> DisplaySettingRow(
                 Text(
                     text = value,
                     color = MixinAppTheme.colors.textAssist,
-                    fontSize = 12.sp,
+                    fontSize = 14.sp,
                     textAlign = TextAlign.End,
                 )
                 Box {
@@ -1512,8 +1512,15 @@ private fun subTabLabel(tab: MarketSubTab): String =
 @Composable
 private fun priceChangePeriodLabel(period: MarketPriceChangePeriod): String =
     when (period) {
-        MarketPriceChangePeriod.TWENTY_FOUR_HOURS -> stringResource(R.string.market_change_percent_period_hour, 24)
-        MarketPriceChangePeriod.SEVEN_DAYS -> stringResource(R.string.change_percent_period_day, 7)
+        MarketPriceChangePeriod.TWENTY_FOUR_HOURS -> stringResource(R.string.hours_count_short, 24)
+        MarketPriceChangePeriod.SEVEN_DAYS -> stringResource(R.string.days_count_short, 7)
+    }
+
+@Composable
+private fun priceChangePeriodMenuLabel(period: MarketPriceChangePeriod): String =
+    when (period) {
+        MarketPriceChangePeriod.TWENTY_FOUR_HOURS -> stringResource(R.string.hours_count_long, 24)
+        MarketPriceChangePeriod.SEVEN_DAYS -> stringResource(R.string.days_count_long, 7)
     }
 
 private fun formatPercent(change: BigDecimal): String {

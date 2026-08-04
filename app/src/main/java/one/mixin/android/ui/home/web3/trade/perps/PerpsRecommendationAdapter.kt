@@ -59,9 +59,9 @@ class PerpsRecommendationAdapter(
                 )
                 selectedIv.setImageResource(
                     if (isSelected) {
-                        R.drawable.ic_asset_favorites_checked
+                        R.drawable.ic_asset_add_checked
                     } else {
-                        R.drawable.ic_asset_favorites
+                        R.drawable.ic_asset_add_unchecked
                     },
                 )
                 root.isSelected = isSelected

@@ -597,6 +597,8 @@
     <string name="minutes_count_short">%1$dm</string>
     <string name="hours_count_short">%1$dH</string>
     <string name="days_count_short">%1$dD</string>
+    <string name="hours_count_long">%1$d Hours</string>
+    <string name="days_count_long">%1$d Days</string>
     <string name="weeks_count_short">%1$dW</string>
     <string name="months_count_short">%1$dM</string>
     <string name="ytd">1Y</string>
@@ -1809,7 +1811,7 @@
     <string name="change_percent_period_day">%1$dD %%</string>
     <string name="change_percent_period_hour">%1$dh %%</string>
     <string name="change_24h">%1$dH %%</string>
-    <string name="market_change_percent_period_hour">%1$d h</string>
+    <string name="market_change_percent_period_hour">%1$dh</string>
     <string name="Choose_Token">Choose %1$s Network</string>
     <string name="choose_token_desc">%1$s is issued on multiple networks</string>
     <string name="watchlist_add_desc">%1$s is now on your watchlist</string>

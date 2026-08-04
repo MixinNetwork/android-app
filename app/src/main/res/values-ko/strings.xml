@@ -596,6 +596,8 @@
     <string name="minutes_count_short">%1$dm</string>
     <string name="hours_count_short">%1$dH</string>
     <string name="days_count_short">%1$dD</string>
+    <string name="hours_count_long">%1$d시간</string>
+    <string name="days_count_long">%1$d일</string>
     <string name="weeks_count_short">%1$dW</string>
     <string name="months_count_short">%1$dM</string>
     <string name="ytd">1년</string>

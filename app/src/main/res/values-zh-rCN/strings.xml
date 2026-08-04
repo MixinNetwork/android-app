@@ -590,6 +590,8 @@
     <string name="minutes_count_short">%1$d分钟</string>
     <string name="hours_count_short">%1$d小时</string>
     <string name="days_count_short">%1$d天</string>
+    <string name="hours_count_long">%1$d 小时</string>
+    <string name="days_count_long">%1$d 天</string>
     <string name="weeks_count_short">%1$d周</string>
     <string name="months_count_short">%1$d月</string>
     <string name="ytd">一年</string>

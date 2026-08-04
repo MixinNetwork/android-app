@@ -61,9 +61,9 @@
 
     <ImageView
         android:id="@+id/selected_iv"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:src="@drawable/ic_asset_favorites"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:src="@drawable/ic_asset_add_unchecked"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
