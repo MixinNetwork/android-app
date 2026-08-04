@@ -2,7 +2,7 @@ package one.mixin.android.ui.home.web3.market
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,13 +20,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
@@ -182,15 +183,21 @@ private fun TopTabs(
     selected: MarketTopTab,
     onSelect: (MarketTopTab) -> Unit,
 ) {
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(horizontal = 12.dp),
+    val tabs = MarketTopTab.entries
+    val listState = rememberLazyListState()
+    LaunchedEffect(selected) {
+        listState.animateScrollToCenteredItem(tabs.indexOf(selected))
+    }
+    LazyRow(
+        state = listState,
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(horizontal = 12.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        MarketTopTab.entries.forEach { tab ->
+        items(
+            items = tabs,
+            key = { it.name },
+        ) { tab ->
             MarketChip(
                 text = topTabLabel(tab),
                 selected = selected == tab,
@@ -207,16 +214,21 @@ private fun SubTabs(
     onSelect: (MarketSubTab) -> Unit,
 ) {
     val tabs = marketSubTabs(topTab)
-    Row(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(start = 14.dp, end = 20.dp),
+    val listState = rememberLazyListState()
+    LaunchedEffect(topTab, selected) {
+        listState.animateScrollToCenteredItem(selected?.let(tabs::indexOf) ?: -1)
+    }
+    LazyRow(
+        state = listState,
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(start = 14.dp, end = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        tabs.forEach { tab ->
+        items(
+            items = tabs,
+            key = { it.name },
+        ) { tab ->
             if (tab == MarketSubTab.FAVORITE) {
                 Box(
                     contentAlignment = Alignment.Center,
@@ -265,6 +277,19 @@ private fun SubTabs(
             }
         }
     }
+}
+
+private suspend fun LazyListState.animateScrollToCenteredItem(index: Int) {
+    if (index < 0) return
+    var itemInfo = layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
+    if (itemInfo == null) {
+        animateScrollToItem(index)
+        itemInfo = layoutInfo.visibleItemsInfo.firstOrNull { it.index == index }
+    }
+    itemInfo ?: return
+    val viewportCenter = (layoutInfo.viewportStartOffset + layoutInfo.viewportEndOffset) / 2
+    val itemCenter = itemInfo.offset + itemInfo.size / 2
+    animateScrollBy((itemCenter - viewportCenter).toFloat())
 }
 
 @Composable

@@ -68,6 +68,9 @@ fun defaultMarketSortState(
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.DESCENDING)
         subTab == MarketSubTab.TOP_LOSERS ->
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.ASCENDING)
+        topTab == MarketTopTab.WATCHLIST &&
+            (subTab == MarketSubTab.CRYPTO || subTab == MarketSubTab.PERPETUAL) ->
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.ALL ->
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.TRENDING ->

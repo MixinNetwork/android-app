@@ -391,7 +391,7 @@ private fun PerpsMarketRecommendations(
                     disabledContentColor = MixinAppTheme.colors.textAssist,
                     modifier =
                         Modifier
-                            .width(172.dp)
+                            .wrapContentWidth()
                             .height(42.dp),
                 ) {
                     Text(

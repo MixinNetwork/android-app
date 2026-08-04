@@ -231,6 +231,15 @@ class MarketPageModelsTest {
 
     @Test
     fun defaultVolumeSortMatchesMarketCategory() {
+        listOf(
+            MarketSubTab.CRYPTO,
+            MarketSubTab.PERPETUAL,
+        ).forEach { subTab ->
+            assertEquals(
+                MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                defaultMarketSortState(MarketTopTab.WATCHLIST, subTab),
+            )
+        }
         assertEquals(
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
             defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL),
