@@ -7,6 +7,7 @@ enum class DAppMethod {
     SIGNTYPEDMESSAGE,
     ECRECOVER,
     REQUESTACCOUNTS,
+    REQUESTPERMISSIONS,
     WATCHASSET,
     ADDETHEREUMCHAIN,
     SWITCHETHEREUMCHAIN,
@@ -25,6 +26,7 @@ enum class DAppMethod {
                 "eth_signTypedData_v4" -> SIGNTYPEDMESSAGE
                 "ecRecover" -> ECRECOVER
                 "requestAccounts" -> REQUESTACCOUNTS
+                "wallet_requestPermissions" -> REQUESTPERMISSIONS
                 "watchAsset" -> WATCHASSET
                 "addEthereumChain" -> ADDETHEREUMCHAIN
                 "switchChain" -> SWITCHETHEREUMCHAIN
