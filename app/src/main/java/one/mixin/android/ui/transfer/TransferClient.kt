@@ -120,7 +120,7 @@ class TransferClient
         val ftsDatabase: FtsDatabase,
         val status: TransferStatusLiveData,
         private val serializationJson: Json,
-        @ApplicationScope
+        @param:ApplicationScope
         private val applicationScope: CoroutineScope,
         private val jobManager: MixinJobManager,
     ) {

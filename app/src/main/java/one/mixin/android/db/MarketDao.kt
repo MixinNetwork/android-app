@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.vo.market.Market

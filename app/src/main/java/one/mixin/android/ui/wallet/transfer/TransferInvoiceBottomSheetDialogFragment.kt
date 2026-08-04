@@ -67,7 +67,7 @@ class TransferInvoiceBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         const val TAG = "TransferInvoiceBottomSheetDialogFragment"
         const val ARGS_TRANSFER = "args_transfer"
 
-        inline fun newInstance(t: String) =
+        fun newInstance(t: String) =
             TransferInvoiceBottomSheetDialogFragment().withArgs {
                 putString(ARGS_TRANSFER, t)
             }

@@ -160,9 +160,9 @@ class TranscriptAttachmentDownloadJob(
         if (response.code == 404) {
             destination.delete()
             return true
-        } else if (response.isSuccessful && !isCancelled && response.body != null) {
+        } else if (response.isSuccessful && !isCancelled) {
             val sink = destination.sink().buffer()
-            sink.writeAll(response.body!!.source())
+            sink.writeAll(response.body.source())
             sink.close()
             when {
                 transcriptMessage.type.endsWith("_IMAGE") -> {

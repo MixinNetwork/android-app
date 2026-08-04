@@ -33,7 +33,7 @@ class SnapshotAdapter(
 
     override fun getHeaderId(pos: Int): Long {
         val snapshot = getItem(pos)
-        return abs(snapshot.createdAt.hashForDate() ?: -1)
+        return abs(snapshot.createdAt.hashForDate())
     }
 
     override fun onCreateHeaderViewHolder(parent: ViewGroup) =
@@ -47,7 +47,7 @@ class SnapshotAdapter(
         vh: SnapshotHeaderViewHolder,
         pos: Int,
     ) {
-        val time = getItem(pos).createdAt ?: return
+        val time = getItem(pos).createdAt
         vh.bind(time)
     }
 

@@ -472,7 +472,7 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                                 if (errorRes != null) {
                                     withContext(Dispatchers.Main) {
                                         errorString = requireContext().getString(errorRes)
-                                        toast(errorString!!)
+                                        toast(errorString)
                                     }
                                 }
                             },
@@ -481,9 +481,6 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                     ShareCategory.Contact -> {
                         val contactData = GsonHelper.customGson.fromJson(content, ContactMessagePayload::class.java) ?: return@checkData
                         chatViewModel.sendContactMessage(conversationId, sender, contactData.userId, encryptCategory)
-                    }
-                    ShareCategory.Contact -> {
-                        chatViewModel.sendPostMessage(conversationId, sender, content, encryptCategory)
                     }
                     ShareCategory.AppCard -> {
                         chatViewModel.sendAppCardMessage(conversationId, sender, content)
