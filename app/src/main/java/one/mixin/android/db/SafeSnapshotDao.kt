@@ -5,7 +5,6 @@ import androidx.paging.DataSource
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RawQuery
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
@@ -20,7 +19,6 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 
 @Dao
-@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     companion object {

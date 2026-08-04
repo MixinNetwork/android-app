@@ -3,7 +3,6 @@ package one.mixin.android.db.web3
 import android.content.Context
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
@@ -14,7 +13,6 @@ import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.vo.WalletCategory
 
 @Dao
-@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface Web3WalletDao : BaseDao<Web3Wallet> {
 

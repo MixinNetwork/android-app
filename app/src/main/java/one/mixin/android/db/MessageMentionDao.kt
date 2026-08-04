@@ -3,13 +3,11 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.vo.MessageMention
 
 @Dao
-@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface MessageMentionDao : BaseDao<MessageMention> {
     @Query("SELECT count(1) FROM message_mentions WHERE conversation_id = :conversationId AND has_read = 0")

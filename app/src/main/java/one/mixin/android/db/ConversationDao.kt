@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
@@ -15,7 +14,6 @@ import one.mixin.android.vo.GroupMinimal
 import one.mixin.android.vo.ParticipantSessionMinimal
 
 @Dao
-@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface ConversationDao : BaseDao<Conversation> {
     companion object {

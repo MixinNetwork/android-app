@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint
@@ -737,7 +739,7 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
 
                     val transactionHash = runCatching {
-                        val data = (response.data as? List<*>)?.filterIsInstance<TransactionResponse>()
+                        val data = response.data as? List<TransactionResponse>
                         if (data?.size == 1) {
                             data.first().transactionHash
                         } else {

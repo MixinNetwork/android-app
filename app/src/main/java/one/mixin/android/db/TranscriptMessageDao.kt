@@ -3,7 +3,6 @@ package one.mixin.android.db
 import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import one.mixin.android.db.contants.AUDIOS
 import one.mixin.android.db.contants.DATA
@@ -16,7 +15,6 @@ import one.mixin.android.vo.TranscriptAttachmentMigration
 import one.mixin.android.vo.TranscriptMessage
 
 @Dao
-@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     companion object {

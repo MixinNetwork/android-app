@@ -4,7 +4,6 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import androidx.room.Update
@@ -13,7 +12,6 @@ import one.mixin.android.vo.ParticipantSessionKey
 import one.mixin.android.vo.ParticipantSessionSent
 
 @Dao
-@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface ParticipantSessionDao : BaseDao<ParticipantSession> {
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id = :userId AND session_id = :sessionId")

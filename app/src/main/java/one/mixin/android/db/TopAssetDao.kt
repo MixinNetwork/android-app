@@ -3,13 +3,11 @@ package one.mixin.android.db
 import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.TopAssetItem
 
 @Dao
-@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface TopAssetDao : BaseDao<TopAsset> {
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)

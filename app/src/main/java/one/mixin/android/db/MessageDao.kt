@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.paging.DataSource
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RawQuery
 import androidx.room.RoomWarnings
 import androidx.sqlite.db.SupportSQLiteQuery
@@ -29,7 +28,6 @@ import one.mixin.android.vo.QuoteMinimal
 import one.mixin.android.vo.SearchMessageDetailItem
 
 @Dao
-@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface MessageDao : BaseDao<Message> {
     companion object {

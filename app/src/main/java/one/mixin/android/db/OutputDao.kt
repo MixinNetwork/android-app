@@ -4,7 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import androidx.room.Transaction
 import one.mixin.android.ui.home.web3.components.InscriptionState
@@ -15,7 +14,6 @@ import one.mixin.android.vo.safe.SafeCollection
 import timber.log.Timber
 
 @Dao
-@RewriteQueriesToDropUnusedColumns
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface OutputDao : BaseDao<Output> {
     @Query("SELECT * FROM outputs WHERE (state = 'unspent' OR state = 'pending') AND asset = :asset AND (inscription_hash IS NULL OR inscription_hash = '') ORDER BY CASE WHEN state = 'pending' THEN 1 ELSE 0 END, sequence ASC LIMIT :limit")
