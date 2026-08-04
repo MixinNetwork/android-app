@@ -1,5 +1,6 @@
 package one.mixin.android.db.web3
 
+import androidx.lifecycle.LiveData
 import androidx.room.Dao
 import androidx.room.Query
 import one.mixin.android.db.BaseDao
@@ -10,6 +11,9 @@ interface Web3RawTransactionDao : BaseDao<Web3RawTransaction> {
     
     @Query("SELECT * FROM raw_transactions WHERE state = 'pending' AND account IN (SELECT DISTINCT destination FROM addresses WHERE wallet_id = :walletId)")
     suspend fun getPendingRawTransactions(walletId:String): List<Web3RawTransaction>
+
+    @Query("SELECT COUNT(*) FROM raw_transactions WHERE state = 'pending' AND account IN (SELECT DISTINCT destination FROM addresses WHERE wallet_id = :walletId)")
+    fun getPendingRawTransactionCount(walletId: String): LiveData<Int>
 
     @Query("SELECT * FROM raw_transactions WHERE state = 'pending' AND chain_id = :chainId AND account IN (SELECT DISTINCT destination FROM addresses WHERE wallet_id = :walletId)")
     suspend fun getPendingRawTransactions(walletId:String, chainId: String): List<Web3RawTransaction>

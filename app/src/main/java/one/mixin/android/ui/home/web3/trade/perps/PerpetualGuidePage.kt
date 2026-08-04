@@ -103,6 +103,17 @@ fun PerpetualGuidePage(
         stringResource(R.string.position_size),
         stringResource(R.string.take_profit_stop_loss_label),
         stringResource(R.string.Liquidation_Price),
+        stringResource(R.string.Funding_Rate),
+    )
+    val navigationTabs = listOf(
+        stringResource(R.string.Brief_Introduction),
+        stringResource(R.string.Long),
+        stringResource(R.string.Short),
+        stringResource(R.string.Leverage),
+        stringResource(R.string.position_size),
+        stringResource(R.string.take_profit_stop_loss_label),
+        stringResource(R.string.perps_liquidation_price_short),
+        stringResource(R.string.Funding_Rate),
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
     var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
@@ -192,13 +203,14 @@ fun PerpetualGuidePage(
                         4 -> PositionContent()
                         5 -> TpSlContent()
                         6 -> LiquidationContent()
+                        7 -> FundingRateContent()
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 }
                 Spacer(modifier = Modifier.height(20.dp))
                 GuideBottomNavigation(
                     selectedTab = selectedTab,
-                    tabs = tabs,
+                    tabs = navigationTabs,
                     onSelect = { targetTab ->
                         coroutineScope.launch { selectedTab = targetTab }
                     },
@@ -653,6 +665,164 @@ private fun LiquidationContent() {
         ),
         riskContents = emptyList(),
     )
+}
+
+@Composable
+private fun FundingRateContent() {
+    FundingRateExampleCard()
+    Spacer(modifier = Modifier.height(14.dp))
+    DescriptionWithInfoAndRiskCard(
+        description = stringResource(R.string.perps_funding_rate_overview),
+        infoTitle = stringResource(R.string.perps_funding_rate_purpose),
+        infoContents = listOf(
+            stringResource(R.string.perps_funding_rate_key_point_1),
+            stringResource(R.string.perps_funding_rate_key_point_2),
+            stringResource(R.string.perps_funding_rate_key_point_3),
+        ),
+        riskContents = emptyList(),
+    )
+}
+
+@Composable
+private fun FundingRateExampleCard() {
+    val context = LocalContext.current
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val positiveColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val negativeColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    var isPositiveFunding by remember { mutableStateOf(true) }
+    val longAction = if (isPositiveFunding) stringResource(R.string.Pay) else stringResource(R.string.perps_receive)
+    val longRate = if (isPositiveFunding) "-0.01%" else "+0.01%"
+    val longRateColor = if (isPositiveFunding) negativeColor else positiveColor
+    val shortAction = if (isPositiveFunding) stringResource(R.string.perps_receive) else stringResource(R.string.Pay)
+    val shortRate = if (isPositiveFunding) "+0.01%" else "-0.01%"
+    val shortRateColor = if (isPositiveFunding) positiveColor else negativeColor
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.Example),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        GuideValueRow(title = stringResource(R.string.perps_market)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_chain_btc),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "BTC - USD",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W500,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.Funding_Rate)) {
+            FundingRateToggle(
+                isPositiveFunding = isPositiveFunding,
+                onFundingRateChange = { isPositiveFunding = it },
+                positiveColor = positiveColor,
+                negativeColor = negativeColor,
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.perps_funding_frequency)) {
+            Text(
+                text = stringResource(R.string.perps_funding_frequency_value),
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W500,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(MixinAppTheme.colors.backgroundWindow)
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+        Text(
+            text = stringResource(R.string.Long),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        GuideValueRow(title = longAction) {
+            Text(
+                text = longRate,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W500,
+                color = longRateColor
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(1.dp)
+                .background(MixinAppTheme.colors.backgroundWindow)
+        )
+        Spacer(modifier = Modifier.height(14.dp))
+        Text(
+            text = stringResource(R.string.Short),
+            fontSize = 14.sp,
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        GuideValueRow(title = shortAction) {
+            Text(
+                text = shortRate,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W500,
+                color = shortRateColor
+            )
+        }
+    }
+}
+
+@Composable
+private fun FundingRateToggle(
+    isPositiveFunding: Boolean,
+    onFundingRateChange: (Boolean) -> Unit,
+    positiveColor: Color,
+    negativeColor: Color,
+) {
+    Row(
+        modifier = Modifier
+            .clip(RoundedCornerShape(6.dp))
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .padding(2.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        listOf(true, false).forEach { itemIsPositive ->
+            val selected = itemIsPositive == isPositiveFunding
+            GuideDirectionTag(
+                text = if (itemIsPositive) "+0.01%" else "-0.01%",
+                backgroundColor = if (selected) {
+                    if (itemIsPositive) positiveColor else negativeColor
+                } else {
+                    Color.Transparent
+                },
+                textColor = if (selected) Color.White else MixinAppTheme.colors.textAssist,
+                modifier = Modifier.clickable { onFundingRateChange(itemIsPositive) },
+            )
+        }
+    }
 }
 
 

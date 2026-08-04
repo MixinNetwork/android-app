@@ -559,7 +559,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             } else {
                 null
             }
-        errorInfo = msg ?: e.message
+        errorInfo = msg ?: ErrorHandler.getErrorMessage(e)
         reportException("$TAG handleException", e)
         step = Step.Error
     }

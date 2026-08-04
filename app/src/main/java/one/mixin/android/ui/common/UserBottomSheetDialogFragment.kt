@@ -268,6 +268,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
             forwardContact(user)
         }
         setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
+        binding.detailTv.expandAction = getString(R.string.More).lowercase()
         bottomViewModel.refreshUser(user.userId, true)
         bottomViewModel.loadFavoriteApps(user.userId)
         bottomViewModel.observerFavoriteApps(user.userId).observe(this@UserBottomSheetDialogFragment) { apps ->

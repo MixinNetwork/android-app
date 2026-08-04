@@ -28,6 +28,8 @@ object Constants {
         const val WS_URL = "wss://blaze.mixin.one"
         const val Mixin_URL = "https://mixin-api.zeromesh.net/"
         const val Mixin_WS_URL = "wss://mixin-blaze.zeromesh.net"
+        const val CASH_URL = "https://api.cash.mixin.one/"
+        const val CASH_HOME_URL = "https://cash.mixin.one"
 
         const val GIPHY_URL = "https://api.giphy.com/v1/"
         const val FOURSQUARE_URL = "https://api.foursquare.com/v2/"
@@ -61,6 +63,7 @@ object Constants {
     }
 
     object Account {
+        const val PREF_PENDING_MNEMONIC_IMPORT = "pref_pending_mnemonic_import"
         const val PREF_PIN_CHECK = "pref_pin_check"
         const val PREF_BIOMETRICS = "pref_biometrics"
         const val PREF_RANDOM = "pref_random"
@@ -106,6 +109,8 @@ object Constants {
         const val PREF_MARKET_ORDER = "pref_market_order"
         const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
+        const val PREF_CASH_BOT_PK = "pref_cash_bot_pk"
+        const val PREF_CASH_ACCOUNT = "pref_cash_account"
 
         const val PREF_REFERRAL_BOT_PK = "pref_referral_bot_pk"
 
@@ -216,7 +221,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 69
+        const val CURRENT_VERSION = 71
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -490,9 +495,13 @@ object Constants {
 
     const val MIXIN_CARD_USER_ID = "5715d4e6-9a54-4c3d-a659-4b3879ed9734"
 
-    val DEFAULT_BOTS = listOf(TEAM_MIXIN_USER_ID, ROUTE_BOT_USER_ID, MIXIN_ALERT_USER_ID, MIXIN_COMMUNITY_USER_ID, MIXIN_REWARD_USER_ID, MIXIN_CARD_USER_ID, MIXIN_CASH_USER_ID)
+    const val MIXIN_CN_COMMUNITY_USER_ID = "aa6e2f4f-bf4b-4d16-b6c9-70cdabb9a916"
 
-    val DEFAULT_CN_BOTS = listOf(TEAM_MIXIN_USER_ID, ROUTE_BOT_USER_ID, MIXIN_ALERT_USER_ID, MIXIN_DISCOURSE_USER_ID, MIXIN_REWARD_USER_ID, MIXIN_CARD_USER_ID, MIXIN_CASH_USER_ID)
+    const val MIXIN_EN_COMMUNITY_USER_ID = "12abf171-5012-4365-8df3-548fd6ff803e"
+
+    val DEFAULT_BOTS = listOf(TEAM_MIXIN_USER_ID, ROUTE_BOT_USER_ID, MIXIN_ALERT_USER_ID, MIXIN_COMMUNITY_USER_ID, MIXIN_REWARD_USER_ID, MIXIN_CARD_USER_ID, MIXIN_CASH_USER_ID, MIXIN_EN_COMMUNITY_USER_ID)
+
+    val DEFAULT_CN_BOTS = listOf(TEAM_MIXIN_USER_ID, ROUTE_BOT_USER_ID, MIXIN_ALERT_USER_ID, MIXIN_DISCOURSE_USER_ID, MIXIN_REWARD_USER_ID, MIXIN_CARD_USER_ID, MIXIN_CASH_USER_ID, MIXIN_CN_COMMUNITY_USER_ID)
 
     const val TEAM_MIXIN_USER_NAME = "Team Mixin"
     const val MIXIN_BOND_USER_NAME = "Bond Bot"
@@ -532,13 +541,11 @@ object Constants {
 
         const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
         const val REFERRAL_BOT_USER_ID = "b35af74d-cca6-400c-a62b-5a7e659de91e"
-
         const val SAFE_BOT_USER_ID = "b5418449-9ed6-4979-a690-82690949c542"
 
         const val ROUTE_BOT_URL = "https://api.route.mixin.one"
 
         const val REFERRAL_API_URL = "https://api.reward.mixin.one"
-
         const val GOOGLE_PAY = "googlepay"
 
         const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION

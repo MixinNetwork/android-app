@@ -2,7 +2,6 @@ package one.mixin.android.ui.setting.delete
 
 import android.os.Bundle
 import android.view.View
-import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.viewModels
@@ -77,11 +76,13 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
         }
     }
 
+    override fun onDestroyView() {
+        captchaView?.release()
+        captchaView = null
+        super.onDestroyView()
+    }
+
     override fun onBackPressed(): Boolean {
-        if (captchaView?.isVisible() == true) {
-            captchaView?.hide()
-            return true
-        }
         return false
     }
 
@@ -253,11 +254,6 @@ class DeleteAccountFragment : BaseFragment(R.layout.fragment_delete_account) {
                             }
                         },
                     )
-                (view as ViewGroup).addView(
-                    captchaView?.webView,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                )
             }
             captchaView?.loadCaptcha(
                 if (errorDescription.containsIgnoreCase(gtCAPTCHA)) CaptchaView.CaptchaType.GTCaptcha

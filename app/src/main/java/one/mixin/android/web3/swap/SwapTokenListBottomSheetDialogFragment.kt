@@ -60,6 +60,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         const val ARGS_KEY = "args_key"
         const val ARGS_UNIQUE = "args_unique"
         const val ARGS_IS_FROM = "args_is_from"
+        const val ARGS_INITIAL_STOCK_MODE = "args_initial_stock_mode"
         const val TAG = "SwapTokenListBottomSheetDialogFragment"
 
         fun newInstance(
@@ -68,11 +69,13 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             stocks: List<SwapToken>? = null,
             selectUnique: String? = null,
             isFrom: Boolean = true,
+            initialStockMode: Boolean = false,
         ) =
             SwapTokenListBottomSheetDialogFragment().withArgs {
                 putString(ARGS_KEY, key)
                 putString(ARGS_UNIQUE, selectUnique)
                 putBoolean(ARGS_IS_FROM, isFrom)
+                putBoolean(ARGS_INITIAL_STOCK_MODE, initialStockMode)
             }.also { fragment ->
                 fragment.setTokens(tokens)
                 stocks?.let { fragment.setStocks(it) }
@@ -97,6 +100,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         requireArguments().getBoolean(ARGS_IS_FROM, true)
     }
 
+    private val initialStockMode by lazy {
+        requireArguments().getBoolean(ARGS_INITIAL_STOCK_MODE, false)
+    }
+
     private val adapter by lazy {
         SwapTokenAdapter(selectUnique).apply {
             tokenType = spotTokenType()
@@ -117,6 +124,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         if (isAdded) {
             adapter.stocks = stocks
             initRadio()
+            if (initialStockMode && stocks.isNotEmpty()) {
+                isLoading = false
+                binding.radio.isVisible = true
+                filter(binding.searchEt.et.text?.toString() ?: "")
+            }
         }
     }
 
@@ -143,13 +155,25 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioToncoin.isVisible = inMixin()
             radioBtc.isVisible = !inMixin()
             radioStock.isVisible = stocks.isNotEmpty()
-            radioAll.isChecked = true
+            radioGroup.setOnCheckedChangeListener(null)
+            if (initialStockMode && stocks.isNotEmpty()) {
+                isStockMode = true
+                currentChain = ""
+                radioStock.isChecked = true
+            } else {
+                isStockMode = false
+                currentChain = null
+                radioAll.isChecked = true
+            }
+            adapter.chain = currentChain
+            adapter.keyword = searchEt.et.text?.toString()
+            adapter.isSearch = false
             radio.scrollToCenterCheckedRadio(radioGroup)
             radioGroup.setOnCheckedChangeListener { _, id ->
                 when (id) {
                     R.id.radio_stock -> {
-                        currentChain = ""
                         isStockMode = true
+                        currentChain = ""
                     }
                     else -> {
                         isStockMode = false
@@ -248,9 +272,14 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 searchEt.hideKeyboard()
                 dismiss()
             }
+            val hasVisibleTokens = if (initialStockMode && stocks.isNotEmpty()) {
+                stocks.isNotEmpty()
+            } else {
+                tokens.isNotEmpty()
+            }
             if (isLoading) {
                 rvVa.displayedChild = 3
-            } else if (tokens.isEmpty()) {
+            } else if (!hasVisibleTokens) {
                 rvVa.displayedChild = 2
             } else {
                 rvVa.displayedChild = 0
@@ -288,7 +317,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                                 AnalyticsTracker.trackTradeTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
                                 AnalyticsTracker.trackSpotTokenSelect(
                                     method = AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK,
-                                    type = spotTokenType(),
+                                    side = spotTokenType(),
                                     chain = it.chain.name,
                                     assetSymbol = it.symbol,
                                 )

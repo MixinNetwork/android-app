@@ -56,9 +56,9 @@ import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PENDING_DB_THREAD
-import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.mention.resolveMentionUsers
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCap
@@ -275,6 +275,18 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 data.status,
             )
         val appCardData = gson.fromJson(message.content, AppCardData::class.java)
+        appCardData.description?.let { description ->
+            parseMentionData(
+                description,
+                data.messageId,
+                data.conversationId,
+                userDao,
+                messageMentionDao,
+                data.userId,
+            ) { identityNumbers ->
+                resolveMentionUsers(identityNumbers, userApi, userDao, appDao)
+            }
+        }
         appCardData.appId?.let { id ->
             runBlocking {
                 var app = appDao.findAppById(id)
@@ -1160,7 +1172,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         snapshotDao.insert(snapshot)
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
-        runBlocking { AnalyticsTracker.setAssetLevel(tokenDao.findTotalUSDBalance() ?: 0) }
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)
@@ -1194,7 +1205,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshTokensJob(snapshot.assetId, data.conversationId, data.messageId))
         jobManager.addJobInBackground(SyncOutputJob())
-        runBlocking { AnalyticsTracker.setAssetLevel(tokenDao.findTotalUSDBalance() ?: 0) }
 
         if (snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)

@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.web3.trade.perps
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -43,6 +44,10 @@ import java.math.BigDecimal
 fun OpenPositionItem(
     position: PerpsPositionItem,
     onClick: () -> Unit = {},
+    compact: Boolean = false,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    contentPadding: PaddingValues = PaddingValues(horizontal = 16.dp, vertical = if (compact) 4.dp else 8.dp),
 ) {
     val context = LocalContext.current
     val quoteColorPref = context.defaultSharedPreferences
@@ -81,10 +86,10 @@ fun OpenPositionItem(
     }
 
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .clickable(enabled = enabled, onClick = onClick)
+            .padding(contentPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CoilImage(
@@ -95,7 +100,7 @@ fun OpenPositionItem(
                 .clip(CircleShape)
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(if (compact) 14.dp else 12.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Row(

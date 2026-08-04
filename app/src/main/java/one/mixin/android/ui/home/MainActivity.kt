@@ -36,7 +36,6 @@ import com.google.android.play.core.install.InstallStateUpdatedListener
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.InstallStatus
 import com.google.android.play.core.install.model.UpdateAvailability
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.Maybe
@@ -72,6 +71,7 @@ import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
+import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.databinding.ActivityMainBinding
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
@@ -151,7 +151,10 @@ import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.MarketFragment
 import one.mixin.android.ui.landing.InitializeActivity
 import one.mixin.android.ui.landing.LandingActivity
+import one.mixin.android.ui.landing.PendingMnemonicStartupRoute
 import one.mixin.android.ui.landing.RestoreActivity
+import one.mixin.android.ui.landing.reuseOrCreateLoginPinGate
+import one.mixin.android.ui.landing.routePendingMnemonicStartup
 import one.mixin.android.ui.qr.CaptureActivity
 import one.mixin.android.ui.qr.CaptureActivity.Companion.ARGS_SHOW_SCAN
 import one.mixin.android.ui.search.SearchMessageFragment
@@ -161,6 +164,8 @@ import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipBundle
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.tip.TryConnecting
+import one.mixin.android.ui.tip.PendingMnemonicResolution
+import one.mixin.android.ui.tip.resolvePendingMnemonicForWalletsOrNull
 import one.mixin.android.ui.tip.wc.WalletConnectActivity
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.ASSET_PREFERENCE
@@ -169,14 +174,18 @@ import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Companion.BUY
 import one.mixin.android.ui.wallet.WalletFragment
 import one.mixin.android.ui.wallet.WalletMissingBtcAddressFragment
+import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.WalletDestination
+import one.mixin.android.ui.wallet.components.walletDestinationFromJson
+import one.mixin.android.ui.wallet.components.walletDestinationForWallet
+import one.mixin.android.ui.wallet.components.walletDestinationToJson
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.SERVER
-import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.ThirdPartyUserIdentity
 import one.mixin.android.util.database.databaseFile
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -342,14 +351,35 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             finish()
             return
         }
+        when (
+            routePendingMnemonicStartup(
+                hasPendingImport = hasPendingImportMnemonic(this),
+                hasSafe = Session.hasSafe(),
+            )
+        ) {
+            PendingMnemonicStartupRoute.Continue -> Unit
+            PendingMnemonicStartupRoute.ResumeAccountSetup -> {
+                Timber.e("LoginFlow main_pending_import_resume_account_setup")
+                InitializeActivity.showLoading(this, false)
+                finish()
+                return
+            }
+        }
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         initFragmentsFromSavedState(restoreState)
+        findLoginPinGate()?.let { dialog ->
+            if (hasPendingImportMnemonic(this)) {
+                bindPendingMnemonicPinGate(dialog)
+            } else if (defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)) {
+                bindLoginVerificationPinGate(dialog)
+            }
+        }
 
         val account = Session.getAccount()
         account?.let {
-            FirebaseCrashlytics.getInstance().setUserId(it.userId)
+            ThirdPartyUserIdentity.setUser(it)
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
@@ -404,21 +434,21 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     val shouldGoWallet: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
                     val shouldBlockNavigation: Boolean = shouldShowWalletMissingBtcAddress()
                     Timber.e("isLoginVerified: $isLoginVerified, shouldGoWallet: $shouldGoWallet, shouldBlockNavigation: $shouldBlockNavigation")
+                    if (hasPendingImportMnemonic(this@MainActivity)) {
+                        if (isLoginVerified) {
+                            AnalyticsTracker.trackLoginPinVerify("pin_verify")
+                            showPendingMnemonicPinGate()
+                        } else {
+                            openPendingMnemonicNext()
+                        }
+                        return@launch
+                    }
                     if (isLoginVerified) {
                         AnalyticsTracker.trackLoginPinVerify("pin_verify")
-                        LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-                            onDismissCallback = { success ->
-                                if (success) {
-                                    defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
-                                }
-                            }
-                        }.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+                        showLoginVerificationPinGate()
                     }
                     if (shouldGoWallet && !shouldBlockNavigation) {
-                        binding.bottomNav.selectedItemId = R.id.nav_wallet
-                        switchToDestination(NavigationController.Wallet)
-                        lastBottomNavItemId = R.id.nav_wallet
-                        defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
+                        openWalletTabFromLogin()
                     }
                 } else {
                     CheckRegisterBottomSheetDialogFragment.newInstance()
@@ -450,6 +480,111 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     {},
                 )
         }
+    }
+
+    private fun showPendingMnemonicPinGate() {
+        reuseOrCreateLoginPinGate(
+            existing = findLoginPinGate(),
+            create = LoginVerifyBottomSheetDialogFragment::newInstance,
+            bind = ::bindPendingMnemonicPinGate,
+            show = { dialog ->
+                dialog.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+            },
+        )
+    }
+
+    private fun findLoginPinGate(): LoginVerifyBottomSheetDialogFragment? =
+        supportFragmentManager.findFragmentByTag(LoginVerifyBottomSheetDialogFragment.TAG) as? LoginVerifyBottomSheetDialogFragment
+
+    private fun bindPendingMnemonicPinGate(dialog: LoginVerifyBottomSheetDialogFragment) {
+        dialog.onDismissCallback = { success, pin ->
+            if (success) {
+                this@MainActivity.lifecycleScope.launch {
+                    openPendingMnemonicNext(pin)
+                }
+            }
+        }
+    }
+
+    private fun showLoginVerificationPinGate() {
+        reuseOrCreateLoginPinGate(
+            existing = findLoginPinGate(),
+            create = LoginVerifyBottomSheetDialogFragment::newInstance,
+            bind = ::bindLoginVerificationPinGate,
+            show = { dialog ->
+                dialog.showNow(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+            },
+        )
+    }
+
+    private fun bindLoginVerificationPinGate(dialog: LoginVerifyBottomSheetDialogFragment) {
+        dialog.onDismissCallback = { success, _ ->
+            if (success) {
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+            }
+        }
+    }
+
+    private suspend fun openPendingMnemonicNext(pin: String? = null): Boolean {
+        val wallets = web3Repository.syncWalletsFromRoute()
+        val resolution = resolvePendingMnemonicForWalletsOrNull(
+            context = this,
+            tip = tip,
+            web3Repository = web3Repository,
+            wallets = wallets,
+            pin = pin,
+            source = "main",
+        ) ?: return false
+        return when (resolution) {
+            is PendingMnemonicResolution.WalletHome -> {
+                Timber.e(
+                    "LoginFlow pending_import_wallet_open source=main wallet_id=${resolution.walletId} category=${resolution.walletCategory}"
+                )
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                val walletDestination = walletDestinationForWallet(
+                    resolution.walletId,
+                    resolution.walletCategory,
+                )
+                openWalletTabFromLogin(walletDestination)
+                true
+            }
+            PendingMnemonicResolution.ImportMnemonic -> {
+                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+                WalletSecurityActivity.show(this, WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC, pin = pin)
+                true
+            }
+            PendingMnemonicResolution.NeedPin -> {
+                showPendingMnemonicPinGate()
+                false
+            }
+            PendingMnemonicResolution.LocalSaveFailed -> {
+                if (pin == null) {
+                    showPendingMnemonicPinGate()
+                } else {
+                    Snackbar.make(binding.container, R.string.Save_failure, Snackbar.LENGTH_INDEFINITE)
+                        .setAction(R.string.Retry) {
+                            lifecycleScope.launch {
+                                openPendingMnemonicNext(pin)
+                            }
+                        }
+                        .show()
+                }
+                false
+            }
+        }
+    }
+
+    private fun openWalletTabFromLogin(walletDestination: WalletDestination? = null) {
+        walletDestination?.let { destination ->
+            val json = walletDestinationToJson(destination)
+            defaultSharedPreferences.putString(Account.PREF_USED_WALLET, json)
+            intent.putExtra(WALLET_DESTINATION, json)
+        }
+        binding.bottomNav.selectedItemId = R.id.nav_wallet
+        switchToDestination(NavigationController.Wallet)
+        intent.removeExtra(WALLET_DESTINATION)
+        lastBottomNavItemId = R.id.nav_wallet
+        defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, false)
     }
 
     override fun onStart() {
@@ -562,32 +697,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             jobManager.addJobInBackground(RefreshContactJob())
             jobManager.addJobInBackground(RefreshSafeAccountsJob())
 
-            val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
-            val hasClassicWallet: Boolean = web3Repository.hasClassicWallet()
-            // Only show login verify when it has not been verified and there is no classic wallet.
-            Timber.e("isLoginVerified: $isLoginVerified, hasClassicWallet: $hasClassicWallet")
-            if (!isLoginVerified && !hasClassicWallet && Session.getAccount()?.hasSafe == true) {
-                lifecycleScope.launch {
-                    withContext(Dispatchers.Main) {
-                        try {
-                            if (!isFinishing && !supportFragmentManager.isStateSaved && !supportFragmentManager.isDestroyed) {
-                                LoginVerifyBottomSheetDialogFragment.newInstance().apply {
-                                    onDismissCallback = { success ->
-                                        if (success) {
-                                            defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
-                                        }
-                                        jobManager.addJobInBackground(RefreshWeb3Job())
-                                    }
-                                }.show(supportFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
-                            }
-                        } catch (e: Exception) {
-                            Timber.w(e)
-                        }
-                    }
-                }
-            } else {
-              jobManager.addJobInBackground(RefreshWeb3Job())
-            }
+            jobManager.addJobInBackground(RefreshWeb3Job())
         }
 
     private suspend fun updateSessionIfNeeded() {
@@ -833,7 +943,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private var bottomSheet: DialogFragment? = null
     private var alertDialog: Dialog? = null
 
-    private fun handlerCode(intent: Intent) {
+    fun handlerCode(intent: Intent) {
         if (intent.hasExtra(SCAN)) {
             val scan = intent.getStringExtra(SCAN)!!
             bottomSheet?.dismiss()
@@ -846,11 +956,17 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             bottomSheet?.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
             clearCodeAfterConsume(intent, URL)
         } else if (intent.hasExtra(WALLET)) {
+            intent.getStringExtra(WALLET_DESTINATION)?.let { json ->
+                if (walletDestinationFromJson(json) != null) {
+                    defaultSharedPreferences.putString(Account.PREF_USED_WALLET, json)
+                }
+            }
             binding.bottomNav.selectedItemId = R.id.nav_wallet
             if (intent.getBooleanExtra(BUY, false)) {
                 WalletActivity.showBuy(this, false, null, null)
                 clearCodeAfterConsume(intent, BUY)
             }
+            clearCodeAfterConsume(intent, WALLET_DESTINATION)
             clearCodeAfterConsume(intent, WALLET)
         } else if (intent.hasExtra(TRANSFER)) {
             val userId = intent.getStringExtra(TRANSFER) ?: return
@@ -1102,25 +1218,22 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 is NavigationController.Market -> MarketFragment()
             }
         } else if (fragment is WalletFragment) {
-            // Ensure wallet fragment refreshes its content when switching back
-            fragment.update()
+            fragment.selectWalletDestination(loadInitialWalletDestination())
         }
 
         navigationController.navigate(fm, destination, fragment)
     }
 
     private fun loadInitialWalletDestination(): WalletDestination {
+        intent.getStringExtra(WALLET_DESTINATION)?.let { json ->
+            walletDestinationFromJson(json)?.let { return it }
+        }
+
         val walletPref = defaultSharedPreferences.getString(
             Account.PREF_USED_WALLET, null
         )
 
-        return walletPref?.let { pref ->
-            try {
-                GsonHelper.customGson.fromJson(pref, WalletDestination::class.java)
-            } catch (_: Exception) {
-                WalletDestination.Privacy
-            }
-        } ?: WalletDestination.Privacy
+        return walletPref?.let(::walletDestinationFromJson) ?: WalletDestination.Privacy
     }
 
     private fun handleNavigationItemSelected(itemId: Int) {
@@ -1356,16 +1469,23 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         const val SCAN = "scan"
         const val TRANSFER = "transfer"
         private const val WALLET = "wallet"
+        private const val WALLET_DESTINATION = "wallet_destination"
         const val WALLET_CONNECT = "wallet_connect"
         private const val KEY_LAST_BOTTOM_NAV = "last_bottom_nav_item_id"
 
         fun showWallet(
             context: Context,
             buy: Boolean = false,
+            walletDestination: WalletDestination? = null,
         ) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(WALLET, true)
                 putExtra(BUY, buy)
+                walletDestination?.let {
+                    val json = walletDestinationToJson(it)
+                    context.defaultSharedPreferences.putString(Account.PREF_USED_WALLET, json)
+                    putExtra(WALLET_DESTINATION, json)
+                }
                 addCategory(Intent.CATEGORY_LAUNCHER)
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK or Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED)
             }.run {

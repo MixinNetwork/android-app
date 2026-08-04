@@ -74,6 +74,7 @@ class DepositFragment : BaseFragment() {
     private val walletViewModel by viewModels<WalletViewModel>()
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
+    private var receiveSuccessTracked = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -96,7 +97,6 @@ class DepositFragment : BaseFragment() {
     }
 
     override fun onDestroyView() {
-        AnalyticsTracker.trackAssetReceiveEnd()
         super.onDestroyView()
         _binding = null
     }
@@ -109,6 +109,7 @@ class DepositFragment : BaseFragment() {
                 rightAnimator.setOnClickListener { context?.openUrl(getString(R.string.deposit_url)) }
             }
             title.setSubTitle(getString(R.string.Deposit_Token, asset.symbol), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
+            title.setWalletNameSubTitleStyle()
             addressDesc.text = getTipsByAsset(asset)
             if (notSupport) {
                 notSupportLl.isVisible = true
@@ -464,6 +465,10 @@ class DepositFragment : BaseFragment() {
                     )
                 }
                 bottom.isVisible = noTag
+            }
+            if (!receiveSuccessTracked) {
+                AnalyticsTracker.trackAssetReceiveSuccess(asset.priceUsd)
+                receiveSuccessTracked = true
             }
         } else {
             binding.apply {

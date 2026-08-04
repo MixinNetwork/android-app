@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName
 data class SubmitGaslessTxRequest(
     @SerializedName("chain_id")
     val chainId: String,
+    @SerializedName("payload")
     val payload: JsonElement,
     @SerializedName("user_op_signature")
     val userOpSignature: String,

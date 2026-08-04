@@ -286,6 +286,7 @@
     <string name="database_upgrade_tips">La base de datos se está actualizando, puede tardar varios minutos, no cierres esta aplicación.</string>
     <string name="Date">Fecha</string>
     <string name="date_format_date">MMM dd, aaaa</string>
+    <string name="date_format_month_day">MMM dd</string>
     <string name="db_debug_warning">Atención: ¡Si se ejecuta una declaración SQL dañina, el resultado es irreversible!</string>
     <string name="Debug_database">Base de datos de depuración</string>
     <string name="Decline">Rechazar</string>

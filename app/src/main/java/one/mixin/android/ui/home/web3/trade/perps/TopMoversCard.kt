@@ -49,6 +49,7 @@ fun TopMoversCard(
     quoteColorReversed: Boolean,
     onViewAllClick: () -> Unit,
     onMarketItemClick: (PerpsMarket) -> Unit,
+    titleRes: Int = R.string.perps_top_movers,
 ) {
     if (markets.isEmpty()) return
 
@@ -61,18 +62,17 @@ fun TopMoversCard(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Text(
-            text = stringResource(R.string.perps_top_movers),
+            text = stringResource(titleRes),
             fontSize = 14.sp,
             color = MixinAppTheme.colors.textPrimary,
         )
         Icon(
-            painter = painterResource(R.drawable.ic_arrow_right),
+            painter = painterResource(R.drawable.ic_arrow_gray_right),
             contentDescription = null,
-            tint = MixinAppTheme.colors.textAssist,
-            modifier = Modifier.size(16.dp),
+            tint = Color.Unspecified,
+            modifier = Modifier.size(16.dp).offset(x = 4.dp),
         )
     }
-    Spacer(modifier = Modifier.height(12.dp))
 
     val rows = markets.chunked(TOP_MOVERS_COLUMNS)
     rows.forEachIndexed { index, rowMarkets ->
@@ -97,9 +97,6 @@ fun TopMoversCard(
             repeat(TOP_MOVERS_COLUMNS - rowMarkets.size) {
                 Spacer(modifier = Modifier.weight(1f))
             }
-        }
-        if (index != rows.lastIndex) {
-            Spacer(modifier = Modifier.height(12.dp))
         }
     }
 }

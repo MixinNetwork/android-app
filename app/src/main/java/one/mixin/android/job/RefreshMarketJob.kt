@@ -34,6 +34,16 @@ class RefreshMarketJob(private val assetId: String) : BaseJob(
                         createdAt = nowInUtc()
                     )
                 })
+                remoteAssetIds
+                    .filter { it.isNotBlank() }
+                    .distinct()
+                    .forEach { assetId ->
+                        runCatching {
+                            assetRepo.findOrSyncAsset(assetId)
+                        }.onFailure { error ->
+                            Timber.e(error, "Failed to sync market asset: $assetId")
+                        }
+                    }
             }
         }
     }

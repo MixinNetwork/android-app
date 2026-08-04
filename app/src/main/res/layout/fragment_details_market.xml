@@ -11,14 +11,15 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rightIcon="@drawable/ic_share_arrow"
         app:layout_constraintTop_toTopOf="parent"
         app:need_divider="false"
+        app:rightIcon="@drawable/ic_share_arrow"
         app:titleText="@string/Transactions" />
 
     <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="0dp"
+        android:layout_weight="1">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -35,8 +36,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"
+                    android:layout_marginEnd="20dp"
                     android:background="?attr/bg_market_card">
 
                     <RelativeLayout
@@ -45,35 +46,35 @@
 
                         <RelativeLayout
                             android:id="@+id/title_rl"
-                            android:layout_marginTop="20dp"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginEnd="16dp"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="16dp"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginEnd="16dp">
 
                             <TextView
                                 android:id="@+id/asset_symbol"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="14sp"
-                                android:textColor="?attr/text_minor" />
+                                android:textColor="?attr/text_minor"
+                                android:textSize="14sp" />
 
                             <TextView
                                 android:id="@+id/asset_rank"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textColor="?attr/text_assist"
-                                android:textSize="12sp"
-                                android:layout_marginStart="4dp"
-                                android:layout_toEndOf="@id/asset_symbol"
-                                android:paddingStart="4dp"
-                                android:paddingEnd="4dp"
-                                android:paddingTop="1dp"
-                                android:paddingBottom="1dp"
-                                android:textFontWeight="500"
                                 android:layout_alignTop="@id/asset_symbol"
                                 android:layout_alignBottom="@id/asset_symbol"
-                                android:background="@drawable/bg_rank_round_6dp" />
+                                android:layout_marginStart="4dp"
+                                android:layout_toEndOf="@id/asset_symbol"
+                                android:background="@drawable/bg_rank_round_6dp"
+                                android:paddingStart="4dp"
+                                android:paddingTop="1dp"
+                                android:paddingEnd="4dp"
+                                android:paddingBottom="1dp"
+                                android:textColor="?attr/text_assist"
+                                android:textFontWeight="500"
+                                android:textSize="12sp" />
 
                             <one.mixin.android.widget.BadgeCircleImageView
                                 android:id="@+id/icon"
@@ -85,12 +86,12 @@
                                 android:id="@+id/price_value"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:textSize="22sp"
                                 android:layout_below="@id/asset_symbol"
-                                android:textFontWeight="600"
                                 android:layout_marginTop="8dp"
+                                android:text="@string/NA"
                                 android:textColor="?attr/text_minor"
-                                android:text="@string/NA" />
+                                android:textFontWeight="600"
+                                android:textSize="22sp" />
 
                             <TextView
                                 android:id="@+id/price_rise"
@@ -98,21 +99,21 @@
                                 android:layout_height="wrap_content"
                                 android:layout_below="@id/price_value"
                                 android:layout_marginTop="8dp"
-                                android:textFontWeight="600"
-                                android:textSize="14sp"
+                                android:background="@drawable/bg_text_quote_gray"
                                 android:text="0.00%"
                                 android:textColor="?attr/bg_white"
-                                android:background="@drawable/bg_text_quote_gray"/>
+                                android:textFontWeight="600"
+                                android:textSize="14sp" />
                         </RelativeLayout>
 
                         <androidx.compose.ui.platform.ComposeView
                             android:id="@+id/market"
                             android:layout_width="match_parent"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginEnd="16dp"
                             android:layout_height="204dp"
+                            android:layout_below="@+id/title_rl"
+                            android:layout_marginStart="16dp"
                             android:layout_marginTop="24dp"
-                            android:layout_below="@+id/title_rl" />
+                            android:layout_marginEnd="16dp" />
 
                         <RadioGroup
                             android:id="@+id/radio_group"
@@ -120,17 +121,17 @@
                             android:layout_height="wrap_content"
                             android:layout_below="@+id/market"
                             android:layout_marginStart="16dp"
-                            android:layout_marginEnd="16dp"
                             android:layout_marginTop="16dp"
-                            android:layout_marginBottom="16dp"
-                            android:orientation="horizontal"
-                            android:gravity="center">
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginBottom="24dp"
+                            android:gravity="center"
+                            android:orientation="horizontal">
 
                             <androidx.appcompat.widget.AppCompatRadioButton
                                 android:id="@+id/radio_1d"
                                 style="@style/AppTheme.RadioButtonDateStyle"
-                                android:text="1D"
-                                android:checked="true" />
+                                android:checked="true"
+                                android:text="1D" />
 
                             <androidx.appcompat.widget.AppCompatRadioButton
                                 android:id="@+id/radio_1w"
@@ -154,14 +155,16 @@
 
                         </RadioGroup>
 
-                        <one.mixin.android.widget.SwapAlertView
-                            android:id="@+id/swap_alert"
+                        <androidx.compose.ui.platform.ComposeView
+                            android:id="@+id/perps_action"
                             android:layout_width="match_parent"
-                            android:layout_height="44dp"
+                            android:layout_height="wrap_content"
                             android:layout_below="@+id/radio_group"
-                            android:layout_marginBottom="16dp"
-                            android:layout_marginStart="16dp"
-                            android:layout_marginEnd="16dp" />
+                            android:layout_marginStart="18dp"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginEnd="18dp"
+                            android:layout_marginBottom="24dp"
+                            android:visibility="gone" />
 
                     </RelativeLayout>
                 </FrameLayout>
@@ -171,8 +174,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="20dp"
-                    android:layout_marginEnd="20dp"
                     android:layout_marginTop="10dp"
+                    android:layout_marginEnd="20dp"
                     android:background="?attr/bg_market_card">
 
                     <RelativeLayout
@@ -183,110 +186,110 @@
                             android:id="@+id/asset_name"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="?attr/text_minor"
-                            android:text="@string/Stats"
-                            android:layout_marginBottom="14dp"
                             android:layout_marginStart="16dp"
-                            android:layout_marginTop="20dp" />
+                            android:layout_marginTop="20dp"
+                            android:layout_marginBottom="14dp"
+                            android:text="@string/Stats"
+                            android:textColor="?attr/text_minor" />
 
                         <TextView
                             android:id="@+id/market_vol_u_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/Market_Cap"
-                            android:textColor="?attr/text_remarks"
-                            android:textSize="12sp"
+                            android:layout_below="@id/asset_name"
                             android:layout_alignParentEnd="true"
                             android:layout_marginEnd="16dp"
-                            android:layout_below="@id/asset_name" />
+                            android:text="@string/Market_Cap"
+                            android:textColor="?attr/text_remarks"
+                            android:textSize="12sp" />
 
                         <TextView
                             android:id="@+id/market_vol_u"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_below="@id/market_vol_u_title"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginEnd="16dp"
+                            android:text="@string/N_A"
                             android:textColor="?attr/text_primary"
                             android:textFontWeight="600"
                             android:textSize="14sp"
-                            android:layout_marginEnd="16dp"
-                            android:layout_alignParentEnd="true"
-                            android:layout_marginTop="10dp"
-                            android:layout_below="@id/market_vol_u_title"
-                            android:text="@string/N_A"
                             tools:targetApi="p" />
 
                         <TextView
                             android:id="@+id/market_cap_stats_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_below="@id/asset_name"
+                            android:layout_marginStart="16dp"
                             android:text="@string/vol_24h"
                             android:textColor="?attr/text_remarks"
-                            android:textSize="12sp"
-                            android:layout_marginStart="16dp"
-                            android:layout_below="@id/asset_name" />
+                            android:textSize="12sp" />
 
                         <TextView
                             android:id="@+id/market_cap_stats"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="?attr/text_primary"
-                            android:textSize="14sp"
-                            android:textFontWeight="600"
                             android:layout_below="@id/market_cap_stats_title"
                             android:layout_marginStart="16dp"
-                            android:layout_marginBottom="20dp"
                             android:layout_marginTop="10dp"
+                            android:layout_marginBottom="20dp"
                             android:text="@string/N_A"
+                            android:textColor="?attr/text_primary"
+                            android:textFontWeight="600"
+                            android:textSize="14sp"
                             tools:targetApi="p" />
 
                         <TextView
                             android:id="@+id/market_low_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_below="@id/market_vol_u"
+                            android:layout_alignParentEnd="true"
+                            android:layout_marginTop="20dp"
+                            android:layout_marginEnd="16dp"
                             android:text="@string/low_24h"
                             android:textColor="?attr/text_remarks"
-                            android:textSize="12sp"
-                            android:layout_alignParentEnd="true"
-                            android:layout_marginEnd="16dp"
-                            android:layout_marginTop="20dp"
-                            android:layout_below="@id/market_vol_u" />
+                            android:textSize="12sp" />
 
                         <TextView
                             android:id="@+id/market_low"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="?attr/text_primary"
-                            android:textSize="14sp"
-                            android:textFontWeight="600"
-                            android:layout_marginEnd="16dp"
-                            android:layout_alignParentEnd="true"
                             android:layout_below="@id/market_low_title"
-                            android:layout_marginBottom="20dp"
+                            android:layout_alignParentEnd="true"
                             android:layout_marginTop="10dp"
+                            android:layout_marginEnd="16dp"
+                            android:layout_marginBottom="20dp"
                             android:text="@string/N_A"
+                            android:textColor="?attr/text_primary"
+                            android:textFontWeight="600"
+                            android:textSize="14sp"
                             tools:targetApi="p" />
 
                         <TextView
                             android:id="@+id/market_high_title"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="@string/high_24h"
-                            android:textColor="?attr/text_remarks"
-                            android:textSize="12sp"
+                            android:layout_below="@id/market_vol_u"
                             android:layout_marginStart="16dp"
                             android:layout_marginTop="20dp"
-                            android:layout_below="@id/market_vol_u" />
+                            android:text="@string/high_24h"
+                            android:textColor="?attr/text_remarks"
+                            android:textSize="12sp" />
 
                         <TextView
                             android:id="@+id/market_high"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="?attr/text_primary"
-                            android:textSize="14sp"
-                            android:textFontWeight="600"
                             android:layout_below="@id/market_high_title"
                             android:layout_marginStart="16dp"
                             android:layout_marginTop="10dp"
                             android:text="@string/N_A"
+                            android:textColor="?attr/text_primary"
+                            android:textFontWeight="600"
+                            android:textSize="14sp"
                             tools:targetApi="p" />
                     </RelativeLayout>
                 </FrameLayout>
@@ -297,8 +300,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
                 android:background="?attr/bg_market_card">
 
                 <RelativeLayout
@@ -310,8 +313,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignParentEnd="true"
-                        android:layout_marginEnd="@dimen/margin16"
                         android:layout_marginTop="20dp"
+                        android:layout_marginEnd="@dimen/margin16"
                         android:src="@drawable/ic_arrow_gray_right"
                         tools:ignore="ContentDescription" />
 
@@ -320,11 +323,11 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignTop="@+id/contract_iv"
-                        android:layout_marginStart="@dimen/margin16"
                         android:layout_alignParentStart="true"
-                        android:textSize="14sp"
+                        android:layout_marginStart="@dimen/margin16"
                         android:text="@string/My_Balance"
                         android:textColor="?attr/text_minor"
+                        android:textSize="14sp"
                         tools:ignore="RelativeOverlap" />
 
                     <TextView
@@ -352,29 +355,29 @@
                         android:id="@+id/day"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="14dp"
                         android:layout_below="@+id/market_title"
-                        android:layout_marginStart="@dimen/margin16"
                         android:layout_alignParentEnd="true"
+                        android:layout_marginStart="@dimen/margin16"
+                        android:layout_marginTop="14dp"
                         android:layout_marginEnd="12dp"
-                        android:textIsSelectable="true"
-                        android:textFontWeight="500"
-                        android:textSize="12sp"
                         android:textColor="?attr/text_assist"
+                        android:textFontWeight="500"
+                        android:textIsSelectable="true"
+                        android:textSize="12sp"
                         tools:ignore="RelativeOverlap" />
 
                     <TextView
                         android:id="@+id/value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
                         android:layout_below="@+id/balance"
-                        android:layout_marginStart="@dimen/margin16"
                         android:layout_alignParentStart="true"
-                        android:layout_marginBottom="@dimen/margin16"
+                        android:layout_marginStart="@dimen/margin16"
+                        android:layout_marginTop="8dp"
                         android:layout_marginEnd="12dp"
-                        android:textSize="14sp"
+                        android:layout_marginBottom="@dimen/margin16"
                         android:textColor="?attr/text_remarks"
+                        android:textSize="14sp"
                         tools:ignore="RelativeOverlap" />
 
                     <TextView
@@ -383,23 +386,23 @@
                         android:layout_height="wrap_content"
                         android:layout_alignTop="@id/balance"
                         android:layout_alignBottom="@id/balance"
+                        android:layout_alignParentEnd="true"
                         android:layout_marginStart="@dimen/margin16"
                         android:layout_marginEnd="20dp"
-                        android:layout_alignParentEnd="true"
-                        android:textSize="14sp"
                         android:text="24H"
-                        android:textColor="?attr/text_assist" />
+                        android:textColor="?attr/text_assist"
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/balance_change"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_alignTop="@id/value"
+                        android:layout_alignParentEnd="true"
                         android:layout_marginStart="@dimen/margin16"
                         android:layout_marginEnd="20dp"
-                        android:layout_alignParentEnd="true"
-                        android:textSize="14sp"
-                        android:textColor="@color/wallet_green" />
+                        android:textColor="@color/wallet_green"
+                        android:textSize="14sp" />
 
                 </RelativeLayout>
             </FrameLayout>
@@ -409,8 +412,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp"
                 android:layout_marginTop="10dp"
+                android:layout_marginEnd="20dp"
                 android:layout_marginBottom="10dp"
                 android:background="?attr/bg_market_card">
 
@@ -419,9 +422,9 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:paddingStart="16dp"
+                    android:paddingTop="14dp"
                     android:paddingEnd="16dp"
-                    android:paddingTop="20dp"
-                    android:paddingBottom="20dp">
+                    android:paddingBottom="14dp">
 
                     <!-- Name -->
                     <TextView
@@ -436,111 +439,111 @@
                         android:id="@+id/name"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
+                        android:textSize="16sp" />
 
                     <!-- Symbol -->
                     <TextView
                         android:id="@+id/symbol_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
                         android:text="@string/Symbol"
                         android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
-                        android:layout_marginTop="20dp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/symbol"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
+                        android:textSize="16sp" />
 
                     <!-- Market Cap -->
                     <TextView
                         android:id="@+id/market_cap_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
                         android:text="@string/Market_Cap"
                         android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
-                        android:layout_marginTop="20dp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/market_cap"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:text="@string/N_A"
                         android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
+                        android:textSize="16sp" />
 
                     <!-- Circulation Supply -->
                     <TextView
                         android:id="@+id/circulation_supply_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
                         android:text="@string/Circulation_Supply"
                         android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
-                        android:layout_marginTop="20dp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/circulation_supply"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:text="@string/N_A"
                         android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
+                        android:textSize="16sp" />
 
                     <!-- Total Supply -->
                     <TextView
                         android:id="@+id/total_supply_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
                         android:text="@string/Total_Supply"
                         android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
-                        android:layout_marginTop="20dp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/total_supply"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
                         android:layout_marginTop="8dp"
-                        android:text="@string/N_A" />
+                        android:text="@string/N_A"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="16sp" />
 
                     <!-- All Time High -->
                     <TextView
                         android:id="@+id/all_time_high_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
                         android:text="@string/All_Time_High"
                         android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
-                        android:layout_marginTop="20dp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/high_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
                         android:layout_marginTop="8dp"
-                        android:text="@string/N_A" />
+                        android:text="@string/N_A"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="16sp" />
 
                     <TextView
                         android:id="@+id/high_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="?attr/text_assist"
-                        android:textSize="16sp"
                         android:layout_marginTop="6dp"
+                        android:textColor="?attr/text_assist"
+                        android:textSize="14sp"
                         android:visibility="gone" />
 
                     <!-- All Time Low -->
@@ -548,33 +551,120 @@
                         android:id="@+id/all_time_low_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="20dp"
                         android:text="@string/All_Time_Low"
                         android:textColor="?attr/text_assist"
-                        android:textSize="14sp"
-                        android:layout_marginTop="20dp" />
+                        android:textSize="14sp" />
 
                     <TextView
                         android:id="@+id/low_value"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
                         android:text="@string/N_A"
                         android:textColor="?attr/text_primary"
-                        android:textSize="16sp"
-                        android:layout_marginTop="8dp" />
+                        android:textSize="16sp" />
 
                     <TextView
                         android:id="@+id/low_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="?attr/text_assist"
-                        android:textSize="16sp"
                         android:layout_marginTop="6dp"
+                        android:textColor="?attr/text_assist"
+                        android:textSize="14sp"
                         android:visibility="gone" />
 
                 </LinearLayout>
             </FrameLayout>
 
+            <LinearLayout
+                android:id="@+id/about_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="36dp"
+                android:paddingTop="20dp"
+                android:paddingEnd="36dp"
+                android:paddingBottom="20dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/about_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/About"
+                    android:textColor="?attr/text_minor"
+                    android:textSize="14sp" />
+
+                <one.mixin.android.ui.wallet.MarketDescriptionTextView
+                    android:id="@+id/about_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:breakStrategy="high_quality"
+                    android:ellipsize="end"
+                    android:hyphenationFrequency="none"
+                    android:maxLines="3"
+                    android:textColor="?attr/text_assist"
+                    android:textSize="13sp" />
+            </LinearLayout>
+
         </LinearLayout>
     </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/market_action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/bg_white"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="36dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="36dp"
+        android:paddingBottom="24dp">
+
+        <LinearLayout
+            android:id="@+id/bottom_alert"
+            android:layout_width="wrap_content"
+            android:layout_height="56dp"
+            android:foreground="@drawable/ripple_round_8_mask"
+            android:gravity="center"
+            android:orientation="vertical">
+
+
+            <ImageView
+                android:id="@+id/bottom_alert_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/ic_market_alert_add"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/bottom_alert_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="@string/Alert"
+                android:textColor="?attr/text_primary"
+                android:textFontWeight="500"
+                android:textSize="10sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/bottom_trade"
+            style="@style/AppTheme.MaterialButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:text="@string/Trade"
+            android:textColor="@color/white"
+            android:textSize="16sp" />
+    </LinearLayout>
 
 </LinearLayout>

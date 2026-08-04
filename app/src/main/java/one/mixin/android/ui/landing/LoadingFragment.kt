@@ -17,14 +17,6 @@ import one.mixin.android.Constants.Account.PREF_TRIED_UPDATE_KEY
 import one.mixin.android.Constants.DEFAULT_BOTS
 import one.mixin.android.Constants.DEFAULT_CN_BOTS
 import one.mixin.android.Constants.DEVICE_ID
-import one.mixin.android.Constants.MIXIN_ALERT_USER_ID
-import one.mixin.android.Constants.MIXIN_CARD_USER_ID
-import one.mixin.android.Constants.MIXIN_COMMUNITY_USER_ID
-import one.mixin.android.Constants.MIXIN_DISCOURSE_USER_ID
-import one.mixin.android.Constants.MIXIN_REWARD_USER_ID
-import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
-import one.mixin.android.Constants.TEAM_MIXIN_USER_NAME
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.SessionSecretRequest
@@ -33,21 +25,32 @@ import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.putIsSyncSession
 import one.mixin.android.crypto.generateEd25519KeyPair
+import one.mixin.android.crypto.hasPendingImportMnemonic
 import one.mixin.android.databinding.FragmentLoadingBinding
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putString
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.InitializeJob
 import one.mixin.android.job.MixinJobManager
+import one.mixin.android.repository.Web3Repository
 import one.mixin.android.session.Session
 import one.mixin.android.session.decryptPinToken
+import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.ui.logs.LogViewerBottomSheet
+import one.mixin.android.ui.tip.PendingMnemonicResolution
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
+import one.mixin.android.ui.tip.resolvePendingMnemonicForWalletsOrNull
+import one.mixin.android.ui.wallet.WalletSecurityActivity
+import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -73,6 +76,12 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
     @Inject
     lateinit var jobManager: MixinJobManager
 
+    @Inject
+    lateinit var web3Repository: Web3Repository
+
+    @Inject
+    lateinit var tip: Tip
+
     private val loadingViewModel by viewModels<LoadingViewModel>()
     private val binding by viewBinding(FragmentLoadingBinding::bind)
 
@@ -81,11 +90,16 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        binding.loadingTitle.setOnLongClickListener {
+            LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
+            true
+        }
         MixinApplication.get().isOnline.set(true)
         when (arguments?.getString(ARGS_SOURCE)) {
             InitializeActivity.SOURCE_SIGN_UP -> AnalyticsTracker.trackSignUpSignalInit()
             InitializeActivity.SOURCE_LOGIN -> AnalyticsTracker.trackLoginSignalInit()
         }
+        findLoginPinGate()?.let(::bindLoginPinGate)
         checkAndLoad()
     }
 
@@ -119,26 +133,121 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                     return@launch
                 }
             }
-            if (Session.hasSafe()) {
-                defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
-                defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, true)
-                defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
-                MainActivity.show(requireContext())
-            } else {
-                var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
-                if (deviceId == null) {
-                    deviceId = requireActivity().getStringDeviceId()
+            initializeBots()
+            val hasSafe = Session.hasSafe()
+            val hasPin = Session.getAccount()?.hasPin == true
+            val loginPostGateRoute = routeLoginPostGate(hasSafe, hasPin)
+            Timber.i(
+                "LoginFlow post_login_gate route=$loginPostGateRoute has_safe=$hasSafe has_pin=$hasPin pending_import=${hasPendingImportMnemonic(requireContext())}"
+            )
+            when (loginPostGateRoute) {
+                LoginPostGateRoute.VerifyPin -> {
+                    showLoginPinGate()
+                    return@launch
                 }
-                val tipType = if (Session.getAccount()?.hasPin == true) TipType.Upgrade else TipType.Create
-                if (TipType.Create == tipType) {
+                LoginPostGateRoute.SetupPin -> {
+                    ensureDeviceId()
                     InitializeActivity.showSetupPin(requireActivity())
-                } else {
-                    TipActivity.show(requireActivity(), tipType, shouldWatch = true)
+                }
+                LoginPostGateRoute.UpgradeTip -> {
+                    ensureDeviceId()
+                    TipActivity.show(requireActivity(), TipType.Upgrade, shouldWatch = true)
                 }
             }
-            initializeBots()
             activity?.finish()
         }
+
+    private fun showLoginPinGate() {
+        defaultSharedPreferences.putBoolean(PREF_LOGIN_OR_SIGN_UP, true)
+        defaultSharedPreferences.putBoolean(PREF_LOGIN_VERIFY, false)
+        reuseOrCreateLoginPinGate(
+            existing = findLoginPinGate(),
+            create = LoginVerifyBottomSheetDialogFragment::newInstance,
+            bind = ::bindLoginPinGate,
+            show = { dialog ->
+                dialog.showNow(parentFragmentManager, LoginVerifyBottomSheetDialogFragment.TAG)
+            },
+        )
+    }
+
+    private fun findLoginPinGate(): LoginVerifyBottomSheetDialogFragment? =
+        parentFragmentManager.findFragmentByTag(LoginVerifyBottomSheetDialogFragment.TAG) as? LoginVerifyBottomSheetDialogFragment
+
+    private fun bindLoginPinGate(dialog: LoginVerifyBottomSheetDialogFragment) {
+        dialog.onDismissCallback = loginPinGateDismissCallback(
+            ownerScope = this@LoadingFragment.lifecycleScope,
+            openNext = { pin ->
+                Timber.i("LoginFlow login_pin_gate_result success=true pending_import=${hasPendingImportMnemonic(requireContext())}")
+                openNextAfterPin(pin)
+            },
+            finish = { activity?.finish() },
+        )
+    }
+
+    private suspend fun openNextAfterPin(pin: String?): Boolean {
+        return if (hasPendingImportMnemonic(requireContext())) {
+            openPendingMnemonicNext(pin)
+        } else {
+            MainActivity.show(requireContext())
+            true
+        }
+    }
+
+    private suspend fun openPendingMnemonicNext(pin: String?): Boolean {
+        val context = requireContext()
+        val wallets = web3Repository.syncWalletsFromRoute()
+        val resolution = resolvePendingMnemonicForWalletsOrNull(
+            context = context,
+            tip = tip,
+            web3Repository = web3Repository,
+            wallets = wallets,
+            pin = pin,
+            source = "loading",
+        ) ?: return false
+        Timber.i(
+            "LoginFlow pending_import_wallet_sync_result source=loading resolution=$resolution wallet_count=${wallets?.size ?: -1}"
+        )
+        return when (resolution) {
+            is PendingMnemonicResolution.WalletHome -> {
+                Timber.e(
+                    "LoginFlow pending_import_wallet_open source=loading wallet_id=${resolution.walletId} category=${resolution.walletCategory}"
+                )
+                val walletDestination = walletDestinationForWallet(
+                    resolution.walletId,
+                    resolution.walletCategory,
+                )
+                MainActivity.showWallet(context, walletDestination = walletDestination)
+                true
+            }
+            PendingMnemonicResolution.ImportMnemonic -> {
+                Timber.i("LoginFlow pending_import_fetch_open source=loading pin_reused=${pin != null}")
+                WalletSecurityActivity.show(requireActivity(), WalletSecurityActivity.Mode.LOGIN_IMPORT_MNEMONIC, pin = pin)
+                true
+            }
+            PendingMnemonicResolution.NeedPin -> {
+                showRetry { showLoginPinGate() }
+                false
+            }
+            PendingMnemonicResolution.LocalSaveFailed -> {
+                toast(R.string.Save_failure)
+                showRetry {
+                    lifecycleScope.launch {
+                        showLoading()
+                        if (openPendingMnemonicNext(pin)) {
+                            activity?.finish()
+                        }
+                    }
+                }
+                false
+            }
+        }
+    }
+
+    private fun ensureDeviceId() {
+        if (defaultSharedPreferences.getString(DEVICE_ID, null) == null) {
+            defaultSharedPreferences.putString(DEVICE_ID, requireActivity().getStringDeviceId())
+        }
+    }
 
     private fun initializeBots() {
         val phone = Session.getAccount()?.phone.orEmpty()
@@ -207,7 +316,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
         }
     }
 
-    private fun showRetry() {
+    private fun showRetry(onRetry: () -> Unit = { checkAndLoad() }) {
         if (viewDestroyed()) return
 
         count = 2
@@ -216,7 +325,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
             pb.isVisible = false
             retryTv.isVisible = true
             retryTv.setOnClickListener {
-                checkAndLoad()
+                onRetry()
             }
         }
     }

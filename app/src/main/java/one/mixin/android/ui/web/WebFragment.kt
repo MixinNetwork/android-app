@@ -1888,9 +1888,6 @@ class WebFragment : BaseFragment() {
                 if (wcUrl != null) {
                     // handle wallet connect url
                     UrlInterpreterActivity.show(view.context, wcUrl)
-                    if (request.isForMainFrame) {
-                        closeWebContainer()
-                    }
                 }
                 // ignore wallet connect data url
                 return true

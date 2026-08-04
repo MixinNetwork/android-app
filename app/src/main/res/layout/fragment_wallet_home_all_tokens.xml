@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="?android:attr/actionBarSize"
+        android:background="?attr/bg_white">
+
+        <one.mixin.android.widget.TitleView
+            android:id="@+id/title_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignParentStart="true"
+            app:need_divider="false"
+            app:titleText="@string/Assets" />
+
+        <LinearLayout
+            android:id="@+id/title_actions"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="6dp">
+
+            <ImageButton
+                android:id="@+id/search_ib"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/mixin_ripple"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_search_home"
+                tools:ignore="ContentDescription" />
+
+            <ImageButton
+                android:id="@+id/more_ib"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/mixin_ripple"
+                android:padding="8dp"
+                app:srcCompat="@drawable/ic_more"
+                tools:ignore="ContentDescription" />
+        </LinearLayout>
+    </RelativeLayout>
+
+    <androidx.compose.ui.platform.ComposeView
+        android:id="@+id/compose"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</LinearLayout>

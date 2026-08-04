@@ -364,6 +364,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             } else {
                 titleView.setSubTitle(getString(R.string.Transaction), getString(R.string.Common_Wallet))
             }
+            titleView.setWalletNameSubTitleStyle()
             spamLl.isVisible = transaction.isNotVerified()
             transactionHashTv.text = transaction.transactionHash
             val amountColor = if (transaction.status == TransactionStatus.PENDING.value || transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value) {
@@ -544,7 +545,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
             dateTv.text = transaction.transactionAt.fullDate()
             feeLl.isVisible = shouldShowFee(transaction.status)
-            feeTv.text = "${transaction.fee} ${transaction.chainSymbol ?: ""}"
+            feeTv.text = "${transaction.displayFeeAmount()} ${transaction.displayFeeSymbol() ?: ""}"
             statusLl.isVisible = false
             
             networkLl.isVisible = true
@@ -621,13 +622,13 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         status: String,
         pendingRawTx: Web3RawTransaction? = null,
     ): Boolean {
-        if (transaction.transactionType == TransactionType.TRANSFER_IN.value || transaction.fee.isEmpty()) {
+        if (!transaction.hasSponsorFee() && (transaction.transactionType == TransactionType.TRANSFER_IN.value || transaction.fee.isEmpty())) {
             return false
         }
         if (status != TransactionStatus.PENDING.value) {
             return true
         }
-        return pendingRawTx?.isGaslessPending() == false || transaction.fee.isNotEmpty()
+        return pendingRawTx?.isGaslessPending() == false || transaction.displayFeeAmount().isNotEmpty()
     }
 
     private suspend fun updateFeeVisibility(status: String = transaction.status) {

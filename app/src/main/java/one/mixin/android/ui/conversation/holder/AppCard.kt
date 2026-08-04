@@ -75,7 +75,8 @@ fun AppCard(
     isRepresentative: Boolean = false,
     isSecret: Boolean = false,
     isWhite: Boolean = false,
-    coverClick: (() -> Unit)? = null
+    coverClick: (() -> Unit)? = null,
+    mentionUserMap: Map<String, String> = emptyMap(),
 ) {
     val configuration = LocalConfiguration.current
     val screenWidthDp = configuration.screenWidthDp.dp
@@ -169,7 +170,14 @@ fun AppCard(
                     !appCardData.description.isNullOrEmpty()
                 ) {
                     ClickableTextWithUrlsAndBots(
-                        text = appCardData.description ?: "", textSize, contentClick, contentLongClick, urlClick, urlLongClick, botClick
+                        text = appCardData.description ?: "",
+                        textSize,
+                        contentClick,
+                        contentLongClick,
+                        urlClick,
+                        urlLongClick,
+                        botClick,
+                        mentionUserMap,
                     )
                 }
                 if (createdAt != null) {
@@ -202,9 +210,10 @@ fun ClickableTextWithUrlsAndBots(
     contentLongClick: () -> Unit,
     urlClick: (String) -> Unit,
     urlLongClick: (String) -> Unit,
-    botClick: (String) -> Unit
+    botClick: (String) -> Unit,
+    mentionUserMap: Map<String, String> = emptyMap(),
 ) {
-    val annotatedString = remember(text) {
+    val annotatedString = remember(text, mentionUserMap) {
         buildAnnotatedString {
             val urlPattern = Pattern.compile(URL_PATTERN)
             val botPattern = Pattern.compile(BOT_PATTERN)
@@ -247,7 +256,7 @@ fun ClickableTextWithUrlsAndBots(
                         textDecoration = if (isUrl) TextDecoration.Underline else TextDecoration.None
                     )
                 ) {
-                    append(detectedText)
+                    append(if (isUrl) detectedText else appCardMentionDisplayText(detectedText, mentionUserMap))
                 }
                 pop()
                 lastIndex = end
@@ -311,7 +320,7 @@ fun ClickableTextWithUrlsAndBots(
                         background = if (highlightedUrl == detectedText) Color(0x660D94FC) else Color.Transparent
                     )
                 ) {
-                    append(detectedText)
+                    append(if (isUrl) detectedText else appCardMentionDisplayText(detectedText, mentionUserMap))
                 }
                 pop()
                 lastIndex = end
@@ -377,3 +386,8 @@ fun ClickableTextWithUrlsAndBots(
         }
     }
 }
+
+internal fun appCardMentionDisplayText(
+    identityNumber: String,
+    mentionUserMap: Map<String, String>,
+): String = mentionUserMap[identityNumber] ?: identityNumber

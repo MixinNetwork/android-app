@@ -31,6 +31,7 @@ import one.mixin.android.ui.setting.ui.page.MixinMemberUpgradePage
 import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.vo.Plan
+import one.mixin.android.vo.activePlan
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -56,7 +57,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : MixinComposeBottomSheetDialo
     val linkViewModel by viewModels<BottomSheetViewModel>()
     private val memberViewModel by viewModels<MemberViewModel>()
 
-    private var currentUserPlan: Plan by mutableStateOf(Session.getAccount()?.membership?.plan ?: Plan.None)
+    private var currentUserPlan: Plan by mutableStateOf((Session.getAccount()?.membership).activePlan())
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +73,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : MixinComposeBottomSheetDialo
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(scope(Lifecycle.Event.ON_DESTROY))
             .subscribe { _ ->
-                currentUserPlan = Session.getAccount()!!.membership?.plan ?: Plan.None
+                currentUserPlan = (Session.getAccount()?.membership).activePlan()
             }
     }
 
@@ -85,7 +86,7 @@ class MixinMemberUpgradeBottomSheetDialogFragment : MixinComposeBottomSheetDialo
         }
         MixinMemberUpgradePage(
             currentUserPlan = currentUserPlan,
-            selectedPlanOverride = defaultPlan ?: currentUserPlan,
+            selectedPlanOverride = defaultPlan ?: Session.getAccount()?.membership?.plan ?: currentUserPlan,
             onClose = { dismiss() },
             onUrlGenerated = { url ->
                 viewLifecycleOwner.lifecycleScope.launch {

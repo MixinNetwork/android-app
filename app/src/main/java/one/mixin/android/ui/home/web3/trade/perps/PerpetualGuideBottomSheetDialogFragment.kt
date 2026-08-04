@@ -34,6 +34,7 @@ class PerpetualGuideBottomSheetDialogFragment : MixinComposeBottomSheetDialogFra
         const val TAB_POSITION = 4
         const val TAB_TP_SL = 5
         const val TAB_LIQUIDATION = 6
+        const val TAB_FUNDING_RATE = 7
 
         fun newInstance(initialTab: Int = TAB_OVERVIEW) = PerpetualGuideBottomSheetDialogFragment().apply {
             arguments = Bundle().apply {

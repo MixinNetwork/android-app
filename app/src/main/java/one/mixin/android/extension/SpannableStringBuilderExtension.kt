@@ -45,6 +45,28 @@ internal fun buildAmountSymbol(
     }
 }
 
+internal fun buildBalanceAmountSymbol(
+    context: Context,
+    amount: String,
+    symbol: String,
+    @ColorInt amountColor: Int,
+    @ColorInt symbolColor: Int,
+) = buildSpannedString {
+    font(ResourcesCompat.getFont(context, R.font.mixin_font)) {
+        color(amountColor) {
+            inSpans(AbsoluteSizeSpan(30, true)) {
+                append(amount)
+            }
+        }
+    }
+    append(" ")
+    color(symbolColor) {
+        inSpans(AbsoluteSizeSpan(14, true)) {
+            append(symbol)
+        }
+    }
+}
+
 internal fun buildBulletLines(
     context: Context,
     vararg lines: SpannableStringBuilder,

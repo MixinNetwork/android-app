@@ -242,7 +242,7 @@ open class AutoLinkTextView(context: Context, attrs: AttributeSet?) :
         text: CharSequence,
         autoLinkItems: MutableList<AutoLinkItem>,
     ): List<AutoLinkItem> {
-        for (anAutoLinkMode in requireNotNull(autoLinkModes)) {
+        for (anAutoLinkMode in autoLinkModes.orEmpty()) {
             val pattern = Utils.getPatternByAutoLinkMode(anAutoLinkMode, customRegex)
             val matcher = pattern.matcher(text)
 

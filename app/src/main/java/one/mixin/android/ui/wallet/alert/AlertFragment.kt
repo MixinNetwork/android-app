@@ -32,9 +32,9 @@ import one.mixin.android.job.RefreshAlertsJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.wallet.MultiSelectCoinListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.MultiSelectTokenListBottomSheetDialogFragment
-import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.ui.wallet.alert.vo.Alert
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
+import one.mixin.android.util.analytics.AnalyticsTracker
 import javax.inject.Inject
 
 @AndroidEntryPoint

@@ -35,7 +35,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 @Composable
 fun OpenedOrderItem(
@@ -75,11 +74,8 @@ fun OpenedOrderItem(
             stringResource(if (isLong) R.string.Opened_Long else R.string.Opened_Short)
     }
 
-    val amountValue = if (!isFailed && order.leverage > 0) {
-        val quantityDecimal = order.quantity.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
-        val entryPriceDecimal = order.entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        quantityDecimal.multiply(entryPriceDecimal)
-            .divide(BigDecimal(order.leverage), 8, RoundingMode.HALF_UP)
+    val amountValue = if (!isFailed) {
+        order.payAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
     } else {
         null
     }

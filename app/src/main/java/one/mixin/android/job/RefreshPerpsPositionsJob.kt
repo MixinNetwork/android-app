@@ -10,7 +10,7 @@ import timber.log.Timber
 
 class RefreshPerpsPositionsJob(
     private val walletId: String? = null
-) : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork().persist()) {
+) : BaseJob(Params(PRIORITY_BACKGROUND).singleInstanceBy(GROUP).requireNetwork()) {
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshPerpsPositionsJob"

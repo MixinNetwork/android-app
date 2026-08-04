@@ -1427,6 +1427,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     class LinkSigData(
         @SerializedName("request_id")
         val requestId: String,
+        @SerializedName("signature")
         val signature: String,
     )
 }

@@ -6,6 +6,7 @@ import android.content.Intent
 import android.os.SystemClock
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import com.google.gson.JsonElement
+import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import one.mixin.android.Constants.SLEEP_MILLIS
@@ -1020,6 +1021,7 @@ const val ERROR_PEER_CLOSED = 5002002
 const val ERROR_TRACK_NOT_FOUND = 5002003
 
 data class PeerList(
+    @SerializedName("peers")
     val peers: ArrayList<UserSession>?,
 )
 

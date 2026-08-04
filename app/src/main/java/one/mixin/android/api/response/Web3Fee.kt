@@ -11,11 +11,15 @@ import java.math.BigDecimal
 data class Web3Fee(
     @SerializedName("fungible_id")
     val fungibleId: String,
+    @SerializedName("name")
     val name: String,
+    @SerializedName("symbol")
     val symbol: String,
     @SerializedName("icon_url")
     val iconUrl: String,
+    @SerializedName("amount")
     val amount: String,
+    @SerializedName("price")
     val price: String,
 ) : Parcelable {
     val amountFormat: String
