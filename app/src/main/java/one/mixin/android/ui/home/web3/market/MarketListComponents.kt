@@ -445,7 +445,7 @@ private fun PerpetualMarketBadge(
 ) {
     val isLeverage = style == PerpetualMarketBadgeStyle.LEVERAGE
     Text(
-        text = if (isLeverage) "${leverage}x" else stringResource(R.string.market_perpetual_badge),
+        text = if (isLeverage) "${leverage}x" else stringResource(R.string.Perp),
         fontSize = 12.sp,
         fontWeight = if (isLeverage) FontWeight.W500 else FontWeight.W400,
         color = MixinAppTheme.colors.textAssist,

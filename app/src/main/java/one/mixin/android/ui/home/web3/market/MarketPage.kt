@@ -768,7 +768,7 @@ private fun BitcoinDominanceCard(indicator: GlobalMarket) {
                     .padding(horizontal = 20.dp, vertical = 20.dp),
         ) {
             Text(
-                text = "${stringResource(R.string.Bitcoin)} ${stringResource(R.string.Dominance)}",
+                text = stringResource(R.string.Bitcoin_Dominance),
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
             )

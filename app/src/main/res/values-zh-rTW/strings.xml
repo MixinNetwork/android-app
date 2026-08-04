@@ -918,10 +918,10 @@
     <string name="transfer_without_pin">轉賬前請先設定 PIN</string>
     <string name="Trending">熱門資產</string>
     <string name="watchlist_empty">您的自選列表為空</string>
-    <string name="Add_to_Watchlist">加入自選</string>
+    <string name="Add_to_Watchlist">新增到自選</string>
     <string name="Remove_from_Watchlist">從自選中移除</string>
     <string name="Keep">保留</string>
-    <string name="Dominance">市佔率</string>
+    <string name="Bitcoin_Dominance">比特幣市佔率</string>
     <string name="volume_24h">24 小時交易量</string>
     <string name="market_volume_short">交易量</string>
     <string name="market_change_short">漲跌幅</string>
@@ -930,7 +930,7 @@
     <string name="market_stock">股票</string>
     <string name="Indicator">指標</string>
     <string name="market_display">行情顯示</string>
-    <string name="market_perpetual_badge">合約</string>
+    <string name="Perp">合約</string>
     <string name="volume_label">交易量：%1$s</string>
     <string name="change_percent_period_day">%1$d 天 %%</string>
     <string name="change_percent_period_hour">%1$dh %%</string>
@@ -2450,7 +2450,7 @@
     <string name="perps_funding_rate_key_point_2">資金費率為負時，空頭向多頭支付資金費。</string>
     <string name="perps_funding_rate_key_point_3">實際資金費取決於您的倉位價值和當前資金費率。</string>
     <string name="perps_funding_frequency">頻率</string>
-    <string name="perps_funding_frequency_value">8 小時</string>
+    <string name="perps_funding_frequency_value">1/4/8 小時</string>
     <string name="perps_receive">收到</string>
     <string name="perps_liquidation_price_short">強平價格</string>
     <string name="lock_in_profits_description">價格達到觸發價時自動平倉，及時鎖定利潤</string>
@@ -2649,4 +2649,6 @@
     <string name="cash_account_minimum_send">錯誤 10614：最低金額為 %1$s %2$s。</string>
     <string name="cash_account_maximum_send">錯誤 10614：最大金額為 %1$s %2$s。</string>
     <string name="no_tokens">沒有代幣</string>
+    <string name="watchlist_remove_desc">%1$s 已從自選移除</string>
+    <string name="perps_category_meme">Memes</string>
 </resources>
