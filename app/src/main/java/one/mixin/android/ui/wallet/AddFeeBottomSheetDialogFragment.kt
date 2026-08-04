@@ -6,6 +6,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAddFeeBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
@@ -49,8 +50,8 @@ class AddFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         (dialog as BottomSheet).apply {
             setCustomView(contentView)
         }
-        val tokenItem = requireArguments().getParcelable<TokenItem?>(ARGS_TOKEN)
-        val web3TokenItem = requireArguments().getParcelable<Web3TokenItem?>(ARGS_WEB3_TOKEN)
+        val tokenItem = requireArguments().getParcelableCompat(ARGS_TOKEN, TokenItem::class.java)
+        val web3TokenItem = requireArguments().getParcelableCompat(ARGS_WEB3_TOKEN, Web3TokenItem::class.java)
         binding.apply {
             titleTv.text = "${getString(R.string.Add)} ${tokenItem?.symbol ?: web3TokenItem?.symbol ?: ""}"
             subtitleTv.text = tokenItem?.chainName ?: web3TokenItem?.chainName ?: ""
@@ -58,9 +59,9 @@ class AddFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 dismiss()
             }
             if (tokenItem != null) {
-                swapTv.text = getString(R.string.swap_token, tokenItem.symbol ?: "-")
-                swapDescTv.text = getString(R.string.swap_token_description, tokenItem.symbol ?: "-")
-                depositTv.text = getString(R.string.deposit_token, tokenItem.symbol ?: "-")
+                swapTv.text = getString(R.string.swap_token, tokenItem.symbol)
+                swapDescTv.text = getString(R.string.swap_token_description, tokenItem.symbol)
+                depositTv.text = getString(R.string.deposit_token, tokenItem.symbol)
                 swapLayout.setOnClickListener {
                     onAction?.invoke(ActionType.SWAP, tokenItem)
                     dismiss()
@@ -70,9 +71,9 @@ class AddFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     dismiss()
                 }
             } else if (web3TokenItem != null) {
-                swapTv.text = getString(R.string.swap_token, web3TokenItem.symbol ?: "-")
-                swapDescTv.text = getString(R.string.swap_token_description, web3TokenItem.symbol ?: "-")
-                depositTv.text = getString(R.string.deposit_token, web3TokenItem.symbol ?: "-")
+                swapTv.text = getString(R.string.swap_token, web3TokenItem.symbol)
+                swapDescTv.text = getString(R.string.swap_token_description, web3TokenItem.symbol)
+                depositTv.text = getString(R.string.deposit_token, web3TokenItem.symbol)
                 swapLayout.setOnClickListener {
                     onWeb3Action?.invoke(ActionType.SWAP, web3TokenItem)
                     dismiss()

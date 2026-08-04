@@ -24,7 +24,7 @@ interface ParticipantSessionDao : BaseDao<ParticipantSession> {
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId")
     fun getParticipantSessionsByConversationId(conversationId: String): List<ParticipantSession>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT * FROM participant_session WHERE conversation_id = :conversationId AND user_id != :userId LIMIT 1")
     fun getParticipantSessionKeyWithoutSelf(
         conversationId: String,

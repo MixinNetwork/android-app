@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.web3.details
 
 import android.annotation.SuppressLint

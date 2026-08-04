@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.wallet
 
 import android.os.Bundle
@@ -181,7 +183,6 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                 is SNSSDKState.FinallyRejected -> Timber.e("Applicant has been finally rejected")
                 is SNSSDKState.TemporarilyDeclined -> Timber.e("Applicant has been declined temporarily")
                 is SNSSDKState.Approved -> Timber.e("Applicant has been approved")
-                else -> Timber.e("Unknown")
             }
         }
 
@@ -199,7 +200,6 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
             when (result) {
                 is SNSCompletionResult.SuccessTermination -> Timber.e("The SDK finished successfully")
                 is SNSCompletionResult.AbnormalTermination -> Timber.e(result.exception, "The SDK got closed because of errors")
-                else -> Timber.e("Unknown")
             }
         }
 

@@ -62,7 +62,7 @@ import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.util.getChainName
 import one.mixin.android.vo.safe.TokenItem
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.ui.wallet.WalletViewModel
 import kotlinx.coroutines.launch
 import one.mixin.android.ui.home.inscription.component.AutoSizeConstraint
