@@ -15,6 +15,7 @@ import one.mixin.android.api.response.web3.ParsedTx
 data class Web3RawTransaction(
     @PrimaryKey
     @ColumnInfo(name = "hash") 
+    @SerializedName("hash")
     val hash: String,
 
     @ColumnInfo(name = "chain_id")
@@ -22,15 +23,19 @@ data class Web3RawTransaction(
     val chainId: String,
 
     @ColumnInfo(name = "account")
+    @SerializedName("account")
     val account: String,
 
     @ColumnInfo(name = "nonce")
+    @SerializedName("nonce")
     val nonce: String,
 
     @ColumnInfo(name = "raw")
+    @SerializedName("raw")
     val raw: String,
 
     @ColumnInfo(name = "state")
+    @SerializedName("state")
     val state: String,
 
     @ColumnInfo(name = "created_at")

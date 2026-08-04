@@ -696,7 +696,7 @@ class TransferInserter(val db: MixinDatabase) {
             if (safeSnapshot.confirmations == null) {
                 stmt.bindNull(11)
             } else {
-                stmt.bindLong(11, safeSnapshot.confirmations.toLong())
+                stmt.bindLong(11, safeSnapshot.confirmations)
             }
             if (safeSnapshot.openingBalance == null) {
                 stmt.bindNull(12)

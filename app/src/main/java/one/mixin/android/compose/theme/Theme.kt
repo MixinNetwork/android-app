@@ -78,10 +78,9 @@ class AppColors(
 )
 
 class AppDrawables(
-    @DrawableRes
+    @param:DrawableRes
     val bgAlertCard: Int,
-
-    )
+)
 
 object MixinAppTheme {
     val colors: AppColors

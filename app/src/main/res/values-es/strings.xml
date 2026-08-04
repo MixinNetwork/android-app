@@ -90,7 +90,6 @@
     <string name="an_audio">un audio</string>
     <string name="ANSWER">RESPUESTA</string>
     <string name="app_card_shareable_false">La tarjeta se ha configurado para no permitir compartir</string>
-    <string name="app_name">Mixin</string>
     <string name="App_version">Versión de aplicación</string>
     <string name="Appearance">Apariencia</string>
     <string name="Apply">Aplicar</string>
@@ -310,8 +309,8 @@
     <string name="deposit_account_attention">Atención: prueba con una pequeña cantidad para el primer depósito. Se requiere una nota y una dirección para depositar correctamente tu %1$s en Mixin.</string>
     <string name="deposit_attention">Prueba con una pequeña cantidad para el primer depósito.</string>
     <plurals name="deposit_confirmation" tools:ignore="UnusedQuantity">
-        <item quantity="one">El depósito llegará %1$d confirmación de bloqueo</item>
-        <item quantity="other">El depósito llegará %1$d bloquear confirmaciones</item>
+        <item quantity="one">El depósito llegará tras %1$d confirmación de bloque</item>
+        <item quantity="other">El depósito llegará tras %1$d confirmaciones de bloque</item>
     </plurals>
     <string name="deposit_memo_notice">Se requiere Memo, o perderás tus monedas.</string>
     <string name="deposit_notice">Tanto el memorándum como la dirección son necesarios para depositar tu %1$s en tu cuenta.</string>
@@ -578,9 +577,40 @@
         <item quantity="one">%d Minuto</item>
         <item quantity="other">%d Minutos</item>
     </plurals>
-    <string name="Mixin">Mixin</string>
-    <string name="Mixin_ID">ID de Mixin</string>
     <string name="Mixin_Locked">Mixin bloqueado</string>
+    <string name="Mixin_ID">ID de Mixin</string>
+    <string name="Mixin_One">Mixin One</string>
+    <string name="delete_watch_wallet_description">Eliminar esta billetera no afectará sus activos, ya que es una billetera de solo lectura.</string>
+    <string name="wallet_summary_tip_all">Mixin Safe, las billeteras de solo lectura y los activos ocultos se excluyen del total.</string>
+    <string name="wallet_summary_tip_safe">Los Mixin Safe cogestionados se excluyen del total</string>
+    <string name="perps_intro_overview">Mixin Perps son contratos perpetuos liquidados en criptomonedas sin fecha de vencimiento que permiten a los traders especular sobre el precio de los criptoactivos. Se pueden mantener indefinidamente y suelen seguir el mercado spot subyacente.</string>
+    <string name="product_features_2">Opere en long o short</string>
+    <string name="perps_long_overview">Abre una posición long cuando espera que el precio suba. Si el precio sube, obtiene ganancias; si baja, incurre en pérdidas.</string>
+    <string name="perps_short_overview">Abre una posición short cuando espera que el precio baje. Si el precio baja, obtiene ganancias; si sube, incurre en pérdidas.</string>
+    <string name="perps_funding_rate_overview">La tasa de financiación es una comisión pagada o recibida entre traders long y short para mantener el precio de Perps cerca del precio spot. Cuando es positiva, los long pagan a los short. Cuando es negativa, los short pagan a los long.</string>
+    <string name="perps_funding_rate_key_point_1">Mantener los precios de Perps cerca de los precios spot</string>
+    <string name="perps_funding_rate_key_point_2">Equilibrar posiciones long y short</string>
+    <string name="perps_liquidation_price_short">Precio liq.</string>
+    <string name="Long">Long</string>
+    <string name="Short">Short</string>
+    <string name="Close_All_Positions">Cerrar todas las posiciones (%1$d)</string>
+    <string name="Opened_Long">Posición long abierta</string>
+    <string name="Opened_Short">Posición short abierta</string>
+    <string name="Closed_Long">Posición long cerrada</string>
+    <string name="Closed_Short">Posición short cerrada</string>
+    <string name="Added_Long">Posición long añadida</string>
+    <string name="Added_Short">Posición short añadida</string>
+    <string name="Opened_Long_Failed">Error al abrir posición long</string>
+    <string name="Opened_Short_Failed">Error al abrir posición short</string>
+    <string name="Closed_Long_Failed">Error al cerrar posición long</string>
+    <string name="Closed_Short_Failed">Error al cerrar posición short</string>
+    <string name="Added_Long_Failed">Error al añadir posición long</string>
+    <string name="Added_Short_Failed">Error al añadir posición short</string>
+    <string name="perps_share_card_title">🚀 Perps %1$s</string>
+    <string name="perps_share_card_side">- ↕️ Dirección: %1$s (%2$dx)</string>
+    <string name="watch_wallet_empty_description">Observe direcciones sin claves privadas. Vea saldos y transacciones, y reciba notificaciones de actividad con una experiencia nativa rápida.</string>
+    <string name="pin_log_title_upgrade_safe">Actualizar Mixin Safe</string>
+    <string name="wallet_home_add_wallet_banner_title">Agregar billeteras mediante clave privada, frase o dirección de solo lectura</string>
     <string name="Mixin_Messenger_Desktop">Mixin de Escritorio</string>
     <string name="Model">Modelo</string>
     <string name="Monday">Lunes</string>
@@ -749,7 +779,7 @@
     <string name="Refuse">Rechazar</string>
     <string name="Reload">Recargar</string>
     <string name="Remove_all">Eliminar todo</string>
-    <string name="Remove_all_floats">¿Eliminar todos los flotadores?</string>
+    <string name="Remove_all_floats">¿Eliminar todas las ventanas flotantes?</string>
     <string name="Remove_Bot">Eliminar Bot</string>
     <string name="Remove_Contact">Eliminar contacto</string>
     <string name="Remove_emergency_contact">Eliminar contacto de emergencia</string>
@@ -781,6 +811,10 @@
     <string name="Retry_upload_failed">Reintentar carga fallida.</string>
     <string name="Revoke_access">Revocar el acceso</string>
     <string name="Revoke_multisig_transaction">Revocar transacción multigrado</string>
+    <string name="swap_not_supported">No se admite el intercambio de %1$s.</string>
+    <string name="Market_Cap">Capitalización de mercado</string>
+    <string name="Global_Market_Cap">Capitalización de mercado</string>
+    <string name="SAFE">Mixin Safe</string>
     <string name="Saturday">Sábado</string>
     <string name="Save">Guardar</string>
     <string name="Save_failure">Guardar error</string>
@@ -1003,7 +1037,7 @@
     <string name="Upgrade_Database">Actualizar base de datos</string>
     <string name="Upgrade_need_verify_your_PIN">La actualización requiere la verificación de tu PIN.</string>
     <string name="Upgrade_TIP">Actualizar TIP</string>
-    <string name="Upgrade_TIP_successfully">Actualizar TIP con éxito</string>
+    <string name="Upgrade_TIP_successfully">TIP actualizado correctamente</string>
     <string name="Upgrading">Actualizando</string>
     <string name="Upgrading_TIP_terminated_unexpectedly">La actualización de TIP ha finalizado inesperadamente, haz clic en Continuar para completar la actualización</string>
     <string name="Upload_Mobile_Contacts">Cargar contactos móviles</string>
@@ -1052,7 +1086,7 @@
     <string name="wallet_withdrawal_recent_tip">Ya has retirado %3$s a %2$s hace %1$s, ¿quieres retirarlo de nuevo?</string>
     <string name="web_cannot_reached_desc">%1$s ha tardado demasiado en responder. Verifica tu red e intenta cambiar 4G, Wi-Fi o VPN para recargar la página.</string>
     <string name="web_cannot_reached_title">No se puede acceder a esta página web</string>
-    <string name="web_floating_permission">No puedes flotar ya que Mixin no está autorizado para usar ventanas flotantes</string>
+    <string name="web_floating_permission">No puedes usar la ventana flotante porque Mixin no tiene permiso para usar ventanas flotantes</string>
     <string name="web_full">Límite flotante alcanzado. Cierra algunos antes de añadir otros nuevos.</string>
     <string name="web_suspicious_link_tips">El enlace no está en los patrones de recursos correspondientes.</string>
     <string name="website">https://mixin.one/messenger</string>
@@ -1082,4 +1116,27 @@
     <string name="You_have_left_the_group">Te has ido del grupo</string>
     <string name="Your_emergency_contact_has_been_changed">Tu contacto de emergencia se ha cambiado</string>
     <string name="Receivers">receivers</string>
+    <string name="import_from_another_wallet">¿Importar desde otra billetera?</string>
+    <string name="login_method_from_other_wallets">Desde otras billeteras</string>
+    <string name="login_method_mnemonic_12_24_desc">Importa cuentas de otra billetera.</string>
+    <string name="login_method_mnemonic_12_24_title">12 o 24 palabras</string>
+    <string name="login_method_mnemonic_13_25_desc">Inicia sesión con tu frase de recuperación de Mixin.</string>
+    <string name="login_method_mnemonic_13_25_title">13 o 25 palabras</string>
+    <string name="login_method_mobile_desc">Inicia sesión con el número de teléfono vinculado a tu cuenta.</string>
+    <string name="login_method_mobile_title">Número de teléfono</string>
+    <string name="login_method_recovery_kit">Kit de recuperación de Mixin</string>
+    <string name="mnemonic_login_security_tip_1">· Mixin es de código abierto, reproducible y auditado de forma independiente.</string>
+    <string name="mnemonic_login_security_tip_2">· Tus datos se cifran de forma segura y se almacenan localmente en tu dispositivo.</string>
+    <string name="mnemonic_login_security_tip_3">· Mixin nunca accede a tu información privada ni la comparte con terceros.</string>
+    <string name="Watch_Wallet">Billetera de solo lectura</string>
+    <string name="Whats_Safe_Wallet">¿Qué es Mixin Safe?</string>
+    <string name="Upgrade_Safe_Description">Actualice a Mixin One para desbloquear Mixin Safe y administrar activos de forma segura con su familia, amigos o colegas.</string>
+    <string name="Create_Safe">Crear Mixin Safe</string>
+    <string name="Create_Safe_Description">Aún no tiene un Mixin Safe. Cree uno ahora y administre activos de forma segura con su familia, amigos o colegas.</string>
+    <string name="membership_benefit_create_safe">Crear %1$d Mixin Safe.</string>
+    <string name="safe_members">Miembros de Mixin Safe</string>
+    <string name="membership_benefit_safe_members">%1$d miembros por Mixin Safe, %2$d miembros en total.</string>
+    <string name="membership_elite_description">Administra grandes patrimonios en Mixin Safe con familiares, amigos o colegas para evitar robos, accidentes y riesgos de custodia.</string>
+    <string name="mnemonic_login_security_title">¿Es seguro importar a Mixin?</string>
+    <string name="mobile_number_description">Este es el número de teléfono vinculado a tu cuenta</string>
 </resources>

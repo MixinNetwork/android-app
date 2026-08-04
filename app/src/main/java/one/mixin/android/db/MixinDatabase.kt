@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.db
 
 import android.annotation.SuppressLint
@@ -147,6 +149,7 @@ import java.util.concurrent.Executors
 import kotlin.math.max
 import kotlin.math.min
 
+@SuppressWarnings("deprecation")
 @Database(
     entities = [
         (User::class),

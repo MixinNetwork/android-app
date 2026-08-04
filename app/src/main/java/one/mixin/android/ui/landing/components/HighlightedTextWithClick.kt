@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.landing.components
 
 import androidx.compose.foundation.text.ClickableText

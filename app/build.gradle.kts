@@ -153,7 +153,7 @@ android {
     }
 
     androidResources {
-        localeFilters += listOf("en", "es", "in", "ja", "ms", "ru", "zh-rCN", "zh-rTW")
+        localeFilters += listOf("en", "es", "in", "ja", "ko", "ms", "ru", "zh-rCN", "zh-rTW")
     }
 
     packaging {
@@ -167,7 +167,7 @@ android {
         }
         jniLibs {
             useLegacyPackaging = true
-            excludes += setOf("lib/x86_64/libcurve25519.so")
+            pickFirsts += setOf("lib/x86_64/libcurve25519.so")
         }
     }
 

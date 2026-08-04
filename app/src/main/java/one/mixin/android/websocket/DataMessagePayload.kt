@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.util.Attachment
 
 data class DataMessagePayload(
+    @SerializedName("url")
     val url: String,
     @SerializedName("file_name")
     val filename: String,

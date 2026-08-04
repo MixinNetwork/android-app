@@ -15,9 +15,11 @@ class AuthorizationResponse(
     val authorizationId: String,
     @SerializedName("authorization_code")
     val authorizationCode: String,
+    @SerializedName("scopes")
     val scopes: List<String>,
     @SerializedName("code_id")
     val codeId: String,
+    @SerializedName("app")
     val app: App,
     @SerializedName("created_at")
     val createAt: String,

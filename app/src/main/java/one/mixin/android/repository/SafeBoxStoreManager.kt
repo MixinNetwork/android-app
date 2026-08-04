@@ -20,7 +20,7 @@ import javax.inject.Singleton
 class SafeBoxStoreManager
     @Inject
     constructor(
-        @ApplicationContext private val appContext: Context,
+        @param:ApplicationContext private val appContext: Context,
     ) {
         private data class StoreEntry(
             val store: DataStore<SafeBox>,
