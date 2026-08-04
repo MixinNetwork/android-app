@@ -23,8 +23,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Button
-import androidx.compose.material.ButtonDefaults
+import one.mixin.android.widget.components.MixinButton
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -450,7 +449,9 @@ fun LimitOrderContent(
                         val isOutputValid = outputText.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
                         val isEnabled = isInputValid && isPriceValid && isOutputValid && checkBalance == true && toToken != null
                         val isBusy = isSubmitting || reviewing
-                        Button(
+                        val buttonBackgroundColor = if (isEnabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight
+                        val buttonContentColor = if (isEnabled) Color.White else MixinAppTheme.colors.textAssist
+                        MixinButton(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(48.dp),
@@ -502,16 +503,10 @@ fun LimitOrderContent(
                                 }
                             },
                             enabled = isEnabled && !isBusy,
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = if (isEnabled) MixinAppTheme.colors.accent else MixinAppTheme.colors.backgroundGrayLight,
-                            ),
-                            shape = RoundedCornerShape(32.dp),
-                            elevation = ButtonDefaults.elevation(
-                                pressedElevation = 0.dp,
-                                defaultElevation = 0.dp,
-                                hoveredElevation = 0.dp,
-                                focusedElevation = 0.dp,
-                            ),
+                            backgroundColor = buttonBackgroundColor,
+                            contentColor = buttonContentColor,
+                            disabledBackgroundColor = MixinAppTheme.colors.backgroundGrayLight,
+                            disabledContentColor = MixinAppTheme.colors.textAssist,
                         ) {
                             Box(
                                 modifier = Modifier
@@ -524,13 +519,13 @@ fun LimitOrderContent(
                                         modifier = Modifier
                                             .width(18.dp)
                                             .height(18.dp),
-                                        color = if (isEnabled) Color.White else MixinAppTheme.colors.textAssist,
+                                        color = buttonContentColor,
                                         strokeWidth = 2.dp,
                                     )
                                 } else {
                                     Text(
                                         text = if (checkBalance == false) "${fromToken?.symbol} ${stringResource(R.string.insufficient_balance)}" else stringResource(R.string.Review_Order),
-                                        color = if (isEnabled) Color.White else MixinAppTheme.colors.textAssist,
+                                        color = buttonContentColor,
                                     )
                                 }
                             }

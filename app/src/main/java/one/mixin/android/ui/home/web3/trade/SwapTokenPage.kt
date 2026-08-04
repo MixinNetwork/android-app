@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Button
+import one.mixin.android.widget.components.MixinButton
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -103,23 +103,9 @@ fun SwapTokenPage(
                 }
             }
             Spacer(modifier = Modifier.height(20.dp))
-            Button(
+            MixinButton(
                 modifier = Modifier.fillMaxWidth(),
-                onClick =
-                confirmAction,
-                colors =
-                    ButtonDefaults.outlinedButtonColors(
-                        backgroundColor = MixinAppTheme.colors.accent,
-                    ),
-                shape = RoundedCornerShape(32.dp),
-                contentPadding = PaddingValues(vertical = 16.dp),
-                elevation =
-                    ButtonDefaults.elevation(
-                        pressedElevation = 0.dp,
-                        defaultElevation = 0.dp,
-                        hoveredElevation = 0.dp,
-                        focusedElevation = 0.dp,
-                    ),
+                onClick = confirmAction,
             ) {
                 Text(
                     text = stringResource(id = R.string.view_on_explorer),

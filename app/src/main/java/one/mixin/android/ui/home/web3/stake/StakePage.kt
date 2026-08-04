@@ -21,7 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.Button
+import one.mixin.android.widget.components.MixinButton
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Divider
@@ -127,7 +127,7 @@ fun StakePage(
                     LocalSoftwareKeyboardController.current
                 val focusManager = LocalFocusManager.current
                 if (amountText.isNotEmpty()) {
-                    Button(
+                    MixinButton(
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !isLoading,
                         onClick = {
@@ -135,19 +135,8 @@ fun StakePage(
                             focusManager.clearFocus()
                             onStake.invoke()
                         },
-                        colors =
-                            ButtonDefaults.outlinedButtonColors(
-                                backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent,
-                            ),
-                        shape = RoundedCornerShape(32.dp),
-                        contentPadding = PaddingValues(vertical = 16.dp),
-                        elevation =
-                            ButtonDefaults.elevation(
-                                pressedElevation = 0.dp,
-                                defaultElevation = 0.dp,
-                                hoveredElevation = 0.dp,
-                                focusedElevation = 0.dp,
-                            ),
+                        backgroundColor = if (checkBalance != true) MixinAppTheme.colors.backgroundGray else MixinAppTheme.colors.accent,
+                        contentColor = if (checkBalance != true) MixinAppTheme.colors.textAssist else Color.White,
                     ) {
                         if (isLoading) {
                             CircularProgressIndicator(
