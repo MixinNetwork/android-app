@@ -23,7 +23,7 @@
         const normalizedChainId = '0x' + parseInt(chainId || '1').toString(16);
         ethereum.setChainId(normalizedChainId);
         ethereum.emit('chainChanged', normalizedChainId);
-        ethereum.emit('networkChanged', parseInt(normalizedChainId));
+        ethereum.emit('networkChanged', parseInt(normalizedChainId).toString(10));
     };
 
     ethereum.setConfig = (nextConfig) => {
