@@ -659,7 +659,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     private fun bindDefaultPosterFooter(itemBinding: ItemPerpsPositionSharePosterBinding) {
         itemBinding.shareDescTv.isVisible = true
         itemBinding.shareDescTv.minLines = 1
-        itemBinding.referralTitle.text = getString(R.string.mixin_messenger)
+        itemBinding.referralTitle.text = getString(R.string.Mixin)
         itemBinding.shareDescTv.text = getString(R.string.perps_share_mixin_contact_desc)
     }
 
