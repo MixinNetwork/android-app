@@ -107,6 +107,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                 }
             }
 
+        @Suppress("DEPRECATION")
         fun getDatabase(
             context: Context,
             identityNumber: String,

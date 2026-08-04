@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.wallet
 
 import android.os.Bundle
@@ -181,7 +183,6 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                 is SNSSDKState.FinallyRejected -> Timber.e("Applicant has been finally rejected")
                 is SNSSDKState.TemporarilyDeclined -> Timber.e("Applicant has been declined temporarily")
                 is SNSSDKState.Approved -> Timber.e("Applicant has been approved")
-                else -> Timber.e("Unknown")
             }
         }
 
@@ -199,7 +200,6 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
             when (result) {
                 is SNSCompletionResult.SuccessTermination -> Timber.e("The SDK finished successfully")
                 is SNSCompletionResult.AbnormalTermination -> Timber.e(result.exception, "The SDK got closed because of errors")
-                else -> Timber.e("Unknown")
             }
         }
 
@@ -221,6 +221,7 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                                 AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
                                 AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
                                 AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Language
+                                AppearanceFragment.POS_KOREAN -> Constants.Locale.Korean.Language
                                 else -> Locale.US.language
                             }
                         val selectedCountry =
@@ -232,6 +233,7 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                                 AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
                                 AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
                                 AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Country
+                                AppearanceFragment.POS_KOREAN -> Constants.Locale.Korean.Country
                                 else -> Locale.US.country
                             }
                         Locale(selectedLang, selectedCountry)

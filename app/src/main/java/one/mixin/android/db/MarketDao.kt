@@ -5,7 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
-import androidx.room.RewriteQueriesToDropUnusedColumns
 import androidx.room.RoomWarnings
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.ui.wallet.alert.vo.CoinItem

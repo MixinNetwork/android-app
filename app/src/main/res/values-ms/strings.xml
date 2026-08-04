@@ -407,8 +407,8 @@
     <plurals name="Minute" tools:ignore="UnusedQuantity">
         <item quantity="other">%d Minit</item>
     </plurals>
-    <string name="Mixin">Mixin</string>
     <string name="Mixin_ID">Mixin ID</string>
+    <string name="Mixin_One">Mixin One</string>
     <string name="Mixin_Messenger_Desktop">Desktop Mixin</string>
     <string name="Monday">Isnin</string>
     <string name="More">Lebih banyak lagi</string>

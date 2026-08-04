@@ -46,7 +46,7 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
         messageId: String,
     ): String?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT category, id, conversation_id, media_url FROM pending_messages WHERE id = :messageId")
     fun findMessageMediaById(messageId: String): MessageMedia?
 

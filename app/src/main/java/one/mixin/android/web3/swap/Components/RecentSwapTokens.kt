@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.web3.swap.Components
 
 import androidx.compose.foundation.BorderStroke

@@ -23,7 +23,7 @@ interface AppDao : BaseDao<App> {
             """
     }
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """ 
             $PREFIX_APP_ITEM
