@@ -49,6 +49,14 @@ data class Web3Transaction(
     @SerializedName("fee")
     val fee: String,
 
+    @ColumnInfo(name = "sponsor_fee_asset_id")
+    @SerializedName("sponsor_fee_asset_id")
+    val sponsorFeeAssetId: String? = null,
+
+    @ColumnInfo(name = "sponsor_fee_amount")
+    @SerializedName("sponsor_fee_amount")
+    val sponsorFeeAmount: String? = null,
+
     @TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "senders")
     @SerializedName("senders")

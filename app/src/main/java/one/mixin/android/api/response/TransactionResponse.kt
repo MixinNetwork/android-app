@@ -6,6 +6,7 @@ import kotlinx.parcelize.Parcelize
 import java.util.UUID.nameUUIDFromBytes
 
 data class TransactionResponse(
+    @SerializedName("type")
     val type: String,
     @SerializedName("request_id")
     val requestId: String,
@@ -17,6 +18,7 @@ data class TransactionResponse(
     val transactionHash: String,
     @SerializedName("snapshot_id")
     val snapshotId: String?,
+    @SerializedName("asset")
     val asset: String,
     @SerializedName("asset_id")
     val assetId: String?,
@@ -24,12 +26,17 @@ data class TransactionResponse(
     val sendersHash: String,
     @SerializedName("senders_threshold")
     val sendersThreshold: Int,
+    @SerializedName("senders")
     val senders: List<String>,
+    @SerializedName("receivers")
     val receivers: List<Receiver>?,
+    @SerializedName("signers")
     val signers: List<String>?,
     @SerializedName("revoked_by")
     val revokedBy: String?,
+    @SerializedName("extra")
     val extra: String,
+    @SerializedName("state")
     val state: String,
     @SerializedName("raw_transaction")
     val rawTransaction: String,
@@ -62,8 +69,11 @@ data class Receiver(
     val members: List<String>,
     @SerializedName("members_hash")
     val membersHash: String,
+    @SerializedName("threshold")
     val threshold: Int,
+    @SerializedName("destination")
     val destination: String?,
+    @SerializedName("tag")
     val tag: String?,
     @SerializedName("withdrawal_hash")
     val withdrawalHash: String?,
@@ -71,8 +81,11 @@ data class Receiver(
 
 @Parcelize
 data class SafeTransactionRecipient(
+    @SerializedName("address")
     val address: String,
+    @SerializedName("amount")
     val amount: String,
+    @SerializedName("label")
     var label: String?
 ) : Parcelable
 
@@ -80,21 +93,29 @@ data class SafeTransactionRecipient(
 data class SafeTransaction(
     @SerializedName("asset_id")
     val assetId: String,
+    @SerializedName("recipients")
     val recipients: List<SafeTransactionRecipient>,
+    @SerializedName("note")
     val note: String?,
 ) : Parcelable
 
 @Parcelize
 data class SafeOperation(
+    @SerializedName("transaction")
     val transaction: SafeTransaction
 ) : Parcelable
 
 @Parcelize
 data class SafeAccount(
+    @SerializedName("id")
     val id: String,
+    @SerializedName("name")
     val name: String,
+    @SerializedName("address")
     val address: String,
+    @SerializedName("role")
     val role: String?,
+    @SerializedName("operation")
     val operation: SafeOperation
 ) : Parcelable
 

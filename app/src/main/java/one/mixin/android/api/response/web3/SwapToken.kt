@@ -19,11 +19,17 @@ data class SwapToken(
     @SerializedName("symbol") val symbol: String,
     @SerializedName("icon") val icon: String,
     @SerializedName("chain") val chain: SwapChain,
+    @SerializedName("category")
     val category: String? = null,
+    @SerializedName("price")
     var price: String? = null,
+    @SerializedName("balance")
     var balance: String? = null,
+    @SerializedName("collectionHash")
     var collectionHash: String? = null,
+    @SerializedName("changeUsd")
     var changeUsd: String? = null,
+    @SerializedName("isWeb3")
     var isWeb3: Boolean = false,
     @SerializedName("level") val level: Int? = null
 ) : Parcelable {
