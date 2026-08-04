@@ -71,11 +71,14 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         st.asset_height AS assetHeight, st.asset_url AS assetUrl, st.asset_type AS assetType,t.media_duration AS mediaDuration, 
         t.media_waveform AS mediaWaveform, su.user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.avatar_url AS sharedUserAvatarUrl, 
         su.app_id AS sharedUserAppId, su.identity_number AS sharedUserIdentityNumber, su.is_verified AS sharedUserIsVerified, t.quote_id AS quoteId,
-        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership 
+        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership,
+        rm.user_id AS recallUserId, ru.full_name AS recallUserFullName
         FROM transcript_messages t
         LEFT JOIN users u on t.user_id = u.user_id
         LEFT JOIN users su ON t.shared_user_id = su.user_id
         LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
+        LEFT JOIN recall_messages rm ON t.message_id = rm.message_id
+        LEFT JOIN users ru ON rm.user_id = ru.user_id
         WHERE t.transcript_id = :transcriptId
         ORDER BY t.created_at ASC, t.rowid ASC
         """,
@@ -96,11 +99,14 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         st.asset_height AS assetHeight, st.asset_url AS assetUrl, st.asset_type AS assetType,t.media_duration AS mediaDuration, 
         t.media_waveform AS mediaWaveform, su.user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.avatar_url AS sharedUserAvatarUrl, 
         su.app_id AS sharedUserAppId, su.identity_number AS sharedUserIdentityNumber, su.is_verified AS sharedUserIsVerified, t.quote_id AS quoteId,
-        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership
+        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership,
+        rm.user_id AS recallUserId, ru.full_name AS recallUserFullName
         FROM transcript_messages t
         LEFT JOIN users u on t.user_id = u.user_id
         LEFT JOIN users su ON t.shared_user_id = su.user_id
         LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
+        LEFT JOIN recall_messages rm ON t.message_id = rm.message_id
+        LEFT JOIN users ru ON rm.user_id = ru.user_id
         WHERE t.transcript_id = :transcriptId
         AND t.category IN ($IMAGES, $VIDEOS, $LIVES)
         ORDER BY t.created_at ASC, t.rowid ASC
