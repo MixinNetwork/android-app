@@ -91,7 +91,7 @@ import java.math.BigDecimal
 import java.util.Locale
 
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
-private const val MARKET_REFRESH_INTERVAL_MS = 10_000L
+private const val MARKET_REFRESH_INTERVAL_MS = 30_000L
 private const val PREF_MARKET_DETAIL_TIME_FRAME = "perps_market_detail_time_frame"
 
 @Composable

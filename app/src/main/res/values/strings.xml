@@ -595,8 +595,8 @@
         <item quantity="other">%d Hours</item>
     </plurals>
     <string name="minutes_count_short">%1$dm</string>
-    <string name="hours_count_short">%1$dH</string>
-    <string name="days_count_short">%1$dD</string>
+    <string name="hours_count_short">%1$dh</string>
+    <string name="days_count_short">%1$dd</string>
     <string name="hours_count_long">%1$d Hours</string>
     <string name="days_count_long">%1$d Days</string>
     <string name="weeks_count_short">%1$dW</string>

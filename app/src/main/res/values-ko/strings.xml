@@ -594,8 +594,8 @@
         <item quantity="other">%d 시간</item>
     </plurals>
     <string name="minutes_count_short">%1$dm</string>
-    <string name="hours_count_short">%1$dH</string>
-    <string name="days_count_short">%1$dD</string>
+    <string name="hours_count_short">%1$dh</string>
+    <string name="days_count_short">%1$dd</string>
     <string name="hours_count_long">%1$d시간</string>
     <string name="days_count_long">%1$d일</string>
     <string name="weeks_count_short">%1$dW</string>
