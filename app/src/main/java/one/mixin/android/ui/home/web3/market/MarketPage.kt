@@ -95,6 +95,7 @@ fun MarketPage(
                 .fillMaxSize()
                 .background(MixinAppTheme.colors.background),
     ) {
+        Spacer(modifier = Modifier.height(10.dp))
         MarketToolbar(
             onSearch = onSearch,
             onScan = onScan,
@@ -112,7 +113,7 @@ fun MarketPage(
                 onSelect = onSelectSubTab,
             )
             if (!state.isShowingRecommendations && state.entries.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 MarketListHeader(
                     period = state.effectivePriceChangePeriod,
                     showMarketCap = state.showsMarketCapColumn,
@@ -232,7 +233,6 @@ private fun SubTabs(
                     contentAlignment = Alignment.Center,
                     modifier =
                         Modifier
-                            .size(28.dp)
                             .clip(CircleShape)
                             .background(
                                 if (selected == tab) {
@@ -240,7 +240,8 @@ private fun SubTabs(
                                 } else {
                                     Color.Transparent
                                 },
-                            ).clickable { onSelect(tab) },
+                            ).clickable { onSelect(tab) }
+                            .padding(horizontal = 7.dp, vertical = 5.dp),
                 ) {
                     Icon(
                         painter =
@@ -335,7 +336,7 @@ private fun MarketListHeader(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = MarketHorizontalPadding, vertical = 4.dp),
+                .padding(horizontal = MarketHorizontalPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -343,6 +344,7 @@ private fun MarketListHeader(
             modifier =
                 Modifier
                     .size(24.dp)
+                    .offset(x = -MarketLeadingIconInset)
                     .clip(CircleShape)
                     .clickable(onClick = onShowDisplaySettings),
         ) {
@@ -350,10 +352,8 @@ private fun MarketListHeader(
                 painter = painterResource(R.drawable.ic_config),
                 contentDescription = stringResource(R.string.market_display),
                 tint = Color.Unspecified,
-                modifier = Modifier.size(16.dp).offset(x = -MarketLeadingIconInset),
             )
         }
-        Spacer(modifier = Modifier.width(MarketLeadingGap))
         MarketHeaderSortLabels(
             period = period,
             showMarketCap = showMarketCap,
@@ -394,7 +394,7 @@ private fun MarketList(
             )
         }
 
-        state.entries.isEmpty() -> {
+        state.entries.isEmpty() && state.hasLoadedLocalData -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
@@ -417,7 +417,7 @@ private fun MarketList(
         else -> {
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().offset(y = (-4).dp),
             ) {
                 items(
                     items = state.entries,

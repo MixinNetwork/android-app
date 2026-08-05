@@ -351,6 +351,7 @@ internal fun MarketRecommendationCard(
     onSelect: () -> Unit,
 ) {
     val shape = RoundedCornerShape(8.dp)
+    val compactTextStyle = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
     val symbol =
         when (entry) {
             is MarketListEntry.Spot -> entry.market.symbol
@@ -391,18 +392,23 @@ internal fun MarketRecommendationCard(
                     role = Role.Checkbox,
                     onClick = onSelect,
                 )
-                .padding(vertical = 10.dp)
+                .padding(vertical = 12.dp)
                 .padding(start = 12.dp, end = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MarketIcon(url = iconUrl, size = 24.dp)
-        Spacer(modifier = Modifier.width(if (perpetualBadgeStyle == PerpetualMarketBadgeStyle.LEVERAGE) 8.dp else 10.dp))
-        Column(modifier = Modifier.weight(1f)) {
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = symbol,
                     color = MixinAppTheme.colors.textPrimary,
-                    fontSize = if (perpetualBadgeStyle == PerpetualMarketBadgeStyle.LEVERAGE) 14.sp else 15.sp,
+                    fontSize = 14.sp,
+                    lineHeight = 16.sp,
+                    style = compactTextStyle,
                     maxLines = 1,
                 )
                 if (entry is MarketListEntry.Perpetual) {
@@ -416,7 +422,9 @@ internal fun MarketRecommendationCard(
             Text(
                 text = subtitle,
                 color = subtitleColor,
-                fontSize = if (perpetualBadgeStyle == PerpetualMarketBadgeStyle.LEVERAGE) 12.sp else 13.sp,
+                fontSize = 12.sp,
+                lineHeight = 14.sp,
+                style = compactTextStyle,
                 maxLines = 1,
             )
         }

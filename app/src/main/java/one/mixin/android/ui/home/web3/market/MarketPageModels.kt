@@ -157,13 +157,13 @@ data class MarketPageUiState(
             }
 
     val showsMarketLoading: Boolean
-        get() = isLoading && hasLoadedLocalData && entries.isEmpty()
+        get() = isLoading && entries.isEmpty()
 }
 
 fun defaultMarketSubTabs(): Map<MarketTopTab, MarketSubTab> =
     mapOf(
         MarketTopTab.WATCHLIST to MarketSubTab.CRYPTO,
-        MarketTopTab.CRYPTO to MarketSubTab.TOP_LOSERS,
+        MarketTopTab.CRYPTO to MarketSubTab.TRENDING,
         MarketTopTab.PERPETUAL to MarketSubTab.TRENDING,
     )
 

@@ -12,7 +12,7 @@ class MarketPageModelsTest {
         val defaults = defaultMarketSubTabs()
 
         assertEquals(MarketSubTab.CRYPTO, defaults[MarketTopTab.WATCHLIST])
-        assertEquals(MarketSubTab.TOP_LOSERS, defaults[MarketTopTab.CRYPTO])
+        assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.CRYPTO])
         assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.PERPETUAL])
         assertEquals(
             listOf(MarketTopTab.WATCHLIST, MarketTopTab.CRYPTO, MarketTopTab.PERPETUAL, MarketTopTab.INDICATOR),
@@ -335,10 +335,10 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun initialLoadingWaitsForLocalDatabaseResult() {
+    fun initialLoadingShowsBeforeLocalDatabaseResult() {
         val state = MarketPageUiState(isLoading = true, hasLoadedLocalData = false)
 
-        assertTrue(!state.showsMarketLoading)
+        assertTrue(state.showsMarketLoading)
     }
 
     @Test
