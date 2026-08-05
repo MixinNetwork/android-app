@@ -190,6 +190,45 @@ class PerpsMigrationTest {
         }
     }
 
+    @Test
+    fun migrate_7_8_addsPerpsOrderFeeAndMarketFundingFields() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 7).close()
+
+        val migratedDb = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME,
+            8,
+            true,
+            PerpsDatabase.MIGRATION_7_8,
+        )
+
+        assertColumn(migratedDb, "perps_orders", "fee_amount", "'0'")
+        assertColumn(migratedDb, "markets", "funding_interval_hours", "0")
+        assertColumn(migratedDb, "markets", "next_funding_at", "''")
+        assertColumn(migratedDb, "markets", "open_interest", "'0'")
+    }
+
+    private fun assertColumn(
+        db: SupportSQLiteDatabase,
+        table: String,
+        column: String,
+        defaultValue: String,
+    ) {
+        db.query("PRAGMA table_info(`$table`)").use { cursor ->
+            val nameIndex = cursor.getColumnIndexOrThrow("name")
+            val notNullIndex = cursor.getColumnIndexOrThrow("notnull")
+            val defaultValueIndex = cursor.getColumnIndexOrThrow("dflt_value")
+            var found = false
+            while (cursor.moveToNext()) {
+                if (cursor.getString(nameIndex) == column) {
+                    found = true
+                    assertEquals(1, cursor.getInt(notNullIndex))
+                    assertEquals(defaultValue, cursor.getString(defaultValueIndex))
+                }
+            }
+            assertTrue(found)
+        }
+    }
+
     private fun SupportSQLiteDatabase.insertMarket() {
         execSQL(
             """
