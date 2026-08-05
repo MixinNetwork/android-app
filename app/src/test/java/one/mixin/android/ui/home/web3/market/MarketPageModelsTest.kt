@@ -277,6 +277,16 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun marketFavoritesDefaultToVolumeDescending() {
+        listOf(MarketTopTab.CRYPTO, MarketTopTab.PERPETUAL).forEach { topTab ->
+            assertEquals(
+                MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                defaultMarketSortState(topTab, MarketSubTab.FAVORITE),
+            )
+        }
+    }
+
+    @Test
     fun spotAllVolumeColumnSortsByMarketCap() {
         val lowerMarketCap =
             MarketListEntry.Spot(

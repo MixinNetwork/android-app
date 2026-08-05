@@ -312,7 +312,6 @@ private fun PerpsMarketListContent(
                         isFavored = isFavored,
                         quoteColorReversed = state.quoteColorReversed,
                         badgeStyle = PerpetualMarketBadgeStyle.LEVERAGE,
-                        emphasizePrice = false,
                         onFavorite = { onFavorite(market, isFavored) },
                         onClick = { onMarketClick(market) },
                     )

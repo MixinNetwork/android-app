@@ -30,8 +30,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -374,7 +372,7 @@ private fun MarketList(
     onEntryClick: (MarketListEntry) -> Unit,
 ) {
     val listState = rememberLazyListState()
-    LaunchedEffect(state.selectedTopTab, state.selectedSubTab) {
+    LaunchedEffect(state.selectedTopTab, state.selectedSubTab, state.sortState) {
         listState.scrollToItem(0)
     }
     when {
@@ -535,7 +533,6 @@ private fun MarketRow(
                 isFavored = entry.isFavored,
                 quoteColorReversed = settings.quoteColorReversed,
                 badgeStyle = PerpetualMarketBadgeStyle.PERPETUAL,
-                emphasizePrice = true,
                 onFavorite = onFavorite,
                 onClick = onClick,
             )
@@ -588,25 +585,7 @@ private fun RowScope.SpotMarketRowContent(
             )
         }
     }
-    BasicText(
-        text = formatSpotPrice(market.currentPrice),
-        style =
-            TextStyle(
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.End,
-            ),
-        maxLines = 1,
-        softWrap = false,
-        autoSize =
-            TextAutoSize.StepBased(
-                minFontSize = 8.sp,
-                maxFontSize = 14.sp,
-                stepSize = 0.5.sp,
-            ),
-        modifier = Modifier.weight(1f),
-    )
+    MarketPriceText(text = formatSpotPrice(market.currentPrice))
     Spacer(modifier = Modifier.width(MarketPriceChangeGap))
     MarketChangeColumn(
         change = change,

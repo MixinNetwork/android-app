@@ -244,12 +244,34 @@ internal fun MarketListRowFrame(
 }
 
 @Composable
+internal fun RowScope.MarketPriceText(text: String) {
+    BasicText(
+        text = text,
+        style =
+            TextStyle(
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.End,
+            ),
+        maxLines = 1,
+        softWrap = false,
+        autoSize =
+            TextAutoSize.StepBased(
+                minFontSize = 8.sp,
+                maxFontSize = 14.sp,
+                stepSize = 0.5.sp,
+            ),
+        modifier = Modifier.weight(1f),
+    )
+}
+
+@Composable
 internal fun PerpsMarketListItem(
     market: PerpsMarket,
     isFavored: Boolean,
     quoteColorReversed: Boolean,
     badgeStyle: PerpetualMarketBadgeStyle,
-    emphasizePrice: Boolean,
     onFavorite: () -> Unit,
     onClick: () -> Unit,
 ) {
@@ -263,7 +285,6 @@ internal fun PerpsMarketListItem(
             market = market,
             quoteColorReversed = quoteColorReversed,
             badgeStyle = badgeStyle,
-            emphasizePrice = emphasizePrice,
         )
     }
 }
@@ -273,7 +294,6 @@ private fun RowScope.PerpsMarketRowContent(
     market: PerpsMarket,
     quoteColorReversed: Boolean,
     badgeStyle: PerpetualMarketBadgeStyle,
-    emphasizePrice: Boolean,
 ) {
     val change = market.changePercentValue()
     MarketIcon(url = market.iconUrl, size = 38.dp)
@@ -287,7 +307,7 @@ private fun RowScope.PerpsMarketRowContent(
                 lineHeight = 14.sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             )
-            Spacer(modifier = Modifier.width(if (badgeStyle == PerpetualMarketBadgeStyle.LEVERAGE) 6.dp else 5.dp))
+            Spacer(modifier = Modifier.width(5.dp))
             PerpetualMarketBadge(
                 leverage = market.leverage,
                 style = badgeStyle,
@@ -306,27 +326,7 @@ private fun RowScope.PerpsMarketRowContent(
             maxLines = 1,
         )
     }
-    val priceStyle =
-        TextStyle(
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 14.sp,
-            textAlign = TextAlign.End,
-        ).let { style ->
-            if (emphasizePrice) style.copy(fontWeight = FontWeight.Medium) else style
-        }
-    BasicText(
-        text = "$${market.last}",
-        style = priceStyle,
-        maxLines = 1,
-        softWrap = false,
-        autoSize =
-            TextAutoSize.StepBased(
-                minFontSize = 8.sp,
-                maxFontSize = 14.sp,
-                stepSize = 0.5.sp,
-            ),
-        modifier = Modifier.weight(1f),
-    )
+    MarketPriceText(text = "$${market.last}")
     Spacer(modifier = Modifier.width(MarketPriceChangeGap))
     MarketChangeColumn(
         change = change,
@@ -447,7 +447,7 @@ private fun PerpetualMarketBadge(
     Text(
         text = if (isLeverage) "${leverage}x" else stringResource(R.string.Perp),
         fontSize = 12.sp,
-        fontWeight = if (isLeverage) FontWeight.W500 else FontWeight.W400,
+        fontWeight = FontWeight.W400,
         color = MixinAppTheme.colors.textAssist,
         lineHeight = 14.sp,
         style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
@@ -456,7 +456,7 @@ private fun PerpetualMarketBadge(
                 .clip(RoundedCornerShape(4.dp))
                 .background(MixinAppTheme.colors.marketBadgeBackground)
                 .padding(
-                    horizontal = if (isLeverage) 3.dp else 2.dp,
+                    horizontal = 2.dp,
                     vertical = if (isLeverage) 1.dp else 0.dp,
                 ),
     )
