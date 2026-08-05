@@ -79,6 +79,7 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
+import one.mixin.android.ui.home.web3.market.MarketFavoriteAnimationIntent
 import one.mixin.android.ui.home.web3.market.MarketFavoriteIcon
 import one.mixin.android.ui.home.web3.trade.CandleChart
 import one.mixin.android.ui.wallet.MarketDescriptionTextView
@@ -113,7 +114,10 @@ fun PerpsMarketDetailPage(
     var isLoading by remember(marketId, initialMarket) { mutableStateOf(initialMarket == null) }
     val favoriteMarketIds by viewModel.favoriteMarketIds.collectAsStateWithLifecycle()
     var isUpdatingFavorite by remember(marketId) { mutableStateOf(false) }
-    var favoriteAnimationTrigger by remember(marketId) { mutableIntStateOf(0) }
+    var favoriteAnimationIntent by
+        remember(marketId) {
+            mutableStateOf<MarketFavoriteAnimationIntent?>(null)
+        }
     val isFavored = marketId in favoriteMarketIds
     val timeFramePreferenceKey = PREF_MARKET_DETAIL_TIME_FRAME
     val walletId = Session.getAccountId().orEmpty()
@@ -204,11 +208,16 @@ fun PerpsMarketDetailPage(
                 onClick = {
                     if (isUpdatingFavorite) return@IconButton
                     isUpdatingFavorite = true
-                    if (!isFavored) {
-                        favoriteAnimationTrigger++
-                    }
+                    favoriteAnimationIntent =
+                        MarketFavoriteAnimationIntent(
+                            id = (favoriteAnimationIntent?.id ?: 0) + 1,
+                            targetFavored = !isFavored,
+                        )
                     viewModel.updateMarketFavorite(marketId, isFavored) { success ->
                         isUpdatingFavorite = false
+                        if (!success) {
+                            favoriteAnimationIntent = null
+                        }
                         if (success) {
                             toast(
                                 context.getString(
@@ -228,7 +237,6 @@ fun PerpsMarketDetailPage(
                 MarketFavoriteIcon(
                     isFavored = isFavored,
                     unselectedIconRes = R.drawable.ic_title_favorites,
-                    selectedIconRes = R.drawable.ic_title_favorites_checked,
                     contentDescription =
                         stringResource(
                             if (isFavored) {
@@ -238,7 +246,7 @@ fun PerpsMarketDetailPage(
                             },
                         ),
                     modifier = Modifier.size(24.dp),
-                    animationTrigger = favoriteAnimationTrigger,
+                    animationIntent = favoriteAnimationIntent,
                 )
             }
             IconButton(onClick = {

@@ -1,28 +1,135 @@
 package one.mixin.android.ui.home.web3.market
 
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Test
 
 class MarketFavoriteAnimationStateTest {
     @Test
-    fun externalFavoriteUpdateDoesNotAnimate() {
-        val state =
-            MarketFavoriteAnimationState(
-                initialAnimationTrigger = 0,
-            )
+    fun initialNotFavoredSnapsToFirstFrame() {
+        val state = MarketFavoriteAnimationState(initialFavored = false)
 
-        assertFalse(state.shouldPlay(animationTrigger = 0))
-        assertFalse(state.shouldPlay(animationTrigger = 0))
+        assertDecision(state.update(isFavored = false, intent = null), MarketFavoriteAnimationMode.SNAP, 0f)
+        assertDecision(state.update(isFavored = false, intent = null), MarketFavoriteAnimationMode.SNAP, 0f)
     }
 
     @Test
-    fun explicitFavoriteTriggerAnimates() {
-        val state =
-            MarketFavoriteAnimationState(
-                initialAnimationTrigger = 0,
-            )
+    fun initialFavoredSnapsToFinalFrame() {
+        val state = MarketFavoriteAnimationState(initialFavored = true)
 
-        assertTrue(state.shouldPlay(animationTrigger = 1))
+        assertDecision(state.update(isFavored = true, intent = null), MarketFavoriteAnimationMode.SNAP, 1f)
+    }
+
+    @Test
+    fun explicitAddIntentAnimatesForward() {
+        val state = MarketFavoriteAnimationState(initialFavored = false)
+
+        assertDecision(
+            state.update(false, MarketFavoriteAnimationIntent(id = 1, targetFavored = true)),
+            MarketFavoriteAnimationMode.ANIMATE_FORWARD,
+            1f,
+        )
+    }
+
+    @Test
+    fun explicitRemoveIntentSnapsToFirstFrame() {
+        val state = MarketFavoriteAnimationState(initialFavored = true)
+
+        assertDecision(
+            state.update(true, MarketFavoriteAnimationIntent(id = 1, targetFavored = false)),
+            MarketFavoriteAnimationMode.SNAP,
+            0f,
+        )
+    }
+
+    @Test
+    fun repeatedIntentContinuesWithoutCreatingAnotherStart() {
+        val state = MarketFavoriteAnimationState(initialFavored = false)
+        val intent = MarketFavoriteAnimationIntent(id = 1, targetFavored = true)
+
+        assertDecision(state.update(false, intent), MarketFavoriteAnimationMode.ANIMATE_FORWARD, 1f)
+        assertDecision(state.update(false, intent), MarketFavoriteAnimationMode.ANIMATE_FORWARD, 1f)
+        assertDecision(
+            state.update(false, MarketFavoriteAnimationIntent(id = 2, targetFavored = false)),
+            MarketFavoriteAnimationMode.SNAP,
+            0f,
+        )
+    }
+
+    @Test
+    fun externalFavoriteRefreshSnapsWithoutAnimation() {
+        val state = MarketFavoriteAnimationState(initialFavored = false)
+
+        assertDecision(state.update(false, null), MarketFavoriteAnimationMode.SNAP, 0f)
+        assertDecision(state.update(true, null), MarketFavoriteAnimationMode.SNAP, 1f)
+        assertDecision(state.update(false, null), MarketFavoriteAnimationMode.SNAP, 0f)
+    }
+
+    @Test
+    fun authoritativeConfirmationKeepsActiveIntent() {
+        val state = MarketFavoriteAnimationState(initialFavored = false)
+        val intent = MarketFavoriteAnimationIntent(id = 1, targetFavored = true)
+
+        assertDecision(state.update(false, intent), MarketFavoriteAnimationMode.ANIMATE_FORWARD, 1f)
+        assertDecision(state.update(true, intent), MarketFavoriteAnimationMode.ANIMATE_FORWARD, 1f)
+        assertDecision(state.update(true, null), MarketFavoriteAnimationMode.SNAP, 1f)
+    }
+
+    @Test
+    fun failedForwardIntentSnapsBackToAuthoritativeState() {
+        val state = MarketFavoriteAnimationState(initialFavored = false)
+
+        assertDecision(
+            state.update(false, MarketFavoriteAnimationIntent(id = 1, targetFavored = true)),
+            MarketFavoriteAnimationMode.ANIMATE_FORWARD,
+            1f,
+        )
+        assertDecision(state.update(false, null), MarketFavoriteAnimationMode.SNAP, 0f)
+    }
+
+    @Test
+    fun failedRemoveIntentSnapsBackToAuthoritativeState() {
+        val state = MarketFavoriteAnimationState(initialFavored = true)
+
+        assertDecision(
+            state.update(true, MarketFavoriteAnimationIntent(id = 1, targetFavored = false)),
+            MarketFavoriteAnimationMode.SNAP,
+            0f,
+        )
+        assertDecision(state.update(true, null), MarketFavoriteAnimationMode.SNAP, 1f)
+    }
+
+    @Test
+    fun newerRemoveIntentCancelsForwardAnimation() {
+        val state = MarketFavoriteAnimationState(initialFavored = false)
+
+        state.update(false, MarketFavoriteAnimationIntent(id = 1, targetFavored = true))
+
+        assertDecision(
+            state.update(false, MarketFavoriteAnimationIntent(id = 2, targetFavored = false)),
+            MarketFavoriteAnimationMode.SNAP,
+            0f,
+        )
+    }
+
+    @Test
+    fun newerForwardIntentReplacesRemoveIntent() {
+        val state = MarketFavoriteAnimationState(initialFavored = true)
+
+        state.update(true, MarketFavoriteAnimationIntent(id = 1, targetFavored = false))
+
+        assertDecision(
+            state.update(true, MarketFavoriteAnimationIntent(id = 2, targetFavored = true)),
+            MarketFavoriteAnimationMode.ANIMATE_FORWARD,
+            1f,
+        )
+    }
+
+    private fun assertDecision(
+        actual: MarketFavoriteAnimationDecision,
+        mode: MarketFavoriteAnimationMode,
+        targetProgress: Float,
+    ) {
+        assertEquals(mode, actual.mode)
+        assertEquals(targetProgress, actual.targetProgress)
     }
 }

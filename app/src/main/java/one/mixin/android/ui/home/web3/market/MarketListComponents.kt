@@ -25,7 +25,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,6 +61,7 @@ internal val MarketHorizontalPadding = 16.dp
 internal val MarketLeadingIconInset = 6.dp
 internal val MarketRowStartPadding = MarketHorizontalPadding - MarketLeadingIconInset
 internal val MarketLeadingGap = 6.dp
+internal val MarketListFavoriteIconSize = 18.dp
 
 private val MarketHeaderPriceWidth = 96.dp
 private val MarketHeaderPriceChangeMinGap = 20.dp
@@ -194,7 +195,10 @@ internal fun MarketListRowFrame(
     onClick: () -> Unit,
     content: @Composable RowScope.() -> Unit,
 ) {
-    var favoriteAnimationTrigger by remember(stableId) { mutableIntStateOf(0) }
+    var favoriteAnimationIntent by
+        remember(stableId) {
+            mutableStateOf<MarketFavoriteAnimationIntent?>(null)
+        }
     Row(
         modifier =
             Modifier
@@ -215,16 +219,17 @@ internal fun MarketListRowFrame(
                     .size(24.dp)
                     .clip(CircleShape)
                     .clickable {
-                        if (!isFavored) {
-                            favoriteAnimationTrigger++
-                        }
+                        favoriteAnimationIntent =
+                            MarketFavoriteAnimationIntent(
+                                id = (favoriteAnimationIntent?.id ?: 0) + 1,
+                                targetFavored = !isFavored,
+                            )
                         onFavorite()
                     },
         ) {
             MarketFavoriteIcon(
                 isFavored = isFavored,
-                unselectedIconRes = R.drawable.ic_asset_favorites,
-                selectedIconRes = R.drawable.ic_asset_favorites_checked,
+                unselectedIconRes = R.drawable.ic_title_favorites,
                 contentDescription =
                     stringResource(
                         if (isFavored) {
@@ -233,9 +238,9 @@ internal fun MarketListRowFrame(
                             R.string.Add_to_Watchlist
                         },
                     ),
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(MarketListFavoriteIconSize),
                 unselectedTint = MixinAppTheme.colors.textAssist,
-                animationTrigger = favoriteAnimationTrigger,
+                animationIntent = favoriteAnimationIntent,
             )
         }
         Spacer(modifier = Modifier.width(MarketLeadingGap))

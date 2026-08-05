@@ -252,7 +252,7 @@ private fun SubTabs(
                             } else {
                                 MixinAppTheme.colors.textAssist
                             },
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(MarketListFavoriteIconSize),
                     )
                 }
             } else {
