@@ -86,10 +86,10 @@ interface MarketDao : BaseDao<Market> {
     @Query(
         """
         SELECT m.*, mf.is_favored
-        FROM market_cap_ranks mr
-        INNER JOIN markets m ON m.coin_id = mr.coin_id
+        FROM markets m
         LEFT JOIN market_favored mf ON mf.coin_id = m.coin_id
-        ORDER BY CAST(mr.market_cap_rank AS INTEGER) ASC
+        LEFT JOIN market_cap_ranks mr ON mr.coin_id = m.coin_id
+        ORDER BY CAST(COALESCE(mr.market_cap_rank, m.market_cap_rank) AS INTEGER) ASC
         """,
     )
     fun observeAllMarkets(): Flow<List<MarketItem>>

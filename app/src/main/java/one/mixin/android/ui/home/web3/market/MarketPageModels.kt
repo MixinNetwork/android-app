@@ -157,7 +157,7 @@ data class MarketPageUiState(
             }
 
     val showsMarketLoading: Boolean
-        get() = isLoading && entries.isEmpty()
+        get() = isLoading && hasLoadedLocalData && entries.isEmpty()
 }
 
 fun defaultMarketSubTabs(): Map<MarketTopTab, MarketSubTab> =
@@ -195,14 +195,17 @@ fun marketSubTabs(topTab: MarketTopTab): List<MarketSubTab> =
 object MarketPageMapper {
     fun spotMarkets(
         markets: List<MarketItem>,
+        fallbackMarkets: List<MarketItem> = emptyList(),
         subTab: MarketSubTab,
         period: MarketPriceChangePeriod,
-    ): List<MarketItem> =
-        when (subTab) {
-            MarketSubTab.TOP_GAINERS -> markets.sortedByDescending { it.changePercent(period) ?: BigDecimal.ZERO }
-            MarketSubTab.TOP_LOSERS -> markets.sortedBy { it.changePercent(period) ?: BigDecimal.ZERO }
-            else -> markets
+    ): List<MarketItem> {
+        val source = markets.ifEmpty { fallbackMarkets }
+        return when (subTab) {
+            MarketSubTab.TOP_GAINERS -> source.sortedByDescending { it.changePercent(period) ?: BigDecimal.ZERO }
+            MarketSubTab.TOP_LOSERS -> source.sortedBy { it.changePercent(period) ?: BigDecimal.ZERO }
+            else -> source
         }
+    }
 
     fun perpetualMarkets(
         markets: List<PerpsMarket>,

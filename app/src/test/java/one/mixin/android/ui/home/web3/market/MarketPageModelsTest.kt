@@ -204,6 +204,21 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun spotCategoryUsesAllMarketCacheUntilCategoryCacheLoads() {
+        val cachedMarkets = listOf(market("btc"), market("eth"))
+
+        val result =
+            MarketPageMapper.spotMarkets(
+                markets = emptyList(),
+                fallbackMarkets = cachedMarkets,
+                subTab = MarketSubTab.TRENDING,
+                period = MarketPriceChangePeriod.SEVEN_DAYS,
+            )
+
+        assertEquals(listOf("btc", "eth"), result.map { it.coinId })
+    }
+
+    @Test
     fun perpetualOnlySelectionForcesTwentyFourHourDisplay() {
         val state =
             MarketPageUiState(
@@ -335,10 +350,10 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun initialLoadingShowsBeforeLocalDatabaseResult() {
+    fun initialLoadingDoesNotFlashSpinnerBeforeLocalDatabaseResult() {
         val state = MarketPageUiState(isLoading = true, hasLoadedLocalData = false)
 
-        assertTrue(state.showsMarketLoading)
+        assertTrue(!state.showsMarketLoading)
     }
 
     @Test

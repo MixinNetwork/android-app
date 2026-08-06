@@ -340,8 +340,9 @@ class MarketPageViewModel
                         )
 
                     MarketTopTab.CRYPTO -> {
+                        val subTab = state.selectedSubTab ?: MarketSubTab.TRENDING
                         val source =
-                            when (state.selectedSubTab) {
+                            when (subTab) {
                                 MarketSubTab.FAVORITE ->
                                     favoriteCryptoMarkets.ifEmpty {
                                         featuredSpotMarkets.filterNot { it.coinId in stockCoinIds }
@@ -351,10 +352,19 @@ class MarketPageViewModel
                                 MarketSubTab.ALL -> allMarkets
                                 else -> trendingMarkets
                             }
+                        val fallbackMarkets =
+                            when (subTab) {
+                                MarketSubTab.TRENDING,
+                                MarketSubTab.TOP_GAINERS,
+                                MarketSubTab.TOP_LOSERS,
+                                -> allMarkets
+                                else -> emptyList()
+                            }
                         MarketPageMapper
                             .spotMarkets(
                                 markets = source.withFavoriteState(),
-                                subTab = state.selectedSubTab ?: MarketSubTab.TRENDING,
+                                fallbackMarkets = fallbackMarkets.withFavoriteState(),
+                                subTab = subTab,
                                 period = state.effectivePriceChangePeriod,
                             )
                             .filterNot { it.coinId in stockCoinIds }
