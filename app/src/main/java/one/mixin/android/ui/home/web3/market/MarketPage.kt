@@ -245,7 +245,7 @@ private fun SubTabs(
                 ) {
                     Icon(
                         painter =
-                            painterResource(R.drawable.ic_market_favorites),
+                            painterResource(R.drawable.ic_title_favorites),
                         contentDescription = stringResource(R.string.Watchlist),
                         tint =
                             if (selected == tab) {
