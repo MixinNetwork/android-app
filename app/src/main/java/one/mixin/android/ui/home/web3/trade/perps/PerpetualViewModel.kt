@@ -93,7 +93,14 @@ class PerpetualViewModel @Inject constructor(
         onComplete: (Boolean) -> Unit = {},
     ) {
         viewModelScope.launch {
-            val success = perpsMarketRepository.updateFavorite(marketId, isFavored)
+            val success =
+                try {
+                    perpsMarketRepository.updateFavorite(marketId, isFavored)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (_: Exception) {
+                    false
+                }
             onComplete(success)
         }
     }

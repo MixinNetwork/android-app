@@ -142,7 +142,7 @@ internal class MarketFavoriteAnimationState(
                 intentId = intent.id,
             )
         } else {
-            snapTo(authoritativeFavored)
+            snapTo(intent.targetFavored)
         }
     }
 

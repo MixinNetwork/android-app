@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -124,46 +125,53 @@ class MarketPageViewModel
             }
         }
 
-        fun toggleFavorite(entry: MarketListEntry, onComplete: () -> Unit = {}) {
+        fun toggleFavorite(entry: MarketListEntry, onResult: (Boolean) -> Unit = {}) {
             when (entry) {
                 is MarketListEntry.Spot ->
                     viewModelScope.launch {
-                        try {
-                            withContext(Dispatchers.IO) {
-                                tokenRepository.updateMarketFavored(
-                                    entry.market.symbol,
-                                    entry.favoriteId,
-                                    entry.isFavored,
-                                )
+                        val success =
+                            try {
+                                withContext(Dispatchers.IO) {
+                                    tokenRepository.updateMarketFavored(
+                                        entry.market.symbol,
+                                        entry.favoriteId,
+                                        entry.isFavored,
+                                    )
+                                }
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (_: Exception) {
+                                false
                             }
-                        } finally {
-                            onComplete()
-                        }
+                        onResult(success)
                     }
 
                 is MarketListEntry.Perpetual ->
                     viewModelScope.launch {
-                        try {
-                            val updated =
+                        val success =
+                            try {
                                 perpsMarketRepository.updateFavorite(
                                     marketId = entry.favoriteId,
                                     isFavored = entry.isFavored,
                                 )
-                            if (updated) {
-                                toast(
-                                    MixinApplication.appContext.getString(
-                                        if (entry.isFavored) {
-                                            R.string.watchlist_remove_desc
-                                        } else {
-                                            R.string.watchlist_add_desc
-                                        },
-                                        entry.market.tokenSymbol,
-                                    ),
-                                )
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (_: Exception) {
+                                false
                             }
-                        } finally {
-                            onComplete()
+                        if (success) {
+                            toast(
+                                MixinApplication.appContext.getString(
+                                    if (entry.isFavored) {
+                                        R.string.watchlist_remove_desc
+                                    } else {
+                                        R.string.watchlist_add_desc
+                                    },
+                                    entry.market.tokenSymbol,
+                                ),
+                            )
                         }
+                        onResult(success)
                     }
             }
         }

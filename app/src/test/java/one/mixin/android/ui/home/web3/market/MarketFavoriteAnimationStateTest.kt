@@ -75,23 +75,34 @@ class MarketFavoriteAnimationStateTest {
     }
 
     @Test
-    fun completedIntentUsesAuthoritativeState() {
+    fun completedIntentKeepsTargetUntilCleared() {
         val state = MarketFavoriteAnimationState(initialFavored = false)
         val intent = MarketFavoriteAnimationIntent(id = 1, targetFavored = true)
 
         assertDecision(state.update(false, intent), MarketFavoriteAnimationMode.ANIMATE_FORWARD, 1f)
         state.onAnimationFinished(intent.id)
-        assertDecision(state.update(false, intent), MarketFavoriteAnimationMode.SNAP, 0f)
-        assertDecision(state.update(true, intent), MarketFavoriteAnimationMode.SNAP, 1f)
+        assertDecision(state.update(false, intent), MarketFavoriteAnimationMode.SNAP, 1f)
+        assertDecision(state.update(false, null), MarketFavoriteAnimationMode.SNAP, 0f)
     }
 
     @Test
-    fun repeatedRemoveIntentUsesAuthoritativeState() {
+    fun repeatedRemoveIntentKeepsTargetUntilCleared() {
         val state = MarketFavoriteAnimationState(initialFavored = true)
         val intent = MarketFavoriteAnimationIntent(id = 1, targetFavored = false)
 
         assertDecision(state.update(true, intent), MarketFavoriteAnimationMode.SNAP, 0f)
-        assertDecision(state.update(true, intent), MarketFavoriteAnimationMode.SNAP, 1f)
+        assertDecision(state.update(true, intent), MarketFavoriteAnimationMode.SNAP, 0f)
+    }
+
+    @Test
+    fun failedIntentRollsBackAfterAnimationFinishes() {
+        val state = MarketFavoriteAnimationState(initialFavored = true)
+        val intent = MarketFavoriteAnimationIntent(id = 1, targetFavored = false)
+
+        assertDecision(state.update(true, intent), MarketFavoriteAnimationMode.SNAP, 0f)
+        state.onAnimationFinished(intent.id)
+        assertDecision(state.update(true, intent), MarketFavoriteAnimationMode.SNAP, 0f)
+        assertDecision(state.update(true, null), MarketFavoriteAnimationMode.SNAP, 1f)
     }
 
     @Test

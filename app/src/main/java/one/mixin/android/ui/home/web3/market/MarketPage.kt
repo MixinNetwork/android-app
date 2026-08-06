@@ -85,7 +85,7 @@ fun MarketPage(
     onSelectTopTab: (MarketTopTab) -> Unit,
     onSelectSubTab: (MarketSubTab) -> Unit,
     onSort: (MarketSortColumn) -> Unit,
-    onFavorite: (MarketListEntry, () -> Unit) -> Unit,
+    onFavorite: (MarketListEntry, (Boolean) -> Unit) -> Unit,
     onAddRecommendations: (List<MarketListEntry>) -> Unit,
     onEntryClick: (MarketListEntry) -> Unit,
 ) {
@@ -367,7 +367,7 @@ private fun MarketListHeader(
 @Composable
 private fun MarketList(
     state: MarketPageUiState,
-    onFavorite: (MarketListEntry, () -> Unit) -> Unit,
+    onFavorite: (MarketListEntry, (Boolean) -> Unit) -> Unit,
     onAddRecommendations: (List<MarketListEntry>) -> Unit,
     onEntryClick: (MarketListEntry) -> Unit,
 ) {
@@ -427,7 +427,7 @@ private fun MarketList(
                         entry = entry,
                         settings = state.displaySettings,
                         showMarketCap = state.showsMarketCapColumn,
-                        onFavorite = { onComplete -> onFavorite(entry, onComplete) },
+                        onFavorite = { onResult -> onFavorite(entry, onResult) },
                         onClick = { onEntryClick(entry) },
                     )
                 }
@@ -509,7 +509,7 @@ private fun MarketRow(
     entry: MarketListEntry,
     settings: MarketDisplaySettings,
     showMarketCap: Boolean,
-    onFavorite: (() -> Unit) -> Unit,
+    onFavorite: ((Boolean) -> Unit) -> Unit,
     onClick: () -> Unit,
 ) {
     when (entry) {

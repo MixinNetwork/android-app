@@ -172,16 +172,16 @@ class PerpsMarketListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
     private fun updateFavorite(
         market: PerpsMarket,
         isFavored: Boolean,
-        onComplete: () -> Unit,
+        onResult: (Boolean) -> Unit,
     ) {
         if (uiState.value.isFavoriteUpdatePending(market.marketId)) {
-            onComplete()
+            onResult(false)
             return
         }
         mutableUiState.update { it.startFavoriteUpdate(market.marketId) }
         viewModel.updateMarketFavorite(market.marketId, isFavored) { success ->
             mutableUiState.update { it.finishFavoriteUpdate(market.marketId, success) }
-            onComplete()
+            onResult(success)
             if (success) {
                 toast(
                     getString(

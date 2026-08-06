@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -191,7 +192,8 @@ private fun MarketSortLabel(
 internal fun MarketListRowFrame(
     stableId: String,
     isFavored: Boolean,
-    onFavorite: (() -> Unit) -> Unit,
+    onFavorite: ((Boolean) -> Unit) -> Unit,
+    favoriteEnabled: Boolean = true,
     onClick: () -> Unit,
     content: @Composable RowScope.() -> Unit,
 ) {
@@ -200,6 +202,23 @@ internal fun MarketListRowFrame(
             mutableStateOf<MarketFavoriteAnimationIntent?>(null)
         }
     var favoriteAnimationIntentId by remember(stableId) { mutableStateOf(0) }
+    var favoriteRequestPending by remember(stableId) { mutableStateOf(false) }
+    var favoriteRequestResult by remember(stableId) { mutableStateOf<Boolean?>(null) }
+    LaunchedEffect(isFavored, favoriteAnimationIntent, favoriteRequestResult) {
+        val intent = favoriteAnimationIntent ?: return@LaunchedEffect
+        when {
+            favoriteRequestResult == false -> {
+                favoriteAnimationIntent = null
+                favoriteRequestPending = false
+                favoriteRequestResult = null
+            }
+            favoriteRequestResult == true && isFavored == intent.targetFavored -> {
+                favoriteAnimationIntent = null
+                favoriteRequestPending = false
+                favoriteRequestResult = null
+            }
+        }
+    }
     Row(
         modifier =
             Modifier
@@ -219,7 +238,8 @@ internal fun MarketListRowFrame(
                 Modifier
                     .size(24.dp)
                     .clip(CircleShape)
-                    .clickable {
+                    .clickable(enabled = favoriteEnabled && !favoriteRequestPending) {
+                        if (favoriteRequestPending) return@clickable
                         favoriteAnimationIntentId += 1
                         val intent =
                             MarketFavoriteAnimationIntent(
@@ -227,9 +247,11 @@ internal fun MarketListRowFrame(
                                 targetFavored = !isFavored,
                             )
                         favoriteAnimationIntent = intent
-                        onFavorite {
+                        favoriteRequestPending = true
+                        favoriteRequestResult = null
+                        onFavorite { success ->
                             if (favoriteAnimationIntent?.id == intent.id) {
-                                favoriteAnimationIntent = null
+                                favoriteRequestResult = success
                             }
                         }
                     },
@@ -284,13 +306,15 @@ internal fun PerpsMarketListItem(
     isFavored: Boolean,
     quoteColorReversed: Boolean,
     badgeStyle: PerpetualMarketBadgeStyle,
-    onFavorite: (() -> Unit) -> Unit,
+    onFavorite: ((Boolean) -> Unit) -> Unit,
+    favoriteEnabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     MarketListRowFrame(
         stableId = market.marketId,
         isFavored = isFavored,
         onFavorite = onFavorite,
+        favoriteEnabled = favoriteEnabled,
         onClick = onClick,
     ) {
         PerpsMarketRowContent(
