@@ -220,7 +220,7 @@ private fun SubTabs(
     LazyRow(
         state = listState,
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(start = 14.dp, end = 20.dp),
+        contentPadding = PaddingValues(start = 6.dp, end = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

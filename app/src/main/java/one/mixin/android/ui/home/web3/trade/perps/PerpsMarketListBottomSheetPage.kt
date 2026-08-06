@@ -263,7 +263,7 @@ private fun WatchlistCategoryChip(
     ) {
         Box(contentAlignment = Alignment.Center) {
             Icon(
-                painter = painterResource(R.drawable.ic_market_favorites),
+                painter = painterResource(R.drawable.ic_title_favorites),
                 contentDescription = stringResource(R.string.Watchlist),
                 tint = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary,
                 modifier = Modifier.size(MarketListFavoriteIconSize),
