@@ -290,7 +290,13 @@ private fun PerpsAddContent(
     val aboveMaximumMargin = amountValue != null && maximumMargin > BigDecimal.ZERO && amountValue > maximumMargin
 
     val insufficientBalance = amountValue != null && amountValue > BigDecimal.ZERO && amountValue > tokenBalance
-    val canAdd = selectedToken != null && hasInputAmount && !insufficientBalance && !belowMinimumMargin && !aboveMaximumMargin && !isLiquidationLoading
+    val canAdd = selectedToken != null &&
+        hasInputAmount &&
+        !insufficientBalance &&
+        !belowMinimumMargin &&
+        !aboveMaximumMargin &&
+        !isLiquidationLoading &&
+        !remoteLiquidationPrice.isNullOrBlank()
     val marketSymbol = position.tokenSymbol ?: position.displaySymbol.orEmpty()
     val currentPrice = market?.last.orEmpty()
         .ifBlank { market?.markPrice.orEmpty() }
@@ -321,7 +327,7 @@ private fun PerpsAddContent(
                     amount = normalizedAmount,
                     positionId = position.positionId,
                 )
-            } ?: "-"
+            }
             isLiquidationLoading = false
         }
     }
@@ -345,7 +351,11 @@ private fun PerpsAddContent(
     val currentPriceText = formatPerpsPrice(currentPrice, priceScale)
     val defaultLiquidationPrice = position.liquidationPrice
         ?.takeIf { showLiquidationPrice && it.isNotBlank() }
-    val displayLiquidationPrice = remoteLiquidationPrice ?: defaultLiquidationPrice
+    val displayLiquidationPrice = if (hasInputAmount) {
+        remoteLiquidationPrice
+    } else {
+        defaultLiquidationPrice
+    }
     val entryPriceText = position.entryPrice
         .takeIf { it.isNotBlank() }
         ?.let { formatPerpsPrice(it, priceScale) }
