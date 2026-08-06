@@ -2,7 +2,7 @@ package one.mixin.android.vo
 
 import android.graphics.Color
 import android.os.Parcelable
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.MixinApplication
 import one.mixin.android.R

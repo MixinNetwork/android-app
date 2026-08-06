@@ -6,7 +6,6 @@ import androidx.paging.Pager
 import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.cachedIn
-import androidx.room.withTransaction
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -35,6 +34,7 @@ import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.PerpsDatabase
 import one.mixin.android.db.TokenDao
+import one.mixin.android.db.withRoomTransaction
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.perps.PerpsOrderDao
 import one.mixin.android.db.perps.PerpsPositionDao
@@ -82,7 +82,7 @@ class PerpetualViewModel @Inject constructor(
             }
 
             withContext(Dispatchers.IO) {
-                perpsDatabase.withTransaction {
+                perpsDatabase.withRoomTransaction {
                     if (positions.isEmpty()) {
                         perpsPositionDao.deleteOpenByWallet(walletId)
                     } else {

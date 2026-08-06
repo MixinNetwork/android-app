@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.SerialName

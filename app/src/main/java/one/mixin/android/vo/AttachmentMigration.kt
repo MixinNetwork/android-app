@@ -2,7 +2,7 @@ package one.mixin.android.vo
 
 import android.content.Context
 import androidx.core.net.toFile
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 import one.mixin.android.extension.generateConversationPath
 import one.mixin.android.extension.getAudioPath
 import one.mixin.android.extension.getDocumentPath
