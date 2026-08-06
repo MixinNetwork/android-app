@@ -103,7 +103,6 @@ val autodisposeVersion = rootProject.extra["autodisposeVersion"] as String
 val bitcoinPaymentUriVersion = rootProject.extra["bitcoinPaymentUriVersion"] as String
 val startupVersion = rootProject.extra["startupVersion"] as String
 val dnsVersion = rootProject.extra["dnsVersion"] as String
-val audioSwitchVersion = rootProject.extra["audioSwitchVersion"] as String
 val balloonVersion = rootProject.extra["balloonVersion"] as String
 val markdownVersion = rootProject.extra["markdownVersion"] as String
 val bcVersion = rootProject.extra["bcVersion"] as String
@@ -500,7 +499,6 @@ dependencies {
     implementation("com.caverock:androidsvg-aar:$svgVersion")
     implementation("androidx.startup:startup-runtime:$startupVersion")
     implementation("dnsjava:dnsjava:$dnsVersion")
-    implementation("com.github.SeniorZhai:audioswitch:$audioSwitchVersion")
     implementation("com.github.skydoves:balloon:$balloonVersion")
     implementation("org.osmdroid:osmdroid-android:$streetMapVersion")
     implementation("com.mattprecious.swirl:swirl:$swirlVersion")
@@ -586,9 +584,7 @@ dependencies {
     }
 
     // SumSub
-    implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion") {
-        exclude(group = "com.twilio.audioswitch", module = "AudioDevice")
-    }
+    implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion")
     // checkout
     implementation("com.github.checkout:frames-android:$checkoutFramesVersion")
     implementation("com.checkout:checkout-sdk-3ds-android:$checkoutSecureVersion")

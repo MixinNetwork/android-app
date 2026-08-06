@@ -59,7 +59,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.twilio.audioswitch.AudioSwitch
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -92,6 +91,7 @@ import one.mixin.android.event.GroupEvent
 import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.event.MessageEventAction
 import one.mixin.android.event.RecallEvent
+import one.mixin.android.extension.AudioSwitch
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
