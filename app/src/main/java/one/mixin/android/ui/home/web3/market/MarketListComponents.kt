@@ -25,7 +25,7 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,6 +61,7 @@ internal val MarketHorizontalPadding = 16.dp
 internal val MarketLeadingIconInset = 6.dp
 internal val MarketRowStartPadding = MarketHorizontalPadding - MarketLeadingIconInset
 internal val MarketLeadingGap = 6.dp
+internal val MarketListFavoriteIconSize = 18.dp
 
 private val MarketHeaderPriceWidth = 96.dp
 private val MarketHeaderPriceChangeMinGap = 20.dp
@@ -194,7 +195,10 @@ internal fun MarketListRowFrame(
     onClick: () -> Unit,
     content: @Composable RowScope.() -> Unit,
 ) {
-    var favoriteAnimationTrigger by remember(stableId) { mutableIntStateOf(0) }
+    var favoriteAnimationIntent by
+        remember(stableId) {
+            mutableStateOf<MarketFavoriteAnimationIntent?>(null)
+        }
     Row(
         modifier =
             Modifier
@@ -215,16 +219,17 @@ internal fun MarketListRowFrame(
                     .size(24.dp)
                     .clip(CircleShape)
                     .clickable {
-                        if (!isFavored) {
-                            favoriteAnimationTrigger++
-                        }
+                        favoriteAnimationIntent =
+                            MarketFavoriteAnimationIntent(
+                                id = (favoriteAnimationIntent?.id ?: 0) + 1,
+                                targetFavored = !isFavored,
+                            )
                         onFavorite()
                     },
         ) {
             MarketFavoriteIcon(
                 isFavored = isFavored,
-                unselectedIconRes = R.drawable.ic_asset_favorites,
-                selectedIconRes = R.drawable.ic_asset_favorites_checked,
+                unselectedIconRes = R.drawable.ic_title_favorites,
                 contentDescription =
                     stringResource(
                         if (isFavored) {
@@ -233,9 +238,9 @@ internal fun MarketListRowFrame(
                             R.string.Add_to_Watchlist
                         },
                     ),
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(MarketListFavoriteIconSize),
                 unselectedTint = MixinAppTheme.colors.textAssist,
-                animationTrigger = favoriteAnimationTrigger,
+                animationIntent = favoriteAnimationIntent,
             )
         }
         Spacer(modifier = Modifier.width(MarketLeadingGap))
@@ -244,12 +249,34 @@ internal fun MarketListRowFrame(
 }
 
 @Composable
+internal fun RowScope.MarketPriceText(text: String) {
+    BasicText(
+        text = text,
+        style =
+            TextStyle(
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.End,
+            ),
+        maxLines = 1,
+        softWrap = false,
+        autoSize =
+            TextAutoSize.StepBased(
+                minFontSize = 8.sp,
+                maxFontSize = 14.sp,
+                stepSize = 0.5.sp,
+            ),
+        modifier = Modifier.weight(1f),
+    )
+}
+
+@Composable
 internal fun PerpsMarketListItem(
     market: PerpsMarket,
     isFavored: Boolean,
     quoteColorReversed: Boolean,
     badgeStyle: PerpetualMarketBadgeStyle,
-    emphasizePrice: Boolean,
     onFavorite: () -> Unit,
     onClick: () -> Unit,
 ) {
@@ -263,7 +290,6 @@ internal fun PerpsMarketListItem(
             market = market,
             quoteColorReversed = quoteColorReversed,
             badgeStyle = badgeStyle,
-            emphasizePrice = emphasizePrice,
         )
     }
 }
@@ -273,7 +299,6 @@ private fun RowScope.PerpsMarketRowContent(
     market: PerpsMarket,
     quoteColorReversed: Boolean,
     badgeStyle: PerpetualMarketBadgeStyle,
-    emphasizePrice: Boolean,
 ) {
     val change = market.changePercentValue()
     MarketIcon(url = market.iconUrl, size = 38.dp)
@@ -287,7 +312,7 @@ private fun RowScope.PerpsMarketRowContent(
                 lineHeight = 14.sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             )
-            Spacer(modifier = Modifier.width(if (badgeStyle == PerpetualMarketBadgeStyle.LEVERAGE) 6.dp else 5.dp))
+            Spacer(modifier = Modifier.width(5.dp))
             PerpetualMarketBadge(
                 leverage = market.leverage,
                 style = badgeStyle,
@@ -306,27 +331,7 @@ private fun RowScope.PerpsMarketRowContent(
             maxLines = 1,
         )
     }
-    val priceStyle =
-        TextStyle(
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 14.sp,
-            textAlign = TextAlign.End,
-        ).let { style ->
-            if (emphasizePrice) style.copy(fontWeight = FontWeight.Medium) else style
-        }
-    BasicText(
-        text = "$${market.last}",
-        style = priceStyle,
-        maxLines = 1,
-        softWrap = false,
-        autoSize =
-            TextAutoSize.StepBased(
-                minFontSize = 8.sp,
-                maxFontSize = 14.sp,
-                stepSize = 0.5.sp,
-            ),
-        modifier = Modifier.weight(1f),
-    )
+    MarketPriceText(text = "$${market.last}")
     Spacer(modifier = Modifier.width(MarketPriceChangeGap))
     MarketChangeColumn(
         change = change,
@@ -346,6 +351,7 @@ internal fun MarketRecommendationCard(
     onSelect: () -> Unit,
 ) {
     val shape = RoundedCornerShape(8.dp)
+    val compactTextStyle = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false))
     val symbol =
         when (entry) {
             is MarketListEntry.Spot -> entry.market.symbol
@@ -386,18 +392,23 @@ internal fun MarketRecommendationCard(
                     role = Role.Checkbox,
                     onClick = onSelect,
                 )
-                .padding(vertical = 10.dp)
+                .padding(vertical = 12.dp)
                 .padding(start = 12.dp, end = 6.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MarketIcon(url = iconUrl, size = 24.dp)
-        Spacer(modifier = Modifier.width(if (perpetualBadgeStyle == PerpetualMarketBadgeStyle.LEVERAGE) 8.dp else 10.dp))
-        Column(modifier = Modifier.weight(1f)) {
+        Spacer(modifier = Modifier.width(10.dp))
+        Column(
+            modifier = Modifier.weight(1f),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = symbol,
                     color = MixinAppTheme.colors.textPrimary,
-                    fontSize = if (perpetualBadgeStyle == PerpetualMarketBadgeStyle.LEVERAGE) 14.sp else 15.sp,
+                    fontSize = 14.sp,
+                    lineHeight = 16.sp,
+                    style = compactTextStyle,
                     maxLines = 1,
                 )
                 if (entry is MarketListEntry.Perpetual) {
@@ -411,7 +422,9 @@ internal fun MarketRecommendationCard(
             Text(
                 text = subtitle,
                 color = subtitleColor,
-                fontSize = if (perpetualBadgeStyle == PerpetualMarketBadgeStyle.LEVERAGE) 12.sp else 13.sp,
+                fontSize = 12.sp,
+                lineHeight = 14.sp,
+                style = compactTextStyle,
                 maxLines = 1,
             )
         }
@@ -447,7 +460,7 @@ private fun PerpetualMarketBadge(
     Text(
         text = if (isLeverage) "${leverage}x" else stringResource(R.string.Perp),
         fontSize = 12.sp,
-        fontWeight = if (isLeverage) FontWeight.W500 else FontWeight.W400,
+        fontWeight = FontWeight.W400,
         color = MixinAppTheme.colors.textAssist,
         lineHeight = 14.sp,
         style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
@@ -456,7 +469,7 @@ private fun PerpetualMarketBadge(
                 .clip(RoundedCornerShape(4.dp))
                 .background(MixinAppTheme.colors.marketBadgeBackground)
                 .padding(
-                    horizontal = if (isLeverage) 3.dp else 2.dp,
+                    horizontal = 2.dp,
                     vertical = if (isLeverage) 1.dp else 0.dp,
                 ),
     )

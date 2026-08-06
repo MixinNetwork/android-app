@@ -50,6 +50,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.web3.market.MarketChip
 import one.mixin.android.ui.home.web3.market.MarketHeaderSortLabels
 import one.mixin.android.ui.home.web3.market.MarketListEntry
+import one.mixin.android.ui.home.web3.market.MarketListFavoriteIconSize
 import one.mixin.android.ui.home.web3.market.MarketPriceChangePeriod
 import one.mixin.android.ui.home.web3.market.MarketRecommendationCard
 import one.mixin.android.ui.home.web3.market.MarketSortColumn
@@ -265,7 +266,7 @@ private fun WatchlistCategoryChip(
                 painter = painterResource(R.drawable.ic_market_favorites),
                 contentDescription = stringResource(R.string.Watchlist),
                 tint = if (selected) MixinAppTheme.colors.accent else MixinAppTheme.colors.textPrimary,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(MarketListFavoriteIconSize),
             )
         }
     }
@@ -312,7 +313,6 @@ private fun PerpsMarketListContent(
                         isFavored = isFavored,
                         quoteColorReversed = state.quoteColorReversed,
                         badgeStyle = PerpetualMarketBadgeStyle.LEVERAGE,
-                        emphasizePrice = false,
                         onFavorite = { onFavorite(market, isFavored) },
                         onClick = { onMarketClick(market) },
                     )

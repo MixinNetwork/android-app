@@ -71,6 +71,9 @@ fun defaultMarketSortState(
         topTab == MarketTopTab.WATCHLIST &&
             (subTab == MarketSubTab.CRYPTO || subTab == MarketSubTab.PERPETUAL) ->
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+        subTab == MarketSubTab.FAVORITE &&
+            (topTab == MarketTopTab.CRYPTO || topTab == MarketTopTab.PERPETUAL) ->
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.ALL ->
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.TRENDING ->
@@ -154,13 +157,13 @@ data class MarketPageUiState(
             }
 
     val showsMarketLoading: Boolean
-        get() = isLoading && hasLoadedLocalData && entries.isEmpty()
+        get() = isLoading && entries.isEmpty()
 }
 
 fun defaultMarketSubTabs(): Map<MarketTopTab, MarketSubTab> =
     mapOf(
         MarketTopTab.WATCHLIST to MarketSubTab.CRYPTO,
-        MarketTopTab.CRYPTO to MarketSubTab.TOP_LOSERS,
+        MarketTopTab.CRYPTO to MarketSubTab.TRENDING,
         MarketTopTab.PERPETUAL to MarketSubTab.TRENDING,
     )
 

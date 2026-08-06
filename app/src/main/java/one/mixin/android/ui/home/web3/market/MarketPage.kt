@@ -30,8 +30,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicText
-import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
@@ -97,6 +95,7 @@ fun MarketPage(
                 .fillMaxSize()
                 .background(MixinAppTheme.colors.background),
     ) {
+        Spacer(modifier = Modifier.height(10.dp))
         MarketToolbar(
             onSearch = onSearch,
             onScan = onScan,
@@ -114,7 +113,7 @@ fun MarketPage(
                 onSelect = onSelectSubTab,
             )
             if (!state.isShowingRecommendations && state.entries.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(12.dp))
+                Spacer(modifier = Modifier.height(8.dp))
                 MarketListHeader(
                     period = state.effectivePriceChangePeriod,
                     showMarketCap = state.showsMarketCapColumn,
@@ -234,7 +233,6 @@ private fun SubTabs(
                     contentAlignment = Alignment.Center,
                     modifier =
                         Modifier
-                            .size(28.dp)
                             .clip(CircleShape)
                             .background(
                                 if (selected == tab) {
@@ -242,7 +240,8 @@ private fun SubTabs(
                                 } else {
                                     Color.Transparent
                                 },
-                            ).clickable { onSelect(tab) },
+                            ).clickable { onSelect(tab) }
+                            .padding(horizontal = 7.dp, vertical = 5.dp),
                 ) {
                     Icon(
                         painter =
@@ -254,7 +253,7 @@ private fun SubTabs(
                             } else {
                                 MixinAppTheme.colors.textAssist
                             },
-                        modifier = Modifier.size(16.dp),
+                        modifier = Modifier.size(MarketListFavoriteIconSize),
                     )
                 }
             } else {
@@ -337,7 +336,7 @@ private fun MarketListHeader(
         modifier =
             Modifier
                 .fillMaxWidth()
-                .padding(horizontal = MarketHorizontalPadding, vertical = 4.dp),
+                .padding(horizontal = MarketHorizontalPadding),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
@@ -345,6 +344,7 @@ private fun MarketListHeader(
             modifier =
                 Modifier
                     .size(24.dp)
+                    .offset(x = -MarketLeadingIconInset)
                     .clip(CircleShape)
                     .clickable(onClick = onShowDisplaySettings),
         ) {
@@ -352,10 +352,8 @@ private fun MarketListHeader(
                 painter = painterResource(R.drawable.ic_config),
                 contentDescription = stringResource(R.string.market_display),
                 tint = Color.Unspecified,
-                modifier = Modifier.size(16.dp).offset(x = -MarketLeadingIconInset),
             )
         }
-        Spacer(modifier = Modifier.width(MarketLeadingGap))
         MarketHeaderSortLabels(
             period = period,
             showMarketCap = showMarketCap,
@@ -374,7 +372,7 @@ private fun MarketList(
     onEntryClick: (MarketListEntry) -> Unit,
 ) {
     val listState = rememberLazyListState()
-    LaunchedEffect(state.selectedTopTab, state.selectedSubTab) {
+    LaunchedEffect(state.selectedTopTab, state.selectedSubTab, state.sortState) {
         listState.scrollToItem(0)
     }
     when {
@@ -396,7 +394,7 @@ private fun MarketList(
             )
         }
 
-        state.entries.isEmpty() -> {
+        state.entries.isEmpty() && state.hasLoadedLocalData -> {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
@@ -419,7 +417,7 @@ private fun MarketList(
         else -> {
             LazyColumn(
                 state = listState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().offset(y = (-4).dp),
             ) {
                 items(
                     items = state.entries,
@@ -535,7 +533,6 @@ private fun MarketRow(
                 isFavored = entry.isFavored,
                 quoteColorReversed = settings.quoteColorReversed,
                 badgeStyle = PerpetualMarketBadgeStyle.PERPETUAL,
-                emphasizePrice = true,
                 onFavorite = onFavorite,
                 onClick = onClick,
             )
@@ -588,25 +585,7 @@ private fun RowScope.SpotMarketRowContent(
             )
         }
     }
-    BasicText(
-        text = formatSpotPrice(market.currentPrice),
-        style =
-            TextStyle(
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium,
-                textAlign = TextAlign.End,
-            ),
-        maxLines = 1,
-        softWrap = false,
-        autoSize =
-            TextAutoSize.StepBased(
-                minFontSize = 8.sp,
-                maxFontSize = 14.sp,
-                stepSize = 0.5.sp,
-            ),
-        modifier = Modifier.weight(1f),
-    )
+    MarketPriceText(text = formatSpotPrice(market.currentPrice))
     Spacer(modifier = Modifier.width(MarketPriceChangeGap))
     MarketChangeColumn(
         change = change,

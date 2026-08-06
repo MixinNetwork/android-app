@@ -1,11 +1,7 @@
 package one.mixin.android.ui.home.web3.market
 
-import android.animation.Animator
-import android.animation.AnimatorListenerAdapter
 import android.widget.ImageView
-import androidx.annotation.AttrRes
 import androidx.annotation.DrawableRes
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -18,138 +14,164 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.unit.dp
 import com.airbnb.lottie.LottieCompositionFactory
 import com.airbnb.lottie.LottieDrawable
 import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
-import com.airbnb.lottie.compose.animateLottieCompositionAsState
+import com.airbnb.lottie.compose.rememberLottieAnimatable
 import com.airbnb.lottie.compose.rememberLottieComposition
 import one.mixin.android.R
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp as viewDp
 
 @Composable
 fun MarketFavoriteIcon(
     isFavored: Boolean,
     @DrawableRes unselectedIconRes: Int,
-    @DrawableRes selectedIconRes: Int,
     contentDescription: String,
     modifier: Modifier = Modifier,
     unselectedTint: Color = Color.Unspecified,
-    animationTrigger: Int = 0,
+    animationIntent: MarketFavoriteAnimationIntent? = null,
 ) {
     val animationState =
         remember {
             MarketFavoriteAnimationState(
-                initialAnimationTrigger = animationTrigger,
+                initialFavored = isFavored,
             )
         }
-    var isPlaying by
-        remember(animationTrigger) {
-            mutableStateOf(animationState.shouldPlay(animationTrigger))
+    val decision =
+        remember(isFavored, animationIntent) {
+            animationState.update(isFavored, animationIntent)
         }
-    if (!isPlaying) {
-        Icon(
-            painter = painterResource(if (isFavored) selectedIconRes else unselectedIconRes),
-            contentDescription = contentDescription,
-            tint = if (isFavored) Color.Unspecified else unselectedTint,
-            modifier = modifier.padding(1.5.dp),
-        )
-        return
-    }
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.market_watchlist))
-    val progress by
-        animateLottieCompositionAsState(
-            composition = composition,
-            isPlaying = isPlaying,
-            restartOnPlay = true,
-        )
-    LaunchedEffect(progress, isPlaying) {
-        if (isPlaying && progress >= 1f) {
-            isPlaying = false
+    val animatable = rememberLottieAnimatable()
+    var completedAnimationIntentId by remember { mutableStateOf<Int?>(null) }
+    LaunchedEffect(composition, decision) {
+        val currentComposition = composition ?: return@LaunchedEffect
+        if (decision.mode != MarketFavoriteAnimationMode.ANIMATE_FORWARD) {
+            return@LaunchedEffect
         }
+        animatable.animate(
+            composition = currentComposition,
+            initialProgress = 0f,
+        )
+        animationState.onAnimationFinished(decision.intentId)
+        completedAnimationIntentId = decision.intentId
     }
-    LottieAnimation(
-        composition = composition,
-        progress = { progress },
-        modifier =
-            modifier.semantics {
-                this.contentDescription = contentDescription
-            },
-    )
+    val shouldAnimate =
+        composition != null &&
+            decision.mode == MarketFavoriteAnimationMode.ANIMATE_FORWARD &&
+            decision.intentId != completedAnimationIntentId
+    val displayFavored = decision.targetProgress == 1f
+    if (displayFavored) {
+        LottieAnimation(
+            composition = composition,
+            progress = { if (shouldAnimate) animatable.progress else 1f },
+            modifier =
+                modifier.semantics {
+                    this.contentDescription = contentDescription
+                },
+        )
+    } else {
+        Icon(
+            painter = painterResource(unselectedIconRes),
+            contentDescription = contentDescription,
+            tint = unselectedTint,
+            modifier = modifier,
+        )
+    }
 }
 
-internal class MarketFavoriteAnimationState(
-    initialAnimationTrigger: Int,
-) {
-    private var previousAnimationTrigger = initialAnimationTrigger
+data class MarketFavoriteAnimationIntent(
+    val id: Int,
+    val targetFavored: Boolean,
+)
 
-    fun shouldPlay(animationTrigger: Int): Boolean {
-        val shouldPlay = animationTrigger != previousAnimationTrigger
-        previousAnimationTrigger = animationTrigger
-        return shouldPlay
+internal enum class MarketFavoriteAnimationMode {
+    SNAP,
+    ANIMATE_FORWARD,
+}
+
+internal data class MarketFavoriteAnimationDecision(
+    val mode: MarketFavoriteAnimationMode,
+    val targetProgress: Float,
+    val intentId: Int? = null,
+)
+
+internal class MarketFavoriteAnimationState(
+    initialFavored: Boolean,
+) {
+    private var authoritativeFavored = initialFavored
+    private var latestIntent: MarketFavoriteAnimationIntent? = null
+    private var activeAnimationIntentId: Int? = null
+
+    fun update(
+        isFavored: Boolean,
+        intent: MarketFavoriteAnimationIntent?,
+    ): MarketFavoriteAnimationDecision {
+        authoritativeFavored = isFavored
+        if (intent == null) {
+            latestIntent = null
+            activeAnimationIntentId = null
+            return snapTo(authoritativeFavored)
+        }
+        if (intent.id != latestIntent?.id) {
+            latestIntent = intent
+            activeAnimationIntentId = if (intent.targetFavored) intent.id else null
+        }
+        return if (activeAnimationIntentId == intent.id) {
+            MarketFavoriteAnimationDecision(
+                mode = MarketFavoriteAnimationMode.ANIMATE_FORWARD,
+                targetProgress = 1f,
+                intentId = intent.id,
+            )
+        } else {
+            snapTo(intent.targetFavored)
+        }
     }
+
+    fun onAnimationFinished(intentId: Int?) {
+        if (activeAnimationIntentId == intentId) {
+            activeAnimationIntentId = null
+        }
+    }
+
+    private fun snapTo(isFavored: Boolean) =
+        MarketFavoriteAnimationDecision(
+            mode = MarketFavoriteAnimationMode.SNAP,
+            targetProgress = if (isFavored) 1f else 0f,
+        )
 }
 
 fun ImageView.setMarketFavoriteIcon(
     isFavored: Boolean,
     animate: Boolean = false,
     @DrawableRes unselectedIconRes: Int = R.drawable.ic_title_favorites,
-    @DrawableRes selectedIconRes: Int = R.drawable.ic_title_favorites_checked,
-    resizeToTouchTarget: Boolean = true,
-    @AttrRes unselectedTintAttr: Int? = null,
 ) {
-    val animationPadding = if (resizeToTouchTarget) 8.viewDp else 4.viewDp
-    val iconPadding = animationPadding + 1.5f.viewDp
-    imageTintList =
-        if (isFavored || unselectedTintAttr == null) {
-            null
-        } else {
-            android.content.res.ColorStateList.valueOf(context.colorFromAttribute(unselectedTintAttr))
+    imageTintList = null
+    layoutParams =
+        layoutParams.apply {
+            width = 40.viewDp
+            height = 40.viewDp
         }
-    if (resizeToTouchTarget) {
-        layoutParams =
-            layoutParams.apply {
-                width = 40.viewDp
-                height = 40.viewDp
-            }
-    }
     scaleType = ImageView.ScaleType.FIT_CENTER
-    if (!isFavored || !animate) {
-        setPadding(iconPadding, iconPadding, iconPadding, iconPadding)
-        setImageResource(if (isFavored) selectedIconRes else unselectedIconRes)
+    if (!isFavored) {
+        setImageResource(unselectedIconRes)
         return
     }
-    setPadding(animationPadding, animationPadding, animationPadding, animationPadding)
     val composition =
         LottieCompositionFactory.fromRawResSync(context, R.raw.market_watchlist).value
             ?: run {
-                setPadding(iconPadding, iconPadding, iconPadding, iconPadding)
-                setImageResource(selectedIconRes)
+                setImageDrawable(null)
                 return
             }
     val drawable =
         LottieDrawable().apply {
             setComposition(composition)
             repeatCount = 0
-            progress = 0f
-            addAnimatorListener(
-                object : AnimatorListenerAdapter() {
-                    override fun onAnimationEnd(animation: Animator) {
-                        if (this@setMarketFavoriteIcon.drawable === this@apply) {
-                            this@setMarketFavoriteIcon.setPadding(
-                                iconPadding,
-                                iconPadding,
-                                iconPadding,
-                                iconPadding,
-                            )
-                            this@setMarketFavoriteIcon.setImageResource(selectedIconRes)
-                        }
-                    }
-                },
-            )
+            progress = if (animate) 0f else 1f
         }
     setImageDrawable(drawable)
-    drawable.playAnimation()
+    if (animate) {
+        drawable.playAnimation()
+    }
 }
