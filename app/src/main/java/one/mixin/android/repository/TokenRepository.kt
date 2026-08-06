@@ -166,6 +166,7 @@ import org.sol4kt.VersionedTransactionCompat
 
 private const val CATEGORY_ALL = "all"
 private const val CATEGORY_FAVORITE = "favorite"
+private const val MARKET_COINS_DELETE_BATCH_SIZE = 500
 
 class TokenRepository
     @Inject
@@ -1440,14 +1441,12 @@ class TokenRepository
                     )
                 }
             }
-        markets.forEach { market ->
-            val remoteAssetIds = market.assetIds.orEmpty()
-            val localAssetIds = marketCoinDao.findTokenIdsByCoinId(market.coinId)
-            val removedAssetIds = localAssetIds.filterNot(remoteAssetIds::contains)
-            if (removedAssetIds.isNotEmpty()) {
-                marketCoinDao.deleteByCoinIdAndAssetIds(market.coinId, removedAssetIds)
+        markets
+            .map(Market::coinId)
+            .chunked(MARKET_COINS_DELETE_BATCH_SIZE)
+            .forEach { coinIds ->
+                marketCoinDao.deleteByCoinIds(coinIds)
             }
-        }
         if (marketCoins.isNotEmpty()) {
             marketCoinDao.insertIgnoreList(marketCoins)
         }

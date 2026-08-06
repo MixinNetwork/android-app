@@ -89,7 +89,9 @@ interface MarketDao : BaseDao<Market> {
         FROM market_cap_ranks mr
         INNER JOIN markets m ON m.coin_id = mr.coin_id
         LEFT JOIN market_favored mf ON mf.coin_id = m.coin_id
-        ORDER BY CAST(mr.market_cap_rank AS INTEGER) ASC
+        ORDER BY CASE WHEN CAST(mr.market_cap_rank AS INTEGER) > 0 THEN 0 ELSE 1 END,
+            CAST(mr.market_cap_rank AS INTEGER) ASC
+        LIMIT 500
         """,
     )
     fun observeAllMarkets(): Flow<List<MarketItem>>

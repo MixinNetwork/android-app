@@ -81,6 +81,28 @@ class MarketDaoTest {
             assertEquals(true, result.single().isFavored)
         }
 
+    @Test
+    fun allMarketsAreLimitedToRankedPage() =
+        runBlocking {
+            val markets = (1..501).map { rank -> market("coin-$rank", rank.toString()) }
+            database.marketDao().upsertList(markets)
+            database.marketCapRankDao().insertListSuspend(
+                markets.map { market ->
+                    MarketCapRank(
+                        coinId = market.coinId,
+                        marketCapRank = market.marketCapRank,
+                        updatedAt = "",
+                    )
+                },
+            )
+
+            val result = database.marketDao().observeAllMarkets().first()
+
+            assertEquals(500, result.size)
+            assertEquals("coin-1", result.first().coinId)
+            assertEquals("coin-500", result.last().coinId)
+        }
+
     private fun market(
         coinId: String,
         marketCapRank: String = "1",
