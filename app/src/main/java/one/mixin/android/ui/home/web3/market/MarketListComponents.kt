@@ -191,7 +191,7 @@ private fun MarketSortLabel(
 internal fun MarketListRowFrame(
     stableId: String,
     isFavored: Boolean,
-    onFavorite: () -> Unit,
+    onFavorite: (() -> Unit) -> Unit,
     onClick: () -> Unit,
     content: @Composable RowScope.() -> Unit,
 ) {
@@ -199,6 +199,7 @@ internal fun MarketListRowFrame(
         remember(stableId) {
             mutableStateOf<MarketFavoriteAnimationIntent?>(null)
         }
+    var favoriteAnimationIntentId by remember(stableId) { mutableStateOf(0) }
     Row(
         modifier =
             Modifier
@@ -219,12 +220,18 @@ internal fun MarketListRowFrame(
                     .size(24.dp)
                     .clip(CircleShape)
                     .clickable {
-                        favoriteAnimationIntent =
+                        favoriteAnimationIntentId += 1
+                        val intent =
                             MarketFavoriteAnimationIntent(
-                                id = (favoriteAnimationIntent?.id ?: 0) + 1,
+                                id = favoriteAnimationIntentId,
                                 targetFavored = !isFavored,
                             )
-                        onFavorite()
+                        favoriteAnimationIntent = intent
+                        onFavorite {
+                            if (favoriteAnimationIntent?.id == intent.id) {
+                                favoriteAnimationIntent = null
+                            }
+                        }
                     },
         ) {
             MarketFavoriteIcon(
@@ -277,7 +284,7 @@ internal fun PerpsMarketListItem(
     isFavored: Boolean,
     quoteColorReversed: Boolean,
     badgeStyle: PerpetualMarketBadgeStyle,
-    onFavorite: () -> Unit,
+    onFavorite: (() -> Unit) -> Unit,
     onClick: () -> Unit,
 ) {
     MarketListRowFrame(

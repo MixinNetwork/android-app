@@ -65,7 +65,7 @@ internal fun PerpsMarketListBottomSheetPage(
     onCancel: () -> Unit,
     onCategorySelected: (PerpsMarketCategory) -> Unit,
     onSort: (MarketSortColumn) -> Unit,
-    onFavorite: (PerpsMarket, Boolean) -> Unit,
+    onFavorite: (PerpsMarket, Boolean, () -> Unit) -> Unit,
     onMarketClick: (PerpsMarket) -> Unit,
     onRecommendationSelected: (PerpsMarket) -> Unit,
     onAddRecommendations: () -> Unit,
@@ -275,7 +275,7 @@ private fun WatchlistCategoryChip(
 @Composable
 private fun PerpsMarketListContent(
     state: PerpsMarketListUiState,
-    onFavorite: (PerpsMarket, Boolean) -> Unit,
+    onFavorite: (PerpsMarket, Boolean, () -> Unit) -> Unit,
     onMarketClick: (PerpsMarket) -> Unit,
     onRecommendationSelected: (PerpsMarket) -> Unit,
     onAddRecommendations: () -> Unit,
@@ -313,7 +313,7 @@ private fun PerpsMarketListContent(
                         isFavored = isFavored,
                         quoteColorReversed = state.quoteColorReversed,
                         badgeStyle = PerpetualMarketBadgeStyle.LEVERAGE,
-                        onFavorite = { onFavorite(market, isFavored) },
+                        onFavorite = { onComplete -> onFavorite(market, isFavored, onComplete) },
                         onClick = { onMarketClick(market) },
                     )
                 }

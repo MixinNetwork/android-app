@@ -124,35 +124,45 @@ class MarketPageViewModel
             }
         }
 
-        fun toggleFavorite(entry: MarketListEntry) {
+        fun toggleFavorite(entry: MarketListEntry, onComplete: () -> Unit = {}) {
             when (entry) {
                 is MarketListEntry.Spot ->
-                    viewModelScope.launch(Dispatchers.IO) {
-                        tokenRepository.updateMarketFavored(
-                            entry.market.symbol,
-                            entry.favoriteId,
-                            entry.isFavored,
-                        )
+                    viewModelScope.launch {
+                        try {
+                            withContext(Dispatchers.IO) {
+                                tokenRepository.updateMarketFavored(
+                                    entry.market.symbol,
+                                    entry.favoriteId,
+                                    entry.isFavored,
+                                )
+                            }
+                        } finally {
+                            onComplete()
+                        }
                     }
 
                 is MarketListEntry.Perpetual ->
                     viewModelScope.launch {
-                        val updated =
-                            perpsMarketRepository.updateFavorite(
-                                marketId = entry.favoriteId,
-                                isFavored = entry.isFavored,
-                            )
-                        if (updated) {
-                            toast(
-                                MixinApplication.appContext.getString(
-                                    if (entry.isFavored) {
-                                        R.string.watchlist_remove_desc
-                                    } else {
-                                        R.string.watchlist_add_desc
-                                    },
-                                    entry.market.tokenSymbol,
-                                ),
-                            )
+                        try {
+                            val updated =
+                                perpsMarketRepository.updateFavorite(
+                                    marketId = entry.favoriteId,
+                                    isFavored = entry.isFavored,
+                                )
+                            if (updated) {
+                                toast(
+                                    MixinApplication.appContext.getString(
+                                        if (entry.isFavored) {
+                                            R.string.watchlist_remove_desc
+                                        } else {
+                                            R.string.watchlist_add_desc
+                                        },
+                                        entry.market.tokenSymbol,
+                                    ),
+                                )
+                            }
+                        } finally {
+                            onComplete()
                         }
                     }
             }

@@ -118,6 +118,7 @@ fun PerpsMarketDetailPage(
         remember(marketId) {
             mutableStateOf<MarketFavoriteAnimationIntent?>(null)
         }
+    var favoriteAnimationIntentId by remember(marketId) { mutableStateOf(0) }
     val isFavored = marketId in favoriteMarketIds
     val timeFramePreferenceKey = PREF_MARKET_DETAIL_TIME_FRAME
     val walletId = Session.getAccountId().orEmpty()
@@ -208,14 +209,16 @@ fun PerpsMarketDetailPage(
                 onClick = {
                     if (isUpdatingFavorite) return@IconButton
                     isUpdatingFavorite = true
-                    favoriteAnimationIntent =
+                    favoriteAnimationIntentId += 1
+                    val intent =
                         MarketFavoriteAnimationIntent(
-                            id = (favoriteAnimationIntent?.id ?: 0) + 1,
+                            id = favoriteAnimationIntentId,
                             targetFavored = !isFavored,
                         )
+                    favoriteAnimationIntent = intent
                     viewModel.updateMarketFavorite(marketId, isFavored) { success ->
                         isUpdatingFavorite = false
-                        if (!success) {
+                        if (favoriteAnimationIntent?.id == intent.id) {
                             favoriteAnimationIntent = null
                         }
                         if (success) {

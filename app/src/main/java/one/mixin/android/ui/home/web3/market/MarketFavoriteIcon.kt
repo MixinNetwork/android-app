@@ -38,13 +38,13 @@ fun MarketFavoriteIcon(
                 initialFavored = isFavored,
             )
         }
+    var completedAnimationIntentId by remember { mutableStateOf<Int?>(null) }
     val decision =
-        remember(isFavored, animationIntent) {
+        remember(isFavored, animationIntent, completedAnimationIntentId) {
             animationState.update(isFavored, animationIntent)
         }
     val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.market_watchlist))
     val animatable = rememberLottieAnimatable()
-    var completedAnimationIntentId by remember { mutableStateOf<Int?>(null) }
     LaunchedEffect(composition, decision) {
         val currentComposition = composition ?: return@LaunchedEffect
         if (decision.mode != MarketFavoriteAnimationMode.ANIMATE_FORWARD) {
@@ -62,21 +62,29 @@ fun MarketFavoriteIcon(
             decision.mode == MarketFavoriteAnimationMode.ANIMATE_FORWARD &&
             decision.intentId != completedAnimationIntentId
     val displayFavored = decision.targetProgress == 1f
-    if (displayFavored) {
+    val iconModifier =
+        modifier.semantics {
+            this.contentDescription = contentDescription
+        }
+    if (displayFavored && composition != null) {
         LottieAnimation(
             composition = composition,
             progress = { if (shouldAnimate) animatable.progress else 1f },
-            modifier =
-                modifier.semantics {
-                    this.contentDescription = contentDescription
-                },
+            modifier = iconModifier,
+        )
+    } else if (displayFavored) {
+        Icon(
+            painter = painterResource(R.drawable.ic_title_favorites_checked),
+            contentDescription = contentDescription,
+            tint = Color.Unspecified,
+            modifier = iconModifier,
         )
     } else {
         Icon(
             painter = painterResource(unselectedIconRes),
             contentDescription = contentDescription,
             tint = unselectedTint,
-            modifier = modifier,
+            modifier = iconModifier,
         )
     }
 }
@@ -117,6 +125,15 @@ internal class MarketFavoriteAnimationState(
         if (intent.id != latestIntent?.id) {
             latestIntent = intent
             activeAnimationIntentId = if (intent.targetFavored) intent.id else null
+            return if (intent.targetFavored) {
+                MarketFavoriteAnimationDecision(
+                    mode = MarketFavoriteAnimationMode.ANIMATE_FORWARD,
+                    targetProgress = 1f,
+                    intentId = intent.id,
+                )
+            } else {
+                snapTo(false)
+            }
         }
         return if (activeAnimationIntentId == intent.id) {
             MarketFavoriteAnimationDecision(
@@ -125,7 +142,7 @@ internal class MarketFavoriteAnimationState(
                 intentId = intent.id,
             )
         } else {
-            snapTo(intent.targetFavored)
+            snapTo(authoritativeFavored)
         }
     }
 
@@ -161,7 +178,7 @@ fun ImageView.setMarketFavoriteIcon(
     val composition =
         LottieCompositionFactory.fromRawResSync(context, R.raw.market_watchlist).value
             ?: run {
-                setImageDrawable(null)
+                setImageResource(R.drawable.ic_title_favorites_checked)
                 return
             }
     val drawable =
