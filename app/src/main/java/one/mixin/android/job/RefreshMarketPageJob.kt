@@ -10,6 +10,7 @@ import one.mixin.android.Constants.Account.PREF_GLOBAL_MARKET
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
+import one.mixin.android.event.ALL_MARKET_PAGE_DATA_SOURCES
 import one.mixin.android.event.GlobalMarketEvent
 import one.mixin.android.event.MarketPageDataSource
 import one.mixin.android.event.MarketPageRefreshEvent
@@ -25,12 +26,47 @@ internal data class SpotMarketRefreshRequest(
     val category: String,
 )
 
+internal data class MarketPageRefreshPlan(
+    val spotRequests: List<SpotMarketRefreshRequest>,
+    val refreshesPerpetualAll: Boolean,
+    val refreshesPerpetualFavorite: Boolean,
+    val refreshesPerpetualFeatured: Boolean,
+    val refreshesGlobal: Boolean,
+)
+
+internal fun marketPageRefreshPlan(sources: Set<MarketPageDataSource>): MarketPageRefreshPlan =
+    MarketPageRefreshPlan(
+        spotRequests = RefreshMarketPageJob.SPOT_MARKET_REFRESH_REQUESTS.filter { it.source in sources },
+        refreshesPerpetualAll = MarketPageDataSource.PERPETUAL_ALL in sources,
+        refreshesPerpetualFavorite = MarketPageDataSource.PERPETUAL_FAVORITE in sources,
+        refreshesPerpetualFeatured = MarketPageDataSource.PERPETUAL_FEATURED in sources,
+        refreshesGlobal = MarketPageDataSource.GLOBAL in sources,
+    )
+
+private fun refreshMarketPageSingleInstanceId(
+    duration: String,
+    sources: Set<MarketPageDataSource>,
+): String =
+    buildString {
+        append(RefreshMarketPageJob.GROUP)
+        append(':')
+        append(duration)
+        sources.sortedBy { it.ordinal }.forEach { source ->
+            append(':')
+            append(source.name)
+        }
+    }
+
 class RefreshMarketPageJob(
     private val duration: String,
+    sources: Set<MarketPageDataSource> = ALL_MARKET_PAGE_DATA_SOURCES,
 ) : BaseJob(
         Params(PRIORITY_UI_HIGH)
-            .singleInstanceBy(GROUP),
+            .groupBy(GROUP)
+            .singleInstanceBy(refreshMarketPageSingleInstanceId(duration, sources)),
     ) {
+    private val sources = sources.toSet()
+
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshMarketPageJob"
@@ -49,12 +85,17 @@ class RefreshMarketPageJob(
             )
     }
 
+    init {
+        require(sources.isNotEmpty())
+    }
+
     override fun onRun(): Unit =
         runBlocking {
             val perpsMarketRepository = perpsMarketRepositoryProvider.get()
             supervisorScope {
+                val plan = marketPageRefreshPlan(sources)
                 val requests =
-                    SPOT_MARKET_REFRESH_REQUESTS
+                    plan.spotRequests
                         .map { request ->
                             async {
                                 refresh(request.source) {
@@ -62,29 +103,38 @@ class RefreshMarketPageJob(
                                 }
                             }
                         }.toMutableList()
-                requests +=
-                    async {
-                        refresh(MarketPageDataSource.PERPETUAL_ALL) {
-                            perpsMarketRepository.syncAllMarkets() != null
+                if (plan.refreshesPerpetualAll) {
+                    requests +=
+                        async {
+                            refresh(MarketPageDataSource.PERPETUAL_ALL) {
+                                perpsMarketRepository.syncAllMarkets() != null
+                            }
                         }
-                    }
-                requests +=
-                    async {
-                        refresh(MarketPageDataSource.PERPETUAL_FAVORITE) {
-                            perpsMarketRepository.syncFavoriteMarkets() != null
+                }
+                if (plan.refreshesPerpetualFavorite) {
+                    requests +=
+                        async {
+                            refresh(MarketPageDataSource.PERPETUAL_FAVORITE) {
+                                perpsMarketRepository.syncFavoriteMarkets() != null
+                            }
                         }
-                    }
-                requests +=
-                    async {
-                        refresh(MarketPageDataSource.PERPETUAL_FEATURED) {
-                            perpsMarketRepository.syncCategory(MarketCategory.FEATURED) != null
+                }
+                if (plan.refreshesPerpetualFeatured) {
+                    requests +=
+                        async {
+                            refresh(MarketPageDataSource.PERPETUAL_FEATURED) {
+                                perpsMarketRepository.syncCategory(MarketCategory.FEATURED) != null
+                            }
                         }
-                    }
-                requests += async { refresh(MarketPageDataSource.GLOBAL, ::refreshGlobalMarket) }
+                }
+                if (plan.refreshesGlobal) {
+                    requests += async { refresh(MarketPageDataSource.GLOBAL, ::refreshGlobalMarket) }
+                }
                 val results = requests.awaitAll()
                 RxBus.publish(
                     MarketPageRefreshEvent(
                         duration = duration,
+                        refreshedSources = sources,
                         failedSources =
                             results
                                 .filterNot { (_, succeeded) -> succeeded }

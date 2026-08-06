@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.market
 
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.event.MarketPageDataSource
 import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.MarketItem
 import java.math.BigDecimal
@@ -190,6 +191,50 @@ fun marketSubTabs(topTab: MarketTopTab): List<MarketSubTab> =
                 MarketSubTab.FOREX,
             )
         MarketTopTab.INDICATOR -> emptyList()
+    }
+
+internal fun marketPageRefreshSources(
+    topTab: MarketTopTab,
+    subTab: MarketSubTab?,
+): Set<MarketPageDataSource> =
+    when (topTab) {
+        MarketTopTab.WATCHLIST ->
+            if (subTab == MarketSubTab.PERPETUAL) {
+                setOf(
+                    MarketPageDataSource.PERPETUAL_FAVORITE,
+                    MarketPageDataSource.PERPETUAL_FEATURED,
+                )
+            } else {
+                setOf(
+                    MarketPageDataSource.SPOT_FAVORITE,
+                    MarketPageDataSource.SPOT_FEATURED,
+                )
+            }
+
+        MarketTopTab.CRYPTO ->
+            when (subTab) {
+                MarketSubTab.FAVORITE ->
+                    setOf(
+                        MarketPageDataSource.SPOT_FAVORITE,
+                        MarketPageDataSource.SPOT_FEATURED,
+                    )
+                MarketSubTab.TOP_GAINERS -> setOf(MarketPageDataSource.SPOT_TOP_GAINER)
+                MarketSubTab.TOP_LOSERS -> setOf(MarketPageDataSource.SPOT_TOP_LOSER)
+                MarketSubTab.ALL -> setOf(MarketPageDataSource.SPOT_ALL)
+                else -> setOf(MarketPageDataSource.SPOT_TRENDING)
+            }
+
+        MarketTopTab.PERPETUAL ->
+            if (subTab == MarketSubTab.FAVORITE) {
+                setOf(
+                    MarketPageDataSource.PERPETUAL_FAVORITE,
+                    MarketPageDataSource.PERPETUAL_FEATURED,
+                )
+            } else {
+                setOf(MarketPageDataSource.PERPETUAL_ALL)
+            }
+
+        MarketTopTab.INDICATOR -> setOf(MarketPageDataSource.GLOBAL)
     }
 
 object MarketPageMapper {

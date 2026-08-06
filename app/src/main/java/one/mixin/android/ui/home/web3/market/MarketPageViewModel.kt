@@ -20,6 +20,7 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.event.ALL_MARKET_PAGE_DATA_SOURCES
 import one.mixin.android.event.MarketPageDataSource
 import one.mixin.android.event.MarketPageRefreshEvent
 import one.mixin.android.event.QuoteColorEvent
@@ -64,7 +65,7 @@ class MarketPageViewModel
         private var featuredPerpetualMarkets: List<PerpsMarket> = emptyList()
         private var refreshLoopJob: Job? = null
         private var failedSources: Set<MarketPageDataSource> = emptySet()
-        private var hasCompletedRefresh = false
+        private var hasCompletedInitialRefresh = false
         private var hasLoadedSpotMarkets = false
         private var hasLoadedPerpetualMarkets = false
 
@@ -84,6 +85,7 @@ class MarketPageViewModel
                     sortState = defaultMarketSortState(tab, selectedSubTab),
                 )
             rebuildEntries()
+            refreshSelectedPage()
         }
 
         fun selectSubTab(subTab: MarketSubTab) {
@@ -99,6 +101,7 @@ class MarketPageViewModel
                     sortState = defaultMarketSortState(topTab, subTab),
                 )
             rebuildEntries()
+            refreshSelectedPage()
         }
 
         fun updateSort(column: MarketSortColumn) {
@@ -229,10 +232,16 @@ class MarketPageViewModel
         }
 
         fun refreshNow() {
-            if (!hasCompletedRefresh) {
+            val sources =
+                if (hasCompletedInitialRefresh) {
+                    currentPageRefreshSources()
+                } else {
+                    ALL_MARKET_PAGE_DATA_SOURCES
+                }
+            if (!hasCompletedInitialRefresh) {
                 _uiState.value = _uiState.value.copy(isLoading = true, hasError = false)
             }
-            jobManager.addJobInBackground(RefreshMarketPageJob(selectedDuration()))
+            enqueueRefresh(sources)
         }
 
         fun onRefreshCompleted(event: MarketPageRefreshEvent) {
@@ -243,10 +252,31 @@ class MarketPageViewModel
                 }
                 return
             }
-            failedSources = event.failedSources
-            hasCompletedRefresh = true
-            _uiState.value = _uiState.value.copy(isLoading = false)
+            failedSources = (failedSources - event.refreshedSources) + event.failedSources
+            if (event.isFullRefresh) {
+                hasCompletedInitialRefresh = true
+                _uiState.value = _uiState.value.copy(isLoading = false)
+            }
             rebuildEntries()
+        }
+
+        private fun refreshSelectedPage() {
+            if (!hasCompletedInitialRefresh) return
+            enqueueRefresh(currentPageRefreshSources())
+        }
+
+        private fun enqueueRefresh(sources: Set<MarketPageDataSource>) {
+            jobManager.addJobInBackground(
+                RefreshMarketPageJob(
+                    duration = selectedDuration(),
+                    sources = sources,
+                ),
+            )
+        }
+
+        private fun currentPageRefreshSources(): Set<MarketPageDataSource> {
+            val state = _uiState.value
+            return marketPageRefreshSources(state.selectedTopTab, state.selectedSubTab)
         }
 
         private fun selectedDuration(): String =

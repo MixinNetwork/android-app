@@ -2,8 +2,12 @@ package one.mixin.android.event
 
 data class MarketPageRefreshEvent(
     val duration: String,
+    val refreshedSources: Set<MarketPageDataSource>,
     val failedSources: Set<MarketPageDataSource>,
-)
+) {
+    val isFullRefresh: Boolean
+        get() = refreshedSources == ALL_MARKET_PAGE_DATA_SOURCES
+}
 
 enum class MarketPageDataSource {
     SPOT_ALL,
@@ -17,3 +21,5 @@ enum class MarketPageDataSource {
     PERPETUAL_FEATURED,
     GLOBAL,
 }
+
+internal val ALL_MARKET_PAGE_DATA_SOURCES = MarketPageDataSource.entries.toSet()

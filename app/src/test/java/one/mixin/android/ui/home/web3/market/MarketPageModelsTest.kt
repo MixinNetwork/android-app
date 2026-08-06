@@ -1,12 +1,74 @@
 package one.mixin.android.ui.home.web3.market
 
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.event.MarketPageDataSource
 import one.mixin.android.vo.market.MarketItem
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class MarketPageModelsTest {
+    @Test
+    fun refreshSourcesMatchVisibleMarketPage() {
+        val cases =
+            listOf(
+                Triple(
+                    MarketTopTab.WATCHLIST,
+                    MarketSubTab.CRYPTO,
+                    setOf(MarketPageDataSource.SPOT_FAVORITE, MarketPageDataSource.SPOT_FEATURED),
+                ),
+                Triple(
+                    MarketTopTab.WATCHLIST,
+                    MarketSubTab.PERPETUAL,
+                    setOf(MarketPageDataSource.PERPETUAL_FAVORITE, MarketPageDataSource.PERPETUAL_FEATURED),
+                ),
+                Triple(
+                    MarketTopTab.CRYPTO,
+                    MarketSubTab.FAVORITE,
+                    setOf(MarketPageDataSource.SPOT_FAVORITE, MarketPageDataSource.SPOT_FEATURED),
+                ),
+                Triple(
+                    MarketTopTab.CRYPTO,
+                    MarketSubTab.TRENDING,
+                    setOf(MarketPageDataSource.SPOT_TRENDING),
+                ),
+                Triple(
+                    MarketTopTab.CRYPTO,
+                    MarketSubTab.TOP_GAINERS,
+                    setOf(MarketPageDataSource.SPOT_TOP_GAINER),
+                ),
+                Triple(
+                    MarketTopTab.CRYPTO,
+                    MarketSubTab.TOP_LOSERS,
+                    setOf(MarketPageDataSource.SPOT_TOP_LOSER),
+                ),
+                Triple(
+                    MarketTopTab.CRYPTO,
+                    MarketSubTab.ALL,
+                    setOf(MarketPageDataSource.SPOT_ALL),
+                ),
+                Triple(
+                    MarketTopTab.PERPETUAL,
+                    MarketSubTab.FAVORITE,
+                    setOf(MarketPageDataSource.PERPETUAL_FAVORITE, MarketPageDataSource.PERPETUAL_FEATURED),
+                ),
+                Triple(
+                    MarketTopTab.PERPETUAL,
+                    MarketSubTab.INDICES,
+                    setOf(MarketPageDataSource.PERPETUAL_ALL),
+                ),
+                Triple(
+                    MarketTopTab.INDICATOR,
+                    null,
+                    setOf(MarketPageDataSource.GLOBAL),
+                ),
+            )
+
+        cases.forEach { (topTab, subTab, sources) ->
+            assertEquals(sources, marketPageRefreshSources(topTab, subTab))
+        }
+    }
+
     @Test
     fun defaultSelectionStartsAtExpectedSubTabs() {
         val defaults = defaultMarketSubTabs()
