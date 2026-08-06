@@ -990,11 +990,19 @@ class ConversationListFragment : LinkFragment() {
                     }
                     conversationItem.isRecall() -> {
                         setConversationName(conversationItem)
-                        if (id == conversationItem.senderId) {
-                            binding.msgTv.setText(R.string.You_deleted_this_message)
-                        } else {
-                            binding.msgTv.text =
-                                itemView.context.getString(R.string.This_message_was_deleted)
+                        when {
+                            conversationItem.recallUserId == id -> {
+                                binding.msgTv.setText(R.string.You_deleted_this_message)
+                            }
+                            !conversationItem.recallUserFullName.isNullOrBlank() -> {
+                                binding.msgTv.text = itemView.context.getString(
+                                    R.string.User_deleted_this_message,
+                                    conversationItem.recallUserFullName,
+                                )
+                            }
+                            else -> {
+                                binding.msgTv.setText(R.string.This_message_was_deleted)
+                            }
                         }
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_recall)
                     }

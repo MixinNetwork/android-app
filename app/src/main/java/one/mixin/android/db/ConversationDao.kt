@@ -29,13 +29,16 @@ interface ConversationDao : BaseDao<Conversation> {
             mu.full_name AS senderFullName,
             pu.full_name AS participantFullName, pu.user_id AS participantUserId,
             (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) as mentionCount,  
-            mm.mentions AS mentions, ou.membership AS membership
+            mm.mentions AS mentions, ou.membership AS membership,
+            rm.user_id AS recallUserId, ru.full_name AS recallUserFullName
             FROM conversations c
             INNER JOIN users ou ON ou.user_id = c.owner_id
             LEFT JOIN messages m ON c.last_message_id = m.id
             LEFT JOIN message_mentions mm ON mm.message_id = m.id
             LEFT JOIN users mu ON mu.user_id = m.user_id
             LEFT JOIN users pu ON pu.user_id = m.participant_id 
+            LEFT JOIN recall_messages rm ON rm.message_id = m.id
+            LEFT JOIN users ru ON ru.user_id = rm.user_id
             """
     }
 
@@ -119,9 +122,13 @@ interface ConversationDao : BaseDao<Conversation> {
             "c.name AS groupName, c.status AS status, c.last_read_message_id AS lastReadMessageId, " +
             "c.unseen_message_count AS unseenMessageCount, c.owner_id AS ownerId, c.pin_time AS pinTime, c.mute_until AS muteUntil, " +
             "ou.avatar_url AS avatarUrl, ou.full_name AS name, ou.is_verified AS ownerVerified, " +
-            "ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil " +
+            "ou.identity_number AS ownerIdentityNumber, ou.mute_until AS ownerMuteUntil, " +
+            "rm.user_id AS recallUserId, ru.full_name AS recallUserFullName " +
             "FROM conversations c " +
             "INNER JOIN users ou ON ou.user_id = c.owner_id " +
+            "LEFT JOIN messages m ON c.last_message_id = m.id " +
+            "LEFT JOIN recall_messages rm ON rm.message_id = m.id " +
+            "LEFT JOIN users ru ON ru.user_id = rm.user_id " +
             "WHERE c.conversation_id = :conversationId",
     )
     fun getConversationItem(conversationId: String): ConversationItem?

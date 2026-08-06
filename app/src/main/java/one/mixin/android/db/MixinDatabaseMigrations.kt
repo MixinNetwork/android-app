@@ -611,6 +611,13 @@ class MixinDatabaseMigrations private constructor() {
                 }
             }
 
+        val MIGRATION_71_72: Migration =
+            object : Migration(71, 72) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `recall_messages` (`message_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, PRIMARY KEY(`message_id`))")
+                }
+            }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

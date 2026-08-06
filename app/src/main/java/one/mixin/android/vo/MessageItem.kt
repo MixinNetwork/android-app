@@ -36,6 +36,7 @@ import one.mixin.android.extension.getPublicMusicPath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.lateThirtyDays
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.timeFormat
@@ -120,7 +121,9 @@ data class MessageItem(
     val expireIn: Long? = null,
     val expireAt: Long? = null,
     val caption: String? = null,
-    val membership: Membership? = null
+    val membership: Membership? = null,
+    val recallUserId: String? = null,
+    val recallUserFullName: String? = null,
 ) : Parcelable, ICategory {
     @IgnoredOnParcel
     @Ignore
@@ -231,6 +234,16 @@ data class MessageItem(
 
     fun isSharedMembership() = sharedMembership?.isMembership() == true
 }
+
+fun MessageItem.canRecallBy(
+    currentUserId: String,
+    isGroup: Boolean,
+    canManageGroup: Boolean,
+): Boolean =
+    (userId == currentUserId || !isGroup || canManageGroup) &&
+        status != MessageStatus.SENDING.name &&
+        !createdAt.lateThirtyDays() &&
+        canRecall()
 
 fun create(
     type: String,
