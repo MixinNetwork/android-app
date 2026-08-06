@@ -78,18 +78,10 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                 }
                 titleView.leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
                 webDebugSc.isChecked =
-                    defaultSharedPreferences.getBoolean(Constants.Debug.DB_DEBUG, false)
+                    defaultSharedPreferences.getBoolean(Constants.Debug.WEB_DEBUG, false)
                 webDebugSc.setOnCheckedChangeListener { _, isChecked ->
                     lifecycleScope.launch {
-                        if (isChecked) {
-                            defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG, true)
-                        } else {
-                            defaultSharedPreferences.putBoolean(Constants.Debug.DB_DEBUG, false)
-                            defaultSharedPreferences.putBoolean(
-                                Constants.Debug.DB_DEBUG_WARNING,
-                                true,
-                            )
-                        }
+                        defaultSharedPreferences.putBoolean(Constants.Debug.WEB_DEBUG, isChecked)
                     }
                 }
                 webDebug.setOnClickListener {
