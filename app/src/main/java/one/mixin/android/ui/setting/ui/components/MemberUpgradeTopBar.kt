@@ -27,7 +27,7 @@ fun MemberUpgradeTopBar(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
         Text(
-            text = stringResource(id = R.string.mixin_one),
+            text = stringResource(id = R.string.Mixin_One),
             fontSize = 18.sp,
             fontWeight = FontWeight.W700,
             color = MixinAppTheme.colors.textPrimary

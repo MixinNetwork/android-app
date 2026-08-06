@@ -85,7 +85,7 @@ fun MembershipPlanCard(
             Text(
                 text = stringResource(
                     R.string.expires_on,
-                    membership.expiredAt.substringBefore("T") ?: "Unknown"
+                    membership.expiredAt.substringBefore("T")
                 ),
                 color = if (isExpired) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.textMinor,
                 fontSize = 12.sp,

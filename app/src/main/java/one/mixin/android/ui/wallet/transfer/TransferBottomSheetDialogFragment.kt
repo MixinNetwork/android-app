@@ -1,3 +1,5 @@
+@file:Suppress("UNCHECKED_CAST")
+
 package one.mixin.android.ui.wallet.transfer
 
 import android.annotation.SuppressLint

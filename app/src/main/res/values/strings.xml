@@ -95,9 +95,7 @@
     <string name="Anonymous_Number">Anonymous Number</string>
     <string name="ANSWER">ANSWER</string>
     <string name="app_card_shareable_false">The card has been set to not allow sharing</string>
-    <string name="app_name">Mixin</string>
-    <string name="mixin_messenger" translatable="false">Mixin</string>
-    <string name="mixin_one">Mixin One</string>
+    <string name="app_name" translatable="false">Mixin</string>
     <string name="App_version">App version</string>
     <string name="Appearance">Appearance</string>
     <string name="Apply">Apply</string>
@@ -718,7 +716,7 @@
         <item quantity="one">%d Minute</item>
         <item quantity="other">%d Minutes</item>
     </plurals>
-    <string name="Mixin">Mixin</string>
+    <string name="Mixin" translatable="false">Mixin</string>
     <string name="Mixin_ID">Mixin ID</string>
     <string name="Mixin_Locked">Mixin Locked</string>
     <string name="Mixin_Messenger_Desktop">Mixin Desktop</string>
@@ -1564,18 +1562,18 @@
     <string name="edit_by_pin">Edit by PIN</string>
     <string name="Sender">Sender</string>
     <string name="continue_with_pin">Continue with PIN</string>
-    <string name="Bitcoin">Bitcoin</string>
-    <string name="Ethereum">Ethereum</string>
-    <string name="Polygon">Polygon</string>
-    <string name="BSC">BSC</string>
-    <string name="Solana">Solana</string>
-    <string name="Base">Base</string>
-    <string name="TRON">TRON</string>
-    <string name="Optimism">Optimism</string>
-    <string name="Arbitrum">Arbitrum</string>
-    <string name="Avalanche">Avalanche</string>
-    <string name="HyperEVM">HyperEVM</string>
-    <string name="Toncoin">TON</string>
+    <string name="Bitcoin" translatable="false">Bitcoin</string>
+    <string name="Ethereum" translatable="false">Ethereum</string>
+    <string name="Polygon" translatable="false">Polygon</string>
+    <string name="BSC" translatable="false">BSC</string>
+    <string name="Solana" translatable="false">Solana</string>
+    <string name="Base" translatable="false">Base</string>
+    <string name="TRON" translatable="false">TRON</string>
+    <string name="Optimism" translatable="false">Optimism</string>
+    <string name="Arbitrum" translatable="false">Arbitrum</string>
+    <string name="Avalanche" translatable="false">Avalanche</string>
+    <string name="HyperEVM" translatable="false">HyperEVM</string>
+    <string name="Toncoin" translatable="false">TON</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
     <string name="access_dapps_defi_projects">Access apps and DeFi projects.</string>

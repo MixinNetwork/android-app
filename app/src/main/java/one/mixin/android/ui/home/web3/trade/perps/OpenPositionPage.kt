@@ -260,7 +260,12 @@ fun OpenPositionPage(
     val aboveMaximumMargin = hasInputAmount && maximumMargin > BigDecimal.ZERO && inputAmount > maximumMargin
     val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
     val showAddAction = insufficientBalance || tokenBalance <= BigDecimal.ZERO
-    val canReview = hasInputAmount && !belowMinimumMargin && !aboveMaximumMargin && !insufficientBalance && !isLiquidationLoading
+    val canReview = hasInputAmount &&
+        !belowMinimumMargin &&
+        !aboveMaximumMargin &&
+        !insufficientBalance &&
+        !isLiquidationLoading &&
+        !remoteLiquidationPrice.isNullOrBlank()
     val minimumMarginError = stringResource(
         R.string.perps_minimum_margin,
         minimumMargin.stripTrailingZeros().toPlainString(),

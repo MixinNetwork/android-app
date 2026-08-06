@@ -44,6 +44,7 @@ object Web3PropertyHelper {
         propertyDao.deletePropertyByKey(key)
     }
 
+    @Suppress("UNCHECKED_CAST")
     suspend fun <T> findValueByKey(
         key: String,
         default: T,

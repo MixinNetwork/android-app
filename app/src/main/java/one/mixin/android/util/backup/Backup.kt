@@ -90,7 +90,7 @@ suspend fun backup(
                 SQLiteDatabase.OPEN_READWRITE,
             )
     } catch (e: Exception) {
-        result?.delete()
+        result.delete()
         db?.close()
         Timber.e(e)
         withContext(Dispatchers.Main) {
@@ -118,10 +118,10 @@ suspend fun backup(
             }
         }
         if (tmpName.contains(BACKUP_POSTFIX)) {
-            result?.renameTo(File("$backupDir${File.separator}$name"))
+            result.renameTo(File("$backupDir${File.separator}$name"))
         }
     } catch (e: Exception) {
-        result?.delete()
+        result.delete()
         Timber.e(e)
         withContext(Dispatchers.Main) {
             callback(Result.FAILURE)

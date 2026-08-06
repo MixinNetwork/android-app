@@ -54,7 +54,6 @@ class MixinIdentityKeyStore(private val context: Context) : IdentityKeyStore {
             return when (direction) {
                 IdentityKeyStore.Direction.SENDING -> isTrustedForSending(identityKey, dao.getIdentity(theirAddress))
                 IdentityKeyStore.Direction.RECEIVING -> true
-                else -> throw AssertionError("Unknown direction: $direction")
             }
         }
     }

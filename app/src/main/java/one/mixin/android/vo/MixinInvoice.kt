@@ -280,8 +280,8 @@ data class MixinInvoice(
                 }
 
                 val entry = InvoiceEntry(
-                    traceId = traceId.toString(),
-                    assetId = assetId.toString(),
+                    traceId = traceId,
+                    assetId = assetId,
                     amount = amount,
                     extra = extra,
                     indexReferences = indexReferences,
@@ -344,7 +344,7 @@ data class InvoiceEntry(
         }
 
     fun isStorage(): Boolean {
-        return assetId.toString() == Constants.AssetId.XIN_ASSET_ID &&
+        return assetId == Constants.AssetId.XIN_ASSET_ID &&
             extra.isNotEmpty() &&
             extra.size > EXTRA_SIZE_GENERAL_LIMIT &&
             amount.compareTo(estimateStorageCost(extra)) == 0

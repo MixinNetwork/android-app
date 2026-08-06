@@ -250,10 +250,10 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                     context?.let { ctx -> ConversationActivity.show(ctx, null, user.userId) }
                 }
 
-                override fun onMaoAppClick(appId: String) {
+                override fun onMaoAppClick(userId: String) {
                     binding.searchRv.hideKeyboard()
                     lifecycleScope.launch {
-                        val app = searchViewModel.findOrSyncApp(appId)
+                        val app = searchViewModel.findOrSyncApp(userId)
                         if (app != null) {
                             searchViewModel.updateRecentUsedBots(this@SearchFragment.defaultSharedPreferences, app.appId)
                             AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SEARCH_MAO_NAME, app.appNumber)

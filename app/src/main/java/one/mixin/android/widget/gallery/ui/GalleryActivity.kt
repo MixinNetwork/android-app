@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.widget.gallery.ui
 
 import android.app.Activity

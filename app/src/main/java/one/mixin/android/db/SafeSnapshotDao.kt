@@ -161,5 +161,4 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
 
     @Query("SELECT * FROM safe_snapshots WHERE withdrawal LIKE '%'||:receiver||'%' ORDER BY created_at DESC LIMIT 1")
     suspend fun findLastWithdrawalSnapshotByReceiver(receiver: String): SafeSnapshot?
-
 }

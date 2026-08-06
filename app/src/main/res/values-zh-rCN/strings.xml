@@ -701,10 +701,10 @@
         <item quantity="one">%d 分钟</item>
         <item quantity="other">%d 分钟</item>
     </plurals>
-    <string name="Mixin">Mixin</string>
     <string name="Mixin_Locked">Mixin 已锁定</string>
-    <string name="Mixin_Messenger_Desktop">Mixin 桌面</string>
-    <string name="mixin_one">Mixin 大会员</string>
+    <string name="Mixin_ID">Mixin ID</string>
+    <string name="Mixin_One">Mixin 大会员</string>
+    <string name="Mixin_Messenger_Desktop">Mixin 桌面端</string>
     <string name="Model">手机型号</string>
     <string name="Monday">星期一</string>
     <string name="More">更多</string>
@@ -2089,7 +2089,6 @@
     <string name="watching_addresses">你正在观察 %1$d 个地址</string>
     <string name="All_Invoices">全部账单</string>
     <string name="buy_via">付款方式</string>
-    <string name="Mixin_One">Mixin 大会员</string>
     <string name="mixin_one_desc">Mixin 的所有精彩尽在其中</string>
     <string name="expires_on">有效期至 %1$s</string>
     <string name="expired_on">%1$s 过期</string>

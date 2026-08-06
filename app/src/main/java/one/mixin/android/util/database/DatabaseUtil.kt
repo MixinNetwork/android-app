@@ -142,7 +142,7 @@ fun moveLegacyDatabaseFile(context: Context, account: Account): Boolean {
         }
         val dir = dbDir(context, account.identityNumber)
         if (!dir.exists()) dir.mkdirs()
-        c?.close()
+        c.close()
         c = null
         db?.close()
         db = null
@@ -199,7 +199,7 @@ fun moveLegacyPendingDatabaseFile(context: Context, account: Account) {
         if (!targetDir.exists()) {
             targetDir.mkdirs()
         }
-        c?.close()
+        c.close()
         c = null
         db?.close()
         db = null

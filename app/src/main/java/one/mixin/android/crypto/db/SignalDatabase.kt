@@ -44,13 +44,13 @@ abstract class SignalDatabase : RoomDatabase() {
 
         private val MIGRATION_2_3: Migration =
             object : Migration(2, 3) {
-                override suspend fun migrate(database: SQLiteConnection) {
-                    database.execSQL("DROP INDEX IF EXISTS index_sessions_address")
-                    database.execSQL("ALTER TABLE sessions ADD COLUMN device INTEGER NOT NULL DEFAULT 1")
-                    database.execSQL("CREATE UNIQUE INDEX index_sessions_address_device ON sessions (address, device)")
-                    database.execSQL("UPDATE sessions SET address = substr(address, 1, 36), device = 1 WHERE length(address) = 38")
-                    database.execSQL("ALTER TABLE ratchet_sender_keys ADD COLUMN message_id TEXT")
-                    database.execSQL("ALTER TABLE ratchet_sender_keys ADD COLUMN created_at TEXT NOT NULL DEFAULT ''")
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("DROP INDEX IF EXISTS index_sessions_address")
+                    connection.execSQL("ALTER TABLE sessions ADD COLUMN device INTEGER NOT NULL DEFAULT 1")
+                    connection.execSQL("CREATE UNIQUE INDEX index_sessions_address_device ON sessions (address, device)")
+                    connection.execSQL("UPDATE sessions SET address = substr(address, 1, 36), device = 1 WHERE length(address) = 38")
+                    connection.execSQL("ALTER TABLE ratchet_sender_keys ADD COLUMN message_id TEXT")
+                    connection.execSQL("ALTER TABLE ratchet_sender_keys ADD COLUMN created_at TEXT NOT NULL DEFAULT ''")
                 }
             }
 

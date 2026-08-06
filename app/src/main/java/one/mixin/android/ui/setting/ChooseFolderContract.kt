@@ -11,13 +11,13 @@ import androidx.activity.result.contract.ActivityResultContract
 class ChooseFolderContract : ActivityResultContract<String?, Uri?>() {
     override fun createIntent(
         context: Context,
-        lastBackupDirectory: String?,
+        input: String?,
     ): Intent {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
         if (Build.VERSION.SDK_INT >= 26) {
             intent.putExtra(
                 DocumentsContract.EXTRA_INITIAL_URI,
-                lastBackupDirectory,
+                input,
             )
         }
 
@@ -31,11 +31,11 @@ class ChooseFolderContract : ActivityResultContract<String?, Uri?>() {
 
     override fun parseResult(
         resultCode: Int,
-        result: Intent?,
+        intent: Intent?,
     ): Uri? {
         if (resultCode != Activity.RESULT_OK) {
             return null
         }
-        return result?.data
+        return intent?.data
     }
 }

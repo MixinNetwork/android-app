@@ -1,3 +1,5 @@
+@file:Suppress("SENSELESS_COMPARISON", "UNNECESSARY_NOT_NULL_ASSERTION")
+
 package one.mixin.android.ui.conversation.holder
 
 import androidx.compose.foundation.ExperimentalFoundationApi

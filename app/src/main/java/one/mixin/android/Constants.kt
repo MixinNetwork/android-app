@@ -401,6 +401,11 @@ object Constants {
             const val Language = "es"
             const val Country = ""
         }
+
+        object Korean {
+            const val Language = "ko"
+            const val Country = ""
+        }
     }
 
     object Debug {

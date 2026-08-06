@@ -151,7 +151,7 @@ class RestoreFragment : BaseFragment(R.layout.fragment_restore) {
                 if (c.moveToFirst()) {
                     count = c.getIntOrNull(0) ?: 0
                 }
-                c?.close()
+                c.close()
 
                 c = db.rawQuery("SELECT created_at FROM messages ORDER BY created_at DESC LIMIT 1", null)
                 var lastCreatedAt: String? = null

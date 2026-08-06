@@ -14,6 +14,7 @@ import one.mixin.android.vo.GroupMinimal
 import one.mixin.android.vo.ParticipantSessionMinimal
 
 @Dao
+@SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface ConversationDao : BaseDao<Conversation> {
     companion object {
         const val PREFIX_CONVERSATION_ITEM =

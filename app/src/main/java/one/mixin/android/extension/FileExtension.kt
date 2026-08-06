@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.extension
 
 import android.Manifest
@@ -671,13 +673,11 @@ fun Uri.getFileName(context: Context = MixinApplication.appContext): String {
             }
         }
         if (result == null) {
-            result = path
-            val cut = result!!.lastIndexOf('/')
-            if (cut != -1) {
-                result = result!!.substring(cut + 1)
-            }
+            val filePath = path.orEmpty()
+            val cut = filePath.lastIndexOf('/')
+            result = if (cut != -1) filePath.substring(cut + 1) else filePath
         }
-        return result ?: ""
+        return result.orEmpty()
     } catch (e: java.lang.Exception) {
         Timber.e(e)
     }

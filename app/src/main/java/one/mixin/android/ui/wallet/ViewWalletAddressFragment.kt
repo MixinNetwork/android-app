@@ -229,7 +229,7 @@ private fun AddressItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            chains!!.forEachIndexed { index, iconRes ->
+            chains.forEachIndexed { index, iconRes ->
                 Image(
                     painter = painterResource(id = iconRes),
                     contentDescription = null,

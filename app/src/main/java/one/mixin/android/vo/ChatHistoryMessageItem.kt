@@ -220,11 +220,10 @@ fun ChatHistoryMessageItem.absolutePath(context: Context = MixinApplication.appC
             else -> null
         }
     }
-    val url = mediaUrl
+    val url = mediaUrl ?: return null
     return when {
-        url == null || mediaUrl == null -> null
         isLive() -> url
-        mediaUrl.isFileUri() && File(mediaUrl).exists() -> url
+        url.isFileUri() && File(url).exists() -> url
         else -> File(context.getTranscriptDirPath(), url).toUri().toString()
     }
 }

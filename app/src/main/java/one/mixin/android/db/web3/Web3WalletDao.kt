@@ -28,19 +28,19 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     }
 
     @Query("""
-        SELECT * FROM ($WALLET_ITEM_QUERY) w WHERE w.id != :excludeWalletId AND w.name LIKE '%' || :query || '%' AND 
+        SELECT * FROM ($WALLET_ITEM_QUERY) AS w WHERE w.id != :excludeWalletId AND w.name LIKE '%' || :query || '%' AND
         (EXISTS (SELECT 1 FROM addresses a WHERE a.wallet_id = w.id AND a.chain_id = :chainId) OR w.safeChainId = :chainId) 
         ORDER BY createdAt ASC
         """)
     suspend fun getWalletsExcludingByName(excludeWalletId: String, chainId: String, query: String): List<WalletItem>
 
-    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) w WHERE w.id != :excludeWalletId AND w.name LIKE '%' || :query || '%' ORDER BY createdAt ASC")
+    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) AS w WHERE w.id != :excludeWalletId AND w.name LIKE '%' || :query || '%' ORDER BY createdAt ASC")
     suspend fun getWalletsExcludingByNameAllChains(excludeWalletId: String, query: String): List<WalletItem>
 
-    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) ORDER BY createdAt ASC")
+    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) AS w ORDER BY createdAt ASC")
     fun getWallets(): Flow<List<WalletItem>>
 
-    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) ORDER BY createdAt ASC")
+    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) AS w ORDER BY createdAt ASC")
     suspend fun getAllWallets(): List<WalletItem>
 
     @Query("SELECT wallet_id FROM wallets WHERE category = 'classic' ORDER BY created_at ASC LIMIT 1 ")
@@ -49,16 +49,16 @@ interface Web3WalletDao : BaseDao<Web3Wallet> {
     @Query("SELECT * FROM wallets WHERE category = 'classic' LIMIT 1 ")
     suspend fun anyClassicWallet(): Web3Wallet?
 
-    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) WHERE id = :walletId")
+    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) AS w WHERE w.id = :walletId")
     suspend fun getWalletById(walletId: String): WalletItem?
 
-    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) WHERE category = 'mixin_safe' AND safeChainId = :chainId ORDER BY createdAt ASC")
+    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) AS w WHERE w.category = 'mixin_safe' AND w.safeChainId = :chainId ORDER BY createdAt ASC")
     suspend fun getSafeWalletsByChainId(chainId: String): List<WalletItem>
 
     @Query("SELECT name FROM wallets WHERE category IN (:categories)")
     suspend fun getAllWalletNames(categories: List<String>): List<String>
 
-    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) WHERE category = 'classic' ORDER BY createdAt ASC")
+    @Query("SELECT * FROM ($WALLET_ITEM_QUERY) AS w WHERE w.category = 'classic' ORDER BY createdAt ASC")
     suspend fun getAllClassicWallets(): List<WalletItem>
 
     @Query("DELETE FROM wallets WHERE wallet_id = :walletId")

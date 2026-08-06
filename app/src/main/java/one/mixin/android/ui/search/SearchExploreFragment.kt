@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION", "UNCHECKED_CAST")
+
 package one.mixin.android.ui.search
 
 import android.os.Bundle

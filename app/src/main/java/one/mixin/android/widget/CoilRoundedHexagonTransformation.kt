@@ -19,7 +19,7 @@ class CoilRoundedHexagonTransformation : Transformation() {
     override val cacheKey: String = javaClass.name
 
     override suspend fun transform(
-        bitmap: Bitmap,
+        input: Bitmap,
         size: Size,
     ): Bitmap {
         val path = Path()
@@ -29,15 +29,15 @@ class CoilRoundedHexagonTransformation : Transformation() {
                 style = Paint.Style.FILL
             }
 
-        createHexagonPath(bitmap.width.toFloat(), path)
-        val result = createBitmap(bitmap.width, bitmap.height, bitmap.config ?: Bitmap.Config.ARGB_8888)
+        createHexagonPath(input.width.toFloat(), path)
+        val result = createBitmap(input.width, input.height, input.config ?: Bitmap.Config.ARGB_8888)
         paint.pathEffect = CornerPathEffect(result.width / 10f)
 
         val canvas = Canvas(result)
         canvas.drawPath(path, paint)
 
         paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
-        canvas.drawBitmap(bitmap, 0f, 0f, paint)
+        canvas.drawBitmap(input, 0f, 0f, paint)
 
         return result
     }

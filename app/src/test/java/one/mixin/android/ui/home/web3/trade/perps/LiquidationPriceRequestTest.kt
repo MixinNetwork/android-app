@@ -48,6 +48,10 @@ class LiquidationPriceRequestTest {
             LiquidationPriceResult.Failure,
             liquidationPriceResult(price = null, errorCode = 400),
         )
+        assertSame(
+            LiquidationPriceResult.Failure,
+            liquidationPriceResult(price = null, errorCode = null),
+        )
     }
 
     @Test

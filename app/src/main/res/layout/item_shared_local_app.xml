@@ -1,4 +1,5 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/item"
     android:layout_width="match_parent"
     android:layout_height="?listPreferredItemHeight"
@@ -40,22 +41,17 @@
         android:layout_marginEnd="16dp"
         android:layout_toEndOf="@id/avatar">
 
-        <TextView
+        <one.mixin.android.widget.NameTextView
             android:id="@+id/name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:maxLines="1"
-            android:textAppearance="?android:attr/textAppearanceMedium"
-            android:textColor="?attr/text_primary" />
-
-        <ImageView
-            android:id="@+id/verified_iv"
-            android:layout_width="12dp"
-            android:layout_height="12dp"
-            android:layout_marginStart="6dp"
             android:layout_gravity="center_vertical"
-            android:src="@drawable/ic_user_verified"
-            android:contentDescription="@null" />
+            android:textColor="?attr/text_primary"
+            app:badgePadding="6dp"
+            app:badgeSize="12dp"
+            app:ellipsize="end"
+            app:lines="1"
+            app:textSize="@dimen/bottom_name_text_size" />
 
     </LinearLayout>
 

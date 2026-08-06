@@ -56,7 +56,7 @@ fun MixinMemberInvoicesPage(
     val orders = viewModel.getAllMemberOrders().collectAsState(emptyList())
     MixinAppTheme {
         PageScaffold(
-            title = stringResource(R.string.mixin_one),
+            title = stringResource(R.string.Mixin_One),
             verticalScrollable = false,
             pop = onPop,
             actions = {
