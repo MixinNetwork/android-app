@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCapRank
+import one.mixin.android.vo.market.MarketCategoryRelation
 import one.mixin.android.vo.market.MarketFavored
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -101,6 +102,44 @@ class MarketDaoTest {
             assertEquals(500, result.size)
             assertEquals("coin-1", result.first().coinId)
             assertEquals("coin-500", result.last().coinId)
+        }
+
+    @Test
+    fun deletesMarketsWithoutCategoryRankOrFavorite() =
+        runBlocking {
+            database.marketDao().upsertList(
+                listOf(
+                    market("valid"),
+                    market("without-category"),
+                    market("without-rank"),
+                    market("without-category-or-rank"),
+                    market("without-category-or-rank-but-favored"),
+                    market("without-category-or-rank-but-unfavored"),
+                ),
+            )
+            database.marketCategoryDao().insertSuspend(MarketCategoryRelation("valid", 1))
+            database.marketCategoryDao().insertSuspend(MarketCategoryRelation("without-rank", 1))
+            database.marketCapRankDao().insertListSuspend(
+                listOf(
+                    MarketCapRank("valid", "1", ""),
+                    MarketCapRank("without-category", "2", ""),
+                ),
+            )
+            database.marketFavoredDao().insertSuspend(
+                MarketFavored("without-category-or-rank-but-favored", true, ""),
+                MarketFavored("without-category-or-rank-but-unfavored", false, ""),
+            )
+
+            assertEquals(2, database.marketDao().deleteMarketsWithoutCategoryRankOrFavorite())
+            assertEquals("valid", database.marketDao().findMarketById("valid")?.coinId)
+            assertEquals("without-category", database.marketDao().findMarketById("without-category")?.coinId)
+            assertEquals("without-rank", database.marketDao().findMarketById("without-rank")?.coinId)
+            assertEquals(null, database.marketDao().findMarketById("without-category-or-rank"))
+            assertEquals(
+                "without-category-or-rank-but-favored",
+                database.marketDao().findMarketById("without-category-or-rank-but-favored")?.coinId,
+            )
+            assertEquals(null, database.marketDao().findMarketById("without-category-or-rank-but-unfavored"))
         }
 
     private fun market(

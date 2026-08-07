@@ -14,6 +14,21 @@ import one.mixin.android.vo.market.MarketItem
 @Dao
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface MarketDao : BaseDao<Market> {
+    @Query(
+        """
+        DELETE FROM markets
+        WHERE coin_id NOT IN (SELECT coin_id FROM market_cap_ranks)
+          AND coin_id NOT IN (SELECT coin_id FROM market_categories)
+          AND NOT EXISTS (
+              SELECT 1
+              FROM market_favored
+              WHERE market_favored.coin_id = markets.coin_id
+                AND is_favored = TRUE
+          )
+        """,
+    )
+    suspend fun deleteMarketsWithoutCategoryRankOrFavorite(): Int
+
     @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id LEFT JOIN market_coins mc ON mc.coin_id = m.coin_id WHERE mc.asset_id = :assetId")
     fun marketById(assetId: String): LiveData<MarketItem?>
 
