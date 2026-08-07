@@ -86,6 +86,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.perps.AllPositionsFragment
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualGuideBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.home.web3.trade.perps.PerpsMarketListBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.perps.PositionDetailFragment
@@ -224,6 +225,7 @@ class TradeFragment : BaseFragment() {
 
     private val swapViewModel by viewModels<SwapViewModel>()
     private val web3ViewModel by viewModels<Web3ViewModel>()
+    private val perpetualViewModel by viewModels<PerpetualViewModel>()
     private val coroutineErrorHandler = CoroutineExceptionHandler { _, error ->
         Timber.e(error)
         ErrorHandler.handleError(error)
@@ -593,14 +595,18 @@ class TradeFragment : BaseFragment() {
                                     )
                                 },
                                 onOpenPositionClick = { position ->
-                                    requireActivity().supportFragmentManager.navigateToPerpsRoute(
-                                        PositionDetailFragment.newInstance(
-                                            position,
+                                    lifecycleScope.launch {
+                                        val market = perpetualViewModel.getMarketFromDb(position.marketId)
+                                        val activity = activity ?: return@launch
+                                        PerpsActivity.showDetail(
+                                            activity,
+                                            position.marketId,
+                                            market?.displaySymbol ?: position.displaySymbol.orEmpty(),
+                                            market?.displaySymbol ?: position.displaySymbol.orEmpty(),
+                                            market?.tokenSymbol ?: position.tokenSymbol.orEmpty(),
                                             AnalyticsTracker.PerpsSource.PERPS_HOME_LIST,
-                                        ),
-                                        PositionDetailFragment.TAG,
-                                        R.id.container,
-                                    )
+                                        )
+                                    }
                                 },
                                 onMarketItemClick = { market ->
                                     PerpsActivity.showDetail(
