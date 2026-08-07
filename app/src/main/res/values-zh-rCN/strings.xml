@@ -2579,7 +2579,7 @@
     <string name="wallet_home_contact_us">联系我们</string>
     <string name="wallet_home_help_center_desc">指南、文档和常见问题</string>
     <string name="wallet_home_help_center_url">https://support.mixin.one/zh/</string>
-    <string name="wallet_home_common_wallet_reason_title">什么需要普通钱包？</string>
+    <string name="wallet_home_common_wallet_reason_title">为什么需要普通钱包？</string>
     <string name="wallet_home_common_wallet_reason_1">连接任意应用，畅玩 DeFi 与 SocialFi</string>
     <string name="wallet_home_common_wallet_reason_2">支持 Solana、以太坊等多链跨链交易</string>
     <string name="wallet_home_common_wallet_reason_3">可导入其他钱包，一站管理链上资产</string>
