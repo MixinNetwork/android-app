@@ -4,6 +4,7 @@ package one.mixin.android.ui.home.web3.trade
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -410,7 +412,8 @@ fun TradePage(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
-                .padding(top = 4.dp, end = 4.dp),
+                .padding(top = 4.dp, end = 4.dp)
+                .horizontalScroll(rememberScrollState()),
             horizontalArrangement = Arrangement.Start,
         ) {
             tabs.forEachIndexed { index, tab ->

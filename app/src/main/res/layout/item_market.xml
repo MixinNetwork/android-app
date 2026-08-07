@@ -41,6 +41,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="2dp"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textColor="?attr/text_primary"
             android:textSize="14sp" />
 
@@ -63,6 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="4dp"
+            android:ellipsize="end"
             android:textColor="?attr/text_assist"
             android:singleLine="true"
             android:maxWidth="280dp"
@@ -74,12 +77,15 @@
 
     <TextView
         android:id="@+id/price"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textColor="?attr/text_primary"
         android:textFontWeight="600"
         android:textSize="14sp"
         android:gravity="end"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:singleLine="true"
         android:layout_toEndOf="@id/name_layout"
         android:layout_toStartOf="@id/market_rl"
         android:layout_centerVertical="true"
