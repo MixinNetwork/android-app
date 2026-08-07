@@ -1085,4 +1085,23 @@
     <string name="sort_by_recent">新着順</string>
     <string name="sort_by_value">評価額順</string>
     <string name="swap_failed">スワップに失敗しました</string>
+    <string name="hours_count_short">%1$dh</string>
+    <string name="days_count_short">%1$dd</string>
+    <string name="hours_count_long">%1$d時間</string>
+    <string name="days_count_long">%1$d日</string>
+    <string name="Add_to_Watchlist">ウォッチリストに追加</string>
+    <string name="Remove_from_Watchlist">ウォッチリストから削除</string>
+    <string name="Keep">残す</string>
+    <string name="market_volume_short">出来高</string>
+    <string name="market_change_short">騰落率</string>
+    <string name="Crypto">現物</string>
+    <string name="market_stock">株式</string>
+    <string name="Indicator">指標</string>
+    <string name="market_display">市場表示</string>
+    <string name="volume_label">ボリューム: %1$s</string>
+    <string name="watchlist_remove_desc">%1$s がウォッチリストから削除されました</string>
+    <string name="perps_category_meme">ミーム</string>
+    <string name="perps_funding_frequency_value">1/4/8 時間</string>
+    <string name="Bitcoin_Dominance">ビットコインドミナンス</string>
+    <string name="Perp">無期限</string>
 </resources>

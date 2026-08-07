@@ -1080,4 +1080,23 @@
     <string name="membership_elite_description">Управляйте крупными активами в Mixin Safe вместе с семьей, друзьями или коллегами, чтобы снизить риски кражи, ошибок и хранения.</string>
     <string name="mnemonic_login_security_title">Безопасно ли импортировать данные в Mixin?</string>
     <string name="mobile_number_description">Это номер мобильного телефона, привязанный к вашему аккаунту</string>
+    <string name="hours_count_short">%1$dh</string>
+    <string name="days_count_short">%1$dd</string>
+    <string name="hours_count_long">%1$d часа</string>
+    <string name="days_count_long">%1$d дней</string>
+    <string name="Add_to_Watchlist">Добавить в список наблюдения</string>
+    <string name="Remove_from_Watchlist">Удалить из списка наблюдения</string>
+    <string name="Keep">Оставить</string>
+    <string name="market_volume_short">Объем</string>
+    <string name="market_change_short">Изм.</string>
+    <string name="Crypto">Спот</string>
+    <string name="market_stock">Акции</string>
+    <string name="Indicator">Индикаторы</string>
+    <string name="market_display">Отображение рынка</string>
+    <string name="volume_label">VOL: %1$s</string>
+    <string name="watchlist_remove_desc">%1$s больше не в вашем списке наблюдения</string>
+    <string name="perps_category_meme">Мемы</string>
+    <string name="perps_funding_frequency_value">1/4/8 часов</string>
+    <string name="Bitcoin_Dominance">Доминирование биткоина</string>
+    <string name="Perp">Бесср.</string>
 </resources>

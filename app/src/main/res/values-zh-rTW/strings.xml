@@ -917,6 +917,24 @@
     <string name="transfer_to">轉賬給 %1$s</string>
     <string name="transfer_without_pin">轉賬前請先設定 PIN</string>
     <string name="Trending">熱門資產</string>
+    <string name="watchlist_empty">您的自選列表為空</string>
+    <string name="Add_to_Watchlist">新增到自選</string>
+    <string name="Remove_from_Watchlist">從自選中移除</string>
+    <string name="Keep">保留</string>
+    <string name="Bitcoin_Dominance">比特幣市佔率</string>
+    <string name="volume_24h">24 小時交易量</string>
+    <string name="market_volume_short">交易量</string>
+    <string name="market_change_short">漲跌幅</string>
+    <string name="Watchlist">自選</string>
+    <string name="Crypto">現貨</string>
+    <string name="market_stock">股票</string>
+    <string name="Indicator">指標</string>
+    <string name="market_display">行情顯示</string>
+    <string name="Perp">合約</string>
+    <string name="volume_label">交易量：%1$s</string>
+    <string name="change_percent_period_day">%1$d 天 %%</string>
+    <string name="change_percent_period_hour">%1$dh %%</string>
+    <string name="market_change_percent_period_hour">%1$d 小時</string>
     <string name="Try_Again">請重試</string>
     <string name="Tuesday">星期二</string>
     <string name="Turn_On_Notifications">開啟通知</string>
@@ -1308,6 +1326,8 @@
     <string name="minutes_count_short">%1$d分鐘</string>
     <string name="hours_count_short">%1$d小時</string>
     <string name="days_count_short">%1$d天</string>
+    <string name="hours_count_long">%1$d 小時</string>
+    <string name="days_count_long">%1$d 天</string>
     <string name="weeks_count_short">%1$d周</string>
     <string name="months_count_short">%1$d月</string>
     <string name="ytd">1年</string>
@@ -1873,13 +1893,7 @@
     <string name="SAFE">金庫</string>
     <string name="multisig_safe_state_signed">您已批准此交易；您不能再次批准它。</string>
     <string name="multisig_safe_state_unlocked">此交易已被其他人拒絕；你不能再拒絕它。</string>
-    <string name="watchlist_empty">您的自選列表為空</string>
-    <string name="Dominance">市佔率</string>
-    <string name="volume_24h">24 小時交易量</string>
-    <string name="Watchlist">自選</string>
     <string name="top_count">前 %1$d</string>
-    <string name="change_percent_period_day">%1$d天 %%</string>
-    <string name="change_percent_period_hour">%1$d小時 %%</string>
     <string name="change_24h">%1$dH %%</string>
     <string name="Choose_Token">選擇 %1$s 網路</string>
     <string name="choose_token_desc">%1$s 在多個網路上釋出</string>
@@ -2436,7 +2450,7 @@
     <string name="perps_funding_rate_key_point_2">資金費率為負時，空頭向多頭支付資金費。</string>
     <string name="perps_funding_rate_key_point_3">實際資金費取決於您的倉位價值和當前資金費率。</string>
     <string name="perps_funding_frequency">頻率</string>
-    <string name="perps_funding_frequency_value">8 小時</string>
+    <string name="perps_funding_frequency_value">1/4/8 小時</string>
     <string name="perps_receive">收到</string>
     <string name="perps_liquidation_price_short">強平價格</string>
     <string name="lock_in_profits_description">價格達到觸發價時自動平倉，及時鎖定利潤</string>
@@ -2635,4 +2649,6 @@
     <string name="cash_account_minimum_send">錯誤 10614：最低金額為 %1$s %2$s。</string>
     <string name="cash_account_maximum_send">錯誤 10614：最大金額為 %1$s %2$s。</string>
     <string name="no_tokens">沒有代幣</string>
+    <string name="watchlist_remove_desc">%1$s 已從自選移除</string>
+    <string name="perps_category_meme">Memes</string>
 </resources>

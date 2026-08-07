@@ -39,6 +39,7 @@ import one.mixin.android.util.analytics.AnalyticsTracker.TradeQuoteReason
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeQuoteType
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.Market
+import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.TokenItem
@@ -75,7 +76,19 @@ class SwapViewModel
         limit: Int? = null,
         sort: String? = null,
         duration: String? = null,
-    ): MixinResponse<List<Market>> = routeService.markets(category = category, limit = limit, sort = sort, duration = duration)
+    ): MixinResponse<List<Market>> = tokenRepository.markets(category = category, limit = limit, sort = sort, duration = duration)
+
+    fun observeMarketsByCategory(category: MarketCategory): Flow<List<MarketItem>> =
+        tokenRepository.observeMarketsByCategory(category)
+
+    suspend fun refreshMarketsByCategory(
+        category: MarketCategory,
+        limit: Int? = null,
+    ): List<MarketItem>? =
+        tokenRepository.fetchMarkets(
+            category = category.apiValue,
+            limit = limit,
+        )
 
     suspend fun web3Quote(
         inputMint: String,

@@ -43,6 +43,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.DepositTokensBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.market.setMarketFavoriteIcon
 import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_OUTPUT
@@ -117,15 +118,22 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 setSubTitle(marketItem.symbol, marketItem.name)
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
                 rightExtraIb.isVisible = true
-                rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
+                rightExtraIb.setMarketFavoriteIcon(marketItem.isFavored == true)
                 rightExtraIb.setOnClickListener {
                     val addingFavorite = marketItem.isFavored != true
-                    walletViewModel.updateMarketFavored(marketItem.symbol, marketItem.coinId, marketItem.isFavored)
+                    walletViewModel.updateMarketFavored(
+                        marketItem.symbol,
+                        marketItem.coinId,
+                        marketItem.isFavored,
+                    )
                     marketItem.isFavored = marketItem.isFavored != true
                     if (addingFavorite) {
                         AnalyticsTracker.trackMarketFavoriteAdd(marketFavoriteSource())
                     }
-                    rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
+                    rightExtraIb.setMarketFavoriteIcon(
+                        isFavored = marketItem.isFavored == true,
+                        animate = addingFavorite,
+                    )
                 }
                 rightIb.setOnClickListener {
                     if (!isLoading || marketItem.coinId.isBlank()) {

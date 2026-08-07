@@ -18,6 +18,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -27,7 +28,6 @@ import com.google.gson.reflect.TypeToken
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -103,6 +103,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
@@ -161,11 +162,7 @@ class TradeFragment : BaseFragment() {
         const val TAB_ADVANCED = 1
         const val TAB_PERPETUAL = 2
 
-        private const val RECOMMENDED_MARKET_LIMIT = 8
-        private const val MARKET_CATEGORY_STOCKS = "stocks"
-        private const val MARKET_CATEGORY_TRENDING = "trending"
-        private const val MARKET_CATEGORY_TOP_GAINERS = "top_gainers"
-        private const val MARKET_CATEGORY_TOP_LOSERS = "top_losers"
+        private const val MARKET_REFRESH_LIMIT = 500
 
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
@@ -201,10 +198,6 @@ class TradeFragment : BaseFragment() {
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var remoteSwapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var stocks: List<SwapToken> by mutableStateOf(emptyList())
-    private var stockMarkets: List<MarketItem> by mutableStateOf(emptyList())
-    private var trendingMarkets: List<MarketItem> by mutableStateOf(emptyList())
-    private var topGainerMarkets: List<MarketItem> by mutableStateOf(emptyList())
-    private var topLoserMarkets: List<MarketItem> by mutableStateOf(emptyList())
     private var swapScrollToTopSignal by mutableLongStateOf(0L)
     private var tokenItems: List<TokenItem>? = null
     private var web3tokens: List<Web3TokenItem>? = null
@@ -275,6 +268,22 @@ class TradeFragment : BaseFragment() {
         }
         return ComposeView(inflater.context).apply {
             setContent {
+                val stockMarkets by
+                    remember {
+                        swapViewModel.observeMarketsByCategory(MarketCategory.STOCK)
+                    }.collectAsStateWithLifecycle(initialValue = emptyList())
+                val trendingMarkets by
+                    remember {
+                        swapViewModel.observeMarketsByCategory(MarketCategory.TRENDING)
+                    }.collectAsStateWithLifecycle(initialValue = emptyList())
+                val topGainerMarkets by
+                    remember {
+                        swapViewModel.observeMarketsByCategory(MarketCategory.TOP_GAINER)
+                    }.collectAsStateWithLifecycle(initialValue = emptyList())
+                val topLoserMarkets by
+                    remember {
+                        swapViewModel.observeMarketsByCategory(MarketCategory.TOP_LOSER)
+                    }.collectAsStateWithLifecycle(initialValue = emptyList())
                 MixinAppTheme(
                     darkTheme = context.isNightMode(),
                 ) {
@@ -366,6 +375,7 @@ class TradeFragment : BaseFragment() {
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
+                                autoFocusAmount = shouldAutoFocusAmount(),
                             initialTabIndex = initialTabIndex,
                             source = getSource(),
                             entrySource = getEntrySource(),
@@ -1406,68 +1416,19 @@ class TradeFragment : BaseFragment() {
 
     private suspend fun refreshRecommendedMarkets() {
         coroutineScope {
-            val stocksDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_STOCKS, limit = null) }
-            val trendingDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TRENDING, limit = null) }
-            val topGainersDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TOP_GAINERS) }
-            val topLosersDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TOP_LOSERS) }
-
-            val newStockMarkets = stocksDeferred.await()
-            val newTrendingMarkets = trendingDeferred.await()
-            val newTopGainerMarkets = topGainersDeferred.await()
-            val newTopLoserMarkets = topLosersDeferred.await()
-
-            stockMarkets = newStockMarkets
-            trendingMarkets = newTrendingMarkets
-            topGainerMarkets = newTopGainerMarkets
-            topLoserMarkets = newTopLoserMarkets
-        }
-    }
-
-    private suspend fun fetchRecommendedMarket(
-        category: String? = null,
-        limit: Int? = RECOMMENDED_MARKET_LIMIT,
-        sort: String? = null,
-    ): List<MarketItem> {
-        return try {
-            requestRouteAPI(
-                invokeNetwork = {
-                    swapViewModel.markets(
+            listOf(
+                MarketCategory.STOCK,
+                MarketCategory.TRENDING,
+                MarketCategory.TOP_GAINER,
+                MarketCategory.TOP_LOSER,
+            ).map { category ->
+                async {
+                    swapViewModel.refreshMarketsByCategory(
                         category = category,
-                        limit = limit,
-                        sort = sort,
+                        limit = MARKET_REFRESH_LIMIT,
                     )
-                },
-                successBlock = { resp ->
-                    resp.data?.map { MarketItem.fromMarket(it) }.orEmpty()
-                },
-                requestSession = { swapViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
-                failureBlock = { r ->
-                    if (r.errorCode == ErrorHandler.OLD_VERSION) {
-                        alertDialogBuilder()
-                            .setTitle(R.string.Update_Mixin)
-                            .setMessage(getString(R.string.update_mixin_description, requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)))
-                            .setNegativeButton(R.string.Later) { dialog, _ ->
-                                dialog.dismiss()
-                                activity?.onBackPressedDispatcher?.onBackPressed()
-                            }.setPositiveButton(R.string.Update) { dialog, _ ->
-                                dialog.dismiss()
-                                activity?.onBackPressedDispatcher?.onBackPressed()
-                                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
-                            }.setCancelable(false)
-                            .create().show()
-
-                        return@requestRouteAPI true
-                    }
-                    true
-                },
-                exceptionBlock = { true },
-                defaultErrorHandle = {},
-                defaultExceptionHandle = {},
-            ).orEmpty()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (t: Throwable) {
-            emptyList()
+                }
+            }.forEach { it.await() }
         }
     }
 
@@ -1642,6 +1603,11 @@ class TradeFragment : BaseFragment() {
         initialAmount = arguments?.getString(ARGS_AMOUNT)
     }
 
+    private fun shouldAutoFocusAmount(): Boolean {
+        return !arguments?.getString(ARGS_INPUT).isNullOrBlank() ||
+            !arguments?.getString(ARGS_OUTPUT).isNullOrBlank()
+    }
+
     private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
 
     private fun getPreferenceKey(isLimit: Boolean): String {
@@ -1720,10 +1686,6 @@ class TradeFragment : BaseFragment() {
         }
         swapTokens = emptyList()
         stocks = emptyList()
-        stockMarkets = emptyList()
-        trendingMarkets = emptyList()
-        topGainerMarkets = emptyList()
-        topLoserMarkets = emptyList()
         swapScrollToTopSignal = 0L
         tokenItems = null
         web3tokens = null

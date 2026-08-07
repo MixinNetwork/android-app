@@ -428,7 +428,13 @@ internal constructor(
 
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
-    fun updateMarketFavored(symbol: String, coinId: String, isFavored: Boolean?) = viewModelScope.launch(Dispatchers.IO) { tokenRepository.updateMarketFavored(symbol, coinId, isFavored) }
+    fun updateMarketFavored(
+        symbol: String,
+        coinId: String,
+        isFavored: Boolean?,
+    ) = viewModelScope.launch(Dispatchers.IO) {
+        tokenRepository.updateMarketFavored(symbol, coinId, isFavored)
+    }
 
     suspend fun simpleCoinItem(coinId: String) = tokenRepository.simpleCoinItem(coinId)
 

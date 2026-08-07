@@ -115,7 +115,7 @@ class ExploreFragment : BaseFragment() {
             root.setOnClickListener {
                 // do nothing
             }
-            searchIb.setOnClickListener {
+            homeToolbar.setOnSearchClickListener {
                 if (radioCollectible.isChecked) {
                     activity?.addFragment(
                         this@ExploreFragment,
@@ -132,7 +132,7 @@ class ExploreFragment : BaseFragment() {
                     )
                 }
             }
-            scanIb.setOnClickListener {
+            homeToolbar.setOnScanClickListener {
                 RxPermissions(requireActivity()).request(Manifest.permission.CAMERA).autoDispose(stopScope).subscribe { granted ->
                     if (granted) {
                         (requireActivity() as? MainActivity)?.showCapture(true)
@@ -141,7 +141,7 @@ class ExploreFragment : BaseFragment() {
                     }
                 }
             }
-            settingIb.setOnClickListener {
+            homeToolbar.setOnSettingsClickListener {
                 SettingActivity.show(requireContext(), compose = false)
             }
             favoriteRv.adapter = adapter
