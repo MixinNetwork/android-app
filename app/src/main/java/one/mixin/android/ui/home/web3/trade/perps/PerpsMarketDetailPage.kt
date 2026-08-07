@@ -81,6 +81,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.market.MarketFavoriteAnimationIntent
 import one.mixin.android.ui.home.web3.market.MarketFavoriteIcon
+import one.mixin.android.ui.home.web3.market.shouldClearFavoriteAnimationIntent
 import one.mixin.android.ui.home.web3.trade.CandleChart
 import one.mixin.android.ui.wallet.MarketDescriptionTextView
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -119,6 +120,7 @@ fun PerpsMarketDetailPage(
             mutableStateOf<MarketFavoriteAnimationIntent?>(null)
         }
     var favoriteAnimationIntentId by remember(marketId) { mutableStateOf(0) }
+    var completedFavoriteAnimationIntentId by remember(marketId) { mutableStateOf<Int?>(null) }
     var favoriteRequestResult by remember(marketId) { mutableStateOf<Boolean?>(null) }
     val isFavored = marketId in favoriteMarketIds
     val timeFramePreferenceKey = PREF_MARKET_DETAIL_TIME_FRAME
@@ -165,19 +167,24 @@ fun PerpsMarketDetailPage(
         viewModel.refreshFavoriteMarkets()
     }
 
-    LaunchedEffect(isFavored, favoriteAnimationIntent, favoriteRequestResult) {
+    LaunchedEffect(
+        isFavored,
+        favoriteAnimationIntent,
+        favoriteRequestResult,
+        completedFavoriteAnimationIntentId,
+    ) {
         val intent = favoriteAnimationIntent ?: return@LaunchedEffect
-        when {
-            favoriteRequestResult == false -> {
-                favoriteAnimationIntent = null
-                favoriteRequestResult = null
-                isUpdatingFavorite = false
-            }
-            favoriteRequestResult == true && isFavored == intent.targetFavored -> {
-                favoriteAnimationIntent = null
-                favoriteRequestResult = null
-                isUpdatingFavorite = false
-            }
+        if (
+            shouldClearFavoriteAnimationIntent(
+                intent = intent,
+                requestResult = favoriteRequestResult,
+                isFavored = isFavored,
+                completedIntentId = completedFavoriteAnimationIntentId,
+            )
+        ) {
+            favoriteAnimationIntent = null
+            favoriteRequestResult = null
+            isUpdatingFavorite = false
         }
     }
 
@@ -267,6 +274,7 @@ fun PerpsMarketDetailPage(
                         ),
                     modifier = Modifier.size(24.dp),
                     animationIntent = favoriteAnimationIntent,
+                    onAnimationFinished = { completedFavoriteAnimationIntentId = it },
                 )
             }
             IconButton(onClick = {

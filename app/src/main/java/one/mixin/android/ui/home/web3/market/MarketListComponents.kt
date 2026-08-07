@@ -202,21 +202,27 @@ internal fun MarketListRowFrame(
             mutableStateOf<MarketFavoriteAnimationIntent?>(null)
         }
     var favoriteAnimationIntentId by remember(stableId) { mutableStateOf(0) }
+    var completedFavoriteAnimationIntentId by remember(stableId) { mutableStateOf<Int?>(null) }
     var favoriteRequestPending by remember(stableId) { mutableStateOf(false) }
     var favoriteRequestResult by remember(stableId) { mutableStateOf<Boolean?>(null) }
-    LaunchedEffect(isFavored, favoriteAnimationIntent, favoriteRequestResult) {
+    LaunchedEffect(
+        isFavored,
+        favoriteAnimationIntent,
+        favoriteRequestResult,
+        completedFavoriteAnimationIntentId,
+    ) {
         val intent = favoriteAnimationIntent ?: return@LaunchedEffect
-        when {
-            favoriteRequestResult == false -> {
-                favoriteAnimationIntent = null
-                favoriteRequestPending = false
-                favoriteRequestResult = null
-            }
-            favoriteRequestResult == true && isFavored == intent.targetFavored -> {
-                favoriteAnimationIntent = null
-                favoriteRequestPending = false
-                favoriteRequestResult = null
-            }
+        if (
+            shouldClearFavoriteAnimationIntent(
+                intent = intent,
+                requestResult = favoriteRequestResult,
+                isFavored = isFavored,
+                completedIntentId = completedFavoriteAnimationIntentId,
+            )
+        ) {
+            favoriteAnimationIntent = null
+            favoriteRequestPending = false
+            favoriteRequestResult = null
         }
     }
     Row(
@@ -270,6 +276,7 @@ internal fun MarketListRowFrame(
                 modifier = Modifier.size(MarketListFavoriteIconSize),
                 unselectedTint = MixinAppTheme.colors.textAssist,
                 animationIntent = favoriteAnimationIntent,
+                onAnimationFinished = { completedFavoriteAnimationIntentId = it },
             )
         }
         Spacer(modifier = Modifier.width(MarketLeadingGap))

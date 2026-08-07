@@ -31,6 +31,7 @@ fun MarketFavoriteIcon(
     modifier: Modifier = Modifier,
     unselectedTint: Color = Color.Unspecified,
     animationIntent: MarketFavoriteAnimationIntent? = null,
+    onAnimationFinished: (Int) -> Unit = {},
 ) {
     val animationState =
         remember {
@@ -43,19 +44,29 @@ fun MarketFavoriteIcon(
         remember(isFavored, animationIntent, completedAnimationIntentId) {
             animationState.update(isFavored, animationIntent)
         }
-    val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.market_watchlist))
+    val compositionResult = rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.market_watchlist))
+    val composition by compositionResult
     val animatable = rememberLottieAnimatable()
-    LaunchedEffect(composition, decision) {
-        val currentComposition = composition ?: return@LaunchedEffect
+    LaunchedEffect(composition, compositionResult.isFailure, decision) {
         if (decision.mode != MarketFavoriteAnimationMode.ANIMATE_FORWARD) {
             return@LaunchedEffect
         }
+        val currentComposition =
+            composition ?: run {
+                if (compositionResult.isFailure) {
+                    animationState.onAnimationFinished(decision.intentId)
+                    completedAnimationIntentId = decision.intentId
+                    decision.intentId?.let(onAnimationFinished)
+                }
+                return@LaunchedEffect
+            }
         animatable.animate(
             composition = currentComposition,
             initialProgress = 0f,
         )
         animationState.onAnimationFinished(decision.intentId)
         completedAnimationIntentId = decision.intentId
+        decision.intentId?.let(onAnimationFinished)
     }
     val shouldAnimate =
         composition != null &&
@@ -93,6 +104,18 @@ data class MarketFavoriteAnimationIntent(
     val id: Int,
     val targetFavored: Boolean,
 )
+
+internal fun shouldClearFavoriteAnimationIntent(
+    intent: MarketFavoriteAnimationIntent?,
+    requestResult: Boolean?,
+    isFavored: Boolean,
+    completedIntentId: Int?,
+): Boolean {
+    val currentIntent = intent ?: return false
+    if (requestResult == false) return true
+    if (requestResult != true || isFavored != currentIntent.targetFavored) return false
+    return !currentIntent.targetFavored || completedIntentId == currentIntent.id
+}
 
 internal enum class MarketFavoriteAnimationMode {
     SNAP,
