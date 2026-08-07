@@ -412,24 +412,6 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun marketEntriesLoadByPageWithoutChangingOrder() {
-        val entries =
-            List(MARKET_LIST_PAGE_SIZE * 2 + 10) { index ->
-                MarketListEntry.Spot(market("coin-$index"), SpotMarketType.CRYPTO)
-            }
-
-        assertEquals(
-            entries.take(MARKET_LIST_PAGE_SIZE),
-            pagedMarketEntries(entries, page = 1),
-        )
-        assertEquals(
-            entries.take(MARKET_LIST_PAGE_SIZE * 2),
-            pagedMarketEntries(entries, page = 2),
-        )
-        assertEquals(entries, pagedMarketEntries(entries, page = 3))
-    }
-
-    @Test
     fun initialLoadingDoesNotFlashSpinnerBeforeLocalDatabaseResult() {
         val state = MarketPageUiState(isLoading = true, hasLoadedLocalData = false)
 

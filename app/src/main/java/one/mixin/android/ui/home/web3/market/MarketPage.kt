@@ -42,7 +42,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -59,7 +58,6 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import kotlinx.coroutines.flow.distinctUntilChanged
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat2
@@ -374,23 +372,8 @@ private fun MarketList(
     onEntryClick: (MarketListEntry) -> Unit,
 ) {
     val listState = rememberLazyListState()
-    var page by remember(state.selectedTopTab, state.selectedSubTab, state.sortState) { mutableStateOf(1) }
-    val visibleEntries = pagedMarketEntries(state.entries, page)
     LaunchedEffect(state.selectedTopTab, state.selectedSubTab, state.sortState) {
-        page = 1
         listState.scrollToItem(0)
-    }
-    LaunchedEffect(listState, visibleEntries.size, state.entries.size) {
-        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1 }
-            .distinctUntilChanged()
-            .collect { lastVisibleIndex ->
-                if (
-                    visibleEntries.size < state.entries.size &&
-                    lastVisibleIndex >= visibleEntries.lastIndex - 8
-                ) {
-                    page += 1
-                }
-            }
     }
     when {
         state.showsMarketLoading -> {
@@ -437,7 +420,7 @@ private fun MarketList(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 items(
-                    items = visibleEntries,
+                    items = state.entries,
                     key = MarketListEntry::stableId,
                 ) { entry ->
                     MarketRow(
