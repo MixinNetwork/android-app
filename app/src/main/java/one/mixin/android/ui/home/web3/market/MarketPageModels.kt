@@ -125,6 +125,14 @@ sealed interface MarketListEntry {
     }
 }
 
+internal const val MARKET_LIST_PAGE_SIZE = 50
+
+internal fun pagedMarketEntries(
+    entries: List<MarketListEntry>,
+    page: Int,
+    pageSize: Int = MARKET_LIST_PAGE_SIZE,
+): List<MarketListEntry> = entries.take(page.coerceAtLeast(1) * pageSize)
+
 data class MarketPageUiState(
     val selectedTopTab: MarketTopTab = MarketTopTab.CRYPTO,
     val selectedSubTabs: Map<MarketTopTab, MarketSubTab> = defaultMarketSubTabs(),

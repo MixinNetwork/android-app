@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.market
 
-import android.widget.ImageView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,6 +32,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,12 +46,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.viewinterop.AndroidView
+import coil3.compose.AsyncImage
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.loadSvgWithTint
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.vo.Fiats
@@ -530,10 +530,17 @@ internal fun MarketChangeColumn(
     modifier: Modifier = Modifier,
 ) {
     val isRising = change?.let { it >= BigDecimal.ZERO } ?: true
+    val changeText = remember(change) { change?.let(::formatMarketPercent) ?: "--" }
     val changeColor =
         if (change == null) {
             MixinAppTheme.colors.textAssist
         } else if (isRising) {
+            if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+        } else {
+            if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+        }
+    val sparklineColor =
+        if (isRising) {
             if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
         } else {
             if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
@@ -544,7 +551,7 @@ internal fun MarketChangeColumn(
             contentAlignment = Alignment.CenterEnd,
         ) {
             BasicText(
-                text = change?.let(::formatMarketPercent) ?: "--",
+                text = changeText,
                 style =
                     TextStyle(
                         color = changeColor,
@@ -567,22 +574,18 @@ internal fun MarketChangeColumn(
             modifier = modifier,
             horizontalAlignment = Alignment.End,
         ) {
-            AndroidView(
-                factory = { context ->
-                    ImageView(context).apply {
-                        scaleType = ImageView.ScaleType.FIT_XY
-                    }
-                },
-                update = { imageView ->
-                    imageView.loadSvgWithTint(sparkline, isRising, quoteColorReversed)
-                },
+            AsyncImage(
+                model = sparkline,
+                contentDescription = null,
+                colorFilter = ColorFilter.tint(sparklineColor),
+                contentScale = ContentScale.FillBounds,
                 modifier =
                     Modifier
                         .width(60.dp)
                         .height(20.dp),
             )
             BasicText(
-                text = change?.let(::formatMarketPercent) ?: "--",
+                text = changeText,
                 style =
                     TextStyle(
                         color = changeColor,

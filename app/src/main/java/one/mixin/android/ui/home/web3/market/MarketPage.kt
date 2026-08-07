@@ -42,6 +42,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -58,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import kotlinx.coroutines.flow.distinctUntilChanged
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat2
@@ -372,8 +374,23 @@ private fun MarketList(
     onEntryClick: (MarketListEntry) -> Unit,
 ) {
     val listState = rememberLazyListState()
+    var page by remember(state.selectedTopTab, state.selectedSubTab, state.sortState) { mutableStateOf(1) }
+    val visibleEntries = pagedMarketEntries(state.entries, page)
     LaunchedEffect(state.selectedTopTab, state.selectedSubTab, state.sortState) {
+        page = 1
         listState.scrollToItem(0)
+    }
+    LaunchedEffect(listState, visibleEntries.size, state.entries.size) {
+        snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index ?: -1 }
+            .distinctUntilChanged()
+            .collect { lastVisibleIndex ->
+                if (
+                    visibleEntries.size < state.entries.size &&
+                    lastVisibleIndex >= visibleEntries.lastIndex - 8
+                ) {
+                    page += 1
+                }
+            }
     }
     when {
         state.showsMarketLoading -> {
@@ -420,7 +437,7 @@ private fun MarketList(
                 modifier = Modifier.fillMaxSize(),
             ) {
                 items(
-                    items = state.entries,
+                    items = visibleEntries,
                     key = MarketListEntry::stableId,
                 ) { entry ->
                     MarketRow(
@@ -545,7 +562,33 @@ private fun RowScope.SpotMarketRowContent(
     settings: MarketDisplaySettings,
     showMarketCap: Boolean,
 ) {
-    val change = market.changePercent(settings.priceChangePeriod)
+    val fiatSymbol = Fiats.getSymbol()
+    val fiatRate = Fiats.getRate()
+    val change =
+        remember(
+            settings.priceChangePeriod,
+            market.priceChangePercentage24H,
+            market.priceChangePercentage7D,
+        ) {
+            market.changePercent(settings.priceChangePeriod)
+        }
+    val volumeText =
+        remember(
+            showMarketCap,
+            market.marketCap,
+            market.totalVolume,
+            fiatSymbol,
+            fiatRate,
+        ) {
+            formatSpotVolume(
+                if (showMarketCap) market.marketCap else market.totalVolume,
+                fiatSymbol,
+                fiatRate,
+            )
+        }
+    val priceText = remember(market.currentPrice, fiatSymbol, fiatRate) {
+        formatSpotPrice(market.currentPrice, fiatSymbol, fiatRate)
+    }
     MarketIcon(url = market.iconUrl, size = 38.dp)
     Spacer(modifier = Modifier.width(10.dp))
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -576,7 +619,7 @@ private fun RowScope.SpotMarketRowContent(
             )
             Spacer(modifier = Modifier.width(4.dp))
             Text(
-                text = formatSpotVolume(if (showMarketCap) market.marketCap else market.totalVolume),
+                text = volumeText,
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 12.sp,
                 lineHeight = 12.sp,
@@ -585,7 +628,7 @@ private fun RowScope.SpotMarketRowContent(
             )
         }
     }
-    MarketPriceText(text = formatSpotPrice(market.currentPrice))
+    MarketPriceText(text = priceText)
     Spacer(modifier = Modifier.width(MarketPriceChangeGap))
     MarketChangeColumn(
         change = change,
@@ -1070,12 +1113,20 @@ private fun formatPercent(change: BigDecimal): String {
     return "$prefix${change.numberFormat2()}%"
 }
 
-private fun formatSpotPrice(value: String): String =
+private fun formatSpotPrice(
+    value: String,
+    fiatSymbol: String = Fiats.getSymbol(),
+    fiatRate: Double = Fiats.getRate(),
+): String =
     runCatching {
-        "${Fiats.getSymbol()}${BigDecimal(value).multiply(BigDecimal(Fiats.getRate())).priceFormat()}"
+        "$fiatSymbol${BigDecimal(value).multiply(BigDecimal(fiatRate)).priceFormat()}"
     }.getOrDefault(value)
 
-private fun formatSpotVolume(value: String): String =
+private fun formatSpotVolume(
+    value: String,
+    fiatSymbol: String = Fiats.getSymbol(),
+    fiatRate: Double = Fiats.getRate(),
+): String =
     runCatching {
-        "${Fiats.getSymbol()}${BigDecimal(value).multiply(BigDecimal(Fiats.getRate())).numberFormatCompact()}"
+        "$fiatSymbol${BigDecimal(value).multiply(BigDecimal(fiatRate)).numberFormatCompact()}"
     }.getOrDefault(value)
