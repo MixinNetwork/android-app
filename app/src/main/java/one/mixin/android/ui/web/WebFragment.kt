@@ -1153,7 +1153,6 @@ class WebFragment : BaseFragment() {
             val sameHost =
                 try {
                     Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
-                    true
                 } catch (e: Exception) {
                     false
                 }
@@ -1166,9 +1165,11 @@ class WebFragment : BaseFragment() {
                 webView.evaluateJavascript("$callbackFunction('[]')") {}
                 return@launch
             }
-            val auth = bottomViewModel.getAuthorizationByAppId(app!!.appId)
+            val appId = app!!.appId
+            val isVerified = bottomViewModel.findUserByAppId(appId)?.isVerified == true
+            val auth = if (isVerified) null else bottomViewModel.getAuthorizationByAppId(appId)
             val result =
-                if (auth?.scopes?.contains("ASSETS:READ") == true) {
+                if (isVerified || auth?.scopes?.contains("ASSETS:READ") == true) {
                     val tokens =
                         if (ids.isEmpty()) {
                             bottomViewModel.tokenEntry()
@@ -1195,6 +1196,10 @@ class WebFragment : BaseFragment() {
             if (webView.url?.matchResourcePattern(app.resourcePatterns) != true) {
                 webView.evaluateJavascript("$callbackFunction('[]')") {}
                 bottomViewModel.refreshUser(appId, true)
+                return@launch
+            }
+            if (bottomViewModel.findUserByAppId(appId)?.isVerified != true) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
                 return@launch
             }
             val publicKey = bottomViewModel.getBotPublicKey(appId, defaultSharedPreferences, reloadPublicKey)
