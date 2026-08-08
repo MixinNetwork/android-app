@@ -79,7 +79,7 @@ data class ScenarioData(
 data class GuideRowData(
     val label: String,
     val value: String,
-    @DrawableRes val iconRes: Int? = null,
+    @param:DrawableRes val iconRes: Int? = null,
 )
 
 data class AdjusterConfig(

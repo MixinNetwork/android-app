@@ -35,4 +35,10 @@
         <item quantity="other">周</item>
     </plurals>
 
+    <array name="database">
+        <item>Mixin 数据库</item>
+        <item>待处理数据库</item>
+        <item>钱包数据库</item>
+    </array>
+
 </resources>

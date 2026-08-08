@@ -191,9 +191,9 @@ class AttachmentDownloadJob(
             attachmentProcess.remove(message.messageId)
             destination.delete()
             return true
-        } else if (response.isSuccessful && !isCancelled && response.body != null) {
+        } else if (response.isSuccessful && !isCancelled) {
             val sink = destination.sink().buffer()
-            sink.writeAll(response.body!!.source())
+            sink.writeAll(response.body.source())
             sink.close()
             if (message.category.endsWith("_IMAGE")) {
                 val attachmentCipherInputStream =

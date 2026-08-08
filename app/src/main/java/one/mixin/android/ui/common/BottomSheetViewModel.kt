@@ -950,7 +950,7 @@ class BottomSheetViewModel
                     ghostKeyResponse.data!!
                 } else {
                     throw IllegalArgumentException("Transfer has no recipient")
-                } ?: throw IllegalArgumentException("Transfer has no recipient")
+                }
                 Timber.e("Kernel Invoice Transaction UtxoWrapper: $amount $assetId $asset")
                 val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null))
                 val input = utxoWrapper.input

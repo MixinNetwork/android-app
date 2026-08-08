@@ -16,7 +16,7 @@ apply(plugin = "com.google.firebase.crashlytics")
 
 val versionMajor = 5
 val versionMinor = 3
-val versionPatch = 1
+val versionPatch = 2
 val versionBuild = 0
 
 val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
@@ -153,7 +153,7 @@ android {
     }
 
     androidResources {
-        localeFilters += listOf("en", "es", "in", "ja", "ms", "ru", "zh-rCN", "zh-rTW")
+        localeFilters += listOf("en", "es", "in", "ja", "ko", "ms", "ru", "zh-rCN", "zh-rTW")
     }
 
     packaging {
