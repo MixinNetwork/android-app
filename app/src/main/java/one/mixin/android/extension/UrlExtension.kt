@@ -493,7 +493,7 @@ private suspend fun openLocalPerpsTradeAction(
         market.displaySymbol,
         market.displaySymbol,
         market.tokenSymbol,
-        AnalyticsTracker.PerpsSource.APP_CARD,
+        tradeSource(context),
     )
     closeSourceWebActivityIfNeeded(context)
     return true

@@ -30,6 +30,7 @@ import one.mixin.android.job.RefreshMarketPageJob
 import one.mixin.android.repository.PerpsMarketRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.market.GlobalMarket
 import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
@@ -77,6 +78,10 @@ class MarketPageViewModel
 
         fun selectTopTab(tab: MarketTopTab) {
             if (_uiState.value.selectedTopTab == tab) return
+            AnalyticsTracker.trackMarketsTabSwitch(
+                level = AnalyticsTracker.MarketsTabLevel.PRIMARY,
+                tab = tab.analyticsValue(),
+            )
             preferences.edit().putString(PREF_MARKET_PAGE_TOP_TAB, tab.name).apply()
             val selectedSubTab = _uiState.value.selectedSubTabs[tab]
             _uiState.value =
@@ -91,6 +96,10 @@ class MarketPageViewModel
         fun selectSubTab(subTab: MarketSubTab) {
             val topTab = _uiState.value.selectedTopTab
             if (topTab == MarketTopTab.INDICATOR || _uiState.value.selectedSubTab == subTab) return
+            AnalyticsTracker.trackMarketsTabSwitch(
+                level = AnalyticsTracker.MarketsTabLevel.SECONDARY,
+                tab = subTab.analyticsValue(),
+            )
             val selectedSubTabs = _uiState.value.selectedSubTabs + (topTab to subTab)
             preferences.edit()
                 .putString("$PREF_MARKET_PAGE_SUB_TAB_PREFIX${topTab.name}", subTab.name)
@@ -105,12 +114,42 @@ class MarketPageViewModel
         }
 
         fun updateSort(column: MarketSortColumn) {
-            _uiState.value = _uiState.value.copy(sortState = _uiState.value.sortState.next(column))
+            val state = _uiState.value
+            val sortState = state.sortState.next(column)
+            _uiState.value = state.copy(sortState = sortState)
             rebuildEntries()
+            sortState.direction.analyticsValue()?.let { direction ->
+                AnalyticsTracker.trackMarketsListSort(
+                    sortDirection = direction,
+                    primaryTab = state.selectedTopTab.analyticsValue(),
+                    secondaryTab = state.selectedSubTab.analyticsValue(),
+                    sortField = state.analyticsSortField(column),
+                )
+            }
         }
 
         fun applyDisplaySettings(settings: MarketDisplaySettings) {
-            val oldSettings = _uiState.value.displaySettings
+            val state = _uiState.value
+            val oldSettings = state.displaySettings
+            if (oldSettings.priceChangePeriod != settings.priceChangePeriod) {
+                AnalyticsTracker.trackMarketsPriceChangePeriodSwitch(
+                    primaryTab = state.selectedTopTab.analyticsValue(),
+                    secondaryTab = state.selectedSubTab.analyticsValue(),
+                    period = settings.priceChangePeriod.analyticsValue(),
+                )
+            }
+            if (oldSettings.quoteColorReversed != settings.quoteColorReversed) {
+                AnalyticsTracker.trackMarketsQuoteColorSwitch(
+                    primaryTab = state.selectedTopTab.analyticsValue(),
+                    secondaryTab = state.selectedSubTab.analyticsValue(),
+                    colorScheme =
+                        if (settings.quoteColorReversed) {
+                            AnalyticsTracker.MarketsColorScheme.RED_UP_GREEN_DOWN
+                        } else {
+                            AnalyticsTracker.MarketsColorScheme.GREEN_UP_RED_DOWN
+                        },
+                )
+            }
             preferences.edit()
                 .putBoolean(Constants.Account.PREF_QUOTE_COLOR, settings.quoteColorReversed)
                 .putInt(
@@ -146,6 +185,13 @@ class MarketPageViewModel
                             } catch (_: Exception) {
                                 false
                             }
+                        if (success) {
+                            AnalyticsTracker.trackMarketWatchlist(
+                                adding = !entry.isFavored,
+                                type = AnalyticsTracker.MarketType.SPOT,
+                                source = AnalyticsTracker.MarketWatchlistSource.MARKETS,
+                            )
+                        }
                         onResult(success)
                     }
 
@@ -163,6 +209,11 @@ class MarketPageViewModel
                                 false
                             }
                         if (success) {
+                            AnalyticsTracker.trackMarketWatchlist(
+                                adding = !entry.isFavored,
+                                type = AnalyticsTracker.MarketType.PERPS,
+                                source = AnalyticsTracker.MarketWatchlistSource.MARKETS,
+                            )
                             toast(
                                 MixinApplication.appContext.getString(
                                     if (entry.isFavored) {
@@ -198,6 +249,20 @@ class MarketPageViewModel
                                 perpsMarketRepository.addFavoriteMarkets(perpetualMarketIds)
                         }
                     if (addedMarketIds.isNotEmpty()) {
+                        entries
+                            .filter { it.favoriteId in addedMarketIds }
+                            .mapTo(mutableSetOf()) { entry ->
+                                when (entry) {
+                                    is MarketListEntry.Spot -> AnalyticsTracker.MarketType.SPOT
+                                    is MarketListEntry.Perpetual -> AnalyticsTracker.MarketType.PERPS
+                                }
+                            }.forEach { type ->
+                                AnalyticsTracker.trackMarketWatchlist(
+                                    adding = true,
+                                    type = type,
+                                    source = AnalyticsTracker.MarketWatchlistSource.MARKETS,
+                                )
+                            }
                         val symbols =
                             entries
                                 .filter { it.favoriteId in addedMarketIds }

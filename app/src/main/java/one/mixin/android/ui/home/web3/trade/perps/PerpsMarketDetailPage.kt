@@ -246,6 +246,11 @@ fun PerpsMarketDetailPage(
                             favoriteRequestResult = success
                         }
                         if (success) {
+                            AnalyticsTracker.trackMarketWatchlist(
+                                adding = !isFavored,
+                                type = AnalyticsTracker.MarketType.PERPS,
+                                source = AnalyticsTracker.MarketWatchlistSource.MARKET_DETAIL,
+                            )
                             toast(
                                 context.getString(
                                     if (isFavored) {

@@ -98,13 +98,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     private val returnToTrade by lazy {
         requireArguments().getBoolean(ARGS_RETURN_TO_TRADE, false)
     }
-    private fun marketFavoriteSource(): String =
-        if (marketSource == AnalyticsTracker.MarketSource.MORE_MARKET_CAP) {
-            AnalyticsTracker.MarketSource.MORE_MARKET_CAP
-        } else {
-            AnalyticsTracker.MarketSource.MARKET_DETAIL
-        }
-
     @SuppressLint("SetTextI18n", "DefaultLocale")
     override fun onViewCreated(
         view: View,
@@ -112,7 +105,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(RefreshMarketJob(marketItem.coinId))
-        AnalyticsTracker.trackMarketDetail(marketSource)
+        AnalyticsTracker.trackMarketDetail(
+            type = AnalyticsTracker.MarketType.SPOT,
+            source = marketSource,
+        )
         binding.apply {
             titleView.apply {
                 setSubTitle(marketItem.symbol, marketItem.name)
@@ -127,9 +123,11 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         marketItem.isFavored,
                     )
                     marketItem.isFavored = marketItem.isFavored != true
-                    if (addingFavorite) {
-                        AnalyticsTracker.trackMarketFavoriteAdd(marketFavoriteSource())
-                    }
+                    AnalyticsTracker.trackMarketWatchlist(
+                        adding = addingFavorite,
+                        type = AnalyticsTracker.MarketType.SPOT,
+                        source = AnalyticsTracker.MarketWatchlistSource.MARKET_DETAIL,
+                    )
                     rightExtraIb.setMarketFavoriteIcon(
                         isFavored = marketItem.isFavored == true,
                         animate = addingFavorite,
