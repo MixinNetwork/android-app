@@ -306,6 +306,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         val rise = BigDecimal(marketItem.priceChangePercentage24H)
                         currentRise = "${rise.numberFormat2()}%"
                         priceRise.setQuoteTextWithBackgroud(currentRise, rise >= BigDecimal.ZERO)
+                    } else if (typeState.value == "1W") {
+                        val rise = BigDecimal(marketItem.priceChangePercentage7D)
+                        currentRise = "${rise.numberFormat2()}%"
+                        priceRise.setQuoteTextWithBackgroud(currentRise, rise >= BigDecimal.ZERO)
                     } else {
                         currentRise = String.format("%.2f%%", percentageChange)
                         priceRise.setQuoteTextWithBackgroud(currentRise, percentageChange >= 0f)
