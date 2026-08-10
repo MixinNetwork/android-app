@@ -584,7 +584,7 @@ private fun RowScope.SpotMarketRowContent(
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = market.marketCapRank,
+                text = market.marketCapRank.ifBlank { "-" },
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 12.sp,
                 lineHeight = 14.sp,
