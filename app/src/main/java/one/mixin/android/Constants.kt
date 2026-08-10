@@ -272,10 +272,12 @@ object Constants {
 
     val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM)
     val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM)
+    val Web3UtxoChainIds = listOf(BITCOIN_CHAIN_ID, ChainId.PEARL_CHAIN_ID)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
         const val BITCOIN_CHAIN_ID = "c6d0c728-2624-429b-8e0d-d9d19b6592fa"
+        const val PEARL_CHAIN_ID = "e1bf305c-0d49-397d-85bd-55b9eaadafba"
         const val ETHEREUM_CHAIN_ID = "43d61dcd-e413-450d-80b8-101d5e903357"
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
@@ -305,6 +307,8 @@ object Constants {
     }
 
     object AssetId {
+        const val PEARL_ASSET_ID = ChainId.PEARL_CHAIN_ID
+        const val PEARL_KERNEL_ASSET_ID = "d71e09b4943441003ed011be0cbfbe3692e796fe22c612388c27f7e6432806f2"
         const val MGD_ASSET_ID = "b207bce9-c248-4b8e-b6e3-e357146f3f4c"
         const val BYTOM_CLASSIC_ASSET_ID = "443e1ef5-bc9b-47d3-be77-07f328876c50"
         const val OMNI_USDT_ASSET_ID = "815b0b1a-2764-3736-8faa-42d694fa620a"
@@ -352,6 +356,10 @@ object Constants {
         val btcAssets = mapOf(
             BITCOIN_CHAIN_ID to "Bitcoin",
             LIGHTNING_NETWORK_CHAIN_ID to "Lightning",
+        )
+
+        val pearlAssets = mapOf(
+            PEARL_ASSET_ID to "Pearl",
         )
 
     }

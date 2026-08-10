@@ -73,6 +73,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainFromName
+import one.mixin.android.db.web3.vo.isTransferSupported
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
@@ -711,6 +712,9 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             val token = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, inAsset.assetId)
             if (token != null) {
                 try {
+                    if (!token.isTransferSupported()) {
+                        throw IllegalArgumentException(getString(R.string.Not_support))
+                    }
                     this@LimitTransferBottomSheetDialogFragment.token = token
                     chainToken = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, token.chainId)
                     asset = chainToken?.toTokenItem()
@@ -833,13 +837,14 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private suspend fun resolveSenderAddress(token: Web3TokenItem): String {
-        return if (token.chainId == Constants.ChainId.Solana) {
-            Web3Signer.solanaAddress
-        } else if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-            val btcAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, Constants.ChainId.BITCOIN_CHAIN_ID)
-            requireNotNull(btcAddress?.destination) { "btc address not found" }
-        } else {
-            Web3Signer.evmAddress
+        return when {
+            token.chainId == Constants.ChainId.Solana -> Web3Signer.solanaAddress
+            token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                val btcAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, Constants.ChainId.BITCOIN_CHAIN_ID)
+                requireNotNull(btcAddress?.destination) { "btc address not found" }
+            }
+            token.chainId in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
+            else -> throw IllegalArgumentException("Not support: ${token.chainId}")
         }
     }
 

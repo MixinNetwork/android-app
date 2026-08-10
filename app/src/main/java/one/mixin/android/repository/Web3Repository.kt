@@ -102,13 +102,17 @@ constructor(
         }
     }
 
-    suspend fun refreshBitcoinTokenAmount(walletId: String, address: String) {
-        if (walletId.isBlank() || address.isBlank()) return
+    suspend fun refreshUtxoTokenAmount(walletId: String, address: String, assetId: String) {
+        if (walletId.isBlank() || address.isBlank() || assetId !in Constants.Web3UtxoChainIds) return
         val wallet = web3WalletDao.getWalletById(walletId) ?:return
         if (wallet.isWatch()) return
-        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(address, assetId)
         val amount: String = totalAmount.stripTrailingZeros().toPlainString()
-        web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
+        web3TokenDao.updateTokenAmount(walletId, assetId, amount)
+    }
+
+    suspend fun refreshBitcoinTokenAmount(walletId: String, address: String) {
+        refreshUtxoTokenAmount(walletId, address, Constants.ChainId.BITCOIN_CHAIN_ID)
     }
 
     suspend fun insertBitcoinChangeOutputs(fromAddress: String, signedHex: String): Int {

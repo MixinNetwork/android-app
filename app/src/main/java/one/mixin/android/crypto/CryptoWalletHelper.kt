@@ -78,12 +78,36 @@ object CryptoWalletHelper {
                 path.startsWith("m/84'/0'/") -> {
                     path.removePrefix("m/84'/0'/0'/0/").toIntOrNull()
                 }
+                path.startsWith("m/86'/808276'/") -> {
+                    path.removePrefix("m/86'/808276'/0'/0/").toIntOrNull()
+                }
                 else -> null
             }
         } catch (e: Exception) {
             Timber.e(e, "Failed to extract index from path: $path")
             null
         }
+    }
+
+    fun extractIndexFromPaths(paths: Iterable<String?>): Int? {
+        for (path in paths) {
+            if (path.isNullOrBlank()) continue
+            extractIndexFromPath(path)?.let { return it }
+        }
+        return null
+    }
+
+    fun shouldHavePearlAddress(walletCategory: String, derivationIndex: Int): Boolean {
+        return walletCategory != WalletCategory.CLASSIC.value || derivationIndex == 0
+    }
+
+    fun hasMissingUtxoAddress(
+        chainIds: Collection<String>,
+        walletCategory: String,
+        derivationIndex: Int,
+    ): Boolean {
+        return Constants.ChainId.BITCOIN_CHAIN_ID !in chainIds ||
+            (shouldHavePearlAddress(walletCategory, derivationIndex) && Constants.ChainId.PEARL_CHAIN_ID !in chainIds)
     }
 
     fun mnemonicToBitcoinSegwitWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
@@ -99,6 +123,22 @@ object CryptoWalletHelper {
             )
         } catch (e: Exception) {
             throw RuntimeException("Bitcoin SegWit wallet generation failed: ${e.message}", e)
+        }
+    }
+
+    fun mnemonicToPearlWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
+        try {
+            val path = Bip44Path.pearlPathString(index)
+            val privateKeyBytes = PearlKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, passphrase, index)
+            val address = PearlKeyGenerator.mnemonicToAddress(mnemonic, passphrase, index)
+            return CryptoWallet(
+                mnemonic = mnemonic,
+                privateKey = Numeric.toHexString(privateKeyBytes),
+                address = address,
+                path = path,
+            )
+        } catch (e: Exception) {
+            throw RuntimeException("Pearl wallet generation failed: ${e.message}", e)
         }
     }
 
@@ -160,6 +200,15 @@ object CryptoWalletHelper {
                 address.toString()
             }
 
+            Constants.ChainId.PEARL_CHAIN_ID -> {
+                val privateKeyBytes = if (isBitcoinWifPrivateKey(privateKey)) {
+                    DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKey).key.privKeyBytes
+                } else {
+                    Numeric.hexStringToByteArray(privateKey)
+                }
+                PearlKeyGenerator.privateKeyToAddress(privateKeyBytes)
+            }
+
             in Constants.Web3EvmChainIds -> {
                 val privateKeyBytes: ByteArray = Numeric.hexStringToByteArray(privateKey)
                 EthKeyGenerator.privateKeyToAddress(privateKeyBytes)
@@ -184,6 +233,9 @@ object CryptoWalletHelper {
             }
             Constants.ChainId.BITCOIN_CHAIN_ID -> {
                 BitcoinKeyGenerator.mnemonicToAddress(mnemonic, passphrase, index)
+            }
+            Constants.ChainId.PEARL_CHAIN_ID -> {
+                PearlKeyGenerator.mnemonicToAddress(mnemonic, passphrase, index)
             }
             in Constants.Web3EvmChainIds -> {
                 val privateKey: ByteArray =
@@ -212,6 +264,12 @@ object CryptoWalletHelper {
             Constants.ChainId.BITCOIN_CHAIN_ID -> {
                 val privateKey = Numeric.hexStringToByteArray(
                     mnemonicToBitcoinSegwitWallet(mnemonic, index = index).privateKey,
+                )
+                ECKey.fromPrivate(privateKey, true).getPrivateKeyEncoded(BitcoinNetwork.MAINNET).toBase58()
+            }
+            Constants.ChainId.PEARL_CHAIN_ID -> {
+                val privateKey = Numeric.hexStringToByteArray(
+                    mnemonicToPearlWallet(mnemonic, index = index).privateKey,
                 )
                 ECKey.fromPrivate(privateKey, true).getPrivateKeyEncoded(BitcoinNetwork.MAINNET).toBase58()
             }
@@ -304,7 +362,8 @@ object CryptoWalletHelper {
                 Constants.ChainId.SOLANA_CHAIN_ID -> {
                     privateKeyStr.decodeBase58()
                 }
-                Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                Constants.ChainId.BITCOIN_CHAIN_ID,
+                Constants.ChainId.PEARL_CHAIN_ID -> {
                     if (isBitcoinWifPrivateKey(privateKeyStr)) {
                         DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKeyStr).key.privKeyBytes
                     } else {
@@ -380,6 +439,9 @@ object CryptoWalletHelper {
             }
             Constants.ChainId.BITCOIN_CHAIN_ID -> {
                 BitcoinKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
+            }
+            Constants.ChainId.PEARL_CHAIN_ID -> {
+                PearlKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)
             }
             in Constants.Web3EvmChainIds -> {
                 EthKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, index = derivationIndex)

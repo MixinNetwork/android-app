@@ -39,6 +39,7 @@ import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainSymbolFromName
+import one.mixin.android.db.web3.vo.isTransferSupported
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
@@ -408,6 +409,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 when (web3Token?.chainId) {
                                                     Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
                                                     Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                                                    Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
                                                     in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
                                                     else -> null
                                                 }
@@ -472,6 +474,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             when (web3Token?.chainId) {
                                                 Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
                                                 Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                                                Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
                                                 in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
                                                 else -> null
                                             }
@@ -507,6 +510,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             when (web3Token?.chainId) {
                                                 Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
                                                 Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                                                Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
                                                 in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
                                                 else -> null
                                             }
@@ -670,6 +674,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     alertDialog.dismiss()
                                 },
                             ) {
+                                if (!token.isTransferSupported()) {
+                                    toast(R.string.Not_support)
+                                    return@launch
+                                }
                                 if (shouldUseGaslessFlow()) {
                                     if (!isGaslessFeeEnough(amount)) {
                                         binding.insufficientFeeBalance.isVisible = true
@@ -1804,6 +1812,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         when (web3Token?.chainId) {
                             Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
                             Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                            Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
                             else -> Web3Signer.evmAddress
                         }
                     view?.navigate(
@@ -2296,6 +2305,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private suspend fun refreshWeb3Fees(t: Web3TokenItem) {
+        if (!t.isTransferSupported()) return
         setFeeLoading(true)
         try {
             refreshGas(t)

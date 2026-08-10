@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
+import one.mixin.android.Constants.ChainId.PEARL_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -22,7 +23,6 @@ import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentLoginVerifyBottomSheetBinding
 import one.mixin.android.databinding.ViewLoginVerifyMoreBottomBinding
 import one.mixin.android.event.TipEvent
-import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
@@ -37,6 +37,7 @@ import one.mixin.android.ui.common.biometric.BiometricLayout
 import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.tip.TipFlowInteractor
+import one.mixin.android.ui.wallet.signUtxoAddressMessage
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
@@ -44,11 +45,8 @@ import one.mixin.android.vo.Account
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.BottomSheet
-import org.bitcoinj.base.ScriptType
-import org.bitcoinj.crypto.ECKey
 import org.web3j.utils.Numeric
 import timber.log.Timber
-import java.math.BigInteger
 import java.time.Instant
 import javax.inject.Inject
 
@@ -195,7 +193,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
                 return MixinResponse<Any>(IllegalStateException(getString(R.string.Save_failure)))
             }
             MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
-            addBtcAddressIfNeeded(pin)
+            addUtxoAddressesIfNeeded(pin)?.let { return it }
             synchronizeSelectedWalletSigner()
             AnalyticsTracker.trackLoginEnd()
         }
@@ -216,80 +214,119 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         }
     }
 
-    private suspend fun addBtcAddressIfNeeded(pin: String): Boolean {
-        if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, false)) return false
+    private suspend fun addUtxoAddressesIfNeeded(pin: String): MixinResponse<*>? {
+        if (!defaultSharedPreferences.getBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, false)) return null
         val wallets = web3Repository.getAllWallets().filter { walletItem ->
             walletItem.category == WalletCategory.CLASSIC.value ||
-                walletItem.category == WalletCategory.IMPORTED_MNEMONIC.value
+                (walletItem.category == WalletCategory.IMPORTED_MNEMONIC.value && walletItem.hasLocalPrivateKey)
         }
         if (wallets.isEmpty()) {
-            return true
+            return null
         }
-        val hasAnyMissingBtcAddress: Boolean = wallets.any { walletItem ->
-            web3Repository.getAddressesByChainId(walletItem.id, BITCOIN_CHAIN_ID) == null
+        val hasAnyMissingUtxoAddress: Boolean = wallets.any { walletItem ->
+            val addresses = web3Repository.getAddresses(walletItem.id)
+            val derivationIndex = CryptoWalletHelper.extractIndexFromPaths(addresses.map { it.path }) ?: 0
+            CryptoWalletHelper.hasMissingUtxoAddress(
+                chainIds = addresses.map { it.chainId },
+                walletCategory = walletItem.category,
+                derivationIndex = derivationIndex,
+            )
         }
-        if (!hasAnyMissingBtcAddress) {
-            return true
+        if (!hasAnyMissingUtxoAddress) {
+            return null
         }
         val spendKey: ByteArray = bottomViewModel.getSpendKey(requireContext(), pin)
         for (walletItem in wallets) {
-            val hasBtcAddress: Boolean = web3Repository.getAddressesByChainId(walletItem.id, BITCOIN_CHAIN_ID) != null
-            if (hasBtcAddress) {
+            val localAddresses = web3Repository.getAddresses(walletItem.id)
+            val derivationIndex = CryptoWalletHelper.extractIndexFromPaths(localAddresses.map { it.path }) ?: 0
+            val pearlRequired = CryptoWalletHelper.shouldHavePearlAddress(walletItem.category, derivationIndex)
+            val hasBtcAddress: Boolean = localAddresses.any { it.chainId == BITCOIN_CHAIN_ID }
+            val hasPearlAddress: Boolean = !pearlRequired || localAddresses.any { it.chainId == PEARL_CHAIN_ID }
+            if (hasBtcAddress && hasPearlAddress) {
                 continue
             }
-            val localAddresses = web3Repository.getAddresses(walletItem.id)
-            val localPath: String? = localAddresses.firstOrNull { it.path.isNullOrBlank().not() }?.path
-            val derivationIndex: Int = localPath?.let { CryptoWalletHelper.extractIndexFromPath(it) } ?: 0
             val now: Instant = Instant.now()
             val userId: String = requireNotNull(Session.getAccountId())
-            val btcWallet: Pair<String, ByteArray> = if (walletItem.category == WalletCategory.CLASSIC.value) {
-                val btcAddress: String = bottomViewModel.getTipAddress(
-                    requireContext(),
-                    pin,
-                    BITCOIN_CHAIN_ID,
-                    derivationIndex,
-                )
-                val btcPrivateKey: ByteArray = bottomViewModel.getTipPrivateKey(
-                    requireContext(),
-                    pin,
-                    BITCOIN_CHAIN_ID,
-                    derivationIndex,
-                )
-                Pair(btcAddress, btcPrivateKey)
+            val mnemonic: String? = if (walletItem.category == WalletCategory.CLASSIC.value) {
+                null
             } else {
-                // Skip if no key
-                val mnemonic: String = CryptoWalletHelper.getWeb3Mnemonic(requireContext(), spendKey, walletItem.id) ?: continue
-                val derivedWallet = CryptoWalletHelper.mnemonicToBitcoinSegwitWallet(mnemonic, index = derivationIndex)
-                Pair(derivedWallet.address, Numeric.hexStringToByteArray(derivedWallet.privateKey))
+                CryptoWalletHelper.getWeb3Mnemonic(requireContext(), spendKey, walletItem.id)
+                    ?: return MixinResponse<Any>(IllegalStateException(getString(R.string.Save_failure)))
             }
-            val btcAddress: String = btcWallet.first
-            val btcPrivateKey: ByteArray = btcWallet.second
-            val message = "$btcAddress\n$userId\n${now.epochSecond}"
-            val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, btcPrivateKey), true)
-            val signature: String = Numeric.toHexString(ecKey.signMessage(message, ScriptType.P2WPKH).decodeBase64())
+            val addressRequests = mutableListOf<Web3AddressRequest>()
+            if (!hasBtcAddress) {
+                val btcWallet: Pair<String, ByteArray> = if (walletItem.category == WalletCategory.CLASSIC.value) {
+                    val btcAddress: String = bottomViewModel.getTipAddress(
+                        requireContext(),
+                        pin,
+                        BITCOIN_CHAIN_ID,
+                        derivationIndex,
+                    )
+                    val btcPrivateKey: ByteArray = bottomViewModel.getTipPrivateKey(
+                        requireContext(),
+                        pin,
+                        BITCOIN_CHAIN_ID,
+                        derivationIndex,
+                    )
+                    Pair(btcAddress, btcPrivateKey)
+                } else {
+                    val importedMnemonic = requireNotNull(mnemonic)
+                    val derivedWallet = CryptoWalletHelper.mnemonicToBitcoinSegwitWallet(importedMnemonic, index = derivationIndex)
+                    Pair(derivedWallet.address, Numeric.hexStringToByteArray(derivedWallet.privateKey))
+                }
+                val message = "${btcWallet.first}\n$userId\n${now.epochSecond}"
+                addressRequests += Web3AddressRequest(
+                    destination = btcWallet.first,
+                    chainId = BITCOIN_CHAIN_ID,
+                    path = Bip44Path.bitcoinSegwitPathString(derivationIndex),
+                    signature = signUtxoAddressMessage(btcWallet.second, message, BITCOIN_CHAIN_ID),
+                    timestamp = now.toString(),
+                )
+            }
+            if (pearlRequired && !hasPearlAddress) {
+                val pearlWallet: Pair<String, ByteArray> = if (walletItem.category == WalletCategory.CLASSIC.value) {
+                    val pearlAddress: String = bottomViewModel.getTipAddress(
+                        requireContext(),
+                        pin,
+                        PEARL_CHAIN_ID,
+                        derivationIndex,
+                    )
+                    val pearlPrivateKey: ByteArray = bottomViewModel.getTipPrivateKey(
+                        requireContext(),
+                        pin,
+                        PEARL_CHAIN_ID,
+                        derivationIndex,
+                    )
+                    Pair(pearlAddress, pearlPrivateKey)
+                } else {
+                    val importedMnemonic = requireNotNull(mnemonic)
+                    val derivedWallet = CryptoWalletHelper.mnemonicToPearlWallet(importedMnemonic, index = derivationIndex)
+                    Pair(derivedWallet.address, Numeric.hexStringToByteArray(derivedWallet.privateKey))
+                }
+                val message = "${pearlWallet.first}\n$userId\n${now.epochSecond}"
+                addressRequests += Web3AddressRequest(
+                    destination = pearlWallet.first,
+                    chainId = PEARL_CHAIN_ID,
+                    path = Bip44Path.pearlPathString(derivationIndex),
+                    signature = signUtxoAddressMessage(pearlWallet.second, message, PEARL_CHAIN_ID),
+                    timestamp = now.toString(),
+                )
+            }
             val updateRequest = WalletRequest(
                 name = null,
                 category = null,
-                addresses = listOf(
-                    Web3AddressRequest(
-                        destination = btcAddress,
-                        chainId = BITCOIN_CHAIN_ID,
-                        path = Bip44Path.bitcoinSegwitPathString(derivationIndex),
-                        signature = signature,
-                        timestamp = now.toString(),
-                    ),
-                ),
+                addresses = addressRequests,
             )
             val updateResponse = web3Repository.updateWallet(walletItem.id, updateRequest)
             if (updateResponse.isSuccess.not()) {
-                return false
+                return updateResponse
             } else {
                 updateResponse.data?.addresses?.let { addresses ->
                     web3Repository.insertAddressList(addresses)
                 }
             }
         }
-        return true
+        return null
     }
 
     private var pinSuccess = false

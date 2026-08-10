@@ -2,6 +2,7 @@ package one.mixin.android.tip
 
 import blockchain.Blockchain
 import one.mixin.android.Constants
+import one.mixin.android.crypto.PearlKeyGenerator
 import one.mixin.android.crypto.initFromSeedAndSign
 import one.mixin.android.crypto.newKeyPairFromSeed
 import one.mixin.android.extension.hexString
@@ -131,6 +132,13 @@ fun tipPrivToPrivateKey(
             }
             return privateKeyBytes
         }
+        Constants.ChainId.PEARL_CHAIN_ID -> {
+            require(index == 0) { "Pearl classic wallet only supports the default path" }
+            val privateKey = PearlKeyGenerator.getPrivateKeyFromSeed(priv)
+            val address = PearlKeyGenerator.privateKeyToAddress(privateKey)
+            check(address == PearlKeyGenerator.seedToAddress(priv)) { "Generate illegal Pearl Address" }
+            return privateKey
+        }
         Constants.ChainId.SOLANA_CHAIN_ID -> {
             val addressFromGo = Blockchain.generateSolanaAddress(priv.hexString(), Bip44Path.solanaPathString(index))
             val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))
@@ -182,6 +190,10 @@ fun privateKeyToAddress(
                 throw IllegalArgumentException("Generate illegal Bitcoin SegWit Address")
             }
             return addressString
+        }
+        Constants.ChainId.PEARL_CHAIN_ID -> {
+            require(index == 0) { "Pearl classic wallet only supports the default path" }
+            return PearlKeyGenerator.seedToAddress(priv)
         }
         Constants.ChainId.SOLANA_CHAIN_ID -> {
             val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))

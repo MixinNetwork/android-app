@@ -69,6 +69,7 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.hasPendingImportMnemonic
@@ -1303,10 +1304,16 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 walletItem.category == WalletCategory.CLASSIC.value || (walletItem.category == WalletCategory.IMPORTED_MNEMONIC.value && walletItem.hasLocalPrivateKey)
             }
             if (wallets.isEmpty()) return@withContext false
-            val shouldShowBtcAddress: Boolean = wallets.any { walletItem ->
-                web3Repository.getAddressesByChainId(walletItem.id, Constants.ChainId.BITCOIN_CHAIN_ID) == null
+            val shouldShowUtxoAddress: Boolean = wallets.any { walletItem ->
+                val addresses = web3Repository.getAddresses(walletItem.id)
+                val derivationIndex = CryptoWalletHelper.extractIndexFromPaths(addresses.map { it.path }) ?: 0
+                CryptoWalletHelper.hasMissingUtxoAddress(
+                    chainIds = addresses.map { it.chainId },
+                    walletCategory = walletItem.category,
+                    derivationIndex = derivationIndex,
+                )
             }
-            return@withContext shouldShowBtcAddress
+            return@withContext shouldShowUtxoAddress
         }
     }
 

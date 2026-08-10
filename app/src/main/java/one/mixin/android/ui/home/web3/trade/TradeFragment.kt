@@ -60,6 +60,8 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenFeeItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
+import one.mixin.android.db.web3.vo.isTransferSupported
+import one.mixin.android.db.web3.vo.isWeb3TransferSupported
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.TradeMarketSelectedEvent
 import one.mixin.android.extension.addToList
@@ -1334,6 +1336,9 @@ class TradeFragment : BaseFragment() {
     }
 
     private suspend fun initFromTo() {
+        if (!inMixin()) {
+            web3tokens = web3tokens?.filter { it.isTransferSupported() }
+        }
         var swappable = web3tokens ?: tokenItems
         if (!inMixin() && web3tokens.isNullOrEmpty()) {
             if (walletId == null) {
@@ -1341,8 +1346,10 @@ class TradeFragment : BaseFragment() {
                 return
             }
             swappable = swapViewModel.findWeb3AssetItemsWithBalance(walletId!!)
+                .filter { it.isTransferSupported() }
             if (swappable.isEmpty()) {
                 swappable = swapViewModel.findWeb3AssetItems(walletId!!)
+                    .filter { it.isTransferSupported() }
             }
             web3tokens = swappable
         } else if (swappable.isNullOrEmpty()) {
@@ -1390,6 +1397,10 @@ class TradeFragment : BaseFragment() {
             if (inMixin()) swapViewModel.findToken(lastTo.assetId)?.toSwapToken() else swapViewModel.web3TokenItemById(walletId!!, lastTo.assetId)?.toSwapToken()
         } else {
             tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() && t.getUnique() in Constants.usdIds }
+        }
+        if (!inMixin()) {
+            tempFromToken = tempFromToken?.takeIf { isWeb3TransferSupported(it.chain.chainId) }
+            tempToToken = tempToToken?.takeIf { isWeb3TransferSupported(it.chain.chainId) }
         }
         resolveDuplicateSwapTokenPair(
             tokens = tokens,
@@ -1481,13 +1492,13 @@ class TradeFragment : BaseFragment() {
                 return@requestRouteAPI true
             },
         )?.let { remote: List<SwapToken> ->
-            val filteredRemote: List<SwapToken> = if (chainIdSet == null) {
+            val filteredRemote: List<SwapToken> = (if (chainIdSet == null) {
                 remote
             } else {
                 remote.filter { token: SwapToken ->
                     chainIdSet.contains(token.chain.chainId)
                 }
-            }
+            }).filter { inMixin() || isWeb3TransferSupported(it.chain.chainId) }
             stocks = filteredRemote.map { it.copy(isWeb3 = !inMixin(), walletId = walletId) }.map { token ->
                 val t = web3tokens?.firstOrNull { web3Token ->
                     (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
@@ -1518,13 +1529,13 @@ class TradeFragment : BaseFragment() {
                 return@requestRouteAPI true
             },
         )?.let { remote: List<SwapToken> ->
-            val filteredRemote: List<SwapToken> = if (chainIdSet == null) {
+            val filteredRemote: List<SwapToken> = (if (chainIdSet == null) {
                 remote
             } else {
                 remote.filter { token: SwapToken ->
                     chainIdSet.contains(token.chain.chainId)
                 }
-            }
+            }).filter { inMixin() || isWeb3TransferSupported(it.chain.chainId) }
             if (!inMixin()) {
                 remoteSwapTokens = filteredRemote.map { it.copy(isWeb3 = true, walletId = walletId) }.mapNotNull { token ->
                     val local = swapViewModel.web3TokenItemById(walletId ?: "", token.assetId)
@@ -1540,21 +1551,15 @@ class TradeFragment : BaseFragment() {
                 }.sortByKeywordAndBalance()
 
                 swapTokens = swapTokens.union(remoteSwapTokens).toList().sortByKeywordAndBalance()
-                if (fromToken == null) {
-                    fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
+                resolveDefaultWeb3SwapTokenPair(swapTokens, fromToken, toToken).let { pair ->
+                    fromToken = pair.from
+                    toToken = pair.to
                 }
-                if (toToken == null || toToken?.getUnique() == fromToken?.getUnique()) {
-                    toToken = swapTokens.firstOrNull { s -> s.assetId != fromToken?.assetId } ?: swapTokens.getOrNull(1) ?: swapTokens[0]
+                resolveDefaultWeb3SwapTokenPair(swapTokens, limitFromToken, limitToToken).let { pair ->
+                    limitFromToken = pair.from
+                    limitToToken = pair.to
                 }
-                if (limitFromToken == null) {
-                    limitFromToken = swapTokens.firstOrNull { t -> limitFromToken == t } ?: swapTokens[0]
-                }
-                if (limitToToken == null || limitToToken?.getUnique() == limitFromToken?.getUnique()) {
-                    limitToToken = swapTokens.firstOrNull { s -> s.assetId != limitFromToken?.assetId } ?: swapTokens.getOrNull(1) ?: swapTokens[0]
-                }
-                if (swapTokens.isNotEmpty()) {
-                    (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
-                }
+                (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
             } else {
                 remoteSwapTokens = filteredRemote.mapNotNull { token ->
                     val local = swapViewModel.findToken(token.assetId)

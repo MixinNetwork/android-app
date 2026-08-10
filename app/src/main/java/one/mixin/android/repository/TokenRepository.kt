@@ -1201,7 +1201,7 @@ class TokenRepository
             var receiveAssetId: String? = null
 
             val txType = when {
-                assetId == Constants.ChainId.BITCOIN_CHAIN_ID -> TransactionType.TRANSFER_OUT.value
+                assetId in Constants.Web3UtxoChainIds -> TransactionType.TRANSFER_OUT.value
                 raw.simulateTx?.approves?.isNotEmpty() == true -> TransactionType.APPROVAL.value
                 (raw.simulateTx?.balanceChanges?.size ?: 0) > 1 -> TransactionType.SWAP.value
                 raw.simulateTx?.balanceChanges?.size == 1 -> TransactionType.TRANSFER_OUT.value
@@ -1235,9 +1235,9 @@ class TokenRepository
                 }
             }
 
-            if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                sendAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
-                receiveAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
+            if (assetId in Constants.Web3UtxoChainIds) {
+                sendAssetId = assetId
+                receiveAssetId = assetId
             }
             if (raw.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
                 Timber.e("bitcoin tx,hash=%s, rate=%s", raw.hash, rate ?: "null")

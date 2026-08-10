@@ -5,6 +5,7 @@ import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 
 class SwapTokenSelectionTest {
     @Test
@@ -37,6 +38,33 @@ class SwapTokenSelectionTest {
 
         assertEquals(from.assetId, result.from?.assetId)
         assertEquals(base.assetId, result.to?.assetId)
+    }
+
+    @Test
+    fun emptyWeb3TokenListDoesNotSelectDefaults() {
+        val result = resolveDefaultWeb3SwapTokenPair(
+            tokens = emptyList(),
+            fromToken = null,
+            toToken = null,
+        )
+
+        assertNull(result.from)
+        assertNull(result.to)
+    }
+
+    @Test
+    fun web3DefaultsSelectFirstAndDifferentSecondToken() {
+        val first = token("first")
+        val second = token("second")
+
+        val result = resolveDefaultWeb3SwapTokenPair(
+            tokens = listOf(first, second),
+            fromToken = null,
+            toToken = null,
+        )
+
+        assertEquals(first.assetId, result.from?.assetId)
+        assertEquals(second.assetId, result.to?.assetId)
     }
 
     private fun token(assetId: String) =

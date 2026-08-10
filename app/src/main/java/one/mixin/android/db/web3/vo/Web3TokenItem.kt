@@ -90,6 +90,7 @@ data class Web3TokenItem(
             chainId == Constants.ChainId.Polygon -> "Polygon"
             chainId == Constants.ChainId.BinanceSmartChain -> "BNB Chain"
             chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "Bitcoin"
+            chainId == Constants.ChainId.PEARL_CHAIN_ID -> "Pearl"
             chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "Solana"
             else -> chainId
         }
@@ -202,6 +203,15 @@ fun Web3TokenItem.getChainFromName(): Chain {
     }
 }
 
+fun Web3TokenItem.isTransferSupported(): Boolean {
+    return isWeb3TransferSupported(chainId)
+}
+
+fun isWeb3TransferSupported(chainId: String): Boolean =
+    chainId in Constants.Web3EvmChainIds ||
+        chainId == Constants.ChainId.SOLANA_CHAIN_ID ||
+        chainId == Constants.ChainId.BITCOIN_CHAIN_ID
+
 fun Web3TokenItem.getChainSymbolFromName(): String {
     return when {
         chainId == Constants.ChainId.ETHEREUM_CHAIN_ID -> "ETH"
@@ -213,6 +223,7 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
         chainId == Constants.ChainId.BinanceSmartChain -> "BNB"
         chainId == Constants.ChainId.Polygon -> "POL"
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "BTC"
+        chainId == Constants.ChainId.PEARL_CHAIN_ID -> "PRL"
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "SOL"
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
@@ -358,4 +369,3 @@ suspend fun Web3TokenItem.buildTransaction(
         throw IllegalStateException("Not support: $chainId")
     }
 }
-
