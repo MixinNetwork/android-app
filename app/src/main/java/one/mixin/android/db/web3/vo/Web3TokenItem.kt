@@ -199,6 +199,7 @@ fun Web3TokenItem.getChainFromName(): Chain {
         chainId == Constants.ChainId.HyperEVM -> Chain.HyperEVM
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> Chain.Solana
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> Chain.Bitcoin
+        chainId == Constants.ChainId.PEARL_CHAIN_ID -> Chain.Bitcoin
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
 }
@@ -210,7 +211,7 @@ fun Web3TokenItem.isTransferSupported(): Boolean {
 fun isWeb3TransferSupported(chainId: String): Boolean =
     chainId in Constants.Web3EvmChainIds ||
         chainId == Constants.ChainId.SOLANA_CHAIN_ID ||
-        chainId == Constants.ChainId.BITCOIN_CHAIN_ID
+        chainId in Constants.Web3UtxoChainIds
 
 fun Web3TokenItem.getChainSymbolFromName(): String {
     return when {
@@ -341,11 +342,12 @@ suspend fun Web3TokenItem.buildTransaction(
                 WCEthereumTransaction(fromAddress, assetKey, null, null, null, null, null, null, "0x0", data)
             }
         return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
-    } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+    } else if (chainId in Constants.Web3UtxoChainIds) {
         if (!localUtxos.isNullOrEmpty()) {
             val feeRate: BigDecimal = rate ?: BigDecimal.ONE
             val minFeeBtc: BigDecimal? = minFee?.toBigDecimalOrNull()
             val built: BtcTransactionBuilder.BuiltBtcTransaction = BtcTransactionBuilder.buildSendTransaction(
+                chainId = chainId,
                 fromAddress = fromAddress,
                 toAddress = toAddress,
                 amountBtc = v,

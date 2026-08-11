@@ -161,7 +161,8 @@ class Web3ViewModel @Inject constructor(
         }
     }
 
-    suspend fun estimateBtcFeeRate(rawTransactionHex: String? = null, currentRate: String?): EstimateFeeResponse? {
+    suspend fun estimateUtxoFeeRate(chainId: String, rawTransactionHex: String? = null, currentRate: String?): EstimateFeeResponse? {
+        require(chainId in Constants.Web3UtxoChainIds) { "Unsupported UTXO chain: $chainId" }
         val cleanedRawHex: String? = rawTransactionHex
             ?.removePrefix("0x")
             ?.trim()
@@ -170,7 +171,7 @@ class Web3ViewModel @Inject constructor(
             runCatching {
                 web3Repository.estimateFee(
                     EstimateFeeRequest(
-                        chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                        chainId = chainId,
                         rawTransaction = cleanedRawHex,
                         data = null,
                         rate = currentRate,
@@ -180,6 +181,10 @@ class Web3ViewModel @Inject constructor(
         }
         if (response?.isSuccess != true || response.data == null) return null
         return response.data!!
+    }
+
+    suspend fun estimateBtcFeeRate(rawTransactionHex: String? = null, currentRate: String?): EstimateFeeResponse? {
+        return estimateUtxoFeeRate(Constants.ChainId.BITCOIN_CHAIN_ID, rawTransactionHex, currentRate)
     }
 
     fun disconnect(
@@ -414,12 +419,12 @@ class Web3ViewModel @Inject constructor(
         }
     }
 
-    suspend fun markOutputsToSigned(walletId: String, fromAddress: String, signedHex: String, outputIds: List<String>) {
+    suspend fun markOutputsToSigned(walletId: String, fromAddress: String, signedHex: String, outputIds: List<String>, assetId: String) {
         if (outputIds.isEmpty()) return
         withContext(Dispatchers.IO) {
             web3Repository.walletOutputDao.updateOutputsToSigned(outputIds)
-            web3Repository.insertBitcoinChangeOutputs(fromAddress, signedHex)
-            web3Repository.refreshBitcoinTokenAmount(walletId, fromAddress)
+            web3Repository.insertUtxoChangeOutputs(fromAddress, signedHex, assetId)
+            web3Repository.refreshUtxoTokenAmount(walletId, fromAddress, assetId)
         }
     }
 
@@ -434,8 +439,8 @@ class Web3ViewModel @Inject constructor(
         transaction: JsSignMessage,
         fromAddress: String,
     ): FeeEstimateResult {
-        if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-            val localUtxos = withContext(Dispatchers.IO) { outputsByAddress(fromAddress, token.assetId) }
+        if (token.chainId in Constants.Web3UtxoChainIds) {
+            val localUtxos = withContext(Dispatchers.IO) { outputsByAddress(fromAddress, token.chainId) }
             val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.00000001", localUtxos)
             val virtualSize: Int? = jsMsg.virtualSize
             val response = withContext(Dispatchers.IO) {
@@ -639,7 +644,7 @@ class Web3ViewModel @Inject constructor(
         hash: String,
         chainId: String,
         status: String,
-        btcRawTransactionHexToDeleteOutputs: String?,
+        utxoRawTransactionHexToDeleteOutputs: String?,
     ) {
         withContext(Dispatchers.IO) {
             tokenRepository.insertRawTransactionAndUpdateTransactionStatus(
@@ -647,7 +652,7 @@ class Web3ViewModel @Inject constructor(
                 hash = hash,
                 status = status,
                 chainId = chainId,
-                btcRawTransactionHexToDeleteOutputs = btcRawTransactionHexToDeleteOutputs,
+                utxoRawTransactionHexToDeleteOutputs = utxoRawTransactionHexToDeleteOutputs,
             )
         }
     }

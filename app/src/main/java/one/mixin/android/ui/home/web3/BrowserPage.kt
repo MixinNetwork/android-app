@@ -418,7 +418,7 @@ fun BrowserPage(
                     ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account)
                 })
                 Box(modifier = Modifier.height(20.dp))
-                ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
+                ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = token?.getChainDisplayName() ?: chain.name)
                 Box(modifier = Modifier.height(20.dp))
             }
             Box(modifier = Modifier.fillMaxWidth()) {

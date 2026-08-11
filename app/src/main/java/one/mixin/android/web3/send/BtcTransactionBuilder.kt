@@ -1,8 +1,11 @@
 package one.mixin.android.web3.send
 
+import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.WalletOutput
+import one.mixin.android.crypto.PearlKeyGenerator
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
+import org.bitcoinj.base.Address
 import org.bitcoinj.base.AddressParser
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
@@ -47,6 +50,7 @@ object BtcTransactionBuilder {
     )
 
     fun buildSendTransaction(
+        chainId: String = Constants.ChainId.BITCOIN_CHAIN_ID,
         fromAddress: String,
         toAddress: String,
         amountBtc: String,
@@ -56,6 +60,7 @@ object BtcTransactionBuilder {
         minimumChangeSatoshis: Long = 1000L,
     ): BuiltBtcTransaction {
         val built: BuiltBtcTransaction = buildSendTransactionInternal(
+            chainId = chainId,
             fromAddress = fromAddress,
             toAddress = toAddress,
             amountBtc = amountBtc,
@@ -71,6 +76,7 @@ object BtcTransactionBuilder {
             .divide(BigDecimal(built.virtualSize), 8, RoundingMode.UP)
             .max(feeRate)
         return buildSendTransactionInternal(
+            chainId = chainId,
             fromAddress = fromAddress,
             toAddress = toAddress,
             amountBtc = amountBtc,
@@ -81,6 +87,7 @@ object BtcTransactionBuilder {
     }
 
     private fun buildSendTransactionInternal(
+        chainId: String,
         fromAddress: String,
         toAddress: String,
         amountBtc: String,
@@ -88,9 +95,12 @@ object BtcTransactionBuilder {
         feeRate: BigDecimal,
         minimumChangeSatoshis: Long,
     ): BuiltBtcTransaction {
-        val addressParser = AddressParser.getDefault(BitcoinNetwork.MAINNET)
-        val changeAddress = addressParser.parseAddress(fromAddress)
-        val recipientAddress = addressParser.parseAddress(toAddress)
+        require(chainId in Constants.Web3UtxoChainIds) { "Unsupported UTXO chain: $chainId" }
+        require(localUtxos.all { it.assetId == chainId && it.address == fromAddress }) {
+            "UTXOs do not belong to the selected chain and address"
+        }
+        val changeAddress = parseAddress(chainId, fromAddress)
+        val recipientAddress = parseAddress(chainId, toAddress)
         val sendAmount = Coin.parseCoin(amountBtc)
         val minimumChangeAmount: Coin = Coin.valueOf(minimumChangeSatoshis)
         var selectedAmount: Coin = Coin.ZERO
@@ -109,7 +119,7 @@ object BtcTransactionBuilder {
                 val input = TransactionInput(candidateTx, byteArrayOf(), outPoint)
                 candidateTx.addInput(input)
             }
-            virtualSize = candidateTx.vsize
+            virtualSize = estimateVirtualSize(candidateTx, chainId)
             val feeSatoshis: BigDecimal = feeRate.multiply(BigDecimal(virtualSize)).setScale(0, RoundingMode.UP)
             feeBtc = feeSatoshis.divide(satoshisPerBtc, 8, RoundingMode.HALF_UP)
             val targetAmount: Coin = sendAmount.add(Coin.parseCoin(feeBtc.toPlainString()))
@@ -119,7 +129,7 @@ object BtcTransactionBuilder {
             }
             if (changeAmount.isGreaterThan(minimumChangeAmount) || changeAmount == minimumChangeAmount) {
                 candidateTx.addOutput(changeAmount, changeAddress)
-                virtualSize = candidateTx.vsize
+                virtualSize = estimateVirtualSize(candidateTx, chainId)
                 val feeSatoshisWithChange: BigDecimal = feeRate.multiply(BigDecimal(virtualSize)).setScale(0, RoundingMode.UP)
                 feeBtc = feeSatoshisWithChange.divide(satoshisPerBtc, 8, RoundingMode.HALF_UP)
                 val targetAmountWithChange: Coin = sendAmount.add(Coin.parseCoin(feeBtc.toPlainString()))
@@ -153,7 +163,7 @@ object BtcTransactionBuilder {
             val input = TransactionInput(tx, byteArrayOf(), outPoint)
             tx.addInput(input)
         }
-        virtualSize = tx.vsize
+        virtualSize = estimateVirtualSize(tx, chainId)
         val feeSatoshi: BigDecimal = BigDecimal.valueOf(calculateFeeSatoshi(tx, localUtxos))
         val finalFeeBtc: BigDecimal = feeSatoshi.divide(satoshisPerBtc)
         return BuiltBtcTransaction(rawHex = tx.serialize().toHex(), feeBtc = finalFeeBtc, virtualSize = virtualSize, changeAmount = changeAmount)
@@ -339,6 +349,24 @@ object BtcTransactionBuilder {
         val addressParser: AddressParser = AddressParser.getDefault(BitcoinNetwork.MAINNET)
         val parsedAddress = addressParser.parseAddress(address)
         return ScriptBuilder.createOutputScript(parsedAddress)
+    }
+
+    private fun parseAddress(chainId: String, address: String): Address =
+        when (chainId) {
+            Constants.ChainId.BITCOIN_CHAIN_ID -> AddressParser.getDefault(BitcoinNetwork.MAINNET).parseAddress(address)
+            Constants.ChainId.PEARL_CHAIN_ID -> PearlKeyGenerator.parseAddress(address)
+            else -> throw IllegalArgumentException("Unsupported UTXO chain: $chainId")
+        }
+
+    private fun estimateVirtualSize(transaction: BtcTransaction, chainId: String): Int {
+        if (chainId != Constants.ChainId.PEARL_CHAIN_ID) return transaction.vsize
+        val originalInputs = transaction.inputs.toList()
+        originalInputs.forEachIndexed { index, input ->
+            transaction.replaceInput(index, input.withWitness(org.bitcoinj.core.TransactionWitness.of(ByteArray(64))))
+        }
+        val virtualSize = transaction.vsize
+        originalInputs.forEachIndexed(transaction::replaceInput)
+        return virtualSize
     }
 
     private fun calculateInputAmount(inputs: List<TransactionInput>, localUtxos: List<WalletOutput>): Coin {

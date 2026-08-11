@@ -1,7 +1,6 @@
 package one.mixin.android.db.web3.vo
 
 import one.mixin.android.Constants
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -12,7 +11,7 @@ class Web3TransferSupportTest {
     }
 
     @Test
-    fun pearlTransferIsDisabledUntilTransactionBuildingIsSupported() {
-        assertFalse(isWeb3TransferSupported(Constants.ChainId.PEARL_CHAIN_ID))
+    fun pearlTransferIsSupported() {
+        assertTrue(isWeb3TransferSupported(Constants.ChainId.PEARL_CHAIN_ID))
     }
 }

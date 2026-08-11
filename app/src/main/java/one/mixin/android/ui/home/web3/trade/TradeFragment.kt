@@ -703,6 +703,7 @@ class TradeFragment : BaseFragment() {
                                 when (t.chainId) {
                                     Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
                                     Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                                    Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
                                     else -> Web3Signer.evmAddress
                                 }
                             navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
@@ -917,6 +918,9 @@ class TradeFragment : BaseFragment() {
                                 Constants.ChainId.BITCOIN_CHAIN_ID -> {
                                     Web3Signer.btcAddress
                                 }
+                                Constants.ChainId.PEARL_CHAIN_ID -> {
+                                    Web3Signer.pearlAddress
+                                }
                                 in Constants.Web3EvmChainIds -> {
                                     Web3Signer.evmAddress
                                 }
@@ -1027,9 +1031,9 @@ class TradeFragment : BaseFragment() {
         val toAddress = destination ?: return FeeCheckResult(true)
         val fromAddress = when (token.chainId) {
             Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
-            Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                val btcAddress = swapViewModel.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return FeeCheckResult(true)
-                btcAddress
+            in Constants.Web3UtxoChainIds -> {
+                val address = swapViewModel.getAddressesByChainId(walletId, token.chainId)?.destination ?: return FeeCheckResult(true)
+                address
             }
             else -> Web3Signer.evmAddress
         }
@@ -1053,7 +1057,7 @@ class TradeFragment : BaseFragment() {
             BigDecimal.ZERO
         }
 
-        if (allowGasless && token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) {
+        if (allowGasless && token.chainId !in Constants.Web3UtxoChainIds) {
             val gaslessPrepared = runCatching {
                 web3ViewModel.gaslessPrepare(
                     GaslessTxRequest(
@@ -1164,8 +1168,8 @@ class TradeFragment : BaseFragment() {
         }
 
         return when (token.chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                val localUtxos = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+            in Constants.Web3UtxoChainIds -> {
+                val localUtxos = web3ViewModel.outputsByAddress(fromAddress, token.chainId)
                 val zeroFeeTx = token.buildTransaction(
                     rpc = rpc,
                     fromAddress = fromAddress,
@@ -1313,8 +1317,8 @@ class TradeFragment : BaseFragment() {
         toAddress: String,
         amount: String,
     ): BigDecimal? {
-        return if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-            val localUtxos = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        return if (token.chainId in Constants.Web3UtxoChainIds) {
+            val localUtxos = web3ViewModel.outputsByAddress(fromAddress, token.chainId)
             val zeroFeeTx = token.buildTransaction(
                 rpc = rpc,
                 fromAddress = fromAddress,

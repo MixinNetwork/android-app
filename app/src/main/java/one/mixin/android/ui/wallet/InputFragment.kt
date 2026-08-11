@@ -62,7 +62,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshWeb3BitCoinJob
+import one.mixin.android.job.RefreshWeb3UtxoJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
@@ -712,7 +712,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     )
                                     return@launch
                                 }
-                                if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                if (token.chainId in Constants.Web3UtxoChainIds) {
                                     val minBtcAmount = BigDecimal("0.00001") // 1,000 sat
                                     val inputAmount: BigDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
                                     if (inputAmount < minBtcAmount) {
@@ -720,9 +720,9 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                         return@launch
                                     }
                                 }
-                                val transaction = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                val transaction = if (token.chainId in Constants.Web3UtxoChainIds) {
                                     runCatching {
-                                        token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByAddress(fromAddress, token.assetId), rate, miniFee)
+                                        token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByAddress(fromAddress, token.chainId), rate, miniFee)
                                     }.onFailure { e ->
                                         Timber.e("Build Transaction Error: ${e.message}")
                                         if (e is EmptyUtxoException) {
@@ -1341,7 +1341,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
         }
         val balanceText =
-            if (transferToken.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            if (transferToken.chainId in Constants.Web3UtxoChainIds) {
                 displayBalance.numberFormat8()
             } else {
                 displayBalance.numberFormat12()
@@ -1648,7 +1648,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun scheduleRefreshBtcFeeIfNeeded(amount: String) {
         val token: Web3TokenItem = web3Token ?: return
-        if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) return
+        if (token.chainId !in Constants.Web3UtxoChainIds) return
         if (amount.toBigDecimalOrNull() == null) return
         if (amount.toBigDecimalOrNull() == BigDecimal.ZERO) return
         if (isAdjustingBtcAmount) return
@@ -1666,7 +1666,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val token: Web3TokenItem = web3Token ?: return
         val from: String = fromAddress ?: return
         val to: String = toAddress ?: return
-        val localUtxos = web3ViewModel.outputsByAddress(from, token.assetId)
+        val localUtxos = web3ViewModel.outputsByAddress(from, token.chainId)
         val currentRate: BigDecimal = rate ?: BigDecimal.ONE
         val currentMiniFee: String? = miniFee
         val tx = try {
@@ -1714,7 +1714,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private fun updateAvailableBalanceForBtcFee() {
         val binding = bindingOrNull() ?: return
         val token: Web3TokenItem = web3Token ?: return
-        if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) return
+        if (token.chainId !in Constants.Web3UtxoChainIds) return
         val reservedFee: BigDecimal = gas ?: return
         val availableBalance: BigDecimal = tokenBalance.toBigDecimalOrNull() ?: return
         val availableAfterFee: BigDecimal = availableBalance.subtract(reservedFee).max(BigDecimal.ZERO)
@@ -2327,13 +2327,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val binding = bindingOrNull() ?: return
         val toAddress = toAddress?: return
         val fromAddress = fromAddress ?: return
-        if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-            jobManager.addJobInBackground(RefreshWeb3BitCoinJob(t.walletId))
+        if (t.chainId in Constants.Web3UtxoChainIds) {
+            jobManager.addJobInBackground(RefreshWeb3UtxoJob(t.walletId, t.chainId))
         }
         val transaction =
             try {
-                if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                    t.buildTransaction(rpc, fromAddress, toAddress, (tokenBalance.toBigDecimalOrNull()?: BigDecimal.ZERO).divide(BigDecimal.valueOf(2L)).setScale(8, RoundingMode.CEILING).toPlainString(), web3ViewModel.outputsByAddress(fromAddress, t.assetId), rate, miniFee)
+                if (t.chainId in Constants.Web3UtxoChainIds) {
+                    t.buildTransaction(rpc, fromAddress, toAddress, (tokenBalance.toBigDecimalOrNull()?: BigDecimal.ZERO).divide(BigDecimal.valueOf(2L)).setScale(8, RoundingMode.CEILING).toPlainString(), web3ViewModel.outputsByAddress(fromAddress, t.chainId), rate, miniFee)
                 } else {
                     t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
                 }
@@ -2345,7 +2345,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 null
             }
         if (transaction == null) {
-            val handledByBtcFallback = t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID &&
+            val handledByBtcFallback = t.chainId in Constants.Web3UtxoChainIds &&
                 isAdded &&
                 applyFallbackBtcFeeWithoutRawTransaction(t)
             if (handledByBtcFallback) {
@@ -2364,7 +2364,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             rate = estimate.rate
             miniFee = estimate.minFee
             if (gas == null) {
-                val handledByBtcFallback = t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID &&
+                val handledByBtcFallback = t.chainId in Constants.Web3UtxoChainIds &&
                     applyFallbackBtcFeeWithoutRawTransaction(t)
                 if (handledByBtcFallback) {
                     binding.iconImageView.isVisible = false
@@ -2599,7 +2599,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private suspend fun applyFallbackBtcFeeWithoutRawTransaction(t: Web3TokenItem): Boolean {
-        val estimate = web3ViewModel.estimateBtcFeeRate(currentRate = rate?.toPlainString()) ?: return false
+        val estimate = web3ViewModel.estimateUtxoFeeRate(t.chainId, currentRate = rate?.toPlainString()) ?: return false
         rate = estimate.feeRate?.toBigDecimalOrNull() ?: rate
         miniFee = estimate.minFee ?: miniFee
         val fallbackFee: BigDecimal = estimate.minFee?.toBigDecimalOrNull()?.movePointLeft(1) ?: return false

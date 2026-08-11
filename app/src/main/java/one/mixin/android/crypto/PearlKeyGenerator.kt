@@ -53,26 +53,7 @@ object PearlKeyGenerator {
     }
 
     fun privateKeyToAddress(privateKey: ByteArray): String {
-        val privateKeyValue = privateKey.toPositiveBigInteger()
-        require(privateKeyValue.signum() > 0 && privateKeyValue < curveOrder) {
-            "Invalid Pearl private key"
-        }
-
-        val publicKey = ECKey.fromPrivate(privateKeyValue, true).pubKeyPoint.normalize()
-        val internalKey = if (publicKey.affineYCoord.toBigInteger().testBit(0)) {
-            publicKey.negate().normalize()
-        } else {
-            publicKey
-        }
-        val xOnlyInternalKey = Numeric.toBytesPadded(internalKey.affineXCoord.toBigInteger(), 32)
-        val tagHash = sha256(TAP_TWEAK_TAG.toByteArray(StandardCharsets.UTF_8))
-        val tweak = BigInteger(1, sha256(tagHash + tagHash + xOnlyInternalKey))
-        require(tweak < curveOrder) { "Invalid Pearl Taproot tweak" }
-
-        val outputKey = internalKey.add(curve.g.multiply(tweak)).normalize()
-        require(!outputKey.isInfinity) { "Invalid Pearl Taproot output key" }
-        val xOnlyOutputKey = Numeric.toBytesPadded(outputKey.affineXCoord.toBigInteger(), 32)
-        return SegwitAddress.fromProgram(PearlNetwork, 1, xOnlyOutputKey).toString()
+        return SegwitAddress.fromProgram(PearlNetwork, 1, taprootOutputKey(privateKey)).toString()
     }
 
     fun seedToAddress(seed: ByteArray): String {
@@ -96,11 +77,59 @@ object PearlKeyGenerator {
     }
 
     fun isAddressValid(address: String): Boolean {
-        return runCatching {
-            val parsedAddress = SegwitAddress.fromBech32(address, PearlNetwork)
+        return runCatching { parseAddress(address) }.isSuccess
+    }
+
+    internal fun parseAddress(address: String): SegwitAddress {
+        val parsedAddress = SegwitAddress.fromBech32(address, PearlNetwork)
+        require(
             parsedAddress.witnessVersion == 1 &&
-                parsedAddress.witnessProgram.size == SegwitAddress.WITNESS_PROGRAM_LENGTH_TR
-        }.getOrDefault(false)
+                parsedAddress.witnessProgram.size == SegwitAddress.WITNESS_PROGRAM_LENGTH_TR,
+        ) { "Invalid Pearl address" }
+        return parsedAddress
+    }
+
+    internal fun taprootOutputKey(privateKey: ByteArray): ByteArray {
+        val privateKeyValue = validatePrivateKey(privateKey)
+        val internalKey = evenYPublicKey(privateKeyValue)
+        val xOnlyInternalKey = Numeric.toBytesPadded(internalKey.affineXCoord.toBigInteger(), 32)
+        val outputKey = internalKey.add(curve.g.multiply(tapTweak(xOnlyInternalKey))).normalize()
+        require(!outputKey.isInfinity) { "Invalid Pearl Taproot output key" }
+        return Numeric.toBytesPadded(outputKey.affineXCoord.toBigInteger(), 32)
+    }
+
+    internal fun taprootTweakedPrivateKey(privateKey: ByteArray): ByteArray {
+        val privateKeyValue = validatePrivateKey(privateKey)
+        val publicKey = ECKey.fromPrivate(privateKeyValue, true).pubKeyPoint.normalize()
+        val internalPrivateKey = if (publicKey.affineYCoord.toBigInteger().testBit(0)) {
+            curveOrder.subtract(privateKeyValue)
+        } else {
+            privateKeyValue
+        }
+        val xOnlyInternalKey = Numeric.toBytesPadded(publicKey.affineXCoord.toBigInteger(), 32)
+        val tweakedPrivateKey = internalPrivateKey.add(tapTweak(xOnlyInternalKey)).mod(curveOrder)
+        require(tweakedPrivateKey.signum() > 0) { "Invalid Pearl Taproot private key" }
+        return Numeric.toBytesPadded(tweakedPrivateKey, 32)
+    }
+
+    private fun validatePrivateKey(privateKey: ByteArray): BigInteger {
+        val privateKeyValue = privateKey.toPositiveBigInteger()
+        require(privateKeyValue.signum() > 0 && privateKeyValue < curveOrder) {
+            "Invalid Pearl private key"
+        }
+        return privateKeyValue
+    }
+
+    private fun evenYPublicKey(privateKeyValue: BigInteger) =
+        ECKey.fromPrivate(privateKeyValue, true).pubKeyPoint.normalize().let { publicKey ->
+            if (publicKey.affineYCoord.toBigInteger().testBit(0)) publicKey.negate().normalize() else publicKey
+        }
+
+    private fun tapTweak(xOnlyInternalKey: ByteArray): BigInteger {
+        val tagHash = sha256(TAP_TWEAK_TAG.toByteArray(StandardCharsets.UTF_8))
+        val tweak = BigInteger(1, sha256(tagHash + tagHash + xOnlyInternalKey))
+        require(tweak < curveOrder) { "Invalid Pearl Taproot tweak" }
+        return tweak
     }
 
     private fun mnemonicToSeed(mnemonic: String, passphrase: String): ByteArray {
