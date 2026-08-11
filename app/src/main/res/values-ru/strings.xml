@@ -1098,4 +1098,5 @@
     <string name="perps_funding_frequency_value">1/4/8 часов</string>
     <string name="Bitcoin_Dominance">Доминирование биткоина</string>
     <string name="Perp">Бесср.</string>
+    <string name="classic_wallet_pearl_intro_title">Common Wallet теперь поддерживает Pearl</string>
 </resources>

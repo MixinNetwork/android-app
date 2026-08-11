@@ -2003,6 +2003,7 @@
     <string name="Common_Wallet">공용지갑</string>
     <string name="Watch_Wallet">보기 전용 지갑</string>
     <string name="classic_wallet_btc_intro_title">이제 Common Wallet에서 비트코인을 지원합니다</string>
+    <string name="classic_wallet_pearl_intro_title">이제 Common Wallet에서 Pearl을 지원합니다</string>
     <string name="feature_decentralized">분산형</string>
     <string name="feature_decentralized_description">개인 키를 제어할 수 있는 완전히 분산된 지갑입니다.</string>
     <string name="feature_privacy_by_default">기본적으로 개인정보 보호</string>

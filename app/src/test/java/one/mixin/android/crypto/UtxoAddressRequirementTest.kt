@@ -23,6 +23,30 @@ class UtxoAddressRequirementTest {
     }
 
     @Test
+    fun missingPearlTakesPriorityOverMissingBitcoin() {
+        assertEquals(
+            CryptoWalletHelper.MissingUtxoAddress.PEARL,
+            CryptoWalletHelper.missingUtxoAddress(
+                chainIds = emptySet(),
+                walletCategory = WalletCategory.CLASSIC.value,
+                derivationIndex = 0,
+            )
+        )
+    }
+
+    @Test
+    fun missingBitcoinUsesTheExistingFlowWhenPearlExists() {
+        assertEquals(
+            CryptoWalletHelper.MissingUtxoAddress.BITCOIN,
+            CryptoWalletHelper.missingUtxoAddress(
+                chainIds = setOf(pearl),
+                walletCategory = WalletCategory.CLASSIC.value,
+                derivationIndex = 0,
+            )
+        )
+    }
+
+    @Test
     fun importedMnemonicWalletRequiresPearlAtAnyIndex() {
         assertTrue(
             CryptoWalletHelper.hasMissingUtxoAddress(

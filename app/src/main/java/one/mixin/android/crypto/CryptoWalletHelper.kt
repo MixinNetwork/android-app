@@ -34,6 +34,11 @@ import java.security.MessageDigest
 
 object CryptoWalletHelper {
 
+    enum class MissingUtxoAddress {
+        BITCOIN,
+        PEARL,
+    }
+
     fun getSecureStorage(context: Context): SharedPreferences? {
         return runCatching {
             EncryptedSharedPreferences.create(
@@ -105,9 +110,16 @@ object CryptoWalletHelper {
         chainIds: Collection<String>,
         walletCategory: String,
         derivationIndex: Int,
-    ): Boolean {
-        return Constants.ChainId.BITCOIN_CHAIN_ID !in chainIds ||
-            (shouldHavePearlAddress(walletCategory, derivationIndex) && Constants.ChainId.PEARL_CHAIN_ID !in chainIds)
+    ): Boolean = missingUtxoAddress(chainIds, walletCategory, derivationIndex) != null
+
+    fun missingUtxoAddress(
+        chainIds: Collection<String>,
+        walletCategory: String,
+        derivationIndex: Int,
+    ): MissingUtxoAddress? = when {
+        shouldHavePearlAddress(walletCategory, derivationIndex) && Constants.ChainId.PEARL_CHAIN_ID !in chainIds -> MissingUtxoAddress.PEARL
+        Constants.ChainId.BITCOIN_CHAIN_ID !in chainIds -> MissingUtxoAddress.BITCOIN
+        else -> null
     }
 
     fun mnemonicToBitcoinSegwitWallet(mnemonic: String, passphrase: String = "", index: Int = 0): CryptoWallet {
