@@ -1188,19 +1188,23 @@ class WebFragment : BaseFragment() {
     private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
         if (viewDestroyed()) return
 
+        if (appId != app?.appId) {
+            webView.evaluateJavascript("$callbackFunction('[]')") {}
+            return
+        }
         lifecycleScope.launch {
             val app = bottomViewModel.findAndSync(appId)
             if (app == null) {
                 webView.evaluateJavascript("$callbackFunction('[]')") {}
                 return@launch
             }
+            if (!isVerifiedBot(appId)) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
             if (webView.url?.matchResourcePattern(app.resourcePatterns) != true) {
                 webView.evaluateJavascript("$callbackFunction('[]')") {}
                 bottomViewModel.refreshUser(appId, true)
-                return@launch
-            }
-            if (!isVerifiedBot(appId)) {
-                webView.evaluateJavascript("$callbackFunction('[]')") {}
                 return@launch
             }
             val publicKey = bottomViewModel.getBotPublicKey(appId, defaultSharedPreferences, reloadPublicKey)
