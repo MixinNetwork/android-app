@@ -583,26 +583,28 @@ private fun RowScope.SpotMarketRowContent(
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
+            if (showMarketCap) {
+                Text(
+                    text = market.marketCapRank.ifBlank { "-" },
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    style =
+                        TextStyle(
+                            platformStyle = PlatformTextStyle(includeFontPadding = false),
+                        ),
+                    modifier =
+                        Modifier
+                            .background(
+                                MixinAppTheme.colors.marketBadgeBackground,
+                                RoundedCornerShape(4.dp),
+                            )
+                            .padding(horizontal = 4.dp),
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+            }
             Text(
-                text = market.marketCapRank.ifBlank { "-" },
-                color = MixinAppTheme.colors.textAssist,
-                fontSize = 12.sp,
-                lineHeight = 14.sp,
-                style =
-                    TextStyle(
-                        platformStyle = PlatformTextStyle(includeFontPadding = false),
-                    ),
-                modifier =
-                    Modifier
-                        .background(
-                            MixinAppTheme.colors.marketBadgeBackground,
-                            RoundedCornerShape(4.dp),
-                        )
-                        .padding(horizontal = 4.dp),
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = volumeText,
+                text = if (showMarketCap) volumeText else stringResource(R.string.volume_label, volumeText),
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 12.sp,
                 lineHeight = 12.sp,
