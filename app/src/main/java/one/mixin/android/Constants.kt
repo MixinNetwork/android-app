@@ -415,6 +415,9 @@ object Constants {
         const val DB_DEBUG_WARNING = "db_debug_warning"
         const val LOG_AND_DEBUG = "log_and_debug"
         const val WALLET_CONNECT_DEBUG = "wallet_connect_debug"
+        const val BOT_SIGN_DEBUG_APP_PREFIX = "bot_sign_debug_app_"
+
+        fun botSignDebugAppKey(appId: String) = "$BOT_SIGN_DEBUG_APP_PREFIX$appId"
     }
 
     object Colors {
