@@ -25,6 +25,7 @@ val kotlinVersion = rootProject.extra["kotlinVersion"] as String
 val tinkVersion = rootProject.extra["tinkVersion"] as String
 val securityCryptoVersion = rootProject.extra["securityCryptoVersion"] as String
 val webkitVersion = rootProject.extra["webkitVersion"] as String
+val lightweightChartsVersion = rootProject.extra["lightweightChartsVersion"] as String
 val mixinJwtVersion = rootProject.extra["mixinJwtVersion"] as String
 val alphabetIndexVersion = rootProject.extra["alphabetIndexVersion"] as String
 val web3jVersion = rootProject.extra["web3jVersion"] as String
@@ -358,6 +359,7 @@ dependencies {
     implementation("androidx.biometric:biometric:$biometricVersion")
     implementation("androidx.security:security-crypto:$securityCryptoVersion")
     implementation("androidx.webkit:webkit:$webkitVersion")
+    implementation("com.tradingview:lightweightcharts:$lightweightChartsVersion")
 
     implementation("org.sol4k:tweetnacl:$tweetnaclVersion")
     implementation("org.sol4k:utilities:$sol4kUtilitiesVersion")
