@@ -87,6 +87,10 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                 webDebug.setOnClickListener {
                     webDebugSc.performClick()
                 }
+                botSignDebug.setOnClickListener {
+                    BotSignAppBottomSheetDialogFragment.newInstance()
+                        .show(parentFragmentManager, BotSignAppBottomSheetDialogFragment.TAG)
+                }
 
                 diagnosis.setOnClickListener {
                     navTo(DiagnosisFragment.newInstance(), DiagnosisFragment.TAG)
