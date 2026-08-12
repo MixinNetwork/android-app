@@ -41,6 +41,7 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.vo.market.MarketRefreshResult
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
@@ -81,11 +82,11 @@ class SwapViewModel
     fun observeMarketsByCategory(category: MarketCategory): Flow<List<MarketItem>> =
         tokenRepository.observeMarketsByCategory(category)
 
-    suspend fun refreshMarketsByCategory(
+    internal suspend fun refreshMarketsByCategory(
         category: MarketCategory,
         limit: Int? = null,
-    ): List<MarketItem>? =
-        tokenRepository.fetchMarkets(
+    ): MarketRefreshResult =
+        tokenRepository.fetchMarketsResult(
             category = category.apiValue,
             limit = limit,
         )

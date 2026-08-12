@@ -20,9 +20,9 @@ internal fun MarketSubTab?.analyticsValue(): String =
         MarketSubTab.INDICES -> AnalyticsTracker.MarketsTab.INDICES
         MarketSubTab.COMMODITIES -> AnalyticsTracker.MarketsTab.COMMODITIES
         MarketSubTab.FOREX -> AnalyticsTracker.MarketsTab.FOREX
+        MarketSubTab.CRYPTO -> AnalyticsTracker.MarketsTab.CRYPTO
+        MarketSubTab.PERPETUAL -> AnalyticsTracker.MarketsTab.PERPETUAL
         MarketSubTab.FAVORITE,
-        MarketSubTab.CRYPTO,
-        MarketSubTab.PERPETUAL,
         null,
         -> AnalyticsTracker.MarketsTab.WATCHLIST
     }

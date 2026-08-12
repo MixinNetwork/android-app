@@ -1800,7 +1800,6 @@
     <string name="Bitcoin_Dominance">Bitcoin Dominance</string>
     <string name="volume_24h">24h Volume</string>
     <string name="market_volume_short">Vol</string>
-    <string name="market_change_short">Change</string>
     <string name="Watchlist">Watchlist</string>
     <string name="Crypto">Crypto</string>
     <string name="market_stock">Stock</string>
@@ -1812,7 +1811,6 @@
     <string name="change_percent_period_day">%1$dD %%</string>
     <string name="change_percent_period_hour">%1$dh %%</string>
     <string name="change_24h">%1$dH %%</string>
-    <string name="market_change_percent_period_hour">%1$dh</string>
     <string name="Choose_Token">Choose %1$s Network</string>
     <string name="choose_token_desc">%1$s is issued on multiple networks</string>
     <string name="watchlist_add_desc">%1$s is now on your watchlist</string>

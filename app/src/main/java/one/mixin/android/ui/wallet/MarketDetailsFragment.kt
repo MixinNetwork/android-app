@@ -117,21 +117,30 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 rightExtraIb.setMarketFavoriteIcon(marketItem.isFavored == true)
                 rightExtraIb.setOnClickListener {
                     val addingFavorite = marketItem.isFavored != true
-                    walletViewModel.updateMarketFavored(
-                        marketItem.symbol,
-                        marketItem.coinId,
-                        marketItem.isFavored,
-                    )
-                    marketItem.isFavored = marketItem.isFavored != true
-                    AnalyticsTracker.trackMarketWatchlist(
-                        adding = addingFavorite,
-                        type = AnalyticsTracker.MarketType.SPOT,
-                        source = AnalyticsTracker.MarketWatchlistSource.MARKET_DETAIL,
-                    )
-                    rightExtraIb.setMarketFavoriteIcon(
-                        isFavored = marketItem.isFavored == true,
-                        animate = addingFavorite,
-                    )
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        rightExtraIb.isEnabled = false
+                        try {
+                            val succeeded =
+                                walletViewModel.updateMarketFavored(
+                                    marketItem.symbol,
+                                    marketItem.coinId,
+                                    marketItem.isFavored,
+                                )
+                            if (!succeeded) return@launch
+                            marketItem.isFavored = addingFavorite
+                            AnalyticsTracker.trackMarketWatchlist(
+                                adding = addingFavorite,
+                                type = AnalyticsTracker.MarketType.SPOT,
+                                source = AnalyticsTracker.MarketWatchlistSource.MARKET_DETAIL,
+                            )
+                            rightExtraIb.setMarketFavoriteIcon(
+                                isFavored = addingFavorite,
+                                animate = addingFavorite,
+                            )
+                        } finally {
+                            rightExtraIb.isEnabled = true
+                        }
+                    }
                 }
                 rightIb.setOnClickListener {
                     if (!isLoading || marketItem.coinId.isBlank()) {

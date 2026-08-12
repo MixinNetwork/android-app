@@ -23,7 +23,7 @@ interface MarketDao : BaseDao<Market> {
               SELECT 1
               FROM market_favored
               WHERE market_favored.coin_id = markets.coin_id
-                AND is_favored = TRUE
+                AND is_favored = 1
           )
         """,
     )

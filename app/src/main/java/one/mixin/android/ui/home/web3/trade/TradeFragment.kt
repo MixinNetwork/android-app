@@ -102,9 +102,10 @@ import one.mixin.android.ui.wallet.transfer.TransferWeb3BalanceErrorBottomSheetD
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.vo.market.hasErrorCode
+import one.mixin.android.vo.market.marketRefreshLimit
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
@@ -162,8 +163,6 @@ class TradeFragment : BaseFragment() {
         const val TAB_ADVANCED = 1
         const val TAB_PERPETUAL = 2
 
-        private const val MARKET_REFRESH_LIMIT = 500
-
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
             output: String? = null,
@@ -211,6 +210,7 @@ class TradeFragment : BaseFragment() {
     private var reviewing: Boolean by mutableStateOf(false)
     private val walletId: String? by lazy { arguments?.getString(ARGS_WALLET_ID) }
     private var refreshJob: Job? = null
+    private var updateMixinDialog: Dialog? = null
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -1420,21 +1420,47 @@ class TradeFragment : BaseFragment() {
     }
 
     private suspend fun refreshRecommendedMarkets() {
-        coroutineScope {
-            listOf(
-                MarketCategory.STOCK,
-                MarketCategory.TRENDING,
-                MarketCategory.TOP_GAINER,
-                MarketCategory.TOP_LOSER,
-            ).map { category ->
-                async {
-                    swapViewModel.refreshMarketsByCategory(
-                        category = category,
-                        limit = MARKET_REFRESH_LIMIT,
-                    )
-                }
-            }.forEach { it.await() }
+        val results =
+            coroutineScope {
+                listOf(
+                    MarketCategory.STOCK,
+                    MarketCategory.TRENDING,
+                    MarketCategory.TOP_GAINER,
+                    MarketCategory.TOP_LOSER,
+                ).map { category ->
+                    async {
+                        swapViewModel.refreshMarketsByCategory(
+                            category = category,
+                            limit = marketRefreshLimit(category),
+                        )
+                    }
+                }.map { it.await() }
+            }
+        if (results.hasErrorCode(ErrorHandler.OLD_VERSION)) {
+            showUpdateMixinDialog()
         }
+    }
+
+    private fun showUpdateMixinDialog() {
+        if (!isAdded || view == null || updateMixinDialog?.isShowing == true) return
+        updateMixinDialog =
+            alertDialogBuilder()
+                .setTitle(R.string.Update_Mixin)
+                .setMessage(
+                    getString(
+                        R.string.update_mixin_description,
+                        requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName,
+                    ),
+                ).setNegativeButton(R.string.Later) { dialog, _ ->
+                    dialog.dismiss()
+                    activity?.onBackPressedDispatcher?.onBackPressed()
+                }.setPositiveButton(R.string.Update) { dialog, _ ->
+                    requireContext().openMarket()
+                    dialog.dismiss()
+                    activity?.onBackPressedDispatcher?.onBackPressed()
+                }.setCancelable(false)
+                .create()
+                .also { it.show() }
     }
 
     private suspend fun refreshStocks(chainIds: List<String>?) {
@@ -1450,18 +1476,7 @@ class TradeFragment : BaseFragment() {
                     swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
                     refreshStocks(chainIds)
                 } else if (r.errorCode == ErrorHandler.OLD_VERSION) {
-                    alertDialogBuilder()
-                        .setTitle(R.string.Update_Mixin)
-                        .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
-                        .setNegativeButton(R.string.Later) { dialog, _ ->
-                            dialog.dismiss()
-                            activity?.onBackPressedDispatcher?.onBackPressed()
-                        }.setPositiveButton(R.string.Update) { dialog, _ ->
-                            requireContext().openMarket()
-                            dialog.dismiss()
-                            activity?.onBackPressedDispatcher?.onBackPressed()
-                        }.setCancelable(false)
-                        .create().show()
+                    showUpdateMixinDialog()
                 }
                 return@requestRouteAPI true
             },
@@ -1498,18 +1513,7 @@ class TradeFragment : BaseFragment() {
                     swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
                     refreshTokens(chainIds)
                 } else if (r.errorCode == ErrorHandler.OLD_VERSION) {
-                    alertDialogBuilder()
-                        .setTitle(R.string.Update_Mixin)
-                        .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
-                        .setNegativeButton(R.string.Later) { dialog, _ ->
-                            dialog.dismiss()
-                            activity?.onBackPressedDispatcher?.onBackPressed()
-                        }.setPositiveButton(R.string.Update) { dialog, _ ->
-                            requireContext().openMarket()
-                            dialog.dismiss()
-                            activity?.onBackPressedDispatcher?.onBackPressed()
-                        }.setCancelable(false)
-                        .create().show()
+                    showUpdateMixinDialog()
                 }
                 return@requestRouteAPI true
             },
@@ -1689,6 +1693,8 @@ class TradeFragment : BaseFragment() {
         if (dialog.isShowing) {
             dialog.dismiss()
         }
+        updateMixinDialog?.dismiss()
+        updateMixinDialog = null
         swapTokens = emptyList()
         stocks = emptyList()
         swapScrollToTopSignal = 0L
