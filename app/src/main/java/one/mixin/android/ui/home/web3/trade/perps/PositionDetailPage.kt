@@ -317,15 +317,29 @@ private fun PositionDetailItem(
     icon: String? = null,
     subtitle: String? = null,
     valueColor: Color = MixinAppTheme.colors.textPrimary,
+    onTipClick: (() -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = label,
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textAssist
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            if (onTipClick != null) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_tip),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clickable(onClick = onTipClick),
+                    tint = MixinAppTheme.colors.textAssist,
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(4.dp))
 
         if (icon != null) {
@@ -374,6 +388,7 @@ fun PositionDetailPage(
     pop: () -> Unit,
     onTradeAgain: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
+    onFeeTipClick: (() -> Unit)? = null,
     onSupport: (() -> Unit)? = null,
 ) {
     val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
@@ -594,6 +609,7 @@ fun PositionDetailPage(
                     PositionDetailItem(
                         label = stringResource(R.string.Fee).uppercase(),
                         value = formatSignedFiat(fee.negate()),
+                        onTipClick = onFeeTipClick,
                     )
                 }
 
@@ -645,6 +661,7 @@ fun OpenedOrderDetailPage(
     pop: () -> Unit,
     onViewMarket: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
+    onFeeTipClick: (() -> Unit)? = null,
     onSupport: (() -> Unit)? = null,
 ) {
     val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
@@ -838,6 +855,7 @@ fun OpenedOrderDetailPage(
                         PositionDetailItem(
                             label = stringResource(R.string.Fee).uppercase(),
                             value = formatPerpsSignedRawUsdDecimal(fee.negate()),
+                            onTipClick = onFeeTipClick,
                         )
                     }
 

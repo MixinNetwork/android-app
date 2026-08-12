@@ -865,18 +865,20 @@ private fun MarketInfoCard(
             color = MixinAppTheme.colors.textPrimary
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
-        Text(
-            text = stringResource(R.string.Open_Interest).uppercase(),
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textAssist
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = formatOpenInterest(market.openInterest, market.markPrice),
-            fontSize = 16.sp,
-            color = MixinAppTheme.colors.textPrimary
-        )
+        if (market.openInterest.toBigDecimalOrNull()?.signum() != 0) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.Open_Interest).uppercase(),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = formatOpenInterest(market.openInterest, market.markPrice),
+                fontSize = 16.sp,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
 
         Spacer(modifier = Modifier.height(12.dp))
         val fundingRateTitle = if (market.fundingIntervalHours > 0) {
