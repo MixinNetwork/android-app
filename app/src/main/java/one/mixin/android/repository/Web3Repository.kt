@@ -174,19 +174,21 @@ constructor(
             else -> throw IllegalArgumentException("Unsupported UTXO chain: $assetId")
         }
 
-    suspend fun deleteBitcoinUnspentChangeOutputs(fromAddress: String, rawTransactionHex: String): Int {
+    suspend fun deleteUtxoUnspentChangeOutputs(fromAddress: String, rawTransactionHex: String, assetId: String): Int {
+        if (assetId !in Constants.Web3UtxoChainIds) return 0
         val cleanedHex: String = rawTransactionHex.removePrefix("0x").trim()
         if (fromAddress.isBlank() || cleanedHex.isBlank()) return 0
         val tx: Transaction = runCatching {
             Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
         }.getOrNull() ?: return 0
         val txHash: String = tx.txId.toString()
-        val deletedOutputsCount: Int = walletOutputDao.deleteByTransactionHash(txHash, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val deletedOutputsCount: Int = walletOutputDao.deleteByTransactionHash(txHash, assetId)
         return deletedOutputsCount
     }
 
-    suspend fun hasBitcoinSignedOutputsByTransactionHash(transactionHash: String): Boolean {
-        val signedCount: Int = walletOutputDao.countSignedByTransactionHash(transactionHash, Constants.ChainId.BITCOIN_CHAIN_ID)
+    suspend fun hasUtxoSignedOutputsByTransactionHash(transactionHash: String, assetId: String): Boolean {
+        if (assetId !in Constants.Web3UtxoChainIds) return false
+        val signedCount: Int = walletOutputDao.countSignedByTransactionHash(transactionHash, assetId)
         return signedCount > 0
     }
 

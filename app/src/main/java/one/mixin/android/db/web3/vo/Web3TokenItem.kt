@@ -358,10 +358,11 @@ suspend fun Web3TokenItem.buildTransaction(
             Timber.e("rawTxHex: ${built.rawHex} virtualSize: ${built.virtualSize} rate: $rate")
             return JsSignMessage(
                 callbackId = 0,
-                type = JsSignMessage.TYPE_BTC_TRANSACTION,
+                type = JsSignMessage.TYPE_UTXO_TRANSACTION,
                 data = built.rawHex,
                 fee = built.feeBtc,
                 virtualSize = built.virtualSize,
+                utxoChainId = chainId,
             )
 
         } else {

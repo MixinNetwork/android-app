@@ -157,7 +157,9 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         token?.getChainFromName() ?: Web3Signer.currentChain
     }
     private val utxoChainId: String
-        get() = token?.chainId?.takeIf { it in Constants.Web3UtxoChainIds } ?: Constants.ChainId.BITCOIN_CHAIN_ID
+        get() = signMessage.utxoChainId?.takeIf { it in Constants.Web3UtxoChainIds }
+            ?: token?.chainId?.takeIf { it in Constants.Web3UtxoChainIds }
+            ?: Constants.ChainId.BITCOIN_CHAIN_ID
 
     var step by mutableStateOf(Step.Input)
         private set
@@ -193,7 +195,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     signMessage.type == JsSignMessage.TYPE_MESSAGE -> Web3Signer.address
                     signMessage.isEvmMessage() -> Web3Signer.evmAddress
                     signMessage.isSolMessage() -> Web3Signer.solanaAddress
-                    signMessage.isBtcMessage() -> if (utxoChainId == Constants.ChainId.PEARL_CHAIN_ID) Web3Signer.pearlAddress else Web3Signer.btcAddress
+                    signMessage.isUtxoMessage() -> if (utxoChainId == Constants.ChainId.PEARL_CHAIN_ID) Web3Signer.pearlAddress else Web3Signer.btcAddress
                     signMessage.isGaslessTransfer() && currentChain == Chain.Solana -> Web3Signer.solanaAddress
                     signMessage.isGaslessTransfer() -> Web3Signer.evmAddress
                     currentChain == Chain.Solana -> Web3Signer.solanaAddress
@@ -404,8 +406,8 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     }
                     return@launch
                 }
-                if (signMessage.type == JsSignMessage.TYPE_BTC_TRANSACTION) {
-                    val rawHex = signMessage.data ?: throw IllegalArgumentException("empty btc transaction hex")
+                if (signMessage.type == JsSignMessage.TYPE_UTXO_TRANSACTION) {
+                    val rawHex = signMessage.data ?: throw IllegalArgumentException("empty UTXO transaction hex")
                     val chainId = utxoChainId
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, chainId)
                     val fromAddress = UtxoTransactionSigner.address(priv, chainId)

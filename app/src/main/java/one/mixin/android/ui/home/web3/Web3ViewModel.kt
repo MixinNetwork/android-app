@@ -403,19 +403,24 @@ class Web3ViewModel @Inject constructor(
         web3Repository.deleteOutputsByAddress(address, assetId)
     }
 
-    suspend fun deleteBitcoinUnspentChangeOutputs(walletId: String, fromAddress: String, rawTransactionHex: String): Int {
+    suspend fun deleteUtxoUnspentChangeOutputs(
+        walletId: String,
+        fromAddress: String,
+        rawTransactionHex: String,
+        assetId: String,
+    ): Int {
         return withContext(Dispatchers.IO) {
-            val deletedCount: Int = web3Repository.deleteBitcoinUnspentChangeOutputs(fromAddress, rawTransactionHex)
+            val deletedCount: Int = web3Repository.deleteUtxoUnspentChangeOutputs(fromAddress, rawTransactionHex, assetId)
             if (deletedCount > 0) {
-                web3Repository.refreshBitcoinTokenAmount(walletId, fromAddress)
+                web3Repository.refreshUtxoTokenAmount(walletId, fromAddress, assetId)
             }
             deletedCount
         }
     }
 
-    suspend fun hasBitcoinSignedOutputsByTransactionHash(transactionHash: String): Boolean {
+    suspend fun hasUtxoSignedOutputsByTransactionHash(transactionHash: String, assetId: String): Boolean {
         return withContext(Dispatchers.IO) {
-            web3Repository.hasBitcoinSignedOutputsByTransactionHash(transactionHash)
+            web3Repository.hasUtxoSignedOutputsByTransactionHash(transactionHash, assetId)
         }
     }
 

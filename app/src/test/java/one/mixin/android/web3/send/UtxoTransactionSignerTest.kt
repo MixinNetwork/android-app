@@ -91,6 +91,7 @@ class UtxoTransactionSignerTest {
         val signatureHash = TaprootSignatureHash.hash(transaction, listOf(prevout), inputIndex = 0)
         assertEquals(1, transaction.inputs.single().witness.pushCount)
         assertEquals(64, signature.size)
+        assertTrue(transaction.inputs.all { it.sequenceNumber <= 0xfffffffdL })
         assertEquals(listOf(output.outputId), signed.consumedOutputIds)
         assertEquals(sender, signed.fromAddress)
         assertTrue(Bip340Signer.verify(PearlKeyGenerator.taprootOutputKey(privateKey), signatureHash, signature))
@@ -120,6 +121,7 @@ class UtxoTransactionSignerTest {
 
         val transaction = Transaction.read(ByteBuffer.wrap(signed.signedHex.hexStringToByteArray()))
         assertEquals(2, transaction.inputs.single().witness.pushCount)
+        assertTrue(transaction.inputs.all { it.sequenceNumber <= 0xfffffffdL })
         assertEquals(listOf(output.outputId), signed.consumedOutputIds)
         assertEquals(sender, signed.fromAddress)
     }

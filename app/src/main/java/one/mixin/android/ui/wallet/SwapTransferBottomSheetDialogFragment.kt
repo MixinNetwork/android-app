@@ -682,9 +682,10 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 trackSwapSuccess()
                             }
 
-                            JsSignMessage.TYPE_BTC_TRANSACTION -> {
-                                val rawHex: String = signMessage.data ?: throw IllegalArgumentException("empty btc transaction hex")
-                                val chainId = requireNotNull(token).chainId
+                            JsSignMessage.TYPE_UTXO_TRANSACTION -> {
+                                val rawHex: String = signMessage.data ?: throw IllegalArgumentException("empty UTXO transaction hex")
+                                val chainId = signMessage.utxoChainId ?: requireNotNull(token).chainId
+                                require(chainId in Constants.Web3UtxoChainIds) { "Unsupported UTXO chain: $chainId" }
                                 val priv = bottomViewModel.getWeb3Priv(requireContext(), pin, chainId)
                                 val fromAddress = UtxoTransactionSigner.address(priv, chainId)
                                 val localUtxos = web3ViewModel.outputsByAddress(fromAddress, chainId)

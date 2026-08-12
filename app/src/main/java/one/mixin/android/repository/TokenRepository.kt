@@ -1239,8 +1239,8 @@ class TokenRepository
                 sendAssetId = assetId
                 receiveAssetId = assetId
             }
-            if (raw.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                Timber.e("bitcoin tx,hash=%s, rate=%s", raw.hash, rate ?: "null")
+            if (raw.chainId in Constants.Web3UtxoChainIds) {
+                Timber.e("utxo tx,hash=%s, rate=%s", raw.hash, rate ?: "null")
             }
 
             val shouldFallbackToGaslessPending = sendAssetId == null && receiveAssetId == null && gaslessPendingTransaction != null
