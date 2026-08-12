@@ -273,7 +273,7 @@ constructor(
     suspend fun mapWeb3Transaction(transaction: Web3TransactionItem, walletId: String): Web3TransactionItem = withContext(Dispatchers.IO) {
         val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList()) + transaction.sponsorFeeAssetId.orEmpty()
         val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds.filter(String::isNotBlank).distinct()).associateBy { it.assetId }
-        transaction.copy(
+        val mapped = transaction.copy(
             senders = transaction.senders.map {
                 it.copy(symbol = tokens[it.assetId]?.symbol)
             },
@@ -285,6 +285,21 @@ constructor(
             },
             sponsorFeeAssetSymbol = tokens[transaction.sponsorFeeAssetId]?.symbol ?: transaction.sponsorFeeAssetSymbol,
         )
+        // TEMP debug: list/detail display path for sponsor fee
+        if (!transaction.sponsorFeeAmount.isNullOrBlank() || !transaction.sponsorFeeAssetId.isNullOrBlank()) {
+            Timber.e(
+                "SponsorFee mapDisplay hash=%s status=%s fee=%s sponsor=%s/%s symbol=%s display=%s %s",
+                mapped.transactionHash,
+                mapped.status,
+                mapped.fee,
+                mapped.sponsorFeeAssetId,
+                mapped.sponsorFeeAmount,
+                mapped.sponsorFeeAssetSymbol,
+                mapped.displayFeeAmount(),
+                mapped.displayFeeSymbol(),
+            )
+        }
+        mapped
     }
 
     fun observeOutputsByAddress(address: String, assetId: String): Flow<List<WalletOutput>> {
