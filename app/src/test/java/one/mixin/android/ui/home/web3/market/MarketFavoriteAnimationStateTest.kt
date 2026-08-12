@@ -155,6 +155,43 @@ class MarketFavoriteAnimationStateTest {
         )
     }
 
+    @Test
+    fun successfulAddWaitsForAnimationCompletionBeforeClearingIntent() {
+        val intent = MarketFavoriteAnimationIntent(id = 1, targetFavored = true)
+
+        assertEquals(
+            false,
+            shouldClearFavoriteAnimationIntent(
+                intent = intent,
+                requestResult = true,
+                isFavored = true,
+                completedIntentId = null,
+            ),
+        )
+        assertEquals(
+            true,
+            shouldClearFavoriteAnimationIntent(
+                intent = intent,
+                requestResult = true,
+                isFavored = true,
+                completedIntentId = intent.id,
+            ),
+        )
+    }
+
+    @Test
+    fun successfulRemoveDoesNotWaitForAnimationCompletion() {
+        assertEquals(
+            true,
+            shouldClearFavoriteAnimationIntent(
+                intent = MarketFavoriteAnimationIntent(id = 1, targetFavored = false),
+                requestResult = true,
+                isFavored = false,
+                completedIntentId = null,
+            ),
+        )
+    }
+
     private fun assertDecision(
         actual: MarketFavoriteAnimationDecision,
         mode: MarketFavoriteAnimationMode,

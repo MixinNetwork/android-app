@@ -225,10 +225,12 @@ class TradeFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         orderBadge = defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1
+        autoFocusAmount = shouldAutoFocusAmount()
         observeTradeMarketSelection()
     }
 
     private var orderBadge: Boolean by mutableStateOf(false)
+    private var autoFocusAmount: Boolean by mutableStateOf(false)
 
     private fun limitOrderBadgeDismissedPrefKey(walletId: String): String {
         return "${Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED}_$walletId"
@@ -375,18 +377,18 @@ class TradeFragment : BaseFragment() {
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
-                                autoFocusAmount = shouldAutoFocusAmount(),
-                            initialTabIndex = initialTabIndex,
-                            source = getSource(),
-                            entrySource = getEntrySource(),
-                            stockMarkets = stockMarkets,
-                            trendingMarkets = trendingMarkets,
-                            topGainerMarkets = topGainerMarkets,
-                            topLoserMarkets = topLoserMarkets,
-                            scrollToTopSignal = swapScrollToTopSignal,
-                            onSelectToken = { isReverse, type, isLimit ->
-                                showSwapTokenList(swapTokens, isReverse, type, isLimit)
-                            },
+                                autoFocusAmount = autoFocusAmount,
+                                initialTabIndex = initialTabIndex,
+                                source = getSource(),
+                                entrySource = getEntrySource(),
+                                stockMarkets = stockMarkets,
+                                trendingMarkets = trendingMarkets,
+                                topGainerMarkets = topGainerMarkets,
+                                topLoserMarkets = topLoserMarkets,
+                                scrollToTopSignal = swapScrollToTopSignal,
+                                onSelectToken = { isReverse, type, isLimit ->
+                                    showSwapTokenList(swapTokens, isReverse, type, isLimit)
+                                },
                                 onDismissLimitOrderTabBadge = {
                                     if (!isLimitOrderTabBadgeDismissed) {
                                         isLimitOrderTabBadgeDismissed = true
@@ -845,8 +847,10 @@ class TradeFragment : BaseFragment() {
             .autoDispose(destroyScope)
             .subscribe { event ->
                 lifecycleScope.launch(coroutineErrorHandler) {
-                    selectMarketToken(event.inputAssetId, event.outputAssetId)
-                    swapScrollToTopSignal++
+                    if (selectMarketToken(event.inputAssetId, event.outputAssetId)) {
+                        autoFocusAmount = true
+                        swapScrollToTopSignal++
+                    }
                 }
             }
     }
@@ -854,10 +858,10 @@ class TradeFragment : BaseFragment() {
     private suspend fun selectMarketToken(
         inputAssetId: String,
         outputAssetId: String,
-    ) {
-        if (!inMixin()) return
-        val input = swapViewModel.findToken(inputAssetId)?.toSwapToken() ?: return
-        val output = swapViewModel.findToken(outputAssetId)?.toSwapToken() ?: return
+    ): Boolean {
+        if (!inMixin()) return false
+        val input = swapViewModel.findToken(inputAssetId)?.toSwapToken() ?: return false
+        val output = swapViewModel.findToken(outputAssetId)?.toSwapToken() ?: return false
         resolveDuplicateSwapTokenPair(
             tokens = swapTokens.ifEmpty { listOf(input, output) },
             fromToken = input,
@@ -873,6 +877,7 @@ class TradeFragment : BaseFragment() {
                 defaultSharedPreferences.putString(getPreferenceKey(false), serializedPair)
             }
         }
+        return true
     }
 
     private suspend fun handleReview(quote: QuoteResult, from: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {

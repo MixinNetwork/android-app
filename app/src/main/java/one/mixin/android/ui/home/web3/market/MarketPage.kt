@@ -545,7 +545,33 @@ private fun RowScope.SpotMarketRowContent(
     settings: MarketDisplaySettings,
     showMarketCap: Boolean,
 ) {
-    val change = market.changePercent(settings.priceChangePeriod)
+    val fiatSymbol = Fiats.getSymbol()
+    val fiatRate = Fiats.getRate()
+    val change =
+        remember(
+            settings.priceChangePeriod,
+            market.priceChangePercentage24H,
+            market.priceChangePercentage7D,
+        ) {
+            market.changePercent(settings.priceChangePeriod)
+        }
+    val volumeText =
+        remember(
+            showMarketCap,
+            market.marketCap,
+            market.totalVolume,
+            fiatSymbol,
+            fiatRate,
+        ) {
+            formatSpotVolume(
+                if (showMarketCap) market.marketCap else market.totalVolume,
+                fiatSymbol,
+                fiatRate,
+            )
+        }
+    val priceText = remember(market.currentPrice, fiatSymbol, fiatRate) {
+        formatSpotPrice(market.currentPrice, fiatSymbol, fiatRate)
+    }
     MarketIcon(url = market.iconUrl, size = 38.dp)
     Spacer(modifier = Modifier.width(10.dp))
     Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -557,26 +583,28 @@ private fun RowScope.SpotMarketRowContent(
             style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
         )
         Row(verticalAlignment = Alignment.CenterVertically) {
+            if (showMarketCap) {
+                Text(
+                    text = market.marketCapRank.ifBlank { "-" },
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    style =
+                        TextStyle(
+                            platformStyle = PlatformTextStyle(includeFontPadding = false),
+                        ),
+                    modifier =
+                        Modifier
+                            .background(
+                                MixinAppTheme.colors.marketBadgeBackground,
+                                RoundedCornerShape(4.dp),
+                            )
+                            .padding(horizontal = 4.dp),
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+            }
             Text(
-                text = market.marketCapRank,
-                color = MixinAppTheme.colors.textAssist,
-                fontSize = 12.sp,
-                lineHeight = 14.sp,
-                style =
-                    TextStyle(
-                        platformStyle = PlatformTextStyle(includeFontPadding = false),
-                    ),
-                modifier =
-                    Modifier
-                        .background(
-                            MixinAppTheme.colors.marketBadgeBackground,
-                            RoundedCornerShape(4.dp),
-                        )
-                        .padding(horizontal = 4.dp),
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                text = formatSpotVolume(if (showMarketCap) market.marketCap else market.totalVolume),
+                text = if (showMarketCap) volumeText else stringResource(R.string.volume_label, volumeText),
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 12.sp,
                 lineHeight = 12.sp,
@@ -585,7 +613,7 @@ private fun RowScope.SpotMarketRowContent(
             )
         }
     }
-    MarketPriceText(text = formatSpotPrice(market.currentPrice))
+    MarketPriceText(text = priceText)
     Spacer(modifier = Modifier.width(MarketPriceChangeGap))
     MarketChangeColumn(
         change = change,
@@ -1070,12 +1098,20 @@ private fun formatPercent(change: BigDecimal): String {
     return "$prefix${change.numberFormat2()}%"
 }
 
-private fun formatSpotPrice(value: String): String =
+private fun formatSpotPrice(
+    value: String,
+    fiatSymbol: String = Fiats.getSymbol(),
+    fiatRate: Double = Fiats.getRate(),
+): String =
     runCatching {
-        "${Fiats.getSymbol()}${BigDecimal(value).multiply(BigDecimal(Fiats.getRate())).priceFormat()}"
+        "$fiatSymbol${BigDecimal(value).multiply(BigDecimal(fiatRate)).priceFormat()}"
     }.getOrDefault(value)
 
-private fun formatSpotVolume(value: String): String =
+private fun formatSpotVolume(
+    value: String,
+    fiatSymbol: String = Fiats.getSymbol(),
+    fiatRate: Double = Fiats.getRate(),
+): String =
     runCatching {
-        "${Fiats.getSymbol()}${BigDecimal(value).multiply(BigDecimal(Fiats.getRate())).numberFormatCompact()}"
+        "$fiatSymbol${BigDecimal(value).multiply(BigDecimal(fiatRate)).numberFormatCompact()}"
     }.getOrDefault(value)

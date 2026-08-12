@@ -23,6 +23,17 @@ class RefreshMarketPageJobTest {
     }
 
     @Test
+    fun limitsTopGainerAndLoserRequestsTo100Markets() {
+        val requests =
+            RefreshMarketPageJob.SPOT_MARKET_REFRESH_REQUESTS.filter {
+                it.source == MarketPageDataSource.SPOT_TOP_GAINER ||
+                    it.source == MarketPageDataSource.SPOT_TOP_LOSER
+            }
+
+        assertEquals(listOf(100, 100), requests.map { it.limit })
+    }
+
+    @Test
     fun scopedSpotAllRefreshIncludesMarketAndStockRequests() {
         val plan = marketPageRefreshPlan(setOf(MarketPageDataSource.SPOT_ALL))
 

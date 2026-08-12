@@ -183,6 +183,11 @@ class PerpsMarketListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
             mutableUiState.update { it.finishFavoriteUpdate(market.marketId, success) }
             onResult(success)
             if (success) {
+                AnalyticsTracker.trackMarketWatchlist(
+                    adding = !isFavored,
+                    type = AnalyticsTracker.MarketType.PERPS,
+                    source = AnalyticsTracker.MarketWatchlistSource.PERPS_MARKETS_DIALOG,
+                )
                 toast(
                     getString(
                         if (isFavored) {
@@ -204,6 +209,11 @@ class PerpsMarketListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
         mutableUiState.update { it.startRecommendationSubmission() }
         viewModel.addFavoriteMarkets(selectedIds) { addedIds ->
             if (addedIds.isNotEmpty()) {
+                AnalyticsTracker.trackMarketWatchlist(
+                    adding = true,
+                    type = AnalyticsTracker.MarketType.PERPS,
+                    source = AnalyticsTracker.MarketWatchlistSource.PERPS_MARKETS_DIALOG,
+                )
                 val symbols =
                     selectedMarkets
                         .filter { it.marketId in addedIds }

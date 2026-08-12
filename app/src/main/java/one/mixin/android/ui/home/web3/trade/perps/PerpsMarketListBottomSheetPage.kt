@@ -301,7 +301,7 @@ private fun PerpsMarketListContent(
             LazyColumn(
                 state = listState,
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(bottom = 8.dp),
+                contentPadding = PaddingValues(bottom = 48.dp),
             ) {
                 items(
                     items = state.visibleMarkets,

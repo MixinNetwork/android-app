@@ -21,9 +21,13 @@ import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.market.MarketCategory
 import timber.log.Timber
 
+private const val SPOT_MARKET_LIMIT = 500
+private const val TOP_GAINER_LOSER_MARKET_LIMIT = 100
+
 internal data class SpotMarketRefreshRequest(
     val source: MarketPageDataSource,
     val category: String,
+    val limit: Int = SPOT_MARKET_LIMIT,
 )
 
 internal data class MarketPageRefreshPlan(
@@ -70,7 +74,6 @@ class RefreshMarketPageJob(
     companion object {
         private const val serialVersionUID = 1L
         const val GROUP = "RefreshMarketPageJob"
-        private const val SPOT_MARKET_LIMIT = 500
         private const val CATEGORY_ALL = "all"
         private const val CATEGORY_FAVORITE = "favorite"
         internal val SPOT_MARKET_REFRESH_REQUESTS =
@@ -79,8 +82,16 @@ class RefreshMarketPageJob(
                 SpotMarketRefreshRequest(MarketPageDataSource.SPOT_FAVORITE, CATEGORY_FAVORITE),
                 SpotMarketRefreshRequest(MarketPageDataSource.SPOT_FEATURED, MarketCategory.FEATURED.apiValue),
                 SpotMarketRefreshRequest(MarketPageDataSource.SPOT_TRENDING, MarketCategory.TRENDING.apiValue),
-                SpotMarketRefreshRequest(MarketPageDataSource.SPOT_TOP_GAINER, MarketCategory.TOP_GAINER.apiValue),
-                SpotMarketRefreshRequest(MarketPageDataSource.SPOT_TOP_LOSER, MarketCategory.TOP_LOSER.apiValue),
+                SpotMarketRefreshRequest(
+                    MarketPageDataSource.SPOT_TOP_GAINER,
+                    MarketCategory.TOP_GAINER.apiValue,
+                    TOP_GAINER_LOSER_MARKET_LIMIT,
+                ),
+                SpotMarketRefreshRequest(
+                    MarketPageDataSource.SPOT_TOP_LOSER,
+                    MarketCategory.TOP_LOSER.apiValue,
+                    TOP_GAINER_LOSER_MARKET_LIMIT,
+                ),
                 SpotMarketRefreshRequest(MarketPageDataSource.SPOT_ALL, MarketCategory.STOCK.apiValue),
             )
     }
@@ -99,7 +110,7 @@ class RefreshMarketPageJob(
                         .map { request ->
                             async {
                                 refresh(request.source) {
-                                    assetRepo.fetchMarkets(request.category, duration, SPOT_MARKET_LIMIT) != null
+                                    assetRepo.fetchMarkets(request.category, duration, request.limit) != null
                                 }
                             }
                         }.toMutableList()
