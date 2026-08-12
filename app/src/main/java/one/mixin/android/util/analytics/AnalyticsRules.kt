@@ -79,6 +79,17 @@ internal object AnalyticsRules {
             AnalyticsEvent("show_asset", mapOf("wallet" to wallet))
         }
 
+    fun assetReceiveSuccessEvent(
+        assetSymbol: String?,
+        amount: BigDecimal,
+        priceUsd: BigDecimal,
+    ): AnalyticsEvent {
+        val params = linkedMapOf<String, String>()
+        assetSymbol?.takeIf { it.isNotBlank() }?.let { params["receive_asset_symbol"] = it }
+        params["receive_asset_level"] = receiveAssetLevel(amount.multiply(priceUsd))
+        return AnalyticsEvent("asset_receive_success", params)
+    }
+
     fun receiveAssetLevel(amountUsd: BigDecimal): String =
         when {
             amountUsd >= BigDecimal("1000000") -> "v1,000,000"

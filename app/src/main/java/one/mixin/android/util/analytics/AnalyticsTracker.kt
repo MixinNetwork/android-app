@@ -245,11 +245,11 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackAssetReceiveSuccess(price: String?) {
-        logEvent("asset_receive_success") {
-            putString("asset_level", getAssetLevel(BigDecimal.ONE, price))
-        }
-    }
+    fun trackAssetReceiveSuccess(
+        assetSymbol: String?,
+        amount: BigDecimal,
+        priceUsd: BigDecimal,
+    ) = logEvent(AnalyticsRules.assetReceiveSuccessEvent(assetSymbol, amount, priceUsd))
 
     fun trackAssetSendStart(wallet: String, source: String) {
         logEvent("asset_send_start") {
