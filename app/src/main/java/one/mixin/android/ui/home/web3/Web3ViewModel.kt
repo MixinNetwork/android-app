@@ -307,28 +307,54 @@ class Web3ViewModel @Inject constructor(
         account: String,
         assetId: String,
         amount: String,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         to: String,
         nonce: String,
         createdAt: String,
         updatedAt: String,
     ) = withContext(Dispatchers.IO) {
-        tokenRepository.insertGaslessPendingTransaction(sponsorTxId, chainId, account, assetId, amount, fee, to, nonce, createdAt, updatedAt)
+        tokenRepository.insertGaslessPendingTransaction(
+            sponsorTxId = sponsorTxId,
+            chainId = chainId,
+            account = account,
+            assetId = assetId,
+            amount = amount,
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
+            to = to,
+            nonce = nonce,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
     }
 
-    suspend fun insertSignedPendingTransaction(
+    suspend fun insertGaslessSignedPendingTransaction(
         hash: String,
         chainId: String,
         account: String,
         assetId: String,
         amount: String,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         to: String,
         raw: String,
         createdAt: String,
         updatedAt: String,
     ) = withContext(Dispatchers.IO) {
-        tokenRepository.insertSignedPendingTransaction(hash, chainId, account, assetId, amount, fee, to, raw, createdAt, updatedAt)
+        tokenRepository.insertGaslessSignedPendingTransaction(
+            hash = hash,
+            chainId = chainId,
+            account = account,
+            assetId = assetId,
+            amount = amount,
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
+            to = to,
+            raw = raw,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
     }
 
     suspend fun ticker(assetId: String, offset: String?) = tokenRepository.ticker(assetId, offset)

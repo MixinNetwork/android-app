@@ -97,6 +97,15 @@ data class Web3Transaction(
     val level: Int = Constants.AssetLevel.UNKNOWN,
 ) : Parcelable
 
+internal fun Web3Transaction.hasSponsorFeeMetadata(): Boolean =
+    !sponsorFeeAssetId.isNullOrBlank() && !sponsorFeeAmount.isNullOrBlank()
+
+internal fun Web3Transaction.copySponsorFeeFrom(source: Web3Transaction): Web3Transaction =
+    copy(
+        sponsorFeeAssetId = source.sponsorFeeAssetId,
+        sponsorFeeAmount = source.sponsorFeeAmount,
+    )
+
 @Parcelize
 data class AssetChange(
     @ColumnInfo(name = "asset_id")

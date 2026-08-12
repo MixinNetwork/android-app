@@ -1173,8 +1173,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         }.getOrNull() ?: return null
         if (!response.isSuccess || response.data == null) return null
 
-        val sameAssetFee = response.data!!.fees.firstOrNull { it.assetId == token.assetId }
-        return (sameAssetFee ?: response.data!!.fees.firstOrNull())?.amount
+        return selectGaslessFeeEstimate(response.data!!.fees, token.assetId)?.amount
     }
 
     private suspend fun submitGaslessTransfer(pin: String) {
@@ -1191,6 +1190,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 fromAddress = fromAddress,
                 toAddress = toAddress,
                 payload = preparedResponse.payload,
+                feeAssetId = transferToken.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
                 privateKey = privateKey,
             )
             in Constants.Web3EvmChainIds -> submitEvmGaslessTransfer(
@@ -1200,7 +1201,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 amount = amount,
                 chainId = preparedResponse.chainId,
                 payload = preparedResponse.payload,
-                fee = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
+                feeAssetId = transferToken.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
                 privateKey = privateKey,
             )
             else -> throw IllegalArgumentException("Gasless is not supported for ${transferToken.chainId}")
@@ -1213,6 +1215,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         fromAddress: String,
         toAddress: String,
         payload: JsonElement,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         val rawPayload = payload.takeIf { it.isJsonPrimitive }?.asString
@@ -1229,13 +1233,14 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             signature != Base58.encode(ByteArray(SIGNATURE_LENGTH))
         } ?: throw IllegalStateException("Gasless Solana transaction signature is missing")
         val now = nowInUtc()
-        web3ViewModel.insertSignedPendingTransaction(
+        web3ViewModel.insertGaslessSignedPendingTransaction(
             hash = txHash,
             chainId = Constants.ChainId.Solana,
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = "0",
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             raw = rawTx,
             createdAt = now,
@@ -1261,7 +1266,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         amount: String,
         chainId: String,
         payload: JsonElement,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         if (!payload.isJsonObject) {
@@ -1294,7 +1300,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = fee,
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,
