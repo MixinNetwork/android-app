@@ -185,6 +185,7 @@
     <string name="database_upgrade_tips">Database sedang ditingkatkan, mungkin perlu beberapa menit, jangan tutup Aplikasi ini.</string>
     <string name="Date">Tanggal</string>
     <string name="date_format_date">TTT bb, tttt</string>
+    <string name="date_format_month_day">TTT bb</string>
     <string name="Decline">Tolak</string>
     <string name="Declined">Ditolak</string>
     <string name="default_time">00:00</string>
@@ -381,8 +382,8 @@
     <plurals name="Minute" tools:ignore="UnusedQuantity">
         <item quantity="other">%d Menit</item>
     </plurals>
-    <string name="Mixin">Mixin</string>
     <string name="Mixin_ID">Mixin ID</string>
+    <string name="Mixin_One">Mixin One</string>
     <string name="Mixin_Messenger_Desktop">Mixin Desktop</string>
     <string name="Monday">Senin</string>
     <string name="More">Lebih banyak</string>

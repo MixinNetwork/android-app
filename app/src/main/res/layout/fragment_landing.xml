@@ -44,7 +44,7 @@
         android:layout_marginStart="36dp"
         android:layout_marginEnd="36dp"
         android:textSize="14sp"
-        android:textFontWeight="500"
+        android:textFontWeight="600"
         app:layout_constraintBottom_toTopOf="@id/continue_tv"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
@@ -59,7 +59,7 @@
         android:layout_marginStart="36dp"
         android:layout_marginEnd="36dp"
         android:textSize="14sp"
-        android:textFontWeight="500"
+        android:textFontWeight="600"
         app:layout_constraintBottom_toTopOf="@id/version"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>

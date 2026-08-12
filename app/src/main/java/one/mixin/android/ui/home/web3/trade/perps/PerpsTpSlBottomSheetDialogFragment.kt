@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.home.web3.trade.perps
 
 import android.annotation.SuppressLint
@@ -301,6 +303,9 @@ private fun PerpsTpSlContent(
         preferences.getString(PREF_TPSL_INPUT_TYPE, null)
             ?.let { stored -> InputType.values().firstOrNull { it.name == stored } }
     }
+    val normalizedInitialPrice = remember(initialPrice, safePriceScale) {
+        normalizePriceInput(initialPrice, safePriceScale)
+    }
     val defaultInputType = remember(initialPrice, storedInputType) {
         storedInputType ?: if (initialPrice.isBlank()) InputType.PNL else InputType.PRICE
     }
@@ -308,14 +313,14 @@ private fun PerpsTpSlContent(
         mutableStateOf(defaultInputType)
     }
     var priceFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
-        mutableStateOf(textFieldValueAtEnd(initialPrice))
+        mutableStateOf(textFieldValueAtEnd(normalizedInitialPrice))
     }
     var percentFieldValue by rememberSaveable(stateSaver = TextFieldValue.Saver) {
         mutableStateOf(
             textFieldValueAtEnd(
                 normalizePercentInput(
                     derivePercentMagnitudeInput(
-                        priceInput = initialPrice,
+                        priceInput = normalizedInitialPrice,
                         percentBasePrice = percentBasePrice,
                         leverage = leverageValue,
                         isLong = isLong,

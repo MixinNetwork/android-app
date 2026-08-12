@@ -137,9 +137,8 @@ class SessionRequestViewModel
                     return@withContext Triple(wallet.name, walletIndex, null)
                 }
                 if (chainId != null) {
-                    val address = tokenRepository.matchAddress(destination, chainId)
-                    if (address != null) {
-                        return@withContext Triple(address.label, 0, null) // Address label
+                    tokenRepository.findAddressByDestination(destination, "", chainId)?.let { label ->
+                        return@withContext Triple(label, 0, null) // Address label
                     }
                 }
                 return@withContext null

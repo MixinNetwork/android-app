@@ -6,4 +6,37 @@
         <item>毎週</item>
         <item>毎月</item>
     </string-array>
+
+    <string-array name="setting_night_array">
+        <item>ライト</item>
+        <item>ダーク</item>
+    </string-array>
+
+    <string-array name="setting_night_array_oreo">
+        <item>ライト</item>
+        <item>ダーク</item>
+        <item>システム設定に従う</item>
+    </string-array>
+
+    <plurals name="time_interval_unit_second">
+        <item quantity="other">秒</item>
+    </plurals>
+    <plurals name="time_interval_unit_minute">
+        <item quantity="other">分</item>
+    </plurals>
+    <plurals name="time_interval_unit_hour">
+        <item quantity="other">時間</item>
+    </plurals>
+    <plurals name="time_interval_unit_day">
+        <item quantity="other">日</item>
+    </plurals>
+    <plurals name="time_interval_unit_week">
+        <item quantity="other">週</item>
+    </plurals>
+
+    <array name="database">
+        <item>Mixin データベース</item>
+        <item>保留中のデータベース</item>
+        <item>ウォレット データベース</item>
+    </array>
 </resources>

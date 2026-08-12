@@ -182,6 +182,13 @@ abstract class MixinJob(
     }
 
     private fun createConversation(conversation: Conversation): Long? {
+        if (conversation.isGroupConversation()) {
+            reportException(
+                "Skip MixinJob.createConversation for group",
+                IllegalStateException("conversation_id=${conversation.conversationId}"),
+            )
+            return conversation.expireIn
+        }
         val request =
             ConversationRequest(
                 conversationId = conversation.conversationId,

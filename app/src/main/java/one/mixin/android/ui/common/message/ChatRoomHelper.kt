@@ -20,7 +20,7 @@ import javax.inject.Inject
 class ChatRoomHelper
     @Inject
     internal constructor(
-        @ApplicationScope private val applicationScope: CoroutineScope,
+        @param:ApplicationScope private val applicationScope: CoroutineScope,
         private val conversationDao: ConversationDao,
         private val remoteMessageStatusDao: RemoteMessageStatusDao,
         private val messageMentionDao: MessageMentionDao,

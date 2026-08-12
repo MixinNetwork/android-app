@@ -9,6 +9,7 @@ class PinMessageMinimal(
     val messageId: String,
     @SerializedName("category")
     override val type: String,
+    @SerializedName("content")
     val content: String?,
 ) : ICategory
 

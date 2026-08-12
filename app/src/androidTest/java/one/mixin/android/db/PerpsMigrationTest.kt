@@ -139,6 +139,31 @@ class PerpsMigrationTest {
         }
     }
 
+    @Test
+    fun migrate_5_6_addsNullableDescriptions() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 5).close()
+
+        val migratedDb = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME,
+            6,
+            true,
+            PerpsDatabase.MIGRATION_5_6,
+        )
+
+        migratedDb.query("PRAGMA table_info(markets)").use { cursor ->
+            val nameIndex = cursor.getColumnIndexOrThrow("name")
+            val notNullIndex = cursor.getColumnIndexOrThrow("notnull")
+            var foundDescriptions = false
+            while (cursor.moveToNext()) {
+                if (cursor.getString(nameIndex) == "descriptions") {
+                    foundDescriptions = true
+                    assertEquals(0, cursor.getInt(notNullIndex))
+                }
+            }
+            assertTrue(foundDescriptions)
+        }
+    }
+
     private fun SupportSQLiteDatabase.insertMarketV2() {
         execSQL(
             """

@@ -181,6 +181,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         label: String?,
         content: String,
         index: Int = 0,
+        @DrawableRes labelBackgroundRes: Int = R.drawable.bg_label,
     ) {
         binding.titleTv.setTextOnly(title)
         if (index != 0) {
@@ -196,6 +197,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.subTitleTv.isVisible = false
             binding.labelTitleTv.isVisible = true
             binding.labelTitleTv.text = label
+            binding.labelTitleTv.setBackgroundResource(labelBackgroundRes)
         } else {
             binding.subTitleTv.isVisible = true
             binding.subTitleTv.setTextOnly(content)

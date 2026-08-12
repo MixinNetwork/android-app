@@ -27,17 +27,22 @@ data class AppCardData(
     val coverUrl: String?,
     @SerializedName("cover")
     val cover: Cover?,
+    @SerializedName("title")
     var title: String?,
+    @SerializedName("description")
     var description: String?,
+    @SerializedName("action")
     val action: String?,
     @SerializedName("updated_at")
     val updatedAt: String?,
+    @SerializedName("shareable")
     val shareable: Boolean?,
+    @SerializedName("actions")
     val actions: List<ActionButtonData>? = null,
 ) : Parcelable {
     init {
-        title = title?.take(36)
-        description = description?.take(512)
+        title = title?.take(APP_CARD_TITLE_MAX_LENGTH)
+        description = description?.take(APP_CARD_DESCRIPTION_MAX_LENGTH)
     }
 
     @IgnoredOnParcel
@@ -59,9 +64,11 @@ data class AppCardData(
     val hashCover: Boolean
         get() {
             if (oldVersion) return false
-            if (coverUrl.isNullOrBlank()) return false
-            return true
+            return !coverUrl.isNullOrBlank() || !cover?.url.isNullOrBlank()
         }
+
+    val hasMediaCover: Boolean
+        get() = !coverUrl.isNullOrBlank()
 
     val hasValidCoverSize: Boolean
         get() {
@@ -76,11 +83,33 @@ fun String.toAppCardDataOrNull(): AppCardData? =
         Timber.e(it, "Failed to parse AppCardData from JSON: $this")
     }.getOrNull()
 
+fun AppCardData.shareDataErrorReasons(): List<String> {
+    val reasons = mutableListOf<String>()
+    if (!hasValidCoverSize) {
+        reasons.add("coverSize=${cover?.width}x${cover?.height}")
+    }
+    val titleLength = title?.length ?: 0
+    if (titleLength !in APP_CARD_TITLE_MIN_LENGTH..APP_CARD_TITLE_MAX_LENGTH) {
+        reasons.add("titleLength=$titleLength")
+    }
+    val descriptionLength = description?.length ?: 0
+    if (descriptionLength !in APP_CARD_DESCRIPTION_MIN_LENGTH..APP_CARD_DESCRIPTION_MAX_LENGTH) {
+        reasons.add("descriptionLength=$descriptionLength")
+    }
+    return reasons
+}
+
 private const val APP_CARD_COVER_MIN_SIZE = 64
 private const val APP_CARD_COVER_MAX_SIZE = 1024
+private const val APP_CARD_TITLE_MIN_LENGTH = 1
+private const val APP_CARD_TITLE_MAX_LENGTH = 128
+private const val APP_CARD_DESCRIPTION_MIN_LENGTH = 1
+private const val APP_CARD_DESCRIPTION_MAX_LENGTH = 1024
 
 private fun String.isValidShareUrl(): Boolean {
-    return isValidSendUrl() || ((startsWith("HTTPS://", true) || startsWith("HTTP://", true)) && !startsWith(HTTPS_SEND, true))
+    return !startsWith(SEND, true) &&
+        !startsWith(MIXIN_SEND, true) &&
+        !startsWith(HTTPS_SEND, true)
 }
 
 fun String.isValidSendUrl(): Boolean {
@@ -117,8 +146,11 @@ fun String.getSendText(): String? {
 
 @Parcelize
 data class ActionButtonData(
+    @SerializedName("label")
     val label: String,
+    @SerializedName("color")
     val color: String,
+    @SerializedName("action")
     val action: String,
 ) : Parcelable {
     @IgnoredOnParcel
@@ -136,11 +168,15 @@ data class ActionButtonData(
 
 @Parcelize
 data class Cover(
+    @SerializedName("height")
     val height: Int,
+    @SerializedName("width")
     val width: Int,
     @SerializedName("mime_type")
     val mimeType: String,
+    @SerializedName("url")
     val url: String?,
+    @SerializedName("thumbnail")
     val thumbnail: String?,
 ) : Parcelable {
     @IgnoredOnParcel
@@ -161,6 +197,18 @@ data class Cover(
 fun MessageItem.appCardCoverUrl(): String? =
     if (isAppCard()) {
         appCardData?.let { it.coverUrl?.takeIf(String::isNotBlank) ?: it.cover?.url?.takeIf(String::isNotBlank) }
+    } else {
+        null
+    }
+
+fun MessageItem.isAppCardWithMediaCover(): Boolean {
+    if (!isAppCard()) return false
+    return appCardData?.hasMediaCover == true
+}
+
+fun MessageItem.appCardMediaCoverUrl(): String? =
+    if (isAppCard()) {
+        appCardData?.coverUrl?.takeIf(String::isNotBlank)
     } else {
         null
     }

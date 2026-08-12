@@ -44,9 +44,12 @@ import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.isWatch
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.wallet.Web3FilterParams
+import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
@@ -66,7 +69,7 @@ import javax.inject.Inject
 class Web3Repository
 @Inject
 constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     val routeService: RouteService,
     val web3TokenDao: Web3TokenDao,
     val web3TransactionDao: Web3TransactionDao,
@@ -268,8 +271,8 @@ constructor(
         web3TransactionDao.getPendingTransactionItems(walletId).map { mapWeb3Transaction(it, walletId) }
 
     suspend fun mapWeb3Transaction(transaction: Web3TransactionItem, walletId: String): Web3TransactionItem = withContext(Dispatchers.IO) {
-        val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
-        val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds.distinct()).associateBy { it.assetId }
+        val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList()) + transaction.sponsorFeeAssetId.orEmpty()
+        val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds.filter(String::isNotBlank).distinct()).associateBy { it.assetId }
         transaction.copy(
             senders = transaction.senders.map {
                 it.copy(symbol = tokens[it.assetId]?.symbol)
@@ -279,7 +282,8 @@ constructor(
             },
             approvals = transaction.approvals?.map {
                 it.copy(symbol = tokens[it.assetId]?.symbol)
-            }
+            },
+            sponsorFeeAssetSymbol = tokens[transaction.sponsorFeeAssetId]?.symbol ?: transaction.sponsorFeeAssetSymbol,
         )
     }
 
@@ -301,6 +305,58 @@ constructor(
     suspend fun createWallet(request: WalletRequest) = routeService.createWallet(request)
 
     suspend fun updateWallet(walletId: String, request: WalletRequest) = routeService.updateWallet(walletId, request)
+
+    suspend fun syncWalletsFromRoute(): List<Web3Wallet>? {
+        return requestRouteAPI(
+            invokeNetwork = { routeService.getWallets() },
+            successBlock = { response ->
+                val wallets = response.data ?: emptyList()
+                if (wallets.isEmpty()) {
+                    return@requestRouteAPI wallets
+                }
+                web3WalletDao.insertListSuspend(wallets)
+                wallets.forEach { wallet ->
+                    val embeddedAddresses = wallet.addresses
+                    if (embeddedAddresses.isNullOrEmpty()) {
+                        syncWalletAddressesFromRoute(wallet.id)
+                    } else {
+                        web3AddressDao.insertListSuspend(embeddedAddresses)
+                        context.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
+                    }
+                }
+                wallets
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to sync wallets from route ${response.errorCode} - ${response.errorDescription}")
+                false
+            },
+            requestSession = { ids ->
+                userRepository.fetchSessionsSuspend(ids)
+            },
+            defaultErrorHandle = {},
+        )
+    }
+
+    private suspend fun syncWalletAddressesFromRoute(walletId: String) {
+        requestRouteAPI(
+            invokeNetwork = { routeService.getWalletAddresses(walletId) },
+            successBlock = { response ->
+                val addresses = response.data ?: emptyList()
+                if (addresses.isNotEmpty()) {
+                    web3AddressDao.insertListSuspend(addresses)
+                    context.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
+                }
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to sync wallet addresses from route ${response.errorCode} - ${response.errorDescription}")
+                false
+            },
+            requestSession = { ids ->
+                userRepository.fetchSessionsSuspend(ids)
+            },
+            defaultErrorHandle = {},
+        )
+    }
 
     suspend fun insertWallet(wallet: Web3Wallet) = web3WalletDao.insertSuspend(wallet)
 

@@ -45,6 +45,9 @@ class TransferBiometricItem(
     var trace: Trace?,
     val returnTo: String?,
     override var reference: String?,
+    val cashReceiveAmount: String? = null,
+    val cashReceiveSymbol: String? = null,
+    val cashBalance: String? = null,
 ) : AssetBiometricItem(asset, traceId, amount, memo, state, reference)
 
 fun buildEmptyTransferBiometricItem(user: User, token: TokenItem? = null) =
@@ -58,8 +61,11 @@ fun buildTransferBiometricItem(
     memo: String?,
     returnTo: String?,
     reference: String? = null,
+    cashReceiveAmount: String? = null,
+    cashReceiveSymbol: String? = null,
+    cashBalance: String? = null,
 ) =
-    TransferBiometricItem(listOf(user), 1.toByte(), traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, null, returnTo, reference)
+    TransferBiometricItem(listOf(user), 1.toByte(), traceId ?: UUID.randomUUID().toString(), token, amount, memo, PaymentStatus.pending.name, null, returnTo, reference, cashReceiveAmount, cashReceiveSymbol, cashBalance)
 
 @Parcelize
 open class AddressTransferBiometricItem(

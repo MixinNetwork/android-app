@@ -259,7 +259,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     lifecycleScope.launch(Dispatchers.IO) {
                         snapshotItems = list.map {
                             if (!it.withdrawal?.receiver.isNullOrBlank()) {
-                                val receiver = it.withdrawal!!.receiver
+                                val receiver = it.withdrawal.receiver
                                 val index: Int = receiver.indexOf(":")
                                 if (index == -1) {
                                     it.label = walletViewModel.findAddressByReceiver(receiver, "", asset.chainId)
@@ -353,9 +353,10 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         bottomBinding.apply {
             hide.setText(if (asset.hidden == true) R.string.Show else R.string.Hide)
             hide.setOnClickListener {
-                AnalyticsTracker.trackAssetDetailHide()
+                val hidden = asset.hidden != true
+                AnalyticsTracker.trackAssetVisibility(hidden, TradeWallet.MAIN, AnalyticsTracker.AssetSource.ASSET_DETAIL)
                 lifecycleScope.launch(Dispatchers.IO) {
-                    walletViewModel.updateAssetHidden(asset.assetId, asset.hidden != true)
+                    walletViewModel.updateAssetHidden(asset.assetId, hidden)
                 }
                 bottomSheet.dismiss()
                 mainThreadDelayed({ activity?.onBackPressedDispatcher?.onBackPressed() }, 200)

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.repository
 
 import android.os.CancellationSignal
@@ -39,6 +41,7 @@ import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.WithdrawalResponse
 import one.mixin.android.api.response.web3.ParsedTx
+import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.api.service.AddressService
 import one.mixin.android.api.service.AssetService
@@ -465,8 +468,13 @@ class TokenRepository
         ) =
             safeSnapshotDao.snapshotLocal(assetId, snapshotId)
 
-        fun findAddressByDestination(receiver: String, tag: String, chainId: String?) = if (chainId == null) addressDao.findAddressByDestination(receiver, tag)
-            else addressDao.findAddressByDestination(receiver, tag, chainId)
+        suspend fun findAddressByDestination(receiver: String, tag: String, chainId: String?): String? {
+            return if (chainId == null) {
+                addressDao.findAddressByDestination(receiver, tag)
+            } else {
+                addressDao.findAddressByDestination(receiver, tag, chainId)
+            }
+        }
 
         fun insertSnapshot(snapshot: SafeSnapshot) = safeSnapshotDao.insert(snapshot)
 
@@ -577,11 +585,11 @@ class TokenRepository
                 val receiver = item.withdrawal.receiver
                 val index: Int = receiver.indexOf(":")
                 if (index == -1) {
-                    item.label = addressDao.findAddressByDestination(receiver, "")
+                    item.label = findAddressByDestination(receiver, "", null)
                 } else {
                     val destination: String = receiver.substring(0, index)
                     val tag: String = receiver.substring(index + 1)
-                    item.label = addressDao.findAddressByDestination(destination, tag)
+                    item.label = findAddressByDestination(destination, tag, null)
                 }
             }
             item
@@ -1532,6 +1540,13 @@ class TokenRepository
 
     suspend fun getSwapToken(address: String) = routeService.getSwapToken(address)
 
+    suspend fun web3Quote(
+        inputMint: String,
+        outputMint: String,
+        amount: String,
+        source: String = "web3",
+    ): MixinResponse<QuoteResult> = routeService.web3Quote(inputMint, outputMint, amount, source)
+
     suspend fun transaction(hash: String, chainId: String) = routeService.transaction(hash,chainId)
 
     suspend fun getPendingRawTransactions(walletId: String) = web3RawTransactionDao.getPendingRawTransactions(
@@ -1563,6 +1578,8 @@ class TokenRepository
             nonce = nonce,
             createdAt = createdAt,
             updatedAt = updatedAt,
+            sponsorFeeAssetId = assetId,
+            sponsorFeeAmount = fee,
         )
     }
 
@@ -1605,9 +1622,12 @@ class TokenRepository
         nonce: String,
         createdAt: String,
         updatedAt: String,
+        sponsorFeeAssetId: String? = null,
+        sponsorFeeAmount: String? = null,
     ) {
         val normalizedAmount = amount.removePrefix("-")
         val normalizedFee = fee.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: fee
+        val normalizedSponsorFeeAmount = sponsorFeeAmount?.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: sponsorFeeAmount
         appDatabase.withTransaction {
             web3RawTransactionDao.insertSuspend(
                 Web3RawTransaction(
@@ -1631,6 +1651,8 @@ class TokenRepository
                     status = TransactionStatus.PENDING.value,
                     blockNumber = 0,
                     fee = normalizedFee,
+                    sponsorFeeAssetId = sponsorFeeAssetId,
+                    sponsorFeeAmount = normalizedSponsorFeeAmount,
                     senders = listOf(
                         AssetChange(
                             assetId = assetId,

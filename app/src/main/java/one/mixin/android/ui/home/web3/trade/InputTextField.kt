@@ -82,6 +82,7 @@ internal fun isTradeInputDecimalAllowed(
 ): Boolean {
     maxDecimalPlaces ?: return true
     val decimalIndex = value.indexOf('.')
+    if (maxDecimalPlaces == 0) return decimalIndex < 0
     return decimalIndex < 0 || value.length - decimalIndex - 1 <= maxDecimalPlaces
 }
 
@@ -92,6 +93,7 @@ internal fun limitTradeInputDecimalPlaces(
     maxDecimalPlaces ?: return value
     val decimalIndex = value.indexOf('.')
     if (decimalIndex < 0) return value
+    if (maxDecimalPlaces == 0) return value.substring(0, decimalIndex)
     val endIndex = (decimalIndex + 1 + maxDecimalPlaces).coerceAtMost(value.length)
     return value.substring(0, endIndex)
 }

@@ -18,7 +18,7 @@
             android:layout_height="match_parent"
             android:layout_alignParentStart="true"
             app:need_divider="false"
-            app:titleText="@string/wallet_home_tokens" />
+            app:titleText="@string/Assets" />
 
         <LinearLayout
             android:id="@+id/title_actions"

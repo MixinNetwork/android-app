@@ -1,8 +1,10 @@
 package one.mixin.android.ui.home.web3.trade
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.fragment.app.FragmentManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.ActivityContactBinding
@@ -34,6 +36,9 @@ class SwapActivity : BaseActivity(){
         ) {
             context.startActivity(
                 Intent(context, SwapActivity::class.java).apply {
+                    if (context !is Activity) {
+                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    }
                     input?.let { putExtra(ARGS_INPUT, it) }
                     output?.let { putExtra(ARGS_OUTPUT, it) }
                     amount?.let { putExtra(ARGS_AMOUNT, it) }
@@ -43,7 +48,7 @@ class SwapActivity : BaseActivity(){
                     entrySource?.let { putExtra(TradeFragment.ARGS_ENTRY_SOURCE, it) }
                     entryType?.let { putExtra(TradeFragment.ARGS_ENTRY_TYPE, it) }
                     initialTab?.let { putExtra(ARGS_INITIAL_TAB, it) }
-                    flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_CLEAR_TOP)
                 },
             )
         }
@@ -60,6 +65,7 @@ class SwapActivity : BaseActivity(){
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        supportFragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
         showTradeFragment(intent)
     }
 

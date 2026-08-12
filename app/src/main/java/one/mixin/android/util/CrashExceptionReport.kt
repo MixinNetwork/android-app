@@ -2,6 +2,7 @@ package one.mixin.android.util
 
 import androidx.media3.common.PlaybackException
 import androidx.media3.datasource.HttpDataSource
+import com.bugsnag.android.Bugsnag
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import one.mixin.android.extension.getStackTraceString
 
@@ -14,6 +15,18 @@ fun reportException(
     e: Throwable,
 ) {
     FirebaseCrashlytics.getInstance().log(msg + e.getStackTraceString())
+}
+
+fun reportFcmException(
+    msg: String,
+    e: Throwable,
+) {
+    FirebaseCrashlytics.getInstance().log(msg + e.getStackTraceString())
+    FirebaseCrashlytics.getInstance().recordException(e)
+    Bugsnag.notify(e) { report ->
+        report.addError(e.javaClass.name, msg)
+        true
+    }
 }
 
 fun reportEvent(msg: String) {

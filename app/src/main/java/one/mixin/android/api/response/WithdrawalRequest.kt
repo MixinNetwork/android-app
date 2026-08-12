@@ -5,5 +5,6 @@ import com.google.gson.annotations.SerializedName
 data class WithdrawalResponse(
     @SerializedName("asset_id")
     val assetId: String?,
+    @SerializedName("amount")
     val amount: String?,
 )
