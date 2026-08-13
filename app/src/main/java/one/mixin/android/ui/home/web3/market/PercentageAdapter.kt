@@ -24,9 +24,9 @@ class TopPercentageAdapter(private val context: Context, private val items: List
         val item = getItem(position)
         binding.iv.isInvisible = checkPosition != position
         binding.title.text = if (item.type == PercentageMenuType.SEVEN_DAYS) {
-            binding.root.context.getString(R.string.change_percent_period_day, 7)
+            binding.root.context.getString(R.string.days_count_long, 7)
         } else {
-            binding.root.context.getString(R.string.change_24h, 24)
+            binding.root.context.getString(R.string.hours_count_long, 24)
         }
         return binding.root
     }

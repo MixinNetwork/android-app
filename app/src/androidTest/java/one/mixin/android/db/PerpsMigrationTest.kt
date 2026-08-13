@@ -39,7 +39,7 @@ class PerpsMigrationTest {
     @Test
     fun migrate_2_3_preservesDataAndAddsPerpsColumns() {
         migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 2).apply {
-            insertMarketV2()
+            insertMarket()
             insertPositionV2()
             close()
         }
@@ -165,6 +165,49 @@ class PerpsMigrationTest {
             }
             assertTrue(foundDescriptions)
         }
+    }
+
+    @Test
+    fun migrate_6_7_preservesMarkets() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 6).apply {
+            insertMarketV6()
+            close()
+        }
+
+        val migratedDb =
+            migrationTestHelper.runMigrationsAndValidate(
+                Constants.DataBase.PERPS_DB_NAME,
+                7,
+                true,
+                PerpsDatabase.MIGRATION_6_7,
+            )
+
+        migratedDb.query(
+            """
+            SELECT market_id
+            FROM markets
+            """.trimIndent(),
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("market-1", cursor.getString(0))
+        }
+    }
+
+    private fun SQLiteConnection.insertMarketV6() {
+        execSQL(
+            """
+            INSERT INTO markets (
+                market_id, display_symbol, token_symbol, quote_symbol, mark_price, leverage,
+                icon_url, category, tags, funding_rate, min_amount, max_amount, last, volume,
+                high, low, open, change, bid_price, ask_price, created_at, updated_at
+            ) VALUES (
+                'market-1', 'BTC/USDT', 'BTC', 'USDT', '100000', 50,
+                'https://example.com/btc.png', 'major', '["hot"]', '0.001', '0.001', '10',
+                '99999', '12345', '101000', '98000', '99000', '0.02', '99998', '100001',
+                '2026-05-15T15:00:00Z', '2026-05-15T15:00:00Z'
+            )
+            """.trimIndent(),
+        )
     }
 
     private fun SQLiteConnection.insertMarketV2() {

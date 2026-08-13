@@ -1292,6 +1292,8 @@ class BottomSheetViewModel
 
         suspend fun findAppById(id: String) = userRepository.findAppById(id)
 
+        suspend fun findUserByAppId(appId: String) = userRepository.findUserByAppId(appId)
+
         suspend fun getAppAndCheckUser(
             userId: String,
             updatedAt: String?,

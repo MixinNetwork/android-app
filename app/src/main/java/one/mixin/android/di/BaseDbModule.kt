@@ -132,6 +132,8 @@ internal object BaseDbModule {
     @Provides
     fun provideMarketCapRankDao(db: MixinDatabase) = db.marketCapRankDao()
     @Provides
+    fun provideMarketCategoryDao(db: MixinDatabase) = db.marketCategoryDao()
+    @Provides
     fun provideMemberOrderDao(db: MixinDatabase) = db.memberOrderDao()
     @Provides
     fun provideWeb3TokenDao(db: WalletDatabase): Web3TokenDao = db.web3TokenDao()

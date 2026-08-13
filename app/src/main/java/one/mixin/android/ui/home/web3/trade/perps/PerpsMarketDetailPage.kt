@@ -79,6 +79,9 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
+import one.mixin.android.ui.home.web3.market.MarketFavoriteAnimationIntent
+import one.mixin.android.ui.home.web3.market.MarketFavoriteIcon
+import one.mixin.android.ui.home.web3.market.shouldClearFavoriteAnimationIntent
 import one.mixin.android.ui.home.web3.trade.CandleChart
 import one.mixin.android.ui.wallet.MarketDescriptionTextView
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -90,7 +93,7 @@ import java.math.BigDecimal
 import java.util.Locale
 
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
-private const val MARKET_REFRESH_INTERVAL_MS = 10_000L
+private const val MARKET_REFRESH_INTERVAL_MS = 30_000L
 private const val PREF_MARKET_DETAIL_TIME_FRAME = "perps_market_detail_time_frame"
 
 @Composable
@@ -110,6 +113,16 @@ fun PerpsMarketDetailPage(
     val lifecycleOwner = LocalLifecycleOwner.current
     var market by remember(marketId, initialMarket) { mutableStateOf(initialMarket) }
     var isLoading by remember(marketId, initialMarket) { mutableStateOf(initialMarket == null) }
+    val favoriteMarketIds by viewModel.favoriteMarketIds.collectAsStateWithLifecycle()
+    var isUpdatingFavorite by remember(marketId) { mutableStateOf(false) }
+    var favoriteAnimationIntent by
+        remember(marketId) {
+            mutableStateOf<MarketFavoriteAnimationIntent?>(null)
+        }
+    var favoriteAnimationIntentId by remember(marketId) { mutableStateOf(0) }
+    var completedFavoriteAnimationIntentId by remember(marketId) { mutableStateOf<Int?>(null) }
+    var favoriteRequestResult by remember(marketId) { mutableStateOf<Boolean?>(null) }
+    val isFavored = marketId in favoriteMarketIds
     val timeFramePreferenceKey = PREF_MARKET_DETAIL_TIME_FRAME
     val walletId = Session.getAccountId().orEmpty()
     val openPositions by remember(walletId) {
@@ -149,6 +162,31 @@ fun PerpsMarketDetailPage(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+
+    LaunchedEffect(marketId) {
+        viewModel.refreshFavoriteMarkets()
+    }
+
+    LaunchedEffect(
+        isFavored,
+        favoriteAnimationIntent,
+        favoriteRequestResult,
+        completedFavoriteAnimationIntentId,
+    ) {
+        val intent = favoriteAnimationIntent ?: return@LaunchedEffect
+        if (
+            shouldClearFavoriteAnimationIntent(
+                intent = intent,
+                requestResult = favoriteRequestResult,
+                isFavored = isFavored,
+                completedIntentId = completedFavoriteAnimationIntentId,
+            )
+        ) {
+            favoriteAnimationIntent = null
+            favoriteRequestResult = null
+            isUpdatingFavorite = false
+        }
+    }
 
     LaunchedEffect(marketId, walletId, lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
@@ -191,6 +229,59 @@ fun PerpsMarketDetailPage(
         verticalScrollable = false,
         pop = onBack,
         actions = {
+            IconButton(
+                onClick = {
+                    if (isUpdatingFavorite) return@IconButton
+                    isUpdatingFavorite = true
+                    favoriteAnimationIntentId += 1
+                    val intent =
+                        MarketFavoriteAnimationIntent(
+                            id = favoriteAnimationIntentId,
+                            targetFavored = !isFavored,
+                        )
+                    favoriteAnimationIntent = intent
+                    favoriteRequestResult = null
+                    viewModel.updateMarketFavorite(marketId, isFavored) { success ->
+                        if (favoriteAnimationIntent?.id == intent.id) {
+                            favoriteRequestResult = success
+                        }
+                        if (success) {
+                            AnalyticsTracker.trackMarketWatchlist(
+                                adding = !isFavored,
+                                type = AnalyticsTracker.MarketType.PERPS,
+                                source = AnalyticsTracker.MarketWatchlistSource.MARKET_DETAIL,
+                            )
+                            toast(
+                                context.getString(
+                                    if (isFavored) {
+                                        R.string.watchlist_remove_desc
+                                    } else {
+                                        R.string.watchlist_add_desc
+                                    },
+                                    tokenSymbol,
+                                ),
+                            )
+                        }
+                    }
+                },
+                enabled = !isUpdatingFavorite,
+            ) {
+                MarketFavoriteIcon(
+                    isFavored = isFavored,
+                    unselectedIconRes = R.drawable.ic_title_favorites,
+                    contentDescription =
+                        stringResource(
+                            if (isFavored) {
+                                R.string.Remove_from_Watchlist
+                            } else {
+                                R.string.Add_to_Watchlist
+                            },
+                        ),
+                    modifier = Modifier.size(24.dp),
+                    animationIntent = favoriteAnimationIntent,
+                    onAnimationFinished = { completedFavoriteAnimationIntentId = it },
+                )
+            }
             IconButton(onClick = {
                 context.openUrl(
                     Constants.HelpLink.CUSTOMER_SERVICE,
@@ -200,7 +291,7 @@ fun PerpsMarketDetailPage(
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.Contact_Support),
                     tint = MixinAppTheme.colors.icon,
                 )
             }

@@ -221,7 +221,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 71
+        const val CURRENT_VERSION = 72
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -415,6 +415,9 @@ object Constants {
         const val DB_DEBUG_WARNING = "db_debug_warning"
         const val LOG_AND_DEBUG = "log_and_debug"
         const val WALLET_CONNECT_DEBUG = "wallet_connect_debug"
+        const val BOT_SIGN_DEBUG_APP_PREFIX = "bot_sign_debug_app_"
+
+        fun botSignDebugAppKey(appId: String) = "$BOT_SIGN_DEBUG_APP_PREFIX$appId"
     }
 
     object Colors {

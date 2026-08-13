@@ -74,6 +74,7 @@ import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_67_68
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_68_69
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_69_70
 import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_70_71
+import one.mixin.android.db.MixinDatabaseMigrations.Companion.MIGRATION_71_72
 import one.mixin.android.db.converter.DepositEntryListConverter
 import one.mixin.android.db.converter.FiatOrderConverter
 import one.mixin.android.db.datasource.RoomDatabaseCompat
@@ -136,6 +137,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCapRank
+import one.mixin.android.vo.market.MarketCategoryRelation
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.safe.DepositEntry
@@ -202,6 +204,7 @@ import kotlin.math.min
         (MarketFavored::class),
         (Alert::class),
         (MarketCapRank::class),
+        (MarketCategoryRelation::class),
         (MembershipOrder::class)
     ],
     version = CURRENT_VERSION,
@@ -314,6 +317,8 @@ abstract class MixinDatabase : RoomDatabase() {
 
     abstract fun marketCapRankDao(): MarketCapRankDao
 
+    abstract fun marketCategoryDao(): MarketCategoryDao
+
     abstract fun memberOrderDao(): MembershipOrderDao
     companion object {
         private var INSTANCE: MixinDatabase? = null
@@ -422,6 +427,7 @@ abstract class MixinDatabase : RoomDatabase() {
                                 MIGRATION_68_69,
                                 MIGRATION_69_70,
                                 MIGRATION_70_71,
+                                MIGRATION_71_72,
                             )
                             .enableMultiInstanceInvalidation()
                             .setQueryCoroutineContext(

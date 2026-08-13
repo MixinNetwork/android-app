@@ -395,7 +395,10 @@ fun SearchBar(
                         tint = MixinAppTheme.colors.icon
                     )
                     Spacer(modifier = Modifier.size(6.dp))
-                    Box(modifier = Modifier.weight(1f)) {
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.CenterStart,
+                    ) {
                         if (query.isEmpty()) {
                             Text(
                                 text = stringResource(id = R.string.search_placeholder_asset),

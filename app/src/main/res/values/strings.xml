@@ -417,6 +417,7 @@
     <string name="Enable_immediately">Enabled immediately</string>
     <string name="Enable_web_debug">Enable web debug</string>
     <string name="Web_debug">Web debug</string>
+    <string name="Bot_sign_debug_apps">Bot sign debug apps</string>
     <string name="Encrypted">Encrypted</string>
     <string name="End_to_End_Encryption">End-to-end Encrypted</string>
     <string name="Enter_new_phone_number">Enter your new phone number</string>
@@ -595,8 +596,10 @@
         <item quantity="other">%d Hours</item>
     </plurals>
     <string name="minutes_count_short">%1$dm</string>
-    <string name="hours_count_short">%1$dH</string>
-    <string name="days_count_short">%1$dD</string>
+    <string name="hours_count_short">%1$dh</string>
+    <string name="days_count_short">%1$dd</string>
+    <string name="hours_count_long">%1$d Hours</string>
+    <string name="days_count_long">%1$d Days</string>
     <string name="weeks_count_short">%1$dW</string>
     <string name="months_count_short">%1$dM</string>
     <string name="ytd">1Y</string>
@@ -1791,9 +1794,19 @@
     <string name="multisig_safe_state_signed">You have already approved this transaction; you cannot approve it again.</string>
     <string name="multisig_safe_state_unlocked">This transaction has already been rejected by someone else; you cannot reject it again.</string>
     <string name="watchlist_empty">Your watchlist is empty</string>
-    <string name="Dominance">Dominance</string>
+    <string name="Add_to_Watchlist">Add to Watchlist</string>
+    <string name="Remove_from_Watchlist">Remove from Watchlist</string>
+    <string name="Keep">Keep</string>
+    <string name="Bitcoin_Dominance">Bitcoin Dominance</string>
     <string name="volume_24h">24h Volume</string>
+    <string name="market_volume_short">Vol</string>
     <string name="Watchlist">Watchlist</string>
+    <string name="Crypto">Crypto</string>
+    <string name="market_stock">Stock</string>
+    <string name="Indicator">Indicator</string>
+    <string name="market_display">Market Display</string>
+    <string name="Perp">Perp</string>
+    <string name="volume_label">VOL: %1$s</string>
     <string name="top_count">Top %1$d</string>
     <string name="change_percent_period_day">%1$dD %%</string>
     <string name="change_percent_period_hour">%1$dh %%</string>
@@ -1801,6 +1814,7 @@
     <string name="Choose_Token">Choose %1$s Network</string>
     <string name="choose_token_desc">%1$s is issued on multiple networks</string>
     <string name="watchlist_add_desc">%1$s is now on your watchlist</string>
+    <string name="watchlist_remove_desc">%1$s has been removed from your watchlist</string>
     <string name="Stats">Stats</string>
     <string name="share_desc">Visit mixin.one/mm or scan the QR code to install.</string>
     <string name="referral_share_desc">Scan to install Mixin, use this referral code for %1$s rebate.</string>
@@ -2382,7 +2396,7 @@
     <string name="perps_funding_rate_key_point_2">Balance long and short positions</string>
     <string name="perps_funding_rate_key_point_3">Create arbitrage opportunities</string>
     <string name="perps_funding_frequency">Frequency</string>
-    <string name="perps_funding_frequency_value">8 hours</string>
+    <string name="perps_funding_frequency_value">1/4/8 hours</string>
     <string name="perps_receive">Receive</string>
     <string name="perps_liquidation_price_short">Liq. Price</string>
     <string name="Take_Profit_When">Take Profit When</string>
@@ -2515,6 +2529,7 @@
     <string name="perps_category_indices">Indices</string>
     <string name="perps_category_commodities">Commodities</string>
     <string name="perps_category_forex">Forex</string>
+    <string name="perps_category_meme">Memes</string>
     <string name="perps_sort_volume_24">24 VOL</string>
     <string name="Forget_Pin">Forgot PIN</string>
     <string name="forget_pin_help_url">https://support.mixin.one/en/article/what-should-i-do-if-i-forget-my-pin-g12pmo/</string>
