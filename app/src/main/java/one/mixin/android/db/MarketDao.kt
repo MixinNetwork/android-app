@@ -6,6 +6,7 @@ import androidx.paging.PagingSource
 import androidx.room.Dao
 import androidx.room.Query
 import androidx.room.RoomWarnings
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketItem
@@ -13,6 +14,21 @@ import one.mixin.android.vo.market.MarketItem
 @Dao
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface MarketDao : BaseDao<Market> {
+    @Query(
+        """
+        DELETE FROM markets
+        WHERE coin_id NOT IN (SELECT coin_id FROM market_cap_ranks)
+          AND coin_id NOT IN (SELECT coin_id FROM market_categories)
+          AND NOT EXISTS (
+              SELECT 1
+              FROM market_favored
+              WHERE market_favored.coin_id = markets.coin_id
+                AND is_favored = 1
+          )
+        """,
+    )
+    suspend fun deleteMarketsWithoutCategoryRankOrFavorite(): Int
+
     @Query("SELECT m.*, mf.is_favored FROM markets m LEFT JOIN market_favored mf on mf.coin_id = m.coin_id LEFT JOIN market_coins mc ON mc.coin_id = m.coin_id WHERE mc.asset_id = :assetId")
     fun marketById(assetId: String): LiveData<MarketItem?>
 
@@ -68,6 +84,32 @@ interface MarketDao : BaseDao<Market> {
         """
     )
     fun getFavoredWeb3Markets(sortValue: Int): PagingSource<Int, MarketItem>
+
+    @Query(
+        """
+        SELECT m.*, mf.is_favored
+        FROM markets m
+        INNER JOIN market_favored mf ON mf.coin_id = m.coin_id
+        LEFT JOIN market_cap_ranks mr ON mr.coin_id = m.coin_id
+        WHERE mf.is_favored = 1
+        ORDER BY CASE WHEN mr.market_cap_rank IS NULL THEN 1 ELSE 0 END,
+            CAST(mr.market_cap_rank AS INTEGER) ASC
+        """
+    )
+    fun observeFavoredMarkets(): Flow<List<MarketItem>>
+
+    @Query(
+        """
+        SELECT m.*, mf.is_favored
+        FROM market_cap_ranks mr
+        INNER JOIN markets m ON m.coin_id = mr.coin_id
+        LEFT JOIN market_favored mf ON mf.coin_id = m.coin_id
+        ORDER BY CASE WHEN CAST(mr.market_cap_rank AS INTEGER) > 0 THEN 0 ELSE 1 END,
+            CAST(mr.market_cap_rank AS INTEGER) ASC
+        LIMIT 500
+        """,
+    )
+    fun observeAllMarkets(): Flow<List<MarketItem>>
 
     @Query("SELECT * FROM markets WHERE coin_id = :coinId")
     fun findMarketById(coinId: String): Market?

@@ -102,6 +102,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
+import one.mixin.android.job.CleanupMarketJob
 import one.mixin.android.job.CleanupQuoteContentJob
 import one.mixin.android.job.CleanupThumbJob
 import one.mixin.android.job.InscriptionCollectionMigrationJob
@@ -696,6 +697,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
             jobManager.addJobInBackground(RefreshContactJob())
             jobManager.addJobInBackground(RefreshSafeAccountsJob())
+            jobManager.addJobInBackground(CleanupMarketJob())
 
             jobManager.addJobInBackground(RefreshWeb3Job())
         }

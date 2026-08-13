@@ -36,7 +36,7 @@ class PerpsMigrationTest {
     @Test
     fun migrate_2_3_preservesDataAndAddsPerpsColumns() {
         migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 2).apply {
-            insertMarketV2()
+            insertMarket()
             insertPositionV2()
             close()
         }
@@ -164,7 +164,33 @@ class PerpsMigrationTest {
         }
     }
 
-    private fun SupportSQLiteDatabase.insertMarketV2() {
+    @Test
+    fun migrate_6_7_preservesMarkets() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 6).apply {
+            insertMarket()
+            close()
+        }
+
+        val migratedDb =
+            migrationTestHelper.runMigrationsAndValidate(
+                Constants.DataBase.PERPS_DB_NAME,
+                7,
+                true,
+                PerpsDatabase.MIGRATION_6_7,
+            )
+
+        migratedDb.query(
+            """
+            SELECT market_id
+            FROM markets
+            """.trimIndent(),
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("market-1", cursor.getString(0))
+        }
+    }
+
+    private fun SupportSQLiteDatabase.insertMarket() {
         execSQL(
             """
             INSERT INTO markets (

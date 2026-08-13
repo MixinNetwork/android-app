@@ -8,10 +8,14 @@ import androidx.room.migration.Migration
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
 import one.mixin.android.Constants
+import one.mixin.android.api.response.perps.PerpsFavorite
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsMarketCategoryRelation
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsPosition
+import one.mixin.android.db.perps.PerpsFavoriteDao
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.db.perps.PerpsMarketCategoryDao
 import one.mixin.android.db.perps.PerpsOrderDao
 import one.mixin.android.db.perps.PerpsPositionDao
 import one.mixin.android.util.SINGLE_DB_EXECUTOR
@@ -27,8 +31,10 @@ import kotlin.math.min
         PerpsPosition::class,
         PerpsOrder::class,
         PerpsMarket::class,
+        PerpsFavorite::class,
+        PerpsMarketCategoryRelation::class,
     ],
-    version = 6,
+    version = 7,
 )
 abstract class PerpsDatabase : RoomDatabase() {
     companion object {
@@ -92,6 +98,14 @@ abstract class PerpsDatabase : RoomDatabase() {
                     db.execSQL("ALTER TABLE `markets` ADD COLUMN `descriptions` TEXT")
                 }
             }
+        val MIGRATION_6_7 =
+            object : Migration(6, 7) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `favorites` (`market_id` TEXT NOT NULL, `is_favored` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))")
+                    db.execSQL("CREATE TABLE IF NOT EXISTS `market_categories` (`market_id` TEXT NOT NULL, `category` INTEGER NOT NULL, PRIMARY KEY(`market_id`, `category`))")
+                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_market_categories_category` ON `market_categories` (`category`)")
+                }
+            }
 
         @Suppress("DEPRECATION")
         fun getDatabase(
@@ -117,7 +131,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                             listOf(
                                 object : MixinCorruptionCallback {
                                     override fun onCorruption(database: SupportSQLiteDatabase) {
-                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 6")
+                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 7")
                                         reportException(e)
                                     }
                                 },
@@ -130,7 +144,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                                 db.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
                         .fallbackToDestructiveMigration()
                         .enableMultiInstanceInvalidation()
                         .setQueryExecutor(
@@ -150,6 +164,8 @@ abstract class PerpsDatabase : RoomDatabase() {
     abstract fun perpsPositionDao(): PerpsPositionDao
     abstract fun perpsOrderDao(): PerpsOrderDao
     abstract fun perpsMarketDao(): PerpsMarketDao
+    abstract fun perpsFavoriteDao(): PerpsFavoriteDao
+    abstract fun perpsMarketCategoryDao(): PerpsMarketCategoryDao
 
     override fun close() {
         super.close()

@@ -5,11 +5,58 @@ import org.junit.Test
 
 class AnalyticsRulesTest {
     @Test
-    fun marketShareEventUsesShareMarketNameAndTypeParam() {
-        val event = AnalyticsRules.marketShareEvent(AnalyticsTracker.MarketShareType.MIXIN_CONTACT)
+    fun marketShareEventUsesMarketShareNameAndParams() {
+        val event =
+            AnalyticsRules.marketShareEvent(
+                type = AnalyticsTracker.MarketType.SPOT,
+                target = AnalyticsTracker.MarketShareType.MIXIN_CONTACT,
+            )
 
-        assertEquals("share_market", event.name)
-        assertEquals(mapOf("type" to "mixin_contact"), event.params)
+        assertEquals("market_share", event.name)
+        assertEquals(
+            mapOf(
+                "type" to "spot",
+                "target" to "mixin_contact",
+            ),
+            event.params,
+        )
+    }
+
+    @Test
+    fun marketDetailEventUsesTypeAndSource() {
+        val event =
+            AnalyticsRules.marketDetailEvent(
+                type = AnalyticsTracker.MarketType.PERPS,
+                source = AnalyticsTracker.MarketDetailSource.MARKETS_LIST,
+            )
+
+        assertEquals("market_detail", event.name)
+        assertEquals(
+            mapOf(
+                "type" to "perps",
+                "source" to "markets_list",
+            ),
+            event.params,
+        )
+    }
+
+    @Test
+    fun marketWatchlistEventUsesActionTypeAndSource() {
+        val event =
+            AnalyticsRules.marketWatchlistEvent(
+                adding = false,
+                type = AnalyticsTracker.MarketType.SPOT,
+                source = AnalyticsTracker.MarketWatchlistSource.MARKET_DETAIL,
+            )
+
+        assertEquals("market_watchlist_remove", event.name)
+        assertEquals(
+            mapOf(
+                "type" to "spot",
+                "source" to "market_detail",
+            ),
+            event.params,
+        )
     }
 
     @Test
@@ -44,7 +91,7 @@ class AnalyticsRulesTest {
 
     @Test
     fun marketAndAssetVisibilityEventsSyncToAppsFlyer() {
-        assertEquals("share_market", AnalyticsRules.appsFlyerEventName("share_market"))
+        assertEquals("market_share", AnalyticsRules.appsFlyerEventName("market_share"))
         assertEquals("hide_asset", AnalyticsRules.appsFlyerEventName("hide_asset"))
         assertEquals("show_asset", AnalyticsRules.appsFlyerEventName("show_asset"))
     }

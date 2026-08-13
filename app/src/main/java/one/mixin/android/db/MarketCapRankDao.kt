@@ -8,11 +8,13 @@ import one.mixin.android.vo.market.MarketCapRank
 @Dao
 interface MarketCapRankDao : BaseDao<MarketCapRank> {
     @Query("DELETE FROM market_cap_ranks")
-    fun deleteAll()
+    suspend fun deleteAll()
 
     @Transaction
-    fun insertAll(list: List<MarketCapRank>) {
+    suspend fun replaceAll(list: List<MarketCapRank>) {
         deleteAll()
-        insertList(list)
+        if (list.isNotEmpty()) {
+            insertListSuspend(list)
+        }
     }
 }

@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 72,
-    "identityHash": "f6ac9cfd3cffae2fbeb99d24ae405028",
+    "identityHash": "009cc68c60ac3a79aaa122bb52909724",
     "entities": [
       {
         "tableName": "users",
@@ -2658,16 +2658,6 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_safe_snapshots_created_at` ON `${TABLE_NAME}` (`created_at`)"
           },
           {
-            "name": "index_safe_snapshots_type_asset_id",
-            "unique": false,
-            "columnNames": [
-              "type",
-              "asset_id"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_safe_snapshots_type_asset_id` ON `${TABLE_NAME}` (`type`, `asset_id`)"
-          },
-          {
             "name": "index_safe_snapshots_type_asset_id_created_at",
             "unique": false,
             "columnNames": [
@@ -3277,6 +3267,42 @@
         }
       },
       {
+        "tableName": "market_categories",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `category` INTEGER NOT NULL, PRIMARY KEY(`coin_id`, `category`))",
+        "fields": [
+          {
+            "fieldPath": "coinId",
+            "columnName": "coin_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "coin_id",
+            "category"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_market_categories_category",
+            "unique": false,
+            "columnNames": [
+              "category"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_market_categories_category` ON `${TABLE_NAME}` (`category`)"
+          }
+        ]
+      },
+      {
         "tableName": "membership_orders",
         "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`order_id` TEXT NOT NULL, `category` TEXT NOT NULL, `amount` TEXT NOT NULL, `amount_actual` TEXT NOT NULL, `amount_original` TEXT NOT NULL, `after` TEXT NOT NULL, `before` TEXT NOT NULL, `created_at` TEXT NOT NULL, `fiat_order` TEXT, `stars` INTEGER NOT NULL, `payment_url` TEXT, `status` TEXT NOT NULL, PRIMARY KEY(`order_id`))",
         "fields": [
@@ -3372,7 +3398,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f6ac9cfd3cffae2fbeb99d24ae405028')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '009cc68c60ac3a79aaa122bb52909724')"
     ]
   }
 }

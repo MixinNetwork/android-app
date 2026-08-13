@@ -118,11 +118,6 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                         },
                     ) {
                         composable(AlertDestination.All.name) {
-                            LaunchedEffect(Unit) {
-                                AnalyticsTracker.trackMarketPriceAlerts(
-                                    if (goAlert) AnalyticsTracker.MarketAlertsType.ONE else AnalyticsTracker.MarketAlertsType.ALL
-                                )
-                            }
                             AllAlertPage(coins = coins, openFilter = { openFilter() }, pop = { requireActivity().onBackPressedDispatcher.onBackPressed() }, to = { onAddAlert(navController, coins.singleOrNull()) }, onEdit = { alert ->
                                 lifecycleScope.launch {
                                     val coin = alertViewModel.simpleCoinItem(alert.coinId)
@@ -175,6 +170,9 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                     }
 
                     LaunchedEffect(Unit) {
+                        AnalyticsTracker.trackMarketPriceAlerts(
+                            if (goAlert) AnalyticsTracker.MarketAlertsType.ONE else AnalyticsTracker.MarketAlertsType.ALL,
+                        )
                         if (goAlert) {
                             selectCoin = coin
                         }

@@ -43,6 +43,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.web3.market.DepositTokensBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.market.setMarketFavoriteIcon
 import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_INPUT
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.ARGS_OUTPUT
@@ -97,13 +98,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     private val returnToTrade by lazy {
         requireArguments().getBoolean(ARGS_RETURN_TO_TRADE, false)
     }
-    private fun marketFavoriteSource(): String =
-        if (marketSource == AnalyticsTracker.MarketSource.MORE_MARKET_CAP) {
-            AnalyticsTracker.MarketSource.MORE_MARKET_CAP
-        } else {
-            AnalyticsTracker.MarketSource.MARKET_DETAIL
-        }
-
     @SuppressLint("SetTextI18n", "DefaultLocale")
     override fun onViewCreated(
         view: View,
@@ -111,21 +105,42 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         jobManager.addJobInBackground(RefreshMarketJob(marketItem.coinId))
-        AnalyticsTracker.trackMarketDetail(marketSource)
+        AnalyticsTracker.trackMarketDetail(
+            type = AnalyticsTracker.MarketType.SPOT,
+            source = marketSource,
+        )
         binding.apply {
             titleView.apply {
                 setSubTitle(marketItem.symbol, marketItem.name)
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
                 rightExtraIb.isVisible = true
-                rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
+                rightExtraIb.setMarketFavoriteIcon(marketItem.isFavored == true)
                 rightExtraIb.setOnClickListener {
                     val addingFavorite = marketItem.isFavored != true
-                    walletViewModel.updateMarketFavored(marketItem.symbol, marketItem.coinId, marketItem.isFavored)
-                    marketItem.isFavored = marketItem.isFavored != true
-                    if (addingFavorite) {
-                        AnalyticsTracker.trackMarketFavoriteAdd(marketFavoriteSource())
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        rightExtraIb.isEnabled = false
+                        try {
+                            val succeeded =
+                                walletViewModel.updateMarketFavored(
+                                    marketItem.symbol,
+                                    marketItem.coinId,
+                                    marketItem.isFavored,
+                                )
+                            if (!succeeded) return@launch
+                            marketItem.isFavored = addingFavorite
+                            AnalyticsTracker.trackMarketWatchlist(
+                                adding = addingFavorite,
+                                type = AnalyticsTracker.MarketType.SPOT,
+                                source = AnalyticsTracker.MarketWatchlistSource.MARKET_DETAIL,
+                            )
+                            rightExtraIb.setMarketFavoriteIcon(
+                                isFavored = addingFavorite,
+                                animate = addingFavorite,
+                            )
+                        } finally {
+                            rightExtraIb.isEnabled = true
+                        }
                     }
-                    rightExtraIb.setImageResource(if (marketItem.isFavored == true) R.drawable.ic_title_favorites_checked else R.drawable.ic_title_favorites)
                 }
                 rightIb.setOnClickListener {
                     if (!isLoading || marketItem.coinId.isBlank()) {
@@ -298,6 +313,10 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                         priceRise.setQuoteTextWithBackgroud(getString(R.string.N_A))
                     } else if (typeState.value == "1D") {
                         val rise = BigDecimal(marketItem.priceChangePercentage24H)
+                        currentRise = "${rise.numberFormat2()}%"
+                        priceRise.setQuoteTextWithBackgroud(currentRise, rise >= BigDecimal.ZERO)
+                    } else if (typeState.value == "1W") {
+                        val rise = BigDecimal(marketItem.priceChangePercentage7D)
                         currentRise = "${rise.numberFormat2()}%"
                         priceRise.setQuoteTextWithBackgroud(currentRise, rise >= BigDecimal.ZERO)
                     } else {

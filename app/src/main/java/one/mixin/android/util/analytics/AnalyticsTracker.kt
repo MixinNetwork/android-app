@@ -545,9 +545,9 @@ object AnalyticsTracker {
     }
 
     object MarketSource {
-        const val MORE_MARKET_CAP = "more_market_cap"
-        const val MORE_FAVORITES = "more_favorites"
-        const val MORE_SEARCH = "more_search"
+        const val MORE_MARKET_CAP = MarketDetailSource.MARKETS_LIST
+        const val MORE_FAVORITES = MarketDetailSource.MARKETS_LIST
+        const val MORE_SEARCH = MarketDetailSource.MARKETS_SEARCH
         const val TOKEN_DETAIL = "token_detail"
         const val APP_CARD = "app_card"
         const val SCHEMA = "schema"
@@ -562,8 +562,70 @@ object AnalyticsTracker {
         const val SAVE_TO_ALBUM = "save_to_album"
     }
 
+    object MarketType {
+        const val SPOT = "spot"
+        const val PERPS = "perps"
+    }
+
+    object MarketsTabLevel {
+        const val PRIMARY = "primary"
+        const val SECONDARY = "secondary"
+    }
+
+    object MarketsTab {
+        const val WATCHLIST = "watchlist"
+        const val CRYPTO = "crypto"
+        const val PERPETUAL = "perpetual"
+        const val INDICATOR = "indicator"
+        const val TRENDING = "trending"
+        const val TOP_GAINERS = "top_gainers"
+        const val TOP_LOSERS = "top_losers"
+        const val ALL = "all"
+        const val MEMES = "memes"
+        const val INDICES = "indices"
+        const val COMMODITIES = "commodities"
+        const val FOREX = "forex"
+    }
+
+    object MarketsPeriod {
+        const val TWENTY_FOUR_HOURS = "24h"
+        const val SEVEN_DAYS = "7d"
+    }
+
+    object MarketsColorScheme {
+        const val GREEN_UP_RED_DOWN = "green_up_red_down"
+        const val RED_UP_GREEN_DOWN = "red_up_green_down"
+    }
+
+    object MarketsSortDirection {
+        const val DESCENDING = "descending"
+        const val ASCENDING = "ascending"
+    }
+
+    object MarketsSortField {
+        const val VOLUME = "vol"
+        const val PRICE = "price"
+        const val TWENTY_FOUR_HOURS = "24h"
+        const val SEVEN_DAYS = "7d"
+        const val MARKET_CAP = "market_cap"
+    }
+
+    object MarketDetailSource {
+        const val MARKETS_SEARCH = "markets_search"
+        const val MARKETS_LIST = "markets_list"
+        const val TOKEN_DETAIL = "token_detail"
+        const val APP_CARD = "app_card"
+        const val SCHEMA = "schema"
+    }
+
+    object MarketWatchlistSource {
+        const val MARKET_DETAIL = "market_detail"
+        const val MARKETS = "markets"
+        const val PERPS_MARKETS_DIALOG = "perps_markets_dialog"
+    }
+
     object MarketAlertsType {
-        const val ONE = "one"
+        const val ONE = "single"
         const val ALL = "all"
     }
 
@@ -950,20 +1012,73 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackMarketDetail(source: String) {
-        logEvent("market_detail") {
-            putString("source", source)
+    fun trackMarketsTabSwitch(level: String, tab: String) {
+        logEvent("markets_tab_switch") {
+            putString("level", level)
+            putString("tab", tab)
         }
     }
 
-    fun trackShareMarket(type: String) {
-        logEvent(AnalyticsRules.marketShareEvent(type))
+    fun trackMarketsPriceChangePeriodSwitch(
+        primaryTab: String,
+        secondaryTab: String,
+        period: String,
+    ) {
+        logEvent("markets_price_change_period_switch") {
+            putString("primary_tab", primaryTab)
+            putString("secondary_tab", secondaryTab)
+            putString("period", period)
+        }
     }
 
-    fun trackMarketFavoriteAdd(source: String) {
-        logEvent("market_favorite_add") {
-            putString("source", source)
+    fun trackMarketsQuoteColorSwitch(
+        primaryTab: String,
+        secondaryTab: String,
+        colorScheme: String,
+    ) {
+        logEvent("markets_quote_color_switch") {
+            putString("primary_tab", primaryTab)
+            putString("secondary_tab", secondaryTab)
+            putString("color_scheme", colorScheme)
         }
+    }
+
+    fun trackMarketsListSort(
+        sortDirection: String,
+        primaryTab: String,
+        secondaryTab: String,
+        sortField: String,
+    ) {
+        logEvent("markets_list_sort") {
+            putString("sort_direction", sortDirection)
+            putString("primary_tab", primaryTab)
+            putString("secondary_tab", secondaryTab)
+            putString("sort_field", sortField)
+        }
+    }
+
+    fun trackMarketDetail(type: String, source: String) {
+        logEvent(AnalyticsRules.marketDetailEvent(type, source))
+    }
+
+    fun normalizeMarketDetailSource(source: String): String =
+        when (source) {
+            MarketDetailSource.MARKETS_SEARCH,
+            MarketDetailSource.MARKETS_LIST,
+            MarketDetailSource.TOKEN_DETAIL,
+            MarketDetailSource.APP_CARD,
+            MarketDetailSource.SCHEMA,
+            -> source
+            PerpsSource.SPOT_MARKET_DETAIL -> MarketDetailSource.TOKEN_DETAIL
+            else -> MarketDetailSource.MARKETS_LIST
+        }
+
+    fun trackMarketShare(type: String, target: String) {
+        logEvent(AnalyticsRules.marketShareEvent(type, target))
+    }
+
+    fun trackMarketWatchlist(adding: Boolean, type: String, source: String) {
+        logEvent(AnalyticsRules.marketWatchlistEvent(adding, type, source))
     }
 
     fun trackMarketPriceAlerts(type: String) {

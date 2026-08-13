@@ -140,6 +140,7 @@ private fun TopMoverGridItem(
                 style = TextStyle(
                     fontSize = 12.sp,
                     lineHeight = 14.sp,
+                    fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textAssist,
                 ),
                 maxLines = 1,

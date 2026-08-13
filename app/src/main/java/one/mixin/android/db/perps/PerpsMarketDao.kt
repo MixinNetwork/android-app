@@ -16,10 +16,24 @@ interface PerpsMarketDao : BaseDao<PerpsMarket> {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(markets: List<PerpsMarket>)
 
-    @Query("SELECT * FROM markets WHERE CAST(volume AS REAL) > 0 ORDER BY rowid ASC")
+    @Query(
+        """
+        SELECT *
+        FROM markets
+        WHERE CAST(volume AS REAL) > 0
+        ORDER BY CAST(volume AS REAL) DESC, token_symbol COLLATE NOCASE ASC, market_id ASC
+        """,
+    )
     suspend fun getAllMarkets(): List<PerpsMarket>
 
-    @Query("SELECT * FROM markets WHERE CAST(volume AS REAL) > 0 ORDER BY rowid ASC")
+    @Query(
+        """
+        SELECT *
+        FROM markets
+        WHERE CAST(volume AS REAL) > 0
+        ORDER BY CAST(volume AS REAL) DESC, token_symbol COLLATE NOCASE ASC, market_id ASC
+        """,
+    )
     fun observeAllMarkets(): Flow<List<PerpsMarket>>
 
     @Query("SELECT * FROM markets WHERE market_id = :marketId")
