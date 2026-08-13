@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 72,
-    "identityHash": "046b653eceef4cf38f4ced295de6aa3b",
+    "identityHash": "009cc68c60ac3a79aaa122bb52909724",
     "entities": [
       {
         "tableName": "users",
@@ -2106,7 +2106,18 @@
           "columnNames": [
             "message_id"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_expired_messages_expire_at",
+            "unique": false,
+            "columnNames": [
+              "expire_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_expired_messages_expire_at` ON `${TABLE_NAME}` (`expire_at`)"
+          }
+        ]
       },
       {
         "tableName": "conversation_ext",
@@ -2647,14 +2658,15 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_safe_snapshots_created_at` ON `${TABLE_NAME}` (`created_at`)"
           },
           {
-            "name": "index_safe_snapshots_type_asset_id",
+            "name": "index_safe_snapshots_type_asset_id_created_at",
             "unique": false,
             "columnNames": [
               "type",
-              "asset_id"
+              "asset_id",
+              "created_at"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_safe_snapshots_type_asset_id` ON `${TABLE_NAME}` (`type`, `asset_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_safe_snapshots_type_asset_id_created_at` ON `${TABLE_NAME}` (`type`, `asset_id`, `created_at`)"
           }
         ]
       },
@@ -3386,7 +3398,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '046b653eceef4cf38f4ced295de6aa3b')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '009cc68c60ac3a79aaa122bb52909724')"
     ]
   }
 }

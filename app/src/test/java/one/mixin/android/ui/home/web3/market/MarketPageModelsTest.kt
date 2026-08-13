@@ -211,30 +211,34 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun perpetualCategoriesUseDatabaseValues() {
+    fun perpetualCategoriesSupportAliasesIgnoringCase() {
         val markets =
             listOf(
                 perpsMarket(marketId = "indices", category = "indices"),
+                perpsMarket(marketId = "index", category = "INDEX"),
                 perpsMarket(marketId = "commodities", category = "commodities"),
+                perpsMarket(marketId = "commodity", category = "Commodity"),
                 perpsMarket(marketId = "forex", category = "forex"),
+                perpsMarket(marketId = "fx", category = "FX"),
                 perpsMarket(marketId = "memes", category = "memes"),
+                perpsMarket(marketId = "meme", category = "Meme"),
                 perpsMarket(marketId = "crypto", category = "crypto"),
             )
 
         assertEquals(
-            listOf("indices"),
+            listOf("indices", "index"),
             MarketPageMapper.perpetualMarkets(markets, MarketSubTab.INDICES).map { it.marketId },
         )
         assertEquals(
-            listOf("commodities"),
+            listOf("commodities", "commodity"),
             MarketPageMapper.perpetualMarkets(markets, MarketSubTab.COMMODITIES).map { it.marketId },
         )
         assertEquals(
-            listOf("forex"),
+            listOf("forex", "fx"),
             MarketPageMapper.perpetualMarkets(markets, MarketSubTab.FOREX).map { it.marketId },
         )
         assertEquals(
-            listOf("memes"),
+            listOf("memes", "meme"),
             MarketPageMapper.perpetualMarkets(markets, MarketSubTab.MEME).map { it.marketId },
         )
     }

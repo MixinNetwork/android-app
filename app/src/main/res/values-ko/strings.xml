@@ -2651,7 +2651,6 @@
     <string name="Remove_from_Watchlist">관심 목록에서 제거</string>
     <string name="Keep">유지</string>
     <string name="market_volume_short">거래량</string>
-    <string name="market_change_short">등락률</string>
     <string name="Crypto">현물</string>
     <string name="market_stock">주식</string>
     <string name="Indicator">지표</string>

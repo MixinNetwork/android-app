@@ -83,6 +83,17 @@ class MarketDaoTest {
         }
 
     @Test
+    fun favoriteMarketIdsOnlyReturnsActiveFavorites() =
+        runBlocking {
+            database.marketFavoredDao().insertSuspend(
+                MarketFavored("btc", true, ""),
+                MarketFavored("eth", false, ""),
+            )
+
+            assertEquals(listOf("btc"), database.marketFavoredDao().favoriteMarketIds())
+        }
+
+    @Test
     fun allMarketsAreLimitedToRankedPage() =
         runBlocking {
             val markets = (1..501).map { rank -> market("coin-$rank", rank.toString()) }

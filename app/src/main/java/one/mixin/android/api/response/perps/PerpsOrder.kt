@@ -39,7 +39,7 @@ data class PerpsOrder(
     @ColumnInfo(name = "pay_amount")
     val payAmount: String = "0",
     @SerializedName("fee_amount")
-    @ColumnInfo(name = "fee_amount")
+    @ColumnInfo(name = "fee_amount", defaultValue = "'0'")
     val feeAmount: String = "0",
     @SerializedName("entry_price")
     @ColumnInfo(name = "entry_price")

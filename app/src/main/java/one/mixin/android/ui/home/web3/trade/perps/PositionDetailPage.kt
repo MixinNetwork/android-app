@@ -269,7 +269,7 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 PositionDetailItem(
-                    label = stringResource(R.string.PnL).uppercase(),
+                    label = stringResource(R.string.PnL),
                     value = formatSignedFiat(pnl),
                     valueColor = pnlColor,
                     subtitle = formatSignedPercent(roe),
@@ -842,10 +842,9 @@ fun OpenedOrderDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 if (!isFailed) {
-                    val amountValue = openedOrder.payAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
                     PositionDetailItem(
-                        label = stringResource(R.string.Amount).uppercase(),
-                        value = formatPerpsUsdDecimal(amountValue)
+                        label = stringResource(R.string.Entry_Price).uppercase(),
+                        value = formatPerpsPrice(openedOrder.entryPrice, openedOrder.priceScale)
                     )
 
                     val fee = openedOrder.feeAmount.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
@@ -861,9 +860,10 @@ fun OpenedOrderDetailPage(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
+                    val amountValue = openedOrder.payAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
                     PositionDetailItem(
-                        label = stringResource(R.string.Entry_Price).uppercase(),
-                        value = formatPerpsPrice(openedOrder.entryPrice, openedOrder.priceScale)
+                        label = stringResource(R.string.Amount).uppercase(),
+                        value = formatPerpsUsdDecimal(amountValue)
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))

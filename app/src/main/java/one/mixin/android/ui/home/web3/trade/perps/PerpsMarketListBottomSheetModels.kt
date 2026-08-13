@@ -4,24 +4,28 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.ui.home.web3.market.MarketSortColumn
 import one.mixin.android.ui.home.web3.market.MarketSortDirection
 import one.mixin.android.ui.home.web3.market.MarketSortState
+import one.mixin.android.ui.home.web3.market.PerpsMarketCategoryKey
 import one.mixin.android.ui.home.web3.market.changePercentValue
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import java.math.BigDecimal
 
-internal enum class PerpsMarketCategory(val databaseValue: String?) {
+internal enum class PerpsMarketCategory(val categoryKey: PerpsMarketCategoryKey?) {
     ALL(null),
     WATCHLIST(null),
-    CRYPTO("crypto"),
-    STOCKS("stocks"),
-    MEME("memes"),
-    INDICES("indices"),
-    COMMODITIES("commodities"),
-    FOREX("forex"),
+    CRYPTO(PerpsMarketCategoryKey.CRYPTO),
+    STOCKS(PerpsMarketCategoryKey.STOCKS),
+    MEME(PerpsMarketCategoryKey.MEME),
+    INDICES(PerpsMarketCategoryKey.INDICES),
+    COMMODITIES(PerpsMarketCategoryKey.COMMODITIES),
+    FOREX(PerpsMarketCategoryKey.FOREX),
     ;
+
+    val databaseValue: String?
+        get() = categoryKey?.databaseValue
 
     companion object {
         fun fromInitialCategory(category: String?): PerpsMarketCategory =
-            entries.firstOrNull { it.databaseValue == category } ?: ALL
+            entries.firstOrNull { it.categoryKey?.matches(category.orEmpty()) == true } ?: ALL
     }
 }
 
@@ -40,24 +44,25 @@ internal data class PerpsMarketListUiState(
     val quoteColorReversed: Boolean = false,
     val scrollToTopRequest: Int = 0,
 ) {
-    val visibleMarkets: List<PerpsMarket>
-        get() =
-            markets
-                .asSequence()
-                .filter(::matchesSelectedCategory)
-                .filter(::matchesQuery)
-                .toList()
-                .sortedByCurrentState()
+    val visibleMarkets: List<PerpsMarket> by lazy {
+        markets
+            .asSequence()
+            .filter(::matchesSelectedCategory)
+            .filter(::matchesQuery)
+            .toList()
+            .sortedByCurrentState()
+    }
 
-    val recommendations: List<PerpsMarket>
-        get() = featuredMarkets.filterNot { it.marketId in favoriteMarketIds }.take(MAX_RECOMMENDATIONS)
+    val recommendations: List<PerpsMarket> by lazy {
+        featuredMarkets.filterNot { it.marketId in favoriteMarketIds }.take(MAX_RECOMMENDATIONS)
+    }
 
-    val isShowingRecommendations: Boolean
-        get() =
-            visibleMarkets.isEmpty() &&
-                selectedCategory == PerpsMarketCategory.WATCHLIST &&
-                query.isBlank() &&
-                recommendations.isNotEmpty()
+    val isShowingRecommendations: Boolean by lazy {
+        selectedCategory == PerpsMarketCategory.WATCHLIST &&
+            query.isBlank() &&
+            recommendations.isNotEmpty() &&
+            markets.none { market -> market.marketId in favoriteMarketIds }
+    }
 
     val selectedRecommendations: List<PerpsMarket>
         get() = recommendations.filter { it.marketId in selectedRecommendationIds }
@@ -83,17 +88,25 @@ internal data class PerpsMarketListUiState(
         ).normalizeRecommendationSelection()
 
     fun updateMarkets(markets: List<PerpsMarket>): PerpsMarketListUiState =
-        copy(markets = markets).normalizeRecommendationSelection()
+        if (this.markets == markets) this else copy(markets = markets).normalizeRecommendationSelection()
 
     fun updateFavoriteMarketIds(marketIds: Set<String>): PerpsMarketListUiState {
         val remainingOverrides =
             favoriteOverrides.filter { (marketId, desiredState) ->
                 (marketId in marketIds) != desiredState
             }
+        val remainingPendingMarketIds = pendingFavoriteMarketIds intersect remainingOverrides.keys
+        if (
+            favoriteMarketIds == marketIds &&
+            favoriteOverrides == remainingOverrides &&
+            pendingFavoriteMarketIds == remainingPendingMarketIds
+        ) {
+            return this
+        }
         return copy(
             favoriteMarketIds = marketIds,
             favoriteOverrides = remainingOverrides,
-            pendingFavoriteMarketIds = pendingFavoriteMarketIds intersect remainingOverrides.keys,
+            pendingFavoriteMarketIds = remainingPendingMarketIds,
         ).normalizeRecommendationSelection()
     }
 
@@ -125,7 +138,7 @@ internal data class PerpsMarketListUiState(
         }
 
     fun updateFeaturedMarkets(markets: List<PerpsMarket>): PerpsMarketListUiState =
-        copy(featuredMarkets = markets).normalizeRecommendationSelection()
+        if (featuredMarkets == markets) this else copy(featuredMarkets = markets).normalizeRecommendationSelection()
 
     fun toggleRecommendation(marketId: String): PerpsMarketListUiState {
         if (marketId !in recommendations.mapTo(mutableSetOf()) { it.marketId }) return this
@@ -152,7 +165,7 @@ internal data class PerpsMarketListUiState(
     private fun matchesSelectedCategory(market: PerpsMarket): Boolean =
         when (selectedCategory) {
             PerpsMarketCategory.WATCHLIST -> market.marketId in favoriteMarketIds
-            else -> selectedCategory.databaseValue == null || market.category == selectedCategory.databaseValue
+            else -> selectedCategory.categoryKey?.matches(market.category) ?: true
         }
 
     private fun matchesQuery(market: PerpsMarket): Boolean {
@@ -182,19 +195,22 @@ internal data class PerpsMarketListUiState(
 
     private fun normalizeRecommendationSelection(): PerpsMarketListUiState {
         if (!isShowingRecommendations) {
+            if (selectedRecommendationIds.isEmpty() && !recommendationSelectionInitialized) return this
             return copy(
                 selectedRecommendationIds = emptySet(),
                 recommendationSelectionInitialized = false,
             )
         }
         val recommendationIds = recommendations.mapTo(linkedSetOf()) { it.marketId }
+        val normalizedSelection =
+            if (recommendationSelectionInitialized) {
+                selectedRecommendationIds intersect recommendationIds
+            } else {
+                recommendationIds
+            }
+        if (recommendationSelectionInitialized && selectedRecommendationIds == normalizedSelection) return this
         return copy(
-            selectedRecommendationIds =
-                if (recommendationSelectionInitialized) {
-                    selectedRecommendationIds intersect recommendationIds
-                } else {
-                    recommendationIds
-                },
+            selectedRecommendationIds = normalizedSelection,
             recommendationSelectionInitialized = true,
         )
     }

@@ -924,7 +924,6 @@
     <string name="Bitcoin_Dominance">比特幣市佔率</string>
     <string name="volume_24h">24 小時交易量</string>
     <string name="market_volume_short">交易量</string>
-    <string name="market_change_short">漲跌幅</string>
     <string name="Watchlist">自選</string>
     <string name="Crypto">現貨</string>
     <string name="market_stock">股票</string>
@@ -934,7 +933,6 @@
     <string name="volume_label">交易量：%1$s</string>
     <string name="change_percent_period_day">%1$d 天 %%</string>
     <string name="change_percent_period_hour">%1$dh %%</string>
-    <string name="market_change_percent_period_hour">%1$d 小時</string>
     <string name="Try_Again">請重試</string>
     <string name="Tuesday">星期二</string>
     <string name="Turn_On_Notifications">開啟通知</string>

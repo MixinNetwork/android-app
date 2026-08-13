@@ -1093,7 +1093,6 @@
     <string name="Remove_from_Watchlist">ウォッチリストから削除</string>
     <string name="Keep">残す</string>
     <string name="market_volume_short">出来高</string>
-    <string name="market_change_short">騰落率</string>
     <string name="Crypto">現物</string>
     <string name="market_stock">株式</string>
     <string name="Indicator">指標</string>

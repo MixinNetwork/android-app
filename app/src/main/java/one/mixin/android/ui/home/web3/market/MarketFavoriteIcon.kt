@@ -5,6 +5,7 @@ import androidx.annotation.DrawableRes
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,12 +39,20 @@ fun MarketFavoriteIcon(
             MarketFavoriteAnimationState(
                 initialFavored = isFavored,
             )
-        }
+    }
     var completedAnimationIntentId by remember { mutableStateOf<Int?>(null) }
-    val decision =
-        remember(isFavored, animationIntent, completedAnimationIntentId) {
-            animationState.update(isFavored, animationIntent)
+    var decision by
+        remember {
+            mutableStateOf(
+                MarketFavoriteAnimationDecision(
+                    mode = MarketFavoriteAnimationMode.SNAP,
+                    targetProgress = if (isFavored) 1f else 0f,
+                ),
+            )
         }
+    SideEffect {
+        decision = animationState.update(isFavored, animationIntent)
+    }
     val compositionResult = rememberLottieComposition(LottieCompositionSpec.RawRes(R.raw.market_watchlist))
     val composition by compositionResult
     val animatable = rememberLottieAnimatable()
@@ -195,23 +204,26 @@ fun ImageView.setMarketFavoriteIcon(
         }
     scaleType = ImageView.ScaleType.FIT_CENTER
     if (!isFavored) {
+        setTag(R.id.market_favorite_icon_request, null)
         setImageResource(unselectedIconRes)
         return
     }
-    val composition =
-        LottieCompositionFactory.fromRawResSync(context, R.raw.market_watchlist).value
-            ?: run {
-                setImageResource(R.drawable.ic_title_favorites_checked)
-                return
+    val request = Any()
+    setTag(R.id.market_favorite_icon_request, request)
+    setImageResource(R.drawable.ic_title_favorites_checked)
+    LottieCompositionFactory
+        .fromRawRes(context, R.raw.market_watchlist)
+        .addListener { composition ->
+            if (getTag(R.id.market_favorite_icon_request) !== request) return@addListener
+            val drawable =
+                LottieDrawable().apply {
+                    setComposition(composition)
+                    repeatCount = 0
+                    progress = if (animate) 0f else 1f
+                }
+            setImageDrawable(drawable)
+            if (animate) {
+                drawable.playAnimation()
             }
-    val drawable =
-        LottieDrawable().apply {
-            setComposition(composition)
-            repeatCount = 0
-            progress = if (animate) 0f else 1f
         }
-    setImageDrawable(drawable)
-    if (animate) {
-        drawable.playAnimation()
-    }
 }

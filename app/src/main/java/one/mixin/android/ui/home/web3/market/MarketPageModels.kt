@@ -27,6 +27,23 @@ enum class MarketSubTab {
     MEME,
 }
 
+internal enum class PerpsMarketCategoryKey(
+    val databaseValue: String,
+    private val aliases: Set<String> = emptySet(),
+) {
+    CRYPTO("crypto"),
+    STOCKS("stocks", setOf("stock")),
+    MEME("memes", setOf("meme")),
+    INDICES("indices", setOf("index")),
+    COMMODITIES("commodities", setOf("commodity")),
+    FOREX("forex", setOf("fx")),
+    ;
+
+    fun matches(value: String): Boolean =
+        databaseValue.equals(value, ignoreCase = true) ||
+            aliases.any { alias -> alias.equals(value, ignoreCase = true) }
+}
+
 enum class MarketPriceChangePeriod {
     TWENTY_FOUR_HOURS,
     SEVEN_DAYS,
@@ -259,12 +276,15 @@ object MarketPageMapper {
         when (subTab) {
             MarketSubTab.TOP_GAINERS -> markets.sortedByDescending { it.changePercentValue() ?: BigDecimal.ZERO }
             MarketSubTab.TOP_LOSERS -> markets.sortedBy { it.changePercentValue() ?: BigDecimal.ZERO }
-            MarketSubTab.INDICES -> markets.filter { it.category == "indices" }
-            MarketSubTab.COMMODITIES -> markets.filter { it.category == "commodities" }
-            MarketSubTab.FOREX -> markets.filter { it.category == "forex" }
-            MarketSubTab.MEME -> markets.filter { it.category == "memes" }
+            MarketSubTab.INDICES -> markets.filterByCategory(PerpsMarketCategoryKey.INDICES)
+            MarketSubTab.COMMODITIES -> markets.filterByCategory(PerpsMarketCategoryKey.COMMODITIES)
+            MarketSubTab.FOREX -> markets.filterByCategory(PerpsMarketCategoryKey.FOREX)
+            MarketSubTab.MEME -> markets.filterByCategory(PerpsMarketCategoryKey.MEME)
             else -> markets
         }
+
+    private fun List<PerpsMarket>.filterByCategory(category: PerpsMarketCategoryKey): List<PerpsMarket> =
+        filter { market -> category.matches(market.category) }
 
     fun watchlist(
         spotFavorites: List<MarketItem>,

@@ -3,12 +3,18 @@ package one.mixin.android.job
 import one.mixin.android.event.ALL_MARKET_PAGE_DATA_SOURCES
 import one.mixin.android.event.MarketPageDataSource
 import one.mixin.android.vo.market.MarketCategory
+import one.mixin.android.vo.market.marketRefreshLimit
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class RefreshMarketPageJobTest {
+    @Test
+    fun requiresNetwork() {
+        assertTrue(RefreshMarketPageJob("24h").requiresNetwork())
+    }
+
     @Test
     fun refreshesStockCategoryForSpotClassification() {
         val stockRequest =
@@ -30,7 +36,13 @@ class RefreshMarketPageJobTest {
                     it.source == MarketPageDataSource.SPOT_TOP_LOSER
             }
 
-        assertEquals(listOf(100, 100), requests.map { it.limit })
+        assertEquals(
+            listOf(
+                marketRefreshLimit(MarketCategory.TOP_GAINER),
+                marketRefreshLimit(MarketCategory.TOP_LOSER),
+            ),
+            requests.map { it.limit },
+        )
     }
 
     @Test

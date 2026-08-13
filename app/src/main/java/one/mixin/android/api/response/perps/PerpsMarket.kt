@@ -56,15 +56,15 @@ data class PerpsMarket(
     val fundingRate: String,
 
     @SerializedName("funding_interval_hours")
-    @ColumnInfo(name = "funding_interval_hours")
+    @ColumnInfo(name = "funding_interval_hours", defaultValue = "0")
     val fundingIntervalHours: Int = 0,
 
     @SerializedName("next_funding_at")
-    @ColumnInfo(name = "next_funding_at")
+    @ColumnInfo(name = "next_funding_at", defaultValue = "''")
     val nextFundingAt: String = "",
 
     @SerializedName("open_interest")
-    @ColumnInfo(name = "open_interest")
+    @ColumnInfo(name = "open_interest", defaultValue = "'0'")
     val openInterest: String = "0",
 
     @SerializedName("min_amount")

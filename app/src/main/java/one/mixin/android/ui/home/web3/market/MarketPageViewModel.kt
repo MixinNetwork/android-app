@@ -468,16 +468,12 @@ class MarketPageViewModel
 
                     MarketTopTab.PERPETUAL -> {
                         val source =
-                            when (state.selectedSubTab) {
-                                MarketSubTab.FAVORITE ->
-                                    favoritePerpetualMarkets.ifEmpty {
-                                        featuredPerpetualMarkets
-                                    }
-                                MarketSubTab.TOP_GAINERS,
-                                MarketSubTab.TOP_LOSERS,
-                                MarketSubTab.ALL
-                                -> perpetualMarkets
-                                else -> perpetualMarkets
+                            if (state.selectedSubTab == MarketSubTab.FAVORITE) {
+                                favoritePerpetualMarkets.ifEmpty {
+                                    featuredPerpetualMarkets
+                                }
+                            } else {
+                                perpetualMarkets
                             }
                         MarketPageMapper.perpetualMarkets(
                             markets = source,

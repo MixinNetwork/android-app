@@ -19,10 +19,10 @@ import one.mixin.android.extension.putString
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.market.MarketCategory
+import one.mixin.android.vo.market.marketRefreshLimit
 import timber.log.Timber
 
 private const val SPOT_MARKET_LIMIT = 500
-private const val TOP_GAINER_LOSER_MARKET_LIMIT = 100
 
 internal data class SpotMarketRefreshRequest(
     val source: MarketPageDataSource,
@@ -67,7 +67,8 @@ class RefreshMarketPageJob(
 ) : BaseJob(
         Params(PRIORITY_UI_HIGH)
             .groupBy(GROUP)
-            .singleInstanceBy(refreshMarketPageSingleInstanceId(duration, sources)),
+            .singleInstanceBy(refreshMarketPageSingleInstanceId(duration, sources))
+            .requireNetwork(),
     ) {
     private val sources = sources.toSet()
 
@@ -85,12 +86,12 @@ class RefreshMarketPageJob(
                 SpotMarketRefreshRequest(
                     MarketPageDataSource.SPOT_TOP_GAINER,
                     MarketCategory.TOP_GAINER.apiValue,
-                    TOP_GAINER_LOSER_MARKET_LIMIT,
+                    marketRefreshLimit(MarketCategory.TOP_GAINER),
                 ),
                 SpotMarketRefreshRequest(
                     MarketPageDataSource.SPOT_TOP_LOSER,
                     MarketCategory.TOP_LOSER.apiValue,
-                    TOP_GAINER_LOSER_MARKET_LIMIT,
+                    marketRefreshLimit(MarketCategory.TOP_LOSER),
                 ),
                 SpotMarketRefreshRequest(MarketPageDataSource.SPOT_ALL, MarketCategory.STOCK.apiValue),
             )

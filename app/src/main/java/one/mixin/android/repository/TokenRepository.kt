@@ -133,6 +133,7 @@ import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.vo.market.MarketRefreshResult
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.route.OrderItem
 import one.mixin.android.vo.safe.DepositEntry
@@ -1368,64 +1369,88 @@ class TokenRepository
         duration: String? = null,
         limit: Int? = null,
     ): List<MarketItem>? =
-        requestRouteAPI(
-            invokeNetwork = {
-                markets(
-                    category = category,
-                    duration = duration,
-                    limit = limit,
-                )
-            },
-            successBlock = { response ->
-                val markets = response.data.orEmpty()
-                val now = nowInUtc()
-                appDatabase.withTransaction {
-                    marketDao.upsertList(markets)
-                    when (category) {
-                        CATEGORY_ALL ->
-                            marketCapRankDao.replaceAll(
-                                markets.map { market ->
-                                    MarketCapRank(
-                                        coinId = market.coinId,
-                                        marketCapRank = market.marketCapRank,
-                                        updatedAt = market.updatedAt,
-                                    )
-                                },
-                            )
+        when (val result = fetchMarketsResult(category, duration, limit)) {
+            is MarketRefreshResult.Success -> result.markets
+            is MarketRefreshResult.Failure -> null
+        }
 
-                        CATEGORY_FAVORITE ->
-                            marketFavoredDao.replaceAll(
-                                markets.map { market ->
-                                    MarketFavored(
-                                        coinId = market.coinId,
-                                        isFavored = true,
-                                        createdAt = now,
-                                    )
-                                },
-                            )
-
-                        else ->
-                            MarketCategory.fromApiValue(category)?.let { marketCategory ->
-                                marketCategoryDao.replaceCategory(
-                                    category = marketCategory.value,
-                                    coinIds = markets.map(Market::coinId),
+    internal suspend fun fetchMarketsResult(
+        category: String,
+        duration: String? = null,
+        limit: Int? = null,
+    ): MarketRefreshResult {
+        var failure = MarketRefreshResult.Failure()
+        val result: MarketRefreshResult? =
+            requestRouteAPI(
+                invokeNetwork = {
+                    markets(
+                        category = category,
+                        duration = duration,
+                        limit = limit,
+                    )
+                },
+                successBlock = { response ->
+                    val markets = response.data.orEmpty()
+                    val now = nowInUtc()
+                    appDatabase.withTransaction {
+                        marketDao.upsertList(markets)
+                        when (category) {
+                            CATEGORY_ALL ->
+                                marketCapRankDao.replaceAll(
+                                    markets.map { market ->
+                                        MarketCapRank(
+                                            coinId = market.coinId,
+                                            marketCapRank = market.marketCapRank,
+                                            updatedAt = market.updatedAt,
+                                        )
+                                    },
                                 )
-                            }
+
+                            CATEGORY_FAVORITE ->
+                                marketFavoredDao.replaceAll(
+                                    markets.map { market ->
+                                        MarketFavored(
+                                            coinId = market.coinId,
+                                            isFavored = true,
+                                            createdAt = now,
+                                        )
+                                    },
+                                )
+
+                            else ->
+                                MarketCategory.fromApiValue(category)?.let { marketCategory ->
+                                    marketCategoryDao.replaceCategory(
+                                        category = marketCategory.value,
+                                        coinIds = markets.map(Market::coinId),
+                                    )
+                                }
+                        }
+                        if (category == CATEGORY_ALL) {
+                            syncMarketCoins(markets, now)
+                        }
                     }
-                    if (category == CATEGORY_ALL) {
-                        syncMarketCoins(markets, now)
-                    }
-                }
-                markets.map(MarketItem::fromMarket)
-            },
-            failureBlock = { true },
-            exceptionBlock = { true },
-            defaultErrorHandle = {},
-            defaultExceptionHandle = {},
-            requestSession = {
-                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
-            },
-        )
+                    MarketRefreshResult.Success(markets.map(MarketItem::fromMarket))
+                },
+                failureBlock = { response ->
+                    failure =
+                        MarketRefreshResult.Failure(
+                            errorCode = response.errorCode,
+                            errorDescription = response.errorDescription,
+                        )
+                    true
+                },
+                exceptionBlock = {
+                    failure = MarketRefreshResult.Failure()
+                    true
+                },
+                defaultErrorHandle = {},
+                defaultExceptionHandle = {},
+                requestSession = {
+                    userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+                },
+            )
+        return result ?: failure
+    }
 
     private suspend fun syncMarketCoins(
         markets: List<Market>,
@@ -1538,15 +1563,17 @@ class TokenRepository
     }
 
     suspend fun addFavoriteMarkets(marketIds: Set<String>): Set<String> {
-        if (marketIds.isEmpty()) return emptySet()
+        val favoriteMarketIds = marketFavoredDao.favoriteMarketIds().toSet()
+        val addedMarketIds = marketIds - favoriteMarketIds
+        if (addedMarketIds.isEmpty()) return emptySet()
         return requestRouteAPI(
             invokeNetwork = {
-                routeService.updateMarketFavorites(marketIds.toList())
+                routeService.updateMarketFavorites(addedMarketIds.toList())
             },
             successBlock = {
                 val createdAt = nowInUtc()
                 marketFavoredDao.insertListSuspend(
-                    marketIds.map { coinId ->
+                    addedMarketIds.map { coinId ->
                         MarketFavored(
                             coinId = coinId,
                             isFavored = true,
@@ -1554,7 +1581,7 @@ class TokenRepository
                         )
                     },
                 )
-                marketIds
+                addedMarketIds
             },
             failureBlock = { true },
             exceptionBlock = { true },
