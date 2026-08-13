@@ -581,7 +581,10 @@ fun File.newTempFile(
     if (noMedia) {
         createNoMediaDir()
     }
-    return File(this, "$name$type")
+    val parent = canonicalFile
+    val file = File(parent, "$name$type").canonicalFile
+    require(file.parentFile == parent) { "Invalid file name" }
+    return file
 }
 
 fun File.processing(to: File) {
