@@ -2461,7 +2461,6 @@
     <string name="Position_Details">Position Details</string>
     <string name="Position_Summary">Position Summary</string>
     <string name="Position_Info">Position Info</string>
-    <string name="Unrealized_PnL">Unrealized PnL</string>
     <string name="Total_Realized_PnL">Total Realized PnL</string>
     <string name="Price_Change">Price Change</string>
     <string name="Time_Info">Time Info</string>

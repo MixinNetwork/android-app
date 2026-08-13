@@ -2424,7 +2424,6 @@
     <string name="Position_Details">포지션 상세 정보</string>
     <string name="Position_Summary">포지션 요약</string>
     <string name="Position_Info">포지션 정보</string>
-    <string name="Unrealized_PnL">미실현 손익</string>
     <string name="Total_Realized_PnL">총 실현 손익</string>
     <string name="Price_Change">가격 변경</string>
     <string name="Time_Info">시간 정보</string>

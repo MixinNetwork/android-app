@@ -2490,7 +2490,6 @@
     <string name="Position_Details">倉位詳情</string>
     <string name="Position_Summary">倉位摘要</string>
     <string name="Position_Info">倉位資訊</string>
-    <string name="Unrealized_PnL">未實現盈虧</string>
     <string name="Total_Realized_PnL">總盈虧</string>
     <string name="Price_Change">價格變化</string>
     <string name="Time_Info">時間訊息</string>

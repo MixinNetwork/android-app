@@ -2390,7 +2390,6 @@
     <string name="Position_Details">持仓详情</string>
     <string name="Position_Summary">持仓概要</string>
     <string name="Position_Info">持仓信息</string>
-    <string name="Unrealized_PnL">未实现盈亏</string>
     <string name="Total_Realized_PnL">总盈亏</string>
     <string name="Price_Change">价格变化</string>
     <string name="Time_Info">时间信息</string>
