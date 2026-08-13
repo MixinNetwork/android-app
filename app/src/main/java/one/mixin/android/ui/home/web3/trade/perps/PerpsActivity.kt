@@ -182,6 +182,11 @@ class PerpsActivity : BaseActivity() {
             return
         }
 
+        AnalyticsTracker.trackMarketDetail(
+            type = AnalyticsTracker.MarketType.PERPS,
+            source = AnalyticsTracker.normalizeMarketDetailSource(source),
+        )
+
         renderJob = lifecycleScope.launch {
             val market = withContext(Dispatchers.IO) {
                 perpsMarketDao.getMarket(marketId)

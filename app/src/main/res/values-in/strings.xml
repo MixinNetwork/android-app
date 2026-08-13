@@ -698,4 +698,22 @@
     <string name="withdrawal_to">Penarikan ke %1$s</string>
     <string name="You">Anda</string>
     <string name="You_deleted_this_message">Anda menghapus pesan ini</string>
+    <string name="hours_count_short">%1$dh</string>
+    <string name="days_count_short">%1$dd</string>
+    <string name="hours_count_long">%1$d jam</string>
+    <string name="days_count_long">%1$d hari</string>
+    <string name="Add_to_Watchlist">Tambahkan ke daftar pantauan</string>
+    <string name="Remove_from_Watchlist">Hapus dari daftar pantauan</string>
+    <string name="Keep">Simpan</string>
+    <string name="market_volume_short">Vol</string>
+    <string name="Crypto">Spot</string>
+    <string name="market_stock">Saham</string>
+    <string name="Indicator">Indikator</string>
+    <string name="market_display">Tampilan Pasar</string>
+    <string name="volume_label">VOL: %1$s</string>
+    <string name="watchlist_remove_desc">%1$s telah dihapus dari daftar pantauan Anda</string>
+    <string name="perps_category_meme">Meme</string>
+    <string name="perps_funding_frequency_value">1/4/8 jam</string>
+    <string name="Bitcoin_Dominance">Dominasi Bitcoin</string>
+    <string name="Perp">Perp</string>
 </resources>
