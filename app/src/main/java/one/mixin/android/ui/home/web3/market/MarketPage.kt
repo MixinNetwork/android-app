@@ -95,7 +95,6 @@ fun MarketPage(
                 .fillMaxSize()
                 .background(MixinAppTheme.colors.background),
     ) {
-        Spacer(modifier = Modifier.height(10.dp))
         MarketToolbar(
             onSearch = onSearch,
             onScan = onScan,
