@@ -14,7 +14,6 @@ import androidx.room3.ColumnTypeConverters
 import androidx.room3.livedata.LiveDataDaoReturnTypeConverter
 import androidx.room3.paging.PagingSourceDaoReturnTypeConverter
 import androidx.sqlite.SQLiteConnection
-import androidx.sqlite.driver.AndroidSQLiteDriver
 import one.mixin.android.Constants.DataBase.CURRENT_VERSION
 import one.mixin.android.Constants.DataBase.DB_NAME
 import one.mixin.android.api.response.MembershipOrder
@@ -369,7 +368,7 @@ abstract class MixinDatabase : RoomDatabase() {
                     val dbPath = File(dbDir(context, scopedIdentity), DB_NAME).absolutePath
                     val builder =
                         Room.databaseBuilder(context, MixinDatabase::class.java, dbPath)
-                            .setDriver(AndroidSQLiteDriver())
+                            .setDriver(ReportingAndroidSQLiteDriver("Mixin", CURRENT_VERSION))
                             .addMigrations(
                                 MIGRATION_15_16,
                                 MIGRATION_16_17,

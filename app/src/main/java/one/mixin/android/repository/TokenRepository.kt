@@ -1394,7 +1394,7 @@ class TokenRepository
                     val markets = response.data.orEmpty()
                     if (persist) {
                         val now = nowInUtc()
-                        appDatabase.withTransaction {
+                        appDatabase.withRoomTransaction {
                             marketDao.upsertList(markets)
                             when (category) {
                                 CATEGORY_ALL ->

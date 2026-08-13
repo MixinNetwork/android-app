@@ -1,6 +1,5 @@
 package one.mixin.android.repository
 
-import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import one.mixin.android.Constants
@@ -10,6 +9,7 @@ import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.PerpsDatabase
+import one.mixin.android.db.withRoomTransaction
 import one.mixin.android.db.perps.PerpsFavoriteDao
 import one.mixin.android.db.perps.PerpsMarketCategoryDao
 import one.mixin.android.db.perps.PerpsMarketDao
@@ -50,7 +50,7 @@ class PerpsMarketRepository
 
         suspend fun syncFavoriteMarkets(): List<PerpsMarket>? {
             val markets = fetchMarkets(CATEGORY_FAVORITE) ?: return null
-            database.withTransaction {
+            database.withRoomTransaction {
                 marketDao.upsertList(markets)
                 favoriteDao.replaceAll(
                     marketIds = markets.map(PerpsMarket::marketId),
@@ -62,7 +62,7 @@ class PerpsMarketRepository
 
         suspend fun syncCategory(category: MarketCategory): List<PerpsMarket>? {
             val markets = fetchMarkets(category.apiValue) ?: return null
-            database.withTransaction {
+            database.withRoomTransaction {
                 marketDao.upsertList(markets)
                 categoryDao.replaceCategory(
                     category = category.value,
