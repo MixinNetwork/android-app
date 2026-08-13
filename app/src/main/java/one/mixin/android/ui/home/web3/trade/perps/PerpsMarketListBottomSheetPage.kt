@@ -150,7 +150,10 @@ private fun PerpsMarketSearchBar(
                         modifier = Modifier.size(16.dp),
                     )
                     Spacer(modifier = Modifier.width(6.dp))
-                    Box(modifier = Modifier.weight(1f)) {
+                    Box(
+                        modifier = Modifier.weight(1f),
+                        contentAlignment = Alignment.CenterStart,
+                    ) {
                         if (query.isEmpty()) {
                             Text(
                                 text = stringResource(R.string.search_placeholder_market),
