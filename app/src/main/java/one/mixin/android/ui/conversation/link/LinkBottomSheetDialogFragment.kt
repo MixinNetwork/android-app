@@ -1133,7 +1133,11 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 market.displaySymbol,
                 market.displaySymbol,
                 market.tokenSymbol,
-                AnalyticsTracker.PerpsSource.APP_CARD,
+                if (activity is ConversationActivity) {
+                    AnalyticsTracker.MarketDetailSource.APP_CARD
+                } else {
+                    AnalyticsTracker.MarketDetailSource.SCHEMA
+                },
             )
             closeSourceWebActivityIfNeeded()
             dismiss()

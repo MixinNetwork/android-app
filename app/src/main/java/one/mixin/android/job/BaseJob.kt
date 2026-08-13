@@ -89,6 +89,7 @@ import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.repository.PerpsMarketRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.MissingAccountScopeException
@@ -100,6 +101,7 @@ import java.io.IOException
 import java.math.BigDecimal
 import java.net.SocketTimeoutException
 import javax.inject.Inject
+import javax.inject.Provider
 
 abstract class BaseJob(params: Params) : Job(params) {
     @InstallIn(SingletonComponent::class)
@@ -239,6 +241,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var assetRepo: TokenRepository
+
+    @Inject
+    @Transient
+    lateinit var perpsMarketRepositoryProvider: Provider<PerpsMarketRepository>
 
     @Inject
     @Transient

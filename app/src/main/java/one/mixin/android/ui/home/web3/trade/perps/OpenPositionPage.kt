@@ -422,6 +422,7 @@ fun OpenPositionPage(
                         },
                         onInputChanged = { usdtAmount = it },
                         tokenIconSize = 25.dp,
+                        autoFocus = true,
                         maxDecimalPlaces = TRADE_INPUT_MAX_DECIMAL_PLACES,
                     )
 
