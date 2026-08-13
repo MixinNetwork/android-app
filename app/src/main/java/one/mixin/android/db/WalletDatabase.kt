@@ -10,7 +10,6 @@ import androidx.room3.livedata.LiveDataDaoReturnTypeConverter
 import androidx.room3.migration.Migration
 import androidx.room3.paging.PagingSourceDaoReturnTypeConverter
 import androidx.sqlite.SQLiteConnection
-import androidx.sqlite.driver.AndroidSQLiteDriver
 import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.converter.AssetChangeListConverter
@@ -146,7 +145,7 @@ abstract class WalletDatabase : RoomDatabase() {
                             context,
                             WalletDatabase::class.java,
                             File(dir, Constants.DataBase.WEB3_DB_NAME).absolutePath,
-                        ).setDriver(AndroidSQLiteDriver())
+                        ).setDriver(ReportingAndroidSQLiteDriver("Wallet", 8))
                             .addCallback(
                             object : Callback() {
                                 override suspend fun onOpen(db: SQLiteConnection) {

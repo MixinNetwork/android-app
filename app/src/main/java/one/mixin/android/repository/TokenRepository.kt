@@ -1392,7 +1392,7 @@ class TokenRepository
                 successBlock = { response ->
                     val markets = response.data.orEmpty()
                     val now = nowInUtc()
-                    appDatabase.withTransaction {
+                    appDatabase.withRoomTransaction {
                         marketDao.upsertList(markets)
                         when (category) {
                             CATEGORY_ALL ->

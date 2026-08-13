@@ -8,7 +8,6 @@ import androidx.room3.RoomDatabase
 import androidx.room3.migration.Migration
 import androidx.room3.paging.PagingSourceDaoReturnTypeConverter
 import androidx.sqlite.SQLiteConnection
-import androidx.sqlite.driver.AndroidSQLiteDriver
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsFavorite
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -128,7 +127,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                         context,
                         PerpsDatabase::class.java,
                         File(dir, Constants.DataBase.PERPS_DB_NAME).absolutePath,
-                    ).setDriver(AndroidSQLiteDriver())
+                    ).setDriver(ReportingAndroidSQLiteDriver("Perps", 7))
                         .addCallback(
                         object : Callback() {
                             override suspend fun onOpen(db: SQLiteConnection) {
