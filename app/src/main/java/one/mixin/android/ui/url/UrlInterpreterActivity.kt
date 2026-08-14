@@ -27,6 +27,9 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.web3.convertWcLink
 import timber.log.Timber
 
+internal fun referralCodeFromMixinPath(pathSegments: List<String>): String =
+    pathSegments.getOrNull(1).orEmpty()
+
 @AndroidEntryPoint
 class UrlInterpreterActivity : BaseActivity() {
     companion object {
@@ -172,7 +175,12 @@ class UrlInterpreterActivity : BaseActivity() {
                     return
                 }
                 if (path.equals(REFERRALS,true)) {
-                    InputReferralBottomSheetDialogFragment.newInstance(uri.pathSegments.last()).showNow(supportFragmentManager, InputReferralBottomSheetDialogFragment.TAG)
+                    InputReferralBottomSheetDialogFragment
+                        .newInstance(referralCodeFromMixinPath(uri.pathSegments))
+                        .showNow(
+                            supportFragmentManager,
+                            InputReferralBottomSheetDialogFragment.TAG,
+                        )
                 } else if (path.equals(BUY, true)) {
                     MainActivity.showWallet(this, buy = true)
                     finish()
