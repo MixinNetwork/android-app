@@ -1096,6 +1096,13 @@
     <string name="watchlist_remove_desc">%1$s больше не в вашем списке наблюдения</string>
     <string name="perps_category_meme">Мемы</string>
     <string name="perps_funding_frequency_value">1/4/8 часов</string>
+    <string name="perps_funding_title_interval">Финансирование (%1$d ч)</string>
+    <string name="Open_Fee">Комиссия за открытие</string>
+    <string name="Close_Fee">Комиссия за закрытие</string>
+    <string name="perps_trading_fee_overview">Комиссия взимается при открытии, увеличении или закрытии позиции. Она рассчитывается исходя из стоимости позиции, а не маржи.</string>
+    <string name="perps_trading_fee_pnl_1">Чем больше позиция, тем выше комиссия</string>
+    <string name="perps_trading_fee_pnl_2">Чем меньше позиция, тем ниже комиссия</string>
+    <string name="perps_trading_fee_pnl_3">Комиссии включены в ваш реализованный PnL</string>
     <string name="Bitcoin_Dominance">Доминирование биткоина</string>
     <string name="Perp">Бесср.</string>
 </resources>

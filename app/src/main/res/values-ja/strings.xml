@@ -1101,6 +1101,13 @@
     <string name="watchlist_remove_desc">%1$s がウォッチリストから削除されました</string>
     <string name="perps_category_meme">ミーム</string>
     <string name="perps_funding_frequency_value">1/4/8 時間</string>
+    <string name="perps_funding_title_interval">資金調達（%1$d時間）</string>
+    <string name="Open_Fee">新規建て手数料</string>
+    <string name="Close_Fee">決済手数料</string>
+    <string name="perps_trading_fee_overview">ポジションの新規建て、追加、決済時に手数料が発生します。手数料は証拠金ではなく、ポジションの価値を基に計算されます。</string>
+    <string name="perps_trading_fee_pnl_1">ポジションが大きいほど手数料が高くなります</string>
+    <string name="perps_trading_fee_pnl_2">ポジションが小さいほど手数料が低くなります</string>
+    <string name="perps_trading_fee_pnl_3">実現損益には関連する手数料が含まれています</string>
     <string name="Bitcoin_Dominance">ビットコインドミナンス</string>
     <string name="Perp">無期限</string>
 </resources>

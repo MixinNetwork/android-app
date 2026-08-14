@@ -778,6 +778,13 @@
     <string name="watchlist_remove_desc">%1$s telah dialih keluar daripada senarai pantauan anda</string>
     <string name="perps_category_meme">Meme</string>
     <string name="perps_funding_frequency_value">1/4/8 jam</string>
+    <string name="perps_funding_title_interval">Pembiayaan (%1$d jam)</string>
+    <string name="Open_Fee">Yuran Pembukaan</string>
+    <string name="Close_Fee">Yuran Penutupan</string>
+    <string name="perps_trading_fee_overview">Yuran dikenakan apabila membuka, menambah atau menutup kedudukan. Yuran dikira berdasarkan nilai kedudukan, bukan margin.</string>
+    <string name="perps_trading_fee_pnl_1">Kedudukan yang lebih besar dikenakan yuran yang lebih tinggi</string>
+    <string name="perps_trading_fee_pnl_2">Kedudukan yang lebih kecil dikenakan yuran yang lebih rendah</string>
+    <string name="perps_trading_fee_pnl_3">Yuran berkaitan telah dimasukkan dalam PnL terealisasi anda</string>
     <string name="Bitcoin_Dominance">Dominasi Bitcoin</string>
     <string name="Perp">Perp</string>
 </resources>

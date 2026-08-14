@@ -1155,6 +1155,13 @@
     <string name="watchlist_remove_desc">%1$s se ha eliminado de tu lista de seguimiento</string>
     <string name="perps_category_meme">Memes</string>
     <string name="perps_funding_frequency_value">1/4/8 horas</string>
+    <string name="perps_funding_title_interval">Financiación (%1$d h)</string>
+    <string name="Open_Fee">Comisión de apertura</string>
+    <string name="Close_Fee">Comisión de cierre</string>
+    <string name="perps_trading_fee_overview">Se aplican comisiones al abrir, añadir o cerrar una posición. Se calculan en función del valor de la posición, no del margen.</string>
+    <string name="perps_trading_fee_pnl_1">Cuanto mayor sea la posición, mayores serán las comisiones</string>
+    <string name="perps_trading_fee_pnl_2">Cuanto menor sea la posición, menores serán las comisiones</string>
+    <string name="perps_trading_fee_pnl_3">Las comisiones están incluidas en su PnL realizado</string>
     <string name="Bitcoin_Dominance">Dominancia de Bitcoin</string>
     <string name="Perp">Perp</string>
 </resources>
