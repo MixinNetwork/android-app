@@ -31,7 +31,7 @@ class SearchDappFragment : BaseFragment(R.layout.fragment_search_dapps) {
 
     private val searchAdapter: SearchDappAdapter by lazy {
         SearchDappAdapter { url ->
-            WebActivity.show(requireContext(), url, null)
+            WebActivity.show(requireContext(), url, null, allowWalletBridge = true)
         }
     }
 

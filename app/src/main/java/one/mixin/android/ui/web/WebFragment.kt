@@ -235,6 +235,7 @@ class WebFragment : BaseFragment() {
         const val ARGS_SHAREABLE = "args_shareable"
         const val ARGS_SAVE_NAME = "args_save_name"
         const val ARGS_INJECTABLE = "args_injectable"
+        const val ARGS_MIXIN_CONTEXT = "args_mixin_context"
         const val ARGS_FIXED_TITLE = "args_fixed_title"
         const val themeColorScript =
             """
@@ -272,7 +273,10 @@ class WebFragment : BaseFragment() {
     }
 
     private val injectable: Boolean by lazy {
-        requireArguments().getBoolean(ARGS_INJECTABLE, true)
+        requireArguments().getBoolean(ARGS_INJECTABLE, false)
+    }
+    private val mixinContextInjectable: Boolean by lazy {
+        requireArguments().getBoolean(ARGS_MIXIN_CONTEXT, false)
     }
     private val trustedWebOrigin: String? by lazy {
         secureWebOrigin(url)
@@ -994,7 +998,9 @@ class WebFragment : BaseFragment() {
                     },
                 )
             if (injectable) {
-                webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
+                if (mixinContextInjectable) {
+                    webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
+                }
                 webView.addJavascriptInterface(
                     Web3Interface(
                         onWalletActionSuccessful = { e ->
@@ -1350,6 +1356,7 @@ class WebFragment : BaseFragment() {
             icon,
             conversationId,
             appCard?.shareable ?: shareable,
+            injectable,
             webView,
             isFinished,
         )
