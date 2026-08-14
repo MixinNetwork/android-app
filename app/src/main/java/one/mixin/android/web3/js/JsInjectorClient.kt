@@ -10,8 +10,13 @@ import java.io.IOException
 class JsInjectorClient {
     fun initJs(context: Context): String {
         val initSrc = loadFile(context, rawRes = R.raw.init)
-        val solAddress = if (Web3Signer.currentChain == Chain.Solana) Web3Signer.solanaAddress else ""
-        return String.format(initSrc, Chain.Ethereum.chainReference, Chain.Ethereum.rpcUrl, Web3Signer.evmAddress, solAddress)
+        return String.format(
+            initSrc,
+            Chain.Ethereum.hexReference,
+            Chain.Ethereum.rpcUrl,
+            Web3Signer.evmAddress,
+            Chain.Solana.rpcUrl,
+        )
     }
 
     fun loadProviderJs(context: Context): String {

@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -40,6 +40,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil3.request.ImageRequest
+import coil3.request.transformations
+import coil3.transform.CircleCropTransformation
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
@@ -126,21 +129,31 @@ fun RecentToken(search: SwapToken, swapTokenClick: (SwapToken) -> Unit) {
             }
             .padding(start = 6.dp, top = 5.dp, bottom = 5.dp, end = 10.dp), verticalAlignment = Alignment.CenterVertically
     ) {
-        Box {
+        Box(modifier = Modifier.size(32.dp)) {
             CoilImage(
-                model = search.icon,
+                model = ImageRequest.Builder(context)
+                    .data(search.icon)
+                    .transformations(CircleCropTransformation())
+                    .build(),
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape),
-                placeholder = R.drawable.ic_avatar_place_holder
+                placeholder = R.drawable.ic_avatar_place_holder,
+                contentScale = ContentScale.Crop,
             )
             CoilImage(
-                model = search.chain.icon,
+                model = ImageRequest.Builder(context)
+                    .data(search.chain.icon)
+                    .transformations(CircleCropTransformation())
+                    .build(),
                 modifier = Modifier
                     .size(13.dp)
-                    .offset(x = 0.dp, y = (19).dp)
+                    .align(Alignment.BottomStart)
+                    .clip(CircleShape)
+                    .background(MixinAppTheme.colors.background)
                     .border(1.dp, MixinAppTheme.colors.background, CircleShape),
-                placeholder = R.drawable.ic_avatar_place_holder
+                placeholder = R.drawable.ic_avatar_place_holder,
+                contentScale = ContentScale.Crop,
             )
         }
         Spacer(modifier = Modifier.width(4.dp))
