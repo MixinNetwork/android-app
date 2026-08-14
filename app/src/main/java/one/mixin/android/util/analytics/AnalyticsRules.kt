@@ -26,7 +26,7 @@ internal object AnalyticsRules {
         "trade_perps_close_end",
         "asset_send_start",
         "asset_send_end",
-        "share_market",
+        "market_share",
         "hide_asset",
         "show_asset",
     )
@@ -53,8 +53,32 @@ internal object AnalyticsRules {
         return properties
     }
 
-    fun marketShareEvent(type: String) =
-        AnalyticsEvent("share_market", mapOf("type" to type))
+    fun marketShareEvent(type: String, target: String) =
+        AnalyticsEvent(
+            "market_share",
+            mapOf(
+                "type" to type,
+                "target" to target,
+            ),
+        )
+
+    fun marketDetailEvent(type: String, source: String) =
+        AnalyticsEvent(
+            "market_detail",
+            mapOf(
+                "type" to type,
+                "source" to source,
+            ),
+        )
+
+    fun marketWatchlistEvent(adding: Boolean, type: String, source: String) =
+        AnalyticsEvent(
+            if (adding) "market_watchlist_add" else "market_watchlist_remove",
+            mapOf(
+                "type" to type,
+                "source" to source,
+            ),
+        )
 
     fun spotOrdersEvent(type: String) =
         AnalyticsEvent("trade_spot_orders", mapOf("type" to type))

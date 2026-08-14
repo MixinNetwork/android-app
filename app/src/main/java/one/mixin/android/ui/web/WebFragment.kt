@@ -94,6 +94,7 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
+import one.mixin.android.db.property.PropertyHelper.findValueByKey
 import one.mixin.android.event.SearchEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.alert
@@ -1160,7 +1161,6 @@ class WebFragment : BaseFragment() {
             val sameHost =
                 try {
                     Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
-                    true
                 } catch (e: Exception) {
                     false
                 }
@@ -1173,9 +1173,11 @@ class WebFragment : BaseFragment() {
                 webView.evaluateJavascript("$callbackFunction('[]')") {}
                 return@launch
             }
-            val auth = bottomViewModel.getAuthorizationByAppId(app!!.appId)
+            val appId = app!!.appId
+            val isVerified = isVerifiedBot(appId)
+            val auth = if (isVerified) null else bottomViewModel.getAuthorizationByAppId(appId)
             val result =
-                if (auth?.scopes?.contains("ASSETS:READ") == true) {
+                if (isVerified || auth?.scopes?.contains("ASSETS:READ") == true) {
                     val tokens =
                         if (ids.isEmpty()) {
                             bottomViewModel.tokenEntry()
@@ -1193,9 +1195,17 @@ class WebFragment : BaseFragment() {
     private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
         if (viewDestroyed()) return
 
+        if (appId != app?.appId) {
+            webView.evaluateJavascript("$callbackFunction('[]')") {}
+            return
+        }
         lifecycleScope.launch {
             val app = bottomViewModel.findAndSync(appId)
             if (app == null) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            if (!isVerifiedBot(appId)) {
                 webView.evaluateJavascript("$callbackFunction('[]')") {}
                 return@launch
             }
@@ -1212,6 +1222,11 @@ class WebFragment : BaseFragment() {
             val (ts, signature) = getBotSignature(publicKey, method, path, body)
             webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
         }
+    }
+
+    private suspend fun isVerifiedBot(appId: String): Boolean {
+        return bottomViewModel.findUserByAppId(appId)?.isVerified == true ||
+            findValueByKey(Constants.Debug.botSignDebugAppKey(appId), false)
     }
 
     private fun tipSign(

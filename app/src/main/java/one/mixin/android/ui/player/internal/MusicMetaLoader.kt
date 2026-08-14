@@ -6,11 +6,11 @@ import android.annotation.SuppressLint
 import android.util.LruCache
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Metadata
-import androidx.media3.exoplayer.MetadataRetriever
 import androidx.media3.extractor.metadata.flac.PictureFrame
 import androidx.media3.extractor.metadata.id3.ApicFrame
 import androidx.media3.extractor.metadata.id3.TextInformationFrame
 import androidx.media3.extractor.metadata.vorbis.VorbisComment
+import androidx.media3.inspector.MetadataRetriever
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.extension.isLocalScheme
@@ -39,18 +39,22 @@ abstract class MusicMetaLoader {
 
         try {
             val item = MediaItem.fromUri(url)
-            val trackGroupsFuture = MetadataRetriever.retrieveMetadata(MixinApplication.appContext, item)
-            val trackGroups = trackGroupsFuture.get(timeoutMillis, TimeUnit.MILLISECONDS)
-            for (i in 0 until trackGroups.length) {
-                val trackGroup = trackGroups[i]
-                for (j in 0 until trackGroup.length) {
-                    val trackMetadata = trackGroup.getFormat(j).metadata
-                    if (trackMetadata != null) {
-                        val meta = decodeMetadata(id, url, trackMetadata)
-                        metaCache.put(url, meta)
-                        return meta
+            val metadataRetriever = MetadataRetriever.Builder(MixinApplication.appContext, item).build()
+            try {
+                val trackGroups = metadataRetriever.retrieveTrackGroups().get(timeoutMillis, TimeUnit.MILLISECONDS)
+                for (i in 0 until trackGroups.length) {
+                    val trackGroup = trackGroups[i]
+                    for (j in 0 until trackGroup.length) {
+                        val trackMetadata = trackGroup.getFormat(j).metadata
+                        if (trackMetadata != null) {
+                            val meta = decodeMetadata(id, url, trackMetadata)
+                            metaCache.put(url, meta)
+                            return meta
+                        }
                     }
                 }
+            } finally {
+                metadataRetriever.close()
             }
         } catch (e: Exception) {
             if (e is FileNotFoundException || e is SecurityException) {
