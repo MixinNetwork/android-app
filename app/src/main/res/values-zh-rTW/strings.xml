@@ -2450,6 +2450,7 @@
     <string name="perps_funding_frequency">頻率</string>
     <string name="perps_funding_frequency_value">1/4/8 小時</string>
     <string name="perps_receive">收到</string>
+    <string name="Trading_Fee">手續費</string>
     <string name="perps_funding_title_interval">資金費率（%1$d小時）</string>
     <string name="Open_Fee">開倉費</string>
     <string name="Close_Fee">平倉費</string>

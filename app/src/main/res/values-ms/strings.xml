@@ -778,6 +778,7 @@
     <string name="watchlist_remove_desc">%1$s telah dialih keluar daripada senarai pantauan anda</string>
     <string name="perps_category_meme">Meme</string>
     <string name="perps_funding_frequency_value">1/4/8 jam</string>
+    <string name="Trading_Fee">Yuran Dagangan</string>
     <string name="perps_funding_title_interval">Pembiayaan (%1$d jam)</string>
     <string name="Open_Fee">Yuran Pembukaan</string>
     <string name="Close_Fee">Yuran Penutupan</string>

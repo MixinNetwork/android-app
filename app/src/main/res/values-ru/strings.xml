@@ -1096,6 +1096,7 @@
     <string name="watchlist_remove_desc">%1$s больше не в вашем списке наблюдения</string>
     <string name="perps_category_meme">Мемы</string>
     <string name="perps_funding_frequency_value">1/4/8 часов</string>
+    <string name="Trading_Fee">Торговая комиссия</string>
     <string name="perps_funding_title_interval">Финансирование (%1$d ч)</string>
     <string name="Open_Fee">Комиссия за открытие</string>
     <string name="Close_Fee">Комиссия за закрытие</string>

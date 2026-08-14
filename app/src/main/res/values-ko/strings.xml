@@ -2363,6 +2363,7 @@
     <string name="perps_funding_frequency">빈도</string>
     <string name="perps_funding_frequency_value">1/4/8시간</string>
     <string name="perps_receive">수신</string>
+    <string name="Trading_Fee">거래 수수료</string>
     <string name="perps_funding_title_interval">펀딩 (%1$d시간)</string>
     <string name="Open_Fee">진입 수수료</string>
     <string name="Close_Fee">종료 수수료</string>

@@ -1155,6 +1155,7 @@
     <string name="watchlist_remove_desc">%1$s se ha eliminado de tu lista de seguimiento</string>
     <string name="perps_category_meme">Memes</string>
     <string name="perps_funding_frequency_value">1/4/8 horas</string>
+    <string name="Trading_Fee">Comisión de trading</string>
     <string name="perps_funding_title_interval">Financiación (%1$d h)</string>
     <string name="Open_Fee">Comisión de apertura</string>
     <string name="Close_Fee">Comisión de cierre</string>

@@ -104,7 +104,7 @@ fun PerpetualGuidePage(
         stringResource(R.string.take_profit_stop_loss_label),
         stringResource(R.string.Liquidation_Price),
         stringResource(R.string.Funding_Rate),
-        stringResource(R.string.Fee),
+        stringResource(R.string.Trading_Fee),
     )
     val navigationTabs = listOf(
         stringResource(R.string.Brief_Introduction),
@@ -115,7 +115,7 @@ fun PerpetualGuidePage(
         stringResource(R.string.take_profit_stop_loss_label),
         stringResource(R.string.perps_liquidation_price_short),
         stringResource(R.string.Funding_Rate),
-        stringResource(R.string.Fee),
+        stringResource(R.string.Trading_Fee),
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
     var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
