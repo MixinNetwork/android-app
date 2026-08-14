@@ -67,6 +67,7 @@ import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.js.WalletErrorCode
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
@@ -77,6 +78,7 @@ import org.bitcoinj.core.TransactionWitness
 import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
+import org.json.JSONObject
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
 import org.sol4k.exception.RpcException
@@ -178,6 +180,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private var solanaTx: VersionedTransactionCompat? by mutableStateOf(null)
     private var parsedTx: ParsedTx? by mutableStateOf(null)
     private var solanaSignInInput: SignInInput? by mutableStateOf(null)
+    private var requestSettled = false
 
     @Inject
     lateinit var rpc: Rpc
@@ -186,9 +189,17 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         super.onViewCreated(view, savedInstanceState)
         token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
         amount = requireArguments().getString(ARGS_AMOUNT)
+        if (isAccountUnavailable()) {
+            val message = getString(R.string.not_support_network, currentChain.symbol)
+            settleError(WalletErrorCode.UNSUPPORTED_METHOD, message)
+            toast(message)
+            dismiss()
+            return
+        }
         if (address.isBlank()) {
             lifecycleScope.launch {
                 address = when {
+                    signMessage.type == JsSignMessage.TYPE_MESSAGE -> Web3Signer.address
                     signMessage.isEvmMessage() -> Web3Signer.evmAddress
                     signMessage.isSolMessage() -> Web3Signer.solanaAddress
                     signMessage.isBtcMessage() -> Web3Signer.btcAddress
@@ -204,14 +215,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     @Composable
     override fun ComposeContent() {
-        if ((signMessage.isSolMessage() || (signMessage.isGaslessTransfer() && currentChain == Chain.Solana)) && Web3Signer.solanaAddress.isBlank()) {
-            toast(getString(R.string.not_support_network, currentChain.symbol))
-            dismiss()
-        } else if ((signMessage.isEvmMessage() || (signMessage.isGaslessTransfer() && currentChain != Chain.Solana)) && Web3Signer.evmAddress.isBlank()) {
-            toast(getString(R.string.not_support_network, currentChain.symbol))
-            dismiss()
-        } else {
-            BrowserPage(
+        BrowserPage(
                 address,
                 currentChain,
                 amount,
@@ -244,13 +248,15 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 },
                 onPreviewMessage = { TextPreviewActivity.show(requireContext(), it) },
                 showPin = { showPin() },
-                onDismissRequest = { dismiss() },
+                onDismissRequest = {
+                    rejectRequest()
+                    dismiss()
+                },
                 onRejectAction = {
-                    onRejectAction?.invoke()
+                    rejectRequest()
                     dismiss()
                 },
             )
-        }
     }
 
     override fun getBottomSheetHeight(view: View): Int {
@@ -420,7 +426,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     val signedResult: BtcSignedResult = signTransaction(rawHex, key, localUtxos)
                     viewModel.postRawTx(signedResult.signedHex, Constants.ChainId.BITCOIN_CHAIN_ID, fromAddress, toAddress, token?.assetId, if (isFeeWaived) "free" else null, rate = signMessage.rate)
                     viewModel.markOutputsToSigned(Web3Signer.currentWalletId, fromAddress, signedResult.signedHex, signedResult.consumedOutputIds)
-                    onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"\");")
+                    settleSuccess("")
                 } else if (signMessage.type == JsSignMessage.TYPE_TRANSACTION) {
                     val transaction = requireNotNull(signMessage.wcEthereumTransaction)
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
@@ -432,7 +438,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     val hex = pair.first
                     val hash = Hash.sha3(hex)
                     viewModel.postRawTx(hex, currentChain.getWeb3ChainId(), pair.second, toAddress, token?.assetId, if (isFeeWaived) "free" else null)
-                    onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hash\");")
+                    settleSuccess(hash)
                 } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
                     val tx = Web3Signer.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" }) {
@@ -446,15 +452,15 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         viewModel.postRawTx(rawTx, Constants.ChainId.Solana, Web3Signer.solanaAddress, toAddress, token?.assetId, if (isFeeWaived) "free" else null)
                         onTxhash?.invoke(sig, rawTx)
                     }
-                    onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$sig\");")
+                    settleSuccess(sig)
                 } else if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE || signMessage.type == JsSignMessage.TYPE_MESSAGE || signMessage.type == JsSignMessage.TYPE_PERSONAL_MESSAGE) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
                     val hex = Web3Signer.signMessage(priv, requireNotNull(signMessage.data), signMessage.type)
-                    onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$hex\");")
+                    settleSuccess(hex)
                 } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
                     val output = Web3Signer.solanaSignIn(priv, solanaSignInInput!!)
-                    onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, \"$output\");")
+                    settleSuccess(output)
                 } else {
                     throw IllegalArgumentException("invalid signMessage type ${signMessage.type}")
                 }
@@ -464,7 +470,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     System.currentTimeMillis(),
                 )
             } catch (e: Exception) {
-                onDone?.invoke("window.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, null);")
+                settleError(WalletErrorCode.INTERNAL_ERROR, e.message ?: "Signing failed")
                 handleException(e)
             }
         }
@@ -509,6 +515,11 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     override fun onDismiss(dialog: DialogInterface) {
         super.onDismiss(dialog)
         onDismissAction?.invoke(step == Step.Done)
+    }
+
+    override fun onCancel(dialog: DialogInterface) {
+        rejectRequest()
+        super.onCancel(dialog)
     }
 
     private suspend fun updateTxPriorityFee(tx: VersionedTransactionCompat, solanaTxSource: SolanaTxSource): VersionedTransactionCompat {
@@ -564,6 +575,45 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         step = Step.Error
     }
 
+    private fun isAccountUnavailable(): Boolean =
+        when {
+            signMessage.type == JsSignMessage.TYPE_MESSAGE -> Web3Signer.address.isBlank()
+            signMessage.isSolMessage() || (signMessage.isGaslessTransfer() && currentChain == Chain.Solana) -> Web3Signer.solanaAddress.isBlank()
+            signMessage.isEvmMessage() || (signMessage.isGaslessTransfer() && currentChain != Chain.Solana) -> Web3Signer.evmAddress.isBlank()
+            else -> false
+        }
+
+    private fun settleSuccess(result: String) {
+        settleRequest(
+            "mixinwallet.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, ${JSONObject.quote(result)});",
+        )
+    }
+
+    private fun settleError(
+        code: Int,
+        message: String,
+    ) {
+        settleRequest(
+            "mixinwallet.${Web3Signer.currentNetwork}.sendError(${signMessage.callbackId}, {code: $code, message: ${JSONObject.quote(message)}});",
+        )
+    }
+
+    private fun settleRequest(callback: String) {
+        if (requestSettled) return
+        requestSettled = true
+        onDone?.invoke(callback)
+    }
+
+    private fun rejectRequest() {
+        if (requestSettled) return
+        if (onRejectAction == null) {
+            settleError(WalletErrorCode.USER_REJECTED_REQUEST, "User rejected the request")
+        } else {
+            requestSettled = true
+            onRejectAction?.invoke()
+        }
+    }
+
 
     fun setOnDone(callback: (String?) -> Unit): BrowserWalletBottomSheetDialogFragment {
         onDone = callback
@@ -602,6 +652,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1).setOnPinComplete { pin ->
             lifecycleScope.launch(
                 CoroutineExceptionHandler { _, error ->
+                    settleError(WalletErrorCode.INTERNAL_ERROR, error.message ?: "Signing failed")
                     handleException(error)
                 },
             ) {
