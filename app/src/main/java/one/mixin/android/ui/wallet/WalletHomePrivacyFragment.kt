@@ -705,7 +705,6 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
         override fun onBuyClicked() {
             showBuyOptionsBottomSheet()
-            renderHome()
         }
 
         override fun onReceiveClicked() {
@@ -850,6 +849,10 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     private fun showBuyOptionsBottomSheet() {
+        defaultSharedPreferences.putBoolean(PREF_HAS_USED_BUY, false)
+        RxBus.publish(BadgeEvent(PREF_HAS_USED_BUY))
+        _headBinding?.sendReceiveView?.buyBadge?.isVisible = false
+        renderHome()
         WalletBuyOptionsBottomSheetDialogFragment.newInstance(
             walletName = getString(R.string.Privacy_Wallet),
             walletIconRes = R.drawable.ic_wallet_privacy,
@@ -857,9 +860,6 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         )
             .setOnGooglePayOrCard {
                 WalletActivity.showBuy(requireActivity(), false, null, null)
-                defaultSharedPreferences.putBoolean(PREF_HAS_USED_BUY, false)
-                RxBus.publish(BadgeEvent(PREF_HAS_USED_BUY))
-                _headBinding?.sendReceiveView?.buyBadge?.isVisible = false
             }
             .setOnBankTransfer { openCashHome(addBank = true) }
             .showNow(parentFragmentManager, WalletBuyOptionsBottomSheetDialogFragment.TAG)
