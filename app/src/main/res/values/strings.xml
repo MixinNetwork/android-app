@@ -2399,7 +2399,6 @@
     <string name="perps_funding_frequency_value">1/4/8 hours</string>
     <string name="perps_receive">Receive</string>
     <string name="perps_funding_title_interval">Funding (%1$dH)</string>
-    <string name="Trading_Fee">Trading Fee</string>
     <string name="Open_Fee">Open Fee</string>
     <string name="Close_Fee">Close Fee</string>
     <string name="perps_trading_fee_overview">Fees apply when opening, adding to, or closing a position. They are calculated based on position value, not margin.</string>

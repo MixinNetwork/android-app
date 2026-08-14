@@ -2328,7 +2328,6 @@
     <string name="perps_funding_frequency_value">1/4/8 小时</string>
     <string name="perps_receive">收到</string>
     <string name="perps_funding_title_interval">资金费率（%1$d小时）</string>
-    <string name="Trading_Fee">手续费</string>
     <string name="Open_Fee">开仓费</string>
     <string name="Close_Fee">平仓费</string>
     <string name="perps_trading_fee_overview">开仓、加仓和平仓均会产生手续费，费用按仓位价值计算，而不是按保证金计算。</string>
