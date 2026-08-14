@@ -355,7 +355,7 @@ fun InputAmountScreen(
 }
 
 // Helper function to generate deposit URI based on token chain and address
-private fun generateDepositUri(
+internal fun generateDepositUri(
     assetId: String?,
     chainId: String?,
     assetKey: String?,
@@ -515,6 +515,27 @@ private fun generateDepositUri(
                     cleanAmount
                 }
                 "ethereum:${assetKey}@999/transfer?address=$address&amount=$cleanAmount&uint256=$uint256Amount"
+            }
+        }
+
+        ChainId.XLayer -> {
+            if (assetId == ChainId.XLayer) {
+                val weiAmount = try {
+                    BigDecimal(cleanAmount).multiply(BigDecimal.TEN.pow(18)).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ethereum:$address@196?value=$weiAmount"
+            } else {
+                val uint256Amount = try {
+                    val tokenAmount = BigDecimal(cleanAmount)
+                    val decimals = precision ?: 18
+                    val multiplier = BigDecimal.TEN.pow(decimals)
+                    tokenAmount.multiply(multiplier).toBigInteger().toString()
+                } catch (_: Exception) {
+                    cleanAmount
+                }
+                "ethereum:${assetKey}@196/transfer?address=$address&amount=$cleanAmount&uint256=$uint256Amount"
             }
         }
 
