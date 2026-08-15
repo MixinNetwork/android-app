@@ -15,11 +15,15 @@
         <TextView
             android:id="@+id/bot_title"
             tools:ignore="RelativeOverlap"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:layout_marginStart="16dp"
+            android:layout_marginEnd="8dp"
+            android:layout_toStartOf="@id/search_ib"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:text="@string/Markets"
             android:textColor="?attr/text_primary"
             android:textSize="18sp"
@@ -133,112 +137,128 @@
                 android:background="?attr/bg_white"
                 app:layout_scrollFlags="enterAlways">
 
-                <RadioGroup
-                    android:id="@+id/radio_group_market"
-                    android:layout_width="wrap_content"
+                <HorizontalScrollView
+                    android:id="@+id/filter_scroll"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="start"
-                    android:layout_marginStart="16dp"
-                    android:background="@drawable/bg_market_radio"
-                    android:orientation="horizontal"
-                    android:padding="1dp">
+                    android:clipToPadding="false"
+                    android:fillViewport="true"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:scrollbars="none">
 
-                    <androidx.appcompat.widget.AppCompatRadioButton
-                        android:id="@+id/radio_favorites"
+                    <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:background="@drawable/ripple_half_circle_left"
-                        android:button="@null"
-                        android:checked="true"
-                        android:drawableStart="@drawable/selector_market_favorites"
-                        android:paddingStart="14dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="6dp"
-                        android:paddingBottom="4dp" />
+                        android:orientation="horizontal">
 
-                    <View
-                        android:layout_width="1dp"
-                        android:layout_height="16dp"
-                        android:layout_gravity="center_vertical"
-                        android:background="@color/color_gray" />
+                        <RadioGroup
+                            android:id="@+id/radio_group_market"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:background="@drawable/bg_market_radio"
+                            android:orientation="horizontal"
+                            android:padding="1dp">
 
-                    <androidx.appcompat.widget.AppCompatRadioButton
-                        android:id="@+id/radio_all"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:background="@drawable/ripple_half_circle_right"
-                        android:button="@null"
-                        android:drawableStart="@drawable/selector_market_rank"
-                        android:paddingStart="6dp"
-                        android:paddingTop="4dp"
-                        android:paddingEnd="14dp"
-                        android:paddingBottom="4dp" />
+                            <androidx.appcompat.widget.AppCompatRadioButton
+                                android:id="@+id/radio_favorites"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/ripple_half_circle_left"
+                                android:button="@null"
+                                android:checked="true"
+                                android:drawableStart="@drawable/selector_market_favorites"
+                                android:paddingStart="14dp"
+                                android:paddingTop="4dp"
+                                android:paddingEnd="6dp"
+                                android:paddingBottom="4dp" />
 
-                </RadioGroup>
+                            <View
+                                android:layout_width="1dp"
+                                android:layout_height="16dp"
+                                android:layout_gravity="center_vertical"
+                                android:background="@color/color_gray" />
 
-                <LinearLayout
-                    android:id="@+id/drop_top_sort"
-                    android:layout_width="wrap_content"
-                    android:layout_height="32dp"
-                    android:layout_alignTop="@id/radio_group_market"
-                    android:layout_marginEnd="10dp"
-                    android:layout_toStartOf="@id/drop_percentage_sort"
-                    android:background="@drawable/bg_market_radio"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                            <androidx.appcompat.widget.AppCompatRadioButton
+                                android:id="@+id/radio_all"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/ripple_half_circle_right"
+                                android:button="@null"
+                                android:drawableStart="@drawable/selector_market_rank"
+                                android:paddingStart="6dp"
+                                android:paddingTop="4dp"
+                                android:paddingEnd="14dp"
+                                android:paddingBottom="4dp" />
 
-                    <TextView
-                        android:id="@+id/drop_top_tv"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="14sp" />
+                        </RadioGroup>
 
-                    <ImageView
-                        android:id="@+id/sort_top_arrow"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/ic_sort_arrow_down" />
+                        <Space
+                            android:layout_width="0dp"
+                            android:layout_height="1dp"
+                            android:layout_weight="1" />
 
-                </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/drop_top_sort"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:layout_marginStart="10dp"
+                            android:background="@drawable/bg_market_radio"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp">
 
-                <LinearLayout
-                    android:id="@+id/drop_percentage_sort"
-                    android:layout_width="wrap_content"
-                    android:layout_height="32dp"
-                    android:layout_alignTop="@id/radio_group_market"
-                    android:layout_alignParentEnd="true"
-                    android:layout_marginEnd="16dp"
-                    android:background="@drawable/bg_market_radio"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="14dp"
-                    android:paddingEnd="14dp">
+                            <TextView
+                                android:id="@+id/drop_top_tv"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:textColor="?attr/text_primary"
+                                android:textSize="14sp" />
 
-                    <TextView
-                        android:id="@+id/drop_percentage_tv"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:textColor="?attr/text_primary"
-                        android:textSize="14sp" />
+                            <ImageView
+                                android:id="@+id/sort_top_arrow"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/ic_sort_arrow_down" />
 
-                    <ImageView
-                        android:id="@+id/sort_percentage_arrow"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:src="@drawable/ic_sort_arrow_down" />
+                        </LinearLayout>
 
-                </LinearLayout>
+                        <LinearLayout
+                            android:id="@+id/drop_percentage_sort"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:layout_marginStart="10dp"
+                            android:background="@drawable/bg_market_radio"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingStart="14dp"
+                            android:paddingEnd="14dp">
+
+                            <TextView
+                                android:id="@+id/drop_percentage_tv"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:textColor="?attr/text_primary"
+                                android:textSize="14sp" />
+
+                            <ImageView
+                                android:id="@+id/sort_percentage_arrow"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:src="@drawable/ic_sort_arrow_down" />
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </HorizontalScrollView>
 
                 <one.mixin.android.ui.home.web3.widget.MarketTitleView
                     android:id="@+id/title_layout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@id/radio_group_market"
+                    android:layout_below="@id/filter_scroll"
                     android:layout_marginTop="16dp" />
 
             </RelativeLayout>
