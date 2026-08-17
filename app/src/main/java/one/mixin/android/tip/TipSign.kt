@@ -133,10 +133,9 @@ fun tipPrivToPrivateKey(
             return privateKeyBytes
         }
         Constants.ChainId.PEARL_CHAIN_ID -> {
-            require(index == 0) { "Pearl classic wallet only supports the default path" }
-            val privateKey = PearlKeyGenerator.getPrivateKeyFromSeed(priv)
+            val privateKey = PearlKeyGenerator.getPrivateKeyFromSeed(priv, index)
             val address = PearlKeyGenerator.privateKeyToAddress(privateKey)
-            check(address == PearlKeyGenerator.seedToAddress(priv)) { "Generate illegal Pearl Address" }
+            check(address == PearlKeyGenerator.seedToAddress(priv, index)) { "Generate illegal Pearl Address" }
             return privateKey
         }
         Constants.ChainId.SOLANA_CHAIN_ID -> {
@@ -192,8 +191,7 @@ fun privateKeyToAddress(
             return addressString
         }
         Constants.ChainId.PEARL_CHAIN_ID -> {
-            require(index == 0) { "Pearl classic wallet only supports the default path" }
-            return PearlKeyGenerator.seedToAddress(priv)
+            return PearlKeyGenerator.seedToAddress(priv, index)
         }
         Constants.ChainId.SOLANA_CHAIN_ID -> {
             val bip44KeyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))

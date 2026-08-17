@@ -1307,11 +1307,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             if (wallets.isEmpty()) return@withContext null
             val missingUtxoAddresses = wallets.mapNotNull { walletItem ->
                 val addresses = web3Repository.getAddresses(walletItem.id)
-                val derivationIndex = CryptoWalletHelper.extractIndexFromPaths(addresses.map { it.path }) ?: 0
                 CryptoWalletHelper.missingUtxoAddress(
                     chainIds = addresses.map { it.chainId },
-                    walletCategory = walletItem.category,
-                    derivationIndex = derivationIndex,
                 )
             }
             return@withContext when {

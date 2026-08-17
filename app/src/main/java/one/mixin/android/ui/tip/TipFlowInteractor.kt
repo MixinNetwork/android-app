@@ -11,6 +11,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.PEARL_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
@@ -84,10 +85,8 @@ internal fun resolveClassicUtxoBackfillPlan(
         .singleOrNull()
         ?: return null
     val requiredChainIds = buildSet {
-        add(Constants.ChainId.BITCOIN_CHAIN_ID)
-        if (CryptoWalletHelper.shouldHavePearlAddress(WalletCategory.CLASSIC.value, derivationIndex)) {
-            add(PEARL_CHAIN_ID)
-        }
+        add(BITCOIN_CHAIN_ID)
+        add(PEARL_CHAIN_ID)
     }
     return ClassicUtxoBackfillPlan(
         derivationIndex = derivationIndex,

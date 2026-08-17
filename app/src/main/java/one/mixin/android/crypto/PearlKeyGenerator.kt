@@ -56,10 +56,12 @@ object PearlKeyGenerator {
         return SegwitAddress.fromProgram(PearlNetwork, 1, taprootOutputKey(privateKey)).toString()
     }
 
-    fun seedToAddress(seed: ByteArray): String {
-        val address = privateKeyToAddress(getPrivateKeyFromSeed(seed))
-        val aarAddress = Blockchain.generatePearlAddress(seed.hexString())
-        check(address == aarAddress) { "Pearl address mismatch: $aarAddress != $address" }
+    fun seedToAddress(seed: ByteArray, index: Int = 0): String {
+        val address = privateKeyToAddress(getPrivateKeyFromSeed(seed, index))
+        if (index == 0) {
+            val aarAddress = Blockchain.generatePearlAddress(seed.hexString())
+            check(address == aarAddress) { "Pearl address mismatch: $aarAddress != $address" }
+        }
         return address
     }
 

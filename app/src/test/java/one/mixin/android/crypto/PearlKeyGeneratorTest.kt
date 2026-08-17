@@ -2,13 +2,28 @@ package one.mixin.android.crypto
 
 import org.bitcoinj.base.Bech32
 import org.bitcoinj.crypto.ECKey
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigInteger
 
 class PearlKeyGeneratorTest {
+    @Test
+    fun derivesDistinctAddressesForSeedIndexes() {
+        val seed = ByteArray(32) { index -> (index + 1).toByte() }
+        val firstAddress = PearlKeyGenerator.seedToAddress(seed, index = 1)
+        val secondAddress = PearlKeyGenerator.seedToAddress(seed, index = 2)
+
+        assertNotEquals(firstAddress, secondAddress)
+        assertEquals(
+            PearlKeyGenerator.privateKeyToAddress(PearlKeyGenerator.getPrivateKeyFromSeed(seed, index = 1)),
+            firstAddress,
+        )
+    }
+
     @Test
     fun rejectsDerivedZeroPrivateKey() {
         val curveOrder = ECKey.ecDomainParameters().n

@@ -1,7 +1,6 @@
 package one.mixin.android.crypto
 
 import one.mixin.android.Constants
-import one.mixin.android.vo.WalletCategory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -12,12 +11,10 @@ class UtxoAddressRequirementTest {
     private val pearl = Constants.ChainId.PEARL_CHAIN_ID
 
     @Test
-    fun classicDefaultWalletRequiresPearl() {
+    fun missingPearlRequiresAddressUpdate() {
         assertTrue(
             CryptoWalletHelper.hasMissingUtxoAddress(
                 chainIds = setOf(btc),
-                walletCategory = WalletCategory.CLASSIC.value,
-                derivationIndex = 0,
             )
         )
     }
@@ -28,8 +25,6 @@ class UtxoAddressRequirementTest {
             CryptoWalletHelper.MissingUtxoAddress.PEARL,
             CryptoWalletHelper.missingUtxoAddress(
                 chainIds = emptySet(),
-                walletCategory = WalletCategory.CLASSIC.value,
-                derivationIndex = 0,
             )
         )
     }
@@ -40,30 +35,6 @@ class UtxoAddressRequirementTest {
             CryptoWalletHelper.MissingUtxoAddress.BITCOIN,
             CryptoWalletHelper.missingUtxoAddress(
                 chainIds = setOf(pearl),
-                walletCategory = WalletCategory.CLASSIC.value,
-                derivationIndex = 0,
-            )
-        )
-    }
-
-    @Test
-    fun importedMnemonicWalletRequiresPearlAtAnyIndex() {
-        assertTrue(
-            CryptoWalletHelper.hasMissingUtxoAddress(
-                chainIds = setOf(btc),
-                walletCategory = WalletCategory.IMPORTED_MNEMONIC.value,
-                derivationIndex = 9,
-            )
-        )
-    }
-
-    @Test
-    fun additionalClassicWalletDoesNotRequirePearl() {
-        assertFalse(
-            CryptoWalletHelper.hasMissingUtxoAddress(
-                chainIds = setOf(btc),
-                walletCategory = WalletCategory.CLASSIC.value,
-                derivationIndex = 1,
             )
         )
     }
@@ -73,8 +44,6 @@ class UtxoAddressRequirementTest {
         assertTrue(
             CryptoWalletHelper.hasMissingUtxoAddress(
                 chainIds = setOf(pearl),
-                walletCategory = WalletCategory.CLASSIC.value,
-                derivationIndex = 0,
             )
         )
     }
@@ -84,8 +53,6 @@ class UtxoAddressRequirementTest {
         assertFalse(
             CryptoWalletHelper.hasMissingUtxoAddress(
                 chainIds = setOf(btc, pearl),
-                walletCategory = WalletCategory.CLASSIC.value,
-                derivationIndex = 0,
             )
         )
     }

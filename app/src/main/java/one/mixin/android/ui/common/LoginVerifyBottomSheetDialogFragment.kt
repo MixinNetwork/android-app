@@ -225,11 +225,8 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         }
         val hasAnyMissingUtxoAddress: Boolean = wallets.any { walletItem ->
             val addresses = web3Repository.getAddresses(walletItem.id)
-            val derivationIndex = CryptoWalletHelper.extractIndexFromPaths(addresses.map { it.path }) ?: 0
             CryptoWalletHelper.hasMissingUtxoAddress(
                 chainIds = addresses.map { it.chainId },
-                walletCategory = walletItem.category,
-                derivationIndex = derivationIndex,
             )
         }
         if (!hasAnyMissingUtxoAddress) {
@@ -239,9 +236,8 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         for (walletItem in wallets) {
             val localAddresses = web3Repository.getAddresses(walletItem.id)
             val derivationIndex = CryptoWalletHelper.extractIndexFromPaths(localAddresses.map { it.path }) ?: 0
-            val pearlRequired = CryptoWalletHelper.shouldHavePearlAddress(walletItem.category, derivationIndex)
             val hasBtcAddress: Boolean = localAddresses.any { it.chainId == BITCOIN_CHAIN_ID }
-            val hasPearlAddress: Boolean = !pearlRequired || localAddresses.any { it.chainId == PEARL_CHAIN_ID }
+            val hasPearlAddress: Boolean = localAddresses.any { it.chainId == PEARL_CHAIN_ID }
             if (hasBtcAddress && hasPearlAddress) {
                 continue
             }
@@ -286,7 +282,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
                     timestamp = now.toString(),
                 )
             }
-            if (pearlRequired && !hasPearlAddress) {
+            if (!hasPearlAddress) {
                 val pearlWallet: Pair<String, ByteArray> = if (walletItem.category == WalletCategory.CLASSIC.value) {
                     val pearlAddress: String = bottomViewModel.getTipAddress(
                         requireContext(),

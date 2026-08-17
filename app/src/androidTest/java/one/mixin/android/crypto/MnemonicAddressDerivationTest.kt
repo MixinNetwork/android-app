@@ -91,6 +91,25 @@ class MnemonicAddressDerivationTest {
     }
 
     @Test
+    fun buildsClassicPearlRequestsForEveryIndex() {
+        MixinApplication.appContext = ApplicationProvider.getApplicationContext()
+        val spendKey = "00e39d185e883a18949c48c834bc0b8347c6466dd0925fa084f3493d6727e0f9".hexStringToByteArray()
+        val addresses = (0..9).map { index ->
+            val privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.PEARL_CHAIN_ID, index)
+            val expectedAddress = PearlKeyGenerator.privateKeyToAddress(privateKey)
+            val pearlRequest = buildClassicUtxoAddressRequests(spendKey, index)
+                .first { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }
+
+            assertEquals(expectedAddress, privateKeyToAddress(spendKey, Constants.ChainId.PEARL_CHAIN_ID, index))
+            assertEquals(expectedAddress, pearlRequest.destination)
+            assertEquals(Bip44Path.pearlPathString(index), pearlRequest.path)
+            expectedAddress
+        }
+
+        assertEquals(addresses.size, addresses.distinct().size)
+    }
+
+    @Test
     fun derivesPearlAddressesWithAarForMnemonicIndexesZeroThroughNine() {
         val mnemonic = "blur staff nurse happy palm neutral inflict inform soup almost always canal"
         val defaultPath = "m/86'/808276'/0'/0/0"

@@ -102,22 +102,14 @@ object CryptoWalletHelper {
         return null
     }
 
-    fun shouldHavePearlAddress(walletCategory: String, derivationIndex: Int): Boolean {
-        return walletCategory != WalletCategory.CLASSIC.value || derivationIndex == 0
-    }
-
     fun hasMissingUtxoAddress(
         chainIds: Collection<String>,
-        walletCategory: String,
-        derivationIndex: Int,
-    ): Boolean = missingUtxoAddress(chainIds, walletCategory, derivationIndex) != null
+    ): Boolean = missingUtxoAddress(chainIds) != null
 
     fun missingUtxoAddress(
         chainIds: Collection<String>,
-        walletCategory: String,
-        derivationIndex: Int,
     ): MissingUtxoAddress? = when {
-        shouldHavePearlAddress(walletCategory, derivationIndex) && Constants.ChainId.PEARL_CHAIN_ID !in chainIds -> MissingUtxoAddress.PEARL
+        Constants.ChainId.PEARL_CHAIN_ID !in chainIds -> MissingUtxoAddress.PEARL
         Constants.ChainId.BITCOIN_CHAIN_ID !in chainIds -> MissingUtxoAddress.BITCOIN
         else -> null
     }

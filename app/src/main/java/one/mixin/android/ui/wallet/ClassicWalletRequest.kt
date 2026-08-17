@@ -90,17 +90,15 @@ fun buildClassicUtxoAddressRequests(
             category = WalletCategory.CLASSIC.value,
         )
     )
-    if (classicIndex == INITIAL_CLASSIC_WALLET_INDEX) {
-        add(
-            createSignedWeb3AddressRequest(
-                destination = privateKeyToAddress(spendKey, Constants.ChainId.PEARL_CHAIN_ID, classicIndex),
-                chainId = Constants.ChainId.PEARL_CHAIN_ID,
-                path = Bip44Path.pearlPathString(),
-                privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.PEARL_CHAIN_ID, classicIndex),
-                category = WalletCategory.CLASSIC.value,
-            )
+    add(
+        createSignedWeb3AddressRequest(
+            destination = privateKeyToAddress(spendKey, Constants.ChainId.PEARL_CHAIN_ID, classicIndex),
+            chainId = Constants.ChainId.PEARL_CHAIN_ID,
+            path = Bip44Path.pearlPathString(classicIndex),
+            privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.PEARL_CHAIN_ID, classicIndex),
+            category = WalletCategory.CLASSIC.value,
         )
-    }
+    )
 }
 
 fun nextWalletNameIndex(
