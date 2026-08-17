@@ -465,7 +465,11 @@ private fun TrackSpotStartEvent(
     spotType: String,
     entrySource: String,
 ) {
-    SideEffect(initialTabIndex, perpetualTabIndex, tradeWallet, spotType, entrySource) {
+    SideEffect(
+        key1 = initialTabIndex,
+        key2 = tradeWallet,
+        key3 = entrySource,
+    ) {
         if (perpetualTabIndex == null || initialTabIndex != perpetualTabIndex) {
             AnalyticsTracker.trackSpotStart(
                 wallet = tradeWallet,
