@@ -24,6 +24,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -251,15 +252,13 @@ fun TradePage(
         }
     }
 
-    LaunchedEffect(initialTabIndex, tradeWallet, entrySource) {
-        if (perpetualTabIndex == null || initialTabIndex != perpetualTabIndex) {
-            AnalyticsTracker.trackSpotStart(
-                wallet = tradeWallet,
-                type = spotTypeForPage(initialTabIndex),
-                source = entrySource,
-            )
-        }
-    }
+    TrackSpotStartEvent(
+        initialTabIndex = initialTabIndex,
+        perpetualTabIndex = perpetualTabIndex,
+        tradeWallet = tradeWallet,
+        spotType = spotTypeForPage(initialTabIndex),
+        entrySource = entrySource,
+    )
 
     LaunchedEffect(Unit) {
         onShowTradingGuideIfNeeded(pagerState.currentPage)
@@ -454,6 +453,25 @@ fun TradePage(
             userScrollEnabled = false,
         ) { page ->
             tabs[page].screen()
+        }
+    }
+}
+
+@Composable
+private fun TrackSpotStartEvent(
+    initialTabIndex: Int,
+    perpetualTabIndex: Int?,
+    tradeWallet: String,
+    spotType: String,
+    entrySource: String,
+) {
+    SideEffect(initialTabIndex, perpetualTabIndex, tradeWallet, spotType, entrySource) {
+        if (perpetualTabIndex == null || initialTabIndex != perpetualTabIndex) {
+            AnalyticsTracker.trackSpotStart(
+                wallet = tradeWallet,
+                type = spotType,
+                source = entrySource,
+            )
         }
     }
 }
