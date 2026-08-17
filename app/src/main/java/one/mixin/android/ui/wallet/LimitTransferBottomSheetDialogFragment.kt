@@ -137,6 +137,20 @@ import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
 
+internal enum class LimitSenderAddressRoute {
+    SOLANA,
+    UTXO,
+    EVM,
+    UNSUPPORTED,
+}
+
+internal fun resolveLimitSenderAddressRoute(chainId: String): LimitSenderAddressRoute = when {
+    chainId == Constants.ChainId.Solana -> LimitSenderAddressRoute.SOLANA
+    chainId in Constants.Web3UtxoChainIds -> LimitSenderAddressRoute.UTXO
+    chainId in Constants.Web3EvmChainIds -> LimitSenderAddressRoute.EVM
+    else -> LimitSenderAddressRoute.UNSUPPORTED
+}
+
 @AndroidEntryPoint
 class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
@@ -837,14 +851,14 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private suspend fun resolveSenderAddress(token: Web3TokenItem): String {
-        return when {
-            token.chainId == Constants.ChainId.Solana -> Web3Signer.solanaAddress
-            token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                val btcAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, Constants.ChainId.BITCOIN_CHAIN_ID)
-                requireNotNull(btcAddress?.destination) { "btc address not found" }
+        return when (resolveLimitSenderAddressRoute(token.chainId)) {
+            LimitSenderAddressRoute.SOLANA -> Web3Signer.solanaAddress
+            LimitSenderAddressRoute.UTXO -> {
+                val utxoAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, token.chainId)
+                requireNotNull(utxoAddress?.destination) { "utxo address not found" }
             }
-            token.chainId in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
-            else -> throw IllegalArgumentException("Not support: ${token.chainId}")
+            LimitSenderAddressRoute.EVM -> Web3Signer.evmAddress
+            LimitSenderAddressRoute.UNSUPPORTED -> throw IllegalArgumentException("Not support")
         }
     }
 

@@ -53,6 +53,36 @@ class SwapTokenSelectionTest {
     }
 
     @Test
+    fun emptyWeb3TokenListKeepsExistingSelections() {
+        val from = token("from")
+        val to = token("to")
+
+        val result = resolveDefaultWeb3SwapTokenPair(
+            tokens = emptyList(),
+            fromToken = from,
+            toToken = to,
+        )
+
+        assertEquals(from, result.from)
+        assertEquals(to, result.to)
+    }
+
+    @Test
+    fun emptyWeb3TokenListKeepsExistingLimitSelections() {
+        val limitFrom = token("limit-from")
+        val limitTo = token("limit-to")
+
+        val result = resolveDefaultWeb3SwapTokenPair(
+            tokens = emptyList(),
+            fromToken = limitFrom,
+            toToken = limitTo,
+        )
+
+        assertEquals(limitFrom, result.from)
+        assertEquals(limitTo, result.to)
+    }
+
+    @Test
     fun web3DefaultsSelectFirstAndDifferentSecondToken() {
         val first = token("first")
         val second = token("second")

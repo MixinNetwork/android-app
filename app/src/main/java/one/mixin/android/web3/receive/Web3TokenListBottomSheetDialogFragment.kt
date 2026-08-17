@@ -36,6 +36,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.isTransferSupported
+import one.mixin.android.db.web3.vo.isWeb3TransferSupported
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
@@ -53,6 +54,10 @@ import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
+
+internal fun shouldHandleRecentTokenClick(type: Int, chainId: String): Boolean =
+    type != Web3TokenListBottomSheetDialogFragment.TYPE_FROM_SEND ||
+        isWeb3TransferSupported(chainId)
 
 @AndroidEntryPoint
 class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -264,7 +269,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         id = composeId
                         setContent {
                             RecentTokens(true, key) { tokenItem ->
-                                if (type != TYPE_FROM_SEND || tokenItem.chainId != Constants.ChainId.PEARL_CHAIN_ID) {
+                                if (shouldHandleRecentTokenClick(type, tokenItem.chainId)) {
                                     requireContext().defaultSharedPreferences.addToList(key, tokenItem.assetId)
                                     this@Web3TokenListBottomSheetDialogFragment.lifecycleScope.launch {
                                         var web3Token = defaultAssets.find { it.assetId == tokenItem.assetId }

@@ -50,6 +50,7 @@ import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.getSpendKeyFromPin
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.privateKeyToAddress
+import one.mixin.android.ui.common.classicWalletAfterUtxoBackfill
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.INITIAL_CLASSIC_WALLET_INDEX
 import one.mixin.android.ui.wallet.buildClassicWalletRequest
@@ -402,13 +403,17 @@ class TipFlowInteractor @Inject internal constructor(
                 )
             },
         )
-        if (refreshedWallets == null || !ensureClassicUtxoAddresses(context, pin)) {
+        if (refreshedWallets == null) {
             return@runCatching null
         }
-        Timber.i(
-            "LoginFlow classic_wallet_ensure_complete has_classic=${refreshedWallets.any { it.category == WalletCategory.CLASSIC.value }} wallet_count=${refreshedWallets.size} initial_index=$INITIAL_CLASSIC_WALLET_INDEX"
+        val ensuredWallets = classicWalletAfterUtxoBackfill(
+            refreshedWallets = refreshedWallets,
+            backfillSucceeded = ensureClassicUtxoAddresses(context, pin),
         )
-        refreshedWallets
+        Timber.i(
+            "LoginFlow classic_wallet_ensure_complete has_classic=${ensuredWallets.any { it.category == WalletCategory.CLASSIC.value }} wallet_count=${ensuredWallets.size} initial_index=$INITIAL_CLASSIC_WALLET_INDEX"
+        )
+        ensuredWallets
     }.getOrElse { throwable ->
         Timber.i("LoginFlow classic_wallet_ensure_exception")
         Timber.e(throwable, "Failed to ensure classic wallet")

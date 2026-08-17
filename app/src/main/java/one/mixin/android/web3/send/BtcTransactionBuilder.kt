@@ -226,6 +226,9 @@ object BtcTransactionBuilder {
             if (updatedChange.isNegative) {
                 continue
             }
+            if (updatedChange.isLessThan(minimumChangeAmount) && extraCount < extraUtxos.size) {
+                continue
+            }
             val replacementTx = BtcTransaction()
             addInputs(replacementTx, originalInputs, usedExtraUtxos)
             originalOutputs.forEachIndexed { index, output ->

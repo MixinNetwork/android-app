@@ -250,8 +250,11 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             val mnemonic: String? = if (walletItem.category == WalletCategory.CLASSIC.value) {
                 null
             } else {
-                CryptoWalletHelper.getWeb3Mnemonic(requireContext(), spendKey, walletItem.id)
-                    ?: return MixinResponse<Any>(IllegalStateException(getString(R.string.Save_failure)))
+                val decryptedMnemonic = CryptoWalletHelper.getWeb3Mnemonic(requireContext(), spendKey, walletItem.id)
+                when (importedMnemonicBackfillAction(walletItem.category, decryptedMnemonic)) {
+                    ImportedMnemonicBackfillAction.PROCESS -> requireNotNull(decryptedMnemonic)
+                    ImportedMnemonicBackfillAction.SKIP -> continue
+                }
             }
             val addressRequests = mutableListOf<Web3AddressRequest>()
             if (!hasBtcAddress) {

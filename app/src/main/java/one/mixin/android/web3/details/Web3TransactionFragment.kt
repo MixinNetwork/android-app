@@ -638,11 +638,9 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     return@apply
                 }
                 if (actionRoute == PendingTransactionActionRoute.Utxo) {
-                    val pearlReplacementUnavailable: Boolean =
-                        chainId == Constants.ChainId.PEARL_CHAIN_ID && !BtcTransactionBuilder.isReplaceable(notNullPendingRawTx.raw)
                     val hasSignedChange: Boolean =
                         web3ViewModel.hasUtxoSignedOutputsByTransactionHash(transaction.transactionHash, chainId)
-                    if (pearlReplacementUnavailable || hasSignedChange) {
+                    if (shouldHideUtxoPendingActions(chainId, notNullPendingRawTx.raw, hasSignedChange)) {
                         actions.isVisible = false
                         actions.speedUp.setOnClickListener(null)
                         actions.cancelTx.setOnClickListener(null)
