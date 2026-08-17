@@ -124,6 +124,27 @@ fun calculateClosedRoe(
         .multiply(direction)
 }
 
+internal fun calculateTotalPnlPercent(
+    positionCount: Int,
+    singlePositionRoe: String?,
+    totalPnl: BigDecimal,
+    totalMargin: BigDecimal,
+): BigDecimal {
+    return when {
+        positionCount <= 0 -> BigDecimal.ZERO
+        positionCount == 1 ->
+            singlePositionRoe
+                ?.toBigDecimalOrNull()
+                ?.multiply(BigDecimal(100))
+                ?: BigDecimal.ZERO
+        totalMargin <= BigDecimal.ZERO -> BigDecimal.ZERO
+        else ->
+            totalPnl
+                .divide(totalMargin, 8, RoundingMode.HALF_UP)
+                .multiply(BigDecimal(100))
+    }
+}
+
 fun formatPerpsSignedPercent(value: BigDecimal, withSign: Boolean = true): String {
     val percentText = "${formatPerpsPercentDecimal(value)}%"
     if (!withSign) {

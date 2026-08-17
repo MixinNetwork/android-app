@@ -94,6 +94,7 @@ internal fun WalletHomeState.withDynamicBanners(
             hasTransactions = false,
             hasImportKeyAction = importKeyAction != null,
             hasPendingIndicator = pendingIndicator != null,
+            isWatchWallet = isWatchWallet,
             isLoading = false,
         )
         WalletHomeCardType.BANNER in cards -> cards

@@ -59,6 +59,7 @@ data class WalletHomeCache(
             hasTransactions = totalTransactionCount > 0,
             hasImportKeyAction = cachedImportKeyAction != null,
             hasPendingIndicator = pendingIndicator != null,
+            isWatchWallet = isWatchWallet,
             isLoading = false,
         )
         return WalletHomeState(
@@ -112,7 +113,8 @@ fun SharedPreferences.putWalletHomeCache(
         state.totalTransactionCount == 0 &&
         state.pendingIndicator == null &&
         state.importKeyAction == null &&
-        state.watchIndicator == null
+        state.watchIndicator == null &&
+        !state.isWatchWallet
     ) return
     val cache = WalletHomeCache(
         walletType = state.walletType,
