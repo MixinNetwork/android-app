@@ -21,6 +21,18 @@ class ExternalTransferUriParserTonTest {
     }
 
     @Test
+    fun parsePearlTransferUri() =
+        runBlocking {
+            val address = "prl1qexampleaddress00000000000000000000000000"
+            val result = parse("pearl:$address?amount=1.25")
+
+            assertNotNull(result)
+            assertEquals(Constants.ChainId.PEARL_CHAIN_ID, result!!.assetId)
+            assertEquals(address, result.destination)
+            assertEquals("1.25", result.amount)
+        }
+
+    @Test
     fun parseTonJettonTransferUri() =
         runBlocking {
             val result = parse(

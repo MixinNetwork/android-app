@@ -333,6 +333,7 @@ class DepositFragment : BaseFragment() {
             // Check if asset supports amount input (QR code generation)
             val supportsAmountInput = when (asset.chainId) {
                 Constants.ChainId.BITCOIN_CHAIN_ID,
+                Constants.ChainId.PEARL_CHAIN_ID,
                 Constants.ChainId.ETHEREUM_CHAIN_ID,
                 Constants.ChainId.Base,
                 Constants.ChainId.Arbitrum,

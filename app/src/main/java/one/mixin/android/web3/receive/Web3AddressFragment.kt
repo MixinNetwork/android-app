@@ -113,35 +113,30 @@ class Web3AddressFragment : BaseFragment() {
                 context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, address))
                 toast(R.string.copied_to_clipboard)
             }
-            if (web3Token.chainId == Constants.ChainId.PEARL_CHAIN_ID) {
-                binding.amount.isVisible = false
-                binding.bottom.weightSum = 2f
-            } else {
-                binding.amount.setOnClickListener {
-                    InputAmountBottomSheetDialogFragment.newInstance(
-                        web3Token,
-                        address
-                    ).apply {
-                        this.onCopyClick = { depositUri ->
-                            this@Web3AddressFragment.lifecycleScope.launch {
-                                context?.heavyClickVibrate()
-                                context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, depositUri))
-                                toast(R.string.copied_to_clipboard)
-                            }
+            binding.amount.setOnClickListener {
+                InputAmountBottomSheetDialogFragment.newInstance(
+                    web3Token,
+                    address
+                ).apply {
+                    this.onCopyClick = { depositUri ->
+                        this@Web3AddressFragment.lifecycleScope.launch {
+                            context?.heavyClickVibrate()
+                            context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, depositUri))
+                            toast(R.string.copied_to_clipboard)
                         }
-                        this.onShareClick = { amount, depositUri ->
-                            this@Web3AddressFragment.lifecycleScope.launch {
-                                DepositShareActivity.show(
-                                    requireContext(),
-                                    web3Token,
-                                    address,
-                                    depositUri,
-                                    amount
-                                )
-                            }
+                    }
+                    this.onShareClick = { amount, depositUri ->
+                        this@Web3AddressFragment.lifecycleScope.launch {
+                            DepositShareActivity.show(
+                                requireContext(),
+                                web3Token,
+                                address,
+                                depositUri,
+                                amount
+                            )
                         }
-                    }.show(parentFragmentManager, InputAmountBottomSheetDialogFragment.TAG)
-                }
+                    }
+                }.show(parentFragmentManager, InputAmountBottomSheetDialogFragment.TAG)
             }
 
             binding.share.setOnClickListener {
