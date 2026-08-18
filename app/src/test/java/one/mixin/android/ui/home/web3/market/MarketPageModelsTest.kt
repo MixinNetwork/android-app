@@ -222,12 +222,12 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun perpetualTrendingPreservesApiRankOrder() {
+    fun perpetualTrendingSortsByTradeVolumeScore() {
         val markets =
             listOf(
-                perpsMarket(marketId = "first"),
-                perpsMarket(marketId = "second"),
-                perpsMarket(marketId = "third"),
+                perpsMarket(marketId = "second", tradeVolumeScore1D = 20),
+                perpsMarket(marketId = "third", tradeVolumeScore1D = 10),
+                perpsMarket(marketId = "first", tradeVolumeScore1D = 30),
             )
 
         val trending = MarketPageMapper.perpetualMarkets(markets, MarketSubTab.TRENDING)
@@ -377,7 +377,7 @@ class MarketPageModelsTest {
             defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL),
         )
         assertEquals(
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+            MarketSortState(),
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING),
         )
         assertEquals(
@@ -538,6 +538,7 @@ class MarketPageModelsTest {
         marketId: String,
         change: String = "0",
         category: String = "",
+        tradeVolumeScore1D: Int = 0,
     ) = PerpsMarket(
         marketId = marketId,
         displaySymbol = marketId,
@@ -552,6 +553,7 @@ class MarketPageModelsTest {
         maxAmount = "0",
         last = "1",
         volume = "10",
+        tradeVolumeScore1D = tradeVolumeScore1D,
         high = "1",
         low = "1",
         open = "1",
