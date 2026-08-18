@@ -1,25 +1,22 @@
 package one.mixin.android.util.database
 
-import android.annotation.SuppressLint
 import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
-import android.os.Build
-import androidx.sqlite.db.SupportSQLiteDatabase
 import one.mixin.android.Constants
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.datasource.RoomDatabaseCompat
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.moveTo
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Account
 import timber.log.Timber
 import java.io.File
 
-@SuppressLint("ObsoleteSdkInt")
 suspend fun clearJobsAndRawTransaction(
     context: Context,
     identityNumber: String,
 ) {
-        val supportsDeferForeignKeys = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
         val scopedDbFile = databaseFile(context, identityNumber)
         val legacyDbFile = legacyDatabaseFile(context)
 
@@ -28,31 +25,18 @@ suspend fun clearJobsAndRawTransaction(
             return
         }
 
-        var db: SupportSQLiteDatabase? = null
         try {
-            // At this point, migration should have already happened via CurrentUserScopeManager.enter()
-            // So we can safely get the database which should be the migrated scoped database
-            db = MixinDatabase.getWritableDatabase() ?: return
-            if (!supportsDeferForeignKeys) {
-                db.execSQL("PRAGMA foreign_keys = FALSE")
+            val db = MixinDatabase.getDatabase(context, identityNumber)
+            db.runInTransaction {
+                RoomDatabaseCompat.execute(db, "PRAGMA defer_foreign_keys = TRUE")
+                RoomDatabaseCompat.execute(db, "DELETE FROM `jobs`")
+                RoomDatabaseCompat.execute(db, "DELETE FROM `raw_transactions`")
+                RoomDatabaseCompat.execute(db, "DELETE FROM `outputs`")
             }
-            if (supportsDeferForeignKeys) {
-                db.execSQL("PRAGMA defer_foreign_keys = TRUE")
-            }
-            db.beginTransaction()
-            db.execSQL("DELETE FROM `jobs`")
-            db.execSQL("DELETE FROM `raw_transactions`")
-            db.execSQL("DELETE FROM `outputs`")
-            db.setTransactionSuccessful()
             Timber.e("Clear jobs and raw transaction")
         } catch (e: Exception) {
             Timber.e(e)
             reportException(e)
-        } finally {
-            db?.endTransaction()
-            if (!supportsDeferForeignKeys) {
-                db?.execSQL("PRAGMA foreign_keys = TRUE")
-            }
         }
 }
 

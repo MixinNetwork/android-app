@@ -7,6 +7,7 @@ import one.mixin.android.db.converter.ListConverter
 import one.mixin.android.db.converter.SafeDepositConverter
 import one.mixin.android.db.converter.SafeWithdrawalConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
+import one.mixin.android.db.datasource.RoomDatabaseCompat
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
@@ -35,10 +36,10 @@ class TransferInserter(val db: MixinDatabase) {
                 Timber.e("Insert assistanceId $value")
             }
             field = value
-        }
+    }
 
     private val writableDatabase by lazy {
-        db.openHelper.writableDatabase
+        RoomDatabaseCompat.statementDatabase(db)
     }
 
     fun insertMessages(messages: List<Message>) {

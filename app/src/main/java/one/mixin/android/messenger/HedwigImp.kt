@@ -1,7 +1,6 @@
 package one.mixin.android.messenger
 
 import android.database.sqlite.SQLiteBlobTooBigException
-import androidx.room.InvalidationTracker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
@@ -83,24 +82,20 @@ class HedwigImp(
     private fun jobDao() = pendingDatabase().jobDao()
 
     private var floodJob: Job? = null
-    private var floodObservedDatabase: PendingDatabase? = null
-    private val floodObserver =
-        object : InvalidationTracker.Observer("flood_messages") {
-            override fun onInvalidated(tables: Set<String>) {
-                runFloodJob()
-            }
-        }
+    private var floodObserverJob: Job? = null
 
     private fun startObserveFlood() {
         runFloodJob()
-        val db = pendingDatabase()
-        floodObservedDatabase = db
-        db.addObserver(floodObserver)
+        floodObserverJob?.cancel()
+        floodObserverJob =
+            pendingDatabase().observeInvalidation(lifecycleScope, "flood_messages") {
+                runFloodJob()
+            }
     }
 
     private fun stopObserveFlood() {
-        floodObservedDatabase?.removeObserver(floodObserver)
-        floodObservedDatabase = null
+        floodObserverJob?.cancel()
+        floodObserverJob = null
     }
 
     @Synchronized
@@ -165,24 +160,20 @@ class HedwigImp(
     }
 
     private var pendingJob: Job? = null
-    private var pendingObservedDatabase: PendingDatabase? = null
-    private val pendingObserver =
-        object : InvalidationTracker.Observer("pending_messages") {
-            override fun onInvalidated(tables: Set<String>) {
-                runPendingJob()
-            }
-        }
+    private var pendingObserverJob: Job? = null
 
     private fun startObservePending() {
         runPendingJob()
-        val db = pendingDatabase()
-        pendingObservedDatabase = db
-        db.addObserver(pendingObserver)
+        pendingObserverJob?.cancel()
+        pendingObserverJob =
+            pendingDatabase().observeInvalidation(lifecycleScope, "pending_messages") {
+                runPendingJob()
+            }
     }
 
     private fun stopObservePending() {
-        pendingObservedDatabase?.removeObserver(pendingObserver)
-        pendingObservedDatabase = null
+        pendingObserverJob?.cancel()
+        pendingObserverJob = null
     }
 
     @Synchronized

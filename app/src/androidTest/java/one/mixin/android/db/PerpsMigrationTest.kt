@@ -1,10 +1,12 @@
 package one.mixin.android.db
 
-import androidx.room.testing.MigrationTestHelper
-import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import androidx.room3.testing.MigrationTestHelper
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.platform.app.InstrumentationRegistry
 import one.mixin.android.Constants
+import one.mixin.android.db.datasource.execSQL
+import one.mixin.android.db.datasource.query
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -16,8 +18,9 @@ class PerpsMigrationTest {
     val migrationTestHelper =
         MigrationTestHelper(
             InstrumentationRegistry.getInstrumentation(),
-            PerpsDatabase::class.java.canonicalName,
-            FrameworkSQLiteOpenHelperFactory(),
+            InstrumentationRegistry.getInstrumentation().targetContext.getDatabasePath(Constants.DataBase.PERPS_DB_NAME),
+            AndroidSQLiteDriver(),
+            PerpsDatabase::class,
         )
 
     @Test
@@ -167,7 +170,7 @@ class PerpsMigrationTest {
     @Test
     fun migrate_6_7_preservesMarkets() {
         migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 6).apply {
-            insertMarket()
+            insertMarketV6()
             close()
         }
 
@@ -190,7 +193,7 @@ class PerpsMigrationTest {
         }
     }
 
-    private fun SupportSQLiteDatabase.insertMarket() {
+    private fun SQLiteConnection.insertMarketV6() {
         execSQL(
             """
             INSERT INTO markets (
@@ -207,7 +210,24 @@ class PerpsMigrationTest {
         )
     }
 
-    private fun SupportSQLiteDatabase.insertPositionV2() {
+    private fun SQLiteConnection.insertMarketV2() {
+        execSQL(
+            """
+            INSERT INTO markets (
+                market_id, display_symbol, token_symbol, quote_symbol, mark_price, leverage,
+                icon_url, category, tags, funding_rate, min_amount, max_amount, last, volume,
+                high, low, open, change, bid_price, ask_price, created_at, updated_at
+            ) VALUES (
+                'market-1', 'BTC/USDT', 'BTC', 'USDT', '100000', 50,
+                'https://example.com/btc.png', 'major', '["hot"]', '0.001', '0.001', '10',
+                '99999', '12345', '101000', '98000', '99000', '0.02', '99998', '100001',
+                '2026-05-15T15:00:00Z', '2026-05-15T15:00:00Z'
+            )
+            """.trimIndent(),
+        )
+    }
+
+    private fun SQLiteConnection.insertPositionV2() {
         execSQL(
             """
             INSERT INTO positions (
@@ -223,7 +243,7 @@ class PerpsMigrationTest {
         )
     }
 
-    private fun SupportSQLiteDatabase.insertPositionHistoryV3() {
+    private fun SQLiteConnection.insertPositionHistoryV3() {
         execSQL(
             """
             INSERT INTO position_histories (
@@ -237,7 +257,7 @@ class PerpsMigrationTest {
         )
     }
 
-    private fun SupportSQLiteDatabase.insertOrderV4() {
+    private fun SQLiteConnection.insertOrderV4() {
         execSQL(
             """
             INSERT INTO perps_orders (

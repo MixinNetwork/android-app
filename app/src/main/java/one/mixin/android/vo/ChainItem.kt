@@ -2,7 +2,7 @@ package one.mixin.android.vo
 
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

@@ -30,3 +30,4 @@ plugins {
 }
 
 include(":app")
+include(":query-codegen")

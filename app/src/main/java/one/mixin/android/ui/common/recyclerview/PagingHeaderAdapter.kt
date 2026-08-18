@@ -8,6 +8,7 @@ import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import timber.log.Timber
+import java.util.IdentityHashMap
 
 abstract class PagingHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<T>) :
     PagingDataAdapter<T, RecyclerView.ViewHolder>(diffCallback) {
@@ -60,12 +61,20 @@ abstract class PagingHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<
         }
     }
 
-    private var headerObserver: PagedHeaderAdapterDataObserver? = null
+    private lateinit var headerObservers: IdentityHashMap<RecyclerView.AdapterDataObserver, PagingHeaderAdapterDataObserver>
+
+    private fun getHeaderObservers(): IdentityHashMap<RecyclerView.AdapterDataObserver, PagingHeaderAdapterDataObserver> {
+        if (!::headerObservers.isInitialized) {
+            headerObservers = IdentityHashMap()
+        }
+        return headerObservers
+    }
 
     override fun registerAdapterDataObserver(observer: RecyclerView.AdapterDataObserver) {
-        headerObserver = PagedHeaderAdapterDataObserver(observer, if (isShowHeader()) 1 else 0)
+        val headerObserver = PagingHeaderAdapterDataObserver(observer, if (isShowHeader()) 1 else 0)
+        getHeaderObservers()[observer] = headerObserver
         try {
-            super.registerAdapterDataObserver(headerObserver!!)
+            super.registerAdapterDataObserver(headerObserver)
         } catch (e: Exception) {
             Timber.w(e)
         }
@@ -73,7 +82,7 @@ abstract class PagingHeaderAdapter<T : Any>(diffCallback: DiffUtil.ItemCallback<
 
     override fun unregisterAdapterDataObserver(observer: RecyclerView.AdapterDataObserver) {
         try {
-            super.unregisterAdapterDataObserver(headerObserver!!)
+            super.unregisterAdapterDataObserver(getHeaderObservers().remove(observer) ?: observer)
         } catch (e: IllegalStateException) {
             // PagingDataAdapter init unregisterAdapterDataObserver
             Timber.w(e)

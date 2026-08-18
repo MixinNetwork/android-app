@@ -1,12 +1,12 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RawQuery
-import androidx.room.RoomWarnings
-import androidx.sqlite.db.SupportSQLiteQuery
+import androidx.paging.PagingSource
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RawQuery
+import androidx.room3.RoomWarnings
+import androidx.room3.RoomRawQuery
 import one.mixin.android.db.contants.AUDIOS
 import one.mixin.android.db.contants.DATA
 import one.mixin.android.db.contants.IMAGES
@@ -102,7 +102,7 @@ interface MessageDao : BaseDao<Message> {
         ORDER BY m.created_at ASC, m.rowid ASC
     """,
     )
-    fun getMediaMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
+    fun getMediaMessages(conversationId: String): PagingSource<Int, MessageItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
@@ -122,7 +122,7 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun getMediaMessagesList(conversationId: String): List<MessageItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -140,7 +140,7 @@ interface MessageDao : BaseDao<Message> {
     )
     suspend fun getMediaMessagesExcludeLiveList(conversationId: String): List<MessageItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -197,7 +197,7 @@ interface MessageDao : BaseDao<Message> {
         ORDER BY m.created_at DESC, m.rowid DESC
     """,
     )
-    fun getMediaMessagesExcludeLive(conversationId: String): DataSource.Factory<Int, MessageItem>
+    fun getMediaMessagesExcludeLive(conversationId: String): PagingSource<Int, MessageItem>
 
     @Query(
         """
@@ -228,13 +228,13 @@ interface MessageDao : BaseDao<Message> {
         m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
         m.media_width AS mediaWidth, m.media_height AS mediaHeight, m.thumb_image AS thumbImage, m.thumb_url AS thumbUrl,
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.media_duration AS mediaDuration,  m.media_waveform AS mediaWaveform
-        FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id
         WHERE m.conversation_id = :conversationId
         AND m.category IN ($AUDIOS)
         ORDER BY m.created_at DESC
         """,
     )
-    fun getAudioMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
+    fun getAudioMessages(conversationId: String): PagingSource<Int, MessageItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
@@ -250,9 +250,9 @@ interface MessageDao : BaseDao<Message> {
         ORDER BY m.created_at DESC
         """,
     )
-    fun getPostMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
+    fun getPostMessages(conversationId: String): PagingSource<Int, MessageItem>
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
@@ -279,7 +279,7 @@ interface MessageDao : BaseDao<Message> {
         ORDER BY m.created_at DESC
         """,
     )
-    fun getLinkMessages(conversationId: String): DataSource.Factory<Int, HyperlinkItem>
+    fun getLinkMessages(conversationId: String): PagingSource<Int, HyperlinkItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
@@ -294,7 +294,7 @@ interface MessageDao : BaseDao<Message> {
         ORDER BY m.created_at DESC
         """,
     )
-    fun getFileMessages(conversationId: String): DataSource.Factory<Int, MessageItem>
+    fun getFileMessages(conversationId: String): PagingSource<Int, MessageItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
@@ -334,7 +334,7 @@ interface MessageDao : BaseDao<Message> {
     ): Int
 
     @RawQuery
-    suspend fun fuzzySearchMessage(query: SupportSQLiteQuery): List<FtsSearchResult>
+    suspend fun fuzzySearchMessage(query: RoomRawQuery): List<FtsSearchResult>
 
     @Query(
         """
@@ -652,13 +652,30 @@ interface MessageDao : BaseDao<Message> {
         m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
         FROM messages m INNER JOIN users u ON m.user_id = u.user_id 
         WHERE m.conversation_id = :conversationId
-        AND (m.category IN ($DATA)) 
+        AND (m.category IN ($DATA))
         AND m.media_mime_type LIKE 'audio%'
         AND m.media_status != 'EXPIRED'
         ORDER BY m.created_at ASC, m.rowid ASC
         """,
     )
-    fun findAudiosByConversationId(conversationId: String): DataSource.Factory<Int, MessageItem>
+    fun findAudiosByConversationId(conversationId: String): PagingSource<Int, MessageItem>
+
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @Query(
+        """
+        SELECT m.id AS messageId, m.conversation_id AS conversationId, u.user_id AS userId,
+        u.full_name AS userFullName, u.identity_number AS userIdentityNumber, m.category AS type,
+        m.content AS content, m.created_at AS createdAt, m.status AS status, m.media_status AS mediaStatus,
+        m.media_url AS mediaUrl, m.media_mime_type AS mediaMimeType, m.name AS mediaName, m.media_size AS mediaSize
+        FROM messages m INNER JOIN users u ON m.user_id = u.user_id
+        WHERE m.conversation_id = :conversationId
+        AND (m.category IN ($DATA))
+        AND m.media_mime_type LIKE 'audio%'
+        AND m.media_status != 'EXPIRED'
+        ORDER BY m.created_at ASC, m.rowid ASC
+        """,
+    )
+    suspend fun findAudiosByConversationIdList(conversationId: String): List<MessageItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(

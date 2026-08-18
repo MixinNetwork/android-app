@@ -1,8 +1,8 @@
 package one.mixin.android.vo
 
-import androidx.room.TypeConverters
+import androidx.room3.ColumnTypeConverters
 
-@TypeConverters(ArrayConverters::class)
+@ColumnTypeConverters(ArrayConverters::class)
 class AppItem(
     val appId: String,
     val appNumber: String,

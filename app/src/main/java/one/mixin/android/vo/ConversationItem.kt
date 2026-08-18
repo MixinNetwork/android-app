@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
 import androidx.recyclerview.widget.DiffUtil
-import androidx.room.Entity
+import androidx.room3.Entity
 import one.mixin.android.websocket.SystemConversationAction
 import org.threeten.bp.Instant
 

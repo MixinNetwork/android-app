@@ -20,8 +20,6 @@
 -dontwarn org.jni_zero.**
 
 # androidx paging
--keep class androidx.paging.PagedListAdapter.** { *; }
--keep class androidx.paging.AsyncPagedListDiffer.** { *; }
 
 # ServiceLoader support
 -keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
