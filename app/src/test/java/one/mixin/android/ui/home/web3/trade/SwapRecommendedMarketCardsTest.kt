@@ -59,6 +59,26 @@ class SwapRecommendedMarketCardsTest {
     }
 
     @Test
+    fun systemBackKeyboardDismissShowsRecommendedCardsEvenIfFocusRemains() {
+        var isSendFocused = true
+        if (shouldResetSwapSendFocusState(inputText = "", isKeyboardVisible = false)) {
+            isSendFocused = false
+        }
+
+        assertTrue(
+            shouldShowSwapRecommendedMarketCards(
+                hasRecommendedCards = true,
+                inMixin = true,
+                inputText = "",
+                isSendFocused = isSendFocused,
+                isKeyboardVisible = false,
+            )
+        )
+        assertFalse(shouldResetSwapSendFocusState(inputText = "", isKeyboardVisible = true))
+        assertFalse(shouldResetSwapSendFocusState(inputText = "1", isKeyboardVisible = false))
+    }
+
+    @Test
     fun recommendedMarketPriceUsesCompactFixedDecimals() {
         assertEquals("$1.23", formatRecommendedMarketFiatPrice(BigDecimal("1.234"), "$"))
         assertEquals("$0.1234", formatRecommendedMarketFiatPrice(BigDecimal("0.12345"), "$"))
