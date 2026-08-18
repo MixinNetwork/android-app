@@ -1,0 +1,101 @@
+package one.mixin.android.db.perps
+
+import android.content.Context
+import androidx.room.Room
+import androidx.test.core.app.ApplicationProvider
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.db.PerpsDatabase
+import org.junit.Assert.assertEquals
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+
+@RunWith(RobolectricTestRunner::class)
+class PerpsMarketDaoTest {
+    private lateinit var database: PerpsDatabase
+
+    @Before
+    fun setUp() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        database =
+            Room.inMemoryDatabaseBuilder(context, PerpsDatabase::class.java)
+                .allowMainThreadQueries()
+                .build()
+    }
+
+    @After
+    fun tearDown() {
+        database.close()
+    }
+
+    @Test
+    fun marketsOrderByTradeVolumeScoreBeforeVolume() =
+        runBlocking {
+            database.perpsMarketDao().upsertList(
+                listOf(
+                    market("highest-volume", volume = "1000", score = 10),
+                    market("highest-score", volume = "1", score = 30),
+                    market("middle-score", volume = "10", score = 20),
+                ),
+            )
+
+            val result = database.perpsMarketDao().observeAllMarkets().first()
+
+            assertEquals(
+                listOf("highest-score", "middle-score", "highest-volume"),
+                result.map(PerpsMarket::marketId),
+            )
+        }
+
+    @Test
+    fun nonTrendingRefreshPreservesExistingTradeVolumeScore() =
+        runBlocking {
+            val cached = market("cached", volume = "10", score = 30)
+            database.perpsMarketDao().upsertSuspend(cached)
+
+            val merged =
+                database.perpsMarketDao().upsertPreservingTradeVolumeScores(
+                    listOf(
+                        cached.copy(last = "2", tradeVolumeScore1D = 0),
+                        market("uncached", volume = "20", score = 50),
+                    ),
+                )
+
+            assertEquals(30, merged.first { it.marketId == "cached" }.tradeVolumeScore1D)
+            assertEquals("2", database.perpsMarketDao().getMarket("cached")?.last)
+            assertEquals(30, database.perpsMarketDao().getMarket("cached")?.tradeVolumeScore1D)
+            assertEquals(0, database.perpsMarketDao().getMarket("uncached")?.tradeVolumeScore1D)
+        }
+
+    private fun market(
+        marketId: String,
+        volume: String,
+        score: Int,
+    ) = PerpsMarket(
+        marketId = marketId,
+        displaySymbol = marketId,
+        tokenSymbol = marketId,
+        quoteSymbol = "USD",
+        markPrice = "1",
+        leverage = 10,
+        iconUrl = "",
+        fundingRate = "0",
+        minAmount = "0",
+        maxAmount = "0",
+        last = "1",
+        volume = volume,
+        tradeVolumeScore1D = score,
+        high = "1",
+        low = "1",
+        open = "1",
+        change = "0",
+        bidPrice = "1",
+        askPrice = "1",
+        createdAt = "",
+        updatedAt = "",
+    )
+}

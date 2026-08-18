@@ -96,8 +96,6 @@ fun defaultMarketSortState(
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.TRENDING ->
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
-        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.TRENDING ->
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.MEME ->
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.INDICES ->
@@ -274,6 +272,7 @@ object MarketPageMapper {
         subTab: MarketSubTab,
     ): List<PerpsMarket> =
         when (subTab) {
+            MarketSubTab.TRENDING -> markets.sortedByDescending(PerpsMarket::tradeVolumeScore1D)
             MarketSubTab.TOP_GAINERS -> markets.sortedByDescending { it.changePercentValue() ?: BigDecimal.ZERO }
             MarketSubTab.TOP_LOSERS -> markets.sortedBy { it.changePercentValue() ?: BigDecimal.ZERO }
             MarketSubTab.INDICES -> markets.filterByCategory(PerpsMarketCategoryKey.INDICES)

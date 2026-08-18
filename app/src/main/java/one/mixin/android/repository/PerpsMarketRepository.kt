@@ -50,34 +50,40 @@ class PerpsMarketRepository
 
         suspend fun syncFavoriteMarkets(): List<PerpsMarket>? {
             val markets = fetchMarkets(CATEGORY_FAVORITE) ?: return null
-            database.withTransaction {
-                marketDao.upsertList(markets)
+            return database.withTransaction {
+                val mergedMarkets = marketDao.upsertPreservingTradeVolumeScores(markets)
                 favoriteDao.replaceAll(
-                    marketIds = markets.map(PerpsMarket::marketId),
+                    marketIds = mergedMarkets.map(PerpsMarket::marketId),
                     createdAt = nowInUtc(),
                 )
+                mergedMarkets
             }
-            return markets
         }
 
         suspend fun syncCategory(category: MarketCategory): List<PerpsMarket>? {
             val markets = fetchMarkets(category.apiValue) ?: return null
-            database.withTransaction {
-                marketDao.upsertList(markets)
+            return database.withTransaction {
+                val mergedMarkets =
+                    if (category == MarketCategory.TRENDING) {
+                        marketDao.upsertList(markets)
+                        markets
+                    } else {
+                        marketDao.upsertPreservingTradeVolumeScores(markets)
+                    }
                 categoryDao.replaceCategory(
                     category = category.value,
-                    marketIds = markets.map(PerpsMarket::marketId),
+                    marketIds = mergedMarkets.map(PerpsMarket::marketId),
                 )
+                mergedMarkets
             }
-            return markets
         }
 
         suspend fun refreshMarket(marketId: String): PerpsMarket? =
             requestRouteAPI(
                 invokeNetwork = { routeService.getPerpsMarket(marketId) },
                 successBlock = { response ->
-                    response.data?.withDefaults()?.also { market ->
-                        marketDao.upsertSuspend(market)
+                    response.data?.withDefaults()?.let { market ->
+                        marketDao.upsertPreservingTradeVolumeScores(listOf(market)).single()
                     }
                 },
                 failureBlock = { true },
