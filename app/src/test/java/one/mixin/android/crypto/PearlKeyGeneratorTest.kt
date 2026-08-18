@@ -14,14 +14,16 @@ class PearlKeyGeneratorTest {
     @Test
     fun derivesDistinctAddressesForSeedIndexes() {
         val seed = ByteArray(32) { index -> (index + 1).toByte() }
-        val firstAddress = PearlKeyGenerator.seedToAddress(seed, index = 1)
-        val secondAddress = PearlKeyGenerator.seedToAddress(seed, index = 2)
+        val firstAddress =
+            PearlKeyGenerator.privateKeyToAddress(
+                PearlKeyGenerator.getPrivateKeyFromSeed(seed, index = 1),
+            )
+        val secondAddress =
+            PearlKeyGenerator.privateKeyToAddress(
+                PearlKeyGenerator.getPrivateKeyFromSeed(seed, index = 2),
+            )
 
         assertNotEquals(firstAddress, secondAddress)
-        assertEquals(
-            PearlKeyGenerator.privateKeyToAddress(PearlKeyGenerator.getPrivateKeyFromSeed(seed, index = 1)),
-            firstAddress,
-        )
     }
 
     @Test

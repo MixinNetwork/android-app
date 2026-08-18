@@ -92,15 +92,19 @@ object UtxoTransactionSigner {
             )
         }
         val tweakedPrivateKey = PearlKeyGenerator.taprootTweakedPrivateKey(privateKey)
-        transaction.inputs.toList().forEachIndexed { inputIndex, input ->
-            val signatureHash = TaprootSignatureHash.hash(transaction, prevouts, inputIndex)
-            val signature = Bip340Signer.sign(tweakedPrivateKey, signatureHash)
-            transaction.replaceInput(
-                inputIndex,
-                input.withScriptBytes(byteArrayOf()).withWitness(TransactionWitness.of(signature)),
-            )
+        try {
+            transaction.inputs.toList().forEachIndexed { inputIndex, input ->
+                val signatureHash = TaprootSignatureHash.hash(transaction, prevouts, inputIndex)
+                val signature = Bip340Signer.sign(tweakedPrivateKey, signatureHash)
+                transaction.replaceInput(
+                    inputIndex,
+                    input.withScriptBytes(byteArrayOf()).withWitness(TransactionWitness.of(signature)),
+                )
+            }
+            return transaction.signedResult(matchedUtxos, fromAddress)
+        } finally {
+            tweakedPrivateKey.fill(0)
         }
-        return transaction.signedResult(matchedUtxos, fromAddress)
     }
 
     private fun readTransaction(rawHex: String): Transaction {
@@ -194,24 +198,30 @@ internal object Bip340Signer {
         val publicPoint = curve.g.multiply(secretValue).normalize()
         val signingValue = if (hasEvenY(publicPoint)) secretValue else curveOrder.subtract(secretValue)
         val publicKey = xOnly(publicPoint)
-        val maskedKey = Numeric.toBytesPadded(signingValue, 32).xor(taggedHash("BIP0340/aux", auxiliaryRandom))
-        val nonceValue = BigInteger(
-            1,
-            taggedHash("BIP0340/nonce", maskedKey + publicKey + message),
-        ).mod(curveOrder)
-        require(nonceValue.signum() > 0) { "Invalid BIP340 nonce" }
-        val noncePoint = curve.g.multiply(nonceValue).normalize()
-        val adjustedNonce = if (hasEvenY(noncePoint)) nonceValue else curveOrder.subtract(nonceValue)
-        val challenge = BigInteger(
-            1,
-            taggedHash("BIP0340/challenge", xOnly(noncePoint) + publicKey + message),
-        ).mod(curveOrder)
-        val signature = xOnly(noncePoint) + Numeric.toBytesPadded(
-            adjustedNonce.add(challenge.multiply(signingValue)).mod(curveOrder),
-            32,
-        )
-        check(verify(publicKey, message, signature)) { "Generated invalid BIP340 signature" }
-        return signature
+        val signingKeyBytes = Numeric.toBytesPadded(signingValue, 32)
+        val maskedKey = signingKeyBytes.xor(taggedHash("BIP0340/aux", auxiliaryRandom))
+        try {
+            val nonceValue = BigInteger(
+                1,
+                taggedHash("BIP0340/nonce", maskedKey + publicKey + message),
+            ).mod(curveOrder)
+            require(nonceValue.signum() > 0) { "Invalid BIP340 nonce" }
+            val noncePoint = curve.g.multiply(nonceValue).normalize()
+            val adjustedNonce = if (hasEvenY(noncePoint)) nonceValue else curveOrder.subtract(nonceValue)
+            val challenge = BigInteger(
+                1,
+                taggedHash("BIP0340/challenge", xOnly(noncePoint) + publicKey + message),
+            ).mod(curveOrder)
+            val signature = xOnly(noncePoint) + Numeric.toBytesPadded(
+                adjustedNonce.add(challenge.multiply(signingValue)).mod(curveOrder),
+                32,
+            )
+            check(verify(publicKey, message, signature)) { "Generated invalid BIP340 signature" }
+            return signature
+        } finally {
+            signingKeyBytes.fill(0)
+            maskedKey.fill(0)
+        }
     }
 
     fun verify(publicKey: ByteArray, message: ByteArray, signature: ByteArray): Boolean =

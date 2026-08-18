@@ -57,6 +57,7 @@ import one.mixin.android.ui.wallet.INITIAL_CLASSIC_WALLET_INDEX
 import one.mixin.android.ui.wallet.buildClassicWalletRequest
 import one.mixin.android.ui.wallet.buildClassicUtxoAddressRequests
 import one.mixin.android.ui.wallet.ensureInitialClassicWallet
+import one.mixin.android.ui.wallet.validateWalletAddressUpdateResponse
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
@@ -448,13 +449,19 @@ class TipFlowInteractor @Inject internal constructor(
             },
             successBlock = { response ->
                 val wallet = response.data
-                if (wallet == null) {
+                val validatedAddresses =
+                    wallet?.let {
+                        validateWalletAddressUpdateResponse(walletId, missingAddresses, it)
+                    }
+                if (wallet == null || validatedAddresses == null) {
+                    Timber.e(
+                        "Rejected mismatched classic UTXO address update response " +
+                            "walletId=$walletId chains=${missingAddresses.map { it.chainId }}",
+                    )
                     false
                 } else {
                     web3Repository.insertWallet(wallet)
-                    wallet.addresses?.takeIf { it.isNotEmpty() }?.let { addresses ->
-                        web3Repository.insertAddressList(addresses)
-                    }
+                    web3Repository.insertAddressList(validatedAddresses)
                     Timber.i("LoginFlow classic_utxo_addresses_update_success chains=${missingAddresses.map { it.chainId }}")
                     true
                 }

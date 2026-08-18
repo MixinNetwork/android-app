@@ -18,6 +18,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.crypto.ECKey
+import org.bitcoinj.crypto.MnemonicCode
 import org.web3j.utils.Numeric
 
 @RunWith(AndroidJUnit4::class)
@@ -73,7 +74,7 @@ class MnemonicAddressDerivationTest {
             assertEquals(expected.btc, privateKeyToAddress(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, index))
         }
 
-        val aarPearlAddress = Blockchain.generatePearlAddress(spendKey.hexString())
+        val aarPearlAddress = Blockchain.generatePearlAddressAtIndex(spendKey.hexString(), 0)
         val pearlPrivateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.PEARL_CHAIN_ID, index = 0)
         assertEquals(aarPearlAddress, privateKeyToAddress(spendKey, Constants.ChainId.PEARL_CHAIN_ID, index = 0))
         assertEquals(aarPearlAddress, PearlKeyGenerator.privateKeyToAddress(pearlPrivateKey))
@@ -86,7 +87,10 @@ class MnemonicAddressDerivationTest {
         val pearlRequest = buildClassicUtxoAddressRequests(spendKey, INITIAL_CLASSIC_WALLET_INDEX)
             .first { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }
 
-        assertEquals(Blockchain.generatePearlAddress(spendKey.hexString()), pearlRequest.destination)
+        assertEquals(
+            Blockchain.generatePearlAddressAtIndex(spendKey.hexString(), INITIAL_CLASSIC_WALLET_INDEX.toLong()),
+            pearlRequest.destination,
+        )
         assertEquals("m/86'/808276'/0'/0/0", pearlRequest.path)
     }
 
@@ -96,13 +100,15 @@ class MnemonicAddressDerivationTest {
         val spendKey = "00e39d185e883a18949c48c834bc0b8347c6466dd0925fa084f3493d6727e0f9".hexStringToByteArray()
         val addresses = (0..9).map { index ->
             val privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.PEARL_CHAIN_ID, index)
-            val expectedAddress = PearlKeyGenerator.privateKeyToAddress(privateKey)
+            val path = Bip44Path.pearlPathString(index)
+            val expectedAddress = Blockchain.generatePearlAddressAtIndex(spendKey.hexString(), index.toLong())
             val pearlRequest = buildClassicUtxoAddressRequests(spendKey, index)
                 .first { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }
 
+            assertEquals(expectedAddress, PearlKeyGenerator.privateKeyToAddress(privateKey))
             assertEquals(expectedAddress, privateKeyToAddress(spendKey, Constants.ChainId.PEARL_CHAIN_ID, index))
             assertEquals(expectedAddress, pearlRequest.destination)
-            assertEquals(Bip44Path.pearlPathString(index), pearlRequest.path)
+            assertEquals(path, pearlRequest.path)
             expectedAddress
         }
 
@@ -110,16 +116,16 @@ class MnemonicAddressDerivationTest {
     }
 
     @Test
-    fun derivesPearlAddressesWithAarForMnemonicIndexesZeroThroughNine() {
+    fun derivesPearlAddressesFromSeedWithAarForMnemonicIndexesZeroThroughNine() {
         val mnemonic = "blur staff nurse happy palm neutral inflict inform soup almost always canal"
+        val seed = MnemonicCode.toSeed(mnemonic.split(" "), "")
         val defaultPath = "m/86'/808276'/0'/0/0"
-        val defaultAddress = Blockchain.generatePearlAddressFromMnemonic(mnemonic, "")
+        val defaultAddress = Blockchain.generatePearlAddressAtIndex(seed.hexString(), 0)
         assertEquals(defaultPath, Bip44Path.pearlPathString())
-        assertEquals(defaultAddress, Blockchain.generatePearlAddressFromMnemonic(mnemonic, defaultPath))
 
         (0..9).forEach { index ->
             val path = Bip44Path.pearlPathString(index)
-            val aarAddress = Blockchain.generatePearlAddressFromMnemonic(mnemonic, path)
+            val aarAddress = Blockchain.generatePearlAddressAtIndex(seed.hexString(), index.toLong())
             val wallet = CryptoWalletHelper.mnemonicToPearlWallet(mnemonic, index = index)
 
             assertEquals(path, wallet.path)
@@ -133,10 +139,25 @@ class MnemonicAddressDerivationTest {
     }
 
     @Test
+    fun derivesNonDefaultPearlIndexWithMnemonicPassphrase() {
+        val mnemonic = "legal winner thank year wave sausage worth useful legal winner thank yellow"
+        val passphrase = "pearl-passphrase"
+        val index = 1
+        val seed = MnemonicCode.toSeed(mnemonic.split(" "), passphrase)
+        val path = Bip44Path.pearlPathString(index)
+        val aarAddress = Blockchain.generatePearlAddressAtIndex(seed.hexString(), index.toLong())
+        val wallet = CryptoWalletHelper.mnemonicToPearlWallet(mnemonic, passphrase, index)
+
+        assertEquals(path, wallet.path)
+        assertEquals(aarAddress, wallet.address)
+    }
+
+    @Test
     fun derivesOfficialPearlDefaultAddressWithAar() {
         val mnemonic = "legal winner thank year wave sausage worth useful legal winner thank yellow"
         val expectedAddress = "prl1p5rg2k5twnlggzdqhcw994xkgwqfuvvwhjnjrx84xsv9f834r887q4j2j5p"
-        val aarAddress = Blockchain.generatePearlAddressFromMnemonic(mnemonic, Bip44Path.pearlPathString())
+        val seed = MnemonicCode.toSeed(mnemonic.split(" "), "")
+        val aarAddress = Blockchain.generatePearlAddressAtIndex(seed.hexString(), 0)
         val wallet = CryptoWalletHelper.mnemonicToPearlWallet(mnemonic)
 
         assertEquals(expectedAddress, aarAddress)

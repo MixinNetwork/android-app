@@ -58,24 +58,13 @@ object PearlKeyGenerator {
 
     fun seedToAddress(seed: ByteArray, index: Int = 0): String {
         val address = privateKeyToAddress(getPrivateKeyFromSeed(seed, index))
-        if (index == 0) {
-            val aarAddress = Blockchain.generatePearlAddress(seed.hexString())
-            check(address == aarAddress) { "Pearl address mismatch: $aarAddress != $address" }
-        }
+        val aarAddress = Blockchain.generatePearlAddressAtIndex(seed.hexString(), index.toLong())
+        check(address == aarAddress) { "Pearl address mismatch: $aarAddress != $address" }
         return address
     }
 
     fun mnemonicToAddress(mnemonic: String, passphrase: String = "", index: Int = 0): String {
-        val seed = mnemonicToSeed(mnemonic, passphrase)
-        val address = privateKeyToAddress(getPrivateKeyFromSeed(seed, index))
-        val aarAddress = if (passphrase.isEmpty()) {
-            Blockchain.generatePearlAddressFromMnemonic(mnemonic, Bip44Path.pearlPathString(index))
-        } else {
-            require(index == 0) { "Pearl passphrase only supports the default path" }
-            Blockchain.generatePearlAddress(seed.hexString())
-        }
-        check(address == aarAddress) { "Pearl address mismatch: $aarAddress != $address" }
-        return address
+        return seedToAddress(mnemonicToSeed(mnemonic, passphrase), index)
     }
 
     fun isAddressValid(address: String): Boolean {
