@@ -145,6 +145,9 @@ class ConversationViewModel
                 conversationRepository.getConversation(id)
             }
 
+        fun observeConversation(id: String) =
+            conversationRepository.getConversationById(id)
+
         fun findUserById(conversationId: String): LiveData<User> =
             userRepository.findUserById(conversationId)
 

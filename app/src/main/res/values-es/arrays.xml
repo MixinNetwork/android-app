@@ -38,6 +38,14 @@
         <item quantity="one">semana</item>
         <item quantity="other">semanas</item>
     </plurals>
+    <plurals name="time_interval_unit_month">
+        <item quantity="one">mes</item>
+        <item quantity="other">meses</item>
+    </plurals>
+    <plurals name="time_interval_unit_year">
+        <item quantity="one">año</item>
+        <item quantity="other">años</item>
+    </plurals>
 
     <array name="database">
         <item>Base de datos de Mixin</item>
