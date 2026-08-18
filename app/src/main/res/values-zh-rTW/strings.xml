@@ -1305,6 +1305,7 @@
     <string name="error_perps_order_value_too_small">錯誤 10650：部位規模太小。</string>
     <string name="error_already_had_open_position">錯誤 10651：當前已有持倉</string>
     <string name="error_waiting_other_orders">錯誤10652：目前市場仍在處理其他訂單，請稍後重試。</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit">錯誤 10655：部位規模超過目前槓桿檔位限制，請降低金額或槓桿。</string>
     <string name="error_watch_address_not_supported">錯誤 10633：地址不可用</string>
     <string name="error_invalid_referral_code">錯誤 10730：無效的邀請碼</string>
     <string name="error_already_bonded_referral_code">錯誤 10731：當前賬號已繫結邀請碼，無法修改繫結。</string>
@@ -1768,6 +1769,7 @@
     <string name="single_transaction_should_be_between">金額必須介於 %1$s %2$s 與 %3$s %4$s 之間</string>
     <string name="perps_minimum_margin">最低金額為 %1$s %2$s</string>
     <string name="perps_maximum_margin">最大金額為%1$s %2$s</string>
+    <string name="perps_maximum_leverage">目前金額支援的最大槓桿為 %1$dx</string>
     <string name="web3_approve">批准</string>
     <string name="web3_borrow">借款</string>
     <string name="web3_burn">燃燒</string>

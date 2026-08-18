@@ -278,6 +278,7 @@ private fun PerpsAddContent(
     val viewModel = hiltViewModel<PerpetualViewModel>()
     var amount by remember(position.positionId) { mutableStateOf("") }
     var remoteLiquidationPrice by remember(position.positionId) { mutableStateOf<String?>(null) }
+    var liquidationPriceLimit by remember(position.positionId) { mutableStateOf<LiquidationPriceLimit?>(null) }
     var isLiquidationLoading by remember(position.positionId) { mutableStateOf(false) }
     var liquidationJob by remember(position.positionId) { mutableStateOf<Job?>(null) }
     val tokenBalance = selectedToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -305,6 +306,7 @@ private fun PerpsAddContent(
     val priceScale = market?.priceScale ?: position.priceScale
 
     LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin) {
+        liquidationPriceLimit = null
         val addMargin = amount.toBigDecimalOrNull()
         if (!shouldRequestLiquidationPrice(addMargin, minimumMargin) || aboveMaximumMargin) {
             liquidationJob?.cancel()
@@ -322,7 +324,9 @@ private fun PerpsAddContent(
                 .stripTrailingZeros()
                 .toPlainString()
                 .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
-            remoteLiquidationPrice = requestLiquidationPrice {
+            remoteLiquidationPrice = requestLiquidationPrice(
+                onLimitExceeded = { liquidationPriceLimit = it },
+            ) {
                 viewModel.estimateLiquidationPrice(
                     amount = normalizedAmount,
                     positionId = position.positionId,
@@ -342,10 +346,26 @@ private fun PerpsAddContent(
         maximumMargin.stripTrailingZeros().toPlainString(),
         selectedToken?.symbol.orEmpty(),
     )
+    val liquidationLimitMaxAmount = liquidationPriceLimit?.maxAmount
+        ?.toBigDecimalOrNull()
+        ?.takeIf { it > BigDecimal.ZERO }
+        ?.stripTrailingZeros()
+        ?.toPlainString()
+    val liquidationLimitAmountError = liquidationLimitMaxAmount?.let {
+        stringResource(R.string.perps_maximum_margin, it, selectedToken?.symbol.orEmpty())
+    }
+    val liquidationLimitLeverageError = liquidationPriceLimit?.maxLeverage?.let {
+        stringResource(R.string.perps_maximum_leverage, it)
+    }
+    val liquidationLimitError = liquidationPriceLimit?.let {
+        listOfNotNull(liquidationLimitAmountError, liquidationLimitLeverageError)
+            .joinToString(". ")
+            .ifBlank { stringResource(R.string.error_perps_position_size_exceeds_leverage_limit) }
+    }
     val marginLimitError = when {
         belowMinimumMargin -> minimumMarginError
         aboveMaximumMargin -> maximumMarginError
-        else -> null
+        else -> liquidationLimitError
     }
 
     val currentPriceText = formatPerpsPrice(currentPrice, priceScale)

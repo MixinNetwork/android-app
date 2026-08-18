@@ -226,6 +226,7 @@ open class ErrorHandler {
         const val MAX_WALLET_REACHED = 10632
         const val PERPS_ORDER_VALUE_TOO_SMALL = 10650
         const val PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION = 10651
+        const val PERPS_POSITION_SIZE_EXCEEDS_LEVERAGE_LIMIT = 10655
 
         const val UNSUPPORTED_WATCH_ADDRESS = 10633
         const val INVALID_REFERRAL_CODE = 10730
@@ -335,6 +336,9 @@ fun Context.getMixinErrorStringByCode(
         }
         ErrorHandler.PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION -> {
             getString(R.string.error_already_had_open_position)
+        }
+        ErrorHandler.PERPS_POSITION_SIZE_EXCEEDS_LEVERAGE_LIMIT -> {
+            getString(R.string.error_perps_position_size_exceeds_leverage_limit)
         }
         ErrorHandler.UNSUPPORTED_WATCH_ADDRESS -> {
             getString(R.string.error_watch_address_not_supported)
