@@ -142,6 +142,8 @@ import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuList
@@ -963,6 +965,9 @@ class WebFragment : BaseFragment() {
                     openInBrowserAction = { url ->
                         openInBrowser(url)
                     },
+                    verifyPinAction = { callback ->
+                        verifyPin(callback)
+                    },
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             webView.addJavascriptInterface(
@@ -1214,6 +1219,37 @@ class WebFragment : BaseFragment() {
             }
             val (ts, signature) = getBotSignature(publicKey, method, path, body)
             webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
+        }
+    }
+
+    private fun verifyPin(callbackFunction: String) {
+        if (viewDestroyed()) return
+
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+
+            VerifyBottomSheetDialogFragment.newInstance().apply {
+                setOnPinSuccess {
+                    lifecycleScope.launch {
+                        if (!viewDestroyed()) {
+                            webView.evaluateJavascript("$callbackFunction(true)") {}
+                        }
+                    }
+                }
+                setCallback(
+                    object : BiometricBottomSheetDialogFragment.Callback() {
+                        override fun onDismiss(success: Boolean) {
+                            if (success || viewDestroyed()) return
+
+                            lifecycleScope.launch {
+                                if (!viewDestroyed()) {
+                                    webView.evaluateJavascript("$callbackFunction(false)") {}
+                                }
+                            }
+                        }
+                    },
+                )
+            }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
         }
     }
 
@@ -2210,6 +2246,7 @@ class WebFragment : BaseFragment() {
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
         var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
         var openInBrowserAction: ((String) -> Boolean)? = null,
+        var verifyPinAction: ((String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -2257,6 +2294,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun openInBrowser(url: String): Boolean {
             return openInBrowserAction?.invoke(url) ?: false
+        }
+
+        @JavascriptInterface
+        fun verifyPin(callbackFunction: String) {
+            verifyPinAction?.invoke(callbackFunction)
         }
 
         @JavascriptInterface
