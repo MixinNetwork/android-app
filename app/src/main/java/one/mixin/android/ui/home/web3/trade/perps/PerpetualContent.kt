@@ -61,7 +61,6 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 10
@@ -125,7 +124,12 @@ fun PerpetualContent(
     val totalPnlAmount = BigDecimal.valueOf(totalPnl)
     val totalPositionValueFiatText = formatPerpsUsdDecimal(totalMargin)
     val totalPnlFiatText = formatPerpsSignedUsdDecimal(totalPnlAmount)
-    val totalPnlPercent = calculatePnlPercent(totalMargin, totalPnlAmount)
+    val totalPnlPercent = calculateTotalPnlPercent(
+        positionCount = openPositionsCount,
+        singlePositionRoe = openPositions.singleOrNull()?.roe,
+        totalPnl = totalPnlAmount,
+        totalMargin = totalMargin,
+    )
 
     LaunchedEffect(Unit) {
         viewModel.loadMarkets(
@@ -657,19 +661,6 @@ private fun PerpsMarket.isStocksCategory(): Boolean {
 
 private fun PerpsMarket.isCommoditiesCategory(): Boolean {
     return category.equals("commodity", ignoreCase = true) || category.equals("commodities", ignoreCase = true)
-}
-
-private fun calculatePnlPercent(
-    margin: BigDecimal,
-    pnl: BigDecimal,
-): Double {
-    if (margin <= BigDecimal.ZERO) {
-        return 0.0
-    }
-    return pnl
-        .divide(margin, 8, RoundingMode.HALF_UP)
-        .multiply(BigDecimal(100))
-        .toDouble()
 }
 
 @Composable

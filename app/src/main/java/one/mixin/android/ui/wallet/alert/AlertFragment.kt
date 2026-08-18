@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -169,7 +169,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                         }
                     }
 
-                    LaunchedEffect(Unit) {
+                    SideEffect(Unit) {
                         AnalyticsTracker.trackMarketPriceAlerts(
                             if (goAlert) AnalyticsTracker.MarketAlertsType.ONE else AnalyticsTracker.MarketAlertsType.ALL,
                         )

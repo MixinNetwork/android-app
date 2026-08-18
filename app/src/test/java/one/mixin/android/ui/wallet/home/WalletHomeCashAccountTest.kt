@@ -184,4 +184,33 @@ class WalletHomeCashAccountTest {
         )
         assertFalse(state.isLoading)
     }
+
+    @Test
+    fun watchingWalletDoesNotShowFundEmptyGuideWhenBannersLoad() {
+        val banner = WalletHomeBanner(
+            bannerId = "ad-1",
+            title = "Ad",
+            actionUrl = "mixin://ad",
+        )
+
+        val state = WalletHomeState(
+            walletType = WalletHomeType.CLASSIC,
+            isWatchWallet = true,
+            isLoading = true,
+        ).withDynamicBanners(
+            dynamicBanners = listOf(banner),
+            showAddWalletBanner = false,
+        )
+
+        assertEquals(
+            listOf(
+                WalletHomeCardType.BALANCE,
+                WalletHomeCardType.BANNER,
+                WalletHomeCardType.TOKENS,
+                WalletHomeCardType.SUPPORT,
+            ),
+            state.cards,
+        )
+        assertFalse(state.cards.contains(WalletHomeCardType.EMPTY_GUIDE))
+    }
 }
