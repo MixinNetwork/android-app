@@ -23,8 +23,8 @@ import java.nio.ByteBuffer
 object BtcTransactionBuilder {
 
     private const val RBF_SEQUENCE: Long = 0xfffffffdL
-    private const val BTC_MINIMUM_CHANGE_SATOSHIS: Long = 1_000L
-    private const val PEARL_MINIMUM_CHANGE_SATOSHIS: Long = 100_000L
+    private const val BTC_MINIMUM_OUTPUT_SATOSHIS: Long = 1_000L
+    private const val PEARL_MINIMUM_OUTPUT_SATOSHIS: Long = 100_000L
     private const val INCREMENTAL_RELAY_FEE_SAT_PER_VB: Long = 1L
     private const val RBF_SAFETY_EXTRA_SATOSHIS: Long = 300L
 
@@ -104,6 +104,9 @@ object BtcTransactionBuilder {
         val changeAddress = parseAddress(chainId, fromAddress)
         val recipientAddress = parseAddress(chainId, toAddress)
         val sendAmount = Coin.parseCoin(amountBtc)
+        require(sendAmount.value >= minimumOutputSatoshis(chainId)) {
+            "Amount must be at least ${minimumTransferAmount(chainId).toPlainString()}"
+        }
         val minimumChangeAmount: Coin = Coin.valueOf(minimumChangeSatoshis)
         var selectedAmount: Coin = Coin.ZERO
         val selectedUtxos: MutableList<WalletOutput> = mutableListOf()
@@ -361,10 +364,17 @@ object BtcTransactionBuilder {
     private fun buildOutputScript(chainId: String, address: String): Script =
         ScriptBuilder.createOutputScript(parseAddress(chainId, address))
 
-    private fun minimumChangeSatoshis(chainId: String): Long =
+    internal fun minimumTransferAmount(chainId: String): BigDecimal =
+        BigDecimal.valueOf(minimumOutputSatoshis(chainId))
+            .divide(satoshisPerBtc)
+            .stripTrailingZeros()
+
+    private fun minimumChangeSatoshis(chainId: String): Long = minimumOutputSatoshis(chainId)
+
+    private fun minimumOutputSatoshis(chainId: String): Long =
         when (chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> BTC_MINIMUM_CHANGE_SATOSHIS
-            Constants.ChainId.PEARL_CHAIN_ID -> PEARL_MINIMUM_CHANGE_SATOSHIS
+            Constants.ChainId.BITCOIN_CHAIN_ID -> BTC_MINIMUM_OUTPUT_SATOSHIS
+            Constants.ChainId.PEARL_CHAIN_ID -> PEARL_MINIMUM_OUTPUT_SATOSHIS
             else -> throw IllegalArgumentException("Unsupported UTXO chain: $chainId")
         }
 

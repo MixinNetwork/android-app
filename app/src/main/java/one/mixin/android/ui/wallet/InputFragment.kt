@@ -107,6 +107,7 @@ import one.mixin.android.web3.isNativeSolAsset
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.nativeSolSpendableBalance
+import one.mixin.android.web3.send.BtcTransactionBuilder
 import one.mixin.android.web3.send.InsufficientBtcBalanceException
 import one.mixin.android.web3.solanaRecipientAccountState
 import one.mixin.android.web3.solanaTransferAmountRange
@@ -713,10 +714,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     return@launch
                                 }
                                 if (token.chainId in Constants.Web3UtxoChainIds) {
-                                    val minBtcAmount = BigDecimal("0.00001") // 1,000 sat
+                                    val minimumAmount = BtcTransactionBuilder.minimumTransferAmount(token.chainId)
                                     val inputAmount: BigDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                                    if (inputAmount < minBtcAmount) {
-                                        toast(getString(R.string.single_transaction_should_be_greater_than, minBtcAmount.toPlainString(), token.symbol))
+                                    if (inputAmount < minimumAmount) {
+                                        toast(getString(R.string.single_transaction_should_be_greater_than, minimumAmount.toPlainString(), token.symbol))
                                         return@launch
                                     }
                                 }

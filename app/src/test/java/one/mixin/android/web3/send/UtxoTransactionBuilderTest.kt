@@ -23,6 +23,26 @@ class UtxoTransactionBuilderTest {
     private val receiver = "prl1pf7fr22zh8f49j9neucnrwvrk5vz47zj8p2sqr2j0g2w5sylmm2tsg7x98l"
 
     @Test
+    fun minimumTransferAmountUsesChainSpecificOutputLimits() {
+        assertEquals(BigDecimal("0.00001"), BtcTransactionBuilder.minimumTransferAmount(Constants.ChainId.BITCOIN_CHAIN_ID))
+        assertEquals(BigDecimal("0.001"), BtcTransactionBuilder.minimumTransferAmount(Constants.ChainId.PEARL_CHAIN_ID))
+    }
+
+    @Test
+    fun pearlRecipientAmountBelowMinimumIsRejected() {
+        assertThrows(IllegalArgumentException::class.java) {
+            BtcTransactionBuilder.buildSendTransaction(
+                chainId = Constants.ChainId.PEARL_CHAIN_ID,
+                fromAddress = sender,
+                toAddress = receiver,
+                amountBtc = "0.00005",
+                localUtxos = listOf(pearlOutput()),
+                feeRate = BigDecimal.ONE,
+            )
+        }
+    }
+
+    @Test
     fun pearlTaprootAddressesBuildUnsignedTransaction() {
         val output = pearlOutput()
 
@@ -33,7 +53,6 @@ class UtxoTransactionBuilderTest {
             amountBtc = "0.001",
             localUtxos = listOf(output),
             feeRate = BigDecimal.ONE,
-            minimumChangeSatoshis = 100_000L,
         )
 
         val transaction = Transaction.read(ByteBuffer.wrap(built.rawHex.hexStringToByteArray()))
