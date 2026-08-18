@@ -32,7 +32,7 @@ internal enum class PerpsMarketCategory(val categoryKey: PerpsMarketCategoryKey?
 internal data class PerpsMarketListUiState(
     val query: String = "",
     val selectedCategory: PerpsMarketCategory = PerpsMarketCategory.ALL,
-    val sortState: MarketSortState = defaultPerpsMarketSortState(),
+    val sortState: MarketSortState = defaultPerpsMarketSortState(PerpsMarketCategory.ALL),
     val markets: List<PerpsMarket> = emptyList(),
     val favoriteMarketIds: Set<String> = emptySet(),
     val favoriteOverrides: Map<String, Boolean> = emptyMap(),
@@ -76,7 +76,7 @@ internal data class PerpsMarketListUiState(
         if (selectedCategory == category) return this
         return copy(
             selectedCategory = category,
-            sortState = defaultPerpsMarketSortState(),
+            sortState = defaultPerpsMarketSortState(category),
             scrollToTopRequest = scrollToTopRequest + 1,
         ).normalizeRecommendationSelection()
     }
@@ -176,8 +176,14 @@ internal data class PerpsMarketListUiState(
     }
 
     private fun List<PerpsMarket>.sortedByCurrentState(): List<PerpsMarket> {
-        val column = sortState.column ?: return this
-        if (sortState.direction == MarketSortDirection.DEFAULT) return this
+        val column = sortState.column
+        if (column == null || sortState.direction == MarketSortDirection.DEFAULT) {
+            return if (selectedCategory == PerpsMarketCategory.ALL) {
+                sortedByDescending(PerpsMarket::tradeVolumeScore1D)
+            } else {
+                this
+            }
+        }
         val comparator =
             compareBy<PerpsMarket> { market ->
                 when (column) {
@@ -222,21 +228,27 @@ internal data class PerpsMarketListUiState(
             initialCategory: String?,
             initialSort: MarketSort?,
             quoteColorReversed: Boolean,
-        ): PerpsMarketListUiState =
-            PerpsMarketListUiState(
-                selectedCategory = PerpsMarketCategory.fromInitialCategory(initialCategory),
-                sortState = initialSort.toPerpsMarketSortState(),
+        ): PerpsMarketListUiState {
+            val selectedCategory = PerpsMarketCategory.fromInitialCategory(initialCategory)
+            return PerpsMarketListUiState(
+                selectedCategory = selectedCategory,
+                sortState = initialSort.toPerpsMarketSortState(selectedCategory),
                 quoteColorReversed = quoteColorReversed,
             )
+        }
     }
 }
 
-internal fun defaultPerpsMarketSortState() =
-    MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+internal fun defaultPerpsMarketSortState(category: PerpsMarketCategory) =
+    if (category == PerpsMarketCategory.ALL) {
+        MarketSortState()
+    } else {
+        MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+    }
 
-internal fun MarketSort?.toPerpsMarketSortState(): MarketSortState =
+internal fun MarketSort?.toPerpsMarketSortState(category: PerpsMarketCategory): MarketSortState =
     when (this) {
-        null, MarketSort.RANK_DESCENDING -> defaultPerpsMarketSortState()
+        null, MarketSort.RANK_DESCENDING -> defaultPerpsMarketSortState(category)
         MarketSort.RANK_ASCENDING -> MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING)
         MarketSort.PRICE_ASCENDING -> MarketSortState(MarketSortColumn.PRICE, MarketSortDirection.ASCENDING)
         MarketSort.PRICE_DESCENDING -> MarketSortState(MarketSortColumn.PRICE, MarketSortDirection.DESCENDING)

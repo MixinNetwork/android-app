@@ -36,6 +36,21 @@ class PerpsMarketListBottomSheetModelsTest {
     }
 
     @Test
+    fun allMarketsSortByTradeVolumeScore() {
+        val visibleMarkets =
+            PerpsMarketListUiState(
+                markets =
+                    listOf(
+                        perpsMarket("second", "crypto", tradeVolumeScore1D = 20),
+                        perpsMarket("third", "stocks", tradeVolumeScore1D = 10),
+                        perpsMarket("first", "crypto", tradeVolumeScore1D = 30),
+                    ),
+            ).visibleMarkets
+
+        assertEquals(listOf("first", "second", "third"), visibleMarkets.map { it.marketId })
+    }
+
+    @Test
     fun cachesDerivedMarketListsForEachStateInstance() {
         val state =
             PerpsMarketListUiState(
@@ -91,6 +106,7 @@ class PerpsMarketListBottomSheetModelsTest {
     private fun perpsMarket(
         marketId: String,
         category: String,
+        tradeVolumeScore1D: Int = 0,
     ) = PerpsMarket(
         marketId = marketId,
         displaySymbol = marketId,
@@ -105,6 +121,7 @@ class PerpsMarketListBottomSheetModelsTest {
         maxAmount = "0",
         last = "1",
         volume = "10",
+        tradeVolumeScore1D = tradeVolumeScore1D,
         high = "1",
         low = "1",
         open = "1",
