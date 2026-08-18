@@ -1227,6 +1227,11 @@ class WebFragment : BaseFragment() {
 
         lifecycleScope.launch {
             if (viewDestroyed()) return@launch
+            val currentAppId = app?.appId
+            if (currentAppId.isNullOrBlank() || !isVerifiedBot(currentAppId)) {
+                webView.evaluateJavascript("$callbackFunction(false)") {}
+                return@launch
+            }
 
             VerifyBottomSheetDialogFragment.newInstance().apply {
                 setOnPinSuccess {
