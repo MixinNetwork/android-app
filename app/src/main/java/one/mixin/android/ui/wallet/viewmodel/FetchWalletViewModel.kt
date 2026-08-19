@@ -187,6 +187,7 @@ class FetchWalletViewModel @Inject constructor(
                     val solanaWallet =
                         CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index)
                     val btcWallet = CryptoWalletHelper.mnemonicToBitcoinSegwitWallet(mnemonic, index = index)
+                    val pearlWallet = CryptoWalletHelper.mnemonicToPearlWallet(mnemonic, index = index)
 
                     val name = commonWalletName(requireNotNull(nextWalletNameIndex))
                     IndexedWallet(
@@ -194,12 +195,20 @@ class FetchWalletViewModel @Inject constructor(
                         ethereumWallet = ethereumWallet,
                         solanaWallet = solanaWallet,
                         btcWallet = btcWallet,
-                        exists = web3Repository.anyAddressExists(listOf(ethereumWallet.address, solanaWallet.address, btcWallet.address)),
+                        pearlWallet = pearlWallet,
+                        exists = web3Repository.anyAddressExists(
+                            listOf(ethereumWallet.address, solanaWallet.address, btcWallet.address, pearlWallet.address)
+                        ),
                     )
                 }
 
                 val addresses = wallets.flatMap {
-                    listOf(it.ethereumWallet.address, it.solanaWallet.address, it.btcWallet.address)
+                    listOfNotNull(
+                        it.ethereumWallet.address,
+                        it.solanaWallet.address,
+                        it.btcWallet.address,
+                        it.pearlWallet?.address,
+                    )
                 }
                 val response = web3Repository.searchAssetsByAddresses(addresses)
                 if (response.isSuccess && response.data != null) {
@@ -221,7 +230,8 @@ class FetchWalletViewModel @Inject constructor(
                                 tokensMap[wallet.solanaWallet.address] ?: emptyList()
                             val btcTokens =
                                 tokensMap[wallet.btcWallet.address] ?: emptyList()
-                            val allTokens = (evmTokens + solanaTokens + btcTokens).sortedByDescending {
+                            val pearlTokens = wallet.pearlWallet?.let { tokensMap[it.address] } ?: emptyList()
+                            val allTokens = (evmTokens + solanaTokens + btcTokens + pearlTokens).sortedByDescending {
                                 (it.priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (it.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                             }
                             wallet.copy(assets = allTokens)
@@ -326,6 +336,13 @@ class FetchWalletViewModel @Inject constructor(
                             chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
                             path = it.btcWallet.path,
                             privateKey = it.btcWallet.privateKey,
+                            category = category
+                        ),
+                        createSignedWeb3AddressRequest(
+                            destination = requireNotNull(it.pearlWallet).address,
+                            chainId = Constants.ChainId.PEARL_CHAIN_ID,
+                            path = requireNotNull(it.pearlWallet).path,
+                            privateKey = requireNotNull(it.pearlWallet).privateKey,
                             category = category
                         ),
                         createSignedWeb3AddressRequest(
@@ -473,7 +490,8 @@ class FetchWalletViewModel @Inject constructor(
                     val kp = Keypair.fromSecretKey(it)
                     kp.secret.encodeToBase58String()
                 }
-                Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                Constants.ChainId.BITCOIN_CHAIN_ID,
+                Constants.ChainId.PEARL_CHAIN_ID -> {
                     val ecKey: ECKey = ECKey.fromPrivate(it, true)
                     ecKey.getPrivateKeyEncoded(BitcoinNetwork.MAINNET).toBase58()
                 }
@@ -529,7 +547,7 @@ class FetchWalletViewModel @Inject constructor(
                         if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
                             // Solana private keys are provided as Base58; EVM private keys are provided as hex.
                             Base58.decode(key)
-                        } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                        } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID || chainId == Constants.ChainId.PEARL_CHAIN_ID) {
                             getBitcoinPrivateKeyBytes(key)
                         } else {
                             Numeric.hexStringToByteArray(key)
@@ -624,7 +642,8 @@ class FetchWalletViewModel @Inject constructor(
 
     private fun normalizeImportedPrivateKey(chainId: String, privateKey: String): String? {
         return when (chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> normalizeBitcoinPrivateKeyToWif(privateKey)
+            Constants.ChainId.BITCOIN_CHAIN_ID,
+            Constants.ChainId.PEARL_CHAIN_ID -> normalizeBitcoinPrivateKeyToWif(privateKey)
             else -> privateKey
         }
     }

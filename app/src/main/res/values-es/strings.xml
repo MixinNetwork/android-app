@@ -1139,4 +1139,23 @@
     <string name="membership_elite_description">Administra grandes patrimonios en Mixin Safe con familiares, amigos o colegas para evitar robos, accidentes y riesgos de custodia.</string>
     <string name="mnemonic_login_security_title">¿Es seguro importar a Mixin?</string>
     <string name="mobile_number_description">Este es el número de teléfono vinculado a tu cuenta</string>
+    <string name="hours_count_short">%1$dh</string>
+    <string name="days_count_short">%1$dd</string>
+    <string name="hours_count_long">%1$d horas</string>
+    <string name="days_count_long">%1$d días</string>
+    <string name="Add_to_Watchlist">Añadir a la lista de seguimiento</string>
+    <string name="Remove_from_Watchlist">Quitar de la lista de seguimiento</string>
+    <string name="Keep">Conservar</string>
+    <string name="market_volume_short">Vol</string>
+    <string name="Crypto">Spot</string>
+    <string name="market_stock">Acciones</string>
+    <string name="Indicator">Indicadores</string>
+    <string name="market_display">Visualización del mercado</string>
+    <string name="volume_label">VOL: %1$s</string>
+    <string name="watchlist_remove_desc">%1$s se ha eliminado de tu lista de seguimiento</string>
+    <string name="perps_category_meme">Memes</string>
+    <string name="perps_funding_frequency_value">1/4/8 horas</string>
+    <string name="Bitcoin_Dominance">Dominancia de Bitcoin</string>
+    <string name="Perp">Perp</string>
+    <string name="classic_wallet_pearl_intro_title">Common Wallet ahora es compatible con Pearl</string>
 </resources>

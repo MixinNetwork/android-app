@@ -237,6 +237,7 @@ class Web3AddressFragment : BaseFragment() {
                 when (web3Token.chainId) {
                     Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
                     Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                    Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
                     else -> Web3Signer.evmAddress
                 }
             updateUI()

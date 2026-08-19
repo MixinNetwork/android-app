@@ -72,7 +72,6 @@ import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 private const val CLOSED_POSITION_REFRESH_LIMIT = 100
@@ -167,7 +166,12 @@ fun AllPositionsPage(
         total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
     }
     val totalPnlAmount = BigDecimal.valueOf(totalUnrealizedPnl)
-    val totalPnlPercent = calculatePnlPercent(totalPnlAmount, totalMargin)
+    val totalPnlPercent = calculateTotalPnlPercent(
+        positionCount = openPositionsSnapshot.size,
+        singlePositionRoe = openPositionsSnapshot.singleOrNull()?.roe,
+        totalPnl = totalPnlAmount,
+        totalMargin = totalMargin,
+    )
     val titleRes = if (positionType == AllPositionsType.OPEN) {
         R.string.perps_positions
     } else {
@@ -666,18 +670,6 @@ private fun EmptyPositionsState(
             )
         }
     }
-}
-
-private fun calculatePnlPercent(
-    pnl: BigDecimal,
-    margin: BigDecimal,
-): BigDecimal {
-    if (margin <= BigDecimal.ZERO) {
-        return BigDecimal.ZERO
-    }
-    return pnl
-        .divide(margin, 8, RoundingMode.HALF_UP)
-        .multiply(BigDecimal(100))
 }
 
 @Preview(showBackground = true)

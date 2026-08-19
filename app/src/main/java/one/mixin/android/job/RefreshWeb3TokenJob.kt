@@ -61,10 +61,13 @@ class RefreshWeb3TokenJob(
                     if (extrasToInsert.isNotEmpty()) {
                         web3TokensExtraDao.insertList(extrasToInsert)
                     }
-                    if (assets.any { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) {
-                        jobManager.addJobInBackground(RefreshWeb3BitCoinJob(walletId))
-                    }
-                    val tokensToInsert = applyBitcoinTokenBalanceBeforeInsert(walletId, assets)
+                    assets.map { it.assetId }
+                        .filter { it in Constants.Web3UtxoChainIds }
+                        .distinct()
+                        .forEach { assetId ->
+                            jobManager.addJobInBackground(RefreshWeb3UtxoJob(walletId, assetId))
+                        }
+                    val tokensToInsert = applyUtxoTokenBalanceBeforeInsert(walletId, assets)
                     web3TokenDao.insertList(tokensToInsert)
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
@@ -86,7 +89,7 @@ class RefreshWeb3TokenJob(
     }
 
     private suspend fun fetchAsset(assetId: String, address: String) {
-        if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+        if (assetId in Constants.Web3UtxoChainIds) {
             val wallet = web3AddressDao.getWalletByDestination(address)
             val isWatchWallet: Boolean = wallet?.isWatch() == true
             if (!isWatchWallet) {
@@ -101,7 +104,7 @@ class RefreshWeb3TokenJob(
                 val asset = response.data
                 if (asset != null) {
                     Timber.d("Fetched ${asset.symbol} assets for address ${address}")
-                    val tokenToInsert = applyBitcoinTokenBalanceBeforeInsertByDestination(address, asset)
+                    val tokenToInsert = applyUtxoTokenBalanceBeforeInsertByDestination(address, asset)
                     web3TokenDao.insert(tokenToInsert)
                     fetchChain(listOf(asset.chainId))
                     Timber.d("Inserted ${asset.symbol} into database")

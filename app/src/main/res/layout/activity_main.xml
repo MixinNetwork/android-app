@@ -7,31 +7,35 @@
     android:layout_height="match_parent"
     tools:context="one.mixin.android.ui.home.MainActivity">
 
-    <RelativeLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
         <com.google.android.material.bottomnavigation.BottomNavigationView
             android:id="@+id/bottom_nav"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
             android:background="?attr/bg_white"
             app:menu="@menu/bottom_navigation"
             app:labelVisibilityMode="labeled"
             app:itemTextColor="?attr/text_primary"
             app:itemTextAppearanceActive="@style/BottomItemTextAppearance"
             app:itemTextAppearanceInactive="@style/BottomItemTextAppearance"
-            app:itemTextAppearanceActiveBoldEnabled="false" />
+            app:itemTextAppearanceActiveBoldEnabled="false"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/root_view"
-            android:layout_above="@+id/bottom_nav"
-            android:layout_alignParentTop="true"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            app:layout_constraintBottom_toTopOf="@id/bottom_nav"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
-    </RelativeLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <FrameLayout
         android:layout_marginTop="56dp"

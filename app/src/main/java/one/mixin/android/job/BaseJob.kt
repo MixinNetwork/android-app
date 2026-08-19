@@ -90,6 +90,7 @@ import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.di.ApplicationScope
 import one.mixin.android.fts.FtsDatabase
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.repository.PerpsMarketRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.MissingAccountScopeException
@@ -101,6 +102,7 @@ import java.io.IOException
 import java.math.BigDecimal
 import java.net.SocketTimeoutException
 import javax.inject.Inject
+import javax.inject.Provider
 
 abstract class BaseJob(params: Params) : Job(params) {
     @InstallIn(SingletonComponent::class)
@@ -240,6 +242,10 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var assetRepo: TokenRepository
+
+    @Inject
+    @Transient
+    lateinit var perpsMarketRepositoryProvider: Provider<PerpsMarketRepository>
 
     @Inject
     @Transient
@@ -461,54 +467,82 @@ abstract class BaseJob(params: Params) : Job(params) {
             )
     }
 
-    protected suspend fun refreshBitcoinTokenAmountByOutputs(walletId: String, address: String) {
-        if (walletId.isBlank() || address.isBlank()) return
+    protected suspend fun refreshUtxoTokenAmountByOutputs(walletId: String, address: String, assetId: String) {
+        if (walletId.isBlank() || address.isBlank() || assetId !in Constants.Web3UtxoChainIds) return
         val wallet = web3WalletDao.getWalletById(walletId) ?:return
         if (wallet.isWatch()) return
-        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(address, assetId)
         val amount: String = totalAmount.stripTrailingZeros().toPlainString()
-        web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
+        web3TokenDao.updateTokenAmount(walletId, assetId, amount)
     }
 
-    protected suspend fun refreshBitcoinTokenAmountByWalletId(walletId: String) {
-        val address: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return
-        refreshBitcoinTokenAmountByOutputs(walletId, address)
+    protected suspend fun refreshUtxoTokenAmountByWalletId(walletId: String, assetId: String) {
+        val address: String = web3AddressDao.getAddressesByChainId(walletId, assetId)?.destination ?: return
+        refreshUtxoTokenAmountByOutputs(walletId, address, assetId)
     }
 
-    protected suspend fun refreshBitcoinTokenAmountByDestination(destination: String) {
+    protected suspend fun refreshUtxoTokenAmountByDestination(destination: String, assetId: String) {
         val walletId: String = web3AddressDao.getWalletByDestination(destination)?.id ?: return
-        refreshBitcoinTokenAmountByOutputs(walletId, destination)
+        refreshUtxoTokenAmountByOutputs(walletId, destination, assetId)
     }
 
-    protected suspend fun applyBitcoinTokenBalanceBeforeInsert(walletId: String, token: Web3Token): Web3Token {
-        if (token.assetId != Constants.ChainId.BITCOIN_CHAIN_ID) return token
-        val btcAddress: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return token
-        val amounts: List<String> = walletOutputDao.findPendingAndUnspentAmounts(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+    protected suspend fun applyUtxoTokenBalanceBeforeInsert(walletId: String, token: Web3Token): Web3Token {
+        if (token.assetId !in Constants.Web3UtxoChainIds) return token
+        val address: String = web3AddressDao.getAddressesByChainId(walletId, token.assetId)?.destination ?: return token
+        val amounts: List<String> = walletOutputDao.findPendingAndUnspentAmounts(address, token.assetId)
         if (amounts.isEmpty()) return token
-        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(address, token.assetId)
         val amount: String = totalAmount.stripTrailingZeros().toPlainString()
         return token.copy(balance = amount)
     }
 
-    protected suspend fun applyBitcoinTokenBalanceBeforeInsert(walletId: String, tokens: List<Web3Token>): List<Web3Token> {
-        if (tokens.none { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) return tokens
+    protected suspend fun applyUtxoTokenBalanceBeforeInsert(walletId: String, tokens: List<Web3Token>): List<Web3Token> {
+        if (tokens.none { it.assetId in Constants.Web3UtxoChainIds }) return tokens
         val wallet = web3WalletDao.getWalletById(walletId) ?:return tokens
         if (wallet.isWatch()) return tokens
-        val btcAddress: String = web3AddressDao.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return tokens
-        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(btcAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
-        val amount: String = totalAmount.stripTrailingZeros().toPlainString()
         return tokens.map { token ->
-            if (token.assetId == Constants.ChainId.BITCOIN_CHAIN_ID) token.copy(balance = amount) else token
+            if (token.assetId !in Constants.Web3UtxoChainIds) {
+                token
+            } else {
+                val address = web3AddressDao.getAddressesByChainId(walletId, token.assetId)?.destination
+                    ?: return@map token
+                val totalAmount = walletOutputDao.sumPendingAndUnspentAmount(address, token.assetId)
+                token.copy(balance = totalAmount.stripTrailingZeros().toPlainString())
+            }
         }
     }
 
-    protected suspend fun applyBitcoinTokenBalanceBeforeInsertByDestination(destination: String, token: Web3Token): Web3Token {
-        if (token.assetId != Constants.ChainId.BITCOIN_CHAIN_ID) return token
-        val amounts: List<String> = walletOutputDao.findPendingAndUnspentAmounts(destination, Constants.ChainId.BITCOIN_CHAIN_ID)
+    protected suspend fun applyUtxoTokenBalanceBeforeInsertByDestination(destination: String, token: Web3Token): Web3Token {
+        if (token.assetId !in Constants.Web3UtxoChainIds) return token
+        val amounts: List<String> = walletOutputDao.findPendingAndUnspentAmounts(destination, token.assetId)
         if (amounts.isEmpty()) return token
-        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(destination, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(destination, token.assetId)
         val amount: String = totalAmount.stripTrailingZeros().toPlainString()
         return token.copy(balance = amount)
+    }
+
+    protected suspend fun refreshBitcoinTokenAmountByOutputs(walletId: String, address: String) {
+        refreshUtxoTokenAmountByOutputs(walletId, address, Constants.ChainId.BITCOIN_CHAIN_ID)
+    }
+
+    protected suspend fun refreshBitcoinTokenAmountByWalletId(walletId: String) {
+        refreshUtxoTokenAmountByWalletId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)
+    }
+
+    protected suspend fun refreshBitcoinTokenAmountByDestination(destination: String) {
+        refreshUtxoTokenAmountByDestination(destination, Constants.ChainId.BITCOIN_CHAIN_ID)
+    }
+
+    protected suspend fun applyBitcoinTokenBalanceBeforeInsert(walletId: String, token: Web3Token): Web3Token {
+        return applyUtxoTokenBalanceBeforeInsert(walletId, token)
+    }
+
+    protected suspend fun applyBitcoinTokenBalanceBeforeInsert(walletId: String, tokens: List<Web3Token>): List<Web3Token> {
+        return applyUtxoTokenBalanceBeforeInsert(walletId, tokens)
+    }
+
+    protected suspend fun applyBitcoinTokenBalanceBeforeInsertByDestination(destination: String, token: Web3Token): Web3Token {
+        return applyUtxoTokenBalanceBeforeInsertByDestination(destination, token)
     }
 
     public override fun shouldReRunOnThrowable(

@@ -95,6 +95,7 @@ fun SwapContent(
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
+    autoFocus: Boolean,
     source: String,
     stockMarkets: List<MarketItem>,
     trendingMarkets: List<MarketItem>,
@@ -234,6 +235,11 @@ fun SwapContent(
                     isSendFocused = isSendFocused,
                     isKeyboardVisible = availableHeight != null,
                 )
+                LaunchedEffect(availableHeight, inputText) {
+                    if (shouldResetSwapSendFocusState(inputText, availableHeight != null)) {
+                        isSendFocused = false
+                    }
+                }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -288,6 +294,7 @@ fun SwapContent(
                                 text = inputText,
                                 title = stringResource(id = R.string.swap_send),
                                 readOnly = false,
+                                autoFocus = autoFocus,
                                 selectClick = { onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From) },
                                 onInputChanged = { inputText = it },
                                 onDeposit = onDeposit,
@@ -429,6 +436,11 @@ internal fun shouldShowSwapRecommendedMarketCards(
     isSendFocused: Boolean,
     isKeyboardVisible: Boolean,
 ): Boolean = inMixin && hasRecommendedCards && inputText.isBlank() && !isSendFocused && !isKeyboardVisible
+
+internal fun shouldResetSwapSendFocusState(
+    inputText: String,
+    isKeyboardVisible: Boolean,
+): Boolean = inputText.isBlank() && !isKeyboardVisible
 
 @Composable
 fun ReviewButton(

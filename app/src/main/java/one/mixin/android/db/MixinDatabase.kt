@@ -138,6 +138,7 @@ import one.mixin.android.vo.User
 import one.mixin.android.vo.market.HistoryPrice
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCapRank
+import one.mixin.android.vo.market.MarketCategoryRelation
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.safe.DepositEntry
@@ -203,6 +204,7 @@ import kotlin.math.min
         (MarketFavored::class),
         (Alert::class),
         (MarketCapRank::class),
+        (MarketCategoryRelation::class),
         (RecallMessage::class),
         (MembershipOrder::class)
     ],
@@ -313,6 +315,8 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun alertDao(): AlertDao
 
     abstract fun marketCapRankDao(): MarketCapRankDao
+
+    abstract fun marketCategoryDao(): MarketCategoryDao
 
     abstract fun memberOrderDao(): MembershipOrderDao
     companion object {

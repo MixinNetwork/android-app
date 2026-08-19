@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 72,
-    "identityHash": "2b4132107ce48883531ba2b99685efb8",
+    "identityHash": "009cc68c60ac3a79aaa122bb52909724",
     "entities": [
       {
         "tableName": "users",
@@ -2106,7 +2106,18 @@
           "columnNames": [
             "message_id"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_expired_messages_expire_at",
+            "unique": false,
+            "columnNames": [
+              "expire_at"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_expired_messages_expire_at` ON `${TABLE_NAME}` (`expire_at`)"
+          }
+        ]
       },
       {
         "tableName": "conversation_ext",
@@ -2647,14 +2658,15 @@
             "createSql": "CREATE INDEX IF NOT EXISTS `index_safe_snapshots_created_at` ON `${TABLE_NAME}` (`created_at`)"
           },
           {
-            "name": "index_safe_snapshots_type_asset_id",
+            "name": "index_safe_snapshots_type_asset_id_created_at",
             "unique": false,
             "columnNames": [
               "type",
-              "asset_id"
+              "asset_id",
+              "created_at"
             ],
             "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_safe_snapshots_type_asset_id` ON `${TABLE_NAME}` (`type`, `asset_id`)"
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_safe_snapshots_type_asset_id_created_at` ON `${TABLE_NAME}` (`type`, `asset_id`, `created_at`)"
           }
         ]
       },
@@ -3255,28 +3267,40 @@
         }
       },
       {
-        "tableName": "recall_messages",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`message_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, PRIMARY KEY(`message_id`))",
+        "tableName": "market_categories",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`coin_id` TEXT NOT NULL, `category` INTEGER NOT NULL, PRIMARY KEY(`coin_id`, `category`))",
         "fields": [
           {
-            "fieldPath": "messageId",
-            "columnName": "message_id",
+            "fieldPath": "coinId",
+            "columnName": "coin_id",
             "affinity": "TEXT",
             "notNull": true
           },
           {
-            "fieldPath": "userId",
-            "columnName": "user_id",
-            "affinity": "TEXT",
+            "fieldPath": "category",
+            "columnName": "category",
+            "affinity": "INTEGER",
             "notNull": true
           }
         ],
         "primaryKey": {
           "autoGenerate": false,
           "columnNames": [
-            "message_id"
+            "coin_id",
+            "category"
           ]
-        }
+        },
+        "indices": [
+          {
+            "name": "index_market_categories_category",
+            "unique": false,
+            "columnNames": [
+              "category"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_market_categories_category` ON `${TABLE_NAME}` (`category`)"
+          }
+        ]
       },
       {
         "tableName": "membership_orders",
@@ -3374,7 +3398,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '2b4132107ce48883531ba2b99685efb8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '009cc68c60ac3a79aaa122bb52909724')"
     ]
   }
 }

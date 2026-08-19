@@ -18,6 +18,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -27,7 +28,6 @@ import com.google.gson.reflect.TypeToken
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
-import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.Job
@@ -60,6 +60,8 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenFeeItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
+import one.mixin.android.db.web3.vo.isTransferSupported
+import one.mixin.android.db.web3.vo.isWeb3TransferSupported
 import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.TradeMarketSelectedEvent
 import one.mixin.android.extension.addToList
@@ -102,8 +104,10 @@ import one.mixin.android.ui.wallet.transfer.TransferWeb3BalanceErrorBottomSheetD
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.vo.market.hasErrorCode
+import one.mixin.android.vo.market.marketRefreshLimit
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
@@ -161,12 +165,6 @@ class TradeFragment : BaseFragment() {
         const val TAB_ADVANCED = 1
         const val TAB_PERPETUAL = 2
 
-        private const val RECOMMENDED_MARKET_LIMIT = 8
-        private const val MARKET_CATEGORY_STOCKS = "stocks"
-        private const val MARKET_CATEGORY_TRENDING = "trending"
-        private const val MARKET_CATEGORY_TOP_GAINERS = "top_gainers"
-        private const val MARKET_CATEGORY_TOP_LOSERS = "top_losers"
-
         inline fun <reified T : Swappable> newInstance(
             input: String? = null,
             output: String? = null,
@@ -201,10 +199,6 @@ class TradeFragment : BaseFragment() {
     private var swapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var remoteSwapTokens: List<SwapToken> by mutableStateOf(emptyList())
     private var stocks: List<SwapToken> by mutableStateOf(emptyList())
-    private var stockMarkets: List<MarketItem> by mutableStateOf(emptyList())
-    private var trendingMarkets: List<MarketItem> by mutableStateOf(emptyList())
-    private var topGainerMarkets: List<MarketItem> by mutableStateOf(emptyList())
-    private var topLoserMarkets: List<MarketItem> by mutableStateOf(emptyList())
     private var swapScrollToTopSignal by mutableLongStateOf(0L)
     private var tokenItems: List<TokenItem>? = null
     private var web3tokens: List<Web3TokenItem>? = null
@@ -218,6 +212,7 @@ class TradeFragment : BaseFragment() {
     private var reviewing: Boolean by mutableStateOf(false)
     private val walletId: String? by lazy { arguments?.getString(ARGS_WALLET_ID) }
     private var refreshJob: Job? = null
+    private var updateMixinDialog: Dialog? = null
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -232,10 +227,12 @@ class TradeFragment : BaseFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         orderBadge = defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1
+        autoFocusAmount = shouldAutoFocusAmount()
         observeTradeMarketSelection()
     }
 
     private var orderBadge: Boolean by mutableStateOf(false)
+    private var autoFocusAmount: Boolean by mutableStateOf(false)
 
     private fun limitOrderBadgeDismissedPrefKey(walletId: String): String {
         return "${Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED}_$walletId"
@@ -275,6 +272,22 @@ class TradeFragment : BaseFragment() {
         }
         return ComposeView(inflater.context).apply {
             setContent {
+                val stockMarkets by
+                    remember {
+                        swapViewModel.observeMarketsByCategory(MarketCategory.STOCK)
+                    }.collectAsStateWithLifecycle(initialValue = emptyList())
+                val trendingMarkets by
+                    remember {
+                        swapViewModel.observeMarketsByCategory(MarketCategory.TRENDING)
+                    }.collectAsStateWithLifecycle(initialValue = emptyList())
+                val topGainerMarkets by
+                    remember {
+                        swapViewModel.observeMarketsByCategory(MarketCategory.TOP_GAINER)
+                    }.collectAsStateWithLifecycle(initialValue = emptyList())
+                val topLoserMarkets by
+                    remember {
+                        swapViewModel.observeMarketsByCategory(MarketCategory.TOP_LOSER)
+                    }.collectAsStateWithLifecycle(initialValue = emptyList())
                 MixinAppTheme(
                     darkTheme = context.isNightMode(),
                 ) {
@@ -366,17 +379,18 @@ class TradeFragment : BaseFragment() {
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
-                            initialTabIndex = initialTabIndex,
-                            source = getSource(),
-                            entrySource = getEntrySource(),
-                            stockMarkets = stockMarkets,
-                            trendingMarkets = trendingMarkets,
-                            topGainerMarkets = topGainerMarkets,
-                            topLoserMarkets = topLoserMarkets,
-                            scrollToTopSignal = swapScrollToTopSignal,
-                            onSelectToken = { isReverse, type, isLimit ->
-                                showSwapTokenList(swapTokens, isReverse, type, isLimit)
-                            },
+                                autoFocusAmount = autoFocusAmount,
+                                initialTabIndex = initialTabIndex,
+                                source = getSource(),
+                                entrySource = getEntrySource(),
+                                stockMarkets = stockMarkets,
+                                trendingMarkets = trendingMarkets,
+                                topGainerMarkets = topGainerMarkets,
+                                topLoserMarkets = topLoserMarkets,
+                                scrollToTopSignal = swapScrollToTopSignal,
+                                onSelectToken = { isReverse, type, isLimit ->
+                                    showSwapTokenList(swapTokens, isReverse, type, isLimit)
+                                },
                                 onDismissLimitOrderTabBadge = {
                                     if (!isLimitOrderTabBadgeDismissed) {
                                         isLimitOrderTabBadgeDismissed = true
@@ -689,6 +703,7 @@ class TradeFragment : BaseFragment() {
                                 when (t.chainId) {
                                     Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
                                     Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                                    Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
                                     else -> Web3Signer.evmAddress
                                 }
                             navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
@@ -835,8 +850,10 @@ class TradeFragment : BaseFragment() {
             .autoDispose(destroyScope)
             .subscribe { event ->
                 lifecycleScope.launch(coroutineErrorHandler) {
-                    selectMarketToken(event.inputAssetId, event.outputAssetId)
-                    swapScrollToTopSignal++
+                    if (selectMarketToken(event.inputAssetId, event.outputAssetId)) {
+                        autoFocusAmount = true
+                        swapScrollToTopSignal++
+                    }
                 }
             }
     }
@@ -844,10 +861,10 @@ class TradeFragment : BaseFragment() {
     private suspend fun selectMarketToken(
         inputAssetId: String,
         outputAssetId: String,
-    ) {
-        if (!inMixin()) return
-        val input = swapViewModel.findToken(inputAssetId)?.toSwapToken() ?: return
-        val output = swapViewModel.findToken(outputAssetId)?.toSwapToken() ?: return
+    ): Boolean {
+        if (!inMixin()) return false
+        val input = swapViewModel.findToken(inputAssetId)?.toSwapToken() ?: return false
+        val output = swapViewModel.findToken(outputAssetId)?.toSwapToken() ?: return false
         resolveDuplicateSwapTokenPair(
             tokens = swapTokens.ifEmpty { listOf(input, output) },
             fromToken = input,
@@ -863,6 +880,7 @@ class TradeFragment : BaseFragment() {
                 defaultSharedPreferences.putString(getPreferenceKey(false), serializedPair)
             }
         }
+        return true
     }
 
     private suspend fun handleReview(quote: QuoteResult, from: SwapToken, to: SwapToken, amount: String, navController: NavHostController) {
@@ -899,6 +917,9 @@ class TradeFragment : BaseFragment() {
                                 }
                                 Constants.ChainId.BITCOIN_CHAIN_ID -> {
                                     Web3Signer.btcAddress
+                                }
+                                Constants.ChainId.PEARL_CHAIN_ID -> {
+                                    Web3Signer.pearlAddress
                                 }
                                 in Constants.Web3EvmChainIds -> {
                                     Web3Signer.evmAddress
@@ -1010,9 +1031,9 @@ class TradeFragment : BaseFragment() {
         val toAddress = destination ?: return FeeCheckResult(true)
         val fromAddress = when (token.chainId) {
             Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
-            Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                val btcAddress = swapViewModel.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.destination ?: return FeeCheckResult(true)
-                btcAddress
+            in Constants.Web3UtxoChainIds -> {
+                val address = swapViewModel.getAddressesByChainId(walletId, token.chainId)?.destination ?: return FeeCheckResult(true)
+                address
             }
             else -> Web3Signer.evmAddress
         }
@@ -1036,7 +1057,7 @@ class TradeFragment : BaseFragment() {
             BigDecimal.ZERO
         }
 
-        if (allowGasless && token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) {
+        if (allowGasless && token.chainId !in Constants.Web3UtxoChainIds) {
             val gaslessPrepared = runCatching {
                 web3ViewModel.gaslessPrepare(
                     GaslessTxRequest(
@@ -1147,8 +1168,8 @@ class TradeFragment : BaseFragment() {
         }
 
         return when (token.chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                val localUtxos = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+            in Constants.Web3UtxoChainIds -> {
+                val localUtxos = web3ViewModel.outputsByAddress(fromAddress, token.chainId)
                 val zeroFeeTx = token.buildTransaction(
                     rpc = rpc,
                     fromAddress = fromAddress,
@@ -1296,8 +1317,8 @@ class TradeFragment : BaseFragment() {
         toAddress: String,
         amount: String,
     ): BigDecimal? {
-        return if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-            val localUtxos = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+        return if (token.chainId in Constants.Web3UtxoChainIds) {
+            val localUtxos = web3ViewModel.outputsByAddress(fromAddress, token.chainId)
             val zeroFeeTx = token.buildTransaction(
                 rpc = rpc,
                 fromAddress = fromAddress,
@@ -1319,6 +1340,9 @@ class TradeFragment : BaseFragment() {
     }
 
     private suspend fun initFromTo() {
+        if (!inMixin()) {
+            web3tokens = web3tokens?.filter { it.isTransferSupported() }
+        }
         var swappable = web3tokens ?: tokenItems
         if (!inMixin() && web3tokens.isNullOrEmpty()) {
             if (walletId == null) {
@@ -1326,8 +1350,10 @@ class TradeFragment : BaseFragment() {
                 return
             }
             swappable = swapViewModel.findWeb3AssetItemsWithBalance(walletId!!)
+                .filter { it.isTransferSupported() }
             if (swappable.isEmpty()) {
                 swappable = swapViewModel.findWeb3AssetItems(walletId!!)
+                    .filter { it.isTransferSupported() }
             }
             web3tokens = swappable
         } else if (swappable.isNullOrEmpty()) {
@@ -1376,6 +1402,10 @@ class TradeFragment : BaseFragment() {
         } else {
             tokens.firstOrNull { t -> t.getUnique() != tempFromToken?.getUnique() && t.getUnique() in Constants.usdIds }
         }
+        if (!inMixin()) {
+            tempFromToken = tempFromToken?.takeIf { isWeb3TransferSupported(it.chain.chainId) }
+            tempToToken = tempToToken?.takeIf { isWeb3TransferSupported(it.chain.chainId) }
+        }
         resolveDuplicateSwapTokenPair(
             tokens = tokens,
             fromToken = tempFromToken,
@@ -1405,70 +1435,47 @@ class TradeFragment : BaseFragment() {
     }
 
     private suspend fun refreshRecommendedMarkets() {
-        coroutineScope {
-            val stocksDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_STOCKS, limit = null) }
-            val trendingDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TRENDING, limit = null) }
-            val topGainersDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TOP_GAINERS) }
-            val topLosersDeferred = async { fetchRecommendedMarket(category = MARKET_CATEGORY_TOP_LOSERS) }
-
-            val newStockMarkets = stocksDeferred.await()
-            val newTrendingMarkets = trendingDeferred.await()
-            val newTopGainerMarkets = topGainersDeferred.await()
-            val newTopLoserMarkets = topLosersDeferred.await()
-
-            stockMarkets = newStockMarkets
-            trendingMarkets = newTrendingMarkets
-            topGainerMarkets = newTopGainerMarkets
-            topLoserMarkets = newTopLoserMarkets
+        val results =
+            coroutineScope {
+                listOf(
+                    MarketCategory.STOCK,
+                    MarketCategory.TRENDING,
+                    MarketCategory.TOP_GAINER,
+                    MarketCategory.TOP_LOSER,
+                ).map { category ->
+                    async {
+                        swapViewModel.refreshMarketsByCategory(
+                            category = category,
+                            limit = marketRefreshLimit(category),
+                        )
+                    }
+                }.map { it.await() }
+            }
+        if (results.hasErrorCode(ErrorHandler.OLD_VERSION)) {
+            showUpdateMixinDialog()
         }
     }
 
-    private suspend fun fetchRecommendedMarket(
-        category: String? = null,
-        limit: Int? = RECOMMENDED_MARKET_LIMIT,
-        sort: String? = null,
-    ): List<MarketItem> {
-        return try {
-            requestRouteAPI(
-                invokeNetwork = {
-                    swapViewModel.markets(
-                        category = category,
-                        limit = limit,
-                        sort = sort,
-                    )
-                },
-                successBlock = { resp ->
-                    resp.data?.map { MarketItem.fromMarket(it) }.orEmpty()
-                },
-                requestSession = { swapViewModel.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
-                failureBlock = { r ->
-                    if (r.errorCode == ErrorHandler.OLD_VERSION) {
-                        alertDialogBuilder()
-                            .setTitle(R.string.Update_Mixin)
-                            .setMessage(getString(R.string.update_mixin_description, requireContext().getMixinErrorStringByCode(r.errorCode, r.errorDescription)))
-                            .setNegativeButton(R.string.Later) { dialog, _ ->
-                                dialog.dismiss()
-                                activity?.onBackPressedDispatcher?.onBackPressed()
-                            }.setPositiveButton(R.string.Update) { dialog, _ ->
-                                dialog.dismiss()
-                                activity?.onBackPressedDispatcher?.onBackPressed()
-                                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
-                            }.setCancelable(false)
-                            .create().show()
-
-                        return@requestRouteAPI true
-                    }
-                    true
-                },
-                exceptionBlock = { true },
-                defaultErrorHandle = {},
-                defaultExceptionHandle = {},
-            ).orEmpty()
-        } catch (e: CancellationException) {
-            throw e
-        } catch (t: Throwable) {
-            emptyList()
-        }
+    private fun showUpdateMixinDialog() {
+        if (!isAdded || view == null || updateMixinDialog?.isShowing == true) return
+        updateMixinDialog =
+            alertDialogBuilder()
+                .setTitle(R.string.Update_Mixin)
+                .setMessage(
+                    getString(
+                        R.string.update_mixin_description,
+                        requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName,
+                    ),
+                ).setNegativeButton(R.string.Later) { dialog, _ ->
+                    dialog.dismiss()
+                    activity?.onBackPressedDispatcher?.onBackPressed()
+                }.setPositiveButton(R.string.Update) { dialog, _ ->
+                    requireContext().openMarket()
+                    dialog.dismiss()
+                    activity?.onBackPressedDispatcher?.onBackPressed()
+                }.setCancelable(false)
+                .create()
+                .also { it.show() }
     }
 
     private suspend fun refreshStocks(chainIds: List<String>?) {
@@ -1484,29 +1491,18 @@ class TradeFragment : BaseFragment() {
                     swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
                     refreshStocks(chainIds)
                 } else if (r.errorCode == ErrorHandler.OLD_VERSION) {
-                    alertDialogBuilder()
-                        .setTitle(R.string.Update_Mixin)
-                        .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
-                        .setNegativeButton(R.string.Later) { dialog, _ ->
-                            dialog.dismiss()
-                            activity?.onBackPressedDispatcher?.onBackPressed()
-                        }.setPositiveButton(R.string.Update) { dialog, _ ->
-                            requireContext().openMarket()
-                            dialog.dismiss()
-                            activity?.onBackPressedDispatcher?.onBackPressed()
-                        }.setCancelable(false)
-                        .create().show()
+                    showUpdateMixinDialog()
                 }
                 return@requestRouteAPI true
             },
         )?.let { remote: List<SwapToken> ->
-            val filteredRemote: List<SwapToken> = if (chainIdSet == null) {
+            val filteredRemote: List<SwapToken> = (if (chainIdSet == null) {
                 remote
             } else {
                 remote.filter { token: SwapToken ->
                     chainIdSet.contains(token.chain.chainId)
                 }
-            }
+            }).filter { inMixin() || isWeb3TransferSupported(it.chain.chainId) }
             stocks = filteredRemote.map { it.copy(isWeb3 = !inMixin(), walletId = walletId) }.map { token ->
                 val t = web3tokens?.firstOrNull { web3Token ->
                     (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
@@ -1532,29 +1528,18 @@ class TradeFragment : BaseFragment() {
                     swapViewModel.getBotPublicKey(ROUTE_BOT_USER_ID, true)
                     refreshTokens(chainIds)
                 } else if (r.errorCode == ErrorHandler.OLD_VERSION) {
-                    alertDialogBuilder()
-                        .setTitle(R.string.Update_Mixin)
-                        .setMessage(getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName))
-                        .setNegativeButton(R.string.Later) { dialog, _ ->
-                            dialog.dismiss()
-                            activity?.onBackPressedDispatcher?.onBackPressed()
-                        }.setPositiveButton(R.string.Update) { dialog, _ ->
-                            requireContext().openMarket()
-                            dialog.dismiss()
-                            activity?.onBackPressedDispatcher?.onBackPressed()
-                        }.setCancelable(false)
-                        .create().show()
+                    showUpdateMixinDialog()
                 }
                 return@requestRouteAPI true
             },
         )?.let { remote: List<SwapToken> ->
-            val filteredRemote: List<SwapToken> = if (chainIdSet == null) {
+            val filteredRemote: List<SwapToken> = (if (chainIdSet == null) {
                 remote
             } else {
                 remote.filter { token: SwapToken ->
                     chainIdSet.contains(token.chain.chainId)
                 }
-            }
+            }).filter { inMixin() || isWeb3TransferSupported(it.chain.chainId) }
             if (!inMixin()) {
                 remoteSwapTokens = filteredRemote.map { it.copy(isWeb3 = true, walletId = walletId) }.mapNotNull { token ->
                     val local = swapViewModel.web3TokenItemById(walletId ?: "", token.assetId)
@@ -1570,21 +1555,15 @@ class TradeFragment : BaseFragment() {
                 }.sortByKeywordAndBalance()
 
                 swapTokens = swapTokens.union(remoteSwapTokens).toList().sortByKeywordAndBalance()
-                if (fromToken == null) {
-                    fromToken = swapTokens.firstOrNull { t -> fromToken == t } ?: swapTokens[0]
+                resolveDefaultWeb3SwapTokenPair(swapTokens, fromToken, toToken).let { pair ->
+                    fromToken = pair.from
+                    toToken = pair.to
                 }
-                if (toToken == null || toToken?.getUnique() == fromToken?.getUnique()) {
-                    toToken = swapTokens.firstOrNull { s -> s.assetId != fromToken?.assetId } ?: swapTokens.getOrNull(1) ?: swapTokens[0]
+                resolveDefaultWeb3SwapTokenPair(swapTokens, limitFromToken, limitToToken).let { pair ->
+                    limitFromToken = pair.from
+                    limitToToken = pair.to
                 }
-                if (limitFromToken == null) {
-                    limitFromToken = swapTokens.firstOrNull { t -> limitFromToken == t } ?: swapTokens[0]
-                }
-                if (limitToToken == null || limitToToken?.getUnique() == limitFromToken?.getUnique()) {
-                    limitToToken = swapTokens.firstOrNull { s -> s.assetId != limitFromToken?.assetId } ?: swapTokens.getOrNull(1) ?: swapTokens[0]
-                }
-                if (swapTokens.isNotEmpty()) {
-                    (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
-                }
+                (parentFragmentManager.findFragmentByTag(SwapTokenListBottomSheetDialogFragment.TAG) as? SwapTokenListBottomSheetDialogFragment)?.setLoading(false, swapTokens, remoteSwapTokens)
             } else {
                 remoteSwapTokens = filteredRemote.mapNotNull { token ->
                     val local = swapViewModel.findToken(token.assetId)
@@ -1640,6 +1619,11 @@ class TradeFragment : BaseFragment() {
 
     private fun initAmount() {
         initialAmount = arguments?.getString(ARGS_AMOUNT)
+    }
+
+    private fun shouldAutoFocusAmount(): Boolean {
+        return !arguments?.getString(ARGS_INPUT).isNullOrBlank() ||
+            !arguments?.getString(ARGS_OUTPUT).isNullOrBlank()
     }
 
     private fun inMixin(): Boolean = arguments?.getBoolean(ARGS_IN_MIXIN, true) ?: true
@@ -1718,12 +1702,10 @@ class TradeFragment : BaseFragment() {
         if (dialog.isShowing) {
             dialog.dismiss()
         }
+        updateMixinDialog?.dismiss()
+        updateMixinDialog = null
         swapTokens = emptyList()
         stocks = emptyList()
-        stockMarkets = emptyList()
-        trendingMarkets = emptyList()
-        topGainerMarkets = emptyList()
-        topLoserMarkets = emptyList()
         swapScrollToTopSignal = 0L
         tokenItems = null
         web3tokens = null

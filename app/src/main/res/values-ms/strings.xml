@@ -762,4 +762,23 @@
     <string name="Write_Circles">Tulis Lingkaran</string>
     <string name="You">Anda</string>
     <string name="You_deleted_this_message">Anda memadamkan mesej ini</string>
+    <string name="hours_count_short">%1$dh</string>
+    <string name="days_count_short">%1$dd</string>
+    <string name="hours_count_long">%1$d jam</string>
+    <string name="days_count_long">%1$d hari</string>
+    <string name="Add_to_Watchlist">Tambahkan pada senarai pantauan</string>
+    <string name="Remove_from_Watchlist">Alih keluar daripada senarai pantauan</string>
+    <string name="Keep">Kekalkan</string>
+    <string name="market_volume_short">Vol</string>
+    <string name="Crypto">Spot</string>
+    <string name="market_stock">Saham</string>
+    <string name="Indicator">Penunjuk</string>
+    <string name="market_display">Paparan Pasaran</string>
+    <string name="volume_label">VOL: %1$s</string>
+    <string name="watchlist_remove_desc">%1$s telah dialih keluar daripada senarai pantauan anda</string>
+    <string name="perps_category_meme">Meme</string>
+    <string name="perps_funding_frequency_value">1/4/8 jam</string>
+    <string name="Bitcoin_Dominance">Dominasi Bitcoin</string>
+    <string name="Perp">Perp</string>
+    <string name="classic_wallet_pearl_intro_title">Common Wallet kini menyokong Pearl</string>
 </resources>
