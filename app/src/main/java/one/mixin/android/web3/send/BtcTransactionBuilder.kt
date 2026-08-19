@@ -2,12 +2,10 @@ package one.mixin.android.web3.send
 
 import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.WalletOutput
-import one.mixin.android.crypto.PearlKeyGenerator
+import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import org.bitcoinj.base.Address
-import org.bitcoinj.base.AddressParser
-import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
 import org.bitcoinj.base.Sha256Hash
 import org.bitcoinj.core.TransactionInput
@@ -387,11 +385,7 @@ object BtcTransactionBuilder {
     }
 
     private fun parseAddress(chainId: String, address: String): Address =
-        when (chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> AddressParser.getDefault(BitcoinNetwork.MAINNET).parseAddress(address)
-            Constants.ChainId.PEARL_CHAIN_ID -> PearlKeyGenerator.parseAddress(address)
-            else -> throw IllegalArgumentException("Unsupported UTXO chain: $chainId")
-        }
+        UtxoKeyGenerator.parseAddress(address, chainId)
 
     private fun estimateVirtualSize(transaction: BtcTransaction, chainId: String): Int {
         if (chainId != Constants.ChainId.PEARL_CHAIN_ID) return transaction.vsize

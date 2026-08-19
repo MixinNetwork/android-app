@@ -2,7 +2,7 @@ package one.mixin.android.web3.send
 
 import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.WalletOutput
-import one.mixin.android.crypto.PearlKeyGenerator
+import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import org.bitcoinj.core.Transaction
@@ -19,7 +19,10 @@ import java.nio.ByteBuffer
 
 class UtxoTransactionBuilderTest {
     private val privateKey = "465752911a76faccd24460a76c69ac7fb6edc603295cd27afc1a6f7a948b8a40"
-    private val sender = PearlKeyGenerator.privateKeyToAddress(privateKey.hexStringToByteArray())
+    private val sender = UtxoKeyGenerator.privateKeyToAddress(
+        privateKey.hexStringToByteArray(),
+        Constants.ChainId.PEARL_CHAIN_ID,
+    )
     private val receiver = "prl1pf7fr22zh8f49j9neucnrwvrk5vz47zj8p2sqr2j0g2w5sylmm2tsg7x98l"
 
     @Test
@@ -93,7 +96,9 @@ class UtxoTransactionBuilderTest {
         )
 
         val replacement = Transaction.read(ByteBuffer.wrap(replacementHex.hexStringToByteArray()))
-        val selfScript = org.bitcoinj.script.ScriptBuilder.createOutputScript(PearlKeyGenerator.parseAddress(sender)).program()
+        val selfScript = org.bitcoinj.script.ScriptBuilder.createOutputScript(
+            UtxoKeyGenerator.parseAddress(sender, Constants.ChainId.PEARL_CHAIN_ID),
+        ).program()
 
         assertEquals(1, replacement.outputs.size)
         assertTrue(replacement.outputs.single().scriptBytes.contentEquals(selfScript))
@@ -167,7 +172,9 @@ class UtxoTransactionBuilderTest {
             feeRate = BigDecimal.ONE,
         )
         val originalTransaction = Transaction.read(ByteBuffer.wrap(original.rawHex.hexStringToByteArray()))
-        val selfScript = ScriptBuilder.createOutputScript(PearlKeyGenerator.parseAddress(sender)).program()
+        val selfScript = ScriptBuilder.createOutputScript(
+            UtxoKeyGenerator.parseAddress(sender, Constants.ChainId.PEARL_CHAIN_ID),
+        ).program()
         val originalChange = originalTransaction.outputs
             .first { it.scriptBytes.contentEquals(selfScript) }
             .value

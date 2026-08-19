@@ -53,7 +53,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.CryptoWalletHelper
-import one.mixin.android.crypto.PearlKeyGenerator
+import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.crypto.isEvmAddressValid
 import one.mixin.android.crypto.isEvmPrivateKeyValid
 import one.mixin.android.crypto.isSolanaAddressValid
@@ -65,7 +65,6 @@ import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.encodeToBase58String
-import org.bitcoinj.base.AddressParser
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.crypto.DumpedPrivateKey
 import org.bitcoinj.crypto.ECKey
@@ -163,8 +162,7 @@ fun ImportWalletDetailPage(
                 }
                 WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
                     if ((isEvmNetwork && isEvmAddressValid(text)) ||
-                        (isBitcoin && isBitcoinAddressValid(text)) ||
-                        (isPearl && PearlKeyGenerator.isAddressValid(text)) ||
+                        ((isBitcoin || isPearl) && UtxoKeyGenerator.isAddressValid(text, currentChainId)) ||
                         (isSolana && isSolanaAddressValid(text))) {
                         text
                     } else {
@@ -211,10 +209,8 @@ fun ImportWalletDetailPage(
                 WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
                     if (isEvmNetwork) {
                         isEvmAddressValid(text)
-                    } else if (isBitcoin) {
-                        isBitcoinAddressValid(text)
-                    } else if (isPearl) {
-                        PearlKeyGenerator.isAddressValid(text)
+                    } else if (isBitcoin || isPearl) {
+                        UtxoKeyGenerator.isAddressValid(text, currentChainId)
                     } else if(isSolana) {
                         isSolanaAddressValid(text)
                     } else {
@@ -593,14 +589,5 @@ private fun normalizeBitcoinPrivateKeyToWif(privateKey: String): String? {
         }
     } catch (e: Exception) {
         null
-    }
-}
-
-private fun isBitcoinAddressValid(address: String): Boolean {
-    return try {
-        AddressParser.getDefault(BitcoinNetwork.MAINNET).parseAddress(address)
-        true
-    } catch (e: Exception) {
-        false
     }
 }

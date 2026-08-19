@@ -19,6 +19,7 @@ import org.junit.runner.RunWith
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.crypto.ECKey
 import org.bitcoinj.crypto.MnemonicCode
+import org.sol4k.Keypair
 import org.web3j.utils.Numeric
 
 @RunWith(AndroidJUnit4::class)
@@ -74,10 +75,64 @@ class MnemonicAddressDerivationTest {
             assertEquals(expected.btc, privateKeyToAddress(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, index))
         }
 
-        val aarPearlAddress = Blockchain.generatePearlAddressAtIndex(spendKey.hexString(), 0)
+        val aarPearlAddress = pearlAddressFromGo(spendKey, 0)
         val pearlPrivateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.PEARL_CHAIN_ID, index = 0)
         assertEquals(aarPearlAddress, privateKeyToAddress(spendKey, Constants.ChainId.PEARL_CHAIN_ID, index = 0))
-        assertEquals(aarPearlAddress, PearlKeyGenerator.privateKeyToAddress(pearlPrivateKey))
+        assertEquals(aarPearlAddress, Blockchain.generatePearlAddressFromPrivateKey(pearlPrivateKey.hexString()))
+        assertEquals(
+            aarPearlAddress,
+            UtxoKeyGenerator.privateKeyToAddress(pearlPrivateKey, Constants.ChainId.PEARL_CHAIN_ID),
+        )
+    }
+
+    @Test
+    fun derivesMatchingClassicPrivateKeysFromTipSeed() {
+        val spendKey = "00e39d185e883a18949c48c834bc0b8347c6466dd0925fa084f3493d6727e0f9".hexStringToByteArray()
+        val index = 0
+        val bitcoinAddressFromGo = Blockchain.generateBitcoinSegwitAddress(
+            spendKey.hexString(),
+            Bip44Path.bitcoinSegwitPathString(index),
+        )
+        val pearlAddressFromGo = pearlAddressFromGo(spendKey, index)
+        val ethereumAddressFromGo = Blockchain.generateEthereumAddress(
+            spendKey.hexString(),
+            Bip44Path.ethereumPathString(index),
+        )
+        val solanaAddressFromGo = Blockchain.generateSolanaAddress(
+            spendKey.hexString(),
+            Bip44Path.solanaPathString(index),
+        )
+        val bitcoinPrivateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, index = 0)
+        val pearlPrivateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.PEARL_CHAIN_ID, index = 0)
+        val solanaPrivateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, index = 0)
+
+        assertEquals(32, bitcoinPrivateKey.size)
+        assertEquals(32, pearlPrivateKey.size)
+        assertEquals(64, solanaPrivateKey.size)
+        assertEquals(
+            bitcoinAddressFromGo,
+            UtxoKeyGenerator.privateKeyToAddress(bitcoinPrivateKey, Constants.ChainId.BITCOIN_CHAIN_ID),
+        )
+        assertEquals(
+            pearlAddressFromGo,
+            UtxoKeyGenerator.privateKeyToAddress(pearlPrivateKey, Constants.ChainId.PEARL_CHAIN_ID),
+        )
+        assertEquals(pearlAddressFromGo, Blockchain.generatePearlAddressFromPrivateKey(pearlPrivateKey.hexString()))
+        assertEquals(
+            solanaAddressFromGo,
+            Keypair.fromSecretKey(solanaPrivateKey).publicKey.toBase58(),
+        )
+        assertEquals(bitcoinAddressFromGo, privateKeyToAddress(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, index))
+        assertEquals(pearlAddressFromGo, privateKeyToAddress(spendKey, Constants.ChainId.PEARL_CHAIN_ID, index))
+        assertEquals(solanaAddressFromGo, privateKeyToAddress(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, index))
+
+        Constants.Web3EvmChainIds.forEach { chainId ->
+            val ethereumPrivateKey = tipPrivToPrivateKey(spendKey, chainId, index)
+
+            assertEquals(32, ethereumPrivateKey.size)
+            assertEquals(ethereumAddressFromGo, EthKeyGenerator.privateKeyToAddress(ethereumPrivateKey))
+            assertEquals(ethereumAddressFromGo, privateKeyToAddress(spendKey, chainId, index))
+        }
     }
 
     @Test
@@ -88,7 +143,7 @@ class MnemonicAddressDerivationTest {
             .first { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }
 
         assertEquals(
-            Blockchain.generatePearlAddressAtIndex(spendKey.hexString(), INITIAL_CLASSIC_WALLET_INDEX.toLong()),
+            pearlAddressFromGo(spendKey, INITIAL_CLASSIC_WALLET_INDEX),
             pearlRequest.destination,
         )
         assertEquals("m/86'/808276'/0'/0/0", pearlRequest.path)
@@ -101,11 +156,14 @@ class MnemonicAddressDerivationTest {
         val addresses = (0..9).map { index ->
             val privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.PEARL_CHAIN_ID, index)
             val path = Bip44Path.pearlPathString(index)
-            val expectedAddress = Blockchain.generatePearlAddressAtIndex(spendKey.hexString(), index.toLong())
+            val expectedAddress = pearlAddressFromGo(spendKey, index)
             val pearlRequest = buildClassicUtxoAddressRequests(spendKey, index)
                 .first { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }
 
-            assertEquals(expectedAddress, PearlKeyGenerator.privateKeyToAddress(privateKey))
+            assertEquals(
+                expectedAddress,
+                UtxoKeyGenerator.privateKeyToAddress(privateKey, Constants.ChainId.PEARL_CHAIN_ID),
+            )
             assertEquals(expectedAddress, privateKeyToAddress(spendKey, Constants.ChainId.PEARL_CHAIN_ID, index))
             assertEquals(expectedAddress, pearlRequest.destination)
             assertEquals(path, pearlRequest.path)
@@ -120,12 +178,12 @@ class MnemonicAddressDerivationTest {
         val mnemonic = "blur staff nurse happy palm neutral inflict inform soup almost always canal"
         val seed = MnemonicCode.toSeed(mnemonic.split(" "), "")
         val defaultPath = "m/86'/808276'/0'/0/0"
-        val defaultAddress = Blockchain.generatePearlAddressAtIndex(seed.hexString(), 0)
+        val defaultAddress = pearlAddressFromGo(seed, 0)
         assertEquals(defaultPath, Bip44Path.pearlPathString())
 
         (0..9).forEach { index ->
             val path = Bip44Path.pearlPathString(index)
-            val aarAddress = Blockchain.generatePearlAddressAtIndex(seed.hexString(), index.toLong())
+            val aarAddress = pearlAddressFromGo(seed, index)
             val wallet = CryptoWalletHelper.mnemonicToPearlWallet(mnemonic, index = index)
 
             assertEquals(path, wallet.path)
@@ -133,8 +191,14 @@ class MnemonicAddressDerivationTest {
             if (index == 0) {
                 assertEquals(defaultAddress, wallet.address)
             }
-            assertEquals(aarAddress, PearlKeyGenerator.privateKeyToAddress(Numeric.hexStringToByteArray(wallet.privateKey)))
-            assertTrue(PearlKeyGenerator.isAddressValid(aarAddress))
+            assertEquals(
+                aarAddress,
+                UtxoKeyGenerator.privateKeyToAddress(
+                    Numeric.hexStringToByteArray(wallet.privateKey),
+                    Constants.ChainId.PEARL_CHAIN_ID,
+                ),
+            )
+            assertTrue(UtxoKeyGenerator.isAddressValid(aarAddress, Constants.ChainId.PEARL_CHAIN_ID))
         }
     }
 
@@ -145,7 +209,7 @@ class MnemonicAddressDerivationTest {
         val index = 1
         val seed = MnemonicCode.toSeed(mnemonic.split(" "), passphrase)
         val path = Bip44Path.pearlPathString(index)
-        val aarAddress = Blockchain.generatePearlAddressAtIndex(seed.hexString(), index.toLong())
+        val aarAddress = pearlAddressFromGo(seed, index)
         val wallet = CryptoWalletHelper.mnemonicToPearlWallet(mnemonic, passphrase, index)
 
         assertEquals(path, wallet.path)
@@ -157,15 +221,36 @@ class MnemonicAddressDerivationTest {
         val mnemonic = "legal winner thank year wave sausage worth useful legal winner thank yellow"
         val expectedAddress = "prl1p5rg2k5twnlggzdqhcw994xkgwqfuvvwhjnjrx84xsv9f834r887q4j2j5p"
         val seed = MnemonicCode.toSeed(mnemonic.split(" "), "")
-        val aarAddress = Blockchain.generatePearlAddressAtIndex(seed.hexString(), 0)
+        val aarAddress = pearlAddressFromGo(seed, 0)
         val wallet = CryptoWalletHelper.mnemonicToPearlWallet(mnemonic)
 
         assertEquals(expectedAddress, aarAddress)
         assertEquals(aarAddress, wallet.address)
         assertEquals(
             aarAddress,
-            PearlKeyGenerator.privateKeyToAddress(Numeric.hexStringToByteArray(wallet.privateKey)),
+            UtxoKeyGenerator.privateKeyToAddress(
+                Numeric.hexStringToByteArray(wallet.privateKey),
+                Constants.ChainId.PEARL_CHAIN_ID,
+            ),
         )
+    }
+
+    @Test
+    fun derivesPearlStandardBip32VectorMatchingGoSdk() {
+        val seed = (
+            "1d00304f6e8daccbea0e2d4c6b8aa9c8e70b2a496887a6c5e40827466584a3c2" +
+                "e10524436281a0bfde0221405f7e9dbcdbfa1e3d5c7b9ab9d8f71b3a597897b6"
+        ).hexStringToByteArray()
+        val expectedAddress = "prl1p54m4h2agaw92ce58havk6n9l82qgnp8nyyfhad3ycmddsym2rqwqhs07z6"
+        val privateKey = UtxoKeyGenerator.getPrivateKeyFromSeed(seed, Constants.ChainId.PEARL_CHAIN_ID)
+
+        assertEquals(expectedAddress, pearlAddressFromGo(seed, 0))
+        assertEquals(expectedAddress, Blockchain.generatePearlAddressFromPrivateKey(privateKey.hexString()))
+        assertEquals(
+            expectedAddress,
+            UtxoKeyGenerator.privateKeyToAddress(privateKey, Constants.ChainId.PEARL_CHAIN_ID),
+        )
+        assertEquals(expectedAddress, privateKeyToAddress(seed, Constants.ChainId.PEARL_CHAIN_ID))
     }
 
     @Test
@@ -177,7 +262,12 @@ class MnemonicAddressDerivationTest {
             .getPrivateKeyEncoded(BitcoinNetwork.MAINNET)
             .toBase58()
 
+        assertEquals(wallet.address, Blockchain.generatePearlAddressFromPrivateKey(privateKey.hexString()))
         assertEquals(wallet.address, CryptoWalletHelper.privateKeyToAddress(wallet.privateKey, Constants.ChainId.PEARL_CHAIN_ID))
         assertEquals(wallet.address, CryptoWalletHelper.privateKeyToAddress(wif, Constants.ChainId.PEARL_CHAIN_ID))
+    }
+
+    private fun pearlAddressFromGo(seed: ByteArray, index: Int): String {
+        return Blockchain.generatePearlAddress(seed.hexString(), Bip44Path.pearlPathString(index))
     }
 }

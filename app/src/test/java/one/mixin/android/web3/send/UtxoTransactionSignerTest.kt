@@ -2,7 +2,7 @@ package one.mixin.android.web3.send
 
 import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.WalletOutput
-import one.mixin.android.crypto.PearlKeyGenerator
+import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import org.bitcoinj.base.Coin
@@ -62,7 +62,7 @@ class UtxoTransactionSignerTest {
     @Test
     fun pearlTransactionUsesSingleSchnorrWitness() {
         val privateKey = "465752911a76faccd24460a76c69ac7fb6edc603295cd27afc1a6f7a948b8a40".hexStringToByteArray()
-        val sender = PearlKeyGenerator.privateKeyToAddress(privateKey)
+        val sender = UtxoKeyGenerator.privateKeyToAddress(privateKey, Constants.ChainId.PEARL_CHAIN_ID)
         val receiver = "prl1pf7fr22zh8f49j9neucnrwvrk5vz47zj8p2sqr2j0g2w5sylmm2tsg7x98l"
         val output = utxoOutput(sender, Constants.ChainId.PEARL_CHAIN_ID)
         val unsigned = BtcTransactionBuilder.buildSendTransaction(
@@ -86,7 +86,9 @@ class UtxoTransactionSignerTest {
         val signature = transaction.inputs.single().witness.getPush(0)
         val prevout = TaprootPrevout(
             amountSatoshis = Coin.parseCoin(output.amount).value,
-            scriptPubKey = ScriptBuilder.createOutputScript(PearlKeyGenerator.parseAddress(sender)).program(),
+            scriptPubKey = ScriptBuilder.createOutputScript(
+                UtxoKeyGenerator.parseAddress(sender, Constants.ChainId.PEARL_CHAIN_ID),
+            ).program(),
         )
         val signatureHash = TaprootSignatureHash.hash(transaction, listOf(prevout), inputIndex = 0)
         assertEquals(1, transaction.inputs.single().witness.pushCount)
@@ -94,7 +96,7 @@ class UtxoTransactionSignerTest {
         assertTrue(transaction.inputs.all { it.sequenceNumber <= 0xfffffffdL })
         assertEquals(listOf(output.outputId), signed.consumedOutputIds)
         assertEquals(sender, signed.fromAddress)
-        assertTrue(Bip340Signer.verify(PearlKeyGenerator.taprootOutputKey(privateKey), signatureHash, signature))
+        assertTrue(Bip340Signer.verify(UtxoKeyGenerator.taprootOutputKey(privateKey), signatureHash, signature))
     }
 
     @Test
