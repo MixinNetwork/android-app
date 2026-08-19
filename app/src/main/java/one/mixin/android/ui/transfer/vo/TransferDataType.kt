@@ -15,7 +15,6 @@ enum class TransferDataType(val value: String) {
     MESSAGE("message"),
     MESSAGE_MENTION("message_mention"),
     EXPIRED_MESSAGE("expired_message"),
-    RECALL_MESSAGE("recall_message"),
 }
 
 fun transferDataTypeFromValue(value: String?): TransferDataType? {

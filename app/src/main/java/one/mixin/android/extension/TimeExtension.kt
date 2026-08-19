@@ -186,7 +186,7 @@ fun String.lateOneHours(): Boolean {
 }
 
 fun String.lateThirtyDays(): Boolean {
-    val offset = ZonedDateTime.now().toInstant().toEpochMilli() - ZonedDateTime.parse(this).withZoneSameInstant(localeZone()).toInstant().toEpochMilli()
+    val offset = Instant.now().toEpochMilli() - Instant.parse(this).toEpochMilli()
     return offset > DateUtils.DAY_IN_MILLIS * 30
 }
 

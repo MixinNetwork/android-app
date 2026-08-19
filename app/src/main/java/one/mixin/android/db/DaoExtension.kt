@@ -35,7 +35,6 @@ fun MixinDatabase.deleteMessageById(messageId: String) {
         messageDao().deleteMessageById(messageId)
         remoteMessageStatusDao().deleteByMessageId(messageId)
         expiredMessageDao().deleteByMessageId(messageId)
-        recallMessageDao().deleteByMessageId(messageId)
     }
 }
 
@@ -50,7 +49,6 @@ fun MixinDatabase.deleteMessageById(
         conversationExtDao().decrement(conversationId)
         remoteMessageStatusDao().deleteByMessageId(messageId)
         expiredMessageDao().deleteByMessageId(messageId)
-        recallMessageDao().deleteByMessageId(messageId)
         conversationDao().refreshLastMessageId(conversationId, messageId)
     }
 }
@@ -62,7 +60,6 @@ fun MixinDatabase.deleteMessageByIds(messageIds: List<String>) {
         messageDao().deleteMessageById(messageIds)
         remoteMessageStatusDao().deleteByMessageIds(messageIds)
         expiredMessageDao().deleteByMessageId(messageIds)
-        recallMessageDao().deleteByMessageIds(messageIds)
     }
 }
 

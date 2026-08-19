@@ -3,7 +3,8 @@ package one.mixin.android.vo
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import org.threeten.bp.ZonedDateTime
+import org.threeten.bp.Instant
+import org.threeten.bp.temporal.ChronoUnit
 
 class MessageRecallTest {
     @Test
@@ -37,7 +38,7 @@ class MessageRecallTest {
     ) =
         create(
             MessageCategory.PLAIN_TEXT.name,
-            ZonedDateTime.now().minusDays(daysAgo).toInstant().toString(),
+            Instant.now().minus(daysAgo, ChronoUnit.DAYS).toString(),
         ).copy(
             userId = userId,
             status = MessageStatus.SENT.name,

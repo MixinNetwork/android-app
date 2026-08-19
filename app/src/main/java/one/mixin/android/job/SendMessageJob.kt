@@ -29,7 +29,6 @@ import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.ParticipantSessionKey
-import one.mixin.android.vo.RecallMessage
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isCall
 import one.mixin.android.vo.isContact
@@ -135,10 +134,9 @@ open class SendMessageJob(
     private fun recallMessage(conversationId: String) {
         recallMessageId ?: return
         messageDao.findMessageById(recallMessageId)?.let { msg ->
-            recallMessageDao.insert(RecallMessage(msg.messageId, message.userId))
             RxBus.publish(RecallEvent(msg.messageId))
             messageDao.recallFailedMessage(msg.messageId)
-            messageDao.recallMessage(msg.messageId)
+            messageDao.recallMessage(msg.messageId, message.userId)
             messageDao.recallPinMessage(msg.messageId, msg.conversationId)
             pinMessageDao.deleteByMessageId(msg.messageId)
             messageMentionDao.deleteMessage(msg.messageId)

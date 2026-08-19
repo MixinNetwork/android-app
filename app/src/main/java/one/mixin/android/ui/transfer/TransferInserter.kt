@@ -15,7 +15,6 @@ import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.PinMessage
-import one.mixin.android.vo.RecallMessage
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
@@ -953,22 +952,6 @@ class TransferInserter(val db: MixinDatabase) {
             }
             stmt.executeInsert()
             primaryId = expiredMessage.messageId
-            assistanceId = null
-        } catch (e: Exception) {
-            Timber.e(e)
-        } finally {
-            stmt.close()
-        }
-    }
-
-    fun insertIgnore(recallMessage: RecallMessage) {
-        val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `recall_messages` (`message_id`, `user_id`) VALUES (?, ?)")
-        try {
-            stmt.bindString(1, recallMessage.messageId)
-            stmt.bindString(2, recallMessage.userId)
-            stmt.executeInsert()
-            primaryId = recallMessage.messageId
             assistanceId = null
         } catch (e: Exception) {
             Timber.e(e)

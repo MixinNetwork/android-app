@@ -59,8 +59,6 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
     val cursorIndexOfMentionCount = getColumnIndexOrThrow(cursor, "mentionCount")
     val cursorIndexOfMentions = getColumnIndexOrThrow(cursor, "mentions")
     val cursorIndexOfMembership = getColumnIndexOrThrow(cursor, "membership")
-    val cursorIndexOfRecallUserId = getColumnIndexOrThrow(cursor, "recallUserId")
-    val cursorIndexOfRecallUserFullName = getColumnIndexOrThrow(cursor, "recallUserFullName")
     val res = ArrayList<ConversationItem>(cursor.count)
     while (cursor.moveToNext()) {
         val item: ConversationItem
@@ -109,8 +107,6 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
             }
         val tmpMentions = cursor.getString(cursorIndexOfMentions)
         val tmpMembership = cursor.getString(cursorIndexOfMembership)
-        val tmpRecallUserId = cursor.getString(cursorIndexOfRecallUserId)
-        val tmpRecallUserFullName = cursor.getString(cursorIndexOfRecallUserFullName)
         item =
             ConversationItem(
                 tmpConversationId,
@@ -141,8 +137,6 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
                 tmpMentions,
                 tmpMentionCount,
                 membershipConverter.revertData(tmpMembership),
-                tmpRecallUserId,
-                tmpRecallUserFullName,
             )
         res.add(item)
     }
@@ -211,8 +205,6 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
     val cursorIndexOfExpireAt = cursor.getColumnIndexOrThrow("expireAt")
     val cursorIndexOfCaption = cursor.getColumnIndexOrThrow("caption")
     val cursorIndexOfMembership = cursor.getColumnIndexOrThrow("membership")
-    val cursorIndexOfRecallUserId = cursor.getColumnIndexOrThrow("recallUserId")
-    val cursorIndexOfRecallUserFullName = cursor.getColumnIndexOrThrow("recallUserFullName")
     val res = ArrayList<MessageItem>(cursor.count)
     while (cursor.moveToNext()) {
         val item: MessageItem
@@ -356,8 +348,6 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
             } else {
                 cursor.getString(cursorIndexOfMembership)
             }
-        val tempRecallUserId: String? = cursor.getString(cursorIndexOfRecallUserId)
-        val tempRecallUserFullName: String? = cursor.getString(cursorIndexOfRecallUserFullName)
         item =
             MessageItem(
                 tmpMessageId,
@@ -421,8 +411,6 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
                 tempExpireAt,
                 tempCaption,
                 membershipConverter.revertData(tempMembership),
-                tempRecallUserId,
-                tempRecallUserFullName,
             )
         res.add(item)
     }
@@ -1229,8 +1217,8 @@ fun convertChatHistoryMessageItem(
     val cursorIndexOfMentions = 49
     val cursorIndexOfSharedUserMembership = 50
     val cursorIndexOfMembership = 51
-    val cursorIndexOfRecallUserId = 52
-    val cursorIndexOfRecallUserFullName = 53
+    val cursorIndexOfParticipantFullName = 24
+    val cursorIndexOfParticipantUserId = 26
     val list: MutableList<ChatHistoryMessageItem> =
         ArrayList(
             cursor.count,
@@ -1450,17 +1438,17 @@ fun convertChatHistoryMessageItem(
             } else {
                 cursor.getString(cursorIndexOfMembership)
             }
-        val tmpRecallUserId: String? =
-            if (cursor.isNull(cursorIndexOfRecallUserId)) {
+        val tmpParticipantUserId: String? =
+            if (cursor.isNull(cursorIndexOfParticipantUserId)) {
                 null
             } else {
-                cursor.getString(cursorIndexOfRecallUserId)
+                cursor.getString(cursorIndexOfParticipantUserId)
             }
-        val tmpRecallUserFullName: String? =
-            if (cursor.isNull(cursorIndexOfRecallUserFullName)) {
+        val tmpParticipantFullName: String? =
+            if (cursor.isNull(cursorIndexOfParticipantFullName)) {
                 null
             } else {
-                cursor.getString(cursorIndexOfRecallUserFullName)
+                cursor.getString(cursorIndexOfParticipantFullName)
             }
         item =
             ChatHistoryMessageItem(
@@ -1500,8 +1488,8 @@ fun convertChatHistoryMessageItem(
                 tmpQuoteContent,
                 tmpMentions,
                 membershipConverter.revertData(tmpMembership),
-                tmpRecallUserId,
-                tmpRecallUserFullName,
+                tmpParticipantUserId,
+                tmpParticipantFullName,
             )
         list.add(item)
     }

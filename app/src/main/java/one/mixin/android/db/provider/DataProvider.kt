@@ -41,7 +41,7 @@ class DataProvider {
                     val querySqlGenerator = fun(ids: String): RoomSQLiteQuery {
                         return RoomSQLiteQuery.acquire("$sql WHERE c.rowid IN ($ids) ORDER BY c.pin_time DESC, c.last_message_created_at DESC", 0)
                     }
-                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, countStatement, offsetStatement, querySqlGenerator, arrayOf("message_mentions", "conversations", "users", "recall_messages")) {
+                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, countStatement, offsetStatement, querySqlGenerator, arrayOf("message_mentions", "conversations", "users")) {
                         override fun convertRows(cursor: Cursor?): List<ConversationItem> {
                             return convertToConversationItems(cursor)
                         }
@@ -67,8 +67,7 @@ class DataProvider {
                         mu.full_name AS senderFullName,
                         pu.full_name AS participantFullName, pu.user_id AS participantUserId,
                         (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,  
-                        mm.mentions AS mentions, ou.membership AS membership,
-                        rm.user_id AS recallUserId, ru.full_name AS recallUserFullName
+                        mm.mentions AS mentions, ou.membership AS membership
                         FROM circle_conversations cc
                         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
                         INNER JOIN circles ci ON ci.circle_id = cc.circle_id
@@ -77,8 +76,6 @@ class DataProvider {
                         LEFT JOIN message_mentions mm ON mm.message_id = m.id
                         LEFT JOIN users mu ON mu.user_id = m.user_id
                         LEFT JOIN users pu ON pu.user_id = m.participant_id 
-                        LEFT JOIN recall_messages rm ON rm.message_id = m.id
-                        LEFT JOIN users ru ON ru.user_id = rm.user_id
                         """
                     val countStatement =
                         RoomSQLiteQuery.acquire(
@@ -124,7 +121,7 @@ class DataProvider {
                             0,
                         )
                     }
-                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, countStatement, offsetStatement, querySqlGenerator, arrayOf("message_mentions", "circle_conversations", "conversations", "circles", "users", "recall_messages")) {
+                    return object : MixinLimitOffsetDataSource<ConversationItem>(database, countStatement, offsetStatement, querySqlGenerator, arrayOf("message_mentions", "circle_conversations", "conversations", "circles", "users")) {
                         override fun convertRows(cursor: Cursor?): List<ConversationItem> {
                             return convertToConversationItems(cursor)
                         }
@@ -507,8 +504,7 @@ class DataProvider {
                         st.name AS assetName, st.asset_type AS assetType, h.site_name AS siteName, h.site_title AS siteTitle, h.site_description AS siteDescription,
                         h.site_image AS siteImage, m.shared_user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.identity_number AS sharedUserIdentityNumber,
                         su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions,
-                        su.membership AS sharedMembership, u.membership AS membership,
-                        rm.user_id AS recallUserId, ru.full_name AS recallUserFullName
+                        su.membership AS sharedMembership, u.membership AS membership
                         FROM pin_messages pm
                         LEFT JOIN messages m ON m.id = pm.message_id
                         LEFT JOIN users u ON m.user_id = u.user_id
@@ -520,14 +516,12 @@ class DataProvider {
                         LEFT JOIN users su ON m.shared_user_id = su.user_id
                         LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
                         LEFT JOIN message_mentions mm ON m.id = mm.message_id
-                        LEFT JOIN recall_messages rm ON rm.message_id = m.id
-                        LEFT JOIN users ru ON ru.user_id = rm.user_id
                         WHERE m.conversation_id = ? 
                         ORDER BY m.created_at ASC
                         """
                     val statement = RoomSQLiteQuery.acquire(sql, 1)
                     statement.bindString(1, conversationId)
-                    return object : NoCountLimitOffsetDataSource<ChatHistoryMessageItem>(database, statement, count, "pin_messages", "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions", "recall_messages") {
+                    return object : NoCountLimitOffsetDataSource<ChatHistoryMessageItem>(database, statement, count, "pin_messages", "messages", "users", "snapshots", "assets", "stickers", "hyperlinks", "conversations", "message_mentions") {
                         override fun convertRows(cursor: Cursor?): List<ChatHistoryMessageItem> {
                             return convertChatHistoryMessageItem(cursor)
                         }

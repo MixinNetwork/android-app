@@ -81,7 +81,6 @@ import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.PinMessageMinimal
 import one.mixin.android.vo.QuoteMessageItem
-import one.mixin.android.vo.RecallMessage
 import one.mixin.android.vo.ResendSessionMessage
 import one.mixin.android.vo.SYSTEM_USER
 import one.mixin.android.vo.Snapshot
@@ -447,10 +446,9 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
             }
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
                 syncUser(data.userId, data.conversationId)
-                recallMessageDao.insert(RecallMessage(msg.messageId, data.userId))
                 RxBus.publish(RecallEvent(msg.messageId))
                 messageDao.recallFailedMessage(msg.messageId)
-                messageDao.recallMessage(msg.messageId)
+                messageDao.recallMessage(msg.messageId, data.userId)
                 ftsDatabase.deleteByMessageId(msg.messageId)
                 messageDao.recallPinMessage(msg.messageId, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.messageId)

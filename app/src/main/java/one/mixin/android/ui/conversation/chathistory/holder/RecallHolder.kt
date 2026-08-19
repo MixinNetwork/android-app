@@ -6,6 +6,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatRecallBinding
 import one.mixin.android.ui.conversation.chathistory.ChatHistoryAdapter
 import one.mixin.android.vo.ChatHistoryMessageItem
+import one.mixin.android.vo.recalledMessageText
 
 class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHolder(binding.root) {
     fun bind(
@@ -31,13 +32,13 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
 
         chatLayout(isMe, isLast)
         binding.chatTime.load(messageItem.createdAt)
-        binding.recallTv.text =
-            when {
-                messageItem.recallUserId == meId -> ctx.getString(R.string.You_deleted_this_message) + " "
-                !messageItem.recallUserFullName.isNullOrBlank() ->
-                    ctx.getString(R.string.User_deleted_this_message, messageItem.recallUserFullName) + " "
-                else -> ctx.getString(R.string.This_message_was_deleted) + " "
-            }
+        binding.recallTv.text = recalledMessageText(
+            ctx,
+            meId,
+            messageItem.userId,
+            messageItem.participantUserId,
+            messageItem.participantFullName,
+        ) + " "
     }
 
     override fun chatLayout(

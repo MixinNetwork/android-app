@@ -19,7 +19,6 @@ import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.PinMessageDao
-import one.mixin.android.db.RecallMessageDao
 import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.SnapshotDao
 import one.mixin.android.db.StickerDao
@@ -54,7 +53,6 @@ import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.PinMessage
-import one.mixin.android.vo.RecallMessage
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Sticker
 import one.mixin.android.vo.TranscriptMessage
@@ -87,7 +85,6 @@ class TransferServer
         val messageDao: MessageDao,
         val participantDao: ParticipantDao,
         val pinMessageDao: PinMessageDao,
-        val recallMessageDao: RecallMessageDao,
         val snapshotDao: SnapshotDao,
         val safeSnapshotDao: SafeSnapshotDao,
         val stickerDao: StickerDao,
@@ -299,7 +296,6 @@ class TransferServer
             syncMessage(outputStream, transferDataType, primaryId)
             syncMessageMention(outputStream, transferDataType, primaryId)
             syncExpiredMessage(outputStream, transferDataType, primaryId)
-            syncRecallMessage(outputStream, transferDataType, primaryId)
             sendFinish(outputStream)
         }
 
@@ -906,43 +902,6 @@ class TransferServer
             }
         }
 
-        private fun syncRecallMessage(
-            outputStream: OutputStream,
-            transferDataType: TransferDataType?,
-            primaryId: String?,
-        ) {
-            var rowId = -1L
-            if (transferDataType != null) {
-                if (transferDataType.ordinal > TransferDataType.RECALL_MESSAGE.ordinal) {
-                    return
-                } else if (transferDataType == TransferDataType.RECALL_MESSAGE && primaryId != null) {
-                    rowId = recallMessageDao.getRecallMessageRowId(primaryId) ?: -1
-                }
-            }
-            currentType = TransferDataType.RECALL_MESSAGE.value
-            while (!quit) {
-                val list = recallMessageDao.getRecallMessagesByLimitAndRowId(LIMIT, rowId)
-                if (list.isEmpty()) {
-                    return
-                }
-                list.map {
-                    TransferData(TransferDataType.RECALL_MESSAGE.value, it)
-                }.forEach { recallMessage ->
-                    writeJson(
-                        outputStream,
-                        TransferData.serializer(RecallMessage.serializer()),
-                        recallMessage,
-                    )
-                    count++
-                }
-                if (list.size < LIMIT) {
-                    return
-                }
-                currentId = list.last().messageId
-                rowId = recallMessageDao.getRecallMessageRowId(list.last().messageId) ?: return
-            }
-        }
-
         private fun syncMessageMediaFile(
             outputStream: OutputStream,
             message: TransferMessage,
@@ -1008,8 +967,7 @@ class TransferServer
                 totalAppCount(transferDataType, primaryId) + totalAssetCount(transferDataType, primaryId) + totalTokenCount(transferDataType, primaryId) +
                 totalSnapshotCount(transferDataType, primaryId) + totalSafeSnapshotCount(transferDataType, primaryId) + totalStickerCount(transferDataType, primaryId) +
                 totalStickerCount(transferDataType, primaryId) + totalPinMessageCount(transferDataType, primaryId) + totalMessageCount(transferDataType, primaryId) +
-                totalMessageMentionCount(transferDataType, primaryId) + totalExpiredMessageCount(transferDataType, primaryId) +
-                totalRecallMessageCount(transferDataType, primaryId)
+                totalMessageMentionCount(transferDataType, primaryId) + totalExpiredMessageCount(transferDataType, primaryId)
             return total
         }
 
@@ -1187,20 +1145,6 @@ class TransferServer
             } else if (transferDataType == TransferDataType.EXPIRED_MESSAGE) {
                 val rowId = expiredMessageDao.getExpiredMessageRowId(primaryId) ?: -1L
                 expiredMessageDao.countExpiredMessages(rowId)
-            } else {
-                0L
-            }
-        }
-
-        private fun totalRecallMessageCount(
-            transferDataType: TransferDataType?,
-            primaryId: String?,
-        ): Long {
-            return if (transferDataType == null || primaryId == null || transferDataType.ordinal < TransferDataType.RECALL_MESSAGE.ordinal) {
-                recallMessageDao.countRecallMessages()
-            } else if (transferDataType == TransferDataType.RECALL_MESSAGE) {
-                val rowId = recallMessageDao.getRecallMessageRowId(primaryId) ?: -1L
-                recallMessageDao.countRecallMessages(rowId)
             } else {
                 0L
             }

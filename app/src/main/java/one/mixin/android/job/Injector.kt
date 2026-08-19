@@ -30,7 +30,6 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
-import one.mixin.android.db.RecallMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.ResendSessionMessageDao
 import one.mixin.android.db.SafeSnapshotDao
@@ -158,9 +157,6 @@ open class Injector {
 
     @Inject
     lateinit var expiredMessageDao: ExpiredMessageDao
-
-    @Inject
-    lateinit var recallMessageDao: RecallMessageDao
 
     @Inject
     lateinit var database: MixinDatabase

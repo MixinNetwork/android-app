@@ -77,10 +77,10 @@ data class QuoteMessageItem(
     val mentions: String? = null,
     @SerializedName("membership")
     val membership: Membership? = null,
-    @SerializedName(value = "recall_user_id", alternate = ["recallUserId"])
-    val recallUserId: String? = null,
-    @SerializedName(value = "recall_user_full_name", alternate = ["recallUserFullName"])
-    val recallUserFullName: String? = null,
+    @SerializedName(value = "participant_id", alternate = ["participantId", "participantUserId"])
+    val participantUserId: String? = null,
+    @SerializedName(value = "participant_full_name", alternate = ["participantFullName"])
+    val participantFullName: String? = null,
 ) : Parcelable {
     constructor(messageItem: MessageItem) : this(
         messageItem.messageId,
@@ -119,8 +119,8 @@ data class QuoteMessageItem(
         messageItem.sharedUserAvatarUrl,
         messageItem.mentions,
         messageItem.membership,
-        messageItem.recallUserId,
-        messageItem.recallUserFullName,
+        messageItem.participantUserId,
+        messageItem.participantFullName,
     )
 }
 

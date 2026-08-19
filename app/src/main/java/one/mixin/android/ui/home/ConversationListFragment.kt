@@ -112,6 +112,7 @@ import one.mixin.android.vo.isLocation
 import one.mixin.android.vo.isPin
 import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isRecall
+import one.mixin.android.vo.recalledMessageText
 import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
@@ -990,20 +991,13 @@ class ConversationListFragment : LinkFragment() {
                     }
                     conversationItem.isRecall() -> {
                         setConversationName(conversationItem)
-                        when {
-                            conversationItem.recallUserId == id -> {
-                                binding.msgTv.setText(R.string.You_deleted_this_message)
-                            }
-                            !conversationItem.recallUserFullName.isNullOrBlank() -> {
-                                binding.msgTv.text = itemView.context.getString(
-                                    R.string.User_deleted_this_message,
-                                    conversationItem.recallUserFullName,
-                                )
-                            }
-                            else -> {
-                                binding.msgTv.setText(R.string.This_message_was_deleted)
-                            }
-                        }
+                        binding.msgTv.text = recalledMessageText(
+                            itemView.context,
+                            id,
+                            conversationItem.senderId,
+                            conversationItem.participantUserId,
+                            conversationItem.participantFullName,
+                        )
                         AppCompatResources.getDrawable(itemView.context, R.drawable.ic_type_recall)
                     }
                     conversationItem.isGroupCall() -> {

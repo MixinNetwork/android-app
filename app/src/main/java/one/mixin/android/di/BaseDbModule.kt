@@ -95,8 +95,6 @@ internal object BaseDbModule {
     @Provides
     fun providesExpiredMessageDao(db: MixinDatabase) = db.expiredMessageDao()
     @Provides
-    fun providesRecallMessageDao(db: MixinDatabase) = db.recallMessageDao()
-    @Provides
     fun providesConversationExtDao(db: MixinDatabase) = db.conversationExtDao()
     @Provides
     fun providesChainDao(db: MixinDatabase) = db.chainDao()

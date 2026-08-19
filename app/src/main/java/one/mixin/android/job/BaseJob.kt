@@ -63,7 +63,6 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.PropertyDao
 import one.mixin.android.db.RawTransactionDao
-import one.mixin.android.db.RecallMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.SafeSnapshotDao
 import one.mixin.android.db.SnapshotDao
@@ -314,10 +313,6 @@ abstract class BaseJob(params: Params) : Job(params) {
     @Inject
     @Transient
     lateinit var expiredMessageDao: ExpiredMessageDao
-
-    @Inject
-    @Transient
-    lateinit var recallMessageDao: RecallMessageDao
 
     @Inject
     @Transient

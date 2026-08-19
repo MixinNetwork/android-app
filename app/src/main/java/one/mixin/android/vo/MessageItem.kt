@@ -122,8 +122,6 @@ data class MessageItem(
     val expireAt: Long? = null,
     val caption: String? = null,
     val membership: Membership? = null,
-    val recallUserId: String? = null,
-    val recallUserFullName: String? = null,
 ) : Parcelable, ICategory {
     @IgnoredOnParcel
     @Ignore
@@ -244,6 +242,26 @@ fun MessageItem.canRecallBy(
         status != MessageStatus.SENDING.name &&
         !createdAt.lateThirtyDays() &&
         canRecall()
+
+fun recalledMessageText(
+    context: Context,
+    meId: String?,
+    userId: String?,
+    participantUserId: String?,
+    participantFullName: String?,
+): String {
+    val actorId = participantUserId ?: userId
+    return when {
+        actorId == meId -> context.getString(R.string.You_deleted_this_message)
+        !participantFullName.isNullOrBlank() -> context.getString(R.string.User_deleted_this_message, participantFullName)
+        else -> context.getString(R.string.This_message_was_deleted)
+    }
+}
+
+fun MessageItem.recalledText(
+    context: Context,
+    meId: String?,
+): String = recalledMessageText(context, meId, userId, participantUserId, participantFullName)
 
 fun create(
     type: String,

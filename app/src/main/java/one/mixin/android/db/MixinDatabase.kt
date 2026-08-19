@@ -122,7 +122,6 @@ import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.PinMessage
 import one.mixin.android.vo.Property
-import one.mixin.android.vo.RecallMessage
 import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.ResendMessage
 import one.mixin.android.vo.ResendSessionMessage
@@ -205,7 +204,6 @@ import kotlin.math.min
         (Alert::class),
         (MarketCapRank::class),
         (MarketCategoryRelation::class),
-        (RecallMessage::class),
         (MembershipOrder::class)
     ],
     version = CURRENT_VERSION,
@@ -289,8 +287,6 @@ abstract class MixinDatabase : RoomDatabase() {
     abstract fun propertyDao(): PropertyDao
 
     abstract fun expiredMessageDao(): ExpiredMessageDao
-
-    abstract fun recallMessageDao(): RecallMessageDao
 
     abstract fun chainDao(): ChainDao
 

@@ -10,6 +10,7 @@ import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.ui.conversation.holder.base.Terminable
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.recalledText
 
 class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHolder(binding.root), Terminable {
     fun bind(
@@ -32,13 +33,7 @@ class RecallHolder constructor(val binding: ItemChatRecallBinding) : BaseViewHol
         }
         chatLayout(isMe, isLast)
         binding.chatTime.load(messageItem.createdAt)
-        binding.recallTv.text =
-            when {
-                messageItem.recallUserId == meId -> ctx.getString(R.string.You_deleted_this_message) + " "
-                !messageItem.recallUserFullName.isNullOrBlank() ->
-                    ctx.getString(R.string.User_deleted_this_message, messageItem.recallUserFullName) + " "
-                else -> ctx.getString(R.string.This_message_was_deleted) + " "
-            }
+        binding.recallTv.text = messageItem.recalledText(ctx, meId) + " "
 
         itemView.setOnLongClickListener {
             if (!hasSelect) {
