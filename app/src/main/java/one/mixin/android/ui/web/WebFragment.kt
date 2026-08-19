@@ -1234,26 +1234,11 @@ class WebFragment : BaseFragment() {
             }
 
             VerifyBottomSheetDialogFragment.newInstance().apply {
-                setOnPinSuccess {
+                setOnResult { success ->
                     lifecycleScope.launch {
-                        if (!viewDestroyed()) {
-                            webView.evaluateJavascript("$callbackFunction(true)") {}
-                        }
+                        webView.evaluateJavascript("$callbackFunction($success)") {}
                     }
                 }
-                setCallback(
-                    object : BiometricBottomSheetDialogFragment.Callback() {
-                        override fun onDismiss(success: Boolean) {
-                            if (success || viewDestroyed()) return
-
-                            lifecycleScope.launch {
-                                if (!viewDestroyed()) {
-                                    webView.evaluateJavascript("$callbackFunction(false)") {}
-                                }
-                            }
-                        }
-                    },
-                )
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
         }
     }
