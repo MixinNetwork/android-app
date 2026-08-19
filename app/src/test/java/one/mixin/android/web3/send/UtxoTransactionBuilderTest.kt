@@ -32,6 +32,29 @@ class UtxoTransactionBuilderTest {
     }
 
     @Test
+    fun minimumTransferAmountBuildsSendTransaction() {
+        val bitcoinSender = UtxoKeyGenerator.privateKeyToAddress(
+            privateKey.hexStringToByteArray(),
+            Constants.ChainId.BITCOIN_CHAIN_ID,
+        )
+        val cases = listOf(
+            Constants.ChainId.BITCOIN_CHAIN_ID to bitcoinSender,
+            Constants.ChainId.PEARL_CHAIN_ID to sender,
+        )
+        cases.forEach { (chainId, address) ->
+            val built = BtcTransactionBuilder.buildSendTransaction(
+                chainId = chainId,
+                fromAddress = address,
+                toAddress = address,
+                amountBtc = BtcTransactionBuilder.minimumTransferAmount(chainId).toPlainString(),
+                localUtxos = listOf(output(address, chainId)),
+                feeRate = BigDecimal.ONE,
+            )
+            assertTrue(built.rawHex.isNotBlank())
+        }
+    }
+
+    @Test
     fun pearlRecipientAmountBelowMinimumIsRejected() {
         assertThrows(IllegalArgumentException::class.java) {
             BtcTransactionBuilder.buildSendTransaction(
@@ -218,13 +241,22 @@ class UtxoTransactionBuilderTest {
         transactionHash: String = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         status: String = "unspent",
         amount: String = "0.004",
+    ) = output(sender, Constants.ChainId.PEARL_CHAIN_ID, outputId, transactionHash, status, amount)
+
+    private fun output(
+        address: String,
+        assetId: String,
+        outputId: String = "output",
+        transactionHash: String = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        status: String = "unspent",
+        amount: String = "0.004",
     ) = WalletOutput(
         outputId = outputId,
-        assetId = Constants.ChainId.PEARL_CHAIN_ID,
+        assetId = assetId,
         transactionHash = transactionHash,
         outputIndex = 2,
         amount = amount,
-        address = sender,
+        address = address,
         pubkeyHex = "",
         pubkeyType = "",
         status = status,

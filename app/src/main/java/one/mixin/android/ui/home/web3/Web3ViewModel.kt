@@ -226,9 +226,14 @@ class Web3ViewModel @Inject constructor(
         botId: String,
     ) = userRepository.findBotPublicKey(conversationId, botId)
 
+    suspend fun findDepositEntry(chainId: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findDepositEntry(chainId)
+        }
+
     suspend fun findAndSyncDepositEntry(token: Web3TokenItem) =
         withContext(Dispatchers.IO) {
-            tokenRepository.findAndCheckDepositEntry(token.chainId, token.assetId).first
+            tokenRepository.findAndSyncDepositEntry(token.chainId, token.assetId)
         }
 
     suspend fun getFees(
@@ -447,11 +452,11 @@ class Web3ViewModel @Inject constructor(
     ): FeeEstimateResult {
         if (token.chainId in Constants.Web3UtxoChainIds) {
             val localUtxos = withContext(Dispatchers.IO) { outputsByAddress(fromAddress, token.chainId) }
-            // Build a minimal-but-valid dummy transaction to estimate vsize. The output amount does
-            // not affect vsize (Coin values serialize to a fixed 8 bytes), so the chain's minimum
-            // transfer amount is the smallest value that passes buildSendTransaction's minimum check.
+            // Use the chain minimum so the probe amount passes the builder floor.
             val dummyAmount: String = BtcTransactionBuilder.minimumTransferAmount(token.chainId).toPlainString()
-            val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, dummyAmount, localUtxos)
+            val jsMsg = runCatching {
+                token.buildTransaction(rpc, fromAddress, fromAddress, dummyAmount, localUtxos)
+            }.getOrNull() ?: return FeeEstimateResult(null, null, null)
             val virtualSize: Int? = jsMsg.virtualSize
             val response = withContext(Dispatchers.IO) {
                 runCatching {
