@@ -125,9 +125,8 @@ fun tipPrivToPrivateKey(
             val privateKeyBytes: ByteArray = Numeric.toBytesPadded(bip84KeyPair.privateKey, 32)
             val ecKey: ECKey = ECKey.fromPrivate(BigInteger(1, privateKeyBytes), true)
             val address = ecKey.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET)
-            val addressString: String = address.toString()
             val addressFromGo: String = Blockchain.generateBitcoinSegwitAddress(priv.hexString(), Bip44Path.bitcoinSegwitPathString(index))
-            if (addressFromGo != addressString) {
+            if (addressFromGo != address.toString()) {
                 throw IllegalArgumentException("Generate illegal Bitcoin SegWit Address")
             }
             return privateKeyBytes
