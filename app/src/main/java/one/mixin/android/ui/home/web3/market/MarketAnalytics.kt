@@ -55,4 +55,5 @@ internal fun MarketPageUiState.analyticsSortField(column: MarketSortColumn): Str
                 MarketPriceChangePeriod.TWENTY_FOUR_HOURS -> AnalyticsTracker.MarketsSortField.TWENTY_FOUR_HOURS
                 MarketPriceChangePeriod.SEVEN_DAYS -> AnalyticsTracker.MarketsSortField.SEVEN_DAYS
             }
+        MarketSortColumn.SCORE -> AnalyticsTracker.MarketsSortField.SCORE
     }

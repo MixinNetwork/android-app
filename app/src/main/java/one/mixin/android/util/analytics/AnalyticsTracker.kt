@@ -609,6 +609,7 @@ object AnalyticsTracker {
         const val TWENTY_FOUR_HOURS = "24h"
         const val SEVEN_DAYS = "7d"
         const val MARKET_CAP = "market_cap"
+        const val SCORE = "score"
     }
 
     object MarketDetailSource {
