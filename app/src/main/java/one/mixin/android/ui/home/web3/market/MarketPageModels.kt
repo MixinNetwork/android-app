@@ -53,6 +53,7 @@ enum class MarketSortColumn {
     VOLUME,
     PRICE,
     CHANGE,
+    SCORE,
 }
 
 enum class MarketSortDirection {
@@ -65,14 +66,22 @@ data class MarketSortState(
     val column: MarketSortColumn? = null,
     val direction: MarketSortDirection = MarketSortDirection.DEFAULT,
 ) {
-    fun next(selectedColumn: MarketSortColumn): MarketSortState {
+    fun next(
+        selectedColumn: MarketSortColumn,
+        isScoreOrderingAvailable: Boolean = false,
+    ): MarketSortState {
         if (column != selectedColumn) {
             return MarketSortState(selectedColumn, MarketSortDirection.DESCENDING)
         }
         return when (direction) {
             MarketSortDirection.DEFAULT -> MarketSortState(selectedColumn, MarketSortDirection.DESCENDING)
             MarketSortDirection.DESCENDING -> MarketSortState(selectedColumn, MarketSortDirection.ASCENDING)
-            MarketSortDirection.ASCENDING -> MarketSortState()
+            MarketSortDirection.ASCENDING ->
+                if (isScoreOrderingAvailable) {
+                    scoreMarketSortState()
+                } else {
+                    MarketSortState()
+                }
         }
     }
 }
@@ -96,6 +105,7 @@ fun defaultMarketSortState(
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.TRENDING ->
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+        isScoreOrderingAvailable(topTab, subTab) -> scoreMarketSortState()
         topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.MEME ->
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.INDICES ->
@@ -106,6 +116,14 @@ fun defaultMarketSortState(
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         else -> MarketSortState()
     }
+
+internal fun scoreMarketSortState() =
+    MarketSortState(MarketSortColumn.SCORE, MarketSortDirection.DESCENDING)
+
+internal fun isScoreOrderingAvailable(
+    topTab: MarketTopTab,
+    subTab: MarketSubTab?,
+): Boolean = topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.TRENDING
 
 data class MarketDisplaySettings(
     val quoteColorReversed: Boolean = false,
@@ -337,6 +355,7 @@ object MarketPageMapper {
                 MarketSortColumn.VOLUME -> entry.volume(useMarketCapForSpot)
                 MarketSortColumn.PRICE -> entry.price()
                 MarketSortColumn.CHANGE -> entry.changePercent(period)
+                MarketSortColumn.SCORE -> entry.score()
             } ?: BigDecimal.ZERO
         }
         return if (sortState.direction == MarketSortDirection.ASCENDING) {
@@ -384,4 +403,10 @@ fun MarketListEntry.changePercent(period: MarketPriceChangePeriod): BigDecimal? 
     when (this) {
         is MarketListEntry.Spot -> market.changePercent(period)
         is MarketListEntry.Perpetual -> market.changePercentValue()
+    }
+
+fun MarketListEntry.score(): BigDecimal? =
+    when (this) {
+        is MarketListEntry.Spot -> null
+        is MarketListEntry.Perpetual -> market.tradeVolumeScore1D.toBigDecimal()
     }

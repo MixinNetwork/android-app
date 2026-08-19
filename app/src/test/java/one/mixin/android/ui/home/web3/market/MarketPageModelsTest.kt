@@ -311,6 +311,23 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun sortHeaderCyclesBackToScoreWhenAvailable() {
+        val descending = scoreMarketSortState().next(MarketSortColumn.VOLUME, isScoreOrderingAvailable = true)
+        val ascending = descending.next(MarketSortColumn.VOLUME, isScoreOrderingAvailable = true)
+        val score =
+            ascending
+                .next(MarketSortColumn.PRICE, isScoreOrderingAvailable = true)
+                .next(MarketSortColumn.PRICE, isScoreOrderingAvailable = true)
+                .next(MarketSortColumn.PRICE, isScoreOrderingAvailable = true)
+
+        assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING), descending)
+        assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING), ascending)
+        assertEquals(scoreMarketSortState(), score)
+        assertTrue(isScoreOrderingAvailable(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING))
+        assertTrue(!isScoreOrderingAvailable(MarketTopTab.CRYPTO, MarketSubTab.TRENDING))
+    }
+
+    @Test
     fun defaultVolumeSortMatchesMarketCategory() {
         listOf(
             MarketSubTab.CRYPTO,
@@ -326,7 +343,7 @@ class MarketPageModelsTest {
             defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL),
         )
         assertEquals(
-            MarketSortState(),
+            scoreMarketSortState(),
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING),
         )
         assertEquals(
@@ -413,6 +430,23 @@ class MarketPageModelsTest {
             )
 
         assertEquals(listOf("spot:higher-volume", "spot:lower-volume"), result.map { it.stableId })
+    }
+
+    @Test
+    fun applySortByScoreOrdersPerpetualMarkets() {
+        val second = MarketListEntry.Perpetual(perpsMarket(marketId = "second", tradeVolumeScore1D = 20), false)
+        val third = MarketListEntry.Perpetual(perpsMarket(marketId = "third", tradeVolumeScore1D = 10), false)
+        val first = MarketListEntry.Perpetual(perpsMarket(marketId = "first", tradeVolumeScore1D = 30), false)
+
+        val result =
+            MarketPageMapper.applySort(
+                entries = listOf(second, third, first),
+                sortState = scoreMarketSortState(),
+                period = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
+                useMarketCapForSpot = false,
+            )
+
+        assertEquals(listOf("perpetual:first", "perpetual:second", "perpetual:third"), result.map { it.stableId })
     }
 
     @Test

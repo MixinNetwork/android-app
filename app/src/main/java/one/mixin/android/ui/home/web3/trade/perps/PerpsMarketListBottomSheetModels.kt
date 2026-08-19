@@ -6,6 +6,7 @@ import one.mixin.android.ui.home.web3.market.MarketSortDirection
 import one.mixin.android.ui.home.web3.market.MarketSortState
 import one.mixin.android.ui.home.web3.market.PerpsMarketCategoryKey
 import one.mixin.android.ui.home.web3.market.changePercentValue
+import one.mixin.android.ui.home.web3.market.scoreMarketSortState
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import java.math.BigDecimal
 
@@ -83,7 +84,7 @@ internal data class PerpsMarketListUiState(
 
     fun selectSort(column: MarketSortColumn): PerpsMarketListUiState =
         copy(
-            sortState = sortState.next(column),
+            sortState = sortState.next(column, selectedCategory.isScoreOrderingAvailable),
             scrollToTopRequest = scrollToTopRequest + 1,
         ).normalizeRecommendationSelection()
 
@@ -178,7 +179,7 @@ internal data class PerpsMarketListUiState(
     private fun List<PerpsMarket>.sortedByCurrentState(): List<PerpsMarket> {
         val column = sortState.column
         if (column == null || sortState.direction == MarketSortDirection.DEFAULT) {
-            return if (selectedCategory == PerpsMarketCategory.ALL) {
+            return if (selectedCategory.isScoreOrderingAvailable) {
                 sortedByDescending(PerpsMarket::tradeVolumeScore1D)
             } else {
                 this
@@ -190,6 +191,7 @@ internal data class PerpsMarketListUiState(
                     MarketSortColumn.VOLUME -> market.volume.toBigDecimalOrNull()
                     MarketSortColumn.PRICE -> market.last.toBigDecimalOrNull()
                     MarketSortColumn.CHANGE -> market.changePercentValue()
+                    MarketSortColumn.SCORE -> market.tradeVolumeScore1D.toBigDecimal()
                 } ?: BigDecimal.ZERO
             }
         return if (sortState.direction == MarketSortDirection.ASCENDING) {
@@ -240,11 +242,14 @@ internal data class PerpsMarketListUiState(
 }
 
 internal fun defaultPerpsMarketSortState(category: PerpsMarketCategory) =
-    if (category == PerpsMarketCategory.ALL) {
-        MarketSortState()
+    if (category.isScoreOrderingAvailable) {
+        scoreMarketSortState()
     } else {
         MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
     }
+
+private val PerpsMarketCategory.isScoreOrderingAvailable: Boolean
+    get() = this == PerpsMarketCategory.ALL
 
 internal fun MarketSort?.toPerpsMarketSortState(category: PerpsMarketCategory): MarketSortState =
     when (this) {
