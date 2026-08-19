@@ -91,7 +91,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = if (goAlert) AlertDestination.Edit.name else AlertDestination.All.name,
+                        startDestination = AlertDestination.All.name,
                         enterTransition = {
                             slideIntoContainer(
                                 AnimatedContentTransitionScope.SlideDirection.Left,
