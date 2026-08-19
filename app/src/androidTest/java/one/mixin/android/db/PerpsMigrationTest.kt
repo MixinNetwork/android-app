@@ -187,7 +187,7 @@ class PerpsMigrationTest {
     }
 
     @Test
-    fun migrate_7_8_preservesDataAndAddsFeeAndMarketMetrics() {
+    fun migrate_7_8_clearsOrdersAndAddsFeeAndMarketMetrics() {
         migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 7).apply {
             insertMarket()
             insertOrderV7()
@@ -206,9 +206,9 @@ class PerpsMigrationTest {
             assertEquals("market-1", cursor.getString(0))
         }
 
-        migratedDb.query("SELECT order_id FROM perps_orders").use { cursor ->
+        migratedDb.query("SELECT COUNT(*) FROM perps_orders").use { cursor ->
             assertTrue(cursor.moveToFirst())
-            assertEquals("order-1", cursor.getString(0))
+            assertEquals(0, cursor.getInt(0))
         }
 
         assertColumn(migratedDb, "perps_orders", "fee_amount", "'0'")
