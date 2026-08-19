@@ -74,6 +74,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.send.BtcTransactionBuilder
 import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
 import java.math.BigDecimal
@@ -446,7 +447,11 @@ class Web3ViewModel @Inject constructor(
     ): FeeEstimateResult {
         if (token.chainId in Constants.Web3UtxoChainIds) {
             val localUtxos = withContext(Dispatchers.IO) { outputsByAddress(fromAddress, token.chainId) }
-            val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.00000001", localUtxos)
+            // Build a minimal-but-valid dummy transaction to estimate vsize. The output amount does
+            // not affect vsize (Coin values serialize to a fixed 8 bytes), so the chain's minimum
+            // transfer amount is the smallest value that passes buildSendTransaction's minimum check.
+            val dummyAmount: String = BtcTransactionBuilder.minimumTransferAmount(token.chainId).toPlainString()
+            val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, dummyAmount, localUtxos)
             val virtualSize: Int? = jsMsg.virtualSize
             val response = withContext(Dispatchers.IO) {
                 runCatching {
