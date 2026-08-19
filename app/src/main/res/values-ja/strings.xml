@@ -394,6 +394,7 @@
     <string name="error_unknown_with_code">エラー：%1$d</string>
     <string name="error_unknown_with_message">エラー：%1$s</string>
     <string name="error_used_phone">エラー20122：この電話番号はすでに他のアカウントと紐づけられています</string>
+    <string name="error_watch_address_not_supported">エラー 10633: このアドレスは現在対応していません</string>
     <string name="error_user_invalid_format">無効なユーザーIDです</string>
     <string name="error_withdrawal_memo_format_incorrect">エラー20131：出金メモのフォーマットが不正確です</string>
     <string name="Everybody">全員</string>

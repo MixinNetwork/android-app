@@ -510,7 +510,7 @@
     <string name="error_unknown_with_code">오류 %1$d</string>
     <string name="error_unknown_with_message">오류: %1$s</string>
     <string name="error_used_phone">오류 20122: 이 전화번호는 이미 다른 계정과 연결되어 있습니다.</string>
-    <string name="error_watch_address_not_supported">오류 10633: 잘못된 주소</string>
+    <string name="error_watch_address_not_supported">오류 10633: 현재 이 주소를 추가할 수 없습니다</string>
     <string name="error_invalid_referral_code">오류 10730: 잘못된 추천 코드</string>
     <string name="error_already_bonded_referral_code">오류 10731: 이 계정은 이미 추천 코드를 적용했습니다.</string>
     <string name="error_cannot_apply_your_own_referral_code">오류 10732: 자신의 추천 코드를 적용할 수 없습니다.</string>
