@@ -493,13 +493,14 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             avatar.setOnClickListener(
                 object : DebugClickListener() {
                     override fun onDebugClick() {
-                        if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) return
+                        if (token.chainId !in Constants.Web3UtxoChainIds) return
                         val fromAddress: String = address ?: return
                         requireView().navigate(
                             R.id.action_web3_transactions_to_web3_btc_outputs,
                             Bundle().apply {
                                 putString(Web3BtcOutputsFragment.ARGS_WALLET_ID, token.walletId)
                                 putString(Web3BtcOutputsFragment.ARGS_ADDRESS, fromAddress)
+                                putString(Web3BtcOutputsFragment.ARGS_CHAIN_ID, token.chainId)
                             },
                         )
                     }

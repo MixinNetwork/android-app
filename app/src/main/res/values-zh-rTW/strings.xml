@@ -1087,6 +1087,7 @@
     <string name="Transfer_timeout">長時間未收到數據是否退出？</string>
     <string name="Receivers">交易接收人</string>
     <string name="classic_wallet_btc_intro_title">普通錢包現已支援比特幣</string>
+    <string name="classic_wallet_pearl_intro_title">普通錢包現已支援 Pearl</string>
     <string name="feature_decentralized">去中心化</string>
     <string name="feature_decentralized_description">完全去中心化的錢包，你掌控私鑰。</string>
     <string name="feature_privacy_by_default">默認隱私保護</string>
