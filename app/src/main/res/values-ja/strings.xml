@@ -1103,4 +1103,5 @@
     <string name="perps_funding_frequency_value">1/4/8 時間</string>
     <string name="Bitcoin_Dominance">ビットコインドミナンス</string>
     <string name="Perp">無期限</string>
+    <string name="classic_wallet_pearl_intro_title">Common WalletがPearlに対応しました</string>
 </resources>

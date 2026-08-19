@@ -1201,7 +1201,7 @@ class TokenRepository
             var receiveAssetId: String? = null
 
             val txType = when {
-                assetId == Constants.ChainId.BITCOIN_CHAIN_ID -> TransactionType.TRANSFER_OUT.value
+                assetId in Constants.Web3UtxoChainIds -> TransactionType.TRANSFER_OUT.value
                 raw.simulateTx?.approves?.isNotEmpty() == true -> TransactionType.APPROVAL.value
                 (raw.simulateTx?.balanceChanges?.size ?: 0) > 1 -> TransactionType.SWAP.value
                 raw.simulateTx?.balanceChanges?.size == 1 -> TransactionType.TRANSFER_OUT.value
@@ -1235,12 +1235,12 @@ class TokenRepository
                 }
             }
 
-            if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                sendAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
-                receiveAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
+            if (assetId in Constants.Web3UtxoChainIds) {
+                sendAssetId = assetId
+                receiveAssetId = assetId
             }
-            if (raw.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                Timber.e("bitcoin tx,hash=%s, rate=%s", raw.hash, rate ?: "null")
+            if (raw.chainId in Constants.Web3UtxoChainIds) {
+                Timber.e("utxo tx,hash=%s, rate=%s", raw.hash, rate ?: "null")
             }
 
             val shouldFallbackToGaslessPending = sendAssetId == null && receiveAssetId == null && gaslessPendingTransaction != null
@@ -1918,19 +1918,19 @@ class TokenRepository
         hash: String,
         status: String,
         chainId: String,
-        btcRawTransactionHexToDeleteOutputs: String?,
+        utxoRawTransactionHexToDeleteOutputs: String?,
     ) {
         appDatabase.withTransaction {
             web3RawTransactionDao.insertSuspend(raw)
             web3TransactionDao.updateTransaction(hash, status, chainId)
-            if (btcRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withTransaction
-            val cleanedHex: String = btcRawTransactionHexToDeleteOutputs.removePrefix("0x").trim()
+            if (chainId !in Constants.Web3UtxoChainIds || utxoRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withTransaction
+            val cleanedHex: String = utxoRawTransactionHexToDeleteOutputs.removePrefix("0x").trim()
             if (cleanedHex.isBlank()) return@withTransaction
             val tx: Transaction = runCatching {
                 Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
             }.getOrNull() ?: return@withTransaction
             val txHash: String = tx.txId.toString()
-            walletOutputDao.deleteByTransactionHash(txHash, Constants.ChainId.BITCOIN_CHAIN_ID)
+            walletOutputDao.deleteByTransactionHash(txHash, chainId)
 
             val pendingOutpoints: Set<String> = web3RawTransactionDao.getPendingRawTransactionsByAccount(raw.account, chainId)
                 .asSequence()
@@ -1953,9 +1953,9 @@ class TokenRepository
                 if (pendingOutpoints.contains(outpointKey)) {
                     continue
                 }
-                val localOutput: WalletOutput? = walletOutputDao.outputByOutpoint(prevHash, prevIndex, Constants.ChainId.BITCOIN_CHAIN_ID)
+                val localOutput: WalletOutput? = walletOutputDao.outputByOutpoint(prevHash, prevIndex, chainId)
                 if (localOutput != null) {
-                    walletOutputDao.deleteSignedByOutpoint(prevHash, prevIndex, localOutput.address, Constants.ChainId.BITCOIN_CHAIN_ID)
+                    walletOutputDao.deleteSignedByOutpoint(prevHash, prevIndex, localOutput.address, chainId)
                 }
             }
         }

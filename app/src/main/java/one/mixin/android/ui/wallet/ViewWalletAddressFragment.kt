@@ -212,6 +212,8 @@ private fun AddressItem(
             listOf(R.drawable.ic_chain_sol)
         } else if (address.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
             listOf(R.drawable.ic_chain_btc)
+        } else if (address.chainId == Constants.ChainId.PEARL_CHAIN_ID) {
+            listOf(R.drawable.ic_chain_pearl)
         } else {
             listOf(
                 R.drawable.ic_chain_eth,

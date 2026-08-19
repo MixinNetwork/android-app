@@ -1157,4 +1157,5 @@
     <string name="perps_funding_frequency_value">1/4/8 horas</string>
     <string name="Bitcoin_Dominance">Dominancia de Bitcoin</string>
     <string name="Perp">Perp</string>
+    <string name="classic_wallet_pearl_intro_title">Common Wallet ahora es compatible con Pearl</string>
 </resources>

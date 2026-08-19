@@ -35,6 +35,8 @@ import one.mixin.android.Constants.Web3EvmChainIds
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.isTransferSupported
+import one.mixin.android.db.web3.vo.isWeb3TransferSupported
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
@@ -52,6 +54,10 @@ import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
+
+internal fun shouldHandleRecentTokenClick(type: Int, chainId: String): Boolean =
+    type != Web3TokenListBottomSheetDialogFragment.TYPE_FROM_SEND ||
+        isWeb3TransferSupported(chainId)
 
 @AndroidEntryPoint
 class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -232,7 +238,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             bottomViewModel.web3TokenItemsExcludeHidden(it, PREF_WALLET_SEND == this.key).observe(this) { items ->
                 defaultAssets = if (type == TYPE_FROM_SEND)
                     items.filter { t ->
-                        t.balance.toBigDecimalOrNull().run {
+                        t.isTransferSupported() && t.balance.toBigDecimalOrNull().run {
                             this != null && this > BigDecimal.ZERO
                         }
                     } else {
@@ -263,40 +269,42 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         id = composeId
                         setContent {
                             RecentTokens(true, key) { tokenItem ->
-                                requireContext().defaultSharedPreferences.addToList(key, tokenItem.assetId)
-                                this@Web3TokenListBottomSheetDialogFragment.lifecycleScope.launch {
-                                    var web3Token = defaultAssets.find { it.assetId == tokenItem.assetId }
-                                    if (web3Token == null) {
-                                        web3Token = bottomViewModel.findOrSyncAsset(tokenItem.assetId)?.let { tokenItem ->
-                                            Web3TokenItem(
-                                                walletId = walletId ?: "",
-                                                assetId = tokenItem.assetId,
-                                                chainId = tokenItem.chainId,
-                                                name = tokenItem.name,
-                                                assetKey = tokenItem.assetKey ?: "",
-                                                symbol = tokenItem.symbol,
-                                                iconUrl = tokenItem.iconUrl,
-                                                precision = 0,
-                                                kernelAssetId = "",
-                                                balance = "0",
-                                                priceUsd = tokenItem.priceUsd,
-                                                changeUsd = tokenItem.changeUsd,
-                                                chainIcon = tokenItem.chainIconUrl,
-                                                chainName = tokenItem.chainName,
-                                                chainSymbol = tokenItem.chainSymbol,
-                                                hidden = false,
-                                                level = Constants.AssetLevel.VERIFIED
-                                            )
+                                if (shouldHandleRecentTokenClick(type, tokenItem.chainId)) {
+                                    requireContext().defaultSharedPreferences.addToList(key, tokenItem.assetId)
+                                    this@Web3TokenListBottomSheetDialogFragment.lifecycleScope.launch {
+                                        var web3Token = defaultAssets.find { it.assetId == tokenItem.assetId }
+                                        if (web3Token == null) {
+                                            web3Token = bottomViewModel.findOrSyncAsset(tokenItem.assetId)?.let { tokenItem ->
+                                                Web3TokenItem(
+                                                    walletId = walletId ?: "",
+                                                    assetId = tokenItem.assetId,
+                                                    chainId = tokenItem.chainId,
+                                                    name = tokenItem.name,
+                                                    assetKey = tokenItem.assetKey ?: "",
+                                                    symbol = tokenItem.symbol,
+                                                    iconUrl = tokenItem.iconUrl,
+                                                    precision = 0,
+                                                    kernelAssetId = "",
+                                                    balance = "0",
+                                                    priceUsd = tokenItem.priceUsd,
+                                                    changeUsd = tokenItem.changeUsd,
+                                                    chainIcon = tokenItem.chainIconUrl,
+                                                    chainName = tokenItem.chainName,
+                                                    chainSymbol = tokenItem.chainSymbol,
+                                                    hidden = false,
+                                                    level = Constants.AssetLevel.VERIFIED
+                                                )
+                                            }
                                         }
-                                    }
-                                    web3Token?.let {
-                                        if (asyncOnAsset != null) {
-                                            asyncClick(it)
-                                        } else {
-                                            this@Web3TokenListBottomSheetDialogFragment.onAsset?.invoke(
-                                                it
-                                            )
-                                            dismiss()
+                                        web3Token?.let {
+                                            if (asyncOnAsset != null) {
+                                                asyncClick(it)
+                                            } else {
+                                                this@Web3TokenListBottomSheetDialogFragment.onAsset?.invoke(
+                                                    it
+                                                )
+                                                dismiss()
+                                            }
                                         }
                                     }
                                 }
@@ -371,7 +379,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.pb.isVisible = true
         val fuzzyResults = bottomViewModel.queryAsset(walletId = walletId, query = query, web3 = true)
         val remoteAssets = fuzzyResults.filter {
-            it.chainId in Web3EvmChainIds || it.chainId == BITCOIN_CHAIN_ID || it.chainId == SOLANA_CHAIN_ID
+            it.chainId in Web3EvmChainIds || it.chainId == SOLANA_CHAIN_ID || it.chainId in Constants.Web3UtxoChainIds
         }.map { item ->
             bottomViewModel.web3TokenItemById(walletId ?: "", item.assetId).let { local ->
                 if (local != null && (local.level >= 10 || local.hidden == false)) {
