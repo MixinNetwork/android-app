@@ -10,7 +10,7 @@ import org.junit.Test
 class DepositUriTest {
     @Test
     fun pearlDepositUriUsesPearlScheme() {
-        val address = "prl1qexampleaddress00000000000000000000000000"
+        val address = "prl1p5rg2k5twnlggzdqhcw994xkgwqfuvvwhjnjrx84xsv9f834r887q4j2j5p"
         assertEquals(
             "pearl:$address?amount=1.25",
             generateDepositUri(
@@ -53,6 +53,6 @@ class DepositUriTest {
 
     @Test
     fun pearlUriIsExternalTransferUrl() {
-        assertTrue("pearl:prl1qexample?amount=1".isExternalTransferUrl())
+        assertTrue("pearl:prl1p5rg2k5twnlggzdqhcw994xkgwqfuvvwhjnjrx84xsv9f834r887q4j2j5p?amount=1".isExternalTransferUrl())
     }
 }
