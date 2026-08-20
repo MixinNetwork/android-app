@@ -270,7 +270,10 @@ fun PerpetualContent(
                             .wrapContentHeight()
                             .clip(RoundedCornerShape(8.dp))
                             .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                            .padding(vertical = 16.dp),
+                            .padding(
+                                top = 16.dp,
+                                bottom = if (openPositionsCount > openPositionsPreview.size) 16.dp else 12.dp,
+                            ),
                 ) {
                     Row(
                         modifier = Modifier
@@ -306,7 +309,7 @@ fun PerpetualContent(
                             }
                         )
                         if (index != openPositionsPreview.lastIndex) {
-                            Spacer(modifier = Modifier.height(12.dp))
+                            Spacer(modifier = Modifier.height(4.dp))
                         }
                     }
 
@@ -344,7 +347,10 @@ fun PerpetualContent(
                     .wrapContentHeight()
                     .clip(RoundedCornerShape(8.dp))
                     .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                    .padding(vertical = 16.dp)
+                    .padding(
+                        top = 16.dp,
+                        bottom = if (markets.size > marketsPreview.size) 16.dp else 12.dp,
+                    )
             ) {
                 if (marketsPreview.isNotEmpty()) {
                     MarketPreviewSection(
@@ -393,7 +399,10 @@ fun PerpetualContent(
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(8.dp))
                         .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                        .padding(vertical = 16.dp)
+                        .padding(
+                            top = 16.dp,
+                            bottom = if (stocksMarkets.size > stocksMarketsPreview.size) 16.dp else 12.dp,
+                        )
                 ) {
                     MarketPreviewSection(
                         title = stringResource(R.string.perps_category_stocks),
@@ -419,7 +428,10 @@ fun PerpetualContent(
                         .wrapContentHeight()
                         .clip(RoundedCornerShape(8.dp))
                         .cardBackground(Color.Transparent, MixinAppTheme.colors.borderColor)
-                        .padding(vertical = 16.dp)
+                        .padding(
+                            top = 16.dp,
+                            bottom = if (commoditiesMarkets.size > commoditiesMarketsPreview.size) 16.dp else 12.dp,
+                        )
                 ) {
                     MarketPreviewSection(
                         title = stringResource(R.string.perps_category_commodities),
@@ -645,7 +657,7 @@ private fun MarketPreviewSection(
             onClick = { onMarketItemClick(market) }
         )
         if (index != markets.lastIndex) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
         }
     }
 
