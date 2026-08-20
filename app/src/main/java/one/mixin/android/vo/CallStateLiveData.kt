@@ -170,7 +170,7 @@ enum class CallType {
     Group,
 }
 
-private const val JOIN_MUTE_MIC_COUNT = 7
+private const val JOIN_MUTE_MIC_COUNT = 8
 
 class CallStateLiveData : LiveData<CallService.CallState>() {
     var state: CallService.CallState = CallService.CallState.STATE_IDLE
@@ -296,10 +296,10 @@ class CallStateLiveData : LiveData<CallService.CallState>() {
     }
 
     fun needMuteWhenJoin(conversationId: String): Boolean =
-        getUsersCount(conversationId) > JOIN_MUTE_MIC_COUNT
+        getUsersCount(conversationId) >= JOIN_MUTE_MIC_COUNT
 
     fun needMuteWhenJoin(groupCallState: GroupCallState?): Boolean =
-        (groupCallState?.userIds()?.size ?: 0) > JOIN_MUTE_MIC_COUNT
+        (groupCallState?.userIds()?.size ?: 0) >= JOIN_MUTE_MIC_COUNT
 
     fun getUsersCount(conversationId: String): Int =
         getUsers(conversationId)?.size ?: 0
