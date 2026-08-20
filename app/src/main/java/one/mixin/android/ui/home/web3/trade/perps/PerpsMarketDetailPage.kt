@@ -865,7 +865,7 @@ private fun MarketInfoCard(
             color = MixinAppTheme.colors.textPrimary
         )
 
-        if (market.openInterest.toBigDecimalOrNull()?.signum() != 0) {
+        if (market.openInterest.toBigDecimalOrNull()?.let { it.signum() != 0 } == true) {
             Spacer(modifier = Modifier.height(12.dp))
             Text(
                 text = stringResource(R.string.Open_Interest).uppercase(),

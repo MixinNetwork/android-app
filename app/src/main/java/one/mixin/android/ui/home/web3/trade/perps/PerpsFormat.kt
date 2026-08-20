@@ -85,7 +85,8 @@ fun formatPerpsExactUsdDecimal(value: BigDecimal?): String {
     if (absValue.compareTo(BigDecimal.ZERO) == 0) {
         return "${PERPS_USD_SYMBOL}0.00"
     }
-    return "$PERPS_USD_SYMBOL${absValue.stripTrailingZeros().toPlainString()}"
+    val scaledValue = absValue.setScale(8, RoundingMode.HALF_UP)
+    return "$PERPS_USD_SYMBOL${DecimalFormat(",##0.00######").format(scaledValue)}"
 }
 
 fun formatPerpsSignedExactUsdDecimal(value: BigDecimal?): String {

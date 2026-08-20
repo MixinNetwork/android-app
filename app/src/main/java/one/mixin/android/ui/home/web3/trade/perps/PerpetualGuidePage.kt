@@ -709,7 +709,8 @@ private fun TradingFeeExampleCard() {
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val profitColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val lossColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-    var leverage by remember { mutableIntStateOf(10) }
+    var leverage by remember { mutableIntStateOf(5) }
+    val maxLeverage = 10
     val amount = BigDecimal("100")
     val positionValue = amount.multiply(leverage.toBigDecimal())
     val feeRate = BigDecimal("0.0016")
@@ -761,9 +762,9 @@ private fun TradingFeeExampleCard() {
             GuideNumberAdjuster(
                 valueText = "${leverage}x",
                 canDecrease = leverage > 1,
-                canIncrease = leverage < 200,
+                canIncrease = leverage < maxLeverage,
                 onDecrease = { leverage = (leverage - 1).coerceAtLeast(1) },
-                onIncrease = { leverage = (leverage + 1).coerceAtMost(200) },
+                onIncrease = { leverage = (leverage + 1).coerceAtMost(maxLeverage) },
             )
         }
         Spacer(modifier = Modifier.height(14.dp))

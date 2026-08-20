@@ -6,6 +6,26 @@ import java.math.BigDecimal
 
 class PerpsFormatTest {
     @Test
+    fun exactUsdUsesGroupingAndAtLeastTwoFractionDigits() {
+        assertEquals(
+            "$1,234.50",
+            formatPerpsExactUsdDecimal(BigDecimal("1234.5")),
+        )
+        assertEquals(
+            "$0.80",
+            formatPerpsExactUsdDecimal(BigDecimal("0.8")),
+        )
+    }
+
+    @Test
+    fun exactUsdCapsServerPrecision() {
+        assertEquals(
+            "$1.12345679",
+            formatPerpsExactUsdDecimal(BigDecimal("1.123456789")),
+        )
+    }
+
+    @Test
     fun feeShowsFullAmountInsteadOfLessThanOneCent() {
         assertEquals(
             "-$0.003421",
