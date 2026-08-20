@@ -788,4 +788,5 @@
     <string name="perps_trading_fee_pnl_3">Yuran berkaitan telah dimasukkan dalam PnL terealisasi anda</string>
     <string name="Bitcoin_Dominance">Dominasi Bitcoin</string>
     <string name="Perp">Perp</string>
+    <string name="classic_wallet_pearl_intro_title">Common Wallet kini menyokong Pearl</string>
 </resources>

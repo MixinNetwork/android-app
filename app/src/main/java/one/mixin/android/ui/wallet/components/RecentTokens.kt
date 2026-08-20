@@ -44,11 +44,14 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.isWeb3TransferSupported
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.priceFormat2
 import one.mixin.android.ui.search.SearchViewModel
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
+
+internal fun isWeb3RecentTokenChain(chainId: String): Boolean = isWeb3TransferSupported(chainId)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -57,7 +60,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
     val viewModel = hiltViewModel<SearchViewModel>()
     val source by viewModel.recentTokenItems.collectAsState(initial = emptyList())
     val recentToken = if (web3) {
-        source.filter { it.chainId in listOf(Constants.ChainId.Solana, Constants.ChainId.ETHEREUM_CHAIN_ID, Constants.ChainId.Base, Constants.ChainId.Polygon, Constants.ChainId.BinanceSmartChain) }
+        source.filter { isWeb3RecentTokenChain(it.chainId) }
     } else {
         source
     }

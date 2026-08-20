@@ -62,6 +62,8 @@ object Web3Signer {
         data object Ethereum : JsSignerNetwork("ethereum")
 
         data object Solana : JsSignerNetwork("solana")
+
+        data object Pearl : JsSignerNetwork("pearl")
     }
 
     private const val TAG = "Web3Signer"
@@ -77,6 +79,7 @@ object Web3Signer {
         const val EVM_ADDRESS = "signer_evm_address"
         const val SOLANA_ADDRESS = "signer_solana_address"
         const val BTC_ADDRESS = "signer_btc_address"
+        const val PEARL_ADDRESS = "signer_pearl_address"
         const val PATH = "signer_path"
         const val CURRENT_WALLET_CATEGORY = "signer_current_wallet_category"
         const val CLASSIC_WALLET_ID = "signer_classic_wallet_id"
@@ -91,6 +94,8 @@ object Web3Signer {
     var solanaAddress: String = ""
         private set
     var btcAddress: String = ""
+        private set
+    var pearlAddress: String = ""
         private set
     var path: String = ""
         private set
@@ -116,6 +121,7 @@ object Web3Signer {
         evmAddress = sp.getString(Keys.EVM_ADDRESS, "") ?: ""
         solanaAddress = sp.getString(Keys.SOLANA_ADDRESS, "") ?: ""
         btcAddress = sp.getString(Keys.BTC_ADDRESS, "") ?: ""
+        pearlAddress = sp.getString(Keys.PEARL_ADDRESS, "") ?: ""
         path = sp.getString(Keys.PATH, "") ?: ""
         currentWalletId = sp.getString(Keys.SELECTED_WEB3_WALLET_ID, "") ?: ""
         currentWalletCategory = sp.getString(Keys.CURRENT_WALLET_CATEGORY, WalletCategory.CLASSIC.value)
@@ -131,6 +137,7 @@ object Web3Signer {
         sp.putString(Keys.EVM_ADDRESS, evmAddress)
         sp.putString(Keys.SOLANA_ADDRESS, solanaAddress)
         sp.putString(Keys.BTC_ADDRESS, btcAddress)
+        sp.putString(Keys.PEARL_ADDRESS, pearlAddress)
         sp.putString(Keys.PATH, path)
         sp.putString(Keys.SELECTED_WEB3_WALLET_ID, currentWalletId)
         sp.putString(Keys.CURRENT_WALLET_CATEGORY, currentWalletCategory)
@@ -157,10 +164,10 @@ object Web3Signer {
         network: String,
         address: String,
     ) {
-        if (network == JsSignerNetwork.Solana.name) {
-            solanaAddress = address
-        } else {
-            evmAddress = address
+        when (network) {
+            JsSignerNetwork.Solana.name -> solanaAddress = address
+            JsSignerNetwork.Pearl.name -> pearlAddress = address
+            else -> evmAddress = address
         }
         persist()
     }
@@ -234,7 +241,11 @@ object Web3Signer {
     ) {
         if (walletId.isNotBlank()) {
             val addresses = queryAddress(walletId)
-            path = addresses.firstOrNull { it.chainId in Constants.Web3ChainIds || it.chainId == SOLANA_CHAIN_ID }?.path ?: ""
+            path = addresses.firstOrNull {
+                it.chainId in Constants.Web3ChainIds ||
+                    it.chainId == SOLANA_CHAIN_ID ||
+                    it.chainId in Constants.Web3UtxoChainIds
+            }?.path ?: ""
             evmAddress =
                 addresses.firstOrNull { it.chainId in Constants.Web3ChainIds }?.destination
                     ?: ""
@@ -242,11 +253,13 @@ object Web3Signer {
                 addresses.firstOrNull { it.chainId == SOLANA_CHAIN_ID }?.destination
                     ?: ""
             btcAddress = addresses.firstOrNull {it.chainId == BITCOIN_CHAIN_ID}?.destination ?:""
+            pearlAddress = addresses.firstOrNull { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }?.destination ?: ""
             address = evmAddress
         } else {
             evmAddress = ""
             solanaAddress = ""
             btcAddress = ""
+            pearlAddress = ""
             address = ""
             path = ""
         }

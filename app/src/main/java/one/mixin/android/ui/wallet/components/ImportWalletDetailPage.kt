@@ -53,6 +53,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.crypto.isEvmAddressValid
 import one.mixin.android.crypto.isEvmPrivateKeyValid
 import one.mixin.android.crypto.isSolanaAddressValid
@@ -64,7 +65,6 @@ import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.encodeToBase58String
-import org.bitcoinj.base.AddressParser
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.crypto.DumpedPrivateKey
 import org.bitcoinj.crypto.ECKey
@@ -92,6 +92,7 @@ fun ImportWalletDetailPage(
 
     val networks = mapOf(
         "Bitcoin" to Constants.ChainId.BITCOIN_CHAIN_ID,
+        "Pearl" to Constants.ChainId.PEARL_CHAIN_ID,
         "Ethereum" to Constants.ChainId.ETHEREUM_CHAIN_ID,
         "Base" to Constants.ChainId.Base,
         "BSC" to Constants.ChainId.BinanceSmartChain,
@@ -129,6 +130,7 @@ fun ImportWalletDetailPage(
         else -> false
     }
     val isBitcoin: Boolean = selectedNetworkName == "Bitcoin"
+    val isPearl: Boolean = selectedNetworkName == "Pearl"
     val isSolana = selectedNetworkName == "Solana"
 
     val currentChainId = networks[selectedNetworkName] ?: ""
@@ -150,7 +152,7 @@ fun ImportWalletDetailPage(
                 WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY, WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
                     if (isEvmNetwork && isEvmPrivateKeyValid(text)) {
                         CryptoWalletHelper.privateKeyToAddress(text, currentChainId)
-                    } else if (isBitcoin && isBitcoinPrivateKeyValid(text)) {
+                    } else if ((isBitcoin || isPearl) && isBitcoinPrivateKeyValid(text)) {
                         CryptoWalletHelper.privateKeyToAddress(text, currentChainId)
                     } else if (isSolana && isSolanaPrivateKeyValid(text)) {
                         CryptoWalletHelper.privateKeyToAddress(text, currentChainId)
@@ -160,7 +162,7 @@ fun ImportWalletDetailPage(
                 }
                 WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
                     if ((isEvmNetwork && isEvmAddressValid(text)) ||
-                        (isBitcoin && isBitcoinAddressValid(text)) ||
+                        ((isBitcoin || isPearl) && UtxoKeyGenerator.isAddressValid(text, currentChainId)) ||
                         (isSolana && isSolanaAddressValid(text))) {
                         text
                     } else {
@@ -189,14 +191,14 @@ fun ImportWalletDetailPage(
         }
     }
 
-    val isInputValid by remember(mode, text, isEvmNetwork) {
+    val isInputValid by remember(mode, text, isEvmNetwork, isBitcoin, isPearl, isSolana) {
         derivedStateOf {
             when (mode) {
                 WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY,
                 WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> {
                     if (isEvmNetwork) {
                         isEvmPrivateKeyValid(text)
-                    } else if (isBitcoin) {
+                    } else if (isBitcoin || isPearl) {
                         isBitcoinPrivateKeyValid(text)
                     } else if (isSolana) {
                         isSolanaPrivateKeyValid(text)
@@ -207,8 +209,8 @@ fun ImportWalletDetailPage(
                 WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> {
                     if (isEvmNetwork) {
                         isEvmAddressValid(text)
-                    } else if (isBitcoin) {
-                        isBitcoinAddressValid(text)
+                    } else if (isBitcoin || isPearl) {
+                        UtxoKeyGenerator.isAddressValid(text, currentChainId)
                     } else if(isSolana) {
                         isSolanaAddressValid(text)
                     } else {
@@ -252,7 +254,7 @@ fun ImportWalletDetailPage(
         WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY,
         WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY -> when {
             isSolana -> stringResource(R.string.solana_private_key_hint)
-            isBitcoin -> stringResource(R.string.bitcoin_private_key_hint)
+            isBitcoin || isPearl -> stringResource(R.string.bitcoin_private_key_hint)
             else -> stringResource(R.string.ethereum_private_key_hint)
         }
         WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS -> stringResource(R.string.address_hint)
@@ -504,7 +506,7 @@ fun ImportWalletDetailPage(
                             currentChainId,
                             if (mode == WalletSecurityActivity.Mode.ADD_WATCH_ADDRESS && isEvmNetwork) {
                                 Keys.toChecksumAddress(text)
-                            } else if ((mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY || mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY) && isBitcoin) {
+                            } else if ((mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY || mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY) && (isBitcoin || isPearl)) {
                                 requireNotNull(normalizeBitcoinPrivateKeyToWif(text))
                             } else if ((mode == WalletSecurityActivity.Mode.IMPORT_PRIVATE_KEY || mode == WalletSecurityActivity.Mode.RE_IMPORT_PRIVATE_KEY) && isSolana // import solana key
                                 && isSolanaHexPrivateKeyValid(text)
@@ -587,14 +589,5 @@ private fun normalizeBitcoinPrivateKeyToWif(privateKey: String): String? {
         }
     } catch (e: Exception) {
         null
-    }
-}
-
-private fun isBitcoinAddressValid(address: String): Boolean {
-    return try {
-        AddressParser.getDefault(BitcoinNetwork.MAINNET).parseAddress(address)
-        true
-    } catch (e: Exception) {
-        false
     }
 }

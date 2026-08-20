@@ -8,6 +8,23 @@ internal data class SwapTokenPair(
     val to: SwapToken?,
 )
 
+internal fun resolveDefaultWeb3SwapTokenPair(
+    tokens: List<SwapToken>,
+    fromToken: SwapToken?,
+    toToken: SwapToken?,
+): SwapTokenPair {
+    if (tokens.isEmpty()) return SwapTokenPair(fromToken, toToken)
+    val resolvedFrom = fromToken ?: tokens[0]
+    val resolvedTo = if (toToken == null || toToken.getUnique() == resolvedFrom.getUnique()) {
+        tokens.firstOrNull { token -> token.assetId != resolvedFrom.assetId }
+            ?: tokens.getOrNull(1)
+            ?: tokens[0]
+    } else {
+        toToken
+    }
+    return SwapTokenPair(resolvedFrom, resolvedTo)
+}
+
 internal fun resolveDuplicateSwapTokenPair(
     tokens: List<SwapToken>,
     fromToken: SwapToken?,

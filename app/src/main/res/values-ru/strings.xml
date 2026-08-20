@@ -1106,4 +1106,5 @@
     <string name="perps_trading_fee_pnl_3">Комиссии включены в ваш реализованный PnL</string>
     <string name="Bitcoin_Dominance">Доминирование биткоина</string>
     <string name="Perp">Бесср.</string>
+    <string name="classic_wallet_pearl_intro_title">Common Wallet теперь поддерживает Pearl</string>
 </resources>
