@@ -51,7 +51,6 @@ import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.wallet.alert.AlertFragment
 import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_COIN
-import one.mixin.android.ui.wallet.alert.AlertFragment.Companion.ARGS_GO_ALERT
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
@@ -237,14 +236,12 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                                     }
                                     view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
                                         putParcelable(ARGS_COIN, coinItem)
-                                        putBoolean(ARGS_GO_ALERT, !exist)
                                         putString(AlertFragment.ARGS_SOURCE, AnalyticsTracker.MarketSource.MARKET_DETAIL)
                                     })
                                 }
                             } else {
                                 view.navigate(R.id.action_market_details_to_alert, Bundle().apply {
                                     putParcelable(ARGS_COIN, coinItem)
-                                    putBoolean(ARGS_GO_ALERT, !exist)
                                     putString(AlertFragment.ARGS_SOURCE, AnalyticsTracker.MarketSource.MARKET_DETAIL)
                                 })
                             }
