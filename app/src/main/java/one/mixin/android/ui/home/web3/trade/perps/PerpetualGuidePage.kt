@@ -104,6 +104,7 @@ fun PerpetualGuidePage(
         stringResource(R.string.take_profit_stop_loss_label),
         stringResource(R.string.Liquidation_Price),
         stringResource(R.string.Funding_Rate),
+        stringResource(R.string.Trading_Fee),
     )
     val navigationTabs = listOf(
         stringResource(R.string.Brief_Introduction),
@@ -114,6 +115,7 @@ fun PerpetualGuidePage(
         stringResource(R.string.take_profit_stop_loss_label),
         stringResource(R.string.perps_liquidation_price_short),
         stringResource(R.string.Funding_Rate),
+        stringResource(R.string.Trading_Fee),
     )
     val safeInitialTab = initialTab.coerceIn(0, tabs.lastIndex)
     var selectedTab by remember(safeInitialTab) { mutableIntStateOf(safeInitialTab) }
@@ -204,6 +206,7 @@ fun PerpetualGuidePage(
                         5 -> TpSlContent()
                         6 -> LiquidationContent()
                         7 -> FundingRateContent()
+                        8 -> TradingFeeContent()
                     }
                     Spacer(modifier = Modifier.height(24.dp))
                 }
@@ -681,6 +684,176 @@ private fun FundingRateContent() {
         ),
         riskContents = emptyList(),
     )
+}
+
+@Composable
+private fun TradingFeeContent() {
+    TradingFeeExampleCard()
+    Spacer(modifier = Modifier.height(14.dp))
+    DescriptionWithInfoAndRiskCard(
+        description = stringResource(R.string.perps_trading_fee_overview),
+        infoTitle = stringResource(R.string.PnL),
+        infoContents = listOf(
+            stringResource(R.string.perps_trading_fee_pnl_1),
+            stringResource(R.string.perps_trading_fee_pnl_2),
+            stringResource(R.string.perps_trading_fee_pnl_3),
+        ),
+        riskContents = emptyList(),
+    )
+}
+
+@Composable
+private fun TradingFeeExampleCard() {
+    val context = LocalContext.current
+    val quoteColorReversed = context.defaultSharedPreferences
+        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val profitColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val lossColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    var leverage by remember { mutableIntStateOf(5) }
+    val maxLeverage = 10
+    val amount = BigDecimal("100")
+    val positionValue = amount.multiply(leverage.toBigDecimal())
+    val feeRate = BigDecimal("0.0016")
+    val feeRateText = "${feeRate.movePointRight(2).formatGuideDecimal()}%"
+    val fee = positionValue.multiply(feeRate)
+    val totalFee = fee.multiply(BigDecimal("2"))
+    val risePnl = positionValue.multiply(BigDecimal("0.1")).subtract(totalFee)
+    val fallPnl = positionValue.multiply(BigDecimal("-0.05")).subtract(totalFee)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.Example),
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W500,
+            color = MixinAppTheme.colors.textPrimary
+        )
+        Spacer(modifier = Modifier.height(12.dp))
+        GuideValueRow(title = stringResource(R.string.perps_market)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_chain_sol),
+                    contentDescription = null,
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                Text(
+                    text = "SOL - USD",
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.W500,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.Direction)) {
+            GuideDirectionTag(
+                text = stringResource(R.string.Long),
+                backgroundColor = profitColor,
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.Leverage)) {
+            GuideNumberAdjuster(
+                valueText = "${leverage}x",
+                canDecrease = leverage > 1,
+                canIncrease = leverage < maxLeverage,
+                onDecrease = { leverage = (leverage - 1).coerceAtLeast(1) },
+                onIncrease = { leverage = (leverage + 1).coerceAtMost(maxLeverage) },
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.example_amount)) {
+            Text(
+                text = "100 USDT",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W500,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+        GuideCardDivider()
+        GuideValueRow(title = stringResource(R.string.Open_Fee)) {
+            Text(
+                text = "-${fee.formatGuideDecimal()} USDT($feeRateText)",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W500,
+                color = lossColor
+            )
+        }
+        Spacer(modifier = Modifier.height(14.dp))
+        GuideValueRow(title = stringResource(R.string.Close_Fee)) {
+            Text(
+                text = "-${fee.formatGuideDecimal()} USDT($feeRateText)",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.W500,
+                color = lossColor
+            )
+        }
+        GuideCardDivider()
+        TradingFeeScenario(
+            title = stringResource(R.string.example_scene1_increasing),
+            priceChange = "+10%",
+            pnl = "+${risePnl.formatGuideDecimal()} USDT",
+            color = profitColor,
+        )
+        GuideCardDivider()
+        TradingFeeScenario(
+            title = stringResource(R.string.example_scene2_decreasing),
+            priceChange = "-5%",
+            pnl = "${fallPnl.formatGuideDecimal()} USDT",
+            color = lossColor,
+        )
+    }
+}
+
+@Composable
+private fun TradingFeeScenario(
+    title: String,
+    priceChange: String,
+    pnl: String,
+    color: Color,
+) {
+    Text(
+        text = title,
+        fontSize = 14.sp,
+        fontWeight = FontWeight.W500,
+        color = MixinAppTheme.colors.textPrimary
+    )
+    Spacer(modifier = Modifier.height(12.dp))
+    GuideValueRow(title = stringResource(R.string.Price_Change)) {
+        Text(
+            text = priceChange,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.W500,
+            color = color
+        )
+    }
+    Spacer(modifier = Modifier.height(14.dp))
+    GuideValueRow(title = stringResource(R.string.PnL)) {
+        Text(
+            text = pnl,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.W500,
+            color = color
+        )
+    }
+}
+
+@Composable
+private fun GuideCardDivider() {
+    Spacer(modifier = Modifier.height(14.dp))
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(1.dp)
+            .background(MixinAppTheme.colors.backgroundWindow)
+    )
+    Spacer(modifier = Modifier.height(14.dp))
 }
 
 @Composable
@@ -1470,6 +1643,10 @@ private fun GuideDirectionToggle(
 
 private fun formatGuideInt(value: Int): String {
     return String.format("%,d", value)
+}
+
+private fun BigDecimal.formatGuideDecimal(): String {
+    return setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
 }
 
 private fun calculateGuideLiquidationPrice(

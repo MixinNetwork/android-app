@@ -38,6 +38,7 @@ import one.mixin.android.ui.logs.LogViewerBottomSheet
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.tip.TipFlowInteractor
 import one.mixin.android.ui.wallet.signUtxoAddressMessage
+import one.mixin.android.ui.wallet.validateWalletAddressUpdateResponse
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
@@ -225,11 +226,8 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         }
         val hasAnyMissingUtxoAddress: Boolean = wallets.any { walletItem ->
             val addresses = web3Repository.getAddresses(walletItem.id)
-            val derivationIndex = CryptoWalletHelper.extractIndexFromPaths(addresses.map { it.path }) ?: 0
             CryptoWalletHelper.hasMissingUtxoAddress(
                 chainIds = addresses.map { it.chainId },
-                walletCategory = walletItem.category,
-                derivationIndex = derivationIndex,
             )
         }
         if (!hasAnyMissingUtxoAddress) {
@@ -239,9 +237,8 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         for (walletItem in wallets) {
             val localAddresses = web3Repository.getAddresses(walletItem.id)
             val derivationIndex = CryptoWalletHelper.extractIndexFromPaths(localAddresses.map { it.path }) ?: 0
-            val pearlRequired = CryptoWalletHelper.shouldHavePearlAddress(walletItem.category, derivationIndex)
             val hasBtcAddress: Boolean = localAddresses.any { it.chainId == BITCOIN_CHAIN_ID }
-            val hasPearlAddress: Boolean = !pearlRequired || localAddresses.any { it.chainId == PEARL_CHAIN_ID }
+            val hasPearlAddress: Boolean = localAddresses.any { it.chainId == PEARL_CHAIN_ID }
             if (hasBtcAddress && hasPearlAddress) {
                 continue
             }
@@ -250,8 +247,11 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             val mnemonic: String? = if (walletItem.category == WalletCategory.CLASSIC.value) {
                 null
             } else {
-                CryptoWalletHelper.getWeb3Mnemonic(requireContext(), spendKey, walletItem.id)
-                    ?: return MixinResponse<Any>(IllegalStateException(getString(R.string.Save_failure)))
+                val decryptedMnemonic = CryptoWalletHelper.getWeb3Mnemonic(requireContext(), spendKey, walletItem.id)
+                when (importedMnemonicBackfillAction(walletItem.category, decryptedMnemonic)) {
+                    ImportedMnemonicBackfillAction.PROCESS -> requireNotNull(decryptedMnemonic)
+                    ImportedMnemonicBackfillAction.SKIP -> continue
+                }
             }
             val addressRequests = mutableListOf<Web3AddressRequest>()
             if (!hasBtcAddress) {
@@ -275,15 +275,20 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
                     Pair(derivedWallet.address, Numeric.hexStringToByteArray(derivedWallet.privateKey))
                 }
                 val message = "${btcWallet.first}\n$userId\n${now.epochSecond}"
+                val signature = try {
+                    signUtxoAddressMessage(btcWallet.second, message, BITCOIN_CHAIN_ID)
+                } finally {
+                    btcWallet.second.fill(0)
+                }
                 addressRequests += Web3AddressRequest(
                     destination = btcWallet.first,
                     chainId = BITCOIN_CHAIN_ID,
                     path = Bip44Path.bitcoinSegwitPathString(derivationIndex),
-                    signature = signUtxoAddressMessage(btcWallet.second, message, BITCOIN_CHAIN_ID),
+                    signature = signature,
                     timestamp = now.toString(),
                 )
             }
-            if (pearlRequired && !hasPearlAddress) {
+            if (!hasPearlAddress) {
                 val pearlWallet: Pair<String, ByteArray> = if (walletItem.category == WalletCategory.CLASSIC.value) {
                     val pearlAddress: String = bottomViewModel.getTipAddress(
                         requireContext(),
@@ -304,11 +309,16 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
                     Pair(derivedWallet.address, Numeric.hexStringToByteArray(derivedWallet.privateKey))
                 }
                 val message = "${pearlWallet.first}\n$userId\n${now.epochSecond}"
+                val signature = try {
+                    signUtxoAddressMessage(pearlWallet.second, message, PEARL_CHAIN_ID)
+                } finally {
+                    pearlWallet.second.fill(0)
+                }
                 addressRequests += Web3AddressRequest(
                     destination = pearlWallet.first,
                     chainId = PEARL_CHAIN_ID,
                     path = Bip44Path.pearlPathString(derivationIndex),
-                    signature = signUtxoAddressMessage(pearlWallet.second, message, PEARL_CHAIN_ID),
+                    signature = signature,
                     timestamp = now.toString(),
                 )
             }
@@ -321,9 +331,17 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             if (updateResponse.isSuccess.not()) {
                 return updateResponse
             } else {
-                updateResponse.data?.addresses?.let { addresses ->
-                    web3Repository.insertAddressList(addresses)
-                }
+                val validatedAddresses =
+                    updateResponse.data?.let { wallet ->
+                        validateWalletAddressUpdateResponse(walletItem.id, addressRequests, wallet)
+                    } ?: run {
+                        Timber.e(
+                            "Rejected mismatched UTXO address update response " +
+                                "walletId=${walletItem.id} chains=${addressRequests.map { it.chainId }}",
+                        )
+                        return MixinResponse<Any>(IllegalStateException(getString(R.string.Save_failure)))
+                    }
+                web3Repository.insertAddressList(validatedAddresses)
             }
         }
         return null

@@ -79,6 +79,25 @@ fun formatPerpsSignedRawUsdDecimal(value: BigDecimal?): String {
     }
 }
 
+fun formatPerpsExactUsdDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    val absValue = safeValue.abs()
+    if (absValue.compareTo(BigDecimal.ZERO) == 0) {
+        return "${PERPS_USD_SYMBOL}0.00"
+    }
+    val scaledValue = absValue.setScale(8, RoundingMode.HALF_UP)
+    return "$PERPS_USD_SYMBOL${DecimalFormat(",##0.00######").format(scaledValue)}"
+}
+
+fun formatPerpsSignedExactUsdDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    return when {
+        safeValue > BigDecimal.ZERO -> "+${formatPerpsExactUsdDecimal(safeValue)}"
+        safeValue < BigDecimal.ZERO -> "-${formatPerpsExactUsdDecimal(safeValue.abs())}"
+        else -> formatPerpsExactUsdDecimal(BigDecimal.ZERO)
+    }
+}
+
 fun Context.formatPerpsProfitPreview(
     isLong: Boolean,
     priceChangeText: String,

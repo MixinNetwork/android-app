@@ -2,11 +2,12 @@ package one.mixin.android.web3.send
 
 import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.WalletOutput
-import one.mixin.android.crypto.PearlKeyGenerator
+import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.script.Script
+import org.bitcoinj.script.ScriptBuilder
 import org.bitcoinj.script.ScriptPattern
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -18,8 +19,54 @@ import java.nio.ByteBuffer
 
 class UtxoTransactionBuilderTest {
     private val privateKey = "465752911a76faccd24460a76c69ac7fb6edc603295cd27afc1a6f7a948b8a40"
-    private val sender = PearlKeyGenerator.privateKeyToAddress(privateKey.hexStringToByteArray())
+    private val sender = UtxoKeyGenerator.privateKeyToAddress(
+        privateKey.hexStringToByteArray(),
+        Constants.ChainId.PEARL_CHAIN_ID,
+    )
     private val receiver = "prl1pf7fr22zh8f49j9neucnrwvrk5vz47zj8p2sqr2j0g2w5sylmm2tsg7x98l"
+
+    @Test
+    fun minimumTransferAmountUsesChainSpecificOutputLimits() {
+        assertEquals(BigDecimal("0.00001"), BtcTransactionBuilder.minimumTransferAmount(Constants.ChainId.BITCOIN_CHAIN_ID))
+        assertEquals(BigDecimal("0.001"), BtcTransactionBuilder.minimumTransferAmount(Constants.ChainId.PEARL_CHAIN_ID))
+    }
+
+    @Test
+    fun minimumTransferAmountBuildsSendTransaction() {
+        val bitcoinSender = UtxoKeyGenerator.privateKeyToAddress(
+            privateKey.hexStringToByteArray(),
+            Constants.ChainId.BITCOIN_CHAIN_ID,
+        )
+        val cases = listOf(
+            Constants.ChainId.BITCOIN_CHAIN_ID to bitcoinSender,
+            Constants.ChainId.PEARL_CHAIN_ID to sender,
+        )
+        cases.forEach { (chainId, address) ->
+            val built = BtcTransactionBuilder.buildSendTransaction(
+                chainId = chainId,
+                fromAddress = address,
+                toAddress = address,
+                amountBtc = BtcTransactionBuilder.minimumTransferAmount(chainId).toPlainString(),
+                localUtxos = listOf(output(address, chainId)),
+                feeRate = BigDecimal.ONE,
+            )
+            assertTrue(built.rawHex.isNotBlank())
+        }
+    }
+
+    @Test
+    fun pearlRecipientAmountBelowMinimumIsRejected() {
+        assertThrows(IllegalArgumentException::class.java) {
+            BtcTransactionBuilder.buildSendTransaction(
+                chainId = Constants.ChainId.PEARL_CHAIN_ID,
+                fromAddress = sender,
+                toAddress = receiver,
+                amountBtc = "0.00005",
+                localUtxos = listOf(pearlOutput()),
+                feeRate = BigDecimal.ONE,
+            )
+        }
+    }
 
     @Test
     fun pearlTaprootAddressesBuildUnsignedTransaction() {
@@ -32,7 +79,6 @@ class UtxoTransactionBuilderTest {
             amountBtc = "0.001",
             localUtxos = listOf(output),
             feeRate = BigDecimal.ONE,
-            minimumChangeSatoshis = 100_000L,
         )
 
         val transaction = Transaction.read(ByteBuffer.wrap(built.rawHex.hexStringToByteArray()))
@@ -73,7 +119,9 @@ class UtxoTransactionBuilderTest {
         )
 
         val replacement = Transaction.read(ByteBuffer.wrap(replacementHex.hexStringToByteArray()))
-        val selfScript = org.bitcoinj.script.ScriptBuilder.createOutputScript(PearlKeyGenerator.parseAddress(sender)).program()
+        val selfScript = org.bitcoinj.script.ScriptBuilder.createOutputScript(
+            UtxoKeyGenerator.parseAddress(sender, Constants.ChainId.PEARL_CHAIN_ID),
+        ).program()
 
         assertEquals(1, replacement.outputs.size)
         assertTrue(replacement.outputs.single().scriptBytes.contentEquals(selfScript))
@@ -135,6 +183,50 @@ class UtxoTransactionBuilderTest {
         assertFalse(signedExtra.transactionHash in replacementHashes)
     }
 
+    @Test
+    fun pearlSpeedUpRetriesSubDustChangeBeforeReturningReplacement() {
+        val originalOutput = pearlOutput(amount = "0.004")
+        val original = BtcTransactionBuilder.buildSendTransaction(
+            chainId = Constants.ChainId.PEARL_CHAIN_ID,
+            fromAddress = sender,
+            toAddress = receiver,
+            amountBtc = "0.00299346",
+            localUtxos = listOf(originalOutput),
+            feeRate = BigDecimal.ONE,
+        )
+        val originalTransaction = Transaction.read(ByteBuffer.wrap(original.rawHex.hexStringToByteArray()))
+        val selfScript = ScriptBuilder.createOutputScript(
+            UtxoKeyGenerator.parseAddress(sender, Constants.ChainId.PEARL_CHAIN_ID),
+        ).program()
+        val originalChange = originalTransaction.outputs
+            .first { it.scriptBytes.contentEquals(selfScript) }
+            .value
+            .value
+        assertTrue(originalChange >= 100_000L)
+        assertTrue(originalChange < 102_000L)
+
+        val extraOutput = pearlOutput(
+            outputId = "extra",
+            transactionHash = "3123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+            amount = "0.00002000",
+        )
+        val replacementHex = BtcTransactionBuilder.buildSpeedUpReplacement(
+            chainId = Constants.ChainId.PEARL_CHAIN_ID,
+            rawTransactionHex = original.rawHex,
+            fromAddress = sender,
+            localUtxos = listOf(originalOutput, extraOutput),
+            feeRate = BigDecimal.TEN,
+        )
+
+        val replacement = Transaction.read(ByteBuffer.wrap(replacementHex.hexStringToByteArray()))
+        assertTrue(replacement.inputs.any { it.outpoint.hash().toString() == extraOutput.transactionHash })
+        val replacementChange = replacement.outputs
+            .first { it.scriptBytes.contentEquals(selfScript) }
+            .value
+            .value
+        assertTrue(replacementChange >= 100_000L)
+    }
+
     private fun buildPearlTransaction(output: WalletOutput) = BtcTransactionBuilder.buildSendTransaction(
         chainId = Constants.ChainId.PEARL_CHAIN_ID,
         fromAddress = sender,
@@ -148,13 +240,23 @@ class UtxoTransactionBuilderTest {
         outputId: String = "output",
         transactionHash: String = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
         status: String = "unspent",
+        amount: String = "0.004",
+    ) = output(sender, Constants.ChainId.PEARL_CHAIN_ID, outputId, transactionHash, status, amount)
+
+    private fun output(
+        address: String,
+        assetId: String,
+        outputId: String = "output",
+        transactionHash: String = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        status: String = "unspent",
+        amount: String = "0.004",
     ) = WalletOutput(
         outputId = outputId,
-        assetId = Constants.ChainId.PEARL_CHAIN_ID,
+        assetId = assetId,
         transactionHash = transactionHash,
         outputIndex = 2,
-        amount = "0.004",
-        address = sender,
+        amount = amount,
+        address = address,
         pubkeyHex = "",
         pubkeyType = "",
         status = status,

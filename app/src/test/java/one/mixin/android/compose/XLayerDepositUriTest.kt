@@ -1,6 +1,7 @@
 package one.mixin.android.compose
 
 import one.mixin.android.Constants
+import one.mixin.android.pay.generateDepositUri
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

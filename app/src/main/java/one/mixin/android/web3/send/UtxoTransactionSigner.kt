@@ -2,12 +2,10 @@ package one.mixin.android.web3.send
 
 import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.WalletOutput
-import one.mixin.android.crypto.PearlKeyGenerator
+import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
-import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
-import org.bitcoinj.base.ScriptType
 import org.bitcoinj.base.VarInt
 import org.bitcoinj.base.internal.ByteUtils
 import org.bitcoinj.core.Transaction
@@ -44,12 +42,7 @@ object UtxoTransactionSigner {
         }
 
     fun address(privateKey: ByteArray, chainId: String): String =
-        when (chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID ->
-                ECKey.fromPrivate(privateKey, true).toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET).toString()
-            Constants.ChainId.PEARL_CHAIN_ID -> PearlKeyGenerator.privateKeyToAddress(privateKey)
-            else -> throw IllegalArgumentException("Unsupported UTXO chain: $chainId")
-        }
+        UtxoKeyGenerator.privateKeyToAddress(privateKey, chainId)
 
     private fun signBitcoin(
         unsignedRawHex: String,
@@ -88,19 +81,25 @@ object UtxoTransactionSigner {
         val prevouts = matchedUtxos.map { utxo ->
             TaprootPrevout(
                 amountSatoshis = Coin.parseCoin(utxo.amount).value,
-                scriptPubKey = ScriptBuilder.createOutputScript(PearlKeyGenerator.parseAddress(utxo.address)).program(),
+                scriptPubKey = ScriptBuilder.createOutputScript(
+                    UtxoKeyGenerator.parseAddress(utxo.address, Constants.ChainId.PEARL_CHAIN_ID),
+                ).program(),
             )
         }
-        val tweakedPrivateKey = PearlKeyGenerator.taprootTweakedPrivateKey(privateKey)
-        transaction.inputs.toList().forEachIndexed { inputIndex, input ->
-            val signatureHash = TaprootSignatureHash.hash(transaction, prevouts, inputIndex)
-            val signature = Bip340Signer.sign(tweakedPrivateKey, signatureHash)
-            transaction.replaceInput(
-                inputIndex,
-                input.withScriptBytes(byteArrayOf()).withWitness(TransactionWitness.of(signature)),
-            )
+        val tweakedPrivateKey = UtxoKeyGenerator.taprootTweakedPrivateKey(privateKey)
+        try {
+            transaction.inputs.toList().forEachIndexed { inputIndex, input ->
+                val signatureHash = TaprootSignatureHash.hash(transaction, prevouts, inputIndex)
+                val signature = Bip340Signer.sign(tweakedPrivateKey, signatureHash)
+                transaction.replaceInput(
+                    inputIndex,
+                    input.withScriptBytes(byteArrayOf()).withWitness(TransactionWitness.of(signature)),
+                )
+            }
+            return transaction.signedResult(matchedUtxos, fromAddress)
+        } finally {
+            tweakedPrivateKey.fill(0)
         }
-        return transaction.signedResult(matchedUtxos, fromAddress)
     }
 
     private fun readTransaction(rawHex: String): Transaction {
@@ -194,24 +193,30 @@ internal object Bip340Signer {
         val publicPoint = curve.g.multiply(secretValue).normalize()
         val signingValue = if (hasEvenY(publicPoint)) secretValue else curveOrder.subtract(secretValue)
         val publicKey = xOnly(publicPoint)
-        val maskedKey = Numeric.toBytesPadded(signingValue, 32).xor(taggedHash("BIP0340/aux", auxiliaryRandom))
-        val nonceValue = BigInteger(
-            1,
-            taggedHash("BIP0340/nonce", maskedKey + publicKey + message),
-        ).mod(curveOrder)
-        require(nonceValue.signum() > 0) { "Invalid BIP340 nonce" }
-        val noncePoint = curve.g.multiply(nonceValue).normalize()
-        val adjustedNonce = if (hasEvenY(noncePoint)) nonceValue else curveOrder.subtract(nonceValue)
-        val challenge = BigInteger(
-            1,
-            taggedHash("BIP0340/challenge", xOnly(noncePoint) + publicKey + message),
-        ).mod(curveOrder)
-        val signature = xOnly(noncePoint) + Numeric.toBytesPadded(
-            adjustedNonce.add(challenge.multiply(signingValue)).mod(curveOrder),
-            32,
-        )
-        check(verify(publicKey, message, signature)) { "Generated invalid BIP340 signature" }
-        return signature
+        val signingKeyBytes = Numeric.toBytesPadded(signingValue, 32)
+        val maskedKey = signingKeyBytes.xor(taggedHash("BIP0340/aux", auxiliaryRandom))
+        try {
+            val nonceValue = BigInteger(
+                1,
+                taggedHash("BIP0340/nonce", maskedKey + publicKey + message),
+            ).mod(curveOrder)
+            require(nonceValue.signum() > 0) { "Invalid BIP340 nonce" }
+            val noncePoint = curve.g.multiply(nonceValue).normalize()
+            val adjustedNonce = if (hasEvenY(noncePoint)) nonceValue else curveOrder.subtract(nonceValue)
+            val challenge = BigInteger(
+                1,
+                taggedHash("BIP0340/challenge", xOnly(noncePoint) + publicKey + message),
+            ).mod(curveOrder)
+            val signature = xOnly(noncePoint) + Numeric.toBytesPadded(
+                adjustedNonce.add(challenge.multiply(signingValue)).mod(curveOrder),
+                32,
+            )
+            check(verify(publicKey, message, signature)) { "Generated invalid BIP340 signature" }
+            return signature
+        } finally {
+            signingKeyBytes.fill(0)
+            maskedKey.fill(0)
+        }
     }
 
     fun verify(publicKey: ByteArray, message: ByteArray, signature: ByteArray): Boolean =

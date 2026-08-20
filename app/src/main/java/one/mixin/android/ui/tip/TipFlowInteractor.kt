@@ -11,6 +11,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_LOGIN_OR_SIGN_UP
+import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.PEARL_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
@@ -50,11 +51,13 @@ import one.mixin.android.tip.exception.TipNotAllWatcherSuccessException
 import one.mixin.android.tip.getSpendKeyFromPin
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.privateKeyToAddress
+import one.mixin.android.ui.common.classicWalletAfterUtxoBackfill
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.INITIAL_CLASSIC_WALLET_INDEX
 import one.mixin.android.ui.wallet.buildClassicWalletRequest
 import one.mixin.android.ui.wallet.buildClassicUtxoAddressRequests
 import one.mixin.android.ui.wallet.ensureInitialClassicWallet
+import one.mixin.android.ui.wallet.validateWalletAddressUpdateResponse
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.components.walletDestinationForWallet
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
@@ -83,10 +86,8 @@ internal fun resolveClassicUtxoBackfillPlan(
         .singleOrNull()
         ?: return null
     val requiredChainIds = buildSet {
-        add(Constants.ChainId.BITCOIN_CHAIN_ID)
-        if (CryptoWalletHelper.shouldHavePearlAddress(WalletCategory.CLASSIC.value, derivationIndex)) {
-            add(PEARL_CHAIN_ID)
-        }
+        add(BITCOIN_CHAIN_ID)
+        add(PEARL_CHAIN_ID)
     }
     return ClassicUtxoBackfillPlan(
         derivationIndex = derivationIndex,
@@ -402,13 +403,17 @@ class TipFlowInteractor @Inject internal constructor(
                 )
             },
         )
-        if (refreshedWallets == null || !ensureClassicUtxoAddresses(context, pin)) {
+        if (refreshedWallets == null) {
             return@runCatching null
         }
-        Timber.i(
-            "LoginFlow classic_wallet_ensure_complete has_classic=${refreshedWallets.any { it.category == WalletCategory.CLASSIC.value }} wallet_count=${refreshedWallets.size} initial_index=$INITIAL_CLASSIC_WALLET_INDEX"
+        val ensuredWallets = classicWalletAfterUtxoBackfill(
+            refreshedWallets = refreshedWallets,
+            backfillSucceeded = ensureClassicUtxoAddresses(context, pin),
         )
-        refreshedWallets
+        Timber.i(
+            "LoginFlow classic_wallet_ensure_complete has_classic=${ensuredWallets.any { it.category == WalletCategory.CLASSIC.value }} wallet_count=${ensuredWallets.size} initial_index=$INITIAL_CLASSIC_WALLET_INDEX"
+        )
+        ensuredWallets
     }.getOrElse { throwable ->
         Timber.i("LoginFlow classic_wallet_ensure_exception")
         Timber.e(throwable, "Failed to ensure classic wallet")
@@ -444,13 +449,19 @@ class TipFlowInteractor @Inject internal constructor(
             },
             successBlock = { response ->
                 val wallet = response.data
-                if (wallet == null) {
+                val validatedAddresses =
+                    wallet?.let {
+                        validateWalletAddressUpdateResponse(walletId, missingAddresses, it)
+                    }
+                if (wallet == null || validatedAddresses == null) {
+                    Timber.e(
+                        "Rejected mismatched classic UTXO address update response " +
+                            "walletId=$walletId chains=${missingAddresses.map { it.chainId }}",
+                    )
                     false
                 } else {
                     web3Repository.insertWallet(wallet)
-                    wallet.addresses?.takeIf { it.isNotEmpty() }?.let { addresses ->
-                        web3Repository.insertAddressList(addresses)
-                    }
+                    web3Repository.insertAddressList(validatedAddresses)
                     Timber.i("LoginFlow classic_utxo_addresses_update_success chains=${missingAddresses.map { it.chainId }}")
                     true
                 }

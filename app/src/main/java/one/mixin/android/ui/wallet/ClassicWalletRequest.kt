@@ -5,6 +5,8 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
+import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.toHex
 import one.mixin.android.repository.Web3Repository
@@ -90,16 +92,41 @@ fun buildClassicUtxoAddressRequests(
             category = WalletCategory.CLASSIC.value,
         )
     )
-    if (classicIndex == INITIAL_CLASSIC_WALLET_INDEX) {
-        add(
-            createSignedWeb3AddressRequest(
-                destination = privateKeyToAddress(spendKey, Constants.ChainId.PEARL_CHAIN_ID, classicIndex),
-                chainId = Constants.ChainId.PEARL_CHAIN_ID,
-                path = Bip44Path.pearlPathString(),
-                privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.PEARL_CHAIN_ID, classicIndex),
-                category = WalletCategory.CLASSIC.value,
-            )
+    add(
+        createSignedWeb3AddressRequest(
+            destination = privateKeyToAddress(spendKey, Constants.ChainId.PEARL_CHAIN_ID, classicIndex),
+            chainId = Constants.ChainId.PEARL_CHAIN_ID,
+            path = Bip44Path.pearlPathString(classicIndex),
+            privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.PEARL_CHAIN_ID, classicIndex),
+            category = WalletCategory.CLASSIC.value,
         )
+    )
+}
+
+internal fun validateWalletAddressUpdateResponse(
+    walletId: String,
+    requestedAddresses: List<Web3AddressRequest>,
+    updatedWallet: Web3Wallet,
+): List<Web3Address>? {
+    if (updatedWallet.id != walletId) return null
+    if (requestedAddresses.isEmpty()) return emptyList()
+
+    val requestedChainIds = requestedAddresses.mapTo(linkedSetOf(), Web3AddressRequest::chainId)
+    if (requestedChainIds.size != requestedAddresses.size) return null
+
+    val returnedAddresses =
+        updatedWallet.addresses
+            .orEmpty()
+            .filter { address -> address.chainId in requestedChainIds }
+    if (returnedAddresses.size != requestedAddresses.size) return null
+
+    return requestedAddresses.map { request ->
+        returnedAddresses.singleOrNull { address ->
+            address.walletId == walletId &&
+                address.chainId == request.chainId &&
+                address.destination == request.destination &&
+                address.path == request.path
+        } ?: return null
     }
 }
 

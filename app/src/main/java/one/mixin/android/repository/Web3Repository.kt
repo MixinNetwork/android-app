@@ -24,7 +24,7 @@ import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
 import one.mixin.android.api.response.web3.SubmitGaslessTxResponse
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.crypto.CryptoWalletHelper
-import one.mixin.android.crypto.PearlKeyGenerator
+import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.OrderDao
 import one.mixin.android.db.perps.PerpsMarketDao
@@ -55,8 +55,6 @@ import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
 import org.bitcoinj.base.Address
-import org.bitcoinj.base.AddressParser
-import org.bitcoinj.base.BitcoinNetwork
 import timber.log.Timber
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.script.Script
@@ -168,11 +166,7 @@ constructor(
     }
 
     private fun parseUtxoAddress(assetId: String, address: String): Address =
-        when (assetId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> AddressParser.getDefault(BitcoinNetwork.MAINNET).parseAddress(address)
-            Constants.ChainId.PEARL_CHAIN_ID -> PearlKeyGenerator.parseAddress(address)
-            else -> throw IllegalArgumentException("Unsupported UTXO chain: $assetId")
-        }
+        UtxoKeyGenerator.parseAddress(address, assetId)
 
     suspend fun deleteUtxoUnspentChangeOutputs(fromAddress: String, rawTransactionHex: String, assetId: String): Int {
         if (assetId !in Constants.Web3UtxoChainIds) return 0

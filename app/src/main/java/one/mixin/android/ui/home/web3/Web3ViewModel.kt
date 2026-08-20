@@ -74,6 +74,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.send.BtcTransactionBuilder
 import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
 import java.math.BigDecimal
@@ -225,9 +226,14 @@ class Web3ViewModel @Inject constructor(
         botId: String,
     ) = userRepository.findBotPublicKey(conversationId, botId)
 
+    suspend fun findDepositEntry(chainId: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findDepositEntry(chainId)
+        }
+
     suspend fun findAndSyncDepositEntry(token: Web3TokenItem) =
         withContext(Dispatchers.IO) {
-            tokenRepository.findAndCheckDepositEntry(token.chainId, token.assetId).first
+            tokenRepository.findAndSyncDepositEntry(token.chainId, token.assetId)
         }
 
     suspend fun getFees(
@@ -446,7 +452,11 @@ class Web3ViewModel @Inject constructor(
     ): FeeEstimateResult {
         if (token.chainId in Constants.Web3UtxoChainIds) {
             val localUtxos = withContext(Dispatchers.IO) { outputsByAddress(fromAddress, token.chainId) }
-            val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.00000001", localUtxos)
+            // Use the chain minimum so the probe amount passes the builder floor.
+            val dummyAmount: String = BtcTransactionBuilder.minimumTransferAmount(token.chainId).toPlainString()
+            val jsMsg = runCatching {
+                token.buildTransaction(rpc, fromAddress, fromAddress, dummyAmount, localUtxos)
+            }.getOrNull() ?: return FeeEstimateResult(null, null, null)
             val virtualSize: Int? = jsMsg.virtualSize
             val response = withContext(Dispatchers.IO) {
                 runCatching {

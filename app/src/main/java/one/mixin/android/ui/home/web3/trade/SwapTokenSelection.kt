@@ -13,7 +13,7 @@ internal fun resolveDefaultWeb3SwapTokenPair(
     fromToken: SwapToken?,
     toToken: SwapToken?,
 ): SwapTokenPair {
-    if (tokens.isEmpty()) return SwapTokenPair(null, null)
+    if (tokens.isEmpty()) return SwapTokenPair(fromToken, toToken)
     val resolvedFrom = fromToken ?: tokens[0]
     val resolvedTo = if (toToken == null || toToken.getUnique() == resolvedFrom.getUnique()) {
         tokens.firstOrNull { token -> token.assetId != resolvedFrom.assetId }

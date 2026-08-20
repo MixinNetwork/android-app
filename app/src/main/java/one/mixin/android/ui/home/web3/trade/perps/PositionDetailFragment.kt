@@ -147,6 +147,9 @@ class PositionDetailFragment : BaseFragment() {
                                 onShare = {
                                     sharePosition(closeOrder, leverage ?: closeOrder.leverage)
                                 },
+                                onFeeTipClick = {
+                                    showTradingFeeGuide()
+                                },
                                 onSupport = {
                                     context?.openUrl(
                                         Constants.HelpLink.CUSTOMER_SERVICE,
@@ -195,6 +198,9 @@ class PositionDetailFragment : BaseFragment() {
                                             sharePosition(active)
                                         }
                                     }
+                                },
+                                onFeeTipClick = {
+                                    showTradingFeeGuide()
                                 },
                                 onSupport = {
                                     context?.openUrl(
@@ -262,5 +268,11 @@ class PositionDetailFragment : BaseFragment() {
     private fun sharePosition(order: PerpsOrderItem, leverage: Int) {
         PerpsPositionShareBottomFragment.newInstance(order, leverage)
             .show(parentFragmentManager, PerpsPositionShareBottomFragment.TAG)
+    }
+
+    private fun showTradingFeeGuide() {
+        PerpetualGuideBottomSheetDialogFragment.newInstance(
+            PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE
+        ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
     }
 }

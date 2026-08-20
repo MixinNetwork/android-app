@@ -201,10 +201,17 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
             return false
         }
         val updatedWallet = response.data ?: return false
-        updatedWallet.addresses?.let { addresses ->
-            web3Repository.insertAddressList(addresses)
-        }
-        jobManager.addJobInBackground(RefreshSingleWalletJob(updatedWallet.id))
+        val validatedAddresses =
+            validateWalletAddressUpdateResponse(walletId, addresses, updatedWallet)
+                ?: run {
+                    Timber.e(
+                        "Rejected mismatched UTXO address update response " +
+                            "walletId=$walletId chains=${addresses.map { it.chainId }}",
+                    )
+                    return false
+                }
+        web3Repository.insertAddressList(validatedAddresses)
+        jobManager.addJobInBackground(RefreshSingleWalletJob(walletId))
         return true
     }
 

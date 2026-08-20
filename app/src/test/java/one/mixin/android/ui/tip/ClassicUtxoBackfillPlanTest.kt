@@ -7,7 +7,7 @@ import org.junit.Test
 
 class ClassicUtxoBackfillPlanTest {
     @Test
-    fun additionalClassicWalletUsesItsOwnIndexAndDoesNotRequirePearl() {
+    fun additionalClassicWalletUsesItsOwnIndexAndRequiresPearl() {
         val plan = requireNotNull(
             resolveClassicUtxoBackfillPlan(
                 chainIds = setOf(Constants.ChainId.ETHEREUM_CHAIN_ID, Constants.ChainId.SOLANA_CHAIN_ID),
@@ -16,7 +16,10 @@ class ClassicUtxoBackfillPlanTest {
         )
 
         assertEquals(1, plan.derivationIndex)
-        assertEquals(setOf(Constants.ChainId.BITCOIN_CHAIN_ID), plan.missingChainIds)
+        assertEquals(
+            setOf(Constants.ChainId.BITCOIN_CHAIN_ID, Constants.ChainId.PEARL_CHAIN_ID),
+            plan.missingChainIds,
+        )
     }
 
     @Test
