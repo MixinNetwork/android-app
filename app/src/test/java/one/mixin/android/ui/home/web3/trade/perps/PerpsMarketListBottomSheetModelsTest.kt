@@ -1,6 +1,10 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.ui.home.web3.market.MarketSortColumn
+import one.mixin.android.ui.home.web3.market.MarketSortDirection
+import one.mixin.android.ui.home.web3.market.MarketSortState
+import one.mixin.android.ui.home.web3.market.scoreMarketSortState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
@@ -33,6 +37,43 @@ class PerpsMarketListBottomSheetModelsTest {
             ).visibleMarkets
 
         assertEquals(setOf("stock", "stocks"), visibleMarkets.mapTo(mutableSetOf()) { it.marketId })
+    }
+
+    @Test
+    fun allMarketsSortByTradeVolumeScore() {
+        val visibleMarkets =
+            PerpsMarketListUiState(
+                markets =
+                    listOf(
+                        perpsMarket("second", "crypto", tradeVolumeScore1D = 20),
+                        perpsMarket("third", "stocks", tradeVolumeScore1D = 10),
+                        perpsMarket("first", "crypto", tradeVolumeScore1D = 30),
+                    ),
+            ).visibleMarkets
+
+        assertEquals(listOf("first", "second", "third"), visibleMarkets.map { it.marketId })
+    }
+
+    @Test
+    fun allCategoryHeaderCyclesBackToScore() {
+        val markets =
+            listOf(
+                perpsMarket("second", "crypto", tradeVolumeScore1D = 20, volume = "300"),
+                perpsMarket("third", "stocks", tradeVolumeScore1D = 10, volume = "200"),
+                perpsMarket("first", "crypto", tradeVolumeScore1D = 30, volume = "100"),
+            )
+        val descending = PerpsMarketListUiState(markets = markets).selectSort(MarketSortColumn.VOLUME)
+        val ascending = descending.selectSort(MarketSortColumn.VOLUME)
+        val score = ascending.selectSort(MarketSortColumn.VOLUME)
+
+        assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING), descending.sortState)
+        assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING), ascending.sortState)
+        assertEquals(scoreMarketSortState(), score.sortState)
+        assertEquals(listOf("first", "second", "third"), score.visibleMarkets.map { it.marketId })
+        assertEquals(
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+            score.selectCategory(PerpsMarketCategory.CRYPTO).sortState,
+        )
     }
 
     @Test
@@ -91,6 +132,8 @@ class PerpsMarketListBottomSheetModelsTest {
     private fun perpsMarket(
         marketId: String,
         category: String,
+        tradeVolumeScore1D: Int = 0,
+        volume: String = "10",
     ) = PerpsMarket(
         marketId = marketId,
         displaySymbol = marketId,
@@ -104,7 +147,8 @@ class PerpsMarketListBottomSheetModelsTest {
         minAmount = "0",
         maxAmount = "0",
         last = "1",
-        volume = "10",
+        volume = volume,
+        tradeVolumeScore1D = tradeVolumeScore1D,
         high = "1",
         low = "1",
         open = "1",

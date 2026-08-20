@@ -71,6 +71,10 @@ data class PerpsMarket(
     @ColumnInfo(name = "volume")
     val volume: String,
 
+    @SerializedName("trade_volume_score_1d")
+    @ColumnInfo(name = "trade_volume_score_1d", defaultValue = "0")
+    val tradeVolumeScore1D: Int = 0,
+
     @SerializedName("high")
     @ColumnInfo(name = "high")
     val high: String,

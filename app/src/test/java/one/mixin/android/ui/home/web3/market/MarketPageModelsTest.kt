@@ -197,12 +197,12 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun perpetualTrendingPreservesApiRankOrder() {
+    fun perpetualTrendingSortsByTradeVolumeScore() {
         val markets =
             listOf(
-                perpsMarket(marketId = "first"),
-                perpsMarket(marketId = "second"),
-                perpsMarket(marketId = "third"),
+                perpsMarket(marketId = "second", tradeVolumeScore1D = 20),
+                perpsMarket(marketId = "third", tradeVolumeScore1D = 10),
+                perpsMarket(marketId = "first", tradeVolumeScore1D = 30),
             )
 
         val trending = MarketPageMapper.perpetualMarkets(markets, MarketSubTab.TRENDING)
@@ -311,6 +311,23 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun sortHeaderCyclesBackToScoreWhenAvailable() {
+        val descending = scoreMarketSortState().next(MarketSortColumn.VOLUME, isScoreOrderingAvailable = true)
+        val ascending = descending.next(MarketSortColumn.VOLUME, isScoreOrderingAvailable = true)
+        val score =
+            ascending
+                .next(MarketSortColumn.PRICE, isScoreOrderingAvailable = true)
+                .next(MarketSortColumn.PRICE, isScoreOrderingAvailable = true)
+                .next(MarketSortColumn.PRICE, isScoreOrderingAvailable = true)
+
+        assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING), descending)
+        assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING), ascending)
+        assertEquals(scoreMarketSortState(), score)
+        assertTrue(isScoreOrderingAvailable(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING))
+        assertTrue(!isScoreOrderingAvailable(MarketTopTab.CRYPTO, MarketSubTab.TRENDING))
+    }
+
+    @Test
     fun defaultVolumeSortMatchesMarketCategory() {
         listOf(
             MarketSubTab.CRYPTO,
@@ -326,7 +343,7 @@ class MarketPageModelsTest {
             defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL),
         )
         assertEquals(
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+            scoreMarketSortState(),
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING),
         )
         assertEquals(
@@ -416,6 +433,23 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun applySortByScoreOrdersPerpetualMarkets() {
+        val second = MarketListEntry.Perpetual(perpsMarket(marketId = "second", tradeVolumeScore1D = 20), false)
+        val third = MarketListEntry.Perpetual(perpsMarket(marketId = "third", tradeVolumeScore1D = 10), false)
+        val first = MarketListEntry.Perpetual(perpsMarket(marketId = "first", tradeVolumeScore1D = 30), false)
+
+        val result =
+            MarketPageMapper.applySort(
+                entries = listOf(second, third, first),
+                sortState = scoreMarketSortState(),
+                period = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
+                useMarketCapForSpot = false,
+            )
+
+        assertEquals(listOf("perpetual:first", "perpetual:second", "perpetual:third"), result.map { it.stableId })
+    }
+
+    @Test
     fun initialLoadingDoesNotFlashSpinnerBeforeLocalDatabaseResult() {
         val state = MarketPageUiState(isLoading = true, hasLoadedLocalData = false)
 
@@ -487,6 +521,7 @@ class MarketPageModelsTest {
         marketId: String,
         change: String = "0",
         category: String = "",
+        tradeVolumeScore1D: Int = 0,
     ) = PerpsMarket(
         marketId = marketId,
         displaySymbol = marketId,
@@ -501,6 +536,7 @@ class MarketPageModelsTest {
         maxAmount = "0",
         last = "1",
         volume = "10",
+        tradeVolumeScore1D = tradeVolumeScore1D,
         high = "1",
         low = "1",
         open = "1",

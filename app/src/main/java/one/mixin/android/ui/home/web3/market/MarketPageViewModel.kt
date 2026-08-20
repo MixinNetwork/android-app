@@ -115,7 +115,11 @@ class MarketPageViewModel
 
         fun updateSort(column: MarketSortColumn) {
             val state = _uiState.value
-            val sortState = state.sortState.next(column)
+            val sortState =
+                state.sortState.next(
+                    column,
+                    isScoreOrderingAvailable(state.selectedTopTab, state.selectedSubTab),
+                )
             _uiState.value = state.copy(sortState = sortState)
             rebuildEntries()
             sortState.direction.analyticsValue()?.let { direction ->
@@ -123,7 +127,7 @@ class MarketPageViewModel
                     sortDirection = direction,
                     primaryTab = state.selectedTopTab.analyticsValue(),
                     secondaryTab = state.selectedSubTab.analyticsValue(),
-                    sortField = state.analyticsSortField(column),
+                    sortField = state.analyticsSortField(sortState.column ?: column),
                 )
             }
         }
