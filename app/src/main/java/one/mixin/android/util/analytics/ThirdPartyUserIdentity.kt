@@ -20,10 +20,6 @@ object ThirdPartyUserIdentity {
         Bugsnag.setUser(userId, account.identityNumber, account.fullName)
         FirebaseCrashlytics.getInstance().setUserId(userId)
         FirebaseAnalytics.getInstance(MixinApplication.get()).setUserId(userId)
-        if (BuildConfig.APPSFLYER_DEV_KEY.isNotBlank()) {
-            AppsFlyerLib.getInstance().setCustomerUserId(userId)
-            AppsFlyerLib.getInstance().start(MixinApplication.appContext)
-        }
     }
 
     fun clearUser() {
@@ -32,7 +28,6 @@ object ThirdPartyUserIdentity {
         FirebaseAnalytics.getInstance(MixinApplication.get()).setUserId(null)
         if (BuildConfig.APPSFLYER_DEV_KEY.isNotBlank()) {
             AppsFlyerLib.getInstance().setCustomerUserId("")
-            AppsFlyerLib.getInstance().start(MixinApplication.appContext)
         }
     }
 }

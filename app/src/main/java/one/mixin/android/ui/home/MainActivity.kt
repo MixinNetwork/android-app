@@ -28,6 +28,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.appsflyer.AppsFlyerLib
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -283,6 +284,9 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isNotBlank()) {
+            AppsFlyerLib.getInstance().collectDataFromLauncherActivity(this)
+        }
         val restoreState = if (Session.checkToken()) savedInstanceState else null
         super.onCreate(restoreState)
         navigationController = NavigationController()
