@@ -33,6 +33,9 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.ui.home.web3.market.MarketPageMapper
+import one.mixin.android.ui.home.web3.market.MarketPriceChangePeriod
+import one.mixin.android.ui.home.web3.market.MarketSubTab
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
@@ -70,6 +73,18 @@ fun SwapRecommendedMarketCards(
     onViewAllClick: (SwapRecommendedMarketType) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val sortedTopGainerMarkets =
+        MarketPageMapper.spotMarkets(
+            markets = topGainerMarkets,
+            subTab = MarketSubTab.TOP_GAINERS,
+            period = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
+        )
+    val sortedTopLoserMarkets =
+        MarketPageMapper.spotMarkets(
+            markets = topLoserMarkets,
+            subTab = MarketSubTab.TOP_LOSERS,
+            period = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
+        )
     val cards = listOf(
         RecommendedMarketCardData(
             titleRes = R.string.Trending,
@@ -91,8 +106,7 @@ fun SwapRecommendedMarketCards(
             titleRes = R.string.top_gainers,
             type = SwapRecommendedMarketType.TopGainers,
             showViewAll = false,
-            items = sortSwapRecommendedMarkets(topGainerMarkets, SwapRecommendedMarketType.TopGainers)
-                .take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = sortedTopGainerMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),
@@ -100,8 +114,7 @@ fun SwapRecommendedMarketCards(
             titleRes = R.string.top_losers,
             type = SwapRecommendedMarketType.TopLosers,
             showViewAll = false,
-            items = sortSwapRecommendedMarkets(topLoserMarkets, SwapRecommendedMarketType.TopLosers)
-                .take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = sortedTopLoserMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),
@@ -121,20 +134,6 @@ fun SwapRecommendedMarketCards(
         }
     }
 }
-
-internal fun sortSwapRecommendedMarkets(
-    markets: List<MarketItem>,
-    type: SwapRecommendedMarketType,
-): List<MarketItem> =
-    when (type) {
-        SwapRecommendedMarketType.TopGainers ->
-            markets.sortedByDescending { it.priceChangePercentage24H.toBigDecimalOrNull() ?: BigDecimal.ZERO }
-
-        SwapRecommendedMarketType.TopLosers ->
-            markets.sortedBy { it.priceChangePercentage24H.toBigDecimalOrNull() ?: BigDecimal.ZERO }
-
-        else -> markets
-    }
 
 private data class RecommendedMarketCardData(
     val titleRes: Int,

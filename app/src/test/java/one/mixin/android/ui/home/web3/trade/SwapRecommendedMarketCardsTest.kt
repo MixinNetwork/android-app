@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.trade
 
-import one.mixin.android.vo.market.MarketItem
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -95,59 +94,4 @@ class SwapRecommendedMarketCardsTest {
         assertEquals("+1.2K%", formatRecommendedMarketSignedPercent(BigDecimal("1299.99")))
         assertEquals("-1.5K%", formatRecommendedMarketSignedPercent(BigDecimal("-1500.12")))
     }
-
-    @Test
-    fun recommendedTopMoversAreSortedBy24HourChange() {
-        val markets =
-            listOf(
-                market("middle", "5"),
-                market("lowest", "-10"),
-                market("highest", "20"),
-            )
-
-        assertEquals(
-            listOf("highest", "middle", "lowest"),
-            sortSwapRecommendedMarkets(markets, SwapRecommendedMarketType.TopGainers).map { it.coinId },
-        )
-        assertEquals(
-            listOf("lowest", "middle", "highest"),
-            sortSwapRecommendedMarkets(markets, SwapRecommendedMarketType.TopLosers).map { it.coinId },
-        )
-    }
-
-    private fun market(
-        coinId: String,
-        change24h: String,
-    ) = MarketItem(
-        coinId = coinId,
-        name = coinId,
-        symbol = coinId.uppercase(),
-        iconUrl = "",
-        currentPrice = "1",
-        marketCap = "100",
-        marketCapRank = "1",
-        totalVolume = "10",
-        high24h = "1",
-        low24h = "1",
-        priceChange24h = "0",
-        priceChangePercentage1H = "0",
-        priceChangePercentage24H = change24h,
-        priceChangePercentage7D = "0",
-        priceChangePercentage30D = "0",
-        marketCapChange24h = "0",
-        marketCapChangePercentage24h = "0",
-        circulatingSupply = "0",
-        totalSupply = "0",
-        maxSupply = "0",
-        ath = "0",
-        athChangePercentage = "0",
-        athDate = "",
-        atl = "0",
-        atlChangePercentage = "0",
-        atlDate = "",
-        assetIds = emptyList(),
-        sparklineIn7d = "",
-        sparklineIn24 = "",
-        isFavored = false,
-    )
 }
