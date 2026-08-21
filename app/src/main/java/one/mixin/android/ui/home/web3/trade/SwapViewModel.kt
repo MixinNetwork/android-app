@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -68,6 +69,11 @@ class SwapViewModel
     private val walletDatabase: WalletDatabase,
 ) : ViewModel() {
 
+    private val recommendedMarkets =
+        MarketCategory.entries.associateWith {
+            MutableStateFlow<List<MarketItem>>(emptyList())
+        }
+
     suspend fun getBotPublicKey(botId: String, force: Boolean) = userRepository.getBotPublicKey(botId, force)
 
     suspend fun web3Tokens(source: String, category: String? = null): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens(source, category)
@@ -79,17 +85,22 @@ class SwapViewModel
         duration: String? = null,
     ): MixinResponse<List<Market>> = tokenRepository.markets(category = category, limit = limit, sort = sort, duration = duration)
 
-    fun observeMarketsByCategory(category: MarketCategory): Flow<List<MarketItem>> =
-        tokenRepository.observeMarketsByCategory(category)
+    fun observeRecommendedMarkets(category: MarketCategory): Flow<List<MarketItem>> =
+        recommendedMarkets.getValue(category)
 
-    internal suspend fun refreshMarketsByCategory(
+    internal suspend fun refreshRecommendedMarkets(
         category: MarketCategory,
         limit: Int? = null,
     ): MarketRefreshResult =
         tokenRepository.fetchMarketsResult(
             category = category.apiValue,
             limit = limit,
-        )
+            persist = false,
+        ).also { result ->
+            if (result is MarketRefreshResult.Success) {
+                recommendedMarkets.getValue(category).value = result.markets
+            }
+        }
 
     suspend fun web3Quote(
         inputMint: String,
