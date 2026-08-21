@@ -33,9 +33,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormat2
-import one.mixin.android.ui.home.web3.market.MarketPageMapper
-import one.mixin.android.ui.home.web3.market.MarketPriceChangePeriod
-import one.mixin.android.ui.home.web3.market.MarketSubTab
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.market.MarketItem
@@ -44,7 +41,7 @@ import java.math.RoundingMode
 import java.text.DecimalFormat
 
 private const val RECOMMENDED_MARKET_COLUMNS = 4
-private const val RECOMMENDED_MARKET_LIMIT = 8
+internal const val SWAP_RECOMMENDED_MARKET_LIMIT = 8
 private val RecommendedMarketIconSize = 42.dp
 
 enum class SwapRecommendedMarketType {
@@ -73,24 +70,12 @@ fun SwapRecommendedMarketCards(
     onViewAllClick: (SwapRecommendedMarketType) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    val sortedTopGainerMarkets =
-        MarketPageMapper.spotMarkets(
-            markets = topGainerMarkets,
-            subTab = MarketSubTab.TOP_GAINERS,
-            period = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
-        )
-    val sortedTopLoserMarkets =
-        MarketPageMapper.spotMarkets(
-            markets = topLoserMarkets,
-            subTab = MarketSubTab.TOP_LOSERS,
-            period = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
-        )
     val cards = listOf(
         RecommendedMarketCardData(
             titleRes = R.string.Trending,
             type = SwapRecommendedMarketType.Trending,
             showViewAll = false,
-            items = trendingMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = trendingMarkets.take(SWAP_RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),
@@ -98,7 +83,7 @@ fun SwapRecommendedMarketCards(
             titleRes = R.string.Stocks,
             type = SwapRecommendedMarketType.Stocks,
             showViewAll = false,
-            items = stockMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = stockMarkets.take(SWAP_RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),
@@ -106,7 +91,7 @@ fun SwapRecommendedMarketCards(
             titleRes = R.string.top_gainers,
             type = SwapRecommendedMarketType.TopGainers,
             showViewAll = false,
-            items = sortedTopGainerMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = topGainerMarkets.take(SWAP_RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),
@@ -114,7 +99,7 @@ fun SwapRecommendedMarketCards(
             titleRes = R.string.top_losers,
             type = SwapRecommendedMarketType.TopLosers,
             showViewAll = false,
-            items = sortedTopLoserMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = topLoserMarkets.take(SWAP_RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),
