@@ -789,4 +789,11 @@
     <string name="Bitcoin_Dominance">Dominasi Bitcoin</string>
     <string name="Perp">Perp</string>
     <string name="classic_wallet_pearl_intro_title">Common Wallet kini menyokong Pearl</string>
+    <string name="Debug_Wallet_Account_Visibility">Keterlihatan akaun dompet</string>
+    <string name="Debug_Earn_Account">Akaun Earn</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">Jumlah Pendapatan</string>
+    <string name="earn_total_amount">Jumlah Keseluruhan</string>
+    <string name="earn_pending_earning">Pendapatan Belum Selesai</string>
+    <string name="earn_reward_rate">Kadar Ganjaran</string>
 </resources>

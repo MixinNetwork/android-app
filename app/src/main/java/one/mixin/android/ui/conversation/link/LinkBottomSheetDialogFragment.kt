@@ -38,7 +38,6 @@ import one.mixin.android.api.response.getScopes
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentBottomSheetBinding
-import one.mixin.android.extension.appendQueryParamsFromOtherUri
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.booleanFromAttribute
@@ -46,6 +45,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
+import one.mixin.android.extension.homeUriWithSchemeParameters
 import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
@@ -236,28 +236,29 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 dismiss()
             } else {
                 lifecycleScope.launch(errorHandler) {
+                    val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
+                    if (isOpenApp) {
+                        val localApp = oldLinkViewModel.findAppById(userId)
+                        if (localApp != null) {
+                            AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, localApp.appNumber)
+                            WebActivity.show(requireActivity(), localApp.homeUriWithSchemeParameters(uri), null, localApp)
+                            dismiss()
+                            return@launch
+                        }
+                    }
                     val user = oldLinkViewModel.refreshUser(userId)
                     if (user == null) {
                         toast(getUserOrAppNotFoundTip(isAppScheme))
                         dismiss()
                         return@launch
                     }
-                    val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
                     if (isOpenApp && user.appId != null) {
-                        lifecycleScope.launch(errorHandler) {
-                            val app = oldLinkViewModel.findAppById(user.appId!!)
-                            if (app != null) {
-                                val url =
-                                    try {
-                                        app.homeUri.appendQueryParamsFromOtherUri(uri)
-                                    } catch (e: Exception) {
-                                        app.homeUri
-                                    }
-                                AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
-                                WebActivity.show(requireActivity(), url, null, app)
-                            } else {
-                                showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
-                            }
+                        val app = oldLinkViewModel.findAppById(user.appId!!)
+                        if (app != null) {
+                            AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
+                            WebActivity.show(requireActivity(), app.homeUriWithSchemeParameters(uri), null, app)
+                        } else {
+                            showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
                         }
                     } else {
                         showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)

@@ -1,0 +1,73 @@
+package one.mixin.android.api.response
+
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import one.mixin.android.api.MixinResponse
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
+import org.junit.Test
+
+class WealthAccountTest {
+    @Test
+    fun parsesActualEarnProductsResponse() {
+        val json =
+            """
+            {
+              "data": [
+                {
+                  "production_id": "production-1",
+                  "asset_id": "asset-1",
+                  "chain_id": "chain-1",
+                  "icon_url": "https://example.com/usdt.png",
+                  "annual_rates": ["10.95%", "7.30%", "3.65%"],
+                  "account": {
+                    "total_principal": "0",
+                    "total_earnings": "0",
+                    "redeemable_earnings": "0"
+                  }
+                },
+                {
+                  "production_id": "production-2",
+                  "asset_id": "asset-1",
+                  "chain_id": "chain-1",
+                  "icon_url": "https://example.com/usdc.png",
+                  "annual_rates": ["3.65%"],
+                  "account": {
+                    "total_principal": "0",
+                    "total_earnings": "0",
+                    "redeemable_earnings": "0"
+                  }
+                },
+                {
+                  "production_id": "production-3",
+                  "asset_id": "asset-1",
+                  "chain_id": "chain-1",
+                  "icon_url": "https://example.com/usdc.png",
+                  "annual_rates": ["2.00%"],
+                  "account": {
+                    "total_principal": "0",
+                    "total_earnings": "0",
+                    "redeemable_earnings": "0"
+                  }
+                }
+              ]
+            }
+            """.trimIndent()
+        val type = object : TypeToken<MixinResponse<List<WealthProduct>>>() {}.type
+
+        val response = Gson().fromJson<MixinResponse<List<WealthProduct>>>(json, type)
+        val products = response.data!!
+        val product = products.first()
+        val account = product.account!!
+
+        assertEquals(3, products.size)
+        assertEquals("production-1", product.productionId)
+        assertEquals(listOf("10.95%", "7.30%", "3.65%"), product.annualRates)
+        assertEquals("0", account.totalPrincipal)
+        assertEquals("0", account.totalEarnings)
+        assertEquals("0", account.redeemableEarnings)
+        assertNull(product.annualRateTiers)
+        assertNull(product.sharePrices)
+    }
+
+}

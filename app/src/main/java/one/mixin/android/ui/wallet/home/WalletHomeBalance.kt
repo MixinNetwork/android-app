@@ -9,7 +9,8 @@ internal fun calculateWalletHomeTotalFiat(
     positionUsd: BigDecimal,
     fiatRate: BigDecimal,
     cashUsd: BigDecimal = BigDecimal.ZERO,
-): BigDecimal = tokenFiat + positionUsd.add(cashUsd).multiply(fiatRate)
+    wealthUsd: BigDecimal = BigDecimal.ZERO,
+): BigDecimal = tokenFiat + positionUsd.add(cashUsd).add(wealthUsd).multiply(fiatRate)
 
 internal fun calculateWalletHomeTokenFiat(
     totalUsd: BigDecimal,
