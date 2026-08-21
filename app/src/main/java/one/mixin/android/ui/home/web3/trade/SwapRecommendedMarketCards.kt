@@ -91,7 +91,8 @@ fun SwapRecommendedMarketCards(
             titleRes = R.string.top_gainers,
             type = SwapRecommendedMarketType.TopGainers,
             showViewAll = false,
-            items = topGainerMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = sortSwapRecommendedMarkets(topGainerMarkets, SwapRecommendedMarketType.TopGainers)
+                .take(RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),
@@ -99,7 +100,8 @@ fun SwapRecommendedMarketCards(
             titleRes = R.string.top_losers,
             type = SwapRecommendedMarketType.TopLosers,
             showViewAll = false,
-            items = topLoserMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = sortSwapRecommendedMarkets(topLoserMarkets, SwapRecommendedMarketType.TopLosers)
+                .take(RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),
@@ -119,6 +121,20 @@ fun SwapRecommendedMarketCards(
         }
     }
 }
+
+internal fun sortSwapRecommendedMarkets(
+    markets: List<MarketItem>,
+    type: SwapRecommendedMarketType,
+): List<MarketItem> =
+    when (type) {
+        SwapRecommendedMarketType.TopGainers ->
+            markets.sortedByDescending { it.priceChangePercentage24H.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+
+        SwapRecommendedMarketType.TopLosers ->
+            markets.sortedBy { it.priceChangePercentage24H.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+
+        else -> markets
+    }
 
 private data class RecommendedMarketCardData(
     val titleRes: Int,
