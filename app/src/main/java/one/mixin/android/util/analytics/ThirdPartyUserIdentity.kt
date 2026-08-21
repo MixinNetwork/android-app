@@ -22,6 +22,7 @@ object ThirdPartyUserIdentity {
         FirebaseAnalytics.getInstance(MixinApplication.get()).setUserId(userId)
         if (BuildConfig.APPSFLYER_DEV_KEY.isNotBlank()) {
             AppsFlyerLib.getInstance().setCustomerUserId(userId)
+            AppsFlyerLib.getInstance().start(MixinApplication.appContext)
         }
     }
 
@@ -31,6 +32,7 @@ object ThirdPartyUserIdentity {
         FirebaseAnalytics.getInstance(MixinApplication.get()).setUserId(null)
         if (BuildConfig.APPSFLYER_DEV_KEY.isNotBlank()) {
             AppsFlyerLib.getInstance().setCustomerUserId("")
+            AppsFlyerLib.getInstance().start(MixinApplication.appContext)
         }
     }
 }
