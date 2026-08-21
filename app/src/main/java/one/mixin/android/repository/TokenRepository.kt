@@ -1378,6 +1378,7 @@ class TokenRepository
         category: String,
         duration: String? = null,
         limit: Int? = null,
+        persist: Boolean = true,
     ): MarketRefreshResult {
         var failure = MarketRefreshResult.Failure()
         val result: MarketRefreshResult? =
@@ -1391,42 +1392,44 @@ class TokenRepository
                 },
                 successBlock = { response ->
                     val markets = response.data.orEmpty()
-                    val now = nowInUtc()
-                    appDatabase.withTransaction {
-                        marketDao.upsertList(markets)
-                        when (category) {
-                            CATEGORY_ALL ->
-                                marketCapRankDao.replaceAll(
-                                    markets.map { market ->
-                                        MarketCapRank(
-                                            coinId = market.coinId,
-                                            marketCapRank = market.marketCapRank,
-                                            updatedAt = market.updatedAt,
-                                        )
-                                    },
-                                )
-
-                            CATEGORY_FAVORITE ->
-                                marketFavoredDao.replaceAll(
-                                    markets.map { market ->
-                                        MarketFavored(
-                                            coinId = market.coinId,
-                                            isFavored = true,
-                                            createdAt = now,
-                                        )
-                                    },
-                                )
-
-                            else ->
-                                MarketCategory.fromApiValue(category)?.let { marketCategory ->
-                                    marketCategoryDao.replaceCategory(
-                                        category = marketCategory.value,
-                                        coinIds = markets.map(Market::coinId),
+                    if (persist) {
+                        val now = nowInUtc()
+                        appDatabase.withTransaction {
+                            marketDao.upsertList(markets)
+                            when (category) {
+                                CATEGORY_ALL ->
+                                    marketCapRankDao.replaceAll(
+                                        markets.map { market ->
+                                            MarketCapRank(
+                                                coinId = market.coinId,
+                                                marketCapRank = market.marketCapRank,
+                                                updatedAt = market.updatedAt,
+                                            )
+                                        },
                                     )
-                                }
-                        }
-                        if (category == CATEGORY_ALL) {
-                            syncMarketCoins(markets, now)
+
+                                CATEGORY_FAVORITE ->
+                                    marketFavoredDao.replaceAll(
+                                        markets.map { market ->
+                                            MarketFavored(
+                                                coinId = market.coinId,
+                                                isFavored = true,
+                                                createdAt = now,
+                                            )
+                                        },
+                                    )
+
+                                else ->
+                                    MarketCategory.fromApiValue(category)?.let { marketCategory ->
+                                        marketCategoryDao.replaceCategory(
+                                            category = marketCategory.value,
+                                            coinIds = markets.map(Market::coinId),
+                                        )
+                                    }
+                            }
+                            if (category == CATEGORY_ALL) {
+                                syncMarketCoins(markets, now)
+                            }
                         }
                     }
                     MarketRefreshResult.Success(markets.map(MarketItem::fromMarket))

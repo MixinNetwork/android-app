@@ -8,6 +8,11 @@ import java.math.BigDecimal
 
 class SwapRecommendedMarketCardsTest {
     @Test
+    fun recommendedMarketLimitMatchesIOS() {
+        assertEquals(8, SWAP_RECOMMENDED_MARKET_LIMIT)
+    }
+
+    @Test
     fun recommendedCardsShowOnlyWhenSendInputIsEmptyAndNotFocused() {
         assertTrue(
             shouldShowSwapRecommendedMarketCards(
