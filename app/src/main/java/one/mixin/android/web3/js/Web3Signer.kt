@@ -57,6 +57,20 @@ import java.math.BigInteger
 import java.nio.ByteBuffer
 import org.sol4k.Constants as ConstantsSolana
 
+internal fun findChainByHexReference(hex: String?): Chain? =
+    listOf(
+        Chain.Ethereum,
+        Chain.Base,
+        Chain.Arbitrum,
+        Chain.Optimism,
+        Chain.Avalanche,
+        Chain.Polygon,
+        Chain.BinanceSmartChain,
+        Chain.HyperEVM,
+        Chain.XLayer,
+        Chain.Solana,
+    ).firstOrNull { it.hexReference == hex }
+
 object Web3Signer {
     sealed class JsSignerNetwork(val name: String) {
         data object Ethereum : JsSignerNetwork("ethereum")
@@ -127,7 +141,7 @@ object Web3Signer {
         currentWalletCategory = sp.getString(Keys.CURRENT_WALLET_CATEGORY, WalletCategory.CLASSIC.value)
             ?: WalletCategory.CLASSIC.value
         classicWalletId = sp.getString(Keys.CLASSIC_WALLET_ID, "") ?: ""
-        currentChain = findChainByHex(sp.getString(Keys.CURRENT_CHAIN, Chain.Ethereum.hexReference))
+        currentChain = findChainByHexReference(sp.getString(Keys.CURRENT_CHAIN, Chain.Ethereum.hexReference))
             ?: Chain.Ethereum
         currentNetwork = if (currentChain == Chain.Solana) JsSignerNetwork.Solana.name else JsSignerNetwork.Ethereum.name
     }
@@ -143,21 +157,6 @@ object Web3Signer {
         sp.putString(Keys.CURRENT_WALLET_CATEGORY, currentWalletCategory)
         sp.putString(Keys.CLASSIC_WALLET_ID, classicWalletId)
         sp.putString(Keys.CURRENT_CHAIN, currentChain.hexReference)
-    }
-
-    private fun findChainByHex(hex: String?): Chain? {
-        return when (hex) {
-            Chain.Ethereum.hexReference -> Chain.Ethereum
-            Chain.Base.hexReference -> Chain.Base
-            Chain.Arbitrum.hexReference -> Chain.Arbitrum
-            Chain.Optimism.hexReference -> Chain.Optimism
-            Chain.Avalanche.hexReference -> Chain.Avalanche
-            Chain.Polygon.hexReference -> Chain.Polygon
-            Chain.BinanceSmartChain.hexReference -> Chain.BinanceSmartChain
-            Chain.HyperEVM.hexReference -> Chain.HyperEVM
-            Chain.Solana.hexReference -> Chain.Solana
-            else -> null
-        }
     }
 
     fun updateAddress(
@@ -311,6 +310,11 @@ object Web3Signer {
                 currentChain = Chain.HyperEVM
                 persist()
                 Result.success(Chain.HyperEVM.name)
+            }
+            Chain.XLayer.hexReference -> {
+                currentChain = Chain.XLayer
+                persist()
+                Result.success(Chain.XLayer.name)
             }
             Chain.Solana.hexReference -> {
                 currentChain = Chain.Solana
