@@ -43,8 +43,6 @@ import androidx.paging.PagedList
 import androidx.viewpager2.widget.ViewPager2
 import coil3.annotation.ExperimentalCoilApi
 import coil3.imageLoader
-import coil3.request.ImageRequest
-import coil3.request.SuccessResult
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -470,12 +468,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         val coverUrl = item.appCardMediaCoverUrl()
         if (coverUrl != null) {
             return try {
-                val loader = imageLoader
-                val result = loader.execute(ImageRequest.Builder(this).data(coverUrl).build())
-                if (result !is SuccessResult) {
-                    null
-                } else {
-                    loader.diskCache?.openSnapshot(coverUrl)?.data?.toFile()
+                imageLoader.diskCache?.openSnapshot(coverUrl)?.use { snapshot ->
+                    snapshot.data.toFile()
                 }
             } catch (e: Exception) {
                 null
