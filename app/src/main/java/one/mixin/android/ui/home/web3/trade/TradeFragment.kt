@@ -107,7 +107,6 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.market.hasErrorCode
-import one.mixin.android.vo.market.marketRefreshLimit
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
@@ -274,19 +273,19 @@ class TradeFragment : BaseFragment() {
             setContent {
                 val stockMarkets by
                     remember {
-                        swapViewModel.observeMarketsByCategory(MarketCategory.STOCK)
+                        swapViewModel.observeRecommendedMarkets(MarketCategory.STOCK)
                     }.collectAsStateWithLifecycle(initialValue = emptyList())
                 val trendingMarkets by
                     remember {
-                        swapViewModel.observeMarketsByCategory(MarketCategory.TRENDING)
+                        swapViewModel.observeRecommendedMarkets(MarketCategory.TRENDING)
                     }.collectAsStateWithLifecycle(initialValue = emptyList())
                 val topGainerMarkets by
                     remember {
-                        swapViewModel.observeMarketsByCategory(MarketCategory.TOP_GAINER)
+                        swapViewModel.observeRecommendedMarkets(MarketCategory.TOP_GAINER)
                     }.collectAsStateWithLifecycle(initialValue = emptyList())
                 val topLoserMarkets by
                     remember {
-                        swapViewModel.observeMarketsByCategory(MarketCategory.TOP_LOSER)
+                        swapViewModel.observeRecommendedMarkets(MarketCategory.TOP_LOSER)
                     }.collectAsStateWithLifecycle(initialValue = emptyList())
                 MixinAppTheme(
                     darkTheme = context.isNightMode(),
@@ -1444,9 +1443,9 @@ class TradeFragment : BaseFragment() {
                     MarketCategory.TOP_LOSER,
                 ).map { category ->
                     async {
-                        swapViewModel.refreshMarketsByCategory(
+                        swapViewModel.refreshRecommendedMarkets(
                             category = category,
-                            limit = marketRefreshLimit(category),
+                            limit = SWAP_RECOMMENDED_MARKET_LIMIT,
                         )
                     }
                 }.map { it.await() }
