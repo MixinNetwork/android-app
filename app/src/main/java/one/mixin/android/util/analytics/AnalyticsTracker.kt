@@ -7,12 +7,16 @@ import com.appsflyer.AppsFlyerLib
 import com.google.firebase.analytics.FirebaseAnalytics
 import one.mixin.android.BuildConfig
 import one.mixin.android.MixinApplication
+import one.mixin.android.session.Session
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.Plan
 import java.math.BigDecimal
 
 object AnalyticsTracker {
     private val firebaseAnalytics by lazy { FirebaseAnalytics.getInstance(MixinApplication.get()) }
+
+    @Volatile
+    private var appsFlyerSessionReady = false
 
     private fun logEvent(name: String) {
         logEvent(name, null)
@@ -170,9 +174,17 @@ object AnalyticsTracker {
         if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
             return
         }
-        AppsFlyerLib.getInstance().setCustomerUserId(
-            ThirdPartyUserIdentity.appsFlyerCustomerUserId(account.userId)
-        )
+        AppsFlyerLib.getInstance().apply {
+            setCustomerUserId(ThirdPartyUserIdentity.appsFlyerCustomerUserId(account.userId))
+            if (appsFlyerSessionReady) {
+                start()
+            }
+        }
+    }
+
+    fun onAppsFlyerSessionReady() {
+        appsFlyerSessionReady = true
+        Session.getAccount()?.let(::setAppsFlyerCustomerUserId)
     }
 
     fun updateAppsFlyerConversionUserProperties(conversionData: Map<String, Any?>) {
