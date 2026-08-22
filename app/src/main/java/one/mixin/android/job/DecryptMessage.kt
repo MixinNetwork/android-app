@@ -56,6 +56,7 @@ import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PENDING_DB_THREAD
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.cancelConversationNotifications
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
@@ -154,6 +155,7 @@ import org.whispersystems.libsignal.SignalProtocolAddress
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.math.BigDecimal
 import java.util.UUID
 
 class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
@@ -1206,9 +1208,23 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshTokensJob(snapshot.assetId, data.conversationId, data.messageId))
         jobManager.addJobInBackground(SyncOutputJob())
+        trackAssetReceiveSuccess(snapshot)
 
         if (snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)
+        }
+    }
+
+    private fun trackAssetReceiveSuccess(snapshot: SafeSnapshot) {
+        val receivedAmount = snapshot.amount.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return
+        try {
+            runBlocking {
+                val token = tokenDao.simpleAsset(snapshot.assetId)
+                val priceUsd = token?.priceUsd?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                AnalyticsTracker.trackAssetReceiveSuccess(token?.symbol, receivedAmount, priceUsd)
+            }
+        } catch (e: Exception) {
+            Timber.e(e)
         }
     }
 

@@ -93,6 +93,8 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.buildGaslessBroadcastPendingRawMarker
 import one.mixin.android.db.web3.vo.buildGaslessSponsorPendingRawMarker
+import one.mixin.android.db.web3.vo.copySponsorFeeFrom
+import one.mixin.android.db.web3.vo.hasSponsorFeeMetadata
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isUUID
@@ -1124,14 +1126,33 @@ class TokenRepository
             if (r.isSuccess) {
                 val raw = r.data!!
                 val existingPendingTransaction = web3TransactionDao.getLatestTransaction(raw.hash, raw.chainId)
-                val gaslessPendingTransaction = existingPendingTransaction?.takeIf { it.fee.isNotBlank() }
+                val gaslessPendingTransaction = existingPendingTransaction?.takeIf(Web3Transaction::hasSponsorFeeMetadata)
+                // TEMP debug: track sponsor fee through postRawTx local rewrite
+                Timber.e(
+                    "SponsorFee postRawTx hash=%s chain=%s existingFee=%s existingSponsor=%s/%s gaslessMatch=%s",
+                    raw.hash,
+                    raw.chainId,
+                    existingPendingTransaction?.fee,
+                    existingPendingTransaction?.sponsorFeeAssetId,
+                    existingPendingTransaction?.sponsorFeeAmount,
+                    gaslessPendingTransaction != null,
+                )
                 web3RawTransactionDao.insertSuspend(
                     buildRawTransactionForInsert(raw, gaslessPendingTransaction, rate)
                 )
                 web3TransactionDao.deletePending(raw.hash, raw.chainId)
-                web3TransactionDao.insert(
-                    buildPendingTransactionForInsert(raw, assetId, existingPendingTransaction, gaslessPendingTransaction, rate)
+                val pendingToInsert = buildPendingTransactionForInsert(raw, assetId, existingPendingTransaction, gaslessPendingTransaction, rate)
+                Timber.e(
+                    "SponsorFee postRawTx insert hash=%s fee=%s sponsor=%s/%s type=%s send=%s receive=%s",
+                    pendingToInsert.transactionHash,
+                    pendingToInsert.fee,
+                    pendingToInsert.sponsorFeeAssetId,
+                    pendingToInsert.sponsorFeeAmount,
+                    pendingToInsert.transactionType,
+                    pendingToInsert.sendAssetId,
+                    pendingToInsert.receiveAssetId,
                 )
+                web3TransactionDao.insert(pendingToInsert)
             }
             return r
         }
@@ -1245,7 +1266,7 @@ class TokenRepository
 
             val shouldFallbackToGaslessPending = sendAssetId == null && receiveAssetId == null && gaslessPendingTransaction != null
 
-            return Web3Transaction(
+            val pendingTransaction = Web3Transaction(
                 transactionHash = raw.hash,
                 chainId = raw.chainId,
                 address = resolvedAddress,
@@ -1279,6 +1300,7 @@ class TokenRepository
                 updatedAt = raw.updatedAt,
                 level = Constants.AssetLevel.GOOD,
             )
+            return gaslessPendingTransaction?.let(pendingTransaction::copySponsorFeeFrom) ?: pendingTransaction
         }
 
 
@@ -1742,7 +1764,8 @@ class TokenRepository
         account: String,
         assetId: String,
         amount: String,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         to: String,
         nonce: String,
         createdAt: String,
@@ -1754,24 +1777,25 @@ class TokenRepository
             account = account,
             assetId = assetId,
             amount = amount,
-            fee = fee,
+            fee = "",
             to = to,
             raw = buildGaslessSponsorPendingRawMarker(sponsorTxId),
             nonce = nonce,
             createdAt = createdAt,
             updatedAt = updatedAt,
-            sponsorFeeAssetId = assetId,
-            sponsorFeeAmount = fee,
+            sponsorFeeAssetId = feeAssetId,
+            sponsorFeeAmount = feeAmount,
         )
     }
 
-    suspend fun insertSignedPendingTransaction(
+    suspend fun insertGaslessSignedPendingTransaction(
         hash: String,
         chainId: String,
         account: String,
         assetId: String,
         amount: String,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         to: String,
         raw: String,
         createdAt: String,
@@ -1783,12 +1807,14 @@ class TokenRepository
             account = account,
             assetId = assetId,
             amount = amount,
-            fee = fee,
+            fee = "",
             to = to,
             raw = raw,
             nonce = "",
             createdAt = createdAt,
             updatedAt = updatedAt,
+            sponsorFeeAssetId = feeAssetId,
+            sponsorFeeAmount = feeAmount,
         )
     }
 
@@ -1810,6 +1836,20 @@ class TokenRepository
         val normalizedAmount = amount.removePrefix("-")
         val normalizedFee = fee.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: fee
         val normalizedSponsorFeeAmount = sponsorFeeAmount?.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: sponsorFeeAmount
+        // TEMP debug: local gasless pending insert
+        Timber.e(
+            "SponsorFee insertPending hash=%s chain=%s account=%s asset=%s amount=%s fee=%s sponsor=%s/%s raw=%s nonce=%s",
+            hash,
+            chainId,
+            account,
+            assetId,
+            normalizedAmount,
+            normalizedFee,
+            sponsorFeeAssetId,
+            normalizedSponsorFeeAmount,
+            raw,
+            nonce,
+        )
         appDatabase.withTransaction {
             web3RawTransactionDao.insertSuspend(
                 Web3RawTransaction(
@@ -1874,6 +1914,17 @@ class TokenRepository
             val pendingRaw = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, sponsorTxId, chainId)
                 ?: return@withTransaction
             val pendingTransaction = web3TransactionDao.getLatestTransaction(sponsorTxId, chainId)
+            // TEMP debug: sponsor hash rewrite keeps sponsor fee metadata
+            Timber.e(
+                "SponsorFee replaceHash sponsorTxId=%s -> broadcast=%s chain=%s localFee=%s localSponsor=%s/%s raw=%s",
+                sponsorTxId,
+                broadcastTxHash,
+                chainId,
+                pendingTransaction?.fee,
+                pendingTransaction?.sponsorFeeAssetId,
+                pendingTransaction?.sponsorFeeAmount,
+                pendingRaw.raw,
+            )
 
             web3RawTransactionDao.insertSuspend(
                 pendingRaw.copy(
@@ -1906,6 +1957,17 @@ class TokenRepository
         appDatabase.withTransaction {
             val pendingRaw = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, hash, chainId)
                 ?: return@withTransaction
+            val pendingTransaction = web3TransactionDao.getLatestTransaction(hash, chainId)
+            // TEMP debug: status update does not rewrite sponsor fee columns
+            Timber.e(
+                "SponsorFee updateStatus hash=%s chain=%s status=%s localFee=%s localSponsor=%s/%s",
+                hash,
+                chainId,
+                status,
+                pendingTransaction?.fee,
+                pendingTransaction?.sponsorFeeAssetId,
+                pendingTransaction?.sponsorFeeAmount,
+            )
             web3RawTransactionDao.insertSuspend(
                 pendingRaw.copy(
                     state = status,

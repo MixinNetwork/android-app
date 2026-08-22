@@ -58,6 +58,29 @@ class RefreshWeb3TransactionsJob(
                         Timber.d("Address $destination does not exist in local database, skipping transaction sync")
                         return@requestRouteAPI null
                     }
+                    // TEMP debug: inspect remote tx sponsor fee fields before REPLACE insert
+                    result!!.forEach { remoteTx ->
+                        val localTx = web3TransactionDao.getLatestTransaction(remoteTx.transactionHash, remoteTx.chainId)
+                        val remoteHasSponsor = !remoteTx.sponsorFeeAssetId.isNullOrBlank() || !remoteTx.sponsorFeeAmount.isNullOrBlank()
+                        val localHasSponsor = !localTx?.sponsorFeeAssetId.isNullOrBlank() || !localTx?.sponsorFeeAmount.isNullOrBlank()
+                        if (remoteHasSponsor || localHasSponsor || localTx?.status == "pending" || remoteTx.status == "pending") {
+                            Timber.e(
+                                "SponsorFee remotePull dest=%s hash=%s chain=%s status=%s type=%s remoteFee=%s remoteSponsor=%s/%s localFee=%s localSponsor=%s/%s localStatus=%s",
+                                destination,
+                                remoteTx.transactionHash,
+                                remoteTx.chainId,
+                                remoteTx.status,
+                                remoteTx.transactionType,
+                                remoteTx.fee,
+                                remoteTx.sponsorFeeAssetId,
+                                remoteTx.sponsorFeeAmount,
+                                localTx?.fee,
+                                localTx?.sponsorFeeAssetId,
+                                localTx?.sponsorFeeAmount,
+                                localTx?.status,
+                            )
+                        }
+                    }
                     web3TransactionDao.insertList(result!!)
                     Timber.d("Fetched ${result?.size} transactions from API for address $destination")
                 }

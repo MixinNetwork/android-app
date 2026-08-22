@@ -131,4 +131,22 @@ class AnalyticsRulesTest {
         assertEquals("v1", AnalyticsRules.receiveAssetLevel("0.01".toBigDecimal()))
         assertEquals("v1", AnalyticsRules.receiveAssetLevel("99.99".toBigDecimal()))
     }
+
+    @Test
+    fun assetReceiveSuccessEventUsesReceivedUsdValue() {
+        val event = AnalyticsRules.assetReceiveSuccessEvent(
+            assetSymbol = "BTC",
+            amount = "0.001".toBigDecimal(),
+            priceUsd = "100000".toBigDecimal(),
+        )
+
+        assertEquals("asset_receive_success", event.name)
+        assertEquals(
+            mapOf(
+                "receive_asset_symbol" to "BTC",
+                "receive_asset_level" to "v100",
+            ),
+            event.params,
+        )
+    }
 }

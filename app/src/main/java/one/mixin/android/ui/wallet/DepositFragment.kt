@@ -74,7 +74,6 @@ class DepositFragment : BaseFragment() {
     private val walletViewModel by viewModels<WalletViewModel>()
 
     private val scopeProvider by lazy { AndroidLifecycleScopeProvider.from(this) }
-    private var receiveSuccessTracked = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -466,10 +465,6 @@ class DepositFragment : BaseFragment() {
                     )
                 }
                 bottom.isVisible = noTag
-            }
-            if (!receiveSuccessTracked) {
-                AnalyticsTracker.trackAssetReceiveSuccess(asset.priceUsd)
-                receiveSuccessTracked = true
             }
         } else {
             binding.apply {
