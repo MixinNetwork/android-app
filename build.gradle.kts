@@ -147,7 +147,7 @@ extra.set("playPayVersion", "16.5.0")
 extra.set("datastoreVersion", "1.2.1")
 extra.set("appsFlyerVersion", "6.18.0")
 extra.set("installReferrerVersion", "2.2")
-extra.set("billingVersion", "8.3.0")
+extra.set("billingVersion", "9.1.0")
 
 allprojects {
     repositories {
