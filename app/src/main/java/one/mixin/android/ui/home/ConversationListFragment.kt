@@ -849,7 +849,7 @@ class ConversationListFragment : LinkFragment() {
                 val id = Session.getAccountId()
                 binding.nameTv.setName(conversationItem)
                 binding.groupNameTv.visibility = GONE
-                binding.msgExpire.isVisible = conversationItem.isExpire()
+                binding.msgExpire.isVisible = conversationItem.isDisappearingEnabled()
                 binding.mentionFlag.isVisible =
                     conversationItem.mentionCount != null && conversationItem.mentionCount > 0
                 when {

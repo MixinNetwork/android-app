@@ -67,7 +67,7 @@ class DataProvider {
                         mu.full_name AS senderFullName,
                         pu.full_name AS participantFullName, pu.user_id AS participantUserId,
                         (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,  
-                        mm.mentions AS mentions, ou.membership AS membership
+                        mm.mentions AS mentions, ou.membership AS membership, c.expire_in AS expireIn
                         FROM circle_conversations cc
                         INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
                         INNER JOIN circles ci ON ci.circle_id = cc.circle_id

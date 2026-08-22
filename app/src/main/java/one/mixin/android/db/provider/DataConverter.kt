@@ -59,6 +59,7 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
     val cursorIndexOfMentionCount = getColumnIndexOrThrow(cursor, "mentionCount")
     val cursorIndexOfMentions = getColumnIndexOrThrow(cursor, "mentions")
     val cursorIndexOfMembership = getColumnIndexOrThrow(cursor, "membership")
+    val cursorIndexOfExpireIn = getColumnIndexOrThrow(cursor, "expireIn")
     val res = ArrayList<ConversationItem>(cursor.count)
     while (cursor.moveToNext()) {
         val item: ConversationItem
@@ -107,6 +108,12 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
             }
         val tmpMentions = cursor.getString(cursorIndexOfMentions)
         val tmpMembership = cursor.getString(cursorIndexOfMembership)
+        val tmpExpireIn =
+            if (cursor.isNull(cursorIndexOfExpireIn)) {
+                null
+            } else {
+                cursor.getLong(cursorIndexOfExpireIn)
+            }
         item =
             ConversationItem(
                 tmpConversationId,
@@ -136,7 +143,8 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
                 tmpAppId,
                 tmpMentions,
                 tmpMentionCount,
-                membershipConverter.revertData(tmpMembership)
+                membershipConverter.revertData(tmpMembership),
+                tmpExpireIn,
             )
         res.add(item)
     }

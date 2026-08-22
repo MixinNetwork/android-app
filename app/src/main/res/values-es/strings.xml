@@ -330,12 +330,13 @@
     <string name="Disable_web_debug">Deshabilitar depuración web</string>
     <string name="Disabled">Desactivado</string>
     <string name="disappearing_message">Mensajes que desaparecen</string>
-    <string name="disappearing_message_hint">Cuando está habilitado, los nuevos mensajes enviados y recibidos en este chat desaparecerán después de que se hayan visto, lee el documento para **obtener más información**.</string>
+    <string name="disappearing_message_hint">Cuando está habilitado, los nuevos mensajes enviados y recibidos en este chat desaparecerán después de un cierto período de tiempo, lee el documento para **obtener más información**.</string>
     <string name="disappearing_option_1">30 segundos</string>
     <string name="disappearing_option_2">10 minutos</string>
     <string name="disappearing_option_3">2 horas</string>
     <string name="disappearing_option_4">1 día</string>
     <string name="disappearing_option_5">1 semana</string>
+    <string name="disappearing_option_month">1 mes</string>
     <string name="DISCARD">DESECHAR</string>
     <string name="Dismiss_as_Admin">Descartar como administrador</string>
     <string name="divide">, </string>

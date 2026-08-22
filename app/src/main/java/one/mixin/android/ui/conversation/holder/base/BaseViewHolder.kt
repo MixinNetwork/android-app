@@ -10,8 +10,6 @@ import androidx.annotation.ColorInt
 import androidx.annotation.DrawableRes
 import androidx.annotation.IdRes
 import androidx.appcompat.content.res.AppCompatResources
-import androidx.appcompat.widget.TooltipCompat
-import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.uber.autodispose.android.autoDispose
@@ -25,7 +23,6 @@ import one.mixin.android.event.BlinkEvent
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.dpToPx
-import one.mixin.android.extension.fullTime
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
@@ -159,27 +156,12 @@ abstract class BaseViewHolder constructor(containerView: View) :
 
         fun chatJumpLayout(
             chatJump: ImageView,
-            isMe: Boolean,
-            expireIn: Long?,
-            expireAt: Long?,
-            @IdRes id: Int,
+            @Suppress("UNUSED_PARAMETER") isMe: Boolean,
+            @Suppress("UNUSED_PARAMETER") expireIn: Long?,
+            @Suppress("UNUSED_PARAMETER") expireAt: Long?,
+            @Suppress("UNUSED_PARAMETER") @IdRes id: Int,
         ) {
-            chatJump.isVisible = expireIn != null
-            if (expireIn != null) {
-                chatJump.setImageResource(R.drawable.ic_expire_message)
-                expireAt?.fullTime()?.let {
-                    TooltipCompat.setTooltipText(chatJump, chatJump.context.getString(R.string.Expired_tip, it))
-                }
-                (chatJump.layoutParams as ConstraintLayout.LayoutParams).apply {
-                    if (isMe) {
-                        endToStart = id
-                        startToEnd = View.NO_ID
-                    } else {
-                        endToStart = View.NO_ID
-                        startToEnd = id
-                    }
-                }
-            }
+            chatJump.isVisible = false
         }
 
         private val argbEvaluator: ArgbEvaluator by lazy {
