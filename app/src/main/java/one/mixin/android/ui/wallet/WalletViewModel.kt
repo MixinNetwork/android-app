@@ -30,6 +30,7 @@ import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.CashAccount
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.WealthProduct
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.web3.vo.WalletItem
@@ -119,6 +120,11 @@ internal constructor(
     suspend fun cachedCashAccount(): CashAccount? =
         withContext(Dispatchers.IO) {
             cashRepository.cachedAccount()
+        }
+
+    suspend fun wealthAccounts(): MixinResponse<List<WealthProduct>> =
+        withContext(Dispatchers.IO) {
+            cashRepository.wealthAccounts()
         }
 
     suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){

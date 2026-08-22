@@ -924,6 +924,7 @@
     <string name="Bitcoin_Dominance">比特幣市佔率</string>
     <string name="volume_24h">24 小時交易量</string>
     <string name="market_volume_short">交易量</string>
+    <string name="market_change_short">漲跌幅</string>
     <string name="Watchlist">自選</string>
     <string name="Crypto">現貨</string>
     <string name="market_stock">股票</string>
@@ -1162,10 +1163,15 @@
     <string name="wallet_home_cashback_banner_cta">立即領取</string>
     <string name="wallet_home_referral_banner_title">邀請返佣</string>
     <string name="wallet_home_referral_banner_desc">邀請好友可獲得高達 60% 的交易返利和會員佣金。</string>
+    <string name="wallet_home_fiat_account">法幣帳戶</string>
+    <string name="wallet_home_wealth_account">理財賬戶</string>
+    <string name="wallet_home_card_account">卡</string>
+    <string name="wallet_home_mock_account_balance">—</string>
     <string name="Cash_Account">現金賬戶</string>
     <string name="send_to_cash_account_description">輕鬆出售加密貨幣，賬戶餘額自動賺取年化收益。</string>
     <string name="Reset_Wallet_Home_Banners">重置錢包首頁 Banner</string>
     <string name="cash_balance">現金餘額</string>
+    <string name="wealth_balance">理財餘額</string>
     <string name="cash_account_apy">年化 %1$s</string>
     <string name="cash_account_minimum_receive">輸入金額至少價值 %1$s %2$s，請重新輸入。</string>
     <string name="cash_account_invalid_token">暫不支援該幣種轉入現金賬戶。</string>
@@ -2658,4 +2664,11 @@
     <string name="no_tokens">沒有代幣</string>
     <string name="watchlist_remove_desc">%1$s 已從自選移除</string>
     <string name="perps_category_meme">Memes</string>
+    <string name="Debug_Wallet_Account_Visibility">錢包帳戶顯示</string>
+    <string name="Debug_Earn_Account">Earn 帳戶</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">總收益</string>
+    <string name="earn_total_amount">總金額</string>
+    <string name="earn_pending_earning">待結算收益</string>
+    <string name="earn_reward_rate">收益率</string>
 </resources>

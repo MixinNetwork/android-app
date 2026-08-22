@@ -8,6 +8,7 @@ object WalletHomeBuilder {
         showReferral: Boolean,
         hasPositions: Boolean,
         hasCashAccount: Boolean = false,
+        hasWealthAccount: Boolean = false,
         hasTopMovers: Boolean,
         hasTransactions: Boolean,
         hasImportKeyAction: Boolean = false,
@@ -19,7 +20,14 @@ object WalletHomeBuilder {
 
         val cards = mutableListOf<WalletHomeCardType>()
 
-        cards += if (hasAssetValue || hasImportKeyAction || hasPendingIndicator || hasCashAccount || isWatchWallet) {
+        cards += if (
+            hasAssetValue ||
+            hasImportKeyAction ||
+            hasPendingIndicator ||
+            hasCashAccount ||
+            hasWealthAccount ||
+            isWatchWallet
+        ) {
             WalletHomeCardType.BALANCE
         } else {
             WalletHomeCardType.EMPTY_GUIDE
