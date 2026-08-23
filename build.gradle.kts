@@ -2,7 +2,7 @@ buildscript {
     val jetifierVersion = "1.0.0-beta10"
     val hiltGradlePluginVersion = "2.60.1"
     val googleServicesPluginVersion = "4.5.0"
-    val firebaseCrashlyticsPluginVersion = "3.0.7"
+    val firebaseCrashlyticsPluginVersion = "3.0.8"
     val bugsnagGradlePluginVersion = "8.2.0"
 
     repositories {
