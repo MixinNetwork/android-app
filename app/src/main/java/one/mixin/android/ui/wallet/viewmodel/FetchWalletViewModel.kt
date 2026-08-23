@@ -618,6 +618,7 @@ class FetchWalletViewModel @Inject constructor(
             requestSession = { userRepository.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID)) },
             exceptionBlock = {
                 _errorMessage.value = ErrorHandler.getErrorMessage(it)
+                _state.value = FetchWalletState.IMPORT_ERROR
                 true
             }
         )
