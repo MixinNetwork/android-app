@@ -1403,14 +1403,19 @@ class WebFragment : BaseFragment() {
             )
         val viewBinding = ViewWebBottomMenuBinding.bind(view)
         if (isBot()) {
-            app?.let {
-                viewBinding.avatar.loadImage(it.iconUrl)
-                viewBinding.nameTv.text = it.name
-                viewBinding.descTv.text = it.appNumber
+            app?.let { app ->
+                viewBinding.avatar.loadImage(app.iconUrl)
+                viewBinding.nameTv.setTextOnly(app.name)
+                viewBinding.descTv.text = app.appNumber
+                lifecycleScope.launch {
+                    bottomViewModel.findUserByAppId(app.appId)?.let { user ->
+                        viewBinding.nameTv.setVerifiedName(app.name, user.isVerified == true)
+                    }
+                }
             }
             viewBinding.avatar.isVisible = true
         } else {
-            viewBinding.nameTv.text = binding.titleTv.text
+            viewBinding.nameTv.setTextOnly(binding.titleTv.text.toString())
             viewBinding.descTv.text = webView.url
             viewBinding.avatar.isVisible = false
         }
