@@ -1,13 +1,40 @@
 package one.mixin.android.ui.wallet
 
 import one.mixin.android.Constants
+import one.mixin.android.api.response.web3.GaslessFeeEstimate
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
+import kotlin.test.assertNull
 import org.junit.Test
 
 class Web3FeeSelectionTest {
+    @Test
+    fun gaslessTradeFeeKeepsPreferredAssetAndAmountTogether() {
+        val preferred = GaslessFeeEstimate(assetId = "usdc", amount = "0.25")
+
+        val result = selectGaslessFeeEstimate(
+            estimates = listOf(
+                GaslessFeeEstimate(assetId = "usdt", amount = "0.1"),
+                preferred,
+            ),
+            preferredAssetId = "usdc",
+        )
+
+        assertEquals(preferred, result)
+    }
+
+    @Test
+    fun gaslessTradeFeeRejectsDifferentAssetFallback() {
+        val result = selectGaslessFeeEstimate(
+            estimates = listOf(GaslessFeeEstimate(assetId = "usdt", amount = "0.25")),
+            preferredAssetId = "usdc",
+        )
+
+        assertNull(result)
+    }
+
     @Test
     fun sameAssetWithEnoughBalanceIsPreferredFirst() {
         val selected = feeOption(assetId = "usdc", balance = "1", fee = "2")
