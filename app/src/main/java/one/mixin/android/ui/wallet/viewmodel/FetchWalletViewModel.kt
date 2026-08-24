@@ -165,6 +165,7 @@ class FetchWalletViewModel @Inject constructor(
 
     private fun startFetching(offset: Int) {
         viewModelScope.launch {
+            _errorMessage.value = null
             _state.value = FetchWalletState.FETCHING
             try {
                 if (!shouldStartWalletFetch(mnemonic)) {
