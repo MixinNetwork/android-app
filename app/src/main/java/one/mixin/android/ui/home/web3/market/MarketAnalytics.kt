@@ -7,6 +7,7 @@ internal fun MarketTopTab.analyticsValue(): String =
         MarketTopTab.WATCHLIST -> AnalyticsTracker.MarketsTab.WATCHLIST
         MarketTopTab.CRYPTO -> AnalyticsTracker.MarketsTab.CRYPTO
         MarketTopTab.PERPETUAL -> AnalyticsTracker.MarketsTab.PERPETUAL
+        MarketTopTab.STOCK -> AnalyticsTracker.MarketsTab.STOCK
         MarketTopTab.INDICATOR -> AnalyticsTracker.MarketsTab.INDICATOR
     }
 

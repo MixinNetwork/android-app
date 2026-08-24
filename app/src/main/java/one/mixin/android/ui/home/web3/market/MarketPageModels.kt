@@ -10,6 +10,7 @@ enum class MarketTopTab {
     WATCHLIST,
     CRYPTO,
     PERPETUAL,
+    STOCK,
     INDICATOR,
 }
 
@@ -89,6 +90,9 @@ fun defaultMarketSortState(
         topTab == MarketTopTab.WATCHLIST &&
             (subTab == MarketSubTab.CRYPTO || subTab == MarketSubTab.PERPETUAL) ->
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+        topTab == MarketTopTab.STOCK &&
+            (subTab == MarketSubTab.CRYPTO || subTab == MarketSubTab.PERPETUAL) ->
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         subTab == MarketSubTab.FAVORITE &&
             (topTab == MarketTopTab.CRYPTO || topTab == MarketTopTab.PERPETUAL) ->
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
@@ -161,7 +165,8 @@ data class MarketPageUiState(
     val showsOnlyPerpetualMarkets: Boolean
         get() =
             selectedTopTab == MarketTopTab.PERPETUAL ||
-                (selectedTopTab == MarketTopTab.WATCHLIST && selectedSubTab == MarketSubTab.PERPETUAL)
+                (selectedTopTab == MarketTopTab.WATCHLIST && selectedSubTab == MarketSubTab.PERPETUAL) ||
+                (selectedTopTab == MarketTopTab.STOCK && selectedSubTab == MarketSubTab.PERPETUAL)
 
     val showsMarketCapColumn: Boolean
         get() = selectedTopTab == MarketTopTab.CRYPTO && selectedSubTab == MarketSubTab.ALL
@@ -183,6 +188,7 @@ fun defaultMarketSubTabs(): Map<MarketTopTab, MarketSubTab> =
         MarketTopTab.WATCHLIST to MarketSubTab.CRYPTO,
         MarketTopTab.CRYPTO to MarketSubTab.TRENDING,
         MarketTopTab.PERPETUAL to MarketSubTab.TRENDING,
+        MarketTopTab.STOCK to MarketSubTab.CRYPTO,
     )
 
 fun marketSubTabs(topTab: MarketTopTab): List<MarketSubTab> =
@@ -207,6 +213,7 @@ fun marketSubTabs(topTab: MarketTopTab): List<MarketSubTab> =
                 MarketSubTab.COMMODITIES,
                 MarketSubTab.FOREX,
             )
+        MarketTopTab.STOCK -> listOf(MarketSubTab.CRYPTO, MarketSubTab.PERPETUAL)
         MarketTopTab.INDICATOR -> emptyList()
     }
 
@@ -237,7 +244,11 @@ internal fun marketPageRefreshSources(
                     )
                 MarketSubTab.TOP_GAINERS -> setOf(MarketPageDataSource.SPOT_TOP_GAINER)
                 MarketSubTab.TOP_LOSERS -> setOf(MarketPageDataSource.SPOT_TOP_LOSER)
-                MarketSubTab.ALL -> setOf(MarketPageDataSource.SPOT_ALL)
+                MarketSubTab.ALL ->
+                    setOf(
+                        MarketPageDataSource.SPOT_ALL,
+                        MarketPageDataSource.SPOT_STOCK,
+                    )
                 else -> setOf(MarketPageDataSource.SPOT_TRENDING)
             }
 
@@ -249,6 +260,13 @@ internal fun marketPageRefreshSources(
                 )
             } else {
                 setOf(MarketPageDataSource.PERPETUAL_ALL)
+            }
+
+        MarketTopTab.STOCK ->
+            if (subTab == MarketSubTab.PERPETUAL) {
+                setOf(MarketPageDataSource.PERPETUAL_ALL)
+            } else {
+                setOf(MarketPageDataSource.SPOT_STOCK)
             }
 
         MarketTopTab.INDICATOR -> setOf(MarketPageDataSource.GLOBAL)
@@ -282,6 +300,9 @@ object MarketPageMapper {
             MarketSubTab.MEME -> markets.filterByCategory(PerpsMarketCategoryKey.MEME)
             else -> markets
         }
+
+    fun perpetualStockMarkets(markets: List<PerpsMarket>): List<PerpsMarket> =
+        markets.filterByCategory(PerpsMarketCategoryKey.STOCKS)
 
     private fun List<PerpsMarket>.filterByCategory(category: PerpsMarketCategoryKey): List<PerpsMarket> =
         filter { market -> category.matches(market.category) }

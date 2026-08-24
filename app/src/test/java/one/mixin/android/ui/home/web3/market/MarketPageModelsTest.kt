@@ -45,7 +45,7 @@ class MarketPageModelsTest {
                 Triple(
                     MarketTopTab.CRYPTO,
                     MarketSubTab.ALL,
-                    setOf(MarketPageDataSource.SPOT_ALL),
+                    setOf(MarketPageDataSource.SPOT_ALL, MarketPageDataSource.SPOT_STOCK),
                 ),
                 Triple(
                     MarketTopTab.PERPETUAL,
@@ -55,6 +55,16 @@ class MarketPageModelsTest {
                 Triple(
                     MarketTopTab.PERPETUAL,
                     MarketSubTab.INDICES,
+                    setOf(MarketPageDataSource.PERPETUAL_ALL),
+                ),
+                Triple(
+                    MarketTopTab.STOCK,
+                    MarketSubTab.CRYPTO,
+                    setOf(MarketPageDataSource.SPOT_STOCK),
+                ),
+                Triple(
+                    MarketTopTab.STOCK,
+                    MarketSubTab.PERPETUAL,
                     setOf(MarketPageDataSource.PERPETUAL_ALL),
                 ),
                 Triple(
@@ -76,9 +86,24 @@ class MarketPageModelsTest {
         assertEquals(MarketSubTab.CRYPTO, defaults[MarketTopTab.WATCHLIST])
         assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.CRYPTO])
         assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.PERPETUAL])
+        assertEquals(MarketSubTab.CRYPTO, defaults[MarketTopTab.STOCK])
         assertEquals(
-            listOf(MarketTopTab.WATCHLIST, MarketTopTab.CRYPTO, MarketTopTab.PERPETUAL, MarketTopTab.INDICATOR),
+            listOf(
+                MarketTopTab.WATCHLIST,
+                MarketTopTab.CRYPTO,
+                MarketTopTab.PERPETUAL,
+                MarketTopTab.STOCK,
+                MarketTopTab.INDICATOR,
+            ),
             MarketTopTab.entries,
+        )
+    }
+
+    @Test
+    fun stockSubTabsOnlyDistinguishCryptoAndPerpetual() {
+        assertEquals(
+            listOf(MarketSubTab.CRYPTO, MarketSubTab.PERPETUAL),
+            marketSubTabs(MarketTopTab.STOCK),
         )
     }
 
@@ -222,6 +247,8 @@ class MarketPageModelsTest {
                 perpsMarket(marketId = "fx", category = "FX"),
                 perpsMarket(marketId = "memes", category = "memes"),
                 perpsMarket(marketId = "meme", category = "Meme"),
+                perpsMarket(marketId = "stocks", category = "stocks"),
+                perpsMarket(marketId = "stock", category = "STOCK"),
                 perpsMarket(marketId = "crypto", category = "crypto"),
             )
 
@@ -240,6 +267,10 @@ class MarketPageModelsTest {
         assertEquals(
             listOf("memes", "meme"),
             MarketPageMapper.perpetualMarkets(markets, MarketSubTab.MEME).map { it.marketId },
+        )
+        assertEquals(
+            listOf("stocks", "stock"),
+            MarketPageMapper.perpetualStockMarkets(markets).map { it.marketId },
         )
     }
 
@@ -300,6 +331,22 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun stockPerpetualSelectionForcesTwentyFourHourDisplay() {
+        val state =
+            MarketPageUiState(
+                selectedTopTab = MarketTopTab.STOCK,
+                selectedSubTabs = defaultMarketSubTabs() + (MarketTopTab.STOCK to MarketSubTab.PERPETUAL),
+                displaySettings =
+                    MarketDisplaySettings(
+                        priceChangePeriod = MarketPriceChangePeriod.SEVEN_DAYS,
+                    ),
+            )
+
+        assertTrue(state.showsOnlyPerpetualMarkets)
+        assertEquals(MarketPriceChangePeriod.TWENTY_FOUR_HOURS, state.effectivePriceChangePeriod)
+    }
+
+    @Test
     fun sortHeaderCyclesDescendingAscendingAndDefault() {
         val descending = MarketSortState().next(MarketSortColumn.PRICE)
         val ascending = descending.next(MarketSortColumn.PRICE)
@@ -319,6 +366,10 @@ class MarketPageModelsTest {
             assertEquals(
                 MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
                 defaultMarketSortState(MarketTopTab.WATCHLIST, subTab),
+            )
+            assertEquals(
+                MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                defaultMarketSortState(MarketTopTab.STOCK, subTab),
             )
         }
         assertEquals(

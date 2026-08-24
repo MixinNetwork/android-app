@@ -486,6 +486,20 @@ class MarketPageViewModel
                         }
                     }
 
+                    MarketTopTab.STOCK ->
+                        if (state.selectedSubTab == MarketSubTab.PERPETUAL) {
+                            MarketPageMapper.perpetualStockMarkets(perpetualMarkets).map { market ->
+                                MarketListEntry.Perpetual(
+                                    market = market,
+                                    isFavored = market.marketId in favoritePerpetualMarketIds,
+                                )
+                            }
+                        } else {
+                            stockMarkets
+                                .withFavoriteState()
+                                .map { MarketListEntry.Spot(it, SpotMarketType.STOCK) }
+                        }
+
                     MarketTopTab.INDICATOR -> emptyList()
                 }
             val isShowingRecommendations =
@@ -533,6 +547,12 @@ class MarketPageViewModel
                     }
                 MarketTopTab.CRYPTO -> hasLoadedSpotMarkets
                 MarketTopTab.PERPETUAL -> hasLoadedPerpetualMarkets
+                MarketTopTab.STOCK ->
+                    if (state.selectedSubTab == MarketSubTab.PERPETUAL) {
+                        hasLoadedPerpetualMarkets
+                    } else {
+                        hasLoadedSpotMarkets
+                    }
                 MarketTopTab.INDICATOR -> true
             }
 
@@ -581,6 +601,13 @@ class MarketPageViewModel
                                 MarketPageDataSource.PERPETUAL_FAVORITE
                             }
                         else -> MarketPageDataSource.PERPETUAL_ALL
+                    }
+
+                MarketTopTab.STOCK ->
+                    if (state.selectedSubTab == MarketSubTab.PERPETUAL) {
+                        MarketPageDataSource.PERPETUAL_ALL
+                    } else {
+                        MarketPageDataSource.SPOT_STOCK
                     }
 
                 MarketTopTab.INDICATOR -> MarketPageDataSource.GLOBAL

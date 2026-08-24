@@ -1056,6 +1056,7 @@ private fun topTabLabel(tab: MarketTopTab): String =
             MarketTopTab.WATCHLIST -> R.string.Watchlist
             MarketTopTab.CRYPTO -> R.string.Crypto
             MarketTopTab.PERPETUAL -> R.string.Perpetual
+            MarketTopTab.STOCK -> R.string.market_stock
             MarketTopTab.INDICATOR -> R.string.Indicator
         },
     )

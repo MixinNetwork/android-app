@@ -576,6 +576,7 @@ object AnalyticsTracker {
         const val WATCHLIST = "watchlist"
         const val CRYPTO = "crypto"
         const val PERPETUAL = "perpetual"
+        const val STOCK = "stock"
         const val INDICATOR = "indicator"
         const val TRENDING = "trending"
         const val TOP_GAINERS = "top_gainers"
