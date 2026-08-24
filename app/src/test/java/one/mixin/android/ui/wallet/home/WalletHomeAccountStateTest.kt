@@ -25,6 +25,10 @@ class WalletHomeAccountStateTest {
         earningsUsd = BigDecimal("1.25"),
         apyText = "5.00%",
     )
+    private val zeroBalanceWealthAccount = wealthAccount.copy(
+        balanceUsd = BigDecimal.ZERO,
+        earningsUsd = BigDecimal.ZERO,
+    )
 
     @Test
     fun noAccountsDoesNotAddAnAccountCard() {
@@ -61,6 +65,40 @@ class WalletHomeAccountStateTest {
             ),
             state.cards,
         )
+    }
+
+    @Test
+    fun zeroBalanceWealthOnlyUsesTheStandaloneAccountCard() {
+        val state = baseState.withWealthAccounts(listOf(zeroBalanceWealthAccount))
+
+        assertEquals(
+            listOf(
+                WalletHomeCardType.BALANCE,
+                WalletHomeCardType.ACCOUNTS,
+                WalletHomeCardType.BANNER,
+                WalletHomeCardType.POSITIONS,
+            ),
+            state.cards,
+        )
+    }
+
+    @Test
+    fun fiatAndZeroBalanceWealthShowOnlyTheCashCardRegardlessOfLoadOrder() {
+        val wealthThenCash = baseState
+            .withWealthAccounts(listOf(zeroBalanceWealthAccount))
+            .withCashAccount(cashAccount)
+        val cashThenWealth = baseState
+            .withCashAccount(cashAccount)
+            .withWealthAccounts(listOf(zeroBalanceWealthAccount))
+
+        val expectedCards = listOf(
+            WalletHomeCardType.BALANCE,
+            WalletHomeCardType.CASH,
+            WalletHomeCardType.BANNER,
+            WalletHomeCardType.POSITIONS,
+        )
+        assertEquals(expectedCards, wealthThenCash.cards)
+        assertEquals(expectedCards, cashThenWealth.cards)
     }
 
     @Test

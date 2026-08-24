@@ -89,6 +89,25 @@ class WalletHomeWealthAccountTest {
     }
 
     @Test
+    fun mapsZeroBalanceAccountToTheAccountCard() {
+        val product = WealthProduct(
+            productionId = "production-1",
+            assetId = "asset-1",
+            priceUsd = "1",
+            account = WealthAccountSummary(
+                totalPrincipal = "0",
+                totalEarnings = "0",
+                redeemableEarnings = "0",
+            ),
+        )
+
+        val account = listOf(product).toWalletHomeWealthAccounts().single()
+
+        assertEquals(0, account.balanceUsd.compareTo(BigDecimal.ZERO))
+        assertEquals(0, account.earningsUsd.compareTo(BigDecimal.ZERO))
+    }
+
+    @Test
     fun mapsPrincipalAndTotalEarningsToTheAccountCard() {
         val product = WealthProduct(
             productionId = "production-1",

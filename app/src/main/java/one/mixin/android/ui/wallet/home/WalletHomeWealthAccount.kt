@@ -80,7 +80,6 @@ internal fun List<WealthProduct>.toWalletHomeWealthAccounts(
 ): List<WalletHomeWealthAccount> =
     mapNotNull { product ->
         val account = product.account ?: return@mapNotNull null
-        if (!account.hasCurrentBalance()) return@mapNotNull null
 
         val asset = assetItems[product.assetId]
         val assetPriceUsd = (product.priceUsd ?: asset?.priceUsd)
@@ -127,8 +126,10 @@ internal fun WalletHomeState.withWealthAccounts(
     val cardsWithoutAccountCards = cards.filterNot {
         it == WalletHomeCardType.CASH || it == WalletHomeCardType.ACCOUNTS
     }
+    val hasWealthAccount = accounts.isNotEmpty()
+    val hasWealthBalance = accounts.any { it.balanceUsd.signum() != 0 }
     val accountCard = when {
-        accounts.isNotEmpty() -> WalletHomeCardType.ACCOUNTS
+        hasWealthAccount && (cashAccount == null || hasWealthBalance) -> WalletHomeCardType.ACCOUNTS
         cashAccount != null -> WalletHomeCardType.CASH
         else -> null
     }
