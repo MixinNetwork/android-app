@@ -109,6 +109,11 @@ abstract class PerpsDatabase : RoomDatabase() {
         val MIGRATION_7_8 =
             object : Migration(7, 8) {
                 override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("DELETE FROM perps_orders")
+                    db.execSQL("ALTER TABLE `perps_orders` ADD COLUMN `fee_amount` TEXT NOT NULL DEFAULT '0'")
+                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `funding_interval_hours` INTEGER NOT NULL DEFAULT 0")
+                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `next_funding_at` TEXT NOT NULL DEFAULT ''")
+                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `open_interest` TEXT NOT NULL DEFAULT '0'")
                     db.execSQL("ALTER TABLE `markets` ADD COLUMN `trade_volume_score_1d` INTEGER NOT NULL DEFAULT 0")
                 }
             }

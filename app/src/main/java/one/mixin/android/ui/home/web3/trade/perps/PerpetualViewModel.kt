@@ -1041,20 +1041,10 @@ class PerpetualViewModel @Inject constructor(
     private suspend fun upsertSyncedOrders(orders: List<PerpsOrder>) {
         if (orders.isEmpty()) return
 
-        val updatedOrders = orders.map { order ->
-            val cachedLeverage = perpsOrderDao.getCachedLeverage(order.positionId)
-            if (order.leverage == 0 && cachedLeverage != null) {
-                order.copy(leverage = cachedLeverage)
-            } else {
-                order
-            }
-        }
-
-        perpsOrderDao.deleteLocalByPositionIds(updatedOrders.map { it.positionId }.distinct())
-        perpsOrderDao.insertAll(updatedOrders)
+        perpsOrderDao.insertAll(orders)
 
         // Sync position status if it's a close order
-        updatedOrders.filter { it.orderType == PerpsOrder.TYPE_CLOSE && it.status == PerpsOrder.STATUS_FILLED }
+        orders.filter { it.orderType == PerpsOrder.TYPE_CLOSE && it.status == PerpsOrder.STATUS_FILLED }
             .forEach { closeOrder ->
                 perpsPositionDao.updateStatus(
                     closeOrder.positionId,

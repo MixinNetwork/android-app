@@ -2,7 +2,7 @@ buildscript {
     val jetifierVersion = "1.0.0-beta10"
     val hiltGradlePluginVersion = "2.60.1"
     val googleServicesPluginVersion = "4.5.0"
-    val firebaseCrashlyticsPluginVersion = "3.0.7"
+    val firebaseCrashlyticsPluginVersion = "3.0.8"
     val bugsnagGradlePluginVersion = "8.2.0"
 
     repositories {
@@ -73,7 +73,7 @@ extra.set("espressoVersion", "3.7.0")
 extra.set("cameraxVersion", "1.6.1")
 extra.set("glideVersion", "5.0.9")
 extra.set("timberVersion", "5.0.1")
-extra.set("okhttpVersion", "5.4.0")
+extra.set("okhttpVersion", "5.5.0")
 extra.set("rxJavaVersion", "2.2.21")
 extra.set("rxAndroidVersion", "2.1.1")
 extra.set("rxbindingVersion", "3.1.0")
@@ -132,7 +132,7 @@ extra.set("composeBomVersion", "2026.08.00")
 extra.set("reownBomVersion", "1.6.14")
 extra.set("playServicesMapsVersion", "20.0.0")
 extra.set("playServicesLocationVersion", "21.4.0")
-extra.set("firebaseBomVersion", "34.17.0")
+extra.set("firebaseBomVersion", "34.18.0")
 extra.set("webpDecoderVersion", "2.7.4.16.0")
 extra.set("tweetnaclVersion", "0.1.6")
 extra.set("sol4kUtilitiesVersion", "0.1.0")

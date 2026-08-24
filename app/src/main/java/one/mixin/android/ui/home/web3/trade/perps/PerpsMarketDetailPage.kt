@@ -89,6 +89,7 @@ import one.mixin.android.ui.wallet.selectLocalizedMarketDescription
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.components.MixinButton
+import org.threeten.bp.Instant
 import java.math.BigDecimal
 import java.util.Locale
 
@@ -823,6 +824,28 @@ private fun MarketInfoCard(
     market: PerpsMarket,
     onFundingRateTipClick: () -> Unit,
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val nextFundingAtMillis = remember(market.nextFundingAt) {
+        market.nextFundingAt
+            .takeIf { it.isNotBlank() }
+            ?.let { runCatching { Instant.parse(it).toEpochMilli() }.getOrNull() }
+    }
+    var fundingRemainingSeconds by remember(nextFundingAtMillis) {
+        mutableStateOf(nextFundingAtMillis?.let { calculateFundingRemainingSeconds(it, System.currentTimeMillis()) })
+    }
+
+    LaunchedEffect(nextFundingAtMillis, lifecycleOwner) {
+        val targetMillis = nextFundingAtMillis ?: return@LaunchedEffect
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (isActive) {
+                val remainingSeconds = calculateFundingRemainingSeconds(targetMillis, System.currentTimeMillis())
+                fundingRemainingSeconds = remainingSeconds
+                if (remainingSeconds == 0L) break
+                delay(1_000L)
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -842,10 +865,30 @@ private fun MarketInfoCard(
             color = MixinAppTheme.colors.textPrimary
         )
 
+        if (market.openInterest.toBigDecimalOrNull()?.let { it.signum() != 0 } == true) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.Open_Interest).uppercase(),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = formatOpenInterest(market.openInterest, market.markPrice),
+                fontSize = 16.sp,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
+        val fundingRateTitle = if (market.fundingIntervalHours > 0) {
+            stringResource(R.string.perps_funding_title_interval, market.fundingIntervalHours)
+        } else {
+            stringResource(R.string.Funding_Rate)
+        }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stringResource(R.string.Funding_Rate).uppercase(),
+                text = fundingRateTitle.uppercase(),
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist
             )
@@ -865,7 +908,44 @@ private fun MarketInfoCard(
             fontSize = 16.sp,
             color = MixinAppTheme.colors.textPrimary
         )
+        fundingRemainingSeconds?.takeIf { it > 0L }?.let { remainingSeconds ->
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val intervalSeconds = market.fundingIntervalHours.toLong() * 60L * 60L
+                val progress = if (intervalSeconds > 0L) {
+                    (1f - remainingSeconds.toFloat() / intervalSeconds).coerceIn(0f, 1f)
+                } else {
+                    0f
+                }
+                CircularProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier.size(14.dp),
+                    color = MixinAppTheme.colors.textAssist,
+                    backgroundColor = MixinAppTheme.colors.borderColor,
+                    strokeWidth = 2.dp,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = formatFundingCountdown(remainingSeconds),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                )
+            }
+        }
     }
+}
+
+private fun calculateFundingRemainingSeconds(targetMillis: Long, nowMillis: Long): Long {
+    if (targetMillis <= nowMillis) return 0L
+    return (targetMillis - nowMillis - 1L) / 1_000L + 1L
+}
+
+private fun formatFundingCountdown(remainingSeconds: Long): String {
+    val seconds = remainingSeconds.coerceAtLeast(0L)
+    val hours = seconds / 3_600L
+    val minutes = seconds % 3_600L / 60L
+    val secondsPart = seconds % 60L
+    return listOf(hours, minutes, secondsPart).joinToString(":") { it.toString().padStart(2, '0') }
 }
 
 @Composable
@@ -875,6 +955,19 @@ private fun formatVolume(
     return try {
         val vol = BigDecimal(volume)
         "$PERPS_USD_SYMBOL${vol.numberFormatCompact()}"
+    } catch (e: NumberFormatException) {
+        stringResource(R.string.N_A)
+    }
+}
+
+@Composable
+private fun formatOpenInterest(
+    openInterest: String,
+    markPrice: String,
+): String {
+    return try {
+        val notionalValue = BigDecimal(openInterest).multiply(BigDecimal(markPrice))
+        "$PERPS_USD_SYMBOL${notionalValue.numberFormatCompact()}"
     } catch (e: NumberFormatException) {
         stringResource(R.string.N_A)
     }
