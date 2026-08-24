@@ -2545,7 +2545,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             account = fromAddress,
             to = toAddress,
             assetId = token.assetId,
-            feeType = WEB3_FEE_TYPE_FREE,
+            feeType = WEB3_FEE_TYPE_FREE.takeIf { isFeeWaived },
         )
         if (!response.isSuccess) {
             throw IllegalStateException(response.errorDescription)
