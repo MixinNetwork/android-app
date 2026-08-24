@@ -27,10 +27,14 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.coroutines.yield
 import one.mixin.android.Constants.DB_EXPIRED_LIMIT
 import one.mixin.android.Constants.MARK_REMOTE_LIMIT
@@ -84,6 +88,24 @@ import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.max
 
+internal suspend fun runExpiredCleanupWithRetry(
+    retryDelayMillis: Long,
+    onFailure: (Exception) -> Unit,
+    cleanup: suspend () -> Unit,
+) {
+    while (true) {
+        try {
+            cleanup()
+            return
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            onFailure(e)
+            delay(retryDelayMillis)
+        }
+    }
+}
+
 @AndroidEntryPoint
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
     companion object {
@@ -92,7 +114,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         const val ACTION_TO_BACKGROUND = "mixin.intent.action.TO_BACKGROUND"
         const val ACTION_ACTIVITY_RESUME = "action_activity_resume"
         const val ACTION_ACTIVITY_PAUSE = "action_activity_pause"
-        private const val EXPIRED_OBSERVE_DEBOUNCE_MS = 1_500L
+        private const val EXPIRED_OBSERVE_DELAY_MS = 1_500L
+        private const val EXPIRED_CLEANUP_RETRY_DELAY_MS = 1_000L
+        private const val EXPIRED_ACK_WAIT_TIMEOUT_MS = 100L
 
         fun startService(
             ctx: Context,
@@ -367,6 +391,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         ackObservedDatabase = null
     }
 
+    @Volatile
     private var ackJob: Job? = null
     private val ackObserver =
         object : InvalidationTracker.Observer("jobs") {
@@ -481,19 +506,47 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         expiredObservedDatabase = null
     }
 
+    private val expiredCleanupMutex = Mutex()
     private var expiredJob: Job? = null
     private var expiredObserveJob: Job? = null
     private val expiredObserver =
         object : InvalidationTracker.Observer("expired_messages") {
             override fun onInvalidated(tables: Set<String>) {
-                expiredObserveJob?.cancel()
-                expiredObserveJob =
-                    lifecycleScope.launch {
-                        delay(EXPIRED_OBSERVE_DEBOUNCE_MS)
-                        runExpiredJob()
-                    }
+                scheduleExpiredObserveJob()
             }
         }
+
+    @Synchronized
+    private fun scheduleExpiredObserveJob() {
+        if (expiredObserveJob?.isActive == true) {
+            return
+        }
+        expiredObserveJob =
+            lifecycleScope.launch {
+                delay(EXPIRED_OBSERVE_DELAY_MS)
+                clearExpiredObserveJob()
+                try {
+                    withContext(Dispatchers.IO) {
+                        val expireAt = expiredMessageDao().getFirstExpiredMessage()?.expireAt
+                        if (expireAt == null) {
+                            runExpiredJob()
+                        } else {
+                            startExpiredJob(expireAt)
+                        }
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e)
+                    scheduleExpiredObserveJob()
+                }
+            }
+    }
+
+    @Synchronized
+    private fun clearExpiredObserveJob() {
+        expiredObserveJob = null
+    }
 
     @Synchronized
     private fun runStatusJob() {
@@ -549,15 +602,15 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
         expiredJob =
             lifecycleScope.launch {
-                try {
-                    withContext(Dispatchers.IO) {
-                        processExpiredMessage()
+                expiredCleanupMutex.withLock {
+                    runExpiredCleanupWithRetry(
+                        retryDelayMillis = EXPIRED_CLEANUP_RETRY_DELAY_MS,
+                        onFailure = { Timber.e(it) },
+                    ) {
+                        withContext(Dispatchers.IO) {
+                            processExpiredMessage()
+                        }
                     }
-                } catch (e: CancellationException) {
-                    throw e
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    runExpiredJob()
                 }
             }
     }
@@ -580,11 +633,26 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     @Volatile
     private var nextExpirationTime: Long? = null
 
+    private suspend fun awaitAckJob() {
+        if (!networkConnected()) {
+            return
+        }
+        val currentAckJob = ackJob
+        if (currentAckJob?.isActive != true) {
+            return
+        }
+        withTimeoutOrNull(EXPIRED_ACK_WAIT_TIMEOUT_MS) {
+            currentAckJob.join()
+        }
+    }
+
     private tailrec suspend fun processExpiredMessage() {
         val messages =
             expiredMessageDao().getExpiredMessages(currentTimeSeconds(), DB_EXPIRED_LIMIT)
+        currentCoroutineContext().ensureActive()
         if (messages.isEmpty()) {
             val firstExpiredMessage = expiredMessageDao().getFirstExpiredMessage()
+            currentCoroutineContext().ensureActive()
             if (firstExpiredMessage == null) {
                 nextExpirationTime = null
             } else {
@@ -596,13 +664,12 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     )
                 Timber.e("Expired job: delay $delayTime")
                 delay(delayTime)
-                expiredJob?.ensureActive()
+                currentCoroutineContext().ensureActive()
                 processExpiredMessage()
             }
         } else {
-            if (jobDao().findAckJobsCount() > 0) {
-                delay(100)
-            }
+            awaitAckJob()
+            currentCoroutineContext().ensureActive()
             val ids = messages.map { it.messageId }
             val cIds = messageDao().findConversationsByMessages(ids)
             val transcriptIds = mutableListOf<String>()
@@ -634,7 +701,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
             nextExpirationTime = null
             yield()
-            expiredJob?.ensureActive()
+            currentCoroutineContext().ensureActive()
             processExpiredMessage()
         }
     }
