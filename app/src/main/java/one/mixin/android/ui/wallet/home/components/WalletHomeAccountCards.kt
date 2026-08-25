@@ -230,31 +230,44 @@ private fun WealthAccountCard(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.Bottom,
                 ) {
-                    Text(
-                        text = account.balanceAmountText,
-                        color = MixinAppTheme.colors.textPrimary,
-                        fontSize = 18.sp,
-                        lineHeight = 21.sp,
-                        fontWeight = FontWeight.W600,
-                        style = AccountTextStyle,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "USD",
-                        color = MixinAppTheme.colors.textAssist,
-                        fontSize = 12.sp,
-                        lineHeight = 14.sp,
-                        fontWeight = FontWeight.W400,
-                        style = AccountTextStyle,
-                        maxLines = 1,
-                    )
+                    WalletHomeAccountBalance(account.balanceAmountText)
                     Spacer(modifier = Modifier.weight(1f))
                     WealthTokenIcons(accounts)
                 }
             }
         }
+    }
+}
+
+@Composable
+internal fun WalletHomeAccountBalance(
+    balanceAmountText: String,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier,
+        verticalAlignment = Alignment.Bottom,
+    ) {
+        Text(
+            text = balanceAmountText,
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 18.sp,
+            lineHeight = 21.sp,
+            fontWeight = FontWeight.W600,
+            style = AccountTextStyle,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Spacer(modifier = Modifier.width(4.dp))
+        Text(
+            text = "USD",
+            color = MixinAppTheme.colors.textAssist,
+            fontSize = 12.sp,
+            lineHeight = 14.sp,
+            fontWeight = FontWeight.W400,
+            style = AccountTextStyle,
+            maxLines = 1,
+        )
     }
 }
 

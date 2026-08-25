@@ -23,13 +23,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -240,29 +237,8 @@ private fun CashAccountCard(
             }
             Spacer(modifier = Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = buildAnnotatedString {
-                        withStyle(
-                            SpanStyle(
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.W600,
-                            ),
-                        ) { append(cashAccount.balanceAmountText) }
-                        append(" ")
-                        withStyle(
-                            SpanStyle(
-                                color = MixinAppTheme.colors.textAssist,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.W400,
-                            ),
-                        ) {
-                            append("USD")
-                        }
-                    },
-                    color = MixinAppTheme.colors.textPrimary,
-                    style = CashAccountTextStyle,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                WalletHomeAccountBalance(
+                    balanceAmountText = cashAccount.balanceAmountText,
                     modifier = Modifier.weight(1f),
                 )
                 cashAccount.apyText?.let { apyText ->
