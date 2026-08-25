@@ -457,9 +457,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         val chainIds =
                             swapViewModel.getAddresses(Web3Signer.currentWalletId).map {
                                 it.chainId
-                            }
+                            }.toSet()
                         this.filter {
-                            it.chain.chainId in chainIds
+                            isSwapSearchChainAvailable(it.chain.chainId, chainIds)
                         }
                     } else {
                         this
