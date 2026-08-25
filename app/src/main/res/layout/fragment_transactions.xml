@@ -261,7 +261,7 @@
                             android:layout_centerVertical="true"
                             android:layout_marginStart="10dp"
                             android:layout_toEndOf="@id/earn_amount_icon"
-                            android:text="@string/earn_total_amount"
+                            android:text="@string/Total_Amount"
                             android:textColor="?attr/text_assist"
                             android:textSize="14sp"
                             android:lineHeight="17sp"

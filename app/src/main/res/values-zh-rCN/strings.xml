@@ -2569,12 +2569,9 @@
     <string name="wallet_home_cashback_banner_cta">立即领取</string>
     <string name="wallet_home_referral_banner_title">邀请返佣</string>
     <string name="wallet_home_referral_banner_desc">邀请好友可获得高达 60% 的交易返利和会员佣金。</string>
-    <string name="wallet_home_fiat_account">法币账户</string>
-    <string name="wallet_home_wealth_account">理财账户</string>
-    <string name="wallet_home_card_account">卡</string>
-    <string name="wallet_home_mock_account_balance">—</string>
+    <string name="wallet_home_earn_account">理财账户</string>
     <string name="cash_balance">现金余额</string>
-    <string name="wealth_balance">理财余额</string>
+    <string name="earn_balance">理财余额</string>
     <string name="cash_account_apy">年化 %1$s</string>
     <string name="cash_account_minimum_receive">输入金额至少价值 %1$s %2$s，请重新输入。</string>
     <string name="cash_account_minimum_send">错误 10614: 输入金额至少为 %1$s %2$s，请重新输入。</string>
@@ -2605,7 +2602,6 @@
     <string name="Debug_Earn_Account">Earn 账户</string>
     <string name="Earn">Earn</string>
     <string name="earn_total_earnings">总收益</string>
-    <string name="earn_total_amount">总金额</string>
     <string name="earn_pending_earning">待结算收益</string>
     <string name="earn_reward_rate">收益率</string>
 </resources>

@@ -1170,7 +1170,10 @@
     <string name="Debug_Earn_Account">Cuenta Earn</string>
     <string name="Earn">Earn</string>
     <string name="earn_total_earnings">Ganancias totales</string>
-    <string name="earn_total_amount">Importe total</string>
+    <string name="Total_Amount">Importe total</string>
+    <string name="Cash_Account">Cuenta de efectivo</string>
     <string name="earn_pending_earning">Ganancias pendientes</string>
     <string name="earn_reward_rate">Tasa de recompensa</string>
+    <string name="wallet_home_earn_account">Cuenta Earn</string>
+    <string name="earn_balance">Saldo de Earn</string>
 </resources>

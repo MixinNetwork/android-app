@@ -793,7 +793,10 @@
     <string name="Debug_Earn_Account">Akaun Earn</string>
     <string name="Earn">Earn</string>
     <string name="earn_total_earnings">Jumlah Pendapatan</string>
-    <string name="earn_total_amount">Jumlah Keseluruhan</string>
+    <string name="Total_Amount">Jumlah Amaun</string>
+    <string name="Cash_Account">Akaun Tunai</string>
     <string name="earn_pending_earning">Pendapatan Belum Selesai</string>
     <string name="earn_reward_rate">Kadar Ganjaran</string>
+    <string name="wallet_home_earn_account">Akaun Earn</string>
+    <string name="earn_balance">Baki Earn</string>
 </resources>

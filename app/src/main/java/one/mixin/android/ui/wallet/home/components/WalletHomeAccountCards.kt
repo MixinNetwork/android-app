@@ -107,7 +107,7 @@ private fun CompactCashAccountCard(
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
     ) {
         Text(
-            text = stringResource(R.string.wallet_home_fiat_account),
+            text = stringResource(R.string.Cash_Account),
             color = MixinAppTheme.colors.textAssist,
             fontSize = 12.sp,
             lineHeight = 14.sp,
@@ -163,7 +163,7 @@ private fun CompactWealthAccountCard(
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
     ) {
         Text(
-            text = stringResource(R.string.wallet_home_wealth_account),
+            text = stringResource(R.string.wallet_home_earn_account),
             color = MixinAppTheme.colors.textAssist,
             fontSize = 12.sp,
             lineHeight = 14.sp,
@@ -219,7 +219,7 @@ private fun WealthAccountCard(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Text(
-                        text = stringResource(R.string.wealth_balance),
+                        text = stringResource(R.string.earn_balance),
                         color = MixinAppTheme.colors.textMinor,
                         fontSize = 14.sp,
                         lineHeight = 17.sp,
