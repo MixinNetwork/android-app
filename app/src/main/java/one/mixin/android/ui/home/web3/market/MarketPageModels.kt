@@ -96,18 +96,7 @@ fun defaultMarketSortState(
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.DESCENDING)
         subTab == MarketSubTab.TOP_LOSERS ->
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.ASCENDING)
-        topTab == MarketTopTab.WATCHLIST &&
-            (subTab == MarketSubTab.CRYPTO || subTab == MarketSubTab.PERPETUAL) ->
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
-        topTab == MarketTopTab.STOCK &&
-            (subTab == MarketSubTab.CRYPTO || subTab == MarketSubTab.PERPETUAL) ->
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
-        subTab == MarketSubTab.FAVORITE &&
-            (topTab == MarketTopTab.CRYPTO || topTab == MarketTopTab.PERPETUAL) ->
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
-        topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.ALL ->
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
-        topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.TRENDING ->
+        topTab == MarketTopTab.STOCK && subTab == MarketSubTab.PERPETUAL ->
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         isScoreOrderingAvailable(topTab, subTab) -> scoreMarketSortState()
         topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.MEME ->
