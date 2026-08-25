@@ -311,6 +311,7 @@ class ConversationFragment() :
         const val RECIPIENT_ID = "recipient_id"
         const val RECIPIENT = "recipient"
         const val MESSAGE_ID = "initial_position_message_id"
+        const val INITIAL_UNREAD_MESSAGE_ID = "initial_unread_message_id"
         const val TRANSCRIPT_DATA = "transcript_data"
         private const val KEY_WORD = "key_word"
         private const val START_PARAM = "start_param"
@@ -1007,6 +1008,10 @@ class ConversationFragment() :
 
     private val initialMessageId: String? by lazy {
         requireArguments().getString(MESSAGE_ID, null)
+    }
+
+    private val initialUnreadMessageId: String? by lazy {
+        requireArguments().getString(INITIAL_UNREAD_MESSAGE_ID, null)
     }
 
     private var keyword: String? = null
@@ -1951,7 +1956,12 @@ class ConversationFragment() :
     private fun initMessageRecyclerView() {
         lifecycleScope.launch {
             // init message data
-            val (position, data, unreadMessageId) = messageFetcher.initMessages(conversationId, initialMessageId)
+            val (position, data, unreadMessageId) =
+                messageFetcher.initMessages(
+                    conversationId = conversationId,
+                    messageId = initialMessageId,
+                    initialUnreadMessageId = initialUnreadMessageId,
+                )
             if (isFirstMessage && data.isNotEmpty()) {
                 isFirstMessage = false
             }

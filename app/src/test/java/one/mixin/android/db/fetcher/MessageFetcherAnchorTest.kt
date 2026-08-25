@@ -65,6 +65,22 @@ class MessageFetcherAnchorTest {
     }
 
     @Test
+    fun initMessagesRevalidatesPrefetchedUnreadAnchor() = runBlocking {
+        insertMessage(rowId = 4, messageId = "old", createdAt = "2024-01-01T00:00:00.000Z")
+        insertMessage(rowId = 3, messageId = "stale", createdAt = "2024-01-02T00:00:00.000Z")
+        insertMessage(rowId = 2, messageId = "unread", createdAt = "2024-01-03T00:00:00.000Z")
+        insertMessage(rowId = 1, messageId = "new", createdAt = "2024-01-04T00:00:00.000Z")
+        insertRemoteStatus("stale", "READ")
+        insertRemoteStatus("unread")
+
+        val (position, data, unreadMessageId) =
+            fetcher.initMessages(CONVERSATION_ID, initialUnreadMessageId = "stale")
+
+        assertEquals("unread", unreadMessageId)
+        assertEquals("unread", data[position].messageId)
+    }
+
+    @Test
     fun initMessagesAtDateUsesFirstMessageAtOrAfterDate() = runBlocking {
         insertMessage(rowId = 3, messageId = "old", createdAt = "2024-01-01T00:00:00.000Z")
         insertMessage(rowId = 2, messageId = "middle", createdAt = "2024-01-02T00:00:00.000Z")
@@ -152,14 +168,17 @@ class MessageFetcherAnchorTest {
         )
     }
 
-    private fun insertRemoteStatus(messageId: String) {
+    private fun insertRemoteStatus(
+        messageId: String,
+        status: String = "DELIVERED",
+    ) {
         RoomDatabaseCompat.execute(
             db,
             """
             INSERT INTO remote_messages_status(message_id, conversation_id, status)
             VALUES (?, ?, ?)
             """.trimIndent(),
-            arrayOf(messageId, CONVERSATION_ID, "DELIVERED"),
+            arrayOf(messageId, CONVERSATION_ID, status),
         )
     }
 

@@ -51,4 +51,15 @@ class RemoteMessageStatusDaoTest {
         assertEquals(100, statuses.getValue("with-expiration").expireAt)
         assertEquals(null, statuses.getValue("without-expiration").expireAt)
     }
+
+    @Test
+    fun firstUnreadMessageIdSkipsReadStatuses() = runBlocking {
+        remoteMessageStatusDao.insert(
+            RemoteMessageStatus("read", "conversation", MessageStatus.READ.name),
+            RemoteMessageStatus("first-unread", "conversation", MessageStatus.DELIVERED.name),
+            RemoteMessageStatus("second-unread", "conversation", MessageStatus.DELIVERED.name),
+        )
+
+        assertEquals("first-unread", remoteMessageStatusDao.firstUnreadMessageId("conversation"))
+    }
 }

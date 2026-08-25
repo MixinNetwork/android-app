@@ -48,6 +48,7 @@ class MessageFetcher
         conversationId: String,
         messageId: String? = null,
         forceBottom: Boolean = false,
+        initialUnreadMessageId: String? = null,
     ): Triple<Int, List<MessageItem>, String?> =
         withContext(SINGLE_FETCHER_THREAD) {
             resetLoadState()
@@ -55,6 +56,9 @@ class MessageFetcher
                 when {
                     messageId != null -> findAnchorByMessageId(messageId)
                     forceBottom -> null
+                    initialUnreadMessageId != null ->
+                        findUnreadAnchorByMessageId(conversationId, initialUnreadMessageId)
+                            ?: findFirstUnreadAnchor(conversationId)
                     else -> findFirstUnreadAnchor(conversationId)
                 }
             if (anchor == null) {
@@ -184,6 +188,12 @@ class MessageFetcher
 
     private fun findFirstUnreadAnchor(conversationId: String): ChatMessageAnchor? =
         MessageFetcherGenerated.findFirstUnreadAnchor(db, conversationId)
+
+    private fun findUnreadAnchorByMessageId(
+        conversationId: String,
+        messageId: String,
+    ): ChatMessageAnchor? =
+        MessageFetcherGenerated.findUnreadAnchorByMessageId(db, conversationId, messageId)
 
     private fun findAnchorByMessageId(messageId: String): ChatMessageAnchor? =
         MessageFetcherGenerated.findAnchorByMessageId(db, messageId)

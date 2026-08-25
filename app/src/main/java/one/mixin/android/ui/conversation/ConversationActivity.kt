@@ -102,12 +102,14 @@ class ConversationActivity : BlazeBaseActivity() {
             context: Context,
             conversationId: String,
             recipient: User?,
+            initialUnreadMessageId: String? = null,
         ) {
             Intent(context, ConversationActivity::class.java).apply {
                 putExtras(
                     Bundle().apply {
                         putString(CONVERSATION_ID, conversationId)
                         putParcelable(RECIPIENT, recipient)
+                        putString(ConversationFragment.INITIAL_UNREAD_MESSAGE_ID, initialUnreadMessageId)
                         putBoolean(ARGS_FAST_SHOW, true)
                     },
                 )

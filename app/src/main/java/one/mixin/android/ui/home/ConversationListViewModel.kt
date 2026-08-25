@@ -181,6 +181,9 @@ class ConversationListViewModel
         ): String? =
             conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
+        suspend fun firstUnreadMessageId(conversationId: String): String? =
+            conversationRepository.firstUnreadMessageId(conversationId)
+
         fun observeAllCircleItem() = userRepository.observeAllCircleItem()
 
         suspend fun circleRename(

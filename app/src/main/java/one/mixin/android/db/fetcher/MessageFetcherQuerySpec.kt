@@ -129,6 +129,23 @@ interface MessageFetcherQuerySpec {
     ): ChatMessageAnchor?
 
     @GeneratedRawCursorQuery(
+        sql = """
+            SELECT m.rowid, m.created_at, m.id
+            FROM remote_messages_status rm
+            INNER JOIN messages m ON m.id = rm.message_id
+            WHERE rm.conversation_id = ? AND rm.message_id = ? AND rm.status = 'DELIVERED'
+            LIMIT 1
+        """,
+        binds = ["conversationId", "messageId"],
+        converter = "convertToChatMessageAnchor",
+    )
+    fun findUnreadAnchorByMessageId(
+        db: MixinDatabase,
+        conversationId: String,
+        messageId: String,
+    ): ChatMessageAnchor?
+
+    @GeneratedRawCursorQuery(
         sql = "SELECT rowid, created_at, id FROM messages WHERE id = ?",
         binds = ["messageId"],
         converter = "convertToChatMessageAnchor",

@@ -431,6 +431,9 @@ class ConversationRepository
         ): String? =
             messageDao.findFirstUnreadMessageId(conversationId, offset)
 
+        suspend fun firstUnreadMessageId(conversationId: String): String? =
+            remoteMessageStatusDao.firstUnreadMessageId(conversationId)
+
         suspend fun findLastMessage(conversationId: String) = messageDao.findLastMessage(conversationId)
 
         suspend fun findUnreadMessageByMessageId(
