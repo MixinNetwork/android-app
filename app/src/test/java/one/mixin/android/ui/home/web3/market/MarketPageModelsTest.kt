@@ -329,10 +329,7 @@ class MarketPageModelsTest {
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING),
         )
-        assertEquals(
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
-            defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TRENDING),
-        )
+        assertEquals(MarketSortState(), defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TRENDING))
         assertEquals(
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.DESCENDING),
             defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TOP_GAINERS),

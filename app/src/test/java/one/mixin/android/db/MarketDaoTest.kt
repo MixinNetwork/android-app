@@ -116,6 +116,26 @@ class MarketDaoTest {
         }
 
     @Test
+    fun categoryMarketsPreserveApiOrder() =
+        runBlocking {
+            val markets =
+                listOf(
+                    market("first", marketCapRank = "100"),
+                    market("second", marketCapRank = "1"),
+                    market("third", marketCapRank = "10"),
+                )
+            database.marketDao().upsertList(markets)
+            database.marketCategoryDao().replaceCategory(
+                category = 1,
+                coinIds = markets.map(Market::coinId),
+            )
+
+            val result = database.marketCategoryDao().observeMarketsByCategory(1).first()
+
+            assertEquals(markets.map(Market::coinId), result.map { it.coinId })
+        }
+
+    @Test
     fun deletesMarketsWithoutCategoryRankOrFavorite() =
         runBlocking {
             database.marketDao().upsertList(

@@ -1,7 +1,6 @@
 package one.mixin.android.ui.home.web3.trade
 
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -12,14 +11,13 @@ import java.math.BigDecimal
 
 class SwapRecommendedMarketCardsTest {
     @Test
-    fun cachedMarketsFillInitialFailedResponse() =
+    fun databaseMarketsPreserveOrderAndApplyDisplayLimit() =
         runBlocking {
             val cached = (1..10).toList()
 
             val result =
-                recommendedMarketsWithCacheFallback(
-                    cachedMarkets = flowOf(cached),
-                    fetchedMarkets = flowOf(null),
+                recommendedMarketsFromDatabase(
+                    markets = flowOf(cached),
                     limit = SWAP_RECOMMENDED_MARKET_LIMIT,
                 ).first()
 
@@ -27,55 +25,15 @@ class SwapRecommendedMarketCardsTest {
         }
 
     @Test
-    fun cacheUpdatesRecoverInitialFailedResponse() =
+    fun databaseRefreshUpdatesRecommendedMarkets() =
         runBlocking {
             val result =
-                recommendedMarketsWithCacheFallback(
-                    cachedMarkets = flowOf(emptyList(), listOf(1, 2, 3)),
-                    fetchedMarkets = flowOf(null),
+                recommendedMarketsFromDatabase(
+                    markets = flowOf(emptyList(), listOf(3, 1, 2)),
                     limit = SWAP_RECOMMENDED_MARKET_LIMIT,
                 ).first { it.isNotEmpty() }
 
-            assertEquals(listOf(1, 2, 3), result)
-        }
-
-    @Test
-    fun successfulResponsePreservesOrderAndOverridesCache() =
-        runBlocking {
-            val result =
-                recommendedMarketsWithCacheFallback(
-                    cachedMarkets = flowOf(listOf(1, 2, 3)),
-                    fetchedMarkets = flowOf(listOf(3, 1)),
-                    limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-                ).first()
-
-            assertEquals(listOf(3, 1), result)
-        }
-
-    @Test
-    fun successfulResponseDoesNotWaitForCache() =
-        runBlocking {
-            val result =
-                recommendedMarketsWithCacheFallback(
-                    cachedMarkets = flow { error("cache should not be collected") },
-                    fetchedMarkets = flowOf(listOf(3, 1)),
-                    limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-                ).first()
-
-            assertEquals(listOf(3, 1), result)
-        }
-
-    @Test
-    fun successfulEmptyResponseOverridesCache() =
-        runBlocking {
-            val result =
-                recommendedMarketsWithCacheFallback(
-                    cachedMarkets = flowOf(listOf(1, 2, 3)),
-                    fetchedMarkets = flowOf(emptyList()),
-                    limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-                ).first()
-
-            assertEquals(emptyList<Int>(), result)
+            assertEquals(listOf(3, 1, 2), result)
         }
 
     @Test
