@@ -5,7 +5,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -54,6 +59,20 @@ internal class TradeQuoteMixinErrorException(
     val max: String?,
 ) : Exception()
 
+@OptIn(ExperimentalCoroutinesApi::class)
+internal fun <T> recommendedMarketsWithCacheFallback(
+    cachedMarkets: Flow<List<T>>,
+    fetchedMarkets: Flow<List<T>?>,
+    limit: Int,
+): Flow<List<T>> =
+    fetchedMarkets.flatMapLatest { fetched ->
+        if (fetched == null) {
+            cachedMarkets.map { it.take(limit) }
+        } else {
+            flowOf(fetched)
+        }
+    }
+
 @HiltViewModel
 class SwapViewModel
 
@@ -68,6 +87,11 @@ class SwapViewModel
     private val walletDatabase: WalletDatabase,
 ) : ViewModel() {
 
+    private val recommendedMarkets =
+        MarketCategory.entries.associateWith {
+            MutableStateFlow<List<MarketItem>?>(null)
+        }
+
     suspend fun getBotPublicKey(botId: String, force: Boolean) = userRepository.getBotPublicKey(botId, force)
 
     suspend fun web3Tokens(source: String, category: String? = null): MixinResponse<List<SwapToken>> = assetRepository.web3Tokens(source, category)
@@ -79,17 +103,26 @@ class SwapViewModel
         duration: String? = null,
     ): MixinResponse<List<Market>> = tokenRepository.markets(category = category, limit = limit, sort = sort, duration = duration)
 
-    fun observeMarketsByCategory(category: MarketCategory): Flow<List<MarketItem>> =
-        tokenRepository.observeMarketsByCategory(category)
+    fun observeRecommendedMarkets(category: MarketCategory): Flow<List<MarketItem>> =
+        recommendedMarketsWithCacheFallback(
+            cachedMarkets = tokenRepository.observeMarketsByCategory(category),
+            fetchedMarkets = recommendedMarkets.getValue(category),
+            limit = SWAP_RECOMMENDED_MARKET_LIMIT,
+        )
 
-    internal suspend fun refreshMarketsByCategory(
+    internal suspend fun refreshRecommendedMarkets(
         category: MarketCategory,
         limit: Int? = null,
     ): MarketRefreshResult =
         tokenRepository.fetchMarketsResult(
             category = category.apiValue,
             limit = limit,
-        )
+            persist = false,
+        ).also { result ->
+            if (result is MarketRefreshResult.Success) {
+                recommendedMarkets.getValue(category).value = result.markets
+            }
+        }
 
     suspend fun web3Quote(
         inputMint: String,

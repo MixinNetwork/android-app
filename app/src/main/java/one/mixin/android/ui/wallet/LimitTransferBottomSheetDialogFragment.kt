@@ -888,6 +888,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 fromAddress = fromAddress,
                 toAddress = toAddress,
                 payload = preparedResponse.payload,
+                feeAssetId = transferToken.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
                 privateKey = privateKey,
             )
             in Constants.Web3EvmChainIds -> submitEvmGaslessTransfer(
@@ -897,7 +899,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 amount = amount,
                 chainId = preparedResponse.chainId,
                 payload = preparedResponse.payload,
-                fee = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
+                feeAssetId = transferToken.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
                 privateKey = privateKey,
             )
             else -> throw IllegalArgumentException("Gasless is not supported for ${transferToken.chainId}")
@@ -910,6 +913,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         fromAddress: String,
         toAddress: String,
         payload: JsonElement,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         val rawPayload = payload.takeIf { it.isJsonPrimitive }?.asString
@@ -926,13 +931,14 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             signature != Base58.encode(ByteArray(SIGNATURE_LENGTH))
         } ?: throw IllegalStateException("Gasless Solana transaction signature is missing")
         val now = nowInUtc()
-        web3ViewModel.insertSignedPendingTransaction(
+        web3ViewModel.insertGaslessSignedPendingTransaction(
             hash = txHash,
             chainId = Constants.ChainId.Solana,
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = "0",
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             raw = rawTx,
             createdAt = now,
@@ -958,7 +964,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         amount: String,
         chainId: String,
         payload: JsonElement,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         if (!payload.isJsonObject) {
@@ -991,7 +998,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = fee,
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,

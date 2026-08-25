@@ -2452,6 +2452,14 @@
     <string name="perps_funding_frequency">頻率</string>
     <string name="perps_funding_frequency_value">1/4/8 小時</string>
     <string name="perps_receive">收到</string>
+    <string name="Trading_Fee">手續費</string>
+    <string name="perps_funding_title_interval">資金費率（%1$d小時）</string>
+    <string name="Open_Fee">開倉費</string>
+    <string name="Close_Fee">平倉費</string>
+    <string name="perps_trading_fee_overview">開倉、加倉和平倉均會產生手續費，費用按倉位價值計算，而不是按保證金計算。</string>
+    <string name="perps_trading_fee_pnl_1">倉位越大，手續費越高</string>
+    <string name="perps_trading_fee_pnl_2">倉位越小，手續費越低</string>
+    <string name="perps_trading_fee_pnl_3">已實現盈虧已扣除相關手續費</string>
     <string name="perps_liquidation_price_short">強平價格</string>
     <string name="lock_in_profits_description">價格達到觸發價時自動平倉，及時鎖定利潤</string>
     <string name="prevent_further_loss_description">價格跌至觸發價時自動平倉，幫助控制虧損</string>

@@ -714,6 +714,14 @@
     <string name="watchlist_remove_desc">%1$s telah dihapus dari daftar pantauan Anda</string>
     <string name="perps_category_meme">Meme</string>
     <string name="perps_funding_frequency_value">1/4/8 jam</string>
+    <string name="Trading_Fee">Biaya Trading</string>
+    <string name="perps_funding_title_interval">Pendanaan (%1$d jam)</string>
+    <string name="Open_Fee">Biaya Pembukaan</string>
+    <string name="Close_Fee">Biaya Penutupan</string>
+    <string name="perps_trading_fee_overview">Biaya berlaku saat membuka, menambah, atau menutup posisi. Biaya dihitung berdasarkan nilai posisi, bukan margin.</string>
+    <string name="perps_trading_fee_pnl_1">Semakin besar posisi, semakin tinggi biayanya</string>
+    <string name="perps_trading_fee_pnl_2">Semakin kecil posisi, semakin rendah biayanya</string>
+    <string name="perps_trading_fee_pnl_3">Biaya sudah termasuk dalam PnL terealisasi Anda</string>
     <string name="Bitcoin_Dominance">Dominasi Bitcoin</string>
     <string name="Perp">Perp</string>
     <string name="classic_wallet_pearl_intro_title">Common Wallet kini mendukung Pearl</string>
