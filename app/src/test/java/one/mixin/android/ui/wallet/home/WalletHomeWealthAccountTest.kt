@@ -8,17 +8,22 @@ import org.junit.Test
 
 class WalletHomeWealthAccountTest {
     @Test
-    fun selectsMaximumAnnualRateRegardlessOfOrder() {
+    fun showsAnnualRateRangeRegardlessOfOrder() {
         assertEquals(
-            "10.95%",
-            maxAnnualRate(listOf("3.65%", "10.95%", "7.30%")),
+            "3.65%-10.95%",
+            annualRateRange(listOf("0.0365", "0.1095", "0.0730")),
         )
     }
 
     @Test
     fun ignoresInvalidAnnualRates() {
-        assertEquals("7.30%", maxAnnualRate(listOf("invalid", "7.30%", "")))
-        assertEquals(null, maxAnnualRate(listOf("invalid", "")))
+        assertEquals("7.30%", annualRateRange(listOf("invalid", "0.0730", "")))
+        assertEquals(null, annualRateRange(listOf("invalid", "")))
+    }
+
+    @Test
+    fun keepsPercentageAnnualRatesCompatible() {
+        assertEquals("3.65%-10.95%", annualRateRange(listOf("3.65%", "10.95%", "7.30%")))
     }
 
     @Test
@@ -27,7 +32,7 @@ class WalletHomeWealthAccountTest {
             productionId = "production-1",
             assetId = "asset-1",
             priceUsd = "1",
-            annualRates = listOf("3.65%", "10.95%", "7.30%"),
+            annualRates = listOf("0.0365", "0.1095", "0.0730"),
             account = WealthAccountSummary(
                 totalPrincipal = "100",
                 totalEarnings = "20",
@@ -37,7 +42,7 @@ class WalletHomeWealthAccountTest {
 
         val preferredProduct = product.copy(
             productionId = "019f21ba-95f7-7bd4-a108-3620661dd591",
-            annualRates = listOf("10.95%"),
+            annualRates = listOf("0.1095"),
         )
         val details = requireNotNull(
             listOf(
@@ -56,21 +61,58 @@ class WalletHomeWealthAccountTest {
                     ),
                 ),
                 preferredProduct,
+                preferredProduct.copy(
+                    account = product.account?.copy(
+                        totalPrincipal = "1",
+                        totalEarnings = "0",
+                        redeemableEarnings = "0",
+                    ),
+                ),
+                preferredProduct.copy(
+                    assetId = "asset-2",
+                    annualRates = listOf("0.2000"),
+                    account = product.account?.copy(
+                        totalPrincipal = "10000",
+                        totalEarnings = "1000",
+                    ),
+                ),
             ).toWalletWealthDetails(
                 assetId = "asset-1",
                 priceUsd = "1",
             ),
         )
 
-        assertEquals(0, details.totalPrincipal.compareTo(BigDecimal("299")))
+        assertEquals(0, details.totalPrincipal.compareTo(BigDecimal("300")))
         assertEquals("019f21ba-95f7-7bd4-a108-3620661dd591", details.productionId)
         assertEquals(0, details.totalEarningsUsd.compareTo(BigDecimal("59")))
         assertEquals(0, details.pendingEarningsUsd.compareTo(BigDecimal("0.00040002")))
-        assertEquals("10.95%", details.rewardRate)
+        assertEquals("3.65%-20.00%", details.rewardRate)
     }
 
     @Test
-    fun hidesTokenDetailCardWhenAllProductsHaveZeroAccounts() {
+    fun selectsHigherApyWhenProductionBalancesMatch() {
+        val product = WealthProduct(
+            productionId = "production-1",
+            assetId = "asset-1",
+            annualRates = listOf("0.0300"),
+            account = WealthAccountSummary(totalPrincipal = "100"),
+        )
+
+        val details = requireNotNull(
+            listOf(
+                product,
+                product.copy(
+                    productionId = "production-2",
+                    annualRates = listOf("0.0500"),
+                ),
+            ).toWalletWealthDetails("asset-1", "1"),
+        )
+
+        assertEquals("production-2", details.productionId)
+    }
+
+    @Test
+    fun showsTokenDetailCardWhenAllProductsHaveZeroAccounts() {
         val product = WealthProduct(
             productionId = "production-1",
             assetId = "asset-1",
@@ -82,10 +124,29 @@ class WalletHomeWealthAccountTest {
             ),
         )
 
-        assertEquals(
-            null,
+        val details = requireNotNull(
             listOf(product).toWalletWealthDetails("asset-1", "1"),
         )
+
+        assertEquals(0, details.totalPrincipal.compareTo(BigDecimal.ZERO))
+        assertEquals(0, details.totalEarningsUsd.compareTo(BigDecimal.ZERO))
+        assertEquals(0, details.pendingEarningsUsd.compareTo(BigDecimal.ZERO))
+    }
+
+    @Test
+    fun showsTokenDetailCardForSupportedTokenWithoutAccount() {
+        val product = WealthProduct(
+            productionId = "production-1",
+            assetId = "asset-1",
+            priceUsd = "1",
+        )
+
+        val details = requireNotNull(
+            listOf(product).toWalletWealthDetails("asset-1", "1"),
+        )
+
+        assertEquals("production-1", details.productionId)
+        assertEquals(0, details.totalEarningsUsd.compareTo(BigDecimal.ZERO))
     }
 
     @Test
@@ -125,7 +186,7 @@ class WalletHomeWealthAccountTest {
             startAt = "2026-08-01T00:00:00Z",
             createdAt = "2026-07-20T08:00:00Z",
             updatedAt = "2026-08-17T00:00:00Z",
-            annualRates = listOf("5.00%"),
+            annualRates = listOf("0.0500"),
             annualRateTiers = emptyList(),
             maxPerUser = "10000",
             sharePrices = emptyMap(),
@@ -140,5 +201,45 @@ class WalletHomeWealthAccountTest {
 
         assertEquals(0, account.balanceUsd.compareTo(BigDecimal("3000")))
         assertEquals(0, account.earningsUsd.compareTo(BigDecimal("50")))
+        assertEquals("5.00%", account.apyText)
+    }
+
+    @Test
+    fun mergesProductsByAssetWithoutCombiningDifferentAssets() {
+        val firstAssetProduct = WealthProduct(
+            productionId = "production-1",
+            assetId = "asset-1",
+            assetSymbol = "USDT",
+            iconUrl = "https://example.com/usdt.png",
+            priceUsd = "2",
+            annualRates = listOf("0.0300"),
+            account = WealthAccountSummary(
+                totalPrincipal = "100",
+                totalEarnings = "2",
+            ),
+        )
+        val accounts = listOf(
+            firstAssetProduct,
+            firstAssetProduct.copy(
+                productionId = "production-2",
+                annualRates = listOf("0.0500"),
+                account = WealthAccountSummary(
+                    totalPrincipal = "50",
+                    totalEarnings = "1",
+                ),
+            ),
+            firstAssetProduct.copy(
+                assetId = "asset-2",
+                assetSymbol = "USDC",
+                annualRates = listOf("0.0400"),
+                account = WealthAccountSummary(totalPrincipal = "25"),
+            ),
+        ).toWalletHomeWealthAccounts()
+
+        assertEquals(2, accounts.size)
+        val firstAccount = accounts.first { it.assetId == "asset-1" }
+        assertEquals(0, firstAccount.balanceUsd.compareTo(BigDecimal("300")))
+        assertEquals(0, firstAccount.earningsUsd.compareTo(BigDecimal("6")))
+        assertEquals("3.00%-5.00%", firstAccount.apyText)
     }
 }

@@ -19,7 +19,19 @@ class WealthAccountTest {
                   "asset_id": "asset-1",
                   "chain_id": "chain-1",
                   "icon_url": "https://example.com/usdt.png",
-                  "annual_rates": ["10.95%", "7.30%", "3.65%"],
+                  "annual_rates": ["0.1095", "0.0730", "0.0365"],
+                  "account": {
+                    "total_principal": "0",
+                    "total_earnings": "0",
+                    "redeemable_earnings": "0"
+                  }
+                },
+                {
+                  "production_id": "production-1",
+                  "asset_id": "asset-2",
+                  "chain_id": "chain-1",
+                  "icon_url": "https://example.com/usdc.png",
+                  "annual_rates": ["0.0365"],
                   "account": {
                     "total_principal": "0",
                     "total_earnings": "0",
@@ -28,22 +40,10 @@ class WealthAccountTest {
                 },
                 {
                   "production_id": "production-2",
-                  "asset_id": "asset-1",
+                  "asset_id": "asset-3",
                   "chain_id": "chain-1",
                   "icon_url": "https://example.com/usdc.png",
-                  "annual_rates": ["3.65%"],
-                  "account": {
-                    "total_principal": "0",
-                    "total_earnings": "0",
-                    "redeemable_earnings": "0"
-                  }
-                },
-                {
-                  "production_id": "production-3",
-                  "asset_id": "asset-1",
-                  "chain_id": "chain-1",
-                  "icon_url": "https://example.com/usdc.png",
-                  "annual_rates": ["2.00%"],
+                  "annual_rates": ["0.0200"],
                   "account": {
                     "total_principal": "0",
                     "total_earnings": "0",
@@ -62,7 +62,9 @@ class WealthAccountTest {
 
         assertEquals(3, products.size)
         assertEquals("production-1", product.productionId)
-        assertEquals(listOf("10.95%", "7.30%", "3.65%"), product.annualRates)
+        assertEquals("production-1", products[1].productionId)
+        assertEquals("asset-2", products[1].assetId)
+        assertEquals(listOf("0.1095", "0.0730", "0.0365"), product.annualRates)
         assertEquals("0", account.totalPrincipal)
         assertEquals("0", account.totalEarnings)
         assertEquals("0", account.redeemableEarnings)

@@ -276,7 +276,6 @@
                             android:textColor="?attr/text_primary"
                             android:textSize="14sp"
                             android:lineHeight="17sp"
-                            android:fontFamily="@font/mixin_font"
                             android:includeFontPadding="false"
                             tools:text="100 USDC" />
                     </RelativeLayout>
@@ -354,7 +353,6 @@
                             android:textSize="14sp"
                             android:lineHeight="17sp"
                             android:textFontWeight="500"
-                            android:fontFamily="@font/mixin_font"
                             android:includeFontPadding="false"
                             tools:text="10.95% APY" />
                     </RelativeLayout>

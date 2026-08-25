@@ -44,8 +44,8 @@ class WalletHomeAccountStateTest {
         assertEquals(
             listOf(
                 WalletHomeCardType.BALANCE,
-                WalletHomeCardType.CASH,
                 WalletHomeCardType.BANNER,
+                WalletHomeCardType.CASH,
                 WalletHomeCardType.POSITIONS,
             ),
             state.cards,
@@ -59,8 +59,8 @@ class WalletHomeAccountStateTest {
         assertEquals(
             listOf(
                 WalletHomeCardType.BALANCE,
-                WalletHomeCardType.ACCOUNTS,
                 WalletHomeCardType.BANNER,
+                WalletHomeCardType.ACCOUNTS,
                 WalletHomeCardType.POSITIONS,
             ),
             state.cards,
@@ -74,8 +74,8 @@ class WalletHomeAccountStateTest {
         assertEquals(
             listOf(
                 WalletHomeCardType.BALANCE,
-                WalletHomeCardType.ACCOUNTS,
                 WalletHomeCardType.BANNER,
+                WalletHomeCardType.ACCOUNTS,
                 WalletHomeCardType.POSITIONS,
             ),
             state.cards,
@@ -93,8 +93,8 @@ class WalletHomeAccountStateTest {
 
         val expectedCards = listOf(
             WalletHomeCardType.BALANCE,
-            WalletHomeCardType.CASH,
             WalletHomeCardType.BANNER,
+            WalletHomeCardType.CASH,
             WalletHomeCardType.POSITIONS,
         )
         assertEquals(expectedCards, wealthThenCash.cards)
@@ -110,8 +110,8 @@ class WalletHomeAccountStateTest {
         assertEquals(
             listOf(
                 WalletHomeCardType.BALANCE,
-                WalletHomeCardType.ACCOUNTS,
                 WalletHomeCardType.BANNER,
+                WalletHomeCardType.ACCOUNTS,
                 WalletHomeCardType.POSITIONS,
             ),
             state.cards,

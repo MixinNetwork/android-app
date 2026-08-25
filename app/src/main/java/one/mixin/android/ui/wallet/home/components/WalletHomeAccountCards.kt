@@ -27,14 +27,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -48,7 +43,6 @@ import one.mixin.android.ui.wallet.home.WalletAssetIcon
 import java.math.BigDecimal
 
 private val AccountCardShape = RoundedCornerShape(8.dp)
-private val AccountAmountFont = FontFamily(Font(R.font.mixin_font))
 private val AccountTextStyle = TextStyle(
     platformStyle = PlatformTextStyle(includeFontPadding = false),
 )
@@ -118,10 +112,10 @@ private fun CompactCashAccountCard(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = buildCompactUsdAmount(account.balanceAmountText),
+            text = "\$${account.balanceAmountText}",
             color = MixinAppTheme.colors.textPrimary,
-            fontSize = 16.sp,
-            lineHeight = 18.sp,
+            fontSize = 18.sp,
+            lineHeight = 21.sp,
             fontWeight = FontWeight.W600,
             style = AccountTextStyle,
             maxLines = 1,
@@ -174,10 +168,10 @@ private fun CompactWealthAccountCard(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(
-            text = buildCompactUsdAmount(account.balanceAmountText),
+            text = "\$${account.balanceAmountText}",
             color = MixinAppTheme.colors.textPrimary,
-            fontSize = 16.sp,
-            lineHeight = 18.sp,
+            fontSize = 18.sp,
+            lineHeight = 21.sp,
             fontWeight = FontWeight.W600,
             style = AccountTextStyle,
             maxLines = 1,
@@ -241,7 +235,6 @@ private fun WealthAccountCard(
                         color = MixinAppTheme.colors.textPrimary,
                         fontSize = 18.sp,
                         lineHeight = 21.sp,
-                        fontFamily = AccountAmountFont,
                         fontWeight = FontWeight.W600,
                         style = AccountTextStyle,
                         maxLines = 1,
@@ -253,10 +246,9 @@ private fun WealthAccountCard(
                         color = MixinAppTheme.colors.textAssist,
                         fontSize = 12.sp,
                         lineHeight = 14.sp,
-                        fontWeight = FontWeight.W500,
+                        fontWeight = FontWeight.W400,
                         style = AccountTextStyle,
                         maxLines = 1,
-                        modifier = Modifier.padding(bottom = 2.dp),
                     )
                     Spacer(modifier = Modifier.weight(1f))
                     WealthTokenIcons(accounts)
@@ -290,19 +282,6 @@ private fun AccountArrow() {
         tint = Color.Unspecified,
         modifier = Modifier.size(16.dp),
     )
-}
-
-@Composable
-private fun buildCompactUsdAmount(amount: String) = buildAnnotatedString {
-    append('$')
-    withStyle(
-        SpanStyle(
-            fontFamily = AccountAmountFont,
-            fontWeight = FontWeight.W600,
-        ),
-    ) {
-        append(amount)
-    }
 }
 
 @Composable

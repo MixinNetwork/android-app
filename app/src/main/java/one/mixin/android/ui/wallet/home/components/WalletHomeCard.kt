@@ -26,8 +26,6 @@ import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -54,7 +52,6 @@ import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.Web3TokenRecycler
 import one.mixin.android.ui.wallet.home.Web3TransactionRecycler
 
-private val CashAccountAmountFont = FontFamily(Font(R.font.mixin_font))
 private val CashAccountTextStyle = TextStyle(
     platformStyle = PlatformTextStyle(includeFontPadding = false),
 )
@@ -247,13 +244,18 @@ private fun CashAccountCard(
                     text = buildAnnotatedString {
                         withStyle(
                             SpanStyle(
-                                fontFamily = CashAccountAmountFont,
                                 fontSize = 18.sp,
                                 fontWeight = FontWeight.W600,
                             ),
                         ) { append(cashAccount.balanceAmountText) }
                         append(" ")
-                        withStyle(SpanStyle(fontSize = 12.sp, fontWeight = FontWeight.W500)) {
+                        withStyle(
+                            SpanStyle(
+                                color = MixinAppTheme.colors.textAssist,
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.W400,
+                            ),
+                        ) {
                             append("USD")
                         }
                     },
