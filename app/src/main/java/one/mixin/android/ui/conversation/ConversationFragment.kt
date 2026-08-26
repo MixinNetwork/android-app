@@ -312,6 +312,7 @@ class ConversationFragment() :
         const val RECIPIENT = "recipient"
         const val MESSAGE_ID = "initial_position_message_id"
         const val INITIAL_UNREAD_MESSAGE_ID = "initial_unread_message_id"
+        const val INITIAL_UNREAD_COUNT = "initial_unread_count"
         const val TRANSCRIPT_DATA = "transcript_data"
         private const val KEY_WORD = "key_word"
         private const val START_PARAM = "start_param"
@@ -322,7 +323,8 @@ class ConversationFragment() :
             keyword: String?,
             messageId: String? = null,
             transcriptData: TranscriptData? = null,
-            startParam: String? = null
+            startParam: String? = null,
+            initialUnreadCount: Int? = null,
         ): Bundle =
             Bundle().apply {
                 require(!(conversationId == null && recipientId == null)) { "lose data" }
@@ -334,6 +336,7 @@ class ConversationFragment() :
                 putString(MESSAGE_ID, messageId)
                 putParcelable(TRANSCRIPT_DATA, transcriptData)
                 startParam?.let { putString(START_PARAM, startParam) }
+                initialUnreadCount?.let { putInt(INITIAL_UNREAD_COUNT, it) }
             }
 
         fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
@@ -1012,6 +1015,16 @@ class ConversationFragment() :
 
     private val initialUnreadMessageId: String? by lazy {
         requireArguments().getString(INITIAL_UNREAD_MESSAGE_ID, null)
+    }
+
+    private val initialUnreadCount: Int? by lazy {
+        requireArguments().let { arguments ->
+            if (arguments.containsKey(INITIAL_UNREAD_COUNT)) {
+                arguments.getInt(INITIAL_UNREAD_COUNT)
+            } else {
+                null
+            }
+        }
     }
 
     private var keyword: String? = null
@@ -1961,6 +1974,7 @@ class ConversationFragment() :
                     conversationId = conversationId,
                     messageId = initialMessageId,
                     initialUnreadMessageId = initialUnreadMessageId,
+                    initialUnreadCount = initialUnreadCount,
                 )
             if (isFirstMessage && data.isNotEmpty()) {
                 isFirstMessage = false

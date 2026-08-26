@@ -35,6 +35,8 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
+import one.mixin.android.db.datasource.RoomDatabaseCompat
+import one.mixin.android.db.fetcher.MessageDataSource
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
@@ -98,6 +100,8 @@ class ConversationRepository
         private val jobManager: MixinJobManager,
         private val ftsDbHelper: FtsDatabase,
     ) {
+        private val messageDataSource = MessageDataSource(appDatabase)
+
         private fun identityNumber(): String =
             requireNotNull(Session.getAccount()) { "Account is required for database access." }.identityNumber
 
@@ -105,7 +109,10 @@ class ConversationRepository
             conversationId: String,
             offset: Int,
             limit: Int,
-        ): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
+        ): List<MessageItem> =
+            withContext(RoomDatabaseCompat.queryContext(appDatabase)) {
+                messageDataSource.loadChatMessagesByOffset(conversationId, offset, limit)
+            }
 
         fun observeConversations(circleId: String?): PagingSource<Int, ConversationItem> =
             if (circleId.isNullOrBlank()) {

@@ -39,6 +39,7 @@ class MessageFetcher
             private const val INIT_SIZE = 90 // PAGE_SIZE * 3
         }
 
+    private val messageDataSource = MessageDataSource(db)
     private val currentlyLoadingIds = mutableSetOf<String>()
     private val loadedIds = mutableSetOf<String>()
     private var canLoadAbove = true
@@ -49,22 +50,28 @@ class MessageFetcher
         messageId: String? = null,
         forceBottom: Boolean = false,
         initialUnreadMessageId: String? = null,
+        initialUnreadCount: Int? = null,
     ): Triple<Int, List<MessageItem>, String?> =
         withContext(SINGLE_FETCHER_THREAD) {
             resetLoadState()
-            val anchor =
-                when {
-                    messageId != null -> findAnchorByMessageId(messageId)
-                    forceBottom -> null
-                    initialUnreadMessageId != null ->
-                        findUnreadAnchorByMessageId(conversationId, initialUnreadMessageId)
-                            ?: findFirstUnreadAnchor(conversationId)
-                    else -> findFirstUnreadAnchor(conversationId)
+            when {
+                messageId != null -> {
+                    val anchor = findAnchorByMessageId(messageId)
+                        ?: return@withContext Triple(-1, emptyList(), null)
+                    loadAroundAnchor(conversationId, anchor)
                 }
-            if (anchor == null) {
-                loadBottomMessages(conversationId)
-            } else {
-                loadAroundAnchor(conversationId, anchor)
+                forceBottom -> loadBottomMessages(conversationId)
+                else -> {
+                    val page =
+                        messageDataSource.loadInitial(
+                            conversationId = conversationId,
+                            initialUnreadMessageId = initialUnreadMessageId,
+                            initialUnreadCount = initialUnreadCount,
+                            loadSize = INIT_SIZE,
+                        )
+                    updateLoadBoundaries(page)
+                    Triple(page.position, page.messages, page.unreadMessageId)
+                }
             }
         }
 
@@ -103,8 +110,7 @@ class MessageFetcher
 
     suspend fun findMessageById(messageIds: List<String>) =
         withContext(SINGLE_FETCHER_THREAD) {
-            val ids = messageIds.joinToString(", ", "(", ")", transform = { "'$it'" })
-            return@withContext MessageFetcherGenerated.findMessagesByIds(db, ids)
+            messageDataSource.loadMessages(messageIds)
         }
 
     fun isBottom() = !canLoadBelow
@@ -124,11 +130,9 @@ class MessageFetcher
             currentlyLoadingIds.add(loadKey)
             try {
                 val anchor = findAnchorByMessageId(messageId) ?: return@withContext emptyList()
-                MessageFetcherGenerated.loadNextPage(db, conversationId, anchor.createdAt, anchor.rowId, PAGE_SIZE).also {
-                    if (it.size < PAGE_SIZE) {
-                        canLoadBelow = false
-                    }
-                }
+                val page = messageDataSource.loadNextPage(conversationId, anchor, PAGE_SIZE)
+                canLoadBelow = page.hasMore
+                page.messages
             } finally {
                 currentlyLoadingIds.remove(loadKey)
                 loadedIds.add(loadKey)
@@ -148,11 +152,9 @@ class MessageFetcher
             currentlyLoadingIds.add(loadKey)
             try {
                 val anchor = findAnchorByMessageId(messageId) ?: return@withContext emptyList()
-                MessageFetcherGenerated.loadPreviousPage(db, conversationId, anchor.createdAt, anchor.rowId, PAGE_SIZE).reversed().also {
-                    if (it.size < PAGE_SIZE) {
-                        canLoadAbove = false
-                    }
-                }
+                val page = messageDataSource.loadPreviousPage(conversationId, anchor, PAGE_SIZE)
+                canLoadAbove = page.hasMore
+                page.messages
             } finally {
                 currentlyLoadingIds.remove(loadKey)
                 loadedIds.add(loadKey)
@@ -167,43 +169,33 @@ class MessageFetcher
     }
 
     private fun loadBottomMessages(conversationId: String): Triple<Int, List<MessageItem>, String?> {
-        val result = MessageFetcherGenerated.loadBottomMessages(db, conversationId, INIT_SIZE).reversed()
-        canLoadBelow = false
-        canLoadAbove = result.size >= INIT_SIZE
-        return Triple(result.size - 1, result, null)
+        val page = messageDataSource.loadBottom(conversationId, INIT_SIZE)
+        updateLoadBoundaries(page)
+        return Triple(page.position, page.messages, page.unreadMessageId)
     }
 
     private fun loadAroundAnchor(
         conversationId: String,
         anchor: ChatMessageAnchor,
     ): Triple<Int, List<MessageItem>, String?> {
-        val next = MessageFetcherGenerated.loadAroundAnchorNext(db, conversationId, anchor.createdAt, anchor.rowId, INIT_SIZE / 2)
-        canLoadBelow = next.size >= INIT_SIZE / 2
-        val thresholdSize = INIT_SIZE - next.size
-        val previous = MessageFetcherGenerated.loadAroundAnchorPrevious(db, conversationId, anchor.createdAt, anchor.rowId, thresholdSize).reversed()
-        canLoadAbove = previous.size >= thresholdSize
-        val data = previous + next
-        return Triple(data.indexOfFirst { it.messageId == anchor.messageId }, data, anchor.messageId)
+        val page = messageDataSource.loadAroundAnchor(conversationId, anchor, INIT_SIZE)
+        updateLoadBoundaries(page)
+        return Triple(page.position, page.messages, page.unreadMessageId)
     }
 
-    private fun findFirstUnreadAnchor(conversationId: String): ChatMessageAnchor? =
-        MessageFetcherGenerated.findFirstUnreadAnchor(db, conversationId)
-
-    private fun findUnreadAnchorByMessageId(
-        conversationId: String,
-        messageId: String,
-    ): ChatMessageAnchor? =
-        MessageFetcherGenerated.findUnreadAnchorByMessageId(db, conversationId, messageId)
+    private fun updateLoadBoundaries(page: InitialMessagePage) {
+        canLoadAbove = page.canLoadAbove
+        canLoadBelow = page.canLoadBelow
+    }
 
     private fun findAnchorByMessageId(messageId: String): ChatMessageAnchor? =
-        MessageFetcherGenerated.findAnchorByMessageId(db, messageId)
+        messageDataSource.findAnchorByMessageId(messageId)
 
     private fun findAnchorByDate(
         conversationId: String,
         createdAt: String,
     ): ChatMessageAnchor? =
-        MessageFetcherGenerated.findAnchorByDateAfter(db, conversationId, createdAt)
-            ?: MessageFetcherGenerated.findAnchorByDateBefore(db, conversationId, createdAt)
+        messageDataSource.findAnchorByDate(conversationId, createdAt)
 
     private fun findAnchorByPosition(
         conversationId: String,
@@ -212,7 +204,7 @@ class MessageFetcher
         val count = countMessages(conversationId)
         if (count <= 0) return null
         val offset = index.coerceIn(0, count - 1)
-        return MessageFetcherGenerated.findAnchorByPosition(db, conversationId, offset)
+        return messageDataSource.findAnchorByPosition(conversationId, offset)
     }
 
     private fun findAnchorByPercent(
@@ -228,9 +220,9 @@ class MessageFetcher
                 else -> percent.coerceIn(0f, 1f)
             }
         val index = ((count - 1) * normalizedPercent).roundToInt()
-        return findAnchorByPosition(conversationId, index)
+        return messageDataSource.findAnchorByPosition(conversationId, index)
     }
 
     private fun countMessages(conversationId: String): Int =
-        MessageFetcherGenerated.countMessages(db, conversationId)
+        messageDataSource.countMessages(conversationId)
 }

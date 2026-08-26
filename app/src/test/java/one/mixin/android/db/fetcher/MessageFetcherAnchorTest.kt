@@ -51,6 +51,20 @@ class MessageFetcherAnchorTest {
     }
 
     @Test
+    fun initMessagesUsesRowIdToOrderMessagesWithSameTimestamp() = runBlocking {
+        val createdAt = "2024-01-01T00:00:00.000Z"
+        insertMessage(rowId = 3, messageId = "new", createdAt = createdAt)
+        insertMessage(rowId = 1, messageId = "old", createdAt = createdAt)
+        insertMessage(rowId = 2, messageId = "anchor", createdAt = createdAt)
+
+        val (position, data, anchorMessageId) = fetcher.initMessages(CONVERSATION_ID, "anchor")
+
+        assertEquals("anchor", anchorMessageId)
+        assertEquals(1, position)
+        assertEquals(listOf("old", "anchor", "new"), data.map { it.messageId })
+    }
+
+    @Test
     fun initMessagesUsesFirstUnreadMessageAsAnchor() = runBlocking {
         insertMessage(rowId = 3, messageId = "old", createdAt = "2024-01-01T00:00:00.000Z")
         insertMessage(rowId = 2, messageId = "unread", createdAt = "2024-01-02T00:00:00.000Z")
@@ -78,6 +92,82 @@ class MessageFetcherAnchorTest {
 
         assertEquals("unread", unreadMessageId)
         assertEquals("unread", data[position].messageId)
+    }
+
+    @Test
+    fun initMessagesUsesUnreadCountToBuildFastInitialWindow() = runBlocking {
+        repeat(120) { offset ->
+            val index = offset + 1
+            val suffix = index.toString().padStart(3, '0')
+            insertMessage(
+                rowId = index,
+                messageId = "message-$suffix",
+                createdAt = "2024-01-${suffix}T00:00:00.000Z",
+            )
+        }
+        insertConversationExt(120)
+        updateUnseenCount(10)
+        (111..120).forEach { index ->
+            insertRemoteStatus("message-${index.toString().padStart(3, '0')}")
+        }
+
+        val (position, data, unreadMessageId) =
+            fetcher.initMessages(
+                conversationId = CONVERSATION_ID,
+                initialUnreadMessageId = "message-111",
+                initialUnreadCount = 10,
+            )
+
+        assertEquals(90, data.size)
+        assertEquals("message-031", data.first().messageId)
+        assertEquals("message-120", data.last().messageId)
+        assertEquals("message-111", unreadMessageId)
+        assertEquals(unreadMessageId, data[position].messageId)
+    }
+
+    @Test
+    fun pagingKeepsChronologicalOrderInBothDirections() = runBlocking {
+        repeat(149) { offset ->
+            val index = offset + 1
+            val suffix = index.toString().padStart(3, '0')
+            insertMessage(
+                rowId = index,
+                messageId = "message-$suffix",
+                createdAt = "2024-01-${suffix}T00:00:00.000Z",
+            )
+        }
+
+        val (_, initial) = fetcher.initMessages(CONVERSATION_ID, "message-075")
+        assertEquals("message-030", initial.first().messageId)
+        assertEquals("message-119", initial.last().messageId)
+
+        val newer = fetcher.nextPage(CONVERSATION_ID, initial.last().messageId)
+        assertEquals("message-120", newer.first().messageId)
+        assertEquals("message-149", newer.last().messageId)
+        assertTrue(fetcher.isBottom())
+
+        val older = fetcher.previousPage(CONVERSATION_ID, initial.first().messageId)
+        assertEquals("message-001", older.first().messageId)
+        assertEquals("message-029", older.last().messageId)
+        assertTrue(fetcher.isTop())
+    }
+
+    @Test
+    fun chatExportLoadsChronologicalIdPages() {
+        repeat(130) { offset ->
+            val index = offset + 1
+            val suffix = index.toString().padStart(3, '0')
+            insertMessage(
+                rowId = index,
+                messageId = "message-$suffix",
+                createdAt = "2024-01-${suffix}T00:00:00.000Z",
+            )
+        }
+
+        val messages = MessageDataSource(db).loadChatMessagesByOffset(CONVERSATION_ID, 100, 30)
+
+        assertEquals("message-101", messages.first().messageId)
+        assertEquals("message-130", messages.last().messageId)
     }
 
     @Test
@@ -179,6 +269,25 @@ class MessageFetcherAnchorTest {
             VALUES (?, ?, ?)
             """.trimIndent(),
             arrayOf(messageId, CONVERSATION_ID, status),
+        )
+    }
+
+    private fun insertConversationExt(count: Int) {
+        RoomDatabaseCompat.execute(
+            db,
+            """
+            INSERT INTO conversation_ext(conversation_id, count, created_at)
+            VALUES (?, ?, ?)
+            """.trimIndent(),
+            arrayOf<Any?>(CONVERSATION_ID, count, "2024-01-01T00:00:00.000Z"),
+        )
+    }
+
+    private fun updateUnseenCount(count: Int) {
+        RoomDatabaseCompat.execute(
+            db,
+            "UPDATE conversations SET unseen_message_count = ? WHERE conversation_id = ?",
+            arrayOf<Any?>(count, CONVERSATION_ID),
         )
     }
 

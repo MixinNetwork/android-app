@@ -1,8 +1,8 @@
 package one.mixin.android.db.fetcher
 
-import one.mixin.android.db.MixinDatabase
 import one.mixin.android.codegen.annotation.GeneratedQueryProvider
 import one.mixin.android.codegen.annotation.GeneratedRawCursorQuery
+import one.mixin.android.db.MixinDatabase
 import one.mixin.android.vo.MessageItem
 
 private const val MESSAGE_ITEM_SQL =
@@ -36,6 +36,9 @@ private const val MESSAGE_ITEM_SQL =
     LEFT JOIN expired_messages em ON m.id = em.message_id
     """
 
+private const val CHAT_MESSAGE_CATEGORIES =
+    "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'ENCRYPTED_TEXT', 'ENCRYPTED_IMAGE', 'ENCRYPTED_VIDEO', 'ENCRYPTED_STICKER', 'ENCRYPTED_DATA', 'ENCRYPTED_CONTACT', 'ENCRYPTED_AUDIO', 'ENCRYPTED_LIVE', 'ENCRYPTED_POST', 'ENCRYPTED_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT', 'SYSTEM_SAFE_SNAPSHOT')"
+
 @GeneratedQueryProvider(generatedName = "MessageFetcherGenerated")
 interface MessageFetcherQuerySpec {
     @GeneratedRawCursorQuery(
@@ -49,101 +52,120 @@ interface MessageFetcherQuerySpec {
     ): List<MessageItem>
 
     @GeneratedRawCursorQuery(
-        sql = MESSAGE_ITEM_SQL + " WHERE m.conversation_id = ? ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
-        binds = ["conversationId", "limit"],
-        converter = "one.mixin.android.db.provider.convertToMessageItems",
+        sql = "SELECT id FROM messages WHERE conversation_id = ? ORDER BY created_at DESC, rowid DESC LIMIT ? OFFSET ?",
+        binds = ["conversationId", "limit", "offset"],
+        converter = "convertToMessageIds",
     )
-    fun loadBottomMessages(
+    fun loadMessageIdsByOffset(
         db: MixinDatabase,
         conversationId: String,
         limit: Int,
-    ): List<MessageItem>
+        offset: Int,
+    ): List<String>
 
     @GeneratedRawCursorQuery(
-        sql = MESSAGE_ITEM_SQL + " WHERE m.conversation_id = ? AND (m.created_at > ? OR (m.created_at = ? AND m.rowid > ?)) ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
-        binds = ["conversationId", "createdAt", "createdAt", "rowId", "limit"],
-        converter = "one.mixin.android.db.provider.convertToMessageItems",
+        sql = "SELECT id FROM messages WHERE conversation_id = ? AND category IN $CHAT_MESSAGE_CATEGORIES ORDER BY created_at ASC, rowid ASC LIMIT ? OFFSET ?",
+        binds = ["conversationId", "limit", "offset"],
+        converter = "convertToMessageIds",
     )
-    fun loadNextPage(
+    fun loadChatMessageIdsByOffset(
         db: MixinDatabase,
         conversationId: String,
-        createdAt: String,
-        rowId: Long,
         limit: Int,
-    ): List<MessageItem>
+        offset: Int,
+    ): List<String>
 
     @GeneratedRawCursorQuery(
-        sql = MESSAGE_ITEM_SQL + " WHERE m.conversation_id = ? AND (m.created_at < ? OR (m.created_at = ? AND m.rowid < ?)) ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
-        binds = ["conversationId", "createdAt", "createdAt", "rowId", "limit"],
-        converter = "one.mixin.android.db.provider.convertToMessageItems",
+        sql = "SELECT id FROM messages WHERE conversation_id = ? AND (created_at, rowid) > (?, ?) ORDER BY created_at ASC, rowid ASC LIMIT ?",
+        binds = ["conversationId", "createdAt", "rowId", "limit"],
+        converter = "convertToMessageIds",
     )
-    fun loadPreviousPage(
-        db: MixinDatabase,
-        conversationId: String,
-        createdAt: String,
-        rowId: Long,
-        limit: Int,
-    ): List<MessageItem>
-
-    @GeneratedRawCursorQuery(
-        sql = MESSAGE_ITEM_SQL + " WHERE m.conversation_id = ? AND (m.created_at > ? OR (m.created_at = ? AND m.rowid >= ?)) ORDER BY m.created_at ASC, m.rowid ASC LIMIT ?",
-        binds = ["conversationId", "createdAt", "createdAt", "rowId", "limit"],
-        converter = "one.mixin.android.db.provider.convertToMessageItems",
-    )
-    fun loadAroundAnchorNext(
+    fun loadNextPageMessageIds(
         db: MixinDatabase,
         conversationId: String,
         createdAt: String,
         rowId: Long,
         limit: Int,
-    ): List<MessageItem>
+    ): List<String>
 
     @GeneratedRawCursorQuery(
-        sql = MESSAGE_ITEM_SQL + " WHERE m.conversation_id = ? AND (m.created_at < ? OR (m.created_at = ? AND m.rowid < ?)) ORDER BY m.created_at DESC, m.rowid DESC LIMIT ?",
-        binds = ["conversationId", "createdAt", "createdAt", "rowId", "limit"],
-        converter = "one.mixin.android.db.provider.convertToMessageItems",
+        sql = "SELECT id FROM messages WHERE conversation_id = ? AND (created_at, rowid) < (?, ?) ORDER BY created_at DESC, rowid DESC LIMIT ?",
+        binds = ["conversationId", "createdAt", "rowId", "limit"],
+        converter = "convertToMessageIds",
     )
-    fun loadAroundAnchorPrevious(
+    fun loadPreviousPageMessageIds(
         db: MixinDatabase,
         conversationId: String,
         createdAt: String,
         rowId: Long,
         limit: Int,
-    ): List<MessageItem>
+    ): List<String>
 
     @GeneratedRawCursorQuery(
-        sql = """
-            SELECT m.rowid, m.created_at, m.id
-            FROM remote_messages_status rm
-            INNER JOIN messages m ON m.id = rm.message_id
-            WHERE rm.conversation_id = ? AND rm.status = 'DELIVERED'
-            ORDER BY m.created_at ASC, m.rowid ASC
-            LIMIT 1
-        """,
+        sql = "SELECT id FROM messages WHERE conversation_id = ? AND (created_at, rowid) >= (?, ?) ORDER BY created_at ASC, rowid ASC LIMIT ?",
+        binds = ["conversationId", "createdAt", "rowId", "limit"],
+        converter = "convertToMessageIds",
+    )
+    fun loadAroundAnchorNextMessageIds(
+        db: MixinDatabase,
+        conversationId: String,
+        createdAt: String,
+        rowId: Long,
+        limit: Int,
+    ): List<String>
+
+    @GeneratedRawCursorQuery(
+        sql = "SELECT id FROM messages WHERE conversation_id = ? AND (created_at, rowid) < (?, ?) ORDER BY created_at DESC, rowid DESC LIMIT ?",
+        binds = ["conversationId", "createdAt", "rowId", "limit"],
+        converter = "convertToMessageIds",
+    )
+    fun loadAroundAnchorPreviousMessageIds(
+        db: MixinDatabase,
+        conversationId: String,
+        createdAt: String,
+        rowId: Long,
+        limit: Int,
+    ): List<String>
+
+    @GeneratedRawCursorQuery(
+        sql = "SELECT count FROM conversation_ext WHERE conversation_id = ?",
         binds = ["conversationId"],
-        converter = "convertToChatMessageAnchor",
+        converter = "convertToNullableMessageCount",
     )
-    fun findFirstUnreadAnchor(
+    fun findCachedMessageCount(
         db: MixinDatabase,
         conversationId: String,
-    ): ChatMessageAnchor?
+    ): Int?
 
     @GeneratedRawCursorQuery(
-        sql = """
-            SELECT m.rowid, m.created_at, m.id
-            FROM remote_messages_status rm
-            INNER JOIN messages m ON m.id = rm.message_id
-            WHERE rm.conversation_id = ? AND rm.message_id = ? AND rm.status = 'DELIVERED'
-            LIMIT 1
-        """,
-        binds = ["conversationId", "messageId"],
-        converter = "convertToChatMessageAnchor",
+        sql = "SELECT unseen_message_count FROM conversations WHERE conversation_id = ?",
+        binds = ["conversationId"],
+        converter = "convertToMessageCount",
     )
-    fun findUnreadAnchorByMessageId(
+    fun findInitialPosition(
         db: MixinDatabase,
         conversationId: String,
-        messageId: String,
-    ): ChatMessageAnchor?
+    ): Int
+
+    @GeneratedRawCursorQuery(
+        sql = "SELECT count(1) FROM remote_messages_status WHERE conversation_id = ? AND status = 'DELIVERED'",
+        binds = ["conversationId"],
+        converter = "convertToMessageCount",
+    )
+    fun countUnreadMessages(
+        db: MixinDatabase,
+        conversationId: String,
+    ): Int
+
+    @GeneratedRawCursorQuery(
+        sql = "SELECT message_id FROM remote_messages_status WHERE conversation_id = ? AND status = 'DELIVERED' ORDER BY rowid ASC LIMIT 1",
+        binds = ["conversationId"],
+        converter = "convertToMessageId",
+    )
+    fun findFirstUnreadMessageId(
+        db: MixinDatabase,
+        conversationId: String,
+    ): String?
 
     @GeneratedRawCursorQuery(
         sql = "SELECT rowid, created_at, id FROM messages WHERE id = ?",

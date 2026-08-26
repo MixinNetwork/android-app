@@ -103,6 +103,7 @@ class ConversationActivity : BlazeBaseActivity() {
             conversationId: String,
             recipient: User?,
             initialUnreadMessageId: String? = null,
+            initialUnreadCount: Int? = null,
         ) {
             Intent(context, ConversationActivity::class.java).apply {
                 putExtras(
@@ -110,6 +111,9 @@ class ConversationActivity : BlazeBaseActivity() {
                         putString(CONVERSATION_ID, conversationId)
                         putParcelable(RECIPIENT, recipient)
                         putString(ConversationFragment.INITIAL_UNREAD_MESSAGE_ID, initialUnreadMessageId)
+                        initialUnreadCount?.let {
+                            putInt(ConversationFragment.INITIAL_UNREAD_COUNT, it)
+                        }
                         putBoolean(ARGS_FAST_SHOW, true)
                     },
                 )
@@ -139,6 +143,7 @@ class ConversationActivity : BlazeBaseActivity() {
             keyword: String? = null,
             transcriptData: TranscriptData? = null,
             startParam: String? = null,
+            initialUnreadCount: Int? = null,
         ) {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
@@ -151,6 +156,7 @@ class ConversationActivity : BlazeBaseActivity() {
                         messageId,
                         transcriptData,
                         startParam,
+                        initialUnreadCount,
                     ),
                 )
                 if (context !is Activity){
@@ -167,6 +173,7 @@ class ConversationActivity : BlazeBaseActivity() {
             recipientId: String? = null,
             messageId: String? = null,
             keyword: String? = null,
+            initialUnreadCount: Int? = null,
         ): Intent {
             require(!(conversationId == null && recipientId == null)) { "lose data" }
             require(recipientId != Session.getAccountId()) { "error data $conversationId" }
@@ -177,6 +184,7 @@ class ConversationActivity : BlazeBaseActivity() {
                         recipientId,
                         keyword,
                         messageId,
+                        initialUnreadCount = initialUnreadCount,
                     ),
                 )
             }

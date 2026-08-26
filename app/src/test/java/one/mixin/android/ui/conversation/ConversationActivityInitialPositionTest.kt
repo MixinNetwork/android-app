@@ -20,6 +20,7 @@ class ConversationActivityInitialPositionTest {
             conversationId = "conversation-id",
             recipient = null,
             initialUnreadMessageId = "unread-message-id",
+            initialUnreadCount = 12,
         )
 
         val intent = shadowOf(activity).nextStartedActivity
@@ -27,6 +28,7 @@ class ConversationActivityInitialPositionTest {
             "unread-message-id",
             intent.getStringExtra(ConversationFragment.INITIAL_UNREAD_MESSAGE_ID),
         )
+        assertEquals(12, intent.getIntExtra(ConversationFragment.INITIAL_UNREAD_COUNT, -1))
         assertNull(intent.getStringExtra(ConversationFragment.MESSAGE_ID))
     }
 }

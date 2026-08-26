@@ -60,20 +60,11 @@ interface MessageDao : BaseDao<Message> {
         LEFT JOIN pin_messages pm ON m.id = pm.message_id
         LEFT JOIN expired_messages em ON m.id = em.message_id
         """
-        private const val CHAT_CATEGORY = "('SIGNAL_TEXT', 'SIGNAL_IMAGE', 'SIGNAL_VIDEO', 'SIGNAL_STICKER', 'SIGNAL_DATA', 'SIGNAL_CONTACT', 'SIGNAL_AUDIO', 'SIGNAL_LIVE', 'SIGNAL_POST', 'SIGNAL_LOCATION', 'ENCRYPTED_TEXT', 'ENCRYPTED_IMAGE', 'ENCRYPTED_VIDEO', 'ENCRYPTED_STICKER', 'ENCRYPTED_DATA', 'ENCRYPTED_CONTACT', 'ENCRYPTED_AUDIO', 'ENCRYPTED_LIVE', 'ENCRYPTED_POST', 'ENCRYPTED_LOCATION', 'PLAIN_TEXT', 'PLAIN_IMAGE', 'PLAIN_VIDEO', 'PLAIN_DATA', 'PLAIN_STICKER', 'PLAIN_CONTACT', 'PLAIN_AUDIO', 'PLAIN_LIVE', 'PLAIN_POST', 'PLAIN_LOCATION', 'APP_BUTTON_GROUP', 'APP_CARD', 'SYSTEM_ACCOUNT_SNAPSHOT', 'SYSTEM_SAFE_SNAPSHOT')"
         private const val APP_CARD_COVER_MEDIA = "category = 'APP_CARD' AND content LIKE '%\"cover_url\":\"%' AND content NOT LIKE '%\"cover_url\":\"\"%'"
         private const val APP_CARD_COVER_MEDIA_ALIAS = "m.category = 'APP_CARD' AND m.content LIKE '%\"cover_url\":\"%' AND m.content NOT LIKE '%\"cover_url\":\"\"%'"
     }
 
     // Read SQL
-    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND m.category IN $CHAT_CATEGORY ORDER BY m.created_at ASC LIMIT :limit OFFSET :offset")
-    suspend fun getChatMessages(
-        conversationId: String,
-        offset: Int,
-        limit: Int,
-    ): List<MessageItem>
-
     @Query("SELECT count(1) FROM messages WHERE conversation_id = :conversationId AND rowid > (SELECT rowid FROM messages WHERE id = :messageId) AND created_at >= (SELECT created_at FROM messages WHERE id = :messageId)")
     suspend fun findMessageIndex(
         conversationId: String,

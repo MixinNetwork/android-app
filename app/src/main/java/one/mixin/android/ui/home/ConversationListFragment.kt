@@ -334,6 +334,7 @@ class ConversationListFragment : LinkFragment() {
                                     conversationId = item.conversationId,
                                     recipient = user,
                                     initialUnreadMessageId = initialUnreadMessageId,
+                                    initialUnreadCount = item.unseenMessageCount ?: 0,
                                 )
                             }
                     }
