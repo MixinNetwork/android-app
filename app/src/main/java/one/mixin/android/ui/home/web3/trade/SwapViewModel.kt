@@ -47,6 +47,7 @@ import one.mixin.android.vo.market.marketRefreshLimit
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
+import java.math.BigDecimal
 import javax.inject.Inject
 
 internal class TradeQuoteMixinErrorException(
@@ -56,10 +57,22 @@ internal class TradeQuoteMixinErrorException(
     val max: String?,
 ) : Exception()
 
-internal fun <T> recommendedMarketsFromDatabase(
-    markets: Flow<List<T>>,
+internal fun recommendedMarketsFromDatabase(
+    markets: Flow<List<MarketItem>>,
+    category: MarketCategory,
     limit: Int,
-): Flow<List<T>> = markets.map { it.take(limit) }
+): Flow<List<MarketItem>> =
+    markets.map { items ->
+        val orderedItems =
+            when (category) {
+                MarketCategory.TOP_GAINER ->
+                    items.sortedByDescending { it.priceChangePercentage24H.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+                MarketCategory.TOP_LOSER ->
+                    items.sortedBy { it.priceChangePercentage24H.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+                else -> items
+            }
+        orderedItems.take(limit)
+    }
 
 @HiltViewModel
 class SwapViewModel
@@ -89,6 +102,7 @@ class SwapViewModel
     fun observeRecommendedMarkets(category: MarketCategory): Flow<List<MarketItem>> =
         recommendedMarketsFromDatabase(
             markets = tokenRepository.observeMarketsByCategory(category),
+            category = category,
             limit = SWAP_RECOMMENDED_MARKET_LIMIT,
         )
 

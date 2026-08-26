@@ -83,6 +83,23 @@ class MarketDaoTest {
         }
 
     @Test
+    fun favoriteMarketsOrderByNewestAddition() =
+        runBlocking {
+            val markets = listOf(market("old"), market("same-first"), market("same-second"), market("new"))
+            database.marketDao().upsertList(markets)
+            database.marketFavoredDao().insertSuspend(
+                MarketFavored("old", true, "2026-08-26T00:00:00Z"),
+                MarketFavored("same-first", true, "2026-08-26T01:00:00Z"),
+                MarketFavored("same-second", true, "2026-08-26T01:00:00Z"),
+                MarketFavored("new", true, "2026-08-26T02:00:00Z"),
+            )
+
+            val result = database.marketDao().observeFavoredMarkets().first()
+
+            assertEquals(listOf("new", "same-first", "same-second", "old"), result.map { it.coinId })
+        }
+
+    @Test
     fun favoriteMarketIdsOnlyReturnsActiveFavorites() =
         runBlocking {
             database.marketFavoredDao().insertSuspend(

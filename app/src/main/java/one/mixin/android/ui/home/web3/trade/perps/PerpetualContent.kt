@@ -102,19 +102,18 @@ fun PerpetualContent(
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
     val openPositionsCount = openPositions.size
     val openPositionsPreview = openPositions.take(3)
-    val marketsPreview = markets.take(3)
+    val marketsPreview = remember(markets) {
+        markets.trendingPreview()
+    }
     val topMoversPreview = remember(markets) {
         markets.topMoversPreview()
     }
-    val sourceOrder = remember(markets) {
-        markets.withIndex().associate { it.value.marketId to it.index }
+    val stocksMarkets = remember(markets) {
+        markets.filter { it.isStocksCategory() }.sortedByVolumeDescending()
     }
-    val stocksMarkets = markets
-        .filter { it.isStocksCategory() }
-        .sortedBy { sourceOrder[it.marketId] ?: Int.MAX_VALUE }
-    val commoditiesMarkets = markets
-        .filter { it.isCommoditiesCategory() }
-        .sortedBy { sourceOrder[it.marketId] ?: Int.MAX_VALUE }
+    val commoditiesMarkets = remember(markets) {
+        markets.filter { it.isCommoditiesCategory() }.sortedByVolumeDescending()
+    }
     val stocksMarketsPreview = stocksMarkets.take(3)
     val commoditiesMarketsPreview = commoditiesMarkets.take(3)
     val closedPositionsPreview = closedPositions.take(3)

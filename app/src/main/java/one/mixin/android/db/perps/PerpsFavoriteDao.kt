@@ -44,7 +44,7 @@ interface PerpsFavoriteDao : BaseDao<PerpsFavorite> {
         FROM favorites f
         INNER JOIN markets m ON m.market_id = f.market_id
         WHERE f.is_favored = 1
-        ORDER BY CAST(m.volume AS REAL) DESC, f.created_at DESC
+        ORDER BY f.created_at DESC, f.rowid ASC
         """,
     )
     fun observeFavoriteMarkets(): Flow<List<PerpsMarket>>

@@ -375,24 +375,22 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun defaultVolumeSortMatchesMarketCategory() {
+    fun defaultSortMatchesMarketCategory() {
         listOf(
             MarketSubTab.CRYPTO,
             MarketSubTab.PERPETUAL,
         ).forEach { subTab ->
             assertEquals(
-                MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                MarketSortState(),
                 defaultMarketSortState(MarketTopTab.WATCHLIST, subTab),
             )
-            assertEquals(
-                MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
-                defaultMarketSortState(MarketTopTab.STOCK, subTab),
-            )
         }
+        assertEquals(MarketSortState(), defaultMarketSortState(MarketTopTab.STOCK, MarketSubTab.CRYPTO))
         assertEquals(
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
-            defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL),
+            defaultMarketSortState(MarketTopTab.STOCK, MarketSubTab.PERPETUAL),
         )
+        assertEquals(MarketSortState(), defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL))
         assertEquals(
             scoreMarketSortState(),
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING),
@@ -423,10 +421,10 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun marketFavoritesDefaultToVolumeDescending() {
+    fun marketFavoritesPreserveAdditionOrder() {
         listOf(MarketTopTab.CRYPTO, MarketTopTab.PERPETUAL).forEach { topTab ->
             assertEquals(
-                MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                MarketSortState(),
                 defaultMarketSortState(topTab, MarketSubTab.FAVORITE),
             )
         }

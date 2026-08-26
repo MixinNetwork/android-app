@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsFavorite
 import one.mixin.android.db.PerpsDatabase
 import org.junit.Assert.assertEquals
 import org.junit.After
@@ -69,6 +70,29 @@ class PerpsMarketDaoTest {
             assertEquals("2", database.perpsMarketDao().getMarket("cached")?.last)
             assertEquals(30, database.perpsMarketDao().getMarket("cached")?.tradeVolumeScore1D)
             assertEquals(0, database.perpsMarketDao().getMarket("uncached")?.tradeVolumeScore1D)
+        }
+
+    @Test
+    fun favoriteMarketsOrderByNewestAddition() =
+        runBlocking {
+            val markets =
+                listOf(
+                    market("old", volume = "100", score = 0),
+                    market("same-first", volume = "1", score = 0),
+                    market("same-second", volume = "10", score = 0),
+                    market("new", volume = "2", score = 0),
+                )
+            database.perpsMarketDao().upsertList(markets)
+            database.perpsFavoriteDao().insertSuspend(
+                PerpsFavorite("old", true, "2026-08-26T00:00:00Z"),
+                PerpsFavorite("same-first", true, "2026-08-26T01:00:00Z"),
+                PerpsFavorite("same-second", true, "2026-08-26T01:00:00Z"),
+                PerpsFavorite("new", true, "2026-08-26T02:00:00Z"),
+            )
+
+            val result = database.perpsFavoriteDao().observeFavoriteMarkets().first()
+
+            assertEquals(listOf("new", "same-first", "same-second", "old"), result.map { it.marketId })
         }
 
     private fun market(
