@@ -1,16 +1,16 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import one.mixin.android.api.response.perps.PerpsMarket
-import java.math.BigDecimal
+import one.mixin.android.ui.home.web3.market.sortedByScoreAndVolumeDescending
 
 private const val TOP_MOVERS_GROUP_SIZE = 4
 private const val TRENDING_PREVIEW_SIZE = 3
 
 fun List<PerpsMarket>.trendingPreview(): List<PerpsMarket> =
-    sortedByDescending(PerpsMarket::tradeVolumeScore1D).take(TRENDING_PREVIEW_SIZE)
+    sortedByScoreAndVolumeDescending().take(TRENDING_PREVIEW_SIZE)
 
-fun List<PerpsMarket>.sortedByVolumeDescending(): List<PerpsMarket> =
-    sortedByDescending { it.volume.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+internal fun List<PerpsMarket>.sortedByScoreAndVolume(): List<PerpsMarket> =
+    sortedByScoreAndVolumeDescending()
 
 fun List<PerpsMarket>.topMoversPreview(): List<PerpsMarket> {
     val topMarkets = sortedByDescending { it.changePercent() }

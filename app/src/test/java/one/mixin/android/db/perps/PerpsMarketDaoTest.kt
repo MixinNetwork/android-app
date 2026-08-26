@@ -91,8 +91,10 @@ class PerpsMarketDaoTest {
             )
 
             val result = database.perpsFavoriteDao().observeFavoriteMarkets().first()
+            val favoriteMarketIds = database.perpsFavoriteDao().observeFavoriteMarketIds().first()
 
             assertEquals(listOf("new", "same-first", "same-second", "old"), result.map { it.marketId })
+            assertEquals(listOf("new", "same-first", "same-second", "old"), favoriteMarketIds)
         }
 
     private fun market(

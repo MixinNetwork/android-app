@@ -275,7 +275,7 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun spotGainersAndLosersSortBySelectedPeriod() {
+    fun spotGainersAndLosersPreserveApiOrder() {
         val markets =
             listOf(
                 market(coinId = "middle", change24h = "2", change7d = "-2"),
@@ -286,18 +286,14 @@ class MarketPageModelsTest {
         val gainers =
             MarketPageMapper.spotMarkets(
                 markets = markets,
-                subTab = MarketSubTab.TOP_GAINERS,
-                period = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
             )
         val losers =
             MarketPageMapper.spotMarkets(
                 markets = markets,
-                subTab = MarketSubTab.TOP_LOSERS,
-                period = MarketPriceChangePeriod.SEVEN_DAYS,
             )
 
-        assertEquals(listOf("winner", "middle", "loser"), gainers.map { it.coinId })
-        assertEquals(listOf("winner", "middle", "loser"), losers.map { it.coinId })
+        assertEquals(listOf("middle", "winner", "loser"), gainers.map { it.coinId })
+        assertEquals(listOf("middle", "winner", "loser"), losers.map { it.coinId })
     }
 
     @Test
@@ -308,8 +304,6 @@ class MarketPageModelsTest {
             MarketPageMapper.spotMarkets(
                 markets = emptyList(),
                 fallbackMarkets = cachedMarkets,
-                subTab = MarketSubTab.TRENDING,
-                period = MarketPriceChangePeriod.SEVEN_DAYS,
             )
 
         assertEquals(listOf("btc", "eth"), result.map { it.coinId })
@@ -359,19 +353,38 @@ class MarketPageModelsTest {
 
     @Test
     fun sortHeaderCyclesBackToScoreWhenAvailable() {
-        val descending = scoreMarketSortState().next(MarketSortColumn.VOLUME, isScoreOrderingAvailable = true)
-        val ascending = descending.next(MarketSortColumn.VOLUME, isScoreOrderingAvailable = true)
-        val score =
-            ascending
-                .next(MarketSortColumn.PRICE, isScoreOrderingAvailable = true)
-                .next(MarketSortColumn.PRICE, isScoreOrderingAvailable = true)
-                .next(MarketSortColumn.PRICE, isScoreOrderingAvailable = true)
+        val scoreDefault = scoreMarketSortState()
+        val descending = scoreDefault.next(MarketSortColumn.VOLUME, scoreDefault)
+        val ascending = descending.next(MarketSortColumn.VOLUME, scoreDefault)
+        val score = ascending.next(MarketSortColumn.VOLUME, scoreDefault)
 
         assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING), descending)
         assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING), ascending)
         assertEquals(scoreMarketSortState(), score)
-        assertTrue(isScoreOrderingAvailable(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING))
+        listOf(
+            MarketSubTab.TRENDING,
+            MarketSubTab.MEME,
+            MarketSubTab.INDICES,
+            MarketSubTab.COMMODITIES,
+            MarketSubTab.FOREX,
+        ).forEach { subTab ->
+            assertTrue(isScoreOrderingAvailable(MarketTopTab.PERPETUAL, subTab))
+        }
+        assertTrue(isScoreOrderingAvailable(MarketTopTab.STOCK, MarketSubTab.PERPETUAL))
         assertTrue(!isScoreOrderingAvailable(MarketTopTab.CRYPTO, MarketSubTab.TRENDING))
+    }
+
+    @Test
+    fun localMoverSortCyclesBackToVisibleDefault() {
+        val gainerDefault = defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TOP_GAINERS)
+        val gainerAscending = gainerDefault.next(MarketSortColumn.CHANGE, gainerDefault)
+        assertEquals(MarketSortDirection.ASCENDING, gainerAscending.direction)
+        assertEquals(gainerDefault, gainerAscending.next(MarketSortColumn.CHANGE, gainerDefault))
+
+        val loserDefault = defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TOP_LOSERS)
+        val loserDescending = loserDefault.next(MarketSortColumn.CHANGE, loserDefault)
+        assertEquals(MarketSortDirection.DESCENDING, loserDescending.direction)
+        assertEquals(loserDefault, loserDescending.next(MarketSortColumn.CHANGE, loserDefault))
     }
 
     @Test
@@ -387,7 +400,7 @@ class MarketPageModelsTest {
         }
         assertEquals(MarketSortState(), defaultMarketSortState(MarketTopTab.STOCK, MarketSubTab.CRYPTO))
         assertEquals(
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+            scoreMarketSortState(),
             defaultMarketSortState(MarketTopTab.STOCK, MarketSubTab.PERPETUAL),
         )
         assertEquals(MarketSortState(), defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL))
@@ -396,16 +409,18 @@ class MarketPageModelsTest {
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING),
         )
         assertEquals(MarketSortState(), defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TRENDING))
+        assertEquals(MarketSortState(), defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TOP_GAINERS))
+        assertEquals(MarketSortState(), defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TOP_LOSERS))
         assertEquals(
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.DESCENDING),
-            defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TOP_GAINERS),
+            defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TOP_GAINERS),
         )
         assertEquals(
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.ASCENDING),
-            defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TOP_LOSERS),
+            defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TOP_LOSERS),
         )
         assertEquals(
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+            scoreMarketSortState(),
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.MEME),
         )
         listOf(
@@ -414,7 +429,7 @@ class MarketPageModelsTest {
             MarketSubTab.FOREX,
         ).forEach { subTab ->
             assertEquals(
-                MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                scoreMarketSortState(),
                 defaultMarketSortState(MarketTopTab.PERPETUAL, subTab),
             )
         }
@@ -480,19 +495,40 @@ class MarketPageModelsTest {
 
     @Test
     fun applySortByScoreOrdersPerpetualMarkets() {
-        val second = MarketListEntry.Perpetual(perpsMarket(marketId = "second", tradeVolumeScore1D = 20), false)
-        val third = MarketListEntry.Perpetual(perpsMarket(marketId = "third", tradeVolumeScore1D = 10), false)
-        val first = MarketListEntry.Perpetual(perpsMarket(marketId = "first", tradeVolumeScore1D = 30), false)
+        val second = MarketListEntry.Perpetual(
+            perpsMarket(marketId = "second", tradeVolumeScore1D = 20, volume = "10"),
+            false,
+        )
+        val third = MarketListEntry.Perpetual(
+            perpsMarket(marketId = "third", tradeVolumeScore1D = 10, volume = "100"),
+            false,
+        )
+        val firstLowVolume = MarketListEntry.Perpetual(
+            perpsMarket(marketId = "first-low-volume", tradeVolumeScore1D = 30, volume = "1"),
+            false,
+        )
+        val firstHighVolume = MarketListEntry.Perpetual(
+            perpsMarket(marketId = "first-high-volume", tradeVolumeScore1D = 30, volume = "1000"),
+            false,
+        )
 
         val result =
             MarketPageMapper.applySort(
-                entries = listOf(second, third, first),
+                entries = listOf(second, third, firstLowVolume, firstHighVolume),
                 sortState = scoreMarketSortState(),
                 period = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
                 useMarketCapForSpot = false,
             )
 
-        assertEquals(listOf("perpetual:first", "perpetual:second", "perpetual:third"), result.map { it.stableId })
+        assertEquals(
+            listOf(
+                "perpetual:first-high-volume",
+                "perpetual:first-low-volume",
+                "perpetual:second",
+                "perpetual:third",
+            ),
+            result.map { it.stableId },
+        )
     }
 
     @Test
@@ -568,6 +604,7 @@ class MarketPageModelsTest {
         change: String = "0",
         category: String = "",
         tradeVolumeScore1D: Int = 0,
+        volume: String = "10",
     ) = PerpsMarket(
         marketId = marketId,
         displaySymbol = marketId,
@@ -581,7 +618,7 @@ class MarketPageModelsTest {
         minAmount = "0",
         maxAmount = "0",
         last = "1",
-        volume = "10",
+        volume = volume,
         tradeVolumeScore1D = tradeVolumeScore1D,
         high = "1",
         low = "1",

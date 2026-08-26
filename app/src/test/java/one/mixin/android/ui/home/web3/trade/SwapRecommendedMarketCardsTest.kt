@@ -22,7 +22,6 @@ class SwapRecommendedMarketCardsTest {
                 val result =
                     recommendedMarketsFromDatabase(
                         markets = flowOf(cached),
-                        category = category,
                         limit = SWAP_RECOMMENDED_MARKET_LIMIT,
                     ).first()
 
@@ -39,7 +38,6 @@ class SwapRecommendedMarketCardsTest {
             val result =
                 recommendedMarketsFromDatabase(
                     markets = flowOf(emptyList(), listOf(market("3", "3"), market("1", "1"), market("2", "2"))),
-                    category = MarketCategory.TRENDING,
                     limit = SWAP_RECOMMENDED_MARKET_LIMIT,
                 ).first { it.isNotEmpty() }
 
@@ -47,25 +45,23 @@ class SwapRecommendedMarketCardsTest {
         }
 
     @Test
-    fun gainersAndLosersSortLocallyByTwentyFourHourChange() =
+    fun gainersAndLosersPreserveApiOrder() =
         runBlocking {
             val markets = listOf(market("middle", "2"), market("highest", "5"), market("lowest", "-4"))
 
             val gainers =
                 recommendedMarketsFromDatabase(
                     markets = flowOf(markets),
-                    category = MarketCategory.TOP_GAINER,
                     limit = SWAP_RECOMMENDED_MARKET_LIMIT,
                 ).first()
             val losers =
                 recommendedMarketsFromDatabase(
                     markets = flowOf(markets),
-                    category = MarketCategory.TOP_LOSER,
                     limit = SWAP_RECOMMENDED_MARKET_LIMIT,
                 ).first()
 
-            assertEquals(listOf("highest", "middle", "lowest"), gainers.map(MarketItem::coinId))
-            assertEquals(listOf("lowest", "middle", "highest"), losers.map(MarketItem::coinId))
+            assertEquals(listOf("middle", "highest", "lowest"), gainers.map(MarketItem::coinId))
+            assertEquals(listOf("middle", "highest", "lowest"), losers.map(MarketItem::coinId))
         }
 
     @Test

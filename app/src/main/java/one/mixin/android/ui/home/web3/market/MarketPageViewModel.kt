@@ -118,7 +118,7 @@ class MarketPageViewModel
             val sortState =
                 state.sortState.next(
                     column,
-                    isScoreOrderingAvailable(state.selectedTopTab, state.selectedSubTab),
+                    defaultMarketSortState(state.selectedTopTab, state.selectedSubTab),
                 )
             _uiState.value = state.copy(sortState = sortState)
             rebuildEntries()
@@ -463,8 +463,6 @@ class MarketPageViewModel
                             .spotMarkets(
                                 markets = source.withFavoriteState(),
                                 fallbackMarkets = fallbackMarkets.withFavoriteState(),
-                                subTab = subTab,
-                                period = state.effectivePriceChangePeriod,
                             )
                             .filterNot { it.coinId in stockCoinIds }
                             .map { MarketListEntry.Spot(it, SpotMarketType.CRYPTO) }

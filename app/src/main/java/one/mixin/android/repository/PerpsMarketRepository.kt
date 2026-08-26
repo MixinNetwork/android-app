@@ -2,7 +2,6 @@ package one.mixin.android.repository
 
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsFavorite
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -32,8 +31,7 @@ class PerpsMarketRepository
 
         fun observeFavoriteMarkets(): Flow<List<PerpsMarket>> = favoriteDao.observeFavoriteMarkets()
 
-        fun observeFavoriteMarketIds(): Flow<Set<String>> =
-            favoriteDao.observeFavoriteMarketIds().map { marketIds -> marketIds.toSet() }
+        fun observeFavoriteMarketIds(): Flow<List<String>> = favoriteDao.observeFavoriteMarketIds()
 
         fun observeMarketsByCategory(category: MarketCategory): Flow<List<PerpsMarket>> =
             categoryDao.observeMarketsByCategory(category.value)

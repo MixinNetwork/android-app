@@ -10,7 +10,7 @@ import one.mixin.android.db.BaseDao
 
 @Dao
 interface PerpsFavoriteDao : BaseDao<PerpsFavorite> {
-    @Query("SELECT market_id FROM favorites WHERE is_favored = 1")
+    @Query("SELECT market_id FROM favorites WHERE is_favored = 1 ORDER BY created_at DESC, rowid ASC")
     suspend fun favoriteMarketIds(): List<String>
 
     @Query("DELETE FROM favorites")
@@ -35,7 +35,7 @@ interface PerpsFavoriteDao : BaseDao<PerpsFavorite> {
         }
     }
 
-    @Query("SELECT market_id FROM favorites WHERE is_favored = 1")
+    @Query("SELECT market_id FROM favorites WHERE is_favored = 1 ORDER BY created_at DESC, rowid ASC")
     fun observeFavoriteMarketIds(): Flow<List<String>>
 
     @Query(

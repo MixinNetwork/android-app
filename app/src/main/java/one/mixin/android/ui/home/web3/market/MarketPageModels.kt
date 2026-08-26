@@ -69,20 +69,25 @@ data class MarketSortState(
 ) {
     fun next(
         selectedColumn: MarketSortColumn,
-        isScoreOrderingAvailable: Boolean = false,
+        defaultState: MarketSortState = MarketSortState(),
     ): MarketSortState {
+        if (this == defaultState && column == selectedColumn) {
+            return MarketSortState(
+                selectedColumn,
+                if (direction == MarketSortDirection.ASCENDING) {
+                    MarketSortDirection.DESCENDING
+                } else {
+                    MarketSortDirection.ASCENDING
+                },
+            )
+        }
         if (column != selectedColumn) {
             return MarketSortState(selectedColumn, MarketSortDirection.DESCENDING)
         }
         return when (direction) {
             MarketSortDirection.DEFAULT -> MarketSortState(selectedColumn, MarketSortDirection.DESCENDING)
             MarketSortDirection.DESCENDING -> MarketSortState(selectedColumn, MarketSortDirection.ASCENDING)
-            MarketSortDirection.ASCENDING ->
-                if (isScoreOrderingAvailable) {
-                    scoreMarketSortState()
-                } else {
-                    MarketSortState()
-                }
+            MarketSortDirection.ASCENDING -> defaultState
         }
     }
 }
@@ -92,21 +97,11 @@ fun defaultMarketSortState(
     subTab: MarketSubTab?,
 ): MarketSortState =
     when {
-        subTab == MarketSubTab.TOP_GAINERS ->
+        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.TOP_GAINERS ->
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.DESCENDING)
-        subTab == MarketSubTab.TOP_LOSERS ->
+        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.TOP_LOSERS ->
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.ASCENDING)
-        topTab == MarketTopTab.STOCK && subTab == MarketSubTab.PERPETUAL ->
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         isScoreOrderingAvailable(topTab, subTab) -> scoreMarketSortState()
-        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.MEME ->
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
-        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.INDICES ->
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
-        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.COMMODITIES ->
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
-        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.FOREX ->
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
         else -> MarketSortState()
     }
 
@@ -116,7 +111,17 @@ internal fun scoreMarketSortState() =
 internal fun isScoreOrderingAvailable(
     topTab: MarketTopTab,
     subTab: MarketSubTab?,
-): Boolean = topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.TRENDING
+): Boolean =
+    when (topTab) {
+        MarketTopTab.PERPETUAL ->
+            subTab == MarketSubTab.TRENDING ||
+                subTab == MarketSubTab.MEME ||
+                subTab == MarketSubTab.INDICES ||
+                subTab == MarketSubTab.COMMODITIES ||
+                subTab == MarketSubTab.FOREX
+        MarketTopTab.STOCK -> subTab == MarketSubTab.PERPETUAL
+        else -> false
+    }
 
 data class MarketDisplaySettings(
     val quoteColorReversed: Boolean = false,
@@ -281,34 +286,25 @@ object MarketPageMapper {
     fun spotMarkets(
         markets: List<MarketItem>,
         fallbackMarkets: List<MarketItem> = emptyList(),
-        subTab: MarketSubTab,
-        period: MarketPriceChangePeriod,
-    ): List<MarketItem> {
-        val source = markets.ifEmpty { fallbackMarkets }
-        return when (subTab) {
-            MarketSubTab.TOP_GAINERS -> source.sortedByDescending { it.changePercent(period) ?: BigDecimal.ZERO }
-            MarketSubTab.TOP_LOSERS -> source.sortedBy { it.changePercent(period) ?: BigDecimal.ZERO }
-            else -> source
-        }
-    }
+    ): List<MarketItem> = markets.ifEmpty { fallbackMarkets }
 
     fun perpetualMarkets(
         markets: List<PerpsMarket>,
         subTab: MarketSubTab,
     ): List<PerpsMarket> =
         when (subTab) {
-            MarketSubTab.TRENDING -> markets.sortedByDescending(PerpsMarket::tradeVolumeScore1D)
+            MarketSubTab.TRENDING -> markets.sortedByScoreAndVolumeDescending()
             MarketSubTab.TOP_GAINERS -> markets.sortedByDescending { it.changePercentValue() ?: BigDecimal.ZERO }
             MarketSubTab.TOP_LOSERS -> markets.sortedBy { it.changePercentValue() ?: BigDecimal.ZERO }
-            MarketSubTab.INDICES -> markets.filterByCategory(PerpsMarketCategoryKey.INDICES)
-            MarketSubTab.COMMODITIES -> markets.filterByCategory(PerpsMarketCategoryKey.COMMODITIES)
-            MarketSubTab.FOREX -> markets.filterByCategory(PerpsMarketCategoryKey.FOREX)
-            MarketSubTab.MEME -> markets.filterByCategory(PerpsMarketCategoryKey.MEME)
+            MarketSubTab.INDICES -> markets.filterByCategory(PerpsMarketCategoryKey.INDICES).sortedByScoreAndVolumeDescending()
+            MarketSubTab.COMMODITIES -> markets.filterByCategory(PerpsMarketCategoryKey.COMMODITIES).sortedByScoreAndVolumeDescending()
+            MarketSubTab.FOREX -> markets.filterByCategory(PerpsMarketCategoryKey.FOREX).sortedByScoreAndVolumeDescending()
+            MarketSubTab.MEME -> markets.filterByCategory(PerpsMarketCategoryKey.MEME).sortedByScoreAndVolumeDescending()
             else -> markets
         }
 
     fun perpetualStockMarkets(markets: List<PerpsMarket>): List<PerpsMarket> =
-        markets.filterByCategory(PerpsMarketCategoryKey.STOCKS)
+        markets.filterByCategory(PerpsMarketCategoryKey.STOCKS).sortedByScoreAndVolumeDescending()
 
     private fun List<PerpsMarket>.filterByCategory(category: PerpsMarketCategoryKey): List<PerpsMarket> =
         filter { market -> category.matches(market.category) }
@@ -367,6 +363,12 @@ object MarketPageMapper {
                 MarketSortColumn.CHANGE -> entry.changePercent(period)
                 MarketSortColumn.SCORE -> entry.score()
             } ?: BigDecimal.ZERO
+        }.let { baseComparator ->
+            if (column == MarketSortColumn.SCORE) {
+                baseComparator.thenBy { entry -> entry.volume(useMarketCapForSpot) ?: BigDecimal.ZERO }
+            } else {
+                baseComparator
+            }
         }
         return if (sortState.direction == MarketSortDirection.ASCENDING) {
             entries.sortedWith(comparator)
@@ -375,6 +377,12 @@ object MarketPageMapper {
         }
     }
 }
+
+internal fun List<PerpsMarket>.sortedByScoreAndVolumeDescending(): List<PerpsMarket> =
+    sortedWith(
+        compareByDescending<PerpsMarket>(PerpsMarket::tradeVolumeScore1D)
+            .thenByDescending { market -> market.volume.toBigDecimalOrNull() ?: BigDecimal.ZERO },
+    )
 
 fun MarketItem.changePercent(period: MarketPriceChangePeriod): BigDecimal? =
     when (period) {

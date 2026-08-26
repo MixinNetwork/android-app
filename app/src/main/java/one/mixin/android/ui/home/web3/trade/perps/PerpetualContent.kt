@@ -109,10 +109,10 @@ fun PerpetualContent(
         markets.topMoversPreview()
     }
     val stocksMarkets = remember(markets) {
-        markets.filter { it.isStocksCategory() }.sortedByVolumeDescending()
+        markets.filter { it.isStocksCategory() }.sortedByScoreAndVolume()
     }
     val commoditiesMarkets = remember(markets) {
-        markets.filter { it.isCommoditiesCategory() }.sortedByVolumeDescending()
+        markets.filter { it.isCommoditiesCategory() }.sortedByScoreAndVolume()
     }
     val stocksMarketsPreview = stocksMarkets.take(3)
     val commoditiesMarketsPreview = commoditiesMarkets.take(3)

@@ -9,27 +9,31 @@ class PerpetualMarketPreviewsTest {
     fun trendingPreviewOrdersByScore() {
         val markets =
             listOf(
-                market("second", volume = "100", score = 20),
+                market("second-low-volume", volume = "10", score = 20),
+                market("second-high-volume", volume = "100", score = 20),
                 market("fourth", volume = "1000", score = 5),
                 market("first", volume = "1", score = 30),
                 market("third", volume = "10", score = 10),
             )
 
-        assertEquals(listOf("first", "second", "third"), markets.trendingPreview().map { it.marketId })
+        assertEquals(
+            listOf("first", "second-high-volume", "second-low-volume"),
+            markets.trendingPreview().map { it.marketId },
+        )
     }
 
     @Test
-    fun categoryPreviewsOrderByVolume() {
+    fun categoryPreviewsOrderByScoreThenVolume() {
         val markets =
             listOf(
-                market("middle", volume = "10", score = 30),
-                market("lowest", volume = "2", score = 50),
-                market("highest", volume = "100", score = 10),
+                market("second-low-volume", volume = "10", score = 30),
+                market("first", volume = "2", score = 50),
+                market("second-high-volume", volume = "100", score = 30),
             )
 
         assertEquals(
-            listOf("highest", "middle", "lowest"),
-            markets.sortedByVolumeDescending().map { it.marketId },
+            listOf("first", "second-high-volume", "second-low-volume"),
+            markets.sortedByScoreAndVolume().map { it.marketId },
         )
     }
 

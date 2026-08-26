@@ -45,13 +45,17 @@ class PerpsMarketListBottomSheetModelsTest {
             PerpsMarketListUiState(
                 markets =
                     listOf(
-                        perpsMarket("second", "crypto", tradeVolumeScore1D = 20),
+                        perpsMarket("second-low-volume", "crypto", tradeVolumeScore1D = 20, volume = "10"),
+                        perpsMarket("second-high-volume", "stocks", tradeVolumeScore1D = 20, volume = "100"),
                         perpsMarket("third", "stocks", tradeVolumeScore1D = 10),
                         perpsMarket("first", "crypto", tradeVolumeScore1D = 30),
                     ),
             ).visibleMarkets
 
-        assertEquals(listOf("first", "second", "third"), visibleMarkets.map { it.marketId })
+        assertEquals(
+            listOf("first", "second-high-volume", "second-low-volume", "third"),
+            visibleMarkets.map { it.marketId },
+        )
     }
 
     @Test
@@ -71,9 +75,19 @@ class PerpsMarketListBottomSheetModelsTest {
         assertEquals(scoreMarketSortState(), score.sortState)
         assertEquals(listOf("first", "second", "third"), score.visibleMarkets.map { it.marketId })
         assertEquals(
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+            scoreMarketSortState(),
             score.selectCategory(PerpsMarketCategory.CRYPTO).sortState,
         )
+    }
+
+    @Test
+    fun marketCategoriesUseHiddenScoreDefaultExceptWatchlist() {
+        PerpsMarketCategory.entries
+            .filterNot { it == PerpsMarketCategory.WATCHLIST }
+            .forEach { category ->
+                assertEquals(scoreMarketSortState(), defaultPerpsMarketSortState(category))
+            }
+        assertEquals(MarketSortState(), defaultPerpsMarketSortState(PerpsMarketCategory.WATCHLIST))
     }
 
     @Test
@@ -111,7 +125,7 @@ class PerpsMarketListBottomSheetModelsTest {
 
         assertSame(state, state.updateMarkets(markets.toList()))
         assertSame(state, state.updateFeaturedMarkets(featuredMarkets.toList()))
-        assertSame(state, state.updateFavoriteMarketIds(emptySet()))
+        assertSame(state, state.updateFavoriteMarketIds(emptyList()))
     }
 
     @Test
@@ -126,7 +140,25 @@ class PerpsMarketListBottomSheetModelsTest {
 
         assertTrue(emptyWatchlist.isShowingRecommendations)
         assertFalse(emptyWatchlist.updateQuery("btc").isShowingRecommendations)
-        assertFalse(emptyWatchlist.updateFavoriteMarketIds(setOf("btc")).isShowingRecommendations)
+        assertFalse(emptyWatchlist.updateFavoriteMarketIds(listOf("btc")).isShowingRecommendations)
+    }
+
+    @Test
+    fun watchlistOrdersMarketsByNewestAddition() {
+        val visibleMarkets =
+            PerpsMarketListUiState(
+                selectedCategory = PerpsMarketCategory.WATCHLIST,
+                sortState = defaultPerpsMarketSortState(PerpsMarketCategory.WATCHLIST),
+                markets =
+                    listOf(
+                        perpsMarket("old", "crypto"),
+                        perpsMarket("new", "stocks"),
+                        perpsMarket("middle", "crypto"),
+                    ),
+                favoriteMarketIds = listOf("new", "middle", "old"),
+            ).visibleMarkets
+
+        assertEquals(listOf("new", "middle", "old"), visibleMarkets.map { it.marketId })
     }
 
     private fun perpsMarket(
