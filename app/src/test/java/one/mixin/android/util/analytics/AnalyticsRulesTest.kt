@@ -1,6 +1,7 @@
 package one.mixin.android.util.analytics
 
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.Test
 
 class AnalyticsRulesTest {
@@ -90,10 +91,10 @@ class AnalyticsRulesTest {
     }
 
     @Test
-    fun marketAndAssetVisibilityEventsSyncToAppsFlyer() {
-        assertEquals("market_share", AnalyticsRules.appsFlyerEventName("market_share"))
-        assertEquals("hide_asset", AnalyticsRules.appsFlyerEventName("hide_asset"))
-        assertEquals("show_asset", AnalyticsRules.appsFlyerEventName("show_asset"))
+    fun marketAndAssetVisibilityEventsDoNotSyncToAppsFlyer() {
+        assertNull(AnalyticsRules.appsFlyerEventName("market_share"))
+        assertNull(AnalyticsRules.appsFlyerEventName("hide_asset"))
+        assertNull(AnalyticsRules.appsFlyerEventName("show_asset"))
     }
 
     @Test

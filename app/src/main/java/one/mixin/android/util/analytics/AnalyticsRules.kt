@@ -26,9 +26,6 @@ internal object AnalyticsRules {
         "trade_perps_close_end",
         "asset_send_start",
         "asset_send_end",
-        "market_share",
-        "hide_asset",
-        "show_asset",
     )
 
     fun appsFlyerEventName(eventName: String): String? =
