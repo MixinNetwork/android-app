@@ -106,6 +106,24 @@ class AnalyticsRulesTest {
     }
 
     @Test
+    fun nonOrganicConversionMapsSourceAndCampaign() {
+        assertEquals(
+            mapOf(
+                "af_source" to "Non-organic",
+                "af_media_source" to "example_media",
+                "af_campaign" to "example_campaign",
+            ),
+            AnalyticsRules.conversionUserProperties(
+                mapOf(
+                    "af_status" to "Non-organic",
+                    "media_source" to "example_media",
+                    "campaign" to "example_campaign",
+                ),
+            ),
+        )
+    }
+
+    @Test
     fun spotOrdersEventUsesRenamedEventNameAndTypeParam() {
         val event = AnalyticsRules.spotOrdersEvent(AnalyticsTracker.SpotTradeType.ADVANCED)
 

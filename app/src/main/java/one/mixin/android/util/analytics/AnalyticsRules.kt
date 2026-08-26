@@ -8,7 +8,7 @@ internal data class AnalyticsEvent(
 )
 
 internal object AnalyticsRules {
-    private const val NON_ORGANIC = "Non-Organic"
+    private const val NON_ORGANIC = "Non-organic"
 
     private val directAppsFlyerEvents = setOf(
         "sign_up_start",
