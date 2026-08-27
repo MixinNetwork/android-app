@@ -97,9 +97,9 @@ fun defaultMarketSortState(
     subTab: MarketSubTab?,
 ): MarketSortState =
     when {
-        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.TOP_GAINERS ->
+        subTab == MarketSubTab.TOP_GAINERS ->
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.DESCENDING)
-        topTab == MarketTopTab.PERPETUAL && subTab == MarketSubTab.TOP_LOSERS ->
+        subTab == MarketSubTab.TOP_LOSERS ->
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.ASCENDING)
         isScoreOrderingAvailable(topTab, subTab) -> scoreMarketSortState()
         else -> MarketSortState()
