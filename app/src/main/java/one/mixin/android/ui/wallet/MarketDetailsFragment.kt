@@ -110,7 +110,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         )
         binding.apply {
             titleView.apply {
-                setSubTitle(marketItem.symbol, marketItem.name)
+                setSubTitle(marketItem.symbol, null)
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
                 rightExtraIb.isVisible = true
                 rightExtraIb.setMarketFavoriteIcon(marketItem.isFavored == true)
@@ -348,7 +348,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     titleView.rightExtraIb.isVisible = true
                     assetSymbol.text = info.symbol
                     assetName.text = info.name
-                    titleView.setSubTitle(info.symbol, info.name)
+                    titleView.setSubTitle(info.symbol, null)
                     bindAssetRank(info.marketCapRank)
                     currentPrice = priceFormat(info.currentPrice)
                     priceValue.text = currentPrice
