@@ -228,12 +228,7 @@ private fun CashAccountCard(
                     modifier = Modifier.weight(1f),
                 )
                 Spacer(modifier = Modifier.width(10.dp))
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_gray_right),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(16.dp).offset(x = 4.dp),
-                )
+                AccountArrow()
             }
             Spacer(modifier = Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {

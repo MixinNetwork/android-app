@@ -289,7 +289,7 @@ private fun AccountCardSurface(
 }
 
 @Composable
-private fun AccountArrow() {
+internal fun AccountArrow() {
     Icon(
         painter = painterResource(R.drawable.ic_earn_link),
         contentDescription = null,
