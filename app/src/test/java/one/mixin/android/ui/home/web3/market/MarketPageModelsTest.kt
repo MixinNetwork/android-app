@@ -375,6 +375,19 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun spotAllMarketCapSortStaysExplicit() {
+        val ascendingDefault = defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL)
+        val descending = ascendingDefault.next(MarketSortColumn.VOLUME, ascendingDefault)
+
+        assertEquals(
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING),
+            ascendingDefault,
+        )
+        assertEquals(MarketSortDirection.DESCENDING, descending.direction)
+        assertEquals(ascendingDefault, descending.next(MarketSortColumn.VOLUME, ascendingDefault))
+    }
+
+    @Test
     fun localMoverSortCyclesBackToVisibleDefault() {
         val gainerDefault = defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TOP_GAINERS)
         val gainerAscending = gainerDefault.next(MarketSortColumn.CHANGE, gainerDefault)
@@ -403,7 +416,10 @@ class MarketPageModelsTest {
             scoreMarketSortState(),
             defaultMarketSortState(MarketTopTab.STOCK, MarketSubTab.PERPETUAL),
         )
-        assertEquals(MarketSortState(), defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL))
+        assertEquals(
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING),
+            defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL),
+        )
         assertEquals(
             scoreMarketSortState(),
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING),
@@ -486,6 +502,30 @@ class MarketPageModelsTest {
             )
 
         assertEquals(listOf("spot:lower-volume", "spot:higher-volume"), result.map { it.stableId })
+    }
+
+    @Test
+    fun spotAllDefaultsToAscendingMarketCap() {
+        val lowerMarketCap =
+            MarketListEntry.Spot(
+                market(coinId = "lower-market-cap", marketCap = "100"),
+                SpotMarketType.CRYPTO,
+            )
+        val higherMarketCap =
+            MarketListEntry.Spot(
+                market(coinId = "higher-market-cap", marketCap = "200"),
+                SpotMarketType.CRYPTO,
+            )
+
+        val result =
+            MarketPageMapper.applySort(
+                entries = listOf(higherMarketCap, lowerMarketCap),
+                sortState = defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL),
+                period = MarketPriceChangePeriod.SEVEN_DAYS,
+                useMarketCapForSpot = true,
+            )
+
+        assertEquals(listOf("spot:lower-market-cap", "spot:higher-market-cap"), result.map { it.stableId })
     }
 
     @Test

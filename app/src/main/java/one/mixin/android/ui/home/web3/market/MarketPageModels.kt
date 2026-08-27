@@ -101,6 +101,8 @@ fun defaultMarketSortState(
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.DESCENDING)
         subTab == MarketSubTab.TOP_LOSERS ->
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.ASCENDING)
+        topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.ALL ->
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING)
         isScoreOrderingAvailable(topTab, subTab) -> scoreMarketSortState()
         else -> MarketSortState()
     }
