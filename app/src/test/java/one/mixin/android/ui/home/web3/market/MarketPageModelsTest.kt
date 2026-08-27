@@ -449,6 +449,12 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun perpsMarketListPriceDoesNotConvertFiat() {
+        assertEquals("$1,234.50", formatPerpsMarketListPrice("1234.5"))
+        assertEquals("$0.12345678", formatPerpsMarketListPrice("0.12345678"))
+    }
+
+    @Test
     fun marketFavoritesPreserveAdditionOrder() {
         listOf(MarketTopTab.CRYPTO, MarketTopTab.PERPETUAL).forEach { topTab ->
             assertEquals(

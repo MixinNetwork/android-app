@@ -54,6 +54,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.ui.home.web3.trade.perps.PERPS_USD_SYMBOL
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -370,7 +371,7 @@ private fun RowScope.PerpsMarketRowContent(
             maxLines = 1,
         )
     }
-    MarketPriceText(text = formatMarketListPrice(market.last))
+    MarketPriceText(text = formatPerpsMarketListPrice(market.last))
     Spacer(modifier = Modifier.width(MarketPriceChangeGap))
     MarketChangeColumn(
         change = change,
@@ -639,3 +640,6 @@ internal fun formatMarketListPrice(
     runCatching {
         "$fiatSymbol${BigDecimal(value).multiply(BigDecimal(fiatRate)).priceFormat()}"
     }.getOrDefault(value)
+
+internal fun formatPerpsMarketListPrice(value: String): String =
+    formatMarketListPrice(value, PERPS_USD_SYMBOL, 1.0)
