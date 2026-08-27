@@ -243,7 +243,9 @@ internal fun WalletHomeAccountBalance(
     ) {
         BasicText(
             text = balanceAmountText,
-            modifier = Modifier.weight(1f, fill = false),
+            modifier = Modifier
+                .weight(1f, fill = false)
+                .alignByBaseline(),
             style = AccountTextStyle.copy(
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 18.sp,
@@ -262,12 +264,13 @@ internal fun WalletHomeAccountBalance(
         Spacer(modifier = Modifier.width(4.dp))
         Text(
             text = "USD",
-            color = MixinAppTheme.colors.textAssist,
+            color = MixinAppTheme.colors.textPrimary,
             fontSize = 12.sp,
             lineHeight = 14.sp,
             fontWeight = FontWeight.W400,
             style = AccountTextStyle,
             maxLines = 1,
+            modifier = Modifier.alignByBaseline(),
         )
     }
 }

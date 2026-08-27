@@ -2600,7 +2600,7 @@
     <string name="no_tokens">没有代币</string>
     <string name="Debug_Wallet_Account_Visibility">钱包账户显示</string>
     <string name="Debug_Earn_Account">Earn 账户</string>
-    <string name="Earn">Earn</string>
+    <string name="Earn">理财</string>
     <string name="earn_total_earnings">总收益</string>
     <string name="earn_pending_earning">待结算收益</string>
     <string name="earn_reward_rate">收益率</string>
