@@ -480,7 +480,7 @@
     <string name="error_invalid_quote_amount">错误 10614: 输入金额太小或太大，请重新输入。</string>
     <string name="error_invalid_quote_amount_detailed">错误 10614: 金额超出最大下单金额 %1$s，请重新输入。试试限价？不受金额和币种限制。</string>
     <string name="error_no_available_quote">错误 10615: 暂不支持该交易对，请尝试切换币种。</string>
-    <string name="error_perps_order_value_too_small">错误 10650: 仓位规模太小，请调整后重试。</string>
+    <string name="error_perps_order_value_too_small">错误 %1$d: 仓位规模太小，请调整后重试。</string>
     <string name="error_already_had_open_position">错误 10651：当前已有持仓</string>
     <string name="error_waiting_other_orders">当前市场已开仓。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit">错误 10655：仓位规模超过当前杠杆档位限制，请降低金额或杠杆。</string>

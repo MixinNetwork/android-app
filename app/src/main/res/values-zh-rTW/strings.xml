@@ -1302,7 +1302,7 @@
     <string name="error_invalid_quote_amount">錯誤 10614: 輸入金額太小或太大，請重新輸入。</string>
     <string name="error_invalid_quote_amount_detailed">錯誤 10614: 金額超出最大下單金額 %1$s，請重新輸入。試試專業模式？不受金額和幣種限制。</string>
     <string name="error_no_available_quote">錯誤10615：目前不支援此交易對，請嘗試切換到其他代幣。</string>
-    <string name="error_perps_order_value_too_small">錯誤 10650：部位規模太小。</string>
+    <string name="error_perps_order_value_too_small">錯誤 %1$d：部位規模太小。</string>
     <string name="error_already_had_open_position">錯誤 10651：當前已有持倉</string>
     <string name="error_waiting_other_orders">錯誤10652：目前市場仍在處理其他訂單，請稍後重試。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit">錯誤 10655：部位規模超過目前槓桿檔位限制，請降低金額或槓桿。</string>

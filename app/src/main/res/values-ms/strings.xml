@@ -265,6 +265,7 @@
     <string name="error_old_version">RALAT 10006: Sila kemas kini Mixin(%1$s) untuk terus menggunakan perkhidmatan ini.</string>
     <string name="error_open_location">Tidak dapat mencari aplikasi peta</string>
     <string name="error_permission">Sila buka kebenaran yang diperlukan</string>
+    <string name="error_perps_order_value_too_small">RALAT %1$d: Saiz posisi terlalu kecil.</string>
     <string name="error_phone_invalid_format">RALAT 20110: Nombor telefon tidak sah</string>
     <string name="error_phone_sms_delivery">RALAT 10003: Gagal menghantar SMS</string>
     <string name="error_phone_verification_code_expired">RALAT 20114: Kod pengesahan telefon yang telah tamat tempoh</string>

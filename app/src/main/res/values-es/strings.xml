@@ -394,6 +394,7 @@
     <string name="error_old_version">ERROR 10006: Actualiza Mixin(%1$s) para seguir usando el servicio.</string>
     <string name="error_open_location">No puedo encontrar una aplicación de mapas</string>
     <string name="error_permission">Por favor abre los permisos necesarios</string>
+    <string name="error_perps_order_value_too_small">ERROR %1$d: El tamaño de la posición es demasiado pequeño.</string>
     <string name="error_phone_invalid_format">ERROR 20110: Número de teléfono no válido</string>
     <string name="error_phone_sms_delivery">ERROR 10003: Error al entregar SMS</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Código de verificación del teléfono caducado</string>

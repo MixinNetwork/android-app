@@ -370,6 +370,7 @@
     <string name="error_old_version">エラー 10006：このサービスを引き続き使用するには、Mixin(%1$s)をアップデートしてください。</string>
     <string name="error_open_location">地図アプリがありません</string>
     <string name="error_permission">必要な権限を開いてください</string>
+    <string name="error_perps_order_value_too_small">エラー %1$d：ポジションサイズが小さすぎます。</string>
     <string name="error_phone_invalid_format">エラー 20110：無効な電話番号です</string>
     <string name="error_phone_sms_delivery">エラー 10003：SMSの送信に失敗しました</string>
     <string name="error_phone_verification_code_expired">期限切れ</string>

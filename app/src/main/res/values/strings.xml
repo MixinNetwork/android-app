@@ -486,7 +486,7 @@
     <string name="error_invalid_quote_amount">ERROR 10614: The input amount is either too small or too large, please adjust the amount.</string>
     <string name="error_invalid_quote_amount_detailed">ERROR 10614: The amount exceeds the maximum allowable value of %1$s. Please adjust the amount. Try placing a limit order? No restrictions on amount or token.</string>
     <string name="error_no_available_quote">ERROR 10615: This trading pair is currently not supported, please try switching to a different token.</string>
-    <string name="error_perps_order_value_too_small">ERROR 10650: Position size is too small.</string>
+    <string name="error_perps_order_value_too_small">ERROR %1$d: Position size is too small.</string>
     <string name="error_already_had_open_position">ERROR 10651: You already had a open position</string>
     <string name="error_waiting_other_orders">ERROR 10652: The current market is still processing other orders, please try again later.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit">ERROR 10655: Position size exceeds the limit for the selected leverage. Reduce the amount or leverage.</string>

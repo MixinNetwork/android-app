@@ -484,7 +484,7 @@
     <string name="error_invalid_quote_amount">오류 10614: 입력 금액이 너무 작거나 너무 큽니다. 금액을 조정하세요.</string>
     <string name="error_invalid_quote_amount_detailed">오류 10614: 금액이 %1$s의 최대 허용 값을 초과했습니다. 금액을 조정해주세요. 지정가 주문을 해보시겠어요? 금액이나 토큰에 제한이 없습니다.</string>
     <string name="error_no_available_quote">오류 10615: 이 거래 쌍은 현재 지원되지 않습니다. 다른 토큰으로 전환해 보십시오.</string>
-    <string name="error_perps_order_value_too_small">오류 10650: 위치 크기가 너무 작습니다.</string>
+    <string name="error_perps_order_value_too_small">오류 %1$d: 포지션 크기가 너무 작습니다.</string>
     <string name="error_already_had_open_position">오류 10651: 이미 오픈 포지션이 있습니다.</string>
     <string name="error_waiting_other_orders">오류 10652: 현재 시장에서 아직 다른 주문을 처리 중입니다. 나중에 다시 시도하십시오.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit">오류 10655: 포지션 크기가 선택한 레버리지 한도를 초과했습니다. 금액 또는 레버리지를 낮추세요.</string>
