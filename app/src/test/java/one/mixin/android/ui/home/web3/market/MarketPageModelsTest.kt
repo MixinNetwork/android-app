@@ -442,6 +442,13 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun marketListPriceUsesSpotPriceFormat() {
+        assertEquals("$1,234.50", formatMarketListPrice("1234.5", "$", 1.0))
+        assertEquals("$0.12345678", formatMarketListPrice("0.12345678", "$", 1.0))
+        assertEquals("¥2,469.00", formatMarketListPrice("1234.5", "¥", 2.0))
+    }
+
+    @Test
     fun marketFavoritesPreserveAdditionOrder() {
         listOf(MarketTopTab.CRYPTO, MarketTopTab.PERPETUAL).forEach { topTab ->
             assertEquals(

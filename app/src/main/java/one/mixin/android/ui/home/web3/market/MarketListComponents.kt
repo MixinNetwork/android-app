@@ -53,6 +53,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.extension.priceFormat
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
@@ -369,7 +370,7 @@ private fun RowScope.PerpsMarketRowContent(
             maxLines = 1,
         )
     }
-    MarketPriceText(text = "$${market.last}")
+    MarketPriceText(text = formatMarketListPrice(market.last))
     Spacer(modifier = Modifier.width(MarketPriceChangeGap))
     MarketChangeColumn(
         change = change,
@@ -628,4 +629,13 @@ private fun formatMarketPercent(change: BigDecimal): String {
 private fun formatSpotVolume(value: String): String =
     runCatching {
         "${Fiats.getSymbol()}${BigDecimal(value).multiply(BigDecimal(Fiats.getRate())).numberFormatCompact()}"
+    }.getOrDefault(value)
+
+internal fun formatMarketListPrice(
+    value: String,
+    fiatSymbol: String = Fiats.getSymbol(),
+    fiatRate: Double = Fiats.getRate(),
+): String =
+    runCatching {
+        "$fiatSymbol${BigDecimal(value).multiply(BigDecimal(fiatRate)).priceFormat()}"
     }.getOrDefault(value)
