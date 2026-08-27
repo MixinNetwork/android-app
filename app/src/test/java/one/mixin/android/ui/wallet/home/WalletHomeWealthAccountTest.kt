@@ -169,7 +169,7 @@ class WalletHomeWealthAccountTest {
     }
 
     @Test
-    fun mapsPrincipalAndTotalEarningsToTheAccountCard() {
+    fun mapsPrincipalAndRedeemableEarningsToTheAccountCard() {
         val product = WealthProduct(
             productionId = "production-1",
             assetId = "asset-1",
@@ -199,9 +199,47 @@ class WalletHomeWealthAccountTest {
 
         val account = listOf(product).toWalletHomeWealthAccounts().single()
 
-        assertEquals(0, account.balanceUsd.compareTo(BigDecimal("3000")))
+        assertEquals(0, account.balanceUsd.compareTo(BigDecimal("3036")))
         assertEquals(0, account.earningsUsd.compareTo(BigDecimal("50")))
         assertEquals("5.00%", account.apyText)
+    }
+
+    @Test
+    fun homeBalanceCountsRedeemableEarningsWhenPrincipalIsZero() {
+        val product = WealthProduct(
+            productionId = "production-1",
+            assetId = "asset-1",
+            priceUsd = "1",
+            account = WealthAccountSummary(
+                totalPrincipal = "0",
+                totalEarnings = "10",
+                redeemableEarnings = "4",
+            ),
+        )
+
+        val account = listOf(product).toWalletHomeWealthAccounts().single()
+
+        assertEquals(0, account.balanceUsd.compareTo(BigDecimal("4")))
+        assertEquals(0, account.earningsUsd.compareTo(BigDecimal("10")))
+    }
+
+    @Test
+    fun homeBalanceIncludesRedeemableEarningsNotPendingTotalEarnings() {
+        val product = WealthProduct(
+            productionId = "production-1",
+            assetId = "asset-1",
+            priceUsd = "2",
+            account = WealthAccountSummary(
+                totalPrincipal = "100",
+                totalEarnings = "20",
+                redeemableEarnings = "5",
+            ),
+        )
+
+        val account = listOf(product).toWalletHomeWealthAccounts().single()
+
+        assertEquals(0, account.balanceUsd.compareTo(BigDecimal("210")))
+        assertEquals(0, account.earningsUsd.compareTo(BigDecimal("40")))
     }
 
     @Test

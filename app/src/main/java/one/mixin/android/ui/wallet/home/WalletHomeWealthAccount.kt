@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.home
 
+import one.mixin.android.api.response.WealthAccountSummary
 import one.mixin.android.api.response.WealthProduct
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.safe.TokenItem
@@ -104,7 +105,7 @@ internal fun List<WealthProduct>.toWalletHomeWealthAccounts(
             iconUrl = products.firstNotNullOfOrNull { it.iconUrl?.takeIf(String::isNotBlank) }
                 ?: asset?.iconUrl.orEmpty(),
             balanceUsd = accountValues.fold(BigDecimal.ZERO) { total, (account, priceUsd) ->
-                total + decimal(account.totalPrincipal).multiply(priceUsd)
+                total + wealthAccountUsdBalance(account, priceUsd)
             },
             earningsUsd = accountValues.fold(BigDecimal.ZERO) { total, (account, priceUsd) ->
                 total + decimal(account.totalEarnings).multiply(priceUsd)
@@ -112,6 +113,12 @@ internal fun List<WealthProduct>.toWalletHomeWealthAccounts(
             apyText = annualRateRange(products.flatMap { it.annualRates.orEmpty() }),
         )
     }
+
+// Matches iOS EarnAccount: (totalPrincipal + redeemableEarnings) * priceUsd.
+internal fun wealthAccountUsdBalance(
+    account: WealthAccountSummary,
+    priceUsd: BigDecimal,
+): BigDecimal = (decimal(account.totalPrincipal) + decimal(account.redeemableEarnings)).multiply(priceUsd)
 
 internal fun annualRateRange(annualRates: List<String>?): String? {
     val rates = annualRates.orEmpty().mapNotNull(::annualRateValue)

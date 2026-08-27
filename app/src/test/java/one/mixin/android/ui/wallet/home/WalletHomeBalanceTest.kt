@@ -17,6 +17,18 @@ class WalletHomeBalanceTest {
     }
 
     @Test
+    fun totalFiatIncludesWealthUsdConvertedWithFiatRate() {
+        val total = calculateWalletHomeTotalFiat(
+            tokenFiat = BigDecimal("100"),
+            positionUsd = BigDecimal.ZERO,
+            fiatRate = BigDecimal("2"),
+            wealthUsd = BigDecimal("10"),
+        )
+
+        assertEquals(0, total.compareTo(BigDecimal("120")))
+    }
+
+    @Test
     fun positionMarginUsdTotalKeepsPositionMarginsInUsd() {
         val total = calculateWalletHomePositionMarginUsd(
             margins = listOf("10", null, "bad", "-2.5"),
