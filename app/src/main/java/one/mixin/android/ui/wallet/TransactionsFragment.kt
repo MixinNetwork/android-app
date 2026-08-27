@@ -116,6 +116,11 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         scrollY = binding.scrollView.scrollY
     }
 
+    override fun onResume() {
+        super.onResume()
+        refreshWealthDetails()
+    }
+
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
@@ -294,7 +299,6 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         }
 
         walletViewModel.refreshAsset(asset.assetId)
-        refreshWealthDetails()
         lifecycleScope.launch {
             val depositEntry = walletViewModel.findAndSyncDepositEntry(asset.chainId, asset.assetId)
             if (depositEntry != null && depositEntry.destination.isNotBlank()) {
@@ -307,6 +311,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     private var earnProductionId: String? = null
 
     private fun refreshWealthDetails() {
+        if (!isAdded) return
         lifecycleScope.launch {
             val details = runCatching {
                 val response = walletViewModel.wealthAccounts()
@@ -315,6 +320,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     .orEmpty()
                     .toWalletWealthDetails(asset.assetId, asset.priceUsd)
             }.getOrNull()
+            if (viewDestroyed()) return@launch
 
             binding.earnCard.isVisible = details != null
             if (details != null) {
