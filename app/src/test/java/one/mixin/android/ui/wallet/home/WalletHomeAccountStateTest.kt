@@ -83,7 +83,7 @@ class WalletHomeAccountStateTest {
     }
 
     @Test
-    fun fiatAndZeroBalanceWealthShowOnlyTheCashCardRegardlessOfLoadOrder() {
+    fun fiatAndZeroBalanceWealthStillShowsBothAccountCards() {
         val wealthThenCash = baseState
             .withWealthAccounts(listOf(zeroBalanceWealthAccount))
             .withCashAccount(cashAccount)
@@ -94,7 +94,7 @@ class WalletHomeAccountStateTest {
         val expectedCards = listOf(
             WalletHomeCardType.BALANCE,
             WalletHomeCardType.BANNER,
-            WalletHomeCardType.CASH,
+            WalletHomeCardType.ACCOUNTS,
             WalletHomeCardType.POSITIONS,
         )
         assertEquals(expectedCards, wealthThenCash.cards)

@@ -15,7 +15,7 @@ data class WalletHomeWealthAccount(
     val apyText: String?,
 ) {
     val balanceAmountText: String
-        get() = balanceUsd.numberFormat2()
+        get() = usdBalanceAmountText(balanceUsd)
 
     val earningsAmountText: String
         get() {
@@ -48,27 +48,26 @@ internal fun List<WealthProduct>.toWalletWealthDetails(
         .maxWithOrNull(
             compareBy<Map.Entry<String, List<WealthProduct>>> { (_, productionProducts) ->
                 productionProducts.fold(BigDecimal.ZERO) { total, product ->
-                    total + decimal(product.account?.totalPrincipal)
+                    total + decimal(product.account.totalPrincipal)
                 }
             }.thenBy { (_, productionProducts) ->
-                maxAnnualRateValue(productionProducts.flatMap { it.annualRates.orEmpty() })
+                maxAnnualRateValue(productionProducts.flatMap { it.annualRates })
             },
         )
         ?.key
         ?: return null
 
     val totalPrincipal = products.fold(BigDecimal.ZERO) { total, product ->
-        total + decimal(product.account?.totalPrincipal)
+        total + decimal(product.account.totalPrincipal)
     }
     val totalEarnings = products.fold(BigDecimal.ZERO) { total, product ->
-        total + decimal(product.account?.totalEarnings)
+        total + decimal(product.account.totalEarnings)
     }
     val redeemableEarnings = products.fold(BigDecimal.ZERO) { total, product ->
-        total + decimal(product.account?.redeemableEarnings)
+        total + decimal(product.account.redeemableEarnings)
     }
     val assetPriceUsd = priceUsd.toBigDecimalOrNull()
         ?.takeIf { it > BigDecimal.ZERO }
-        ?: products.firstNotNullOfOrNull { it.priceUsd?.toBigDecimalOrNull() }
         ?: BigDecimal.ZERO
     return WalletWealthDetails(
         productionId = selectedProductionId,
@@ -79,7 +78,7 @@ internal fun List<WealthProduct>.toWalletWealthDetails(
             .multiply(assetPriceUsd),
         rewardRate = annualRateRange(
             filter { it.productionId in productionIds }
-                .flatMap { it.annualRates.orEmpty() },
+                .flatMap { it.annualRates },
         ),
     )
 }
@@ -87,22 +86,19 @@ internal fun List<WealthProduct>.toWalletWealthDetails(
 internal fun List<WealthProduct>.toWalletHomeWealthAccounts(
     assetItems: Map<String, TokenItem> = emptyMap(),
 ): List<WalletHomeWealthAccount> =
-    groupBy { it.assetId }.mapNotNull { (assetId, products) ->
+    groupBy { it.assetId }.map { (assetId, products) ->
         val asset = assetItems[assetId]
-        val accountValues = products.mapNotNull { product ->
-            val account = product.account ?: return@mapNotNull null
-            val priceUsd = (product.priceUsd ?: asset?.priceUsd)
+        val accountValues = products.map { product ->
+            val priceUsd = asset?.priceUsd
                 ?.toBigDecimalOrNull()
                 ?.takeIf { it > BigDecimal.ZERO }
-                ?: return@mapNotNull null
-            account to priceUsd
+                ?: BigDecimal.ZERO
+            product.account to priceUsd
         }
-        if (accountValues.isEmpty()) return@mapNotNull null
         WalletHomeWealthAccount(
             assetId = assetId,
-            assetSymbol = products.firstNotNullOfOrNull { it.assetSymbol?.takeIf(String::isNotBlank) }
-                ?: asset?.symbol.orEmpty(),
-            iconUrl = products.firstNotNullOfOrNull { it.iconUrl?.takeIf(String::isNotBlank) }
+            assetSymbol = asset?.symbol.orEmpty(),
+            iconUrl = products.firstNotNullOfOrNull { it.iconUrl.takeIf(String::isNotBlank) }
                 ?: asset?.iconUrl.orEmpty(),
             balanceUsd = accountValues.fold(BigDecimal.ZERO) { total, (account, priceUsd) ->
                 total + wealthAccountUsdBalance(account, priceUsd)
@@ -110,7 +106,7 @@ internal fun List<WealthProduct>.toWalletHomeWealthAccounts(
             earningsUsd = accountValues.fold(BigDecimal.ZERO) { total, (account, priceUsd) ->
                 total + decimal(account.totalEarnings).multiply(priceUsd)
             },
-            apyText = annualRateRange(products.flatMap { it.annualRates.orEmpty() }),
+            apyText = annualRateRange(products.flatMap { it.annualRates }),
         )
     }
 
@@ -152,9 +148,8 @@ internal fun WalletHomeState.withWealthAccounts(
         it == WalletHomeCardType.CASH || it == WalletHomeCardType.ACCOUNTS
     }
     val hasWealthAccount = accounts.isNotEmpty()
-    val hasWealthBalance = accounts.any { it.balanceUsd.signum() != 0 }
     val accountCard = when {
-        hasWealthAccount && (cashAccount == null || hasWealthBalance) -> WalletHomeCardType.ACCOUNTS
+        hasWealthAccount -> WalletHomeCardType.ACCOUNTS
         cashAccount != null -> WalletHomeCardType.CASH
         else -> null
     }

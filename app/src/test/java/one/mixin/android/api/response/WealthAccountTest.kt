@@ -4,7 +4,6 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import one.mixin.android.api.MixinResponse
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertNull
 import org.junit.Test
 
 class WealthAccountTest {
@@ -58,18 +57,18 @@ class WealthAccountTest {
         val response = Gson().fromJson<MixinResponse<List<WealthProduct>>>(json, type)
         val products = response.data!!
         val product = products.first()
-        val account = product.account!!
+        val account = product.account
 
         assertEquals(3, products.size)
         assertEquals("production-1", product.productionId)
         assertEquals("production-1", products[1].productionId)
         assertEquals("asset-2", products[1].assetId)
         assertEquals(listOf("0.1095", "0.0730", "0.0365"), product.annualRates)
+        assertEquals("chain-1", product.chainId)
+        assertEquals("https://example.com/usdt.png", product.iconUrl)
         assertEquals("0", account.totalPrincipal)
         assertEquals("0", account.totalEarnings)
         assertEquals("0", account.redeemableEarnings)
-        assertNull(product.annualRateTiers)
-        assertNull(product.sharePrices)
     }
 
 }

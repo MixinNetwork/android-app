@@ -56,6 +56,8 @@ import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
 import one.mixin.android.ui.wallet.home.toWalletWealthDetails
+import one.mixin.android.ui.wallet.home.tokenAmountText
+import one.mixin.android.ui.wallet.home.usdCurrencyAmountText
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
@@ -325,9 +327,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
             binding.earnCard.isVisible = details != null
             if (details != null) {
                 earnProductionId = details.productionId
-                binding.earnTotalEarnings.text = "\$${details.totalEarningsUsd.stripTrailingZeros().toPlainString()}"
-                binding.earnTotalAmountValue.text = "${details.totalPrincipal.stripTrailingZeros().toPlainString()} ${asset.symbol}"
-                binding.earnPendingValue.text = "\$${details.pendingEarningsUsd.stripTrailingZeros().toPlainString()}"
+                binding.earnTotalEarnings.text = usdCurrencyAmountText(details.totalEarningsUsd)
+                binding.earnTotalAmountValue.text = "${tokenAmountText(details.totalPrincipal)} ${asset.symbol}"
+                binding.earnPendingValue.text = usdCurrencyAmountText(details.pendingEarningsUsd)
                 binding.earnRateValue.text = details.rewardRate
                     ?.let { getString(R.string.cash_account_apy, it) }
                     ?: getString(R.string.N_A)

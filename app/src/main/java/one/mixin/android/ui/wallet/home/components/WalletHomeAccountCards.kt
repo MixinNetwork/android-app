@@ -3,6 +3,8 @@ package one.mixin.android.ui.wallet.home.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -111,15 +113,9 @@ private fun CompactCashAccountCard(
             overflow = TextOverflow.Ellipsis,
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "\$${account.balanceAmountText}",
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 18.sp,
-            lineHeight = 21.sp,
-            fontWeight = FontWeight.W600,
-            style = AccountTextStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+        WalletHomeAccountBalance(
+            balanceAmountText = account.balanceAmountText,
+            modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -167,15 +163,9 @@ private fun CompactWealthAccountCard(
             overflow = TextOverflow.Ellipsis,
         )
         Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = "\$${account.balanceAmountText}",
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 18.sp,
-            lineHeight = 21.sp,
-            fontWeight = FontWeight.W600,
-            style = AccountTextStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+        WalletHomeAccountBalance(
+            balanceAmountText = account.balanceAmountText,
+            modifier = Modifier.fillMaxWidth(),
         )
         Spacer(modifier = Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -230,8 +220,11 @@ private fun WealthAccountCard(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.Bottom,
                 ) {
-                    WalletHomeAccountBalance(account.balanceAmountText)
-                    Spacer(modifier = Modifier.weight(1f))
+                    WalletHomeAccountBalance(
+                        balanceAmountText = account.balanceAmountText,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
                     WealthTokenIcons(accounts)
                 }
             }
@@ -248,15 +241,23 @@ internal fun WalletHomeAccountBalance(
         modifier = modifier,
         verticalAlignment = Alignment.Bottom,
     ) {
-        Text(
+        BasicText(
             text = balanceAmountText,
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 18.sp,
-            lineHeight = 21.sp,
-            fontWeight = FontWeight.W600,
-            style = AccountTextStyle,
+            modifier = Modifier.weight(1f, fill = false),
+            style = AccountTextStyle.copy(
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 18.sp,
+                lineHeight = 21.sp,
+                fontWeight = FontWeight.W600,
+            ),
             maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
+            softWrap = false,
+            overflow = TextOverflow.Clip,
+            autoSize = TextAutoSize.StepBased(
+                minFontSize = 10.sp,
+                maxFontSize = 18.sp,
+                stepSize = 0.5.sp,
+            ),
         )
         Spacer(modifier = Modifier.width(4.dp))
         Text(

@@ -29,6 +29,19 @@ class WalletHomeBalanceTest {
     }
 
     @Test
+    fun usdBalanceAmountTextTruncatesTowardZeroLikeIos() {
+        assertEquals("1.23", usdBalanceAmountText(BigDecimal("1.239")))
+        assertEquals("1,000", usdBalanceAmountText(BigDecimal("1000")))
+        assertEquals("1.2", usdBalanceAmountText(BigDecimal("1.20")))
+    }
+
+    @Test
+    fun usdCurrencyAmountTextKeepsUpToEightFractionDigits() {
+        assertEquals("$0.00040002", usdCurrencyAmountText(BigDecimal("0.00040002")))
+        assertEquals("$40", usdCurrencyAmountText(BigDecimal("40")))
+    }
+
+    @Test
     fun positionMarginUsdTotalKeepsPositionMarginsInUsd() {
         val total = calculateWalletHomePositionMarginUsd(
             margins = listOf("10", null, "bad", "-2.5"),

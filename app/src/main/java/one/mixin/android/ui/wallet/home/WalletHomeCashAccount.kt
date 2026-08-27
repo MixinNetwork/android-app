@@ -3,7 +3,6 @@ package one.mixin.android.ui.wallet.home
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.api.response.CashAccount
 import one.mixin.android.api.response.WalletHomeBanner
-import one.mixin.android.extension.numberFormat2
 import java.math.BigDecimal
 
 data class WalletHomeCashAccount(
@@ -13,7 +12,7 @@ data class WalletHomeCashAccount(
     val rewardApy: String? = null,
 ) {
     val balanceAmountText: String
-        get() = balanceUsd.numberFormat2()
+        get() = usdBalanceAmountText(balanceUsd)
 
     val apyText: String?
         get() = cashAccountApyText(rewardApy)
