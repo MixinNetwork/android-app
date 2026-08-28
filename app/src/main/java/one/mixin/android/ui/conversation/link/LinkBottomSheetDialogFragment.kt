@@ -1106,7 +1106,17 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         
         if (type.equals("perps", true) || type.equals("perpetual", true)) {
             val marketId = uri.getQueryParameter("market")
+            val hasLeaderPositionId = "position_id" in uri.queryParameterNames
+            val leaderPositionId = uri.getQueryParameter("position_id")
+            if (hasLeaderPositionId && (leaderPositionId == null || !leaderPositionId.isUUID())) {
+                showError(R.string.Data_error)
+                return
+            }
             if (marketId.isNullOrBlank() || !marketId.isUUID()) {
+                if (hasLeaderPositionId) {
+                    showError(R.string.Data_error)
+                    return
+                }
                 defaultSharedPreferences.putInt(
                     "$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}",
                     TAB_PERPETUAL,
@@ -1138,6 +1148,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 } else {
                     AnalyticsTracker.MarketDetailSource.SCHEMA
                 },
+                leaderPositionId = leaderPositionId,
             )
             closeSourceWebActivityIfNeeded()
             dismiss()

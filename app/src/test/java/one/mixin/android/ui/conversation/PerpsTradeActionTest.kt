@@ -52,6 +52,40 @@ class PerpsTradeActionTest {
     }
 
     @Test
+    fun parsesPerpsLeaderPositionId() {
+        val action = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&position_id=45d4c134-5682-4b1a-baf5-7c73b1590cc1"
+
+        assertEquals(
+            PerpsTradeAction(
+                marketId = "e015f42e-b0ff-38e7-87b1-7e8d46fea119",
+                leaderPositionId = "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
+            ),
+            action.toPerpsTradeAction(),
+        )
+    }
+
+    @Test
+    fun rejectsInvalidPerpsLeaderPositionId() {
+        val action = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&position_id=invalid"
+
+        assertNull(action.toPerpsTradeAction())
+    }
+
+    @Test
+    fun rejectsMalformedEncodedPerpsLeaderPositionId() {
+        val action = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&position_id=%ZZ"
+
+        assertNull(action.toPerpsTradeAction())
+    }
+
+    @Test
+    fun rejectsPerpsLeaderPositionIdWithoutMarket() {
+        val action = "https://mixin.one/trade?type=perps&position_id=45d4c134-5682-4b1a-baf5-7c73b1590cc1"
+
+        assertNull(action.toPerpsTradeAction())
+    }
+
+    @Test
     fun parsesMixinPerpetualTradeAction() {
         val action = "mixin://mixin.one/trade?type=perpetual&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119"
 
@@ -121,6 +155,17 @@ class PerpsTradeActionTest {
         assertEquals(
             WalletHomeBannerActionTarget.Buy,
             "https://mixin.one/buy".toClassicWalletHomeBannerActionTarget(),
+        )
+    }
+
+    @Test
+    fun classicBannerActionKeepsPerpsLeaderPositionId() {
+        assertEquals(
+            WalletHomeBannerActionTarget.PerpsMarket(
+                marketId = "e015f42e-b0ff-38e7-87b1-7e8d46fea119",
+                leaderPositionId = "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
+            ),
+            "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&position_id=45d4c134-5682-4b1a-baf5-7c73b1590cc1".toClassicWalletHomeBannerActionTarget(),
         )
     }
 

@@ -444,6 +444,7 @@ class PerpetualViewModel @Inject constructor(
         takeProfitPrice: String? = null,
         stopLossPrice: String? = null,
         destination: String? = null,
+        leaderPositionId: String? = null,
         entryPrice: String,
         onSuccess: (OpenOrderResponse) -> Unit,
         onError: (Int, String) -> Unit
@@ -459,7 +460,8 @@ class PerpetualViewModel @Inject constructor(
                     walletId = walletId,
                     takeProfitPrice = takeProfitPrice,
                     stopLossPrice = stopLossPrice,
-                    destination = destination
+                    destination = destination,
+                    leaderPositionId = leaderPositionId,
                 )
                 
                 val response = withContext(Dispatchers.IO) {

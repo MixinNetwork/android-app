@@ -378,6 +378,7 @@ fun String.checkTradeUrl(
 
 internal data class PerpsTradeAction(
     val marketId: String?,
+    val leaderPositionId: String?,
 )
 
 internal data class SpotTradeAction(
@@ -399,9 +400,13 @@ internal fun String.toPerpsTradeAction(): PerpsTradeAction? {
         return null
     }
 
-    val marketId = query.queryParameter("market")?.takeIf(String::isNotBlank) ?: return PerpsTradeAction(null)
+    val hasLeaderPositionId = query.hasQueryParameter("position_id")
+    val leaderPositionId = query.queryParameter("position_id")
+    if (hasLeaderPositionId && (leaderPositionId == null || !leaderPositionId.isUUID())) return null
+    val marketId = query.queryParameter("market")?.takeIf(String::isNotBlank)
+        ?: return if (!hasLeaderPositionId) PerpsTradeAction(null, null) else null
     if (!marketId.isUUID()) return null
-    return PerpsTradeAction(marketId)
+    return PerpsTradeAction(marketId, leaderPositionId)
 }
 
 internal fun String.toSpotTradeAction(): SpotTradeAction? {
@@ -494,6 +499,7 @@ private suspend fun openLocalPerpsTradeAction(
         market.displaySymbol,
         market.tokenSymbol,
         tradeSource(context),
+        leaderPositionId = action.leaderPositionId,
     )
     closeSourceWebActivityIfNeeded(context)
     return true
@@ -538,6 +544,11 @@ private fun String.queryParameter(name: String): String? =
             if (key == name) value else null
         }
         .firstOrNull()
+
+private fun String.hasQueryParameter(name: String): Boolean =
+    split("&").any { parameter ->
+        parameter.substringBefore("=").urlDecode() == name
+    }
 
 private fun String.urlDecode(): String? =
     runCatching { URLDecoder.decode(this, StandardCharsets.UTF_8.name()) }.getOrNull()

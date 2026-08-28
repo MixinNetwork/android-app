@@ -939,6 +939,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                     "",
                     "",
                     AnalyticsTracker.PerpsSource.WALLET_HOME,
+                    leaderPositionId = target.leaderPositionId,
                 )
             }
             WalletHomeBannerActionTarget.PerpsTab -> {

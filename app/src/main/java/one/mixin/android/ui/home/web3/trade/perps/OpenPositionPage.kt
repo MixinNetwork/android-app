@@ -127,10 +127,12 @@ fun OpenPositionPage(
     isLong: Boolean,
     source: String,
     onBack: () -> Unit,
+    onOrderCreated: () -> Unit = {},
     onOpenSuccess: (String) -> Unit = { onBack() },
     selectedToken: TokenItem?,
     onTokenSelect: () -> Unit = {},
     onCurrentTokenChange: (TokenItem?) -> Unit = {},
+    leaderPositionId: String? = null,
 ) {
     val context = LocalContext.current
     val waitingOtherOrdersError = stringResource(R.string.error_waiting_other_orders)
@@ -783,8 +785,10 @@ fun OpenPositionPage(
                                 // Null means "leave TP/SL unset" when creating a new position.
                                 takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
                                 stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
+                                leaderPositionId = leaderPositionId,
                                 entryPrice = m.last,
                                 onSuccess = { response ->
+                                    onOrderCreated()
                                     PerpsConfirmBottomSheetDialogFragment.newInstance(
                                         marketSymbol = m.displaySymbol,
                                         marketIcon = m.iconUrl,

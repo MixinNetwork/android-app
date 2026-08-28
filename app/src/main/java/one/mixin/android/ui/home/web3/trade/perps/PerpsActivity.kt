@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,6 +26,7 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
@@ -48,7 +50,14 @@ class PerpsActivity : BaseActivity() {
     private val viewModel by viewModels<PerpetualViewModel>()
 
     private var selectedToken by mutableStateOf<TokenItem?>(null)
+    private var leaderPositionId by mutableStateOf<String?>(null)
     private var renderJob: Job? = null
+    private val openPositionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            intent.removeExtra(EXTRA_LEADER_POSITION_ID)
+            leaderPositionId = null
+        }
+    }
 
     companion object {
         private const val EXTRA_MARKET_ID = "extra_market_id"
@@ -59,6 +68,7 @@ class PerpsActivity : BaseActivity() {
         private const val EXTRA_IS_LONG = "extra_is_long"
         private const val EXTRA_SOURCE = "extra_source"
         private const val EXTRA_RETURN_TO_DETAIL = "extra_return_to_detail"
+        private const val EXTRA_LEADER_POSITION_ID = "extra_leader_position_id"
         private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 
         const val MODE_DETAIL = "detail"
@@ -72,6 +82,7 @@ class PerpsActivity : BaseActivity() {
             marketTokenSymbol: String = "",
             source: String? = null,
             reuseCurrentActivity: Boolean = true,
+            leaderPositionId: String? = null,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
                 if (context !is Activity) {
@@ -86,6 +97,7 @@ class PerpsActivity : BaseActivity() {
                 putExtra(EXTRA_MARKET_TOKEN_SYMBOL, marketTokenSymbol)
                 putExtra(EXTRA_MODE, MODE_DETAIL)
                 source?.let { putExtra(EXTRA_SOURCE, it) }
+                leaderPositionId?.let { putExtra(EXTRA_LEADER_POSITION_ID, it) }
             }
             context.startActivity(intent)
         }
@@ -99,6 +111,7 @@ class PerpsActivity : BaseActivity() {
             isLong: Boolean,
             source: String,
             returnToDetail: Boolean = false,
+            leaderPositionId: String? = null,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
                 if (context !is Activity) {
@@ -112,8 +125,14 @@ class PerpsActivity : BaseActivity() {
                 putExtra(EXTRA_IS_LONG, isLong)
                 putExtra(EXTRA_SOURCE, source)
                 putExtra(EXTRA_RETURN_TO_DETAIL, returnToDetail)
+                leaderPositionId?.let { putExtra(EXTRA_LEADER_POSITION_ID, it) }
             }
-            context.startActivity(intent)
+            val hostActivity = context.findFragmentActivityOrNull() as? PerpsActivity
+            if (hostActivity != null && returnToDetail && leaderPositionId != null) {
+                hostActivity.openPositionLauncher.launch(intent)
+            } else {
+                context.startActivity(intent)
+            }
         }
     }
 
@@ -140,6 +159,7 @@ class PerpsActivity : BaseActivity() {
         val isLong = currentIntent.getBooleanExtra(EXTRA_IS_LONG, true)
         val source = currentIntent.getStringExtra(EXTRA_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL
         val returnToDetail = currentIntent.getBooleanExtra(EXTRA_RETURN_TO_DETAIL, false)
+        leaderPositionId = currentIntent.getStringExtra(EXTRA_LEADER_POSITION_ID)
 
         if (mode == MODE_OPEN_POSITION) {
             renderJob = lifecycleScope.launch {
@@ -163,6 +183,11 @@ class PerpsActivity : BaseActivity() {
                             isLong = isLong,
                             source = source,
                             onBack = { finish() },
+                            onOrderCreated = {
+                                if (returnToDetail && leaderPositionId != null) {
+                                    setResult(Activity.RESULT_OK)
+                                }
+                            },
                             onOpenSuccess = { openedMarketId ->
                                 if (returnToDetail) {
                                     finish()
@@ -174,7 +199,8 @@ class PerpsActivity : BaseActivity() {
                             onTokenSelect = { showTokenSelection() },
                             onCurrentTokenChange = { token ->
                                 selectedToken = token
-                            }
+                            },
+                            leaderPositionId = leaderPositionId,
                         )
                     }
                 }
@@ -206,6 +232,7 @@ class PerpsActivity : BaseActivity() {
                         onBack = { finish() },
                         onSharePosition = ::showSharePosition,
                         source = source,
+                        leaderPositionId = leaderPositionId,
                     )
                 }
             }
