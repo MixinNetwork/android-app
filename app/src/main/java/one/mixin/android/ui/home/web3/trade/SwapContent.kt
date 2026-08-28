@@ -202,11 +202,11 @@ fun SwapContent(
     fromToken?.let { from ->
         val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
         val rawFromBalanceValue = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        val availableFromBalanceValue = if (from.isNativeSolAsset()) {
-            nativeSolSpendableBalance(rawFromBalanceValue)
-        } else {
-            rawFromBalanceValue
-        }
+        val availableFromBalanceValue = swapSpendableBalance(
+            rawBalance = rawFromBalanceValue,
+            isNativeSol = from.isNativeSolAsset(),
+            inMixin = inMixin,
+        )
         val availableFromBalance = availableFromBalanceValue.stripTrailingZeros().toPlainString()
 
         KeyboardAwareBox(
@@ -436,6 +436,15 @@ internal fun shouldShowSwapRecommendedMarketCards(
     isSendFocused: Boolean,
     isKeyboardVisible: Boolean,
 ): Boolean = inMixin && hasRecommendedCards && inputText.isBlank() && !isSendFocused && !isKeyboardVisible
+
+internal fun swapSpendableBalance(
+    rawBalance: BigDecimal,
+    isNativeSol: Boolean,
+    inMixin: Boolean,
+): BigDecimal {
+    if (!isNativeSol) return rawBalance
+    return if (inMixin) rawBalance else nativeSolSpendableBalance(rawBalance)
+}
 
 internal fun shouldResetSwapSendFocusState(
     inputText: String,

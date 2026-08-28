@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade
 
+import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -46,6 +47,54 @@ class TradeInputTest {
         assertEquals(
             "12.123456789",
             limitTradeInputDecimalPlaces("12.123456789", maxDecimalPlaces = null)
+        )
+    }
+
+    @Test
+    fun inMixinNativeSolSwapUsesFullBalance() {
+        assertEquals(
+            BigDecimal("1"),
+            swapSpendableBalance(
+                rawBalance = BigDecimal("1"),
+                isNativeSol = true,
+                inMixin = true,
+            ),
+        )
+    }
+
+    @Test
+    fun selfCustodyNativeSolSwapStillReservesRent() {
+        assertEquals(
+            BigDecimal("0.99910912"),
+            swapSpendableBalance(
+                rawBalance = BigDecimal("1"),
+                isNativeSol = true,
+                inMixin = false,
+            ),
+        )
+    }
+
+    @Test
+    fun nonNativeSwapBalanceIsUnchanged() {
+        assertEquals(
+            BigDecimal("1"),
+            swapSpendableBalance(
+                rawBalance = BigDecimal("1"),
+                isNativeSol = false,
+                inMixin = true,
+            ),
+        )
+    }
+
+    @Test
+    fun selfCustodyNonNativeSwapBalanceIsUnchanged() {
+        assertEquals(
+            BigDecimal("1"),
+            swapSpendableBalance(
+                rawBalance = BigDecimal("1"),
+                isNativeSol = false,
+                inMixin = false,
+            ),
         )
     }
 }
