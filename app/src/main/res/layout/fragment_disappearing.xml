@@ -113,7 +113,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/disappearing_option_1"
+                    android:text="@string/disappearing_option_4"
                     android:textSize="16sp"
                     tools:ignore="RelativeOverlap" />
 
@@ -155,7 +155,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/disappearing_option_2"
+                    android:text="@string/disappearing_option_5"
                     android:textSize="16sp"
                     tools:ignore="RelativeOverlap" />
 
@@ -197,7 +197,7 @@
                     android:layout_height="wrap_content"
                     android:layout_centerVertical="true"
                     android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/disappearing_option_3"
+                    android:text="@string/disappearing_option_month"
                     android:textSize="16sp"
                     tools:ignore="RelativeOverlap" />
 
@@ -223,92 +223,6 @@
                     android:theme="@style/AppTheme.BlueAccent"
                     android:visibility="gone" />
             </RelativeLayout>
-
-            <RelativeLayout
-                android:id="@+id/disappearing_option_4"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/item_contact_height"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground">
-
-                <TextView
-                    android:id="@+id/disappearing_option_4_title"
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/disappearing_option_4"
-                    android:textSize="16sp"
-                    tools:ignore="RelativeOverlap" />
-
-                <ImageView
-                    android:id="@+id/disappearing_option_4_iv"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:src="@drawable/ic_check_blue_24dp"
-                    android:visibility="gone"
-                    tools:ignore="ContentDescription" />
-
-                <ProgressBar
-                    android:id="@+id/disappearing_option_4_pb"
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:theme="@style/AppTheme.BlueAccent"
-                    android:visibility="gone" />
-            </RelativeLayout>
-
-
-            <RelativeLayout
-                android:id="@+id/disappearing_option_5"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/item_contact_height"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackground">
-
-                <TextView
-                    android:id="@+id/disappearing_option_5_title"
-                    style="@style/NormalTextStyle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerVertical="true"
-                    android:layout_marginStart="@dimen/activity_horizontal_margin"
-                    android:text="@string/disappearing_option_5"
-                    android:textSize="16sp"
-                    tools:ignore="RelativeOverlap" />
-
-                <ImageView
-                    android:id="@+id/disappearing_option_5_iv"
-                    android:layout_width="20dp"
-                    android:layout_height="20dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:src="@drawable/ic_check_blue_24dp"
-                    android:visibility="gone"
-                    tools:ignore="ContentDescription" />
-
-                <ProgressBar
-                    android:id="@+id/disappearing_option_5_pb"
-                    style="?android:attr/progressBarStyleSmall"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="@dimen/activity_horizontal_margin"
-                    android:theme="@style/AppTheme.BlueAccent"
-                    android:visibility="gone" />
-            </RelativeLayout>
-
 
             <RelativeLayout
                 android:id="@+id/disappearing_option_6"

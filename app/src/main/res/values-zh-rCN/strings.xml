@@ -380,13 +380,14 @@
     <string name="Disable_web_debug">已关闭 Web 调试</string>
     <string name="Disabled">已停用</string>
     <string name="disappearing_message">限时消息</string>
-    <string name="disappearing_message_hint">启用后，在此聊天中发送和接收的新信息在被看到后会消失，阅读文档以**了解更多**。</string>
+    <string name="disappearing_message_hint">启用后，在此聊天中发送和接收的新消息将在一段时间后消失，阅读文档以**了解更多**。</string>
     <string name="disappearing_message_url">https://support.mixin.one/zh/article/5aac5l2v5bya5zcv6zmq5pe25rai5ogv77yf-18dzv5i</string>
     <string name="disappearing_option_1">30 秒</string>
     <string name="disappearing_option_2">10 分</string>
     <string name="disappearing_option_3">2 小时</string>
     <string name="disappearing_option_4">1 天</string>
     <string name="disappearing_option_5">1 周</string>
+    <string name="disappearing_option_month">1 个月</string>
     <string name="DISCARD">放弃</string>
     <string name="Dismiss_as_Admin">撤销管理员身份</string>
     <string name="divide">、</string>

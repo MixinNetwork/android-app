@@ -15,6 +15,9 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.picker.INTERVAL_DAY
+import one.mixin.android.widget.picker.INTERVAL_MONTH
+import one.mixin.android.widget.picker.INTERVAL_WEEK
 import one.mixin.android.widget.picker.toTimeInterval
 import one.mixin.android.widget.picker.toTimeIntervalIndex
 import timber.log.Timber
@@ -53,8 +56,6 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                 disappearingOption1Iv,
                 disappearingOption2Iv,
                 disappearingOption3Iv,
-                disappearingOption4Iv,
-                disappearingOption5Iv,
                 disappearingOption6Iv,
             )
         }
@@ -67,8 +68,6 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                 disappearingOption1Pb,
                 disappearingOption2Pb,
                 disappearingOption3Pb,
-                disappearingOption4Pb,
-                disappearingOption5Pb,
                 disappearingOption6Pb,
             )
         }
@@ -77,13 +76,11 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
     private fun Long?.initOption() {
         when {
             this == null || this <= 0 -> updateOptionCheck(0)
-            this == 30L -> updateOptionCheck(1)
-            this == 600L -> updateOptionCheck(2)
-            this == 7200L -> updateOptionCheck(3)
-            this == 86400L -> updateOptionCheck(4)
-            this == 604800L -> updateOptionCheck(5)
+            this == INTERVAL_DAY -> updateOptionCheck(1)
+            this == INTERVAL_WEEK -> updateOptionCheck(2)
+            this == INTERVAL_MONTH -> updateOptionCheck(3)
             else -> {
-                updateOptionCheck(6)
+                updateOptionCheck(4)
                 binding.disappearingOption6Interval.text = toTimeInterval(this)
             }
         }
@@ -106,19 +103,13 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                     updateUI(0, 0L)
                 }
                 disappearingOption1.setOnClickListener {
-                    updateUI(1, 30L)
+                    updateUI(1, INTERVAL_DAY)
                 }
                 disappearingOption2.setOnClickListener {
-                    updateUI(2, 600L)
+                    updateUI(2, INTERVAL_WEEK)
                 }
                 disappearingOption3.setOnClickListener {
-                    updateUI(3, 7200L)
-                }
-                disappearingOption4.setOnClickListener {
-                    updateUI(4, 86400L)
-                }
-                disappearingOption5.setOnClickListener {
-                    updateUI(5, 604800L)
+                    updateUI(3, INTERVAL_MONTH)
                 }
 
                 disappearingOption6.setOnClickListener {
@@ -126,10 +117,20 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                         .apply {
                             onSetCallback {
                                 this@DisappearingFragment.lifecycleScope.launch {
+                                    val index = when (it) {
+                                        INTERVAL_DAY -> 1
+                                        INTERVAL_WEEK -> 2
+                                        INTERVAL_MONTH -> 3
+                                        else -> 4
+                                    }
+                                    if (it == timeInterval) {
+                                        updateOptionCheck(index)
+                                        return@launch
+                                    }
                                     disappearingOption6Iv.isVisible = false
                                     disappearingOption6Interval.isVisible = false
                                     disappearingOption6Arrow.isVisible = false
-                                    updateUI(6, it)
+                                    updateUI(index, it)
                                     disappearingOption6Interval.text = toTimeInterval(it)
                                     Timber.e(
                                         "Set interval ${toTimeInterval(it)} ${
@@ -203,7 +204,7 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
         for ((i, iv) in checkGroup.withIndex()) {
             iv.isVisible = index == i
         }
-        binding.disappearingOption6Arrow.isVisible = index != 6
-        binding.disappearingOption6Interval.isVisible = index == 6
+        binding.disappearingOption6Arrow.isVisible = index != 4
+        binding.disappearingOption6Interval.isVisible = index == 4
     }
 }
