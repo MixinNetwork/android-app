@@ -596,8 +596,17 @@ class WebFragment : BaseFragment() {
                         errorCode == ERROR_TIMEOUT
                     ) {
                         _binding?.apply {
+                            val descriptionRes =
+                                if (isBot()) {
+                                    R.string.web_bot_cannot_reached_desc
+                                } else {
+                                    R.string.web_cannot_reached_desc
+                                }
                             failLoadView.webFailDescription.text =
-                                getString(R.string.web_cannot_reached_desc, failingUrl)
+                                getString(
+                                    descriptionRes,
+                                    webLoadErrorTarget(app, failingUrl),
+                                )
                             failLoadView.isVisible = true
                         }
                     }
