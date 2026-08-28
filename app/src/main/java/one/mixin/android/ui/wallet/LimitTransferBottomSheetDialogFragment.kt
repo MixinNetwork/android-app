@@ -62,7 +62,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
-import one.mixin.android.api.request.web3.WEB3_FEE_TYPE_FREE
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.web3.EthGaslessTxPayload
@@ -950,7 +949,6 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             account = fromAddress,
             to = toAddress,
             assetId = token.assetId,
-            feeType = WEB3_FEE_TYPE_FREE,
         )
         if (!response.isSuccess) {
             throw IllegalStateException(response.errorDescription)
