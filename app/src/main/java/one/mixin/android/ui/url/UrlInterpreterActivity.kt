@@ -173,6 +173,10 @@ class UrlInterpreterActivity : BaseActivity() {
                     finish()
                 }
             }
+            "" -> {
+                MainActivity.show(this)
+                finish()
+            }
             else -> {
                 toast(R.string.Invalid_Link)
                 finish()
