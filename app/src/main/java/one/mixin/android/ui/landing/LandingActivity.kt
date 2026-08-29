@@ -63,23 +63,25 @@ class LandingActivity : BaseActivity() {
         SystemUIManager.setSafePadding(window, color = colorFromAttribute(R.attr.bg_white), imePadding = true)
         checkVersion()
         setContentView(binding.root)
-        val pin = intent.getStringExtra(ARGS_PIN)
-        val from = intent.getIntExtra(ARGS_FROM, -1)
-        val phoneNumber = intent.getStringExtra(ARGS_PHONE_NUM)
-        val fragment =
-            if (pin != null) {
-                MobileFragment.newInstance(pin, FROM_CHANGE_PHONE_ACCOUNT)
-            } else if (from == FROM_CHANGE_PHONE_ACCOUNT) {
-                MobileFragment.newInstance(from = FROM_CHANGE_PHONE_ACCOUNT)
-            } else if (from == FROM_VERIFY_MOBILE_REMINDER) {
-                MobileFragment.newInstance(from = FROM_VERIFY_MOBILE_REMINDER, phoneNumber = phoneNumber)
-            } else {
-                lifecycleScope.launch(Dispatchers.IO) {
-                    jobManager.clear()
+        if (shouldInitializeLanding(savedInstanceState != null)) {
+            val pin = intent.getStringExtra(ARGS_PIN)
+            val from = intent.getIntExtra(ARGS_FROM, -1)
+            val phoneNumber = intent.getStringExtra(ARGS_PHONE_NUM)
+            val fragment =
+                if (pin != null) {
+                    MobileFragment.newInstance(pin, FROM_CHANGE_PHONE_ACCOUNT)
+                } else if (from == FROM_CHANGE_PHONE_ACCOUNT) {
+                    MobileFragment.newInstance(from = FROM_CHANGE_PHONE_ACCOUNT)
+                } else if (from == FROM_VERIFY_MOBILE_REMINDER) {
+                    MobileFragment.newInstance(from = FROM_VERIFY_MOBILE_REMINDER, phoneNumber = phoneNumber)
+                } else {
+                    lifecycleScope.launch(Dispatchers.IO) {
+                        jobManager.clear()
+                    }
+                    LandingFragment.newInstance()
                 }
-                LandingFragment.newInstance()
-            }
-        replaceFragment(fragment, R.id.container)
+            replaceFragment(fragment, R.id.container)
+        }
     }
 
     private fun checkVersion(){
@@ -93,3 +95,5 @@ class LandingActivity : BaseActivity() {
         }
     }
 }
+
+internal fun shouldInitializeLanding(hasSavedInstanceState: Boolean) = !hasSavedInstanceState
