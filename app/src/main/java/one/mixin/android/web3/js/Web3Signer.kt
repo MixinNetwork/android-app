@@ -7,6 +7,7 @@ import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
+import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.EIP7702SignRequest
@@ -64,6 +65,8 @@ object Web3Signer {
         data object Solana : JsSignerNetwork("solana")
 
         data object Pearl : JsSignerNetwork("pearl")
+
+        data object Tron : JsSignerNetwork("tron")
     }
 
     private const val TAG = "Web3Signer"
@@ -80,6 +83,7 @@ object Web3Signer {
         const val SOLANA_ADDRESS = "signer_solana_address"
         const val BTC_ADDRESS = "signer_btc_address"
         const val PEARL_ADDRESS = "signer_pearl_address"
+        const val TRON_ADDRESS = "signer_tron_address"
         const val PATH = "signer_path"
         const val CURRENT_WALLET_CATEGORY = "signer_current_wallet_category"
         const val CLASSIC_WALLET_ID = "signer_classic_wallet_id"
@@ -97,6 +101,8 @@ object Web3Signer {
         private set
     var pearlAddress: String = ""
         private set
+    var tronAddress: String = ""
+        private set
     var path: String = ""
         private set
     var currentWalletId: String = ""
@@ -108,7 +114,6 @@ object Web3Signer {
     var currentChain: Chain = Chain.Ethereum
         private set
 
-    // now only ETH and SOL
     var currentNetwork = JsSignerNetwork.Ethereum.name
         private set
 
@@ -122,6 +127,7 @@ object Web3Signer {
         solanaAddress = sp.getString(Keys.SOLANA_ADDRESS, "") ?: ""
         btcAddress = sp.getString(Keys.BTC_ADDRESS, "") ?: ""
         pearlAddress = sp.getString(Keys.PEARL_ADDRESS, "") ?: ""
+        tronAddress = sp.getString(Keys.TRON_ADDRESS, "") ?: ""
         path = sp.getString(Keys.PATH, "") ?: ""
         currentWalletId = sp.getString(Keys.SELECTED_WEB3_WALLET_ID, "") ?: ""
         currentWalletCategory = sp.getString(Keys.CURRENT_WALLET_CATEGORY, WalletCategory.CLASSIC.value)
@@ -129,7 +135,11 @@ object Web3Signer {
         classicWalletId = sp.getString(Keys.CLASSIC_WALLET_ID, "") ?: ""
         currentChain = findChainByHex(sp.getString(Keys.CURRENT_CHAIN, Chain.Ethereum.hexReference))
             ?: Chain.Ethereum
-        currentNetwork = if (currentChain == Chain.Solana) JsSignerNetwork.Solana.name else JsSignerNetwork.Ethereum.name
+        currentNetwork = when (currentChain) {
+            Chain.Solana -> JsSignerNetwork.Solana.name
+            Chain.Tron -> JsSignerNetwork.Tron.name
+            else -> JsSignerNetwork.Ethereum.name
+        }
     }
 
     private fun persist() {
@@ -138,6 +148,7 @@ object Web3Signer {
         sp.putString(Keys.SOLANA_ADDRESS, solanaAddress)
         sp.putString(Keys.BTC_ADDRESS, btcAddress)
         sp.putString(Keys.PEARL_ADDRESS, pearlAddress)
+        sp.putString(Keys.TRON_ADDRESS, tronAddress)
         sp.putString(Keys.PATH, path)
         sp.putString(Keys.SELECTED_WEB3_WALLET_ID, currentWalletId)
         sp.putString(Keys.CURRENT_WALLET_CATEGORY, currentWalletCategory)
@@ -156,6 +167,7 @@ object Web3Signer {
             Chain.BinanceSmartChain.hexReference -> Chain.BinanceSmartChain
             Chain.HyperEVM.hexReference -> Chain.HyperEVM
             Chain.Solana.hexReference -> Chain.Solana
+            Chain.Tron.hexReference -> Chain.Tron
             else -> null
         }
     }
@@ -167,6 +179,7 @@ object Web3Signer {
         when (network) {
             JsSignerNetwork.Solana.name -> solanaAddress = address
             JsSignerNetwork.Pearl.name -> pearlAddress = address
+            JsSignerNetwork.Tron.name -> tronAddress = address
             else -> evmAddress = address
         }
         persist()
@@ -185,6 +198,13 @@ object Web3Signer {
         address = solanaAddress
         currentChain = Chain.Solana
         currentNetwork = JsSignerNetwork.Solana.name
+        persist()
+    }
+
+    fun useTron() {
+        address = tronAddress
+        currentChain = Chain.Tron
+        currentNetwork = JsSignerNetwork.Tron.name
         persist()
     }
 
@@ -244,6 +264,7 @@ object Web3Signer {
             path = addresses.firstOrNull {
                 it.chainId in Constants.Web3ChainIds ||
                     it.chainId == SOLANA_CHAIN_ID ||
+                    it.chainId == TRON_CHAIN_ID ||
                     it.chainId in Constants.Web3UtxoChainIds
             }?.path ?: ""
             evmAddress =
@@ -254,12 +275,14 @@ object Web3Signer {
                     ?: ""
             btcAddress = addresses.firstOrNull {it.chainId == BITCOIN_CHAIN_ID}?.destination ?:""
             pearlAddress = addresses.firstOrNull { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }?.destination ?: ""
+            tronAddress = addresses.firstOrNull { it.chainId == TRON_CHAIN_ID }?.destination ?: ""
             address = evmAddress
         } else {
             evmAddress = ""
             solanaAddress = ""
             btcAddress = ""
             pearlAddress = ""
+            tronAddress = ""
             address = ""
             path = ""
         }
@@ -317,6 +340,12 @@ object Web3Signer {
                 currentNetwork = JsSignerNetwork.Solana.name
                 persist()
                 Result.success(Chain.Solana.name)
+            }
+            Chain.Tron.hexReference -> {
+                currentChain = Chain.Tron
+                currentNetwork = JsSignerNetwork.Tron.name
+                persist()
+                Result.success(Chain.Tron.name)
             }
             else -> {
                 Result.failure(IllegalArgumentException("No support"))

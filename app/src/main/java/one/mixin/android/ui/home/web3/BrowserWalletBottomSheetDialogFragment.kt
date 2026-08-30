@@ -27,6 +27,7 @@ import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.WalletOutput
+import one.mixin.android.crypto.TronKeyGenerator
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.getChainFromName
 import one.mixin.android.extension.base64Encode
@@ -154,7 +155,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
     private val isFeeWaived by lazy { requireArguments().getBoolean(ARGS_IS_FEE_FREE, false) }
     private val currentChain by lazy {
-        token?.getChainFromName() ?: Web3Signer.currentChain
+        if (signMessage.isTronMessage()) Chain.Tron else token?.getChainFromName() ?: Web3Signer.currentChain
     }
     private val utxoChainId: String
         get() = signMessage.utxoChainId?.takeIf { it in Constants.Web3UtxoChainIds }
@@ -192,6 +193,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         if (address.isBlank()) {
             lifecycleScope.launch {
                 address = when {
+                    signMessage.isTronMessage() -> Web3Signer.tronAddress
                     signMessage.type == JsSignMessage.TYPE_MESSAGE -> Web3Signer.address
                     signMessage.isEvmMessage() -> Web3Signer.evmAddress
                     signMessage.isSolMessage() -> Web3Signer.solanaAddress
@@ -303,6 +305,12 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private fun refreshEstimatedGasAndAsset(chain: Chain) {
+        if (signMessage.isTronMessage()) {
+            lifecycleScope.launch {
+                asset = viewModel.refreshAsset(Constants.ChainId.TRON_CHAIN_ID)
+            }
+            return
+        }
         if (signMessage.isGaslessTransfer()) {
             lifecycleScope.launch {
                 asset = viewModel.refreshAsset(feeToken?.assetId ?: chain.getWeb3ChainId())
@@ -406,7 +414,21 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     }
                     return@launch
                 }
-                if (signMessage.type == JsSignMessage.TYPE_UTXO_TRANSACTION) {
+                if (signMessage.type == JsSignMessage.TYPE_TRON_TRANSACTION) {
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, Constants.ChainId.TRON_CHAIN_ID)
+                    val signedTransaction = TronKeyGenerator.signTransaction(priv, requireNotNull(signMessage.data))
+                    settleJsonSuccess(signedTransaction)
+                } else if (signMessage.type == JsSignMessage.TYPE_TRON_MESSAGE) {
+                    val priv = viewModel.getWeb3Priv(requireContext(), pin, Constants.ChainId.TRON_CHAIN_ID)
+                    require(
+                        TronKeyGenerator.privateKeyToAddress(priv).equals(Web3Signer.tronAddress, ignoreCase = true)
+                    ) { "Tron signing key does not match the selected wallet" }
+                    val signature = TronKeyGenerator.signMessageV2(
+                        priv,
+                        signMessage.tronMessageBytes ?: requireNotNull(signMessage.data).toByteArray(Charsets.UTF_8),
+                    )
+                    settleSuccess(signature)
+                } else if (signMessage.type == JsSignMessage.TYPE_UTXO_TRANSACTION) {
                     val rawHex = signMessage.data ?: throw IllegalArgumentException("empty UTXO transaction hex")
                     val chainId = utxoChainId
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, chainId)
@@ -533,6 +555,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     private fun isAccountUnavailable(): Boolean =
         when {
+            signMessage.isTronMessage() -> Web3Signer.tronAddress.isBlank()
             signMessage.type == JsSignMessage.TYPE_MESSAGE -> Web3Signer.address.isBlank()
             signMessage.isSolMessage() || (signMessage.isGaslessTransfer() && currentChain == Chain.Solana) -> Web3Signer.solanaAddress.isBlank()
             signMessage.isEvmMessage() || (signMessage.isGaslessTransfer() && currentChain != Chain.Solana) -> Web3Signer.evmAddress.isBlank()
@@ -542,6 +565,12 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private fun settleSuccess(result: String) {
         settleRequest(
             "mixinwallet.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, ${JSONObject.quote(result)});",
+        )
+    }
+
+    private fun settleJsonSuccess(result: String) {
+        settleRequest(
+            "mixinwallet.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, $result);",
         )
     }
 

@@ -52,6 +52,7 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
     private var solAddressInfo: Web3Address? = null
     private var btcAddressInfo: Web3Address? = null
     private var pearlAddressInfo: Web3Address? = null
+    private var tronAddressInfo: Web3Address? = null
 
     @Inject
     lateinit var web3Repository: Web3Repository
@@ -84,6 +85,7 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                 solAddressInfo = viewModel.getAddressesByChainId(it, Constants.ChainId.SOLANA_CHAIN_ID)
                 btcAddressInfo = viewModel.getAddressesByChainId(it, Constants.ChainId.BITCOIN_CHAIN_ID)
                 pearlAddressInfo = viewModel.getAddressesByChainId(it, Constants.ChainId.PEARL_CHAIN_ID)
+                tronAddressInfo = viewModel.getAddressesByChainId(it, Constants.ChainId.TRON_CHAIN_ID)
             }
         }
 
@@ -101,7 +103,7 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                 onComplete = { words ->
                     lifecycleScope.launch {
                         val saved = viewModel.saveWeb3PrivateKey(requireContext(), viewModel.getSpendKey()!!, walletId!!, words)
-                        if (!saved || !ensureUtxoAddresses(walletId, words)) {
+                        if (!saved || !ensureUtxoAddresses(walletId, words) || !ensureTronAddress(walletId, words)) {
                             toast(R.string.Save_failure)
                             return@launch
                         }
@@ -146,12 +148,18 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                 return getString(R.string.reimport_mnemonic_phrase_error)
             }
         }
+        tronAddressInfo?.let {
+            val derivedAddress = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.TRON_CHAIN_ID, "", requireNotNull(index))
+            if (!derivedAddress.equals(it.destination, ignoreCase = true)) {
+                return getString(R.string.reimport_mnemonic_phrase_error)
+            }
+        }
         return null
     }
 
     private fun resolveDerivationIndex(): Int? {
         return CryptoWalletHelper.extractIndexFromPaths(
-            listOf(evmAddressInfo?.path, solAddressInfo?.path, btcAddressInfo?.path, pearlAddressInfo?.path)
+            listOf(evmAddressInfo?.path, solAddressInfo?.path, btcAddressInfo?.path, pearlAddressInfo?.path, tronAddressInfo?.path)
         )
     }
 
@@ -163,9 +171,10 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
         }
         val evmAddress: Web3Address? = viewModel.getAddressesByChainId(walletId, Constants.ChainId.ETHEREUM_CHAIN_ID)
         val solAddress: Web3Address? = viewModel.getAddressesByChainId(walletId, Constants.ChainId.SOLANA_CHAIN_ID)
+        val tronAddress: Web3Address? = viewModel.getAddressesByChainId(walletId, Constants.ChainId.TRON_CHAIN_ID)
         val derivationIndex = requireNotNull(
             CryptoWalletHelper.extractIndexFromPaths(
-                listOf(evmAddress?.path, solAddress?.path, btcAddress?.path, pearlAddress?.path)
+                listOf(evmAddress?.path, solAddress?.path, btcAddress?.path, pearlAddress?.path, tronAddress?.path)
             )
         )
         val mnemonicPhrase: String = mnemonic.joinToString(" ")
@@ -215,6 +224,51 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
         return true
     }
 
+    private suspend fun ensureTronAddress(walletId: String, mnemonic: List<String>): Boolean {
+        if (viewModel.getAddressesByChainId(walletId, Constants.ChainId.TRON_CHAIN_ID) != null) {
+            return true
+        }
+        val derivationIndex = requireNotNull(
+            CryptoWalletHelper.extractIndexFromPaths(
+                listOf(
+                    viewModel.getAddressesByChainId(walletId, Constants.ChainId.ETHEREUM_CHAIN_ID)?.path,
+                    viewModel.getAddressesByChainId(walletId, Constants.ChainId.SOLANA_CHAIN_ID)?.path,
+                    viewModel.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)?.path,
+                    viewModel.getAddressesByChainId(walletId, Constants.ChainId.PEARL_CHAIN_ID)?.path,
+                )
+            )
+        )
+        val derivedWallet = CryptoWalletHelper.mnemonicToTronWallet(
+            mnemonic.joinToString(" "),
+            index = derivationIndex,
+        )
+        val request = createSignedWeb3AddressRequest(
+            destination = derivedWallet.address,
+            chainId = Constants.ChainId.TRON_CHAIN_ID,
+            path = Bip44Path.tronPathString(derivationIndex),
+            privateKey = derivedWallet.privateKey,
+            category = WalletCategory.IMPORTED_MNEMONIC.value,
+        )
+        val response = web3Repository.updateWallet(
+            walletId,
+            WalletRequest(name = null, category = null, addresses = listOf(request)),
+        )
+        if (!response.isSuccess) {
+            Timber.e("Failed to update Tron address walletId=$walletId errorCode=${response.errorCode} errorDescription=${response.errorDescription}")
+            return false
+        }
+        val updatedWallet = response.data ?: return false
+        val validatedAddress =
+            validateWalletAddressUpdateResponse(walletId, listOf(request), updatedWallet)?.singleOrNull()
+                ?: run {
+                    Timber.e("Rejected mismatched Tron address update response walletId=$walletId")
+                    return false
+                }
+        web3Repository.insertAddressList(listOf(validatedAddress))
+        jobManager.addJobInBackground(RefreshSingleWalletJob(walletId))
+        return true
+    }
+
     private suspend fun validateMnemonicForOtherWallets(mnemonic: List<String>) {
         val mnemonicPhrase: String = mnemonic.joinToString(" ")
         val currentSpendKey: ByteArray? = viewModel.getSpendKey()
@@ -226,6 +280,7 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                 val solAddress: Web3Address? = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.SOLANA_CHAIN_ID)
                 val btcAddress: Web3Address? = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.BITCOIN_CHAIN_ID)
                 val pearlAddress: Web3Address? = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.PEARL_CHAIN_ID)
+                val tronAddress: Web3Address? = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.TRON_CHAIN_ID)
                 val isEvmMatch: Boolean = evmAddress?.let { address: Web3Address ->
                     val index: Int = requireNotNull(CryptoWalletHelper.extractIndexFromPath(address.path!!))
                     val derivedAddress: String = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.ETHEREUM_CHAIN_ID, "", index)
@@ -246,12 +301,18 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                     val derivedAddress: String = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.PEARL_CHAIN_ID, "", index)
                     derivedAddress.equals(address.destination, ignoreCase = true)
                 } ?: false
+                val isTronMatch: Boolean = tronAddress?.let { address: Web3Address ->
+                    val index: Int = requireNotNull(CryptoWalletHelper.extractIndexFromPath(address.path!!))
+                    val derivedAddress: String = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.TRON_CHAIN_ID, "", index)
+                    derivedAddress.equals(address.destination, ignoreCase = true)
+                } ?: false
                 val isWalletMatch: Boolean =
                     (evmAddress == null || isEvmMatch) &&
                         (solAddress == null || isSolanaMatch) &&
                         (btcAddress == null || isBtcMatch) &&
                         (pearlAddress == null || isPearlMatch) &&
-                        (isEvmMatch || isSolanaMatch || isBtcMatch || isPearlMatch)
+                        (tronAddress == null || isTronMatch) &&
+                        (isEvmMatch || isSolanaMatch || isBtcMatch || isPearlMatch || isTronMatch)
                 if (!isWalletMatch) {
                     return@forEach
                 }
@@ -267,6 +328,12 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                     .onFailure { Timber.e(it, "Failed to update reimported wallet ${wallet.id}") }
                     .getOrDefault(false)
                 if (!updated) {
+                    return@forEach
+                }
+                val tronUpdated = runCatching { ensureTronAddress(wallet.id, mnemonic) }
+                    .onFailure { Timber.e(it, "Failed to update Tron address for reimported wallet ${wallet.id}") }
+                    .getOrDefault(false)
+                if (!tronUpdated) {
                     return@forEach
                 }
                 RxBus.publish(WalletRefreshedEvent(wallet.id, WalletOperationType.CREATE))
