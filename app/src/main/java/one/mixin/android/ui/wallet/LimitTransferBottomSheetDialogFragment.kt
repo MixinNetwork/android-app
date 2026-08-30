@@ -62,7 +62,6 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
-import one.mixin.android.api.request.web3.WEB3_FEE_TYPE_FREE
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
 import one.mixin.android.api.response.web3.EthGaslessTxPayload
@@ -73,6 +72,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainFromName
+import one.mixin.android.db.web3.vo.isTransferSupported
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
@@ -135,6 +135,20 @@ import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
+
+internal enum class LimitSenderAddressRoute {
+    SOLANA,
+    UTXO,
+    EVM,
+    UNSUPPORTED,
+}
+
+internal fun resolveLimitSenderAddressRoute(chainId: String): LimitSenderAddressRoute = when {
+    chainId == Constants.ChainId.Solana -> LimitSenderAddressRoute.SOLANA
+    chainId in Constants.Web3UtxoChainIds -> LimitSenderAddressRoute.UTXO
+    chainId in Constants.Web3EvmChainIds -> LimitSenderAddressRoute.EVM
+    else -> LimitSenderAddressRoute.UNSUPPORTED
+}
 
 @AndroidEntryPoint
 class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -711,6 +725,9 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             val token = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, inAsset.assetId)
             if (token != null) {
                 try {
+                    if (!token.isTransferSupported()) {
+                        throw IllegalArgumentException(getString(R.string.Not_support))
+                    }
                     this@LimitTransferBottomSheetDialogFragment.token = token
                     chainToken = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, token.chainId)
                     asset = chainToken?.toTokenItem()
@@ -833,13 +850,14 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private suspend fun resolveSenderAddress(token: Web3TokenItem): String {
-        return if (token.chainId == Constants.ChainId.Solana) {
-            Web3Signer.solanaAddress
-        } else if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-            val btcAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, Constants.ChainId.BITCOIN_CHAIN_ID)
-            requireNotNull(btcAddress?.destination) { "btc address not found" }
-        } else {
-            Web3Signer.evmAddress
+        return when (resolveLimitSenderAddressRoute(token.chainId)) {
+            LimitSenderAddressRoute.SOLANA -> Web3Signer.solanaAddress
+            LimitSenderAddressRoute.UTXO -> {
+                val utxoAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, token.chainId)
+                requireNotNull(utxoAddress?.destination) { "utxo address not found" }
+            }
+            LimitSenderAddressRoute.EVM -> Web3Signer.evmAddress
+            LimitSenderAddressRoute.UNSUPPORTED -> throw IllegalArgumentException("Not support")
         }
     }
 
@@ -869,6 +887,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 fromAddress = fromAddress,
                 toAddress = toAddress,
                 payload = preparedResponse.payload,
+                feeAssetId = transferToken.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
                 privateKey = privateKey,
             )
             in Constants.Web3EvmChainIds -> submitEvmGaslessTransfer(
@@ -878,7 +898,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 amount = amount,
                 chainId = preparedResponse.chainId,
                 payload = preparedResponse.payload,
-                fee = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
+                feeAssetId = transferToken.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
                 privateKey = privateKey,
             )
             else -> throw IllegalArgumentException("Gasless is not supported for ${transferToken.chainId}")
@@ -891,6 +912,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         fromAddress: String,
         toAddress: String,
         payload: JsonElement,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         val rawPayload = payload.takeIf { it.isJsonPrimitive }?.asString
@@ -907,13 +930,14 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             signature != Base58.encode(ByteArray(SIGNATURE_LENGTH))
         } ?: throw IllegalStateException("Gasless Solana transaction signature is missing")
         val now = nowInUtc()
-        web3ViewModel.insertSignedPendingTransaction(
+        web3ViewModel.insertGaslessSignedPendingTransaction(
             hash = txHash,
             chainId = Constants.ChainId.Solana,
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = "0",
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             raw = rawTx,
             createdAt = now,
@@ -925,7 +949,6 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             account = fromAddress,
             to = toAddress,
             assetId = token.assetId,
-            feeType = WEB3_FEE_TYPE_FREE,
         )
         if (!response.isSuccess) {
             throw IllegalStateException(response.errorDescription)
@@ -939,7 +962,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         amount: String,
         chainId: String,
         payload: JsonElement,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         if (!payload.isJsonObject) {
@@ -972,7 +996,8 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = fee,
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,

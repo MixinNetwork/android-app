@@ -72,7 +72,6 @@ import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.GaslessFeeRequest
 import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
-import one.mixin.android.api.request.web3.WEB3_FEE_TYPE_FREE
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.web3.EthGaslessTxPayload
 import one.mixin.android.api.response.web3.GaslessTxResponse
@@ -84,20 +83,19 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainFromName
+import one.mixin.android.db.web3.vo.isTransferSupported
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.stripAmountZero
-import one.mixin.android.extension.toHex
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.TokenRepository
@@ -138,16 +136,8 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.send.UtxoTransactionSigner
 import one.mixin.android.widget.components.MixinButton
-import org.bitcoinj.base.BitcoinNetwork
-import org.bitcoinj.base.Coin
-import org.bitcoinj.base.ScriptType
-import org.bitcoinj.core.Transaction
-import org.bitcoinj.core.TransactionInput
-import org.bitcoinj.core.TransactionWitness
-import org.bitcoinj.crypto.ECKey
-import org.bitcoinj.script.Script
-import org.bitcoinj.script.ScriptBuilder
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
 import org.sol4kt.VersionedTransactionCompat
@@ -156,7 +146,6 @@ import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.nio.ByteBuffer
 import java.util.UUID
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
@@ -196,42 +185,6 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 }
         }
     }
-
-    private data class BtcSignedResult(
-        val signedHex: String,
-        val consumedOutputIds: List<String>,
-    )
-
-    private fun signBtcTransaction(unsignedRawHex: String, signingKey: ECKey, localUtxos: List<WalletOutput>): BtcSignedResult {
-        val rawTxBytes: ByteArray = unsignedRawHex.hexStringToByteArray()
-        val transaction: Transaction = Transaction.read(ByteBuffer.wrap(rawTxBytes))
-        val utxoMap: Map<String, WalletOutput> = localUtxos.associateBy { utxo -> "${utxo.transactionHash}:${utxo.outputIndex}" }
-        val scriptCode: Script = ScriptBuilder.createP2PKHOutputScript(signingKey)
-        val consumedOutputIds: MutableList<String> = mutableListOf()
-        transaction.inputs.toList().forEachIndexed { inputIndex: Int, input: TransactionInput ->
-            val prevHash: String = input.outpoint.hash().toString()
-            val prevIndex: Long = input.outpoint.index()
-            val utxoKey = "$prevHash:$prevIndex"
-            val utxo: WalletOutput = utxoMap[utxoKey] ?: throw IllegalArgumentException("Missing utxo for input[$inputIndex] $utxoKey")
-            consumedOutputIds.add(utxo.outputId)
-            val utxoAmount: Coin = Coin.parseCoin(utxo.amount)
-            if (utxoAmount.isZero) throw IllegalArgumentException("Invalid utxo amount on input[$inputIndex]")
-            val signature = transaction.calculateWitnessSignature(
-                inputIndex,
-                signingKey,
-                scriptCode,
-                utxoAmount,
-                Transaction.SigHash.ALL,
-                false,
-            )
-            val witness: TransactionWitness = TransactionWitness.of(signature.encodeToBitcoin(), signingKey.pubKey)
-            val newInput: TransactionInput = input.withScriptBytes(byteArrayOf()).withWitness(witness)
-            transaction.replaceInput(inputIndex, newInput)
-        }
-        val signedHex: String = transaction.serialize().toHex()
-        return BtcSignedResult(signedHex = signedHex, consumedOutputIds = consumedOutputIds)
-    }
-
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
@@ -505,9 +458,9 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             !isGaslessPrepared && (
                                 isGaslessLoading ||
                                     (chainId == Constants.ChainId.SOLANA_CHAIN_ID && solanaFee == null) ||
-                                    (chainId == Constants.ChainId.BITCOIN_CHAIN_ID && btcFee == null) ||
+                                    (chainId in Constants.Web3UtxoChainIds && btcFee == null) ||
                                     (chainId != Constants.ChainId.SOLANA_CHAIN_ID &&
-                                        chainId != Constants.ChainId.BITCOIN_CHAIN_ID &&
+                                        chainId !in Constants.Web3UtxoChainIds &&
                                         tipGas == null)
                             )
                         if (tipGas != null || solanaFee != null || btcFee != null || (isGaslessPrepared && previewFeeAmount != null)) {
@@ -728,15 +681,16 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 trackSwapSuccess()
                             }
 
-                            JsSignMessage.TYPE_BTC_TRANSACTION -> {
-                                val rawHex: String = signMessage.data ?: throw IllegalArgumentException("empty btc transaction hex")
-                                val priv: ByteArray = bottomViewModel.getWeb3Priv(requireContext(), pin, Constants.ChainId.BITCOIN_CHAIN_ID)
-                                val key: ECKey = ECKey.fromPrivate(priv, true)
-                                val fromAddress: String = key.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET).toString()
-                                val localUtxos: List<WalletOutput> = web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
-                                val signedResult: BtcSignedResult = signBtcTransaction(rawHex, key, localUtxos)
-                                bottomViewModel.postRawTx(signedResult.signedHex, Constants.ChainId.BITCOIN_CHAIN_ID, fromAddress, inAsset.assetId, rate = signMessage.rate)
-                                web3ViewModel.markOutputsToSigned(Web3Signer.currentWalletId, fromAddress, signedResult.signedHex, signedResult.consumedOutputIds)
+                            JsSignMessage.TYPE_UTXO_TRANSACTION -> {
+                                val rawHex: String = signMessage.data ?: throw IllegalArgumentException("empty UTXO transaction hex")
+                                val chainId = signMessage.utxoChainId ?: requireNotNull(token).chainId
+                                require(chainId in Constants.Web3UtxoChainIds) { "Unsupported UTXO chain: $chainId" }
+                                val priv = bottomViewModel.getWeb3Priv(requireContext(), pin, chainId)
+                                val fromAddress = UtxoTransactionSigner.address(priv, chainId)
+                                val localUtxos = web3ViewModel.outputsByAddress(fromAddress, chainId)
+                                val signedResult = UtxoTransactionSigner.sign(rawHex, priv, chainId, localUtxos)
+                                bottomViewModel.postRawTx(signedResult.signedHex, chainId, signedResult.fromAddress, inAsset.assetId, rate = signMessage.rate)
+                                web3ViewModel.markOutputsToSigned(Web3Signer.currentWalletId, signedResult.fromAddress, signedResult.signedHex, signedResult.consumedOutputIds, chainId)
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,
                                     System.currentTimeMillis(),
@@ -882,6 +836,9 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     val token = bottomViewModel.web3TokenItemById(Web3Signer.currentWalletId, inAsset.assetId)
                     if (token != null) {
                         try {
+                            if (!token.isTransferSupported()) {
+                                throw IllegalArgumentException(getString(R.string.Not_support))
+                            }
                             val fromAddress = resolveSenderAddress(token)
                             senderAddress = fromAddress
                             this@SwapTransferBottomSheetDialogFragment.token = token
@@ -890,13 +847,13 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             if (previewData != null) {
                                 applyPreviewData(previewData!!, token)
                             } else {
-                                val localUtxos: List<WalletOutput>? = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                    web3ViewModel.outputsByAddress(fromAddress, Constants.ChainId.BITCOIN_CHAIN_ID)
+                                val localUtxos: List<WalletOutput>? = if (token.chainId in Constants.Web3UtxoChainIds) {
+                                    web3ViewModel.outputsByAddress(fromAddress, token.chainId)
                                 } else {
                                     null
                                 }
                                 val inputAmount: String = requireArguments().getString(ARGS_IN_AMOUNT)!!
-                                if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                if (token.chainId !in Constants.Web3UtxoChainIds) {
                                     isGaslessLoading = true
                                     val gaslessPayload = try {
                                         probeGaslessAvailability(
@@ -917,7 +874,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                         return@let
                                     }
                                 }
-                                val transaction: JsSignMessage = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                val transaction: JsSignMessage = if (token.chainId in Constants.Web3UtxoChainIds) {
                                     val zeroFeeTx: JsSignMessage = token.buildTransaction(
                                         rpc = rpc,
                                         fromAddress = fromAddress,
@@ -1056,13 +1013,14 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     }
 
     private suspend fun resolveSenderAddress(token: Web3TokenItem): String {
-        return if (token.chainId == Constants.ChainId.Solana) {
-            Web3Signer.solanaAddress
-        } else if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-            val btcAddress = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, Constants.ChainId.BITCOIN_CHAIN_ID)
-            requireNotNull(btcAddress?.destination) { "btc address not found" }
-        } else {
-            Web3Signer.evmAddress
+        return when {
+            token.chainId == Constants.ChainId.Solana -> Web3Signer.solanaAddress
+            token.chainId in Constants.Web3UtxoChainIds -> {
+                val address = web3ViewModel.getAddressesByChainId(Web3Signer.currentWalletId, token.chainId)
+                requireNotNull(address?.destination) { "UTXO address not found" }
+            }
+            token.chainId in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
+            else -> throw IllegalArgumentException("Not support: ${token.chainId}")
         }
     }
 
@@ -1080,7 +1038,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
         val previewFee = previewData.feeAmount.toBigDecimalOrNull()
         when (token.chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> btcFee = previewFee
+            in Constants.Web3UtxoChainIds -> btcFee = previewFee
             Constants.ChainId.SOLANA_CHAIN_ID -> {
                 solanaFee = previewFee
                 previewData.web3Transaction.data?.let {
@@ -1173,8 +1131,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         }.getOrNull() ?: return null
         if (!response.isSuccess || response.data == null) return null
 
-        val sameAssetFee = response.data!!.fees.firstOrNull { it.assetId == token.assetId }
-        return (sameAssetFee ?: response.data!!.fees.firstOrNull())?.amount
+        return selectGaslessFeeEstimate(response.data!!.fees, token.assetId)?.amount
     }
 
     private suspend fun submitGaslessTransfer(pin: String) {
@@ -1191,6 +1148,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 fromAddress = fromAddress,
                 toAddress = toAddress,
                 payload = preparedResponse.payload,
+                feeAssetId = transferToken.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
                 privateKey = privateKey,
             )
             in Constants.Web3EvmChainIds -> submitEvmGaslessTransfer(
@@ -1200,7 +1159,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 amount = amount,
                 chainId = preparedResponse.chainId,
                 payload = preparedResponse.payload,
-                fee = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
+                feeAssetId = transferToken.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
                 privateKey = privateKey,
             )
             else -> throw IllegalArgumentException("Gasless is not supported for ${transferToken.chainId}")
@@ -1213,6 +1173,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         fromAddress: String,
         toAddress: String,
         payload: JsonElement,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         val rawPayload = payload.takeIf { it.isJsonPrimitive }?.asString
@@ -1229,13 +1191,14 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             signature != Base58.encode(ByteArray(SIGNATURE_LENGTH))
         } ?: throw IllegalStateException("Gasless Solana transaction signature is missing")
         val now = nowInUtc()
-        web3ViewModel.insertSignedPendingTransaction(
+        web3ViewModel.insertGaslessSignedPendingTransaction(
             hash = txHash,
             chainId = Constants.ChainId.Solana,
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = "0",
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             raw = rawTx,
             createdAt = now,
@@ -1247,7 +1210,6 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             account = fromAddress,
             to = toAddress,
             assetId = token.assetId,
-            feeType = WEB3_FEE_TYPE_FREE,
         )
         if (!response.isSuccess) {
             throw IllegalStateException(response.errorDescription)
@@ -1261,7 +1223,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         amount: String,
         chainId: String,
         payload: JsonElement,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         if (!payload.isJsonObject) {
@@ -1294,7 +1257,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = fee,
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,

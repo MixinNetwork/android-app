@@ -235,6 +235,11 @@ fun SwapContent(
                     isSendFocused = isSendFocused,
                     isKeyboardVisible = availableHeight != null,
                 )
+                LaunchedEffect(availableHeight, inputText) {
+                    if (shouldResetSwapSendFocusState(inputText, availableHeight != null)) {
+                        isSendFocused = false
+                    }
+                }
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -431,6 +436,11 @@ internal fun shouldShowSwapRecommendedMarketCards(
     isSendFocused: Boolean,
     isKeyboardVisible: Boolean,
 ): Boolean = inMixin && hasRecommendedCards && inputText.isBlank() && !isSendFocused && !isKeyboardVisible
+
+internal fun shouldResetSwapSendFocusState(
+    inputText: String,
+    isKeyboardVisible: Boolean,
+): Boolean = inputText.isBlank() && !isKeyboardVisible
 
 @Composable
 fun ReviewButton(

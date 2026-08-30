@@ -524,6 +524,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             hasTransactions = recentTransactions.isNotEmpty(),
             hasImportKeyAction = currentImportKeyAction != null,
             hasPendingIndicator = pendingCount > 0,
+            isWatchWallet = isWatchWallet,
             isLoading = isLoading,
         )
         val state = WalletHomeState(

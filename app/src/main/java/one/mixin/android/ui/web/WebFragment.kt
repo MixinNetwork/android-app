@@ -142,6 +142,8 @@ import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuList
@@ -621,8 +623,17 @@ class WebFragment : BaseFragment() {
                         errorCode == ERROR_TIMEOUT
                     ) {
                         _binding?.apply {
+                            val descriptionRes =
+                                if (isBot()) {
+                                    R.string.web_bot_cannot_reached_desc
+                                } else {
+                                    R.string.web_cannot_reached_desc
+                                }
                             failLoadView.webFailDescription.text =
-                                getString(R.string.web_cannot_reached_desc, failingUrl)
+                                getString(
+                                    descriptionRes,
+                                    webLoadErrorTarget(app, failingUrl),
+                                )
                             failLoadView.isVisible = true
                         }
                     }
@@ -996,6 +1007,9 @@ class WebFragment : BaseFragment() {
                     openInBrowserAction = { url ->
                         openInBrowser(url)
                     },
+                    verifyPinAction = { callback ->
+                        verifyPin(callback)
+                    },
                 )
             if (injectable) {
                 if (mixinContextInjectable) {
@@ -1256,6 +1270,27 @@ class WebFragment : BaseFragment() {
         }
     }
 
+    private fun verifyPin(callbackFunction: String) {
+        if (viewDestroyed()) return
+
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+            val currentAppId = app?.appId
+            if (currentAppId.isNullOrBlank() || !isVerifiedBot(currentAppId)) {
+                webView.evaluateJavascript("$callbackFunction(false)") {}
+                return@launch
+            }
+
+            VerifyBottomSheetDialogFragment.newInstance().apply {
+                setOnResult { success ->
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction($success)") {}
+                    }
+                }
+            }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+        }
+    }
+
     private suspend fun isVerifiedBot(appId: String): Boolean {
         return bottomViewModel.findUserByAppId(appId)?.isVerified == true ||
             findValueByKey(Constants.Debug.botSignDebugAppKey(appId), false)
@@ -1410,14 +1445,19 @@ class WebFragment : BaseFragment() {
             )
         val viewBinding = ViewWebBottomMenuBinding.bind(view)
         if (isBot()) {
-            app?.let {
-                viewBinding.avatar.loadImage(it.iconUrl)
-                viewBinding.nameTv.text = it.name
-                viewBinding.descTv.text = it.appNumber
+            app?.let { app ->
+                viewBinding.avatar.loadImage(app.iconUrl)
+                viewBinding.nameTv.setTextOnly(app.name)
+                viewBinding.descTv.text = app.appNumber
+                lifecycleScope.launch {
+                    bottomViewModel.findUserByAppId(app.appId)?.let { user ->
+                        viewBinding.nameTv.setVerifiedName(app.name, user.isVerified == true)
+                    }
+                }
             }
             viewBinding.avatar.isVisible = true
         } else {
-            viewBinding.nameTv.text = binding.titleTv.text
+            viewBinding.nameTv.setTextOnly(binding.titleTv.text.toString())
             viewBinding.descTv.text = webView.url
             viewBinding.avatar.isVisible = false
         }
@@ -2297,6 +2337,7 @@ class WebFragment : BaseFragment() {
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
         var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
         var openInBrowserAction: ((String) -> Boolean)? = null,
+        var verifyPinAction: ((String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -2344,6 +2385,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun openInBrowser(url: String): Boolean {
             return openInBrowserAction?.invoke(url) ?: false
+        }
+
+        @JavascriptInterface
+        fun verifyPin(callbackFunction: String) {
+            verifyPinAction?.invoke(callbackFunction)
         }
 
         @JavascriptInterface

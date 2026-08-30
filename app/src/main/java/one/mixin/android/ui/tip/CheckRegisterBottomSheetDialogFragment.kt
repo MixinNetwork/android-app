@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
+import one.mixin.android.Constants.ChainId.PEARL_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
@@ -60,6 +61,9 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
 
     @Inject
     lateinit var tipCounterSynced: TipCounterSyncedLiveData
+
+    @Inject
+    lateinit var tipFlowInteractor: TipFlowInteractor
 
     @SuppressLint("RestrictedApi")
     override fun setupDialog(
@@ -165,9 +169,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
                 val account = requireNotNull(meResp.data) { "required account can not be null" }
                 Session.storeAccount(account)
                 if (account.hasSafe) {
-                    dismiss()
-                    AnalyticsTracker.trackLoginEnd()
-                    toast(R.string.Successful)
+                    finishSafeRegistration(pin)
                     return
                 }
             } else {
@@ -203,13 +205,7 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
             if (resp.isSuccess) {
                 val account = requireNotNull(resp.data) { "required account can not be null" }
                 Session.storeAccount(account)
-                val solAddress = bottomViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
-                Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
-                val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
-                Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
-                dismiss()
-                AnalyticsTracker.trackLoginEnd()
-                toast(R.string.Successful)
+                finishSafeRegistration(pin)
             } else {
                 val error = requireNotNull(resp.error)
                 val errorCode = error.code
@@ -226,6 +222,22 @@ class CheckRegisterBottomSheetDialogFragment : BiometricBottomSheetDialogFragmen
             reportException(msg, e)
             showErrorWhenRegisterFailed(pin, e.message ?: "register public key failed, please retry")
         }
+    }
+
+    private suspend fun finishSafeRegistration(pin: String) {
+        if (tipFlowInteractor.ensureClassicWallet(requireContext(), pin) == null) {
+            showErrorWhenRegisterFailed(pin, getString(R.string.Save_failure))
+            return
+        }
+        val solAddress = bottomViewModel.getTipAddress(requireContext(), pin, SOLANA_CHAIN_ID)
+        Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
+        val evmAddress = bottomViewModel.getTipAddress(requireContext(), pin, ETHEREUM_CHAIN_ID)
+        Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
+        val pearlAddress = bottomViewModel.getTipAddress(requireContext(), pin, PEARL_CHAIN_ID)
+        Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Pearl.name, pearlAddress)
+        dismiss()
+        AnalyticsTracker.trackLoginEnd()
+        toast(R.string.Successful)
     }
 
     private fun showErrorWhenRefreshAccountFailed(errorString: String) {

@@ -41,7 +41,7 @@ import java.math.RoundingMode
 import java.text.DecimalFormat
 
 private const val RECOMMENDED_MARKET_COLUMNS = 4
-private const val RECOMMENDED_MARKET_LIMIT = 8
+internal const val SWAP_RECOMMENDED_MARKET_LIMIT = 8
 private val RecommendedMarketIconSize = 42.dp
 
 enum class SwapRecommendedMarketType {
@@ -75,7 +75,7 @@ fun SwapRecommendedMarketCards(
             titleRes = R.string.Trending,
             type = SwapRecommendedMarketType.Trending,
             showViewAll = false,
-            items = trendingMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = trendingMarkets.take(SWAP_RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),
@@ -83,7 +83,7 @@ fun SwapRecommendedMarketCards(
             titleRes = R.string.Stocks,
             type = SwapRecommendedMarketType.Stocks,
             showViewAll = false,
-            items = stockMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = stockMarkets.take(SWAP_RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),
@@ -91,7 +91,7 @@ fun SwapRecommendedMarketCards(
             titleRes = R.string.top_gainers,
             type = SwapRecommendedMarketType.TopGainers,
             showViewAll = false,
-            items = topGainerMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = topGainerMarkets.take(SWAP_RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),
@@ -99,7 +99,7 @@ fun SwapRecommendedMarketCards(
             titleRes = R.string.top_losers,
             type = SwapRecommendedMarketType.TopLosers,
             showViewAll = false,
-            items = topLoserMarkets.take(RECOMMENDED_MARKET_LIMIT).map { market ->
+            items = topLoserMarkets.take(SWAP_RECOMMENDED_MARKET_LIMIT).map { market ->
                 market.toRecommendedMarketUiItem { onMarketClick(market) }
             },
         ),

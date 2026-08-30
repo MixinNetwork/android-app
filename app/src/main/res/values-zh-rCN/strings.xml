@@ -1220,6 +1220,7 @@
     <string name="wallet_withdrawal_changed">手续费已从 %1$s 变更为 %2$s，要更新手续费并继续提现吗？</string>
     <string name="wallet_withdrawal_not_in_addresses">%1$s 该地址不在提现地址白名单，请仔细核对地址。</string>
     <string name="wallet_withdrawal_recent_tip">你已经在 %1$s 前提现 %3$s 到 %2$s，确认还要再提一次吗？</string>
+    <string name="web_bot_cannot_reached_desc">无法访问 %1$s 网页，请检查你的网络并尝试切换 4G、Wi-Fi 或 VPN 后重新载入页面。</string>
     <string name="web_cannot_reached_desc">无法访问 %1$s，请检查你的网络并尝试切换 4G、Wi-Fi 或 VPN 后重新载入页面。</string>
     <string name="web_cannot_reached_title">无法访问此网页</string>
     <string name="web_floating_permission">你的手机没有授权 Mixin 获得浮窗权限，浮窗不能正常使用</string>
@@ -2007,6 +2008,7 @@
     <string name="Privacy_Wallet">隐私钱包</string>
     <string name="Other">其他</string>
     <string name="classic_wallet_btc_intro_title">普通钱包现已支持比特币</string>
+    <string name="classic_wallet_pearl_intro_title">普通钱包现已支持 Pearl</string>
     <string name="feature_decentralized">去中心化</string>
     <string name="feature_decentralized_description">完全去中心化的钱包，你掌控私钥。</string>
     <string name="feature_privacy_by_default">默认隐私保护</string>
@@ -2327,6 +2329,14 @@
     <string name="perps_funding_frequency">频率</string>
     <string name="perps_funding_frequency_value">1/4/8 小时</string>
     <string name="perps_receive">收到</string>
+    <string name="Trading_Fee">手续费</string>
+    <string name="perps_funding_title_interval">资金费率（%1$d小时）</string>
+    <string name="Open_Fee">开仓费</string>
+    <string name="Close_Fee">平仓费</string>
+    <string name="perps_trading_fee_overview">开仓、加仓和平仓均会产生手续费，费用按仓位价值计算，而不是按保证金计算。</string>
+    <string name="perps_trading_fee_pnl_1">仓位越大，手续费越高</string>
+    <string name="perps_trading_fee_pnl_2">仓位越小，手续费越低</string>
+    <string name="perps_trading_fee_pnl_3">已实现盈亏已扣除相关手续费</string>
     <string name="perps_liquidation_price_short">强平价格</string>
     <string name="Take_Profit_When">止盈条件</string>
     <string name="Stop_Loss_When">止损条件</string>
