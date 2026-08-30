@@ -142,7 +142,7 @@ fun SwapContent(
         inputText = limitTradeInputDecimalPlaces(initialAmount ?: "", fromMaxDecimalPlaces)
     }
     LaunchedEffect(fromMaxDecimalPlaces) {
-        inputText = limitTradeInputDecimalPlaces(inputText, fromMaxDecimalPlaces)
+        inputText = swapInputTextForMaxDecimalPlacesChange(inputText, fromMaxDecimalPlaces)
     }
 
     val shouldRefreshQuote = remember { MutableStateFlow(inputText) }
@@ -441,6 +441,11 @@ internal fun shouldResetSwapSendFocusState(
     inputText: String,
     isKeyboardVisible: Boolean,
 ): Boolean = inputText.isBlank() && !isKeyboardVisible
+
+internal fun swapInputTextForMaxDecimalPlacesChange(
+    currentInput: String,
+    maxDecimalPlaces: Int?,
+): String = limitTradeInputDecimalPlaces(currentInput, maxDecimalPlaces)
 
 @Composable
 fun ReviewButton(

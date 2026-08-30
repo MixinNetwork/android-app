@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.compose.ui.platform.ComposeView
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -28,30 +29,64 @@ class AllPositionsFragment : BaseFragment() {
         const val TAG = "AllPositionsFragment"
         private const val ARGS_POSITION_TYPE = "args_position_type"
         private const val ARGS_SOURCE = "args_source"
+        private const val ARGS_USE_TRADE_FLOW_NAVIGATOR = "args_use_trade_flow_navigator"
         private const val TYPE_OPEN = "type_open"
         private const val TYPE_CLOSED = "type_closed"
 
         fun newInstance(
             showOpenPositions: Boolean = false,
             source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS,
+            useTradeFlowNavigator: Boolean = false,
         ) = AllPositionsFragment().apply {
             arguments = Bundle().apply {
                 putString(ARGS_POSITION_TYPE, if (showOpenPositions) TYPE_OPEN else TYPE_CLOSED)
                 putString(ARGS_SOURCE, source)
+                putBoolean(ARGS_USE_TRADE_FLOW_NAVIGATOR, useTradeFlowNavigator)
             }
         }
 
-        fun newOpenInstance(source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS) =
-            newInstance(showOpenPositions = true, source = source)
+        fun newOpenInstance(
+            source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS,
+            useTradeFlowNavigator: Boolean = false,
+        ) = newInstance(
+            showOpenPositions = true,
+            source = source,
+            useTradeFlowNavigator = useTradeFlowNavigator,
+        )
 
-        fun newClosedInstance(source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS) =
-            newInstance(showOpenPositions = false, source = source)
+        fun newClosedInstance(
+            source: String = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS,
+            useTradeFlowNavigator: Boolean = false,
+        ) = newInstance(
+            showOpenPositions = false,
+            source = source,
+            useTradeFlowNavigator = useTradeFlowNavigator,
+        )
     }
 
     @Inject
     lateinit var perpsMarketDao: PerpsMarketDao
 
     private val viewModel by viewModels<PerpetualViewModel>()
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (arguments?.getBoolean(ARGS_USE_TRADE_FLOW_NAVIGATOR, false) != true) return
+        requireActivity().onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    if (isTopFragment()) {
+                        close()
+                    } else {
+                        isEnabled = false
+                        requireActivity().onBackPressedDispatcher.onBackPressed()
+                        isEnabled = true
+                    }
+                }
+            }
+        )
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -63,6 +98,7 @@ class AllPositionsFragment : BaseFragment() {
             else -> AllPositionsType.CLOSED
         }
         val source = arguments?.getString(ARGS_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS
+        val useTradeFlowNavigator = arguments?.getBoolean(ARGS_USE_TRADE_FLOW_NAVIGATOR, false) == true
         if (positionType == AllPositionsType.OPEN) {
             AnalyticsTracker.trackPerpsAllPositions(source)
         }
@@ -99,15 +135,26 @@ class AllPositionsFragment : BaseFragment() {
                                 val market = withContext(Dispatchers.IO) {
                                     perpsMarketDao.getMarket(position.marketId)
                                 }
-                                activity?.let { ctx ->
-                                    PerpsActivity.showDetail(
-                                        context = ctx,
+                                if (useTradeFlowNavigator) {
+                                    PerpsRouteNavigator.showMarketDetail(
+                                        fragmentManager = parentFragmentManager,
                                         marketId = position.marketId,
-                                        marketSymbol = market?.displaySymbol ?: "",
-                                        marketDisplaySymbol = market?.displaySymbol ?: "",
-                                        marketTokenSymbol = market?.tokenSymbol ?: "",
+                                        marketSymbol = market?.displaySymbol ?: position.displaySymbol.orEmpty(),
+                                        displaySymbol = market?.displaySymbol ?: position.displaySymbol.orEmpty(),
+                                        tokenSymbol = market?.tokenSymbol ?: position.tokenSymbol.orEmpty(),
                                         source = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS,
                                     )
+                                } else {
+                                    activity?.let { ctx ->
+                                        PerpsActivity.showDetail(
+                                            context = ctx,
+                                            marketId = position.marketId,
+                                            marketSymbol = market?.displaySymbol ?: position.displaySymbol.orEmpty(),
+                                            marketDisplaySymbol = market?.displaySymbol ?: position.displaySymbol.orEmpty(),
+                                            marketTokenSymbol = market?.tokenSymbol ?: position.tokenSymbol.orEmpty(),
+                                            source = AnalyticsTracker.PerpsSource.PERPS_ALL_POSITIONS,
+                                        )
+                                    }
                                 }
                             }
                         },
@@ -117,8 +164,14 @@ class AllPositionsFragment : BaseFragment() {
                                 .show(parentFragmentManager, PerpsBatchCloseBottomSheetDialogFragment.TAG)
                         },
                         onClosedPositionClick = { position ->
-                            activity?.supportFragmentManager?.let { fm ->
-                                fm.navigateToPerpsRoute(
+                            if (useTradeFlowNavigator) {
+                                PerpsRouteNavigator.showPositionDetail(
+                                    fragmentManager = parentFragmentManager,
+                                    order = position,
+                                    source = AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_LIST,
+                                )
+                            } else {
+                                activity?.supportFragmentManager?.navigateToPerpsRoute(
                                     PositionDetailFragment.newInstance(position, AnalyticsTracker.PerpsSource.PERPS_ACTIVITY_LIST),
                                     PositionDetailFragment.TAG,
                                     android.R.id.content,
@@ -129,5 +182,13 @@ class AllPositionsFragment : BaseFragment() {
                 }
             }
         }
+    }
+
+    private fun close() {
+        PerpsRouteNavigator.closeTopRoute(parentFragmentManager, this)
+    }
+
+    private fun isTopFragment(): Boolean {
+        return parentFragmentManager.fragments.lastOrNull { it.isVisible } == this
     }
 }
