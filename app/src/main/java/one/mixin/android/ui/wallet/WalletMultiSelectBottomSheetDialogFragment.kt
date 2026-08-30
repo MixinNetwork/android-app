@@ -43,7 +43,7 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.components.ActionBottom
+import one.mixin.android.widget.components.ActionBottom
 import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.ui.wallet.components.WalletCard
 import one.mixin.android.ui.wallet.components.WalletDestination

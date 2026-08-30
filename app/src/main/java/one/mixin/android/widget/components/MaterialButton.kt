@@ -1,8 +1,14 @@
 package one.mixin.android.widget.components
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -58,7 +64,8 @@ fun MixinButton(
     contentColor: Color = Color.White,
     disabledBackgroundColor: Color = backgroundColor.copy(alpha = 0.4f),
     disabledContentColor: Color = contentColor.copy(alpha = 0.6f),
-    content: @Composable () -> Unit,
+    text: String? = null,
+    content: (@Composable () -> Unit)? = null,
 ) {
     Button(
         onClick = onClick,
@@ -79,6 +86,80 @@ fun MixinButton(
             focusedElevation = elevation,
         ),
     ) {
-        content()
+        when {
+            text != null -> {
+                Text(
+                    text = text,
+                    color = contentColor,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W500
+                )
+            }
+            content != null -> content()
+        }
+    }
+}
+
+
+@Composable
+fun ActionButton(
+    text: String,
+    onClick: () -> Unit,
+    backgroundColor: Color,
+    contentColor: Color,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    disabledBackgroundColor: Color = backgroundColor.copy(alpha = 0.4f),
+    disabledContentColor: Color = contentColor.copy(alpha = 0.6f),
+) {
+    MixinButton(
+        onClick = onClick,
+        enabled = enabled,
+        backgroundColor = backgroundColor,
+        contentColor = contentColor,
+        disabledBackgroundColor = disabledBackgroundColor,
+        disabledContentColor = disabledContentColor,
+        shape = RoundedCornerShape(30.dp),
+        contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
+        modifier = modifier
+    ) {
+        Text(
+            text = text,
+            color = if (enabled) contentColor else disabledContentColor,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W400
+        )
+    }
+}
+
+@Composable
+fun ActionBottom(
+    modifier: Modifier,
+    cancelTitle: String,
+    confirmTitle: String,
+    cancelAction: () -> Unit,
+    confirmAction: () -> Unit,
+) {
+    Row(
+        modifier =
+            modifier
+                .background(MixinAppTheme.colors.background)
+                .padding(8.dp)
+                .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        ActionButton(
+            text = cancelTitle,
+            onClick = cancelAction,
+            backgroundColor = MixinAppTheme.colors.backgroundWindow,
+            contentColor = MixinAppTheme.colors.textPrimary
+        )
+        Box(modifier = Modifier.width(36.dp))
+        ActionButton(
+            text = confirmTitle,
+            onClick = confirmAction,
+            backgroundColor = MixinAppTheme.colors.accent,
+            contentColor = Color.White
+        )
     }
 }

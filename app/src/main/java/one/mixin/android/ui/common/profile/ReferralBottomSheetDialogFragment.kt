@@ -51,7 +51,7 @@ import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
-import one.mixin.android.ui.home.web3.components.ActionButton
+import one.mixin.android.widget.components.ActionButton
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
