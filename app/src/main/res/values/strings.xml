@@ -12,6 +12,14 @@
     <string name="a_transcript">a transcript</string>
     <string name="a_video">a video</string>
     <string name="About">About</string>
+    <string name="Use_TradingView_Candlestick_Chart">Use TradingView candlestick chart</string>
+    <string name="Candle_Time">Time</string>
+    <string name="Candle_Open">Open</string>
+    <string name="Candle_High">High</string>
+    <string name="Candle_Low">Low</string>
+    <string name="Candle_Close">Close</string>
+    <string name="Candle_Change">Chg</string>
+    <string name="Candle_Change_Percent">%Chg</string>
     <string name="about_version">Version %1$s (%2$d)</string>
     <string name="Accept">Accept</string>
     <string name="Access_denied">Access denied</string>
