@@ -1124,7 +1124,7 @@ class TokenRepository
             if (r.isSuccess) {
                 val raw = r.data!!
                 val existingPendingTransaction = web3TransactionDao.getLatestTransaction(raw.hash, raw.chainId)
-                val gaslessPendingTransaction = existingPendingTransaction?.takeIf { it.fee.isNotBlank() }
+                val gaslessPendingTransaction = existingPendingTransaction?.takeIf { it.getSponsorFee() != null }
                 web3RawTransactionDao.insertSuspend(
                     buildRawTransactionForInsert(raw, gaslessPendingTransaction, rate)
                 )
@@ -1201,7 +1201,7 @@ class TokenRepository
             var receiveAssetId: String? = null
 
             val txType = when {
-                assetId == Constants.ChainId.BITCOIN_CHAIN_ID -> TransactionType.TRANSFER_OUT.value
+                assetId in Constants.Web3UtxoChainIds -> TransactionType.TRANSFER_OUT.value
                 raw.simulateTx?.approves?.isNotEmpty() == true -> TransactionType.APPROVAL.value
                 (raw.simulateTx?.balanceChanges?.size ?: 0) > 1 -> TransactionType.SWAP.value
                 raw.simulateTx?.balanceChanges?.size == 1 -> TransactionType.TRANSFER_OUT.value
@@ -1235,17 +1235,17 @@ class TokenRepository
                 }
             }
 
-            if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                sendAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
-                receiveAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
+            if (assetId in Constants.Web3UtxoChainIds) {
+                sendAssetId = assetId
+                receiveAssetId = assetId
             }
-            if (raw.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                Timber.e("bitcoin tx,hash=%s, rate=%s", raw.hash, rate ?: "null")
+            if (raw.chainId in Constants.Web3UtxoChainIds) {
+                Timber.e("utxo tx,hash=%s, rate=%s", raw.hash, rate ?: "null")
             }
 
             val shouldFallbackToGaslessPending = sendAssetId == null && receiveAssetId == null && gaslessPendingTransaction != null
 
-            return Web3Transaction(
+            val pendingTransaction = Web3Transaction(
                 transactionHash = raw.hash,
                 chainId = raw.chainId,
                 address = resolvedAddress,
@@ -1279,6 +1279,12 @@ class TokenRepository
                 updatedAt = raw.updatedAt,
                 level = Constants.AssetLevel.GOOD,
             )
+            return gaslessPendingTransaction?.getSponsorFee()?.let { (assetId, amount) ->
+                pendingTransaction.copy(
+                    sponsorFeeAssetId = assetId,
+                    sponsorFeeAmount = amount,
+                )
+            } ?: pendingTransaction
         }
 
 
@@ -1378,6 +1384,7 @@ class TokenRepository
         category: String,
         duration: String? = null,
         limit: Int? = null,
+        persist: Boolean = true,
     ): MarketRefreshResult {
         var failure = MarketRefreshResult.Failure()
         val result: MarketRefreshResult? =
@@ -1391,42 +1398,44 @@ class TokenRepository
                 },
                 successBlock = { response ->
                     val markets = response.data.orEmpty()
-                    val now = nowInUtc()
-                    appDatabase.withTransaction {
-                        marketDao.upsertList(markets)
-                        when (category) {
-                            CATEGORY_ALL ->
-                                marketCapRankDao.replaceAll(
-                                    markets.map { market ->
-                                        MarketCapRank(
-                                            coinId = market.coinId,
-                                            marketCapRank = market.marketCapRank,
-                                            updatedAt = market.updatedAt,
-                                        )
-                                    },
-                                )
-
-                            CATEGORY_FAVORITE ->
-                                marketFavoredDao.replaceAll(
-                                    markets.map { market ->
-                                        MarketFavored(
-                                            coinId = market.coinId,
-                                            isFavored = true,
-                                            createdAt = now,
-                                        )
-                                    },
-                                )
-
-                            else ->
-                                MarketCategory.fromApiValue(category)?.let { marketCategory ->
-                                    marketCategoryDao.replaceCategory(
-                                        category = marketCategory.value,
-                                        coinIds = markets.map(Market::coinId),
+                    if (persist) {
+                        val now = nowInUtc()
+                        appDatabase.withTransaction {
+                            marketDao.upsertList(markets)
+                            when (category) {
+                                CATEGORY_ALL ->
+                                    marketCapRankDao.replaceAll(
+                                        markets.map { market ->
+                                            MarketCapRank(
+                                                coinId = market.coinId,
+                                                marketCapRank = market.marketCapRank,
+                                                updatedAt = market.updatedAt,
+                                            )
+                                        },
                                     )
-                                }
-                        }
-                        if (category == CATEGORY_ALL) {
-                            syncMarketCoins(markets, now)
+
+                                CATEGORY_FAVORITE ->
+                                    marketFavoredDao.replaceAll(
+                                        markets.map { market ->
+                                            MarketFavored(
+                                                coinId = market.coinId,
+                                                isFavored = true,
+                                                createdAt = now,
+                                            )
+                                        },
+                                    )
+
+                                else ->
+                                    MarketCategory.fromApiValue(category)?.let { marketCategory ->
+                                        marketCategoryDao.replaceCategory(
+                                            category = marketCategory.value,
+                                            coinIds = markets.map(Market::coinId),
+                                        )
+                                    }
+                            }
+                            if (category == CATEGORY_ALL) {
+                                syncMarketCoins(markets, now)
+                            }
                         }
                     }
                     MarketRefreshResult.Success(markets.map(MarketItem::fromMarket))
@@ -1739,7 +1748,8 @@ class TokenRepository
         account: String,
         assetId: String,
         amount: String,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         to: String,
         nonce: String,
         createdAt: String,
@@ -1751,24 +1761,25 @@ class TokenRepository
             account = account,
             assetId = assetId,
             amount = amount,
-            fee = fee,
+            fee = "",
             to = to,
             raw = buildGaslessSponsorPendingRawMarker(sponsorTxId),
             nonce = nonce,
             createdAt = createdAt,
             updatedAt = updatedAt,
-            sponsorFeeAssetId = assetId,
-            sponsorFeeAmount = fee,
+            sponsorFeeAssetId = feeAssetId,
+            sponsorFeeAmount = feeAmount,
         )
     }
 
-    suspend fun insertSignedPendingTransaction(
+    suspend fun insertGaslessSignedPendingTransaction(
         hash: String,
         chainId: String,
         account: String,
         assetId: String,
         amount: String,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         to: String,
         raw: String,
         createdAt: String,
@@ -1780,12 +1791,14 @@ class TokenRepository
             account = account,
             assetId = assetId,
             amount = amount,
-            fee = fee,
+            fee = "",
             to = to,
             raw = raw,
             nonce = "",
             createdAt = createdAt,
             updatedAt = updatedAt,
+            sponsorFeeAssetId = feeAssetId,
+            sponsorFeeAmount = feeAmount,
         )
     }
 
@@ -1918,19 +1931,19 @@ class TokenRepository
         hash: String,
         status: String,
         chainId: String,
-        btcRawTransactionHexToDeleteOutputs: String?,
+        utxoRawTransactionHexToDeleteOutputs: String?,
     ) {
         appDatabase.withTransaction {
             web3RawTransactionDao.insertSuspend(raw)
             web3TransactionDao.updateTransaction(hash, status, chainId)
-            if (btcRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withTransaction
-            val cleanedHex: String = btcRawTransactionHexToDeleteOutputs.removePrefix("0x").trim()
+            if (chainId !in Constants.Web3UtxoChainIds || utxoRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withTransaction
+            val cleanedHex: String = utxoRawTransactionHexToDeleteOutputs.removePrefix("0x").trim()
             if (cleanedHex.isBlank()) return@withTransaction
             val tx: Transaction = runCatching {
                 Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
             }.getOrNull() ?: return@withTransaction
             val txHash: String = tx.txId.toString()
-            walletOutputDao.deleteByTransactionHash(txHash, Constants.ChainId.BITCOIN_CHAIN_ID)
+            walletOutputDao.deleteByTransactionHash(txHash, chainId)
 
             val pendingOutpoints: Set<String> = web3RawTransactionDao.getPendingRawTransactionsByAccount(raw.account, chainId)
                 .asSequence()
@@ -1953,9 +1966,9 @@ class TokenRepository
                 if (pendingOutpoints.contains(outpointKey)) {
                     continue
                 }
-                val localOutput: WalletOutput? = walletOutputDao.outputByOutpoint(prevHash, prevIndex, Constants.ChainId.BITCOIN_CHAIN_ID)
+                val localOutput: WalletOutput? = walletOutputDao.outputByOutpoint(prevHash, prevIndex, chainId)
                 if (localOutput != null) {
-                    walletOutputDao.deleteSignedByOutpoint(prevHash, prevIndex, localOutput.address, Constants.ChainId.BITCOIN_CHAIN_ID)
+                    walletOutputDao.deleteSignedByOutpoint(prevHash, prevIndex, localOutput.address, chainId)
                 }
             }
         }

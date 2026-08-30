@@ -30,7 +30,7 @@ import one.mixin.android.extension.textColorResource
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshWeb3BitCoinJob
+import one.mixin.android.job.RefreshWeb3UtxoJob
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.widget.BottomSheet
@@ -42,15 +42,18 @@ class Web3BtcOutputsFragment : BaseFragment() {
     companion object {
         const val ARGS_WALLET_ID: String = "args_wallet_id"
         const val ARGS_ADDRESS: String = "args_address"
+        const val ARGS_CHAIN_ID: String = "args_chain_id"
 
-        fun newInstance(walletId: String, address: String) = Web3BtcOutputsFragment().withArgs {
+        fun newInstance(walletId: String, address: String, chainId: String) = Web3BtcOutputsFragment().withArgs {
             putString(ARGS_WALLET_ID, walletId)
             putString(ARGS_ADDRESS, address)
+            putString(ARGS_CHAIN_ID, chainId)
         }
     }
 
     private val walletId: String by lazy { requireNotNull(requireArguments().getString(ARGS_WALLET_ID)) }
     private val address: String by lazy { requireNotNull(requireArguments().getString(ARGS_ADDRESS)) }
+    private val chainId: String by lazy { requireNotNull(requireArguments().getString(ARGS_CHAIN_ID)) }
 
     private val web3ViewModel by viewModels<Web3ViewModel>()
 
@@ -80,7 +83,7 @@ class Web3BtcOutputsFragment : BaseFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding.titleView.apply {
-            titleTv.setTextOnly("BTC UTXO")
+            titleTv.setTextOnly(utxoTitle(chainId))
             leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
             rightAnimator.isVisible = true
             rightAnimator.setOnClickListener {
@@ -96,11 +99,16 @@ class Web3BtcOutputsFragment : BaseFragment() {
         _binding = null
     }
 
+    private fun utxoTitle(chainId: String): String = when (chainId) {
+        Constants.ChainId.PEARL_CHAIN_ID -> "PRL UTXO"
+        else -> "BTC UTXO"
+    }
+
     private fun observeOutputs() {
         lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 web3ViewModel
-                    .observeOutputsByAddress(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+                    .observeOutputsByAddress(address, chainId)
                     .collectLatest { outputs: List<WalletOutput> ->
                         adapter.submitList(outputs)
                     }
@@ -151,9 +159,9 @@ class Web3BtcOutputsFragment : BaseFragment() {
             loadingDialog?.show()
             runCatching {
                 withContext(Dispatchers.IO) {
-                    web3ViewModel.deleteOutputsByAddress(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+                    web3ViewModel.deleteOutputsByAddress(address, chainId)
                 }
-                jobManager.addJobInBackground(RefreshWeb3BitCoinJob(walletId))
+                jobManager.addJobInBackground(RefreshWeb3UtxoJob(walletId, chainId))
             }.onFailure { err ->
                 Timber.e(err)
             }

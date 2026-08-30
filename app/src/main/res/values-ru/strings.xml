@@ -1023,6 +1023,7 @@
     <string name="wallet_transfer_recent_tip">Вы уже перевели %3$s на %2$s %1$s. Вы хотите перевести его снова?</string>
     <string name="wallet_withdrawal_changed">Комиссия за снятие средств была изменена с %1$s на %2$s. Вы хотите продолжить обработку запроса?</string>
     <string name="wallet_withdrawal_recent_tip">Вы уже выводили %3$s на %2$s %1$s назад. Хотите вывести еще раз?</string>
+    <string name="web_bot_cannot_reached_desc">Веб-страница %1$s недоступна. Пожалуйста, проверьте свою сеть и попробуйте переключить 4G, Wi-Fi или VPN, чтобы перезагрузить страницу.</string>
     <string name="web_cannot_reached_desc">%1$s заняло слишком много времени для ответа. Пожалуйста, проверьте свою сеть и попробуйте переключить 4G, Wi-Fi или VPN, чтобы перезагрузить страницу.</string>
     <string name="web_cannot_reached_title">Эта веб-страница недоступна</string>
     <string name="web_floating_permission">Невозможно использовать плавающее окно, так как у Mixin нет разрешения на плавающие окна.</string>
@@ -1096,6 +1097,15 @@
     <string name="watchlist_remove_desc">%1$s больше не в вашем списке наблюдения</string>
     <string name="perps_category_meme">Мемы</string>
     <string name="perps_funding_frequency_value">1/4/8 часов</string>
+    <string name="Trading_Fee">Торговая комиссия</string>
+    <string name="perps_funding_title_interval">Финансирование (%1$d ч)</string>
+    <string name="Open_Fee">Комиссия за открытие</string>
+    <string name="Close_Fee">Комиссия за закрытие</string>
+    <string name="perps_trading_fee_overview">Комиссия взимается при открытии, увеличении или закрытии позиции. Она рассчитывается исходя из стоимости позиции, а не маржи.</string>
+    <string name="perps_trading_fee_pnl_1">Чем больше позиция, тем выше комиссия</string>
+    <string name="perps_trading_fee_pnl_2">Чем меньше позиция, тем ниже комиссия</string>
+    <string name="perps_trading_fee_pnl_3">Комиссии включены в ваш реализованный PnL</string>
     <string name="Bitcoin_Dominance">Доминирование биткоина</string>
     <string name="Perp">Бесср.</string>
+    <string name="classic_wallet_pearl_intro_title">Common Wallet теперь поддерживает Pearl</string>
 </resources>

@@ -90,6 +90,7 @@ data class Web3TokenItem(
             chainId == Constants.ChainId.Polygon -> "Polygon"
             chainId == Constants.ChainId.BinanceSmartChain -> "BNB Chain"
             chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "Bitcoin"
+            chainId == Constants.ChainId.PEARL_CHAIN_ID -> "Pearl"
             chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "Solana"
             else -> chainId
         }
@@ -198,9 +199,19 @@ fun Web3TokenItem.getChainFromName(): Chain {
         chainId == Constants.ChainId.HyperEVM -> Chain.HyperEVM
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> Chain.Solana
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> Chain.Bitcoin
+        chainId == Constants.ChainId.PEARL_CHAIN_ID -> Chain.Bitcoin
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
 }
+
+fun Web3TokenItem.isTransferSupported(): Boolean {
+    return isWeb3TransferSupported(chainId)
+}
+
+fun isWeb3TransferSupported(chainId: String): Boolean =
+    chainId in Constants.Web3EvmChainIds ||
+        chainId == Constants.ChainId.SOLANA_CHAIN_ID ||
+        chainId in Constants.Web3UtxoChainIds
 
 fun Web3TokenItem.getChainSymbolFromName(): String {
     return when {
@@ -213,6 +224,7 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
         chainId == Constants.ChainId.BinanceSmartChain -> "BNB"
         chainId == Constants.ChainId.Polygon -> "POL"
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "BTC"
+        chainId == Constants.ChainId.PEARL_CHAIN_ID -> "PRL"
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "SOL"
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
@@ -330,11 +342,12 @@ suspend fun Web3TokenItem.buildTransaction(
                 WCEthereumTransaction(fromAddress, assetKey, null, null, null, null, null, null, "0x0", data)
             }
         return JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, transaction)
-    } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+    } else if (chainId in Constants.Web3UtxoChainIds) {
         if (!localUtxos.isNullOrEmpty()) {
             val feeRate: BigDecimal = rate ?: BigDecimal.ONE
             val minFeeBtc: BigDecimal? = minFee?.toBigDecimalOrNull()
             val built: BtcTransactionBuilder.BuiltBtcTransaction = BtcTransactionBuilder.buildSendTransaction(
+                chainId = chainId,
                 fromAddress = fromAddress,
                 toAddress = toAddress,
                 amountBtc = v,
@@ -345,10 +358,11 @@ suspend fun Web3TokenItem.buildTransaction(
             Timber.e("rawTxHex: ${built.rawHex} virtualSize: ${built.virtualSize} rate: $rate")
             return JsSignMessage(
                 callbackId = 0,
-                type = JsSignMessage.TYPE_BTC_TRANSACTION,
+                type = JsSignMessage.TYPE_UTXO_TRANSACTION,
                 data = built.rawHex,
                 fee = built.feeBtc,
                 virtualSize = built.virtualSize,
+                utxoChainId = chainId,
             )
 
         } else {
@@ -358,4 +372,3 @@ suspend fun Web3TokenItem.buildTransaction(
         throw IllegalStateException("Not support: $chainId")
     }
 }
-

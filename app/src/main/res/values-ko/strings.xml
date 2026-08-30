@@ -1240,6 +1240,7 @@
     <string name="wallet_withdrawal_changed">인출 수수료가 %1$s에서 %2$s로 변경되었습니다. 요청을 계속하시겠습니까?</string>
     <string name="wallet_withdrawal_not_in_addresses">%1$s 이 주소는 출금 주소 화이트리스트에 포함되어 있지 않으니 주소를 잘 확인해주세요.</string>
     <string name="wallet_withdrawal_recent_tip">이미 %3$s를 %2$s %1$s로 출금하셨습니다. 다시 출금하시겠습니까?</string>
+    <string name="web_bot_cannot_reached_desc">%1$s 웹페이지에 접속할 수 없습니다. 네트워크를 확인하고 4G, Wi-Fi 또는 VPN을 전환하여 페이지를 새로고침해 보세요.</string>
     <string name="web_cannot_reached_desc">%1$s 응답하는 데 너무 오랜 시간이 걸렸습니다. 네트워크를 확인하고 4G, Wi-Fi 또는 VPN을 전환하여 페이지를 새로고침해 보세요.</string>
     <string name="web_cannot_reached_title">이 웹페이지에 접속할 수 없습니다</string>
     <string name="web_floating_permission">Mixin는 플로팅 창을 사용할 권한이 없으므로 플로팅할 수 없습니다.</string>
@@ -2003,6 +2004,7 @@
     <string name="Common_Wallet">공용지갑</string>
     <string name="Watch_Wallet">보기 전용 지갑</string>
     <string name="classic_wallet_btc_intro_title">이제 Common Wallet에서 비트코인을 지원합니다</string>
+    <string name="classic_wallet_pearl_intro_title">이제 Common Wallet에서 Pearl을 지원합니다</string>
     <string name="feature_decentralized">분산형</string>
     <string name="feature_decentralized_description">개인 키를 제어할 수 있는 완전히 분산된 지갑입니다.</string>
     <string name="feature_privacy_by_default">기본적으로 개인정보 보호</string>
@@ -2363,6 +2365,14 @@
     <string name="perps_funding_frequency">빈도</string>
     <string name="perps_funding_frequency_value">1/4/8시간</string>
     <string name="perps_receive">수신</string>
+    <string name="Trading_Fee">거래 수수료</string>
+    <string name="perps_funding_title_interval">펀딩 (%1$d시간)</string>
+    <string name="Open_Fee">진입 수수료</string>
+    <string name="Close_Fee">종료 수수료</string>
+    <string name="perps_trading_fee_overview">포지션을 열거나 추가하거나 닫을 때 수수료가 발생합니다. 수수료는 증거금이 아닌 포지션 가치를 기준으로 계산됩니다.</string>
+    <string name="perps_trading_fee_pnl_1">포지션이 클수록 수수료가 높아집니다</string>
+    <string name="perps_trading_fee_pnl_2">포지션이 작을수록 수수료가 낮아집니다</string>
+    <string name="perps_trading_fee_pnl_3">실현 손익에는 관련 수수료가 차감되어 있습니다</string>
     <string name="perps_liquidation_price_short">청산가</string>
     <string name="Take_Profit_When">이익을 얻을 때</string>
     <string name="Stop_Loss_When">손절매 시점</string>

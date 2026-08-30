@@ -1018,6 +1018,7 @@
     <string name="wallet_transfer_recent_tip">你已經在 %1$s 給 %2$s 轉賬了 %3$s，確認還要再轉一次嗎？</string>
     <string name="wallet_withdrawal_changed">手續費已從 %1$s 變更為 %2$s，要更新手續費並繼續提現嗎？</string>
     <string name="wallet_withdrawal_recent_tip">你已經在 %1$s 前提現 %3$s 到 %2$s，確認還要再提一次嗎？</string>
+    <string name="web_bot_cannot_reached_desc">無法訪問 %1$s 網頁，請檢查你的網路並嘗試切換 4G、Wi-Fi 或 VPN 後重新載入頁面。</string>
     <string name="web_cannot_reached_desc">無法訪問 %1$s，請檢查你的網路並嘗試切換 4G、Wi-Fi 或 VPN 後重新載入頁面。</string>
     <string name="web_cannot_reached_title">無法訪問此網頁</string>
     <string name="web_floating_permission">你的手機沒有授權 Mixin 獲得浮窗許可權，浮窗不能正常使用</string>
@@ -1087,6 +1088,7 @@
     <string name="Transfer_timeout">長時間未收到數據是否退出？</string>
     <string name="Receivers">交易接收人</string>
     <string name="classic_wallet_btc_intro_title">普通錢包現已支援比特幣</string>
+    <string name="classic_wallet_pearl_intro_title">普通錢包現已支援 Pearl</string>
     <string name="feature_decentralized">去中心化</string>
     <string name="feature_decentralized_description">完全去中心化的錢包，你掌控私鑰。</string>
     <string name="feature_privacy_by_default">默認隱私保護</string>
@@ -2450,6 +2452,14 @@
     <string name="perps_funding_frequency">頻率</string>
     <string name="perps_funding_frequency_value">1/4/8 小時</string>
     <string name="perps_receive">收到</string>
+    <string name="Trading_Fee">手續費</string>
+    <string name="perps_funding_title_interval">資金費率（%1$d小時）</string>
+    <string name="Open_Fee">開倉費</string>
+    <string name="Close_Fee">平倉費</string>
+    <string name="perps_trading_fee_overview">開倉、加倉和平倉均會產生手續費，費用按倉位價值計算，而不是按保證金計算。</string>
+    <string name="perps_trading_fee_pnl_1">倉位越大，手續費越高</string>
+    <string name="perps_trading_fee_pnl_2">倉位越小，手續費越低</string>
+    <string name="perps_trading_fee_pnl_3">已實現盈虧已扣除相關手續費</string>
     <string name="perps_liquidation_price_short">強平價格</string>
     <string name="lock_in_profits_description">價格達到觸發價時自動平倉，及時鎖定利潤</string>
     <string name="prevent_further_loss_description">價格跌至觸發價時自動平倉，幫助控制虧損</string>

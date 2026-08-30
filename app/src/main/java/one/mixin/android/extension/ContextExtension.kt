@@ -1143,6 +1143,7 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
     when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
+        Constants.ChainId.PEARL_CHAIN_ID -> getString(R.string.deposit_tip_common, asset.symbol)
         Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID -> getString(R.string.deposit_tip_lightning)
         Constants.ChainId.EOS_CHAIN_ID,
         Constants.ChainId.SOLANA_CHAIN_ID,
@@ -1163,6 +1164,7 @@ fun Fragment.getTipsByAsset(asset: Web3TokenItem, chain: Web3Chain?) =
     when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
+        Constants.ChainId.PEARL_CHAIN_ID -> getString(R.string.deposit_tip_common, asset.symbol)
         else -> getString(R.string.deposit_tip_chain, asset.symbol, chain?.name ?: getChainName(asset.chainId, asset.chainName, asset.assetKey))
     }
 
