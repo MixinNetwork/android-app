@@ -1014,6 +1014,7 @@
     <string name="wallet_transfer_recent_tip">あなたは%1$sに%2$sへ同額の送金をしています。再度%3$sを送金しますか？</string>
     <string name="wallet_withdrawal_changed">出金手数料が%1$sから%2$sへ変更されました。このまま出金を行いますか？</string>
     <string name="wallet_withdrawal_recent_tip">あなたは%1$sに同額の出金を%2$sへ送っています。再度%3$sを出金しますか？</string>
+    <string name="web_bot_cannot_reached_desc">%1$s のウェブページにアクセスできません。ネットワーク設定を確認してページをリロードしてください。</string>
     <string name="web_cannot_reached_desc">%1$s 接続に時間がかかり過ぎています、ネットワーク設定を確認してページをリロードしてください。</string>
     <string name="web_cannot_reached_title">アクセスできません</string>
     <string name="web_floating_permission">Floating機能を使うため、設定から許可してください</string>
