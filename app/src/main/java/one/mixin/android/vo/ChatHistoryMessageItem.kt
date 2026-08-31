@@ -66,7 +66,9 @@ class ChatHistoryMessageItem(
     val quoteId: String? = null,
     val quoteContent: String? = null,
     val mentions: String? = null,
-    val membership: Membership? = null
+    val membership: Membership? = null,
+    val participantUserId: String? = null,
+    val participantFullName: String? = null,
 ) : ICategory {
     companion object {
         val DIFF_CALLBACK =
@@ -168,8 +170,8 @@ fun ChatHistoryMessageItem.toMessageItem(conversationId: String? = null): Messag
         thumbImage,
         mediaUrl,
         mediaDuration,
-        null,
-        null,
+        participantFullName,
+        participantUserId,
         null,
         null,
         null,
@@ -203,7 +205,8 @@ fun ChatHistoryMessageItem.toMessageItem(conversationId: String? = null): Messag
         quoteContent,
         null,
         mentions = null,
-        null,
+        isPin = null,
+        membership = membership,
     )
 }
 
