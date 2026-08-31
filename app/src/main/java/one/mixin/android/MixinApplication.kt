@@ -29,9 +29,11 @@ import coil3.util.DebugLogger
 import coil3.video.VideoFrameDecoder
 import com.bugsnag.android.Bugsnag
 import com.bugsnag.android.Configuration as BugsnagConfiguration
-import com.appsflyer.AppsFlyerConversionListener
 import com.appsflyer.AppsFlyerLib
+import com.appsflyer.share.AppsFlyerConversionListener
+import com.appsflyer.share.attribution.AppsFlyerRequestListener
 import com.google.android.gms.net.CronetProviderInstaller
+import com.google.android.gms.tasks.Tasks
 import com.google.firebase.analytics.FirebaseAnalytics
 import dagger.hilt.EntryPoint
 import dagger.hilt.InstallIn
@@ -54,7 +56,6 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.di.AppModule.API_UA
-import one.mixin.android.di.ApplicationScope
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStackTraceInfo
 import one.mixin.android.extension.isNightMode
@@ -215,31 +216,31 @@ open class MixinApplication :
         if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
             return
         }
-        AppsFlyerLib.getInstance().init(BuildConfig.APPSFLYER_DEV_KEY, object : AppsFlyerConversionListener {
-            override fun onConversionDataSuccess(conversionData: Map<String, Any>) {
-                Timber.d("AppsFlyer Conversion Data: $conversionData")
-                if (Session.checkToken()) {
+        AppsFlyerLib.getInstance().apply {
+            init(BuildConfig.APPSFLYER_DEV_KEY, object : AppsFlyerConversionListener {
+                override fun onConversionDataSuccess(conversionData: Map<String, Any>) {
+                    Timber.d("AppsFlyer Conversion Data: $conversionData")
                     AnalyticsTracker.updateAppsFlyerConversionUserProperties(conversionData)
                 }
-            }
 
-            override fun onConversionDataFail(error: String) {
-                Timber.e("AppsFlyer Conversion Data Error: $error")
+                override fun onConversionDataFail(error: String) {
+                    Timber.e("AppsFlyer Conversion Data Error: $error")
+                }
+            }, this@MixinApplication)
+            registerSessionReadyListener {
+                startAppsFlyer()
             }
+        }
+    }
 
-            override fun onAppOpenAttribution(attributionData: Map<String, String>) {
-                Timber.d("AppsFlyer Attribution Data: $attributionData")
-            }
-
-            override fun onAttributionFailure(error: String) {
-                Timber.e("AppsFlyer Attribution Failure: $error")
-            }
-        }, this)
-        Session.getAccount()?.let { AnalyticsTracker.setAppsFlyerCustomerUserId(it) }
+    fun startAppsFlyer(userId: String? = Session.getAccountId()) {
+        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank() || !AppsFlyerLib.getInstance().isSessionReady) {
+            return
+        }
         val firebaseAnalytics = FirebaseAnalytics.getInstance(this)
         val appInstanceIdTask = firebaseAnalytics.appInstanceId
         val sessionIdTask = firebaseAnalytics.sessionId
-        com.google.android.gms.tasks.Tasks.whenAllComplete(appInstanceIdTask, sessionIdTask)
+        Tasks.whenAllComplete(appInstanceIdTask, sessionIdTask)
             .addOnCompleteListener {
                 val additionalData = mutableMapOf<String, Any>()
                 if (appInstanceIdTask.isSuccessful) {
@@ -248,17 +249,18 @@ open class MixinApplication :
                 if (sessionIdTask.isSuccessful && sessionIdTask.result != null) {
                     additionalData["ga_session_id"] = sessionIdTask.result
                 }
-                if (additionalData.isNotEmpty()) {
-                    AppsFlyerLib.getInstance().setAdditionalData(additionalData)
+                AppsFlyerLib.getInstance().apply {
+                    userId?.let { setCustomerUserId(ThirdPartyUserIdentity.appsFlyerCustomerUserId(it)) }
+                    setAdditionalData(additionalData)
+                    start(object : AppsFlyerRequestListener {
+                        override fun onSuccess() = Unit
+
+                        override fun onError(code: Int, error: String) {
+                            reportException(IllegalStateException("AppsFlyer start failed: code=$code, error=$error"))
+                        }
+                    })
                 }
             }
-    }
-
-    private fun startAppsFlyer(activity: Activity) {
-        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
-            return
-        }
-        AppsFlyerLib.getInstance().start(activity)
     }
 
     override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
@@ -442,7 +444,6 @@ open class MixinApplication :
             appAuthShown = true
         }
         if (activityReferences == 1 && activity !is AppAuthActivity && !isActivityChangingConfigurations) {
-            startAppsFlyer(activity)
             checkAndShowAppAuth(activity)
         }
     }

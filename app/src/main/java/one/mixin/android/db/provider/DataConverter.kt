@@ -136,7 +136,7 @@ fun convertToConversationItems(cursor: Cursor?): List<ConversationItem> {
                 tmpAppId,
                 tmpMentions,
                 tmpMentionCount,
-                membershipConverter.revertData(tmpMembership)
+                membershipConverter.revertData(tmpMembership),
             )
         res.add(item)
     }
@@ -410,7 +410,7 @@ fun convertToMessageItems(cursor: Cursor?): ArrayList<MessageItem> {
                 tempExpireIn,
                 tempExpireAt,
                 tempCaption,
-                membershipConverter.revertData(tempMembership)
+                membershipConverter.revertData(tempMembership),
             )
         res.add(item)
     }
@@ -1217,6 +1217,8 @@ fun convertChatHistoryMessageItem(
     val cursorIndexOfMentions = 49
     val cursorIndexOfSharedUserMembership = 50
     val cursorIndexOfMembership = 51
+    val cursorIndexOfParticipantFullName = 24
+    val cursorIndexOfParticipantUserId = 26
     val list: MutableList<ChatHistoryMessageItem> =
         ArrayList(
             cursor.count,
@@ -1436,6 +1438,18 @@ fun convertChatHistoryMessageItem(
             } else {
                 cursor.getString(cursorIndexOfMembership)
             }
+        val tmpParticipantUserId: String? =
+            if (cursor.isNull(cursorIndexOfParticipantUserId)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfParticipantUserId)
+            }
+        val tmpParticipantFullName: String? =
+            if (cursor.isNull(cursorIndexOfParticipantFullName)) {
+                null
+            } else {
+                cursor.getString(cursorIndexOfParticipantFullName)
+            }
         item =
             ChatHistoryMessageItem(
                 null,
@@ -1473,7 +1487,9 @@ fun convertChatHistoryMessageItem(
                 tmpQuoteId,
                 tmpQuoteContent,
                 tmpMentions,
-                membershipConverter.revertData(tmpMembership)
+                membershipConverter.revertData(tmpMembership),
+                tmpParticipantUserId,
+                tmpParticipantFullName,
             )
         list.add(item)
     }
