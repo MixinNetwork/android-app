@@ -569,6 +569,7 @@ object AnalyticsTracker {
         const val WATCHLIST = "watchlist"
         const val CRYPTO = "crypto"
         const val PERPETUAL = "perpetual"
+        const val STOCK = "stock"
         const val INDICATOR = "indicator"
         const val TRENDING = "trending"
         const val TOP_GAINERS = "top_gainers"
@@ -601,6 +602,7 @@ object AnalyticsTracker {
         const val TWENTY_FOUR_HOURS = "24h"
         const val SEVEN_DAYS = "7d"
         const val MARKET_CAP = "market_cap"
+        const val SCORE = "score"
     }
 
     object MarketDetailSource {

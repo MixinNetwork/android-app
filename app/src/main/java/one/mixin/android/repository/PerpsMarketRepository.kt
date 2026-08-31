@@ -2,7 +2,6 @@ package one.mixin.android.repository
 
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsFavorite
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -32,8 +31,7 @@ class PerpsMarketRepository
 
         fun observeFavoriteMarkets(): Flow<List<PerpsMarket>> = favoriteDao.observeFavoriteMarkets()
 
-        fun observeFavoriteMarketIds(): Flow<Set<String>> =
-            favoriteDao.observeFavoriteMarketIds().map { marketIds -> marketIds.toSet() }
+        fun observeFavoriteMarketIds(): Flow<List<String>> = favoriteDao.observeFavoriteMarketIds()
 
         fun observeMarketsByCategory(category: MarketCategory): Flow<List<PerpsMarket>> =
             categoryDao.observeMarketsByCategory(category.value)
@@ -50,34 +48,40 @@ class PerpsMarketRepository
 
         suspend fun syncFavoriteMarkets(): List<PerpsMarket>? {
             val markets = fetchMarkets(CATEGORY_FAVORITE) ?: return null
-            database.withTransaction {
-                marketDao.upsertList(markets)
+            return database.withTransaction {
+                val mergedMarkets = marketDao.upsertPreservingTradeVolumeScores(markets)
                 favoriteDao.replaceAll(
-                    marketIds = markets.map(PerpsMarket::marketId),
+                    marketIds = mergedMarkets.map(PerpsMarket::marketId),
                     createdAt = nowInUtc(),
                 )
+                mergedMarkets
             }
-            return markets
         }
 
         suspend fun syncCategory(category: MarketCategory): List<PerpsMarket>? {
             val markets = fetchMarkets(category.apiValue) ?: return null
-            database.withTransaction {
-                marketDao.upsertList(markets)
+            return database.withTransaction {
+                val mergedMarkets =
+                    if (category == MarketCategory.TRENDING) {
+                        marketDao.upsertList(markets)
+                        markets
+                    } else {
+                        marketDao.upsertPreservingTradeVolumeScores(markets)
+                    }
                 categoryDao.replaceCategory(
                     category = category.value,
-                    marketIds = markets.map(PerpsMarket::marketId),
+                    marketIds = mergedMarkets.map(PerpsMarket::marketId),
                 )
+                mergedMarkets
             }
-            return markets
         }
 
         suspend fun refreshMarket(marketId: String): PerpsMarket? =
             requestRouteAPI(
                 invokeNetwork = { routeService.getPerpsMarket(marketId) },
                 successBlock = { response ->
-                    response.data?.withDefaults()?.also { market ->
-                        marketDao.upsertSuspend(market)
+                    response.data?.withDefaults()?.let { market ->
+                        marketDao.upsertPreservingTradeVolumeScores(listOf(market)).single()
                     }
                 },
                 failureBlock = { true },

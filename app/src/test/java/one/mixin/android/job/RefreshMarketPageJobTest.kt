@@ -23,7 +23,7 @@ class RefreshMarketPageJobTest {
             }
 
         assertEquals(
-            MarketPageDataSource.SPOT_ALL,
+            MarketPageDataSource.SPOT_STOCK,
             stockRequest.source,
         )
     }
@@ -46,8 +46,14 @@ class RefreshMarketPageJobTest {
     }
 
     @Test
-    fun scopedSpotAllRefreshIncludesMarketAndStockRequests() {
-        val plan = marketPageRefreshPlan(setOf(MarketPageDataSource.SPOT_ALL))
+    fun combinedSpotRefreshIncludesMarketAndStockRequests() {
+        val plan =
+            marketPageRefreshPlan(
+                setOf(
+                    MarketPageDataSource.SPOT_ALL,
+                    MarketPageDataSource.SPOT_STOCK,
+                ),
+            )
 
         assertEquals(
             listOf("all", MarketCategory.STOCK.apiValue),
@@ -57,6 +63,16 @@ class RefreshMarketPageJobTest {
         assertFalse(plan.refreshesPerpetualFavorite)
         assertFalse(plan.refreshesPerpetualFeatured)
         assertFalse(plan.refreshesGlobal)
+    }
+
+    @Test
+    fun scopedStockRefreshOnlyRequestsStocks() {
+        val plan = marketPageRefreshPlan(setOf(MarketPageDataSource.SPOT_STOCK))
+
+        assertEquals(
+            listOf(MarketCategory.STOCK.apiValue),
+            plan.spotRequests.map { it.category },
+        )
     }
 
     @Test

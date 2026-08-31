@@ -1445,7 +1445,6 @@ class TradeFragment : BaseFragment() {
                     async {
                         swapViewModel.refreshRecommendedMarkets(
                             category = category,
-                            limit = SWAP_RECOMMENDED_MARKET_LIMIT,
                         )
                     }
                 }.map { it.await() }
