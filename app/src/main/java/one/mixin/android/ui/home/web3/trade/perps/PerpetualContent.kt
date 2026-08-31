@@ -358,8 +358,8 @@ fun PerpetualContent(
                         markets = marketsPreview,
                         totalCount = markets.size,
                         quoteColorReversed = quoteColorReversed,
-                        onTitleClick = { onShowAllMarkets(null, null) },
-                        onViewAllClick = { onShowAllMarkets(null, null) },
+                        onTitleClick = { onShowAllMarkets(null, MarketSort.RANK_DESCENDING) },
+                        onViewAllClick = { onShowAllMarkets(null, MarketSort.RANK_DESCENDING) },
                         onMarketItemClick = onMarketItemClick,
                     )
                 } else if (isLoading) {

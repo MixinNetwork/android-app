@@ -4,6 +4,8 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.ui.home.web3.market.MarketSortColumn
 import one.mixin.android.ui.home.web3.market.MarketSortDirection
 import one.mixin.android.ui.home.web3.market.MarketSortState
+import one.mixin.android.ui.home.web3.market.scoreMarketSortState
+import one.mixin.android.ui.home.web3.widget.MarketSort
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
@@ -54,6 +56,28 @@ class PerpsMarketListBottomSheetModelsTest {
         assertEquals(
             listOf("third", "second-high-volume", "second-low-volume", "first"),
             visibleMarkets.map { it.marketId },
+        )
+    }
+
+    @Test
+    fun trendingOpeningUsesScoreOrderWithoutChangingCategoryDefaults() {
+        val state =
+            PerpsMarketListUiState.initial(
+                initialCategory = null,
+                initialSort = MarketSort.RANK_DESCENDING,
+                quoteColorReversed = false,
+            ).updateMarkets(
+                listOf(
+                    perpsMarket("volume-first", "crypto", tradeVolumeScore1D = 10, volume = "100"),
+                    perpsMarket("trending-first", "stocks", tradeVolumeScore1D = 30, volume = "1"),
+                ),
+            )
+
+        assertEquals(scoreMarketSortState(), state.sortState)
+        assertEquals(listOf("trending-first", "volume-first"), state.visibleMarkets.map { it.marketId })
+        assertEquals(
+            defaultPerpsMarketSortState(PerpsMarketCategory.CRYPTO),
+            state.selectCategory(PerpsMarketCategory.CRYPTO).sortState,
         )
     }
 

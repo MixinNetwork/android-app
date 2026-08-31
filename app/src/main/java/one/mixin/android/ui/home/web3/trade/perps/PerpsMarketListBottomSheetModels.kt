@@ -6,6 +6,7 @@ import one.mixin.android.ui.home.web3.market.MarketSortDirection
 import one.mixin.android.ui.home.web3.market.MarketSortState
 import one.mixin.android.ui.home.web3.market.PerpsMarketCategoryKey
 import one.mixin.android.ui.home.web3.market.changePercentValue
+import one.mixin.android.ui.home.web3.market.scoreMarketSortState
 import one.mixin.android.ui.home.web3.market.sortedByVolumeDescending
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import java.math.BigDecimal
@@ -258,7 +259,9 @@ internal fun defaultPerpsMarketSortState(category: PerpsMarketCategory) =
 
 internal fun MarketSort?.toPerpsMarketSortState(category: PerpsMarketCategory): MarketSortState =
     when (this) {
-        null, MarketSort.RANK_DESCENDING -> defaultPerpsMarketSortState(category)
+        null -> defaultPerpsMarketSortState(category)
+        MarketSort.RANK_DESCENDING ->
+            if (category == PerpsMarketCategory.ALL) scoreMarketSortState() else defaultPerpsMarketSortState(category)
         MarketSort.RANK_ASCENDING -> MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING)
         MarketSort.PRICE_ASCENDING -> MarketSortState(MarketSortColumn.PRICE, MarketSortDirection.ASCENDING)
         MarketSort.PRICE_DESCENDING -> MarketSortState(MarketSortColumn.PRICE, MarketSortDirection.DESCENDING)
