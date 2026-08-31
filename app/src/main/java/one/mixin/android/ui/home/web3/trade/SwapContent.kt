@@ -442,8 +442,9 @@ internal fun swapSpendableBalance(
     isNativeSol: Boolean,
     inMixin: Boolean,
 ): BigDecimal {
+    if (inMixin) return rawBalance
     if (!isNativeSol) return rawBalance
-    return if (inMixin) rawBalance else nativeSolSpendableBalance(rawBalance)
+    return nativeSolSpendableBalance(rawBalance)
 }
 
 internal fun shouldResetSwapSendFocusState(
