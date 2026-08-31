@@ -88,6 +88,7 @@ object AnalyticsTracker {
 
     fun trackSignUpEnd() {
         logEvent("sign_up_end")
+        MixinApplication.get().startAppsFlyer()
     }
 
     fun trackLoginStart(type: String, source: String) {
@@ -133,6 +134,7 @@ object AnalyticsTracker {
 
     fun trackLoginEnd() {
         logEvent("login_end")
+        MixinApplication.get().startAppsFlyer()
     }
 
     fun setHasRecoveryContact(account: Account) {
@@ -164,15 +166,6 @@ object AnalyticsTracker {
             else -> "v0"
         }
         firebaseAnalytics.setUserProperty("asset_level", level)
-    }
-
-    fun setAppsFlyerCustomerUserId(account: Account) {
-        if (BuildConfig.APPSFLYER_DEV_KEY.isBlank()) {
-            return
-        }
-        AppsFlyerLib.getInstance().setCustomerUserId(
-            ThirdPartyUserIdentity.appsFlyerCustomerUserId(account.userId)
-        )
     }
 
     fun updateAppsFlyerConversionUserProperties(conversionData: Map<String, Any?>) {

@@ -145,7 +145,7 @@ extra.set("checkoutRiskVersion", "1.0.6")
 extra.set("playWalletVersion", "20.0.0")
 extra.set("playPayVersion", "16.5.0")
 extra.set("datastoreVersion", "1.2.1")
-extra.set("appsFlyerVersion", "6.18.0")
+extra.set("appsFlyerVersion", "7.0.1")
 extra.set("installReferrerVersion", "2.2")
 extra.set("billingVersion", "8.3.0")
 
