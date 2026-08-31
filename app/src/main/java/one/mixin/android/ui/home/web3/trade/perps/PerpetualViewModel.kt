@@ -65,8 +65,8 @@ class PerpetualViewModel @Inject constructor(
     private val perpsMarketRepository: PerpsMarketRepository,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
-    private val _favoriteMarketIds = MutableStateFlow<Set<String>>(emptySet())
-    val favoriteMarketIds: StateFlow<Set<String>> = _favoriteMarketIds.asStateFlow()
+    private val _favoriteMarketIds = MutableStateFlow<List<String>>(emptyList())
+    val favoriteMarketIds: StateFlow<List<String>> = _favoriteMarketIds.asStateFlow()
 
     init {
         viewModelScope.launch {

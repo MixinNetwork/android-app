@@ -34,7 +34,7 @@ import kotlin.math.min
         PerpsFavorite::class,
         PerpsMarketCategoryRelation::class,
     ],
-    version = 8,
+    version = 9,
 )
 abstract class PerpsDatabase : RoomDatabase() {
     companion object {
@@ -116,6 +116,12 @@ abstract class PerpsDatabase : RoomDatabase() {
                     db.execSQL("ALTER TABLE `markets` ADD COLUMN `open_interest` TEXT NOT NULL DEFAULT '0'")
                 }
             }
+        val MIGRATION_8_9 =
+            object : Migration(8, 9) {
+                override fun migrate(db: SupportSQLiteDatabase) {
+                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `trade_volume_score_1d` INTEGER NOT NULL DEFAULT 0")
+                }
+            }
 
         @Suppress("DEPRECATION")
         fun getDatabase(
@@ -141,7 +147,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                             listOf(
                                 object : MixinCorruptionCallback {
                                     override fun onCorruption(database: SupportSQLiteDatabase) {
-                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 8")
+                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 9")
                                         reportException(e)
                                     }
                                 },
@@ -154,7 +160,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                                 db.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
                         .fallbackToDestructiveMigration()
                         .enableMultiInstanceInvalidation()
                         .setQueryExecutor(

@@ -45,7 +45,7 @@ class MarketPageModelsTest {
                 Triple(
                     MarketTopTab.CRYPTO,
                     MarketSubTab.ALL,
-                    setOf(MarketPageDataSource.SPOT_ALL),
+                    setOf(MarketPageDataSource.SPOT_ALL, MarketPageDataSource.SPOT_STOCK),
                 ),
                 Triple(
                     MarketTopTab.PERPETUAL,
@@ -55,6 +55,16 @@ class MarketPageModelsTest {
                 Triple(
                     MarketTopTab.PERPETUAL,
                     MarketSubTab.INDICES,
+                    setOf(MarketPageDataSource.PERPETUAL_ALL),
+                ),
+                Triple(
+                    MarketTopTab.STOCK,
+                    MarketSubTab.CRYPTO,
+                    setOf(MarketPageDataSource.SPOT_STOCK),
+                ),
+                Triple(
+                    MarketTopTab.STOCK,
+                    MarketSubTab.PERPETUAL,
                     setOf(MarketPageDataSource.PERPETUAL_ALL),
                 ),
                 Triple(
@@ -76,9 +86,24 @@ class MarketPageModelsTest {
         assertEquals(MarketSubTab.CRYPTO, defaults[MarketTopTab.WATCHLIST])
         assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.CRYPTO])
         assertEquals(MarketSubTab.TRENDING, defaults[MarketTopTab.PERPETUAL])
+        assertEquals(MarketSubTab.CRYPTO, defaults[MarketTopTab.STOCK])
         assertEquals(
-            listOf(MarketTopTab.WATCHLIST, MarketTopTab.CRYPTO, MarketTopTab.PERPETUAL, MarketTopTab.INDICATOR),
+            listOf(
+                MarketTopTab.WATCHLIST,
+                MarketTopTab.CRYPTO,
+                MarketTopTab.PERPETUAL,
+                MarketTopTab.STOCK,
+                MarketTopTab.INDICATOR,
+            ),
             MarketTopTab.entries,
+        )
+    }
+
+    @Test
+    fun stockSubTabsOnlyDistinguishCryptoAndPerpetual() {
+        assertEquals(
+            listOf(MarketSubTab.CRYPTO, MarketSubTab.PERPETUAL),
+            marketSubTabs(MarketTopTab.STOCK),
         )
     }
 
@@ -197,17 +222,61 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun perpetualTrendingPreservesApiRankOrder() {
+    fun perpetualTrendingSortsByTradeVolumeScore() {
         val markets =
             listOf(
-                perpsMarket(marketId = "first"),
-                perpsMarket(marketId = "second"),
-                perpsMarket(marketId = "third"),
+                perpsMarket(marketId = "second", tradeVolumeScore1D = 20),
+                perpsMarket(marketId = "third", tradeVolumeScore1D = 10),
+                perpsMarket(marketId = "first", tradeVolumeScore1D = 30),
             )
 
         val trending = MarketPageMapper.perpetualMarkets(markets, MarketSubTab.TRENDING)
 
         assertEquals(listOf("first", "second", "third"), trending.map { it.marketId })
+    }
+
+    @Test
+    fun perpetualCategoriesAndStockSortByTradeVolumeOnly() {
+        val categoryMarkets =
+            listOf(
+                MarketSubTab.MEME to
+                    listOf(
+                        perpsMarket("low-volume", category = "memes", tradeVolumeScore1D = 100, volume = "10"),
+                        perpsMarket("high-volume", category = "meme", tradeVolumeScore1D = 1, volume = "100"),
+                    ),
+                MarketSubTab.INDICES to
+                    listOf(
+                        perpsMarket("low-volume", category = "indices", tradeVolumeScore1D = 100, volume = "10"),
+                        perpsMarket("high-volume", category = "index", tradeVolumeScore1D = 1, volume = "100"),
+                    ),
+                MarketSubTab.COMMODITIES to
+                    listOf(
+                        perpsMarket("low-volume", category = "commodities", tradeVolumeScore1D = 100, volume = "10"),
+                        perpsMarket("high-volume", category = "commodity", tradeVolumeScore1D = 1, volume = "100"),
+                    ),
+                MarketSubTab.FOREX to
+                    listOf(
+                        perpsMarket("low-volume", category = "forex", tradeVolumeScore1D = 100, volume = "10"),
+                        perpsMarket("high-volume", category = "fx", tradeVolumeScore1D = 1, volume = "100"),
+                    ),
+            )
+
+        categoryMarkets.forEach { (subTab, markets) ->
+            assertEquals(
+                listOf("high-volume", "low-volume"),
+                MarketPageMapper.perpetualMarkets(markets, subTab).map { it.marketId },
+            )
+        }
+
+        val stocks =
+            listOf(
+                perpsMarket("low-volume", category = "stocks", tradeVolumeScore1D = 100, volume = "10"),
+                perpsMarket("high-volume", category = "stock", tradeVolumeScore1D = 1, volume = "100"),
+            )
+        assertEquals(
+            listOf("high-volume", "low-volume"),
+            MarketPageMapper.perpetualStockMarkets(stocks).map { it.marketId },
+        )
     }
 
     @Test
@@ -222,6 +291,8 @@ class MarketPageModelsTest {
                 perpsMarket(marketId = "fx", category = "FX"),
                 perpsMarket(marketId = "memes", category = "memes"),
                 perpsMarket(marketId = "meme", category = "Meme"),
+                perpsMarket(marketId = "stocks", category = "stocks"),
+                perpsMarket(marketId = "stock", category = "STOCK"),
                 perpsMarket(marketId = "crypto", category = "crypto"),
             )
 
@@ -241,10 +312,14 @@ class MarketPageModelsTest {
             listOf("memes", "meme"),
             MarketPageMapper.perpetualMarkets(markets, MarketSubTab.MEME).map { it.marketId },
         )
+        assertEquals(
+            listOf("stocks", "stock"),
+            MarketPageMapper.perpetualStockMarkets(markets).map { it.marketId },
+        )
     }
 
     @Test
-    fun spotGainersAndLosersSortBySelectedPeriod() {
+    fun spotGainersAndLosersPreserveApiOrder() {
         val markets =
             listOf(
                 market(coinId = "middle", change24h = "2", change7d = "-2"),
@@ -255,18 +330,14 @@ class MarketPageModelsTest {
         val gainers =
             MarketPageMapper.spotMarkets(
                 markets = markets,
-                subTab = MarketSubTab.TOP_GAINERS,
-                period = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
             )
         val losers =
             MarketPageMapper.spotMarkets(
                 markets = markets,
-                subTab = MarketSubTab.TOP_LOSERS,
-                period = MarketPriceChangePeriod.SEVEN_DAYS,
             )
 
-        assertEquals(listOf("winner", "middle", "loser"), gainers.map { it.coinId })
-        assertEquals(listOf("winner", "middle", "loser"), losers.map { it.coinId })
+        assertEquals(listOf("middle", "winner", "loser"), gainers.map { it.coinId })
+        assertEquals(listOf("middle", "winner", "loser"), losers.map { it.coinId })
     }
 
     @Test
@@ -277,8 +348,6 @@ class MarketPageModelsTest {
             MarketPageMapper.spotMarkets(
                 markets = emptyList(),
                 fallbackMarkets = cachedMarkets,
-                subTab = MarketSubTab.TRENDING,
-                period = MarketPriceChangePeriod.SEVEN_DAYS,
             )
 
         assertEquals(listOf("btc", "eth"), result.map { it.coinId })
@@ -289,6 +358,22 @@ class MarketPageModelsTest {
         val state =
             MarketPageUiState(
                 selectedTopTab = MarketTopTab.PERPETUAL,
+                displaySettings =
+                    MarketDisplaySettings(
+                        priceChangePeriod = MarketPriceChangePeriod.SEVEN_DAYS,
+                    ),
+            )
+
+        assertTrue(state.showsOnlyPerpetualMarkets)
+        assertEquals(MarketPriceChangePeriod.TWENTY_FOUR_HOURS, state.effectivePriceChangePeriod)
+    }
+
+    @Test
+    fun stockPerpetualSelectionForcesTwentyFourHourDisplay() {
+        val state =
+            MarketPageUiState(
+                selectedTopTab = MarketTopTab.STOCK,
+                selectedSubTabs = defaultMarketSubTabs() + (MarketTopTab.STOCK to MarketSubTab.PERPETUAL),
                 displaySettings =
                     MarketDisplaySettings(
                         priceChangePeriod = MarketPriceChangePeriod.SEVEN_DAYS,
@@ -311,28 +396,79 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun defaultVolumeSortMatchesMarketCategory() {
+    fun sortHeaderCyclesBackToScoreOnlyForTrending() {
+        val scoreDefault = scoreMarketSortState()
+        val descending = scoreDefault.next(MarketSortColumn.VOLUME, scoreDefault)
+        val ascending = descending.next(MarketSortColumn.VOLUME, scoreDefault)
+        val score = ascending.next(MarketSortColumn.VOLUME, scoreDefault)
+
+        assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING), descending)
+        assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING), ascending)
+        assertEquals(scoreMarketSortState(), score)
+        assertTrue(isScoreOrderingAvailable(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING))
+        listOf(
+            MarketSubTab.MEME,
+            MarketSubTab.INDICES,
+            MarketSubTab.COMMODITIES,
+            MarketSubTab.FOREX,
+        ).forEach { subTab ->
+            assertTrue(!isScoreOrderingAvailable(MarketTopTab.PERPETUAL, subTab))
+        }
+        assertTrue(!isScoreOrderingAvailable(MarketTopTab.STOCK, MarketSubTab.PERPETUAL))
+        assertTrue(!isScoreOrderingAvailable(MarketTopTab.CRYPTO, MarketSubTab.TRENDING))
+    }
+
+    @Test
+    fun spotAllMarketCapSortStaysExplicit() {
+        val ascendingDefault = defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL)
+        val descending = ascendingDefault.next(MarketSortColumn.VOLUME, ascendingDefault)
+
+        assertEquals(
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING),
+            ascendingDefault,
+        )
+        assertEquals(MarketSortDirection.DESCENDING, descending.direction)
+        assertEquals(ascendingDefault, descending.next(MarketSortColumn.VOLUME, ascendingDefault))
+    }
+
+    @Test
+    fun localMoverSortCyclesBackToVisibleDefault() {
+        val gainerDefault = defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TOP_GAINERS)
+        val gainerAscending = gainerDefault.next(MarketSortColumn.CHANGE, gainerDefault)
+        assertEquals(MarketSortDirection.ASCENDING, gainerAscending.direction)
+        assertEquals(gainerDefault, gainerAscending.next(MarketSortColumn.CHANGE, gainerDefault))
+
+        val loserDefault = defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TOP_LOSERS)
+        val loserDescending = loserDefault.next(MarketSortColumn.CHANGE, loserDefault)
+        assertEquals(MarketSortDirection.DESCENDING, loserDescending.direction)
+        assertEquals(loserDefault, loserDescending.next(MarketSortColumn.CHANGE, loserDefault))
+    }
+
+    @Test
+    fun defaultSortMatchesMarketCategory() {
         listOf(
             MarketSubTab.CRYPTO,
             MarketSubTab.PERPETUAL,
         ).forEach { subTab ->
             assertEquals(
-                MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                MarketSortState(),
                 defaultMarketSortState(MarketTopTab.WATCHLIST, subTab),
             )
         }
+        assertEquals(MarketSortState(), defaultMarketSortState(MarketTopTab.STOCK, MarketSubTab.CRYPTO))
         assertEquals(
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+            defaultMarketSortState(MarketTopTab.STOCK, MarketSubTab.PERPETUAL),
+        )
+        assertEquals(
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING),
             defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL),
         )
         assertEquals(
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+            scoreMarketSortState(),
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING),
         )
-        assertEquals(
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
-            defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TRENDING),
-        )
+        assertEquals(MarketSortState(), defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TRENDING))
         assertEquals(
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.DESCENDING),
             defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TOP_GAINERS),
@@ -340,6 +476,14 @@ class MarketPageModelsTest {
         assertEquals(
             MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.ASCENDING),
             defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.TOP_LOSERS),
+        )
+        assertEquals(
+            MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.DESCENDING),
+            defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TOP_GAINERS),
+        )
+        assertEquals(
+            MarketSortState(MarketSortColumn.CHANGE, MarketSortDirection.ASCENDING),
+            defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TOP_LOSERS),
         )
         assertEquals(
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
@@ -358,10 +502,23 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun marketFavoritesDefaultToVolumeDescending() {
+    fun marketListPriceUsesSpotPriceFormat() {
+        assertEquals("$1,234.50", formatMarketListPrice("1234.5", "$", 1.0))
+        assertEquals("$0.12345678", formatMarketListPrice("0.12345678", "$", 1.0))
+        assertEquals("¥2,469.00", formatMarketListPrice("1234.5", "¥", 2.0))
+    }
+
+    @Test
+    fun perpsMarketListPriceDoesNotConvertFiat() {
+        assertEquals("$1,234.50", formatPerpsMarketListPrice("1234.5"))
+        assertEquals("$0.12345678", formatPerpsMarketListPrice("0.12345678"))
+    }
+
+    @Test
+    fun marketFavoritesPreserveAdditionOrder() {
         listOf(MarketTopTab.CRYPTO, MarketTopTab.PERPETUAL).forEach { topTab ->
             assertEquals(
-                MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                MarketSortState(),
                 defaultMarketSortState(topTab, MarketSubTab.FAVORITE),
             )
         }
@@ -392,6 +549,30 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun spotAllDefaultsToAscendingMarketCap() {
+        val lowerMarketCap =
+            MarketListEntry.Spot(
+                market(coinId = "lower-market-cap", marketCap = "100"),
+                SpotMarketType.CRYPTO,
+            )
+        val higherMarketCap =
+            MarketListEntry.Spot(
+                market(coinId = "higher-market-cap", marketCap = "200"),
+                SpotMarketType.CRYPTO,
+            )
+
+        val result =
+            MarketPageMapper.applySort(
+                entries = listOf(higherMarketCap, lowerMarketCap),
+                sortState = defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL),
+                period = MarketPriceChangePeriod.SEVEN_DAYS,
+                useMarketCapForSpot = true,
+            )
+
+        assertEquals(listOf("spot:lower-market-cap", "spot:higher-market-cap"), result.map { it.stableId })
+    }
+
+    @Test
     fun spotNonAllVolumeColumnSortsByTradingVolume() {
         val higherVolume =
             MarketListEntry.Spot(
@@ -413,6 +594,44 @@ class MarketPageModelsTest {
             )
 
         assertEquals(listOf("spot:higher-volume", "spot:lower-volume"), result.map { it.stableId })
+    }
+
+    @Test
+    fun applySortByScoreOrdersPerpetualMarkets() {
+        val second = MarketListEntry.Perpetual(
+            perpsMarket(marketId = "second", tradeVolumeScore1D = 20, volume = "10"),
+            false,
+        )
+        val third = MarketListEntry.Perpetual(
+            perpsMarket(marketId = "third", tradeVolumeScore1D = 10, volume = "100"),
+            false,
+        )
+        val firstLowVolume = MarketListEntry.Perpetual(
+            perpsMarket(marketId = "first-low-volume", tradeVolumeScore1D = 30, volume = "1"),
+            false,
+        )
+        val firstHighVolume = MarketListEntry.Perpetual(
+            perpsMarket(marketId = "first-high-volume", tradeVolumeScore1D = 30, volume = "1000"),
+            false,
+        )
+
+        val result =
+            MarketPageMapper.applySort(
+                entries = listOf(second, third, firstLowVolume, firstHighVolume),
+                sortState = scoreMarketSortState(),
+                period = MarketPriceChangePeriod.TWENTY_FOUR_HOURS,
+                useMarketCapForSpot = false,
+            )
+
+        assertEquals(
+            listOf(
+                "perpetual:first-high-volume",
+                "perpetual:first-low-volume",
+                "perpetual:second",
+                "perpetual:third",
+            ),
+            result.map { it.stableId },
+        )
     }
 
     @Test
@@ -487,6 +706,8 @@ class MarketPageModelsTest {
         marketId: String,
         change: String = "0",
         category: String = "",
+        tradeVolumeScore1D: Int = 0,
+        volume: String = "10",
     ) = PerpsMarket(
         marketId = marketId,
         displaySymbol = marketId,
@@ -500,7 +721,8 @@ class MarketPageModelsTest {
         minAmount = "0",
         maxAmount = "0",
         last = "1",
-        volume = "10",
+        volume = volume,
+        tradeVolumeScore1D = tradeVolumeScore1D,
         high = "1",
         low = "1",
         open = "1",
