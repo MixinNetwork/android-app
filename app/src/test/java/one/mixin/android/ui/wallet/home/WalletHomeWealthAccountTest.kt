@@ -84,7 +84,7 @@ class WalletHomeWealthAccountTest {
         assertEquals(0, details.totalPrincipal.compareTo(BigDecimal("300")))
         assertEquals("019f21ba-95f7-7bd4-a108-3620661dd591", details.productionId)
         assertEquals(0, details.totalEarningsUsd.compareTo(BigDecimal("59")))
-        assertEquals(0, details.pendingEarningsUsd.compareTo(BigDecimal("0.00040002")))
+        assertEquals(0, details.pendingEarningsUsd.compareTo(BigDecimal("58.99959998")))
         assertEquals("3.65%-20.00%", details.rewardRate)
     }
 
@@ -127,7 +127,7 @@ class WalletHomeWealthAccountTest {
     }
 
     @Test
-    fun tokenDetailPendingEarningIsUnsettledNotRedeemable() {
+    fun tokenDetailPendingEarningUsesRedeemableEarnings() {
         val product = wealthProduct(
             productionId = "production-1",
             assetId = "asset-1",
@@ -141,7 +141,29 @@ class WalletHomeWealthAccountTest {
         )
 
         assertEquals(0, details.totalEarningsUsd.compareTo(BigDecimal("40")))
-        assertEquals(0, details.pendingEarningsUsd.compareTo(BigDecimal("30")))
+        assertEquals(0, details.pendingEarningsUsd.compareTo(BigDecimal("10")))
+    }
+
+    @Test
+    fun selectsHigherRedeemableEarningsWhenProductionBalancesMatch() {
+        val product = wealthProduct(
+            productionId = "production-1",
+            assetId = "asset-1",
+            totalPrincipal = "100",
+            redeemableEarnings = "1",
+        )
+
+        val details = requireNotNull(
+            listOf(
+                product,
+                product.copy(
+                    productionId = "production-2",
+                    account = product.account.copy(redeemableEarnings = "2"),
+                ),
+            ).toWalletWealthDetails("asset-1", "1"),
+        )
+
+        assertEquals("production-2", details.productionId)
     }
 
     @Test

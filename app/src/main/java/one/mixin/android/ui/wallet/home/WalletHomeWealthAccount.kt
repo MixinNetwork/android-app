@@ -51,6 +51,10 @@ internal fun List<WealthProduct>.toWalletWealthDetails(
                     total + decimal(product.account.totalPrincipal)
                 }
             }.thenBy { (_, productionProducts) ->
+                productionProducts.fold(BigDecimal.ZERO) { total, product ->
+                    total + decimal(product.account.redeemableEarnings)
+                }
+            }.thenBy { (_, productionProducts) ->
                 maxAnnualRateValue(productionProducts.flatMap { it.annualRates })
             },
         )
@@ -73,9 +77,7 @@ internal fun List<WealthProduct>.toWalletWealthDetails(
         productionId = selectedProductionId,
         totalPrincipal = totalPrincipal,
         totalEarningsUsd = totalEarnings.multiply(assetPriceUsd),
-        pendingEarningsUsd = (totalEarnings - redeemableEarnings)
-            .coerceAtLeast(BigDecimal.ZERO)
-            .multiply(assetPriceUsd),
+        pendingEarningsUsd = redeemableEarnings.multiply(assetPriceUsd),
         rewardRate = annualRateRange(
             filter { it.productionId in productionIds }
                 .flatMap { it.annualRates },
