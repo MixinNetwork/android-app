@@ -85,7 +85,6 @@ import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
 import one.mixin.android.web3.isNativeSolAsset
-import one.mixin.android.web3.nativeSolSpendableBalance
 import java.math.BigDecimal
 
 @Composable
@@ -160,19 +159,6 @@ fun SwapContent(
                 fromToken?.let { from ->
                     toToken?.let { to ->
                         val amount = runCatching { BigDecimal(text) }.getOrDefault(BigDecimal.ZERO)
-                        val isNativeSolRentError = isNativeSolSwapAmountBelowRent(
-                            inputText = text,
-                            isNativeSol = from.isNativeSolAsset(),
-                            inMixin = inMixin,
-                        )
-                        if (isNativeSolRentError) {
-                            quoteError = null
-                            quoteResult = null
-                            quoteMin = null
-                            quoteMax = null
-                            isLoading = false
-                            return@collectLatest
-                        }
                         if (reviewing) {
                             isLoading = false
                             return@collectLatest
@@ -216,10 +202,11 @@ fun SwapContent(
     fromToken?.let { from ->
         val fromBalance = viewModel.tokenExtraFlow(from).collectAsStateWithLifecycle(from.balance).value
         val rawFromBalanceValue = fromBalance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        val availableFromBalanceValue = swapSpendableBalance(
-            rawBalance = rawFromBalanceValue,
+        val availableFromBalanceValue = rawFromBalanceValue
+        val isNativeSolBalanceError = isNativeSolSwapBalanceError(
+            inputText = inputText,
+            balance = rawFromBalanceValue,
             isNativeSol = from.isNativeSolAsset(),
-            inMixin = inMixin,
         )
         val availableFromBalance = availableFromBalanceValue.stripTrailingZeros().toPlainString()
 
@@ -347,11 +334,7 @@ fun SwapContent(
                                         toToken = toToken,
                                         isLoading = isLoading,
                                         inputText = inputText,
-                                        isNativeSolRentError = isNativeSolSwapAmountBelowRent(
-                                            inputText = inputText,
-                                            isNativeSol = from.isNativeSolAsset(),
-                                            inMixin = inMixin,
-                                        ),
+                                        isNativeSolBalanceError = isNativeSolBalanceError,
                                         quoteMin = quoteMin,
                                         quoteMax = quoteMax,
                                         onInputTextChange = {
@@ -392,11 +375,7 @@ fun SwapContent(
                             fromToken = fromToken!!,
                             quoteResult = quoteResult,
                             quoteError = quoteError,
-                            isNativeSolRentError = isNativeSolSwapAmountBelowRent(
-                                inputText = inputText,
-                                isNativeSol = from.isNativeSolAsset(),
-                                inMixin = inMixin,
-                            ),
+                            isNativeSolBalanceError = isNativeSolBalanceError,
                             isLoading = isLoading,
                             reviewing = reviewing,
                             isButtonEnabled = isButtonEnabled,
@@ -461,24 +440,16 @@ internal fun shouldShowSwapRecommendedMarketCards(
     isKeyboardVisible: Boolean,
 ): Boolean = inMixin && hasRecommendedCards && inputText.isBlank() && !isSendFocused && !isKeyboardVisible
 
-internal fun swapSpendableBalance(
-    rawBalance: BigDecimal,
-    isNativeSol: Boolean,
-    inMixin: Boolean,
-): BigDecimal {
-    if (inMixin) return rawBalance
-    if (!isNativeSol) return rawBalance
-    return nativeSolSpendableBalance(rawBalance)
-}
-
-internal fun isNativeSolSwapAmountBelowRent(
+internal fun isNativeSolSwapBalanceError(
     inputText: String,
+    balance: BigDecimal,
     isNativeSol: Boolean,
-    inMixin: Boolean,
 ): Boolean {
-    if (!isNativeSol || !inMixin) return false
+    if (!isNativeSol) return false
     val amount = inputText.toBigDecimalOrNull() ?: return false
-    return amount > BigDecimal.ZERO && amount < SOLANA_RENT_EXEMPTION
+    if (amount <= BigDecimal.ZERO || amount > balance) return false
+    val remaining = balance.subtract(amount)
+    return remaining > BigDecimal.ZERO && remaining < SOLANA_RENT_EXEMPTION
 }
 
 internal fun shouldResetSwapSendFocusState(
@@ -493,7 +464,7 @@ fun ReviewButton(
     fromToken: SwapToken,
     quoteResult: QuoteResult?,
     quoteError: Throwable?,
-    isNativeSolRentError: Boolean,
+    isNativeSolBalanceError: Boolean,
     isLoading: Boolean,
     reviewing: Boolean,
     isButtonEnabled: Boolean,
@@ -506,7 +477,7 @@ fun ReviewButton(
     val checkBalance = checkBalance(inputText, fromBalance)
     val isBusy = isLoading || reviewing
     val hasError = quoteError != null
-    val canReview = quoteResult != null && !hasError && !isBusy && checkBalance == true && !isNativeSolRentError
+    val canReview = quoteResult != null && !hasError && !isBusy && checkBalance == true && !isNativeSolBalanceError
     Button(
         modifier = Modifier
             .padding(horizontal = 20.dp)
@@ -611,7 +582,7 @@ fun QuoteInfoBox(
     toToken: SwapToken?,
     isLoading: Boolean,
     inputText: String,
-    isNativeSolRentError: Boolean,
+    isNativeSolBalanceError: Boolean,
     quoteMin: String?,
     quoteMax: String?,
     onInputTextChange: (String) -> Unit,
@@ -619,8 +590,8 @@ fun QuoteInfoBox(
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
 ) {
     val context = LocalContext.current
-    val displayedErrorInfo = remember(quoteError, quoteMax, inputText, isNativeSolRentError) {
-        if (isNativeSolRentError) {
+    val displayedErrorInfo = remember(quoteError, quoteMax, inputText, isNativeSolBalanceError) {
+        if (isNativeSolBalanceError) {
             context.getString(
                 R.string.send_sol_for_rent,
                 SOLANA_RENT_EXEMPTION.stripTrailingZeros().toPlainString(),
@@ -680,7 +651,7 @@ fun QuoteInfoBox(
                     ),
                 )
                 val mixinError: TradeQuoteMixinErrorException? = quoteError as? TradeQuoteMixinErrorException
-                val canSwitchToLimitOrder: Boolean = if (isNativeSolRentError || mixinError == null) {
+                val canSwitchToLimitOrder: Boolean = if (isNativeSolBalanceError || mixinError == null) {
                     false
                 } else if (mixinError.code == ErrorHandler.INVALID_QUOTE_AMOUNT) {
                     isInputGreaterThanQuoteMax(inputText, mixinError.max)
