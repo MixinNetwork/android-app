@@ -1,0 +1,93 @@
+package one.mixin.android.ui.home.web3.market
+
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.vo.RecentSearch
+import one.mixin.android.vo.RecentSearchType
+import org.junit.Assert.assertEquals
+import org.junit.Test
+
+class MarketSearchModelsTest {
+    @Test
+    fun emptyQueryShowsOnlySpotAndPerpetualTabs() {
+        assertEquals(
+            listOf(MarketSearchTab.CRYPTO, MarketSearchTab.PERPETUAL),
+            marketSearchTabs(""),
+        )
+    }
+
+    @Test
+    fun keywordShowsAllTabs() {
+        assertEquals(MarketSearchTab.entries, marketSearchTabs("btc"))
+    }
+
+    @Test
+    fun enteringKeywordStartsOnAllTab() {
+        assertEquals(
+            MarketSearchTab.ALL,
+            selectedMarketSearchTab("", "btc", MarketSearchTab.CRYPTO),
+        )
+        assertEquals(
+            MarketSearchTab.CRYPTO,
+            selectedMarketSearchTab("btc", "", MarketSearchTab.PERPETUAL),
+        )
+    }
+
+    @Test
+    fun perpetualTrendingUsesScoreBeforeVolume() {
+        val markets =
+            listOf(
+                market("high-volume", volume = "1000", score = 1),
+                market("high-score", volume = "1", score = 3),
+                market("middle-score", volume = "10", score = 2),
+            )
+
+        assertEquals(
+            listOf("high-score", "middle-score", "high-volume"),
+            markets.sortedForTrendingSearch().map(PerpsMarket::marketId),
+        )
+    }
+
+    @Test
+    fun recentAssetsAreGroupedBySymbol() {
+        val searches =
+            listOf(
+                RecentSearch(RecentSearchType.ASSET, title = "USDT", primaryKey = "eth-usdt"),
+                RecentSearch(RecentSearchType.ASSET, title = "BTC", primaryKey = "btc"),
+                RecentSearch(RecentSearchType.ASSET, title = "usdt", primaryKey = "tron-usdt"),
+                RecentSearch(RecentSearchType.PERPETUAL, title = "BTCUSDT", primaryKey = "btc-perp"),
+            )
+
+        assertEquals(
+            listOf("USDT", "BTC", "BTCUSDT"),
+            searches.marketRecentSearches().map { it.title },
+        )
+    }
+
+    private fun market(
+        marketId: String,
+        volume: String,
+        score: Int,
+    ) = PerpsMarket(
+        marketId = marketId,
+        displaySymbol = marketId,
+        tokenSymbol = marketId,
+        quoteSymbol = "USD",
+        markPrice = "1",
+        leverage = 10,
+        iconUrl = "",
+        fundingRate = "0",
+        minAmount = "0",
+        maxAmount = "0",
+        last = "1",
+        volume = volume,
+        tradeVolumeScore1D = score,
+        high = "1",
+        low = "1",
+        open = "1",
+        change = "0",
+        bidPrice = "1",
+        askPrice = "1",
+        createdAt = "",
+        updatedAt = "",
+    )
+}
