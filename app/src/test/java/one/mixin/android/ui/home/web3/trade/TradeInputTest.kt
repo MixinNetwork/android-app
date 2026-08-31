@@ -5,6 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
 
 class TradeInputTest {
     @Test
@@ -94,6 +95,45 @@ class TradeInputTest {
                 rawBalance = BigDecimal("1"),
                 isNativeSol = false,
                 inMixin = false,
+            ),
+        )
+    }
+
+    @Test
+    fun inMixinNativeSolSwapRejectsAmountsBelowRent() {
+        assertTrue(
+            isNativeSolSwapAmountBelowRent(
+                inputText = SOLANA_RENT_EXEMPTION.subtract(BigDecimal("0.00000001")).toPlainString(),
+                isNativeSol = true,
+                inMixin = true,
+            ),
+        )
+        assertFalse(
+            isNativeSolSwapAmountBelowRent(
+                inputText = SOLANA_RENT_EXEMPTION.toPlainString(),
+                isNativeSol = true,
+                inMixin = true,
+            ),
+        )
+        assertFalse(
+            isNativeSolSwapAmountBelowRent(
+                inputText = "0",
+                isNativeSol = true,
+                inMixin = true,
+            ),
+        )
+        assertFalse(
+            isNativeSolSwapAmountBelowRent(
+                inputText = "0.00000001",
+                isNativeSol = true,
+                inMixin = false,
+            ),
+        )
+        assertFalse(
+            isNativeSolSwapAmountBelowRent(
+                inputText = "0.00000001",
+                isNativeSol = false,
+                inMixin = true,
             ),
         )
     }

@@ -83,6 +83,7 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
 import one.mixin.android.web3.isNativeSolAsset
 import one.mixin.android.web3.nativeSolSpendableBalance
 import java.math.BigDecimal
@@ -159,6 +160,19 @@ fun SwapContent(
                 fromToken?.let { from ->
                     toToken?.let { to ->
                         val amount = runCatching { BigDecimal(text) }.getOrDefault(BigDecimal.ZERO)
+                        val isNativeSolRentError = isNativeSolSwapAmountBelowRent(
+                            inputText = text,
+                            isNativeSol = from.isNativeSolAsset(),
+                            inMixin = inMixin,
+                        )
+                        if (isNativeSolRentError) {
+                            quoteError = null
+                            quoteResult = null
+                            quoteMin = null
+                            quoteMax = null
+                            isLoading = false
+                            return@collectLatest
+                        }
                         if (reviewing) {
                             isLoading = false
                             return@collectLatest
@@ -333,6 +347,11 @@ fun SwapContent(
                                         toToken = toToken,
                                         isLoading = isLoading,
                                         inputText = inputText,
+                                        isNativeSolRentError = isNativeSolSwapAmountBelowRent(
+                                            inputText = inputText,
+                                            isNativeSol = from.isNativeSolAsset(),
+                                            inMixin = inMixin,
+                                        ),
                                         quoteMin = quoteMin,
                                         quoteMax = quoteMax,
                                         onInputTextChange = {
@@ -373,6 +392,11 @@ fun SwapContent(
                             fromToken = fromToken!!,
                             quoteResult = quoteResult,
                             quoteError = quoteError,
+                            isNativeSolRentError = isNativeSolSwapAmountBelowRent(
+                                inputText = inputText,
+                                isNativeSol = from.isNativeSolAsset(),
+                                inMixin = inMixin,
+                            ),
                             isLoading = isLoading,
                             reviewing = reviewing,
                             isButtonEnabled = isButtonEnabled,
@@ -447,6 +471,16 @@ internal fun swapSpendableBalance(
     return nativeSolSpendableBalance(rawBalance)
 }
 
+internal fun isNativeSolSwapAmountBelowRent(
+    inputText: String,
+    isNativeSol: Boolean,
+    inMixin: Boolean,
+): Boolean {
+    if (!isNativeSol || !inMixin) return false
+    val amount = inputText.toBigDecimalOrNull() ?: return false
+    return amount > BigDecimal.ZERO && amount < SOLANA_RENT_EXEMPTION
+}
+
 internal fun shouldResetSwapSendFocusState(
     inputText: String,
     isKeyboardVisible: Boolean,
@@ -459,6 +493,7 @@ fun ReviewButton(
     fromToken: SwapToken,
     quoteResult: QuoteResult?,
     quoteError: Throwable?,
+    isNativeSolRentError: Boolean,
     isLoading: Boolean,
     reviewing: Boolean,
     isButtonEnabled: Boolean,
@@ -471,6 +506,7 @@ fun ReviewButton(
     val checkBalance = checkBalance(inputText, fromBalance)
     val isBusy = isLoading || reviewing
     val hasError = quoteError != null
+    val canReview = quoteResult != null && !hasError && !isBusy && checkBalance == true && !isNativeSolRentError
     Button(
         modifier = Modifier
             .padding(horizontal = 20.dp)
@@ -488,9 +524,9 @@ fun ReviewButton(
                 }
             }
         },
-        enabled = quoteResult != null && !hasError && !isBusy && checkBalance == true,
+        enabled = canReview,
         colors = ButtonDefaults.outlinedButtonColors(
-            backgroundColor = if (quoteResult != null && !hasError && checkBalance == true) {
+            backgroundColor = if (canReview) {
                 MixinAppTheme.colors.accent
             } else {
                 MixinAppTheme.colors.backgroundGrayLight
@@ -507,7 +543,7 @@ fun ReviewButton(
         if (isBusy) {
             CircularProgressIndicator(
                 modifier = Modifier.size(18.dp),
-                color = if (quoteResult != null && !hasError && checkBalance == true) {
+                color = if (canReview) {
                     Color.White
                 } else {
                     MixinAppTheme.colors.textAssist
@@ -520,7 +556,7 @@ fun ReviewButton(
                 } else {
                     stringResource(R.string.Review_Order)
                 },
-                color = if (checkBalance != true || hasError) {
+                color = if (!canReview) {
                     MixinAppTheme.colors.textAssist
                 } else {
                     Color.White
@@ -575,6 +611,7 @@ fun QuoteInfoBox(
     toToken: SwapToken?,
     isLoading: Boolean,
     inputText: String,
+    isNativeSolRentError: Boolean,
     quoteMin: String?,
     quoteMax: String?,
     onInputTextChange: (String) -> Unit,
@@ -582,8 +619,15 @@ fun QuoteInfoBox(
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
 ) {
     val context = LocalContext.current
-    val displayedErrorInfo = remember(quoteError, quoteMax, inputText) {
-        buildSwapDisplayedErrorInfo(context, quoteError, quoteMax, inputText)
+    val displayedErrorInfo = remember(quoteError, quoteMax, inputText, isNativeSolRentError) {
+        if (isNativeSolRentError) {
+            context.getString(
+                R.string.send_sol_for_rent,
+                SOLANA_RENT_EXEMPTION.stripTrailingZeros().toPlainString(),
+            )
+        } else {
+            buildSwapDisplayedErrorInfo(context, quoteError, quoteMax, inputText)
+        }
     }
     Box(
         modifier = if (availableHeight == null) Modifier.heightIn(48.dp) else Modifier
@@ -636,7 +680,7 @@ fun QuoteInfoBox(
                     ),
                 )
                 val mixinError: TradeQuoteMixinErrorException? = quoteError as? TradeQuoteMixinErrorException
-                val canSwitchToLimitOrder: Boolean = if (mixinError == null) {
+                val canSwitchToLimitOrder: Boolean = if (isNativeSolRentError || mixinError == null) {
                     false
                 } else if (mixinError.code == ErrorHandler.INVALID_QUOTE_AMOUNT) {
                     isInputGreaterThanQuoteMax(inputText, mixinError.max)
