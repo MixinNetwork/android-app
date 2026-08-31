@@ -107,11 +107,14 @@ data class Web3TransactionItem(
 
     fun isNotVerified() = level < Constants.AssetLevel.VERIFIED
 
-    fun displayFeeAmount(): String = sponsorFeeAmount?.ifBlank { fee } ?: fee
+    fun displayFeeAmount(): String = if (hasSponsorFee()) sponsorFeeAmount.orEmpty() else fee
 
-    fun displayFeeSymbol(): String? = sponsorFeeAssetSymbol ?: chainSymbol
+    fun displayFeeSymbol(): String? = if (hasSponsorFee()) sponsorFeeAssetSymbol ?: chainSymbol else chainSymbol
 
-    fun hasSponsorFee(): Boolean = !sponsorFeeAmount.isNullOrBlank()
+    fun hasSponsorFee(): Boolean {
+        val amount = sponsorFeeAmount?.takeIf { it.isNotBlank() } ?: return false
+        return amount.toBigDecimalOrNull()?.signum()?.let { it != 0 } ?: true
+    }
 
     fun getMainAmount(): String {
         return when (transactionType) {

@@ -93,7 +93,7 @@ class RefreshMarketPageJob(
                     MarketCategory.TOP_LOSER.apiValue,
                     marketRefreshLimit(MarketCategory.TOP_LOSER),
                 ),
-                SpotMarketRefreshRequest(MarketPageDataSource.SPOT_ALL, MarketCategory.STOCK.apiValue),
+                SpotMarketRefreshRequest(MarketPageDataSource.SPOT_STOCK, MarketCategory.STOCK.apiValue),
             )
     }
 

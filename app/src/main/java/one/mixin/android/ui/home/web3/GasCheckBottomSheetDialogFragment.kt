@@ -439,7 +439,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             feeToken = feeToken,
             feeAmount = fee,
             recipientAccountState = recipientState,
-            allowZeroBalance = false,
+            allowZeroBalance = transferToken.isNativeSolAsset(),
             includeAtaCreationReserve = !transferToken.isNativeSolAsset(),
         )
 

@@ -56,6 +56,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.web3.market.sortedByVolumeDescending
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -102,19 +103,18 @@ fun PerpetualContent(
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
     val openPositionsCount = openPositions.size
     val openPositionsPreview = openPositions.take(3)
-    val marketsPreview = markets.take(3)
+    val marketsPreview = remember(markets) {
+        markets.trendingPreview()
+    }
     val topMoversPreview = remember(markets) {
         markets.topMoversPreview()
     }
-    val sourceOrder = remember(markets) {
-        markets.withIndex().associate { it.value.marketId to it.index }
+    val stocksMarkets = remember(markets) {
+        markets.filter { it.isStocksCategory() }.sortedByVolumeDescending()
     }
-    val stocksMarkets = markets
-        .filter { it.isStocksCategory() }
-        .sortedBy { sourceOrder[it.marketId] ?: Int.MAX_VALUE }
-    val commoditiesMarkets = markets
-        .filter { it.isCommoditiesCategory() }
-        .sortedBy { sourceOrder[it.marketId] ?: Int.MAX_VALUE }
+    val commoditiesMarkets = remember(markets) {
+        markets.filter { it.isCommoditiesCategory() }.sortedByVolumeDescending()
+    }
     val stocksMarketsPreview = stocksMarkets.take(3)
     val commoditiesMarketsPreview = commoditiesMarkets.take(3)
     val closedPositionsPreview = closedPositions.take(3)
@@ -358,8 +358,8 @@ fun PerpetualContent(
                         markets = marketsPreview,
                         totalCount = markets.size,
                         quoteColorReversed = quoteColorReversed,
-                        onTitleClick = { onShowAllMarkets(null, null) },
-                        onViewAllClick = { onShowAllMarkets(null, null) },
+                        onTitleClick = { onShowAllMarkets(null, MarketSort.RANK_DESCENDING) },
+                        onViewAllClick = { onShowAllMarkets(null, MarketSort.RANK_DESCENDING) },
                         onMarketItemClick = onMarketItemClick,
                     )
                 } else if (isLoading) {

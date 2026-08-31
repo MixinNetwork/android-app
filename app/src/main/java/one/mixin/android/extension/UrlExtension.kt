@@ -35,6 +35,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.TAB_PERPETUAL
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
@@ -56,6 +57,7 @@ import one.mixin.android.vo.getShareCategory
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
+import java.math.BigDecimal
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -392,6 +394,14 @@ fun String.checkTradeUrl(
 
 internal data class PerpsTradeAction(
     val marketId: String?,
+    val leaderPositionId: String?,
+    val openPosition: PerpsOpenPositionAction? = null,
+)
+
+internal data class PerpsOpenPositionAction(
+    val isLong: Boolean,
+    val leverage: Int?,
+    val margin: String?,
 )
 
 internal data class SpotTradeAction(
@@ -413,9 +423,38 @@ internal fun String.toPerpsTradeAction(): PerpsTradeAction? {
         return null
     }
 
-    val marketId = query.queryParameter("market")?.takeIf(String::isNotBlank) ?: return PerpsTradeAction(null)
+    val hasLeaderPositionId = query.hasQueryParameter("leader_position")
+    val leaderPositionId = query.queryParameter("leader_position")
+    if (hasLeaderPositionId && (leaderPositionId == null || !leaderPositionId.isUUID())) return null
+    val marketId = query.queryParameter("market")?.takeIf(String::isNotBlank)
+        ?: return if (!hasLeaderPositionId) PerpsTradeAction(null, null) else null
     if (!marketId.isUUID()) return null
-    return PerpsTradeAction(marketId)
+
+    val isLong = if (query.queryParameter("action").equals("open", true)) {
+        when {
+            query.queryParameter("side").equals("long", true) -> true
+            query.queryParameter("side").equals("short", true) -> false
+            else -> null
+        }
+    } else {
+        null
+    }
+    val openPosition = isLong?.let {
+        val hasLeverage = query.hasQueryParameter("leverage")
+        val leverage = query.queryParameter("leverage")?.toIntOrNull()?.takeIf { value -> value > 0 }
+        if (hasLeverage && leverage == null) return null
+
+        val hasMargin = query.hasQueryParameter("margin")
+        val margin = query.queryParameter("margin")?.toPerpsMarginOrNull()
+        if (hasMargin && margin == null) return null
+
+        PerpsOpenPositionAction(
+            isLong = it,
+            leverage = leverage,
+            margin = margin,
+        )
+    }
+    return PerpsTradeAction(marketId, leaderPositionId, openPosition)
 }
 
 internal fun String.toSpotTradeAction(): SpotTradeAction? {
@@ -501,14 +540,31 @@ private suspend fun openLocalPerpsTradeAction(
         PerpsDatabase.getDatabase(context, identityNumber).perpsMarketDao().getMarket(marketId)
     } ?: return false
 
-    PerpsActivity.showDetail(
-        context,
-        market.marketId,
-        market.displaySymbol,
-        market.displaySymbol,
-        market.tokenSymbol,
-        tradeSource(context),
-    )
+    val openPosition = action.openPosition
+    if (openPosition == null) {
+        PerpsActivity.showDetail(
+            context,
+            market.marketId,
+            market.displaySymbol,
+            market.displaySymbol,
+            market.tokenSymbol,
+            tradeSource(context),
+            leaderPositionId = action.leaderPositionId,
+        )
+    } else {
+        PerpsActivity.showOpenPosition(
+            context = context,
+            marketId = market.marketId,
+            marketSymbol = market.displaySymbol,
+            marketDisplaySymbol = market.displaySymbol,
+            marketTokenSymbol = market.tokenSymbol,
+            isLong = openPosition.isLong,
+            source = tradeSource(context),
+            leaderPositionId = action.leaderPositionId,
+            initialLeverage = openPosition.leverage,
+            initialMargin = openPosition.margin,
+        )
+    }
     closeSourceWebActivityIfNeeded(context)
     return true
 }
@@ -553,8 +609,30 @@ private fun String.queryParameter(name: String): String? =
         }
         .firstOrNull()
 
+private fun String.hasQueryParameter(name: String): Boolean =
+    split("&").any { parameter ->
+        parameter.substringBefore("=").urlDecode() == name
+    }
+
 private fun String.urlDecode(): String? =
     runCatching { URLDecoder.decode(this, StandardCharsets.UTF_8.name()) }.getOrNull()
+
+private fun String.toPerpsMarginOrNull(): String? {
+    if (isEmpty() || length > 64) return null
+    var hasDigit = false
+    var hasDecimalPoint = false
+    for (character in this) {
+        when {
+            character.isDigit() -> hasDigit = true
+            character == '.' && !hasDecimalPoint -> hasDecimalPoint = true
+            else -> return null
+        }
+    }
+    if (!hasDigit) return null
+    val amount = toBigDecimalOrNull()?.stripTrailingZeros() ?: return null
+    if (amount <= BigDecimal.ZERO || amount.scale() > TRADE_INPUT_MAX_DECIMAL_PLACES) return null
+    return amount.toPlainString()
+}
 
 private fun getUserOrAppNotFoundTip(isApp: Boolean) =
     if (isApp) R.string.Bot_not_found else R.string.User_not_found

@@ -1,81 +1,67 @@
 package one.mixin.android.ui.home.web3.trade
 
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import one.mixin.android.vo.market.Market
+import one.mixin.android.vo.market.MarketCategory
+import one.mixin.android.vo.market.MarketItem
 import java.math.BigDecimal
 
 class SwapRecommendedMarketCardsTest {
     @Test
-    fun cachedMarketsFillInitialFailedResponse() =
+    fun trendingAndStockPreserveApiOrderAndApplyDisplayLimit() =
         runBlocking {
-            val cached = (1..10).toList()
+            val cached = (1..10).map { market("coin-$it", it.toString()) }
 
-            val result =
-                recommendedMarketsWithCacheFallback(
-                    cachedMarkets = flowOf(cached),
-                    fetchedMarkets = flowOf(null),
-                    limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-                ).first()
+            listOf(MarketCategory.TRENDING, MarketCategory.STOCK).forEach { category ->
+                val result =
+                    recommendedMarketsFromDatabase(
+                        markets = flowOf(cached),
+                        limit = SWAP_RECOMMENDED_MARKET_LIMIT,
+                    ).first()
 
-            assertEquals(cached.take(SWAP_RECOMMENDED_MARKET_LIMIT), result)
+                assertEquals(
+                    cached.take(SWAP_RECOMMENDED_MARKET_LIMIT).map(MarketItem::coinId),
+                    result.map(MarketItem::coinId),
+                )
+            }
         }
 
     @Test
-    fun cacheUpdatesRecoverInitialFailedResponse() =
+    fun databaseRefreshUpdatesRecommendedMarkets() =
         runBlocking {
             val result =
-                recommendedMarketsWithCacheFallback(
-                    cachedMarkets = flowOf(emptyList(), listOf(1, 2, 3)),
-                    fetchedMarkets = flowOf(null),
+                recommendedMarketsFromDatabase(
+                    markets = flowOf(emptyList(), listOf(market("3", "3"), market("1", "1"), market("2", "2"))),
                     limit = SWAP_RECOMMENDED_MARKET_LIMIT,
                 ).first { it.isNotEmpty() }
 
-            assertEquals(listOf(1, 2, 3), result)
+            assertEquals(listOf("3", "1", "2"), result.map(MarketItem::coinId))
         }
 
     @Test
-    fun successfulResponsePreservesOrderAndOverridesCache() =
+    fun gainersAndLosersPreserveApiOrder() =
         runBlocking {
-            val result =
-                recommendedMarketsWithCacheFallback(
-                    cachedMarkets = flowOf(listOf(1, 2, 3)),
-                    fetchedMarkets = flowOf(listOf(3, 1)),
+            val markets = listOf(market("middle", "2"), market("highest", "5"), market("lowest", "-4"))
+
+            val gainers =
+                recommendedMarketsFromDatabase(
+                    markets = flowOf(markets),
+                    limit = SWAP_RECOMMENDED_MARKET_LIMIT,
+                ).first()
+            val losers =
+                recommendedMarketsFromDatabase(
+                    markets = flowOf(markets),
                     limit = SWAP_RECOMMENDED_MARKET_LIMIT,
                 ).first()
 
-            assertEquals(listOf(3, 1), result)
-        }
-
-    @Test
-    fun successfulResponseDoesNotWaitForCache() =
-        runBlocking {
-            val result =
-                recommendedMarketsWithCacheFallback(
-                    cachedMarkets = flow { error("cache should not be collected") },
-                    fetchedMarkets = flowOf(listOf(3, 1)),
-                    limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-                ).first()
-
-            assertEquals(listOf(3, 1), result)
-        }
-
-    @Test
-    fun successfulEmptyResponseOverridesCache() =
-        runBlocking {
-            val result =
-                recommendedMarketsWithCacheFallback(
-                    cachedMarkets = flowOf(listOf(1, 2, 3)),
-                    fetchedMarkets = flowOf(emptyList()),
-                    limit = SWAP_RECOMMENDED_MARKET_LIMIT,
-                ).first()
-
-            assertEquals(emptyList<Int>(), result)
+            assertEquals(listOf("middle", "highest", "lowest"), gainers.map(MarketItem::coinId))
+            assertEquals(listOf("middle", "highest", "lowest"), losers.map(MarketItem::coinId))
         }
 
     @Test
@@ -170,4 +156,43 @@ class SwapRecommendedMarketCardsTest {
         assertEquals("+1.2K%", formatRecommendedMarketSignedPercent(BigDecimal("1299.99")))
         assertEquals("-1.5K%", formatRecommendedMarketSignedPercent(BigDecimal("-1500.12")))
     }
+
+    private fun market(
+        coinId: String,
+        change24H: String,
+    ) =
+        MarketItem.fromMarket(
+            Market(
+                coinId = coinId,
+                name = coinId,
+                symbol = coinId,
+                iconUrl = "",
+                currentPrice = "1",
+                marketCap = "1",
+                marketCapRank = "1",
+                totalVolume = "1",
+                high24h = "1",
+                low24h = "1",
+                priceChange24h = "0",
+                priceChangePercentage1H = "0",
+                priceChangePercentage24H = change24H,
+                priceChangePercentage7D = "0",
+                priceChangePercentage30D = "0",
+                marketCapChange24h = "0",
+                marketCapChangePercentage24h = "0",
+                circulatingSupply = "1",
+                totalSupply = "1",
+                maxSupply = "1",
+                ath = "1",
+                athChangePercentage = "0",
+                athDate = "",
+                atl = "1",
+                atlChangePercentage = "0",
+                atlDate = "",
+                assetIds = emptyList(),
+                sparklineIn7d = "",
+                sparklineIn24h = "",
+                updatedAt = "",
+            ),
+        )
 }

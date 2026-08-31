@@ -1282,7 +1282,8 @@
     <string name="Write_Circles">Write Circles</string>
     <string name="you">you</string>
     <string name="You">You</string>
-    <string name="You_deleted_this_message">You deleted this message</string>
+    <string name="You_deleted_this_message">You deleted this message.</string>
+    <string name="User_deleted_this_message">%1$s deleted this message.</string>
     <string name="You_have_left_the_group">You have left the group</string>
     <string name="Your_emergency_contact_has_been_changed">Your recovery contact has been changed</string>
     <string name="text_size">Text Size</string>
@@ -1583,6 +1584,7 @@
     <string name="Arbitrum" translatable="false">Arbitrum</string>
     <string name="Avalanche" translatable="false">Avalanche</string>
     <string name="HyperEVM" translatable="false">HyperEVM</string>
+    <string name="XLayer" translatable="false">X Layer</string>
     <string name="Toncoin" translatable="false">TON</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>

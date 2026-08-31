@@ -70,7 +70,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
-import coil3.annotation.ExperimentalCoilApi
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -172,6 +171,7 @@ import one.mixin.android.util.getCountry
 import one.mixin.android.util.getLanguage
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.reportException
+import one.mixin.android.util.image.withDiskCacheFile
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
@@ -1745,7 +1745,6 @@ class WebFragment : BaseFragment() {
         super.onResume()
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     private fun saveImageFromUrl(url: String?) {
         if (viewDestroyed()) return
 
@@ -1768,8 +1767,9 @@ class WebFragment : BaseFragment() {
                         val request = ImageRequest.Builder(requireContext()).data(url).build()
                         val result = loader.execute(request)
                         if (result !is SuccessResult) return@launch
-                        val f = loader.diskCache?.openSnapshot(url)?.data?.toFile() ?: return@launch
-                        f.copy(outFile)
+                        loader.withDiskCacheFile(result) { cachedFile ->
+                            cachedFile.copy(outFile)
+                        } ?: return@launch
                     }
                     MediaScannerConnection.scanFile(
                         requireContext(),

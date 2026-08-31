@@ -15,6 +15,7 @@ import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
+import one.mixin.android.Constants.ChainId.XLayer
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
@@ -272,8 +273,8 @@ object Constants {
     }
 
 
-    val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM)
-    val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM)
+    val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM, XLayer)
+    val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM, XLayer)
     val Web3UtxoChainIds = listOf(BITCOIN_CHAIN_ID, ChainId.PEARL_CHAIN_ID)
 
     object ChainId {
@@ -304,6 +305,8 @@ object Constants {
         const val Avalanche = "1f67ac58-87ba-3571-9781-e9413c046f34"
 
         const val HyperEVM = "36d23d9e-bf4e-3ede-a12d-26f1f1f9fd2f"
+
+        const val XLayer = "37f5a4d1-905f-3b34-8291-c37438c7dcfc"
 
         const val TON_CHAIN_ID = "ef660437-d915-4e27-ad3f-632bfb6ba0ee"
     }

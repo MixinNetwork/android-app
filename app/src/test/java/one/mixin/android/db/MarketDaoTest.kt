@@ -83,6 +83,23 @@ class MarketDaoTest {
         }
 
     @Test
+    fun favoriteMarketsOrderByNewestAddition() =
+        runBlocking {
+            val markets = listOf(market("old"), market("same-first"), market("same-second"), market("new"))
+            database.marketDao().upsertList(markets)
+            database.marketFavoredDao().insertSuspend(
+                MarketFavored("old", true, "2026-08-26T00:00:00Z"),
+                MarketFavored("same-first", true, "2026-08-26T01:00:00Z"),
+                MarketFavored("same-second", true, "2026-08-26T01:00:00Z"),
+                MarketFavored("new", true, "2026-08-26T02:00:00Z"),
+            )
+
+            val result = database.marketDao().observeFavoredMarkets().first()
+
+            assertEquals(listOf("new", "same-first", "same-second", "old"), result.map { it.coinId })
+        }
+
+    @Test
     fun favoriteMarketIdsOnlyReturnsActiveFavorites() =
         runBlocking {
             database.marketFavoredDao().insertSuspend(
@@ -113,6 +130,26 @@ class MarketDaoTest {
             assertEquals(500, result.size)
             assertEquals("coin-1", result.first().coinId)
             assertEquals("coin-500", result.last().coinId)
+        }
+
+    @Test
+    fun categoryMarketsPreserveApiOrder() =
+        runBlocking {
+            val markets =
+                listOf(
+                    market("first", marketCapRank = "100"),
+                    market("second", marketCapRank = "1"),
+                    market("third", marketCapRank = "10"),
+                )
+            database.marketDao().upsertList(markets)
+            database.marketCategoryDao().replaceCategory(
+                category = 1,
+                coinIds = markets.map(Market::coinId),
+            )
+
+            val result = database.marketCategoryDao().observeMarketsByCategory(1).first()
+
+            assertEquals(markets.map(Market::coinId), result.map { it.coinId })
         }
 
     @Test

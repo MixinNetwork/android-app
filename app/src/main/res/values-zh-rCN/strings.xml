@@ -1071,8 +1071,8 @@
     <string name="Stop_Playing">停止播放</string>
     <string name="Stop_playing_this_list">确定要停止并关闭播放列表？</string>
     <string name="storage_low_message">手机存储空间严重不足，建议清理不重要的视频和文件、卸载不常用的软件，以免影响 Mixin 的使用体验，甚至可能造成聊天丢失或数据损坏</string>
-    <string name="storage_low_title">手机储存空间即将用尽</string>
-    <string name="Storage_Usage">储存空间</string>
+    <string name="storage_low_title">手机存储空间即将用尽</string>
+    <string name="Storage_Usage">存储空间</string>
     <string name="stranger_hint">对方不是你的联系人</string>
     <string name="Stranger_Transfer_Confirmation">陌生人转账确认</string>
     <string name="strikethrough">删除线</string>
@@ -1249,6 +1249,7 @@
     <string name="you">你</string>
     <string name="You">你</string>
     <string name="You_deleted_this_message">你撤回了一条消息</string>
+    <string name="User_deleted_this_message">%1$s 撤回了这条消息</string>
     <string name="You_have_left_the_group">你不在此群组</string>
     <string name="Your_emergency_contact_has_been_changed">恢复联系人已更改</string>
     <string name="text_size">字体大小</string>
