@@ -62,7 +62,6 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.components.AssetDistribution
 import one.mixin.android.ui.wallet.components.MultiColorProgressBar
 import one.mixin.android.widget.components.MixinButton
@@ -219,7 +218,7 @@ private fun SubTabs(
     LazyRow(
         state = listState,
         modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(start = 6.dp, end = 20.dp),
+        contentPadding = PaddingValues(start = if (topTab == MarketTopTab.STOCK) 12.dp else 6.dp, end = 20.dp),
         horizontalArrangement = Arrangement.spacedBy(10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
@@ -569,7 +568,7 @@ private fun RowScope.SpotMarketRowContent(
             )
         }
     val priceText = remember(market.currentPrice, fiatSymbol, fiatRate) {
-        formatSpotPrice(market.currentPrice, fiatSymbol, fiatRate)
+        formatMarketListPrice(market.currentPrice, fiatSymbol, fiatRate)
     }
     MarketIcon(url = market.iconUrl, size = 38.dp)
     Spacer(modifier = Modifier.width(10.dp))
@@ -1056,6 +1055,7 @@ private fun topTabLabel(tab: MarketTopTab): String =
             MarketTopTab.WATCHLIST -> R.string.Watchlist
             MarketTopTab.CRYPTO -> R.string.Crypto
             MarketTopTab.PERPETUAL -> R.string.Perpetual
+            MarketTopTab.STOCK -> R.string.market_stock
             MarketTopTab.INDICATOR -> R.string.Indicator
         },
     )
@@ -1096,15 +1096,6 @@ private fun formatPercent(change: BigDecimal): String {
     val prefix = if (change > BigDecimal.ZERO) "+" else ""
     return "$prefix${change.numberFormat2()}%"
 }
-
-private fun formatSpotPrice(
-    value: String,
-    fiatSymbol: String = Fiats.getSymbol(),
-    fiatRate: Double = Fiats.getRate(),
-): String =
-    runCatching {
-        "$fiatSymbol${BigDecimal(value).multiply(BigDecimal(fiatRate)).priceFormat()}"
-    }.getOrDefault(value)
 
 private fun formatSpotVolume(
     value: String,

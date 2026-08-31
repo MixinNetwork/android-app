@@ -31,6 +31,7 @@ import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
+import one.mixin.android.Constants.ChainId.XLayer
 import one.mixin.android.Constants.Web3EvmChainIds
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
@@ -163,6 +164,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                     R.id.radio_hyperevm -> {
                         HyperEVM
+                    }
+
+                    R.id.radio_xlayer -> {
+                        XLayer
                     }
 
                     else -> {

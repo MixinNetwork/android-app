@@ -1023,6 +1023,7 @@
     <string name="wallet_transfer_recent_tip">Вы уже перевели %3$s на %2$s %1$s. Вы хотите перевести его снова?</string>
     <string name="wallet_withdrawal_changed">Комиссия за снятие средств была изменена с %1$s на %2$s. Вы хотите продолжить обработку запроса?</string>
     <string name="wallet_withdrawal_recent_tip">Вы уже выводили %3$s на %2$s %1$s назад. Хотите вывести еще раз?</string>
+    <string name="web_bot_cannot_reached_desc">Веб-страница %1$s недоступна. Пожалуйста, проверьте свою сеть и попробуйте переключить 4G, Wi-Fi или VPN, чтобы перезагрузить страницу.</string>
     <string name="web_cannot_reached_desc">%1$s заняло слишком много времени для ответа. Пожалуйста, проверьте свою сеть и попробуйте переключить 4G, Wi-Fi или VPN, чтобы перезагрузить страницу.</string>
     <string name="web_cannot_reached_title">Эта веб-страница недоступна</string>
     <string name="web_floating_permission">Невозможно использовать плавающее окно, так как у Mixin нет разрешения на плавающие окна.</string>

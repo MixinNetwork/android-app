@@ -33,6 +33,7 @@ import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
+import one.mixin.android.Constants.ChainId.XLayer
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -221,6 +222,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                             R.id.radio_hyperevm -> {
                                 HyperEVM
+                            }
+
+                            R.id.radio_xlayer -> {
+                                XLayer
                             }
 
                             R.id.radio_toncoin -> {
@@ -452,9 +457,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         val chainIds =
                             swapViewModel.getAddresses(Web3Signer.currentWalletId).map {
                                 it.chainId
-                            }
+                            }.toSet()
                         this.filter {
-                            it.chain.chainId in chainIds
+                            isSwapSearchChainAvailable(it.chain.chainId, chainIds)
                         }
                     } else {
                         this
