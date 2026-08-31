@@ -55,6 +55,7 @@ import one.mixin.android.extension.isValidStartParam
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.toPerpsTradeAction
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
@@ -1105,18 +1106,13 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         val type = uri.getQueryParameter("type")
         
         if (type.equals("perps", true) || type.equals("perpetual", true)) {
-            val marketId = uri.getQueryParameter("market")
-            val hasLeaderPositionId = "position_id" in uri.queryParameterNames
-            val leaderPositionId = uri.getQueryParameter("position_id")
-            if (hasLeaderPositionId && (leaderPositionId == null || !leaderPositionId.isUUID())) {
+            val action = uri.toString().toPerpsTradeAction()
+            if (action == null) {
                 showError(R.string.Data_error)
                 return
             }
-            if (marketId.isNullOrBlank() || !marketId.isUUID()) {
-                if (hasLeaderPositionId) {
-                    showError(R.string.Data_error)
-                    return
-                }
+            val marketId = action.marketId
+            if (marketId == null) {
                 defaultSharedPreferences.putInt(
                     "$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}",
                     TAB_PERPETUAL,
@@ -1137,19 +1133,36 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 return
             }
 
-            PerpsActivity.showDetail(
-                requireContext(),
-                market.marketId,
-                market.displaySymbol,
-                market.displaySymbol,
-                market.tokenSymbol,
-                if (activity is ConversationActivity) {
-                    AnalyticsTracker.MarketDetailSource.APP_CARD
-                } else {
-                    AnalyticsTracker.MarketDetailSource.SCHEMA
-                },
-                leaderPositionId = leaderPositionId,
-            )
+            val source = if (activity is ConversationActivity) {
+                AnalyticsTracker.MarketDetailSource.APP_CARD
+            } else {
+                AnalyticsTracker.MarketDetailSource.SCHEMA
+            }
+            val openPosition = action.openPosition
+            if (openPosition == null) {
+                PerpsActivity.showDetail(
+                    requireContext(),
+                    market.marketId,
+                    market.displaySymbol,
+                    market.displaySymbol,
+                    market.tokenSymbol,
+                    source,
+                    leaderPositionId = action.leaderPositionId,
+                )
+            } else {
+                PerpsActivity.showOpenPosition(
+                    context = requireContext(),
+                    marketId = market.marketId,
+                    marketSymbol = market.displaySymbol,
+                    marketDisplaySymbol = market.displaySymbol,
+                    marketTokenSymbol = market.tokenSymbol,
+                    isLong = openPosition.isLong,
+                    source = source,
+                    leaderPositionId = action.leaderPositionId,
+                    initialLeverage = openPosition.leverage,
+                    initialMargin = openPosition.margin,
+                )
+            }
             closeSourceWebActivityIfNeeded()
             dismiss()
             return

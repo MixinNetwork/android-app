@@ -13,6 +13,8 @@ class OpenOrderRequestTest {
         val json = Gson().toJsonTree(openOrderRequest(leaderPositionId)).asJsonObject
 
         assertEquals(leaderPositionId, json.get("leader_position_id").asString)
+        assertFalse(json.has("leader_position"))
+        assertFalse(json.has("position_id"))
     }
 
     @Test

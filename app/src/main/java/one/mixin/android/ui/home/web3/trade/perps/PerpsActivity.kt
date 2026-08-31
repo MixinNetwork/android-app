@@ -69,6 +69,8 @@ class PerpsActivity : BaseActivity() {
         private const val EXTRA_SOURCE = "extra_source"
         private const val EXTRA_RETURN_TO_DETAIL = "extra_return_to_detail"
         private const val EXTRA_LEADER_POSITION_ID = "extra_leader_position_id"
+        private const val EXTRA_INITIAL_LEVERAGE = "extra_initial_leverage"
+        private const val EXTRA_INITIAL_MARGIN = "extra_initial_margin"
         private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 
         const val MODE_DETAIL = "detail"
@@ -112,6 +114,8 @@ class PerpsActivity : BaseActivity() {
             source: String,
             returnToDetail: Boolean = false,
             leaderPositionId: String? = null,
+            initialLeverage: Int? = null,
+            initialMargin: String? = null,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
                 if (context !is Activity) {
@@ -126,6 +130,8 @@ class PerpsActivity : BaseActivity() {
                 putExtra(EXTRA_SOURCE, source)
                 putExtra(EXTRA_RETURN_TO_DETAIL, returnToDetail)
                 leaderPositionId?.let { putExtra(EXTRA_LEADER_POSITION_ID, it) }
+                initialLeverage?.let { putExtra(EXTRA_INITIAL_LEVERAGE, it) }
+                initialMargin?.let { putExtra(EXTRA_INITIAL_MARGIN, it) }
             }
             val hostActivity = context.findFragmentActivityOrNull() as? PerpsActivity
             if (hostActivity != null && returnToDetail && leaderPositionId != null) {
@@ -160,15 +166,39 @@ class PerpsActivity : BaseActivity() {
         val source = currentIntent.getStringExtra(EXTRA_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL
         val returnToDetail = currentIntent.getBooleanExtra(EXTRA_RETURN_TO_DETAIL, false)
         leaderPositionId = currentIntent.getStringExtra(EXTRA_LEADER_POSITION_ID)
+        val initialLeverage = currentIntent
+            .takeIf { it.hasExtra(EXTRA_INITIAL_LEVERAGE) }
+            ?.getIntExtra(EXTRA_INITIAL_LEVERAGE, 0)
+        val initialMargin = currentIntent.getStringExtra(EXTRA_INITIAL_MARGIN)
 
         if (mode == MODE_OPEN_POSITION) {
             renderJob = lifecycleScope.launch {
-                val market = withContext(Dispatchers.IO) {
-                    perpsMarketDao.getMarket(marketId)
-                }
+                val market = viewModel.getMarketById(marketId)
                 if (market == null) {
                     toast(R.string.Alert_Not_Support)
                     finish()
+                    return@launch
+                }
+                val walletId = Session.getAccountId()
+                val hasOpenPosition = if (walletId.isNullOrEmpty()) {
+                    false
+                } else {
+                    viewModel.getOpenPositionsFromDb(walletId).any { it.marketId == marketId }
+                }
+                if (!canOpenNewPerpsPosition(hasOpenPosition)) {
+                    if (returnToDetail) {
+                        finish()
+                    } else {
+                        showDetail(
+                            context = this@PerpsActivity,
+                            marketId = market.marketId,
+                            marketSymbol = market.displaySymbol,
+                            marketDisplaySymbol = market.displaySymbol,
+                            marketTokenSymbol = market.tokenSymbol,
+                            source = source,
+                            leaderPositionId = leaderPositionId,
+                        )
+                    }
                     return@launch
                 }
                 AnalyticsTracker.trackPerpsOpenStart(
@@ -184,7 +214,11 @@ class PerpsActivity : BaseActivity() {
                             source = source,
                             onBack = { finish() },
                             onOrderCreated = {
-                                if (returnToDetail && leaderPositionId != null) {
+                                if (leaderPositionId != null) {
+                                    intent.removeExtra(EXTRA_LEADER_POSITION_ID)
+                                    leaderPositionId = null
+                                }
+                                if (returnToDetail) {
                                     setResult(Activity.RESULT_OK)
                                 }
                             },
@@ -201,6 +235,8 @@ class PerpsActivity : BaseActivity() {
                                 selectedToken = token
                             },
                             leaderPositionId = leaderPositionId,
+                            initialLeverage = initialLeverage,
+                            initialMargin = initialMargin,
                         )
                     }
                 }
@@ -282,3 +318,5 @@ class PerpsActivity : BaseActivity() {
             .show(supportFragmentManager, PerpsPositionShareBottomFragment.TAG)
     }
 }
+
+internal fun canOpenNewPerpsPosition(hasOpenPosition: Boolean): Boolean = !hasOpenPosition

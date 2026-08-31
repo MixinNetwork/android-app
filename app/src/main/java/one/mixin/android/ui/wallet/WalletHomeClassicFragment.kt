@@ -942,6 +942,20 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                     leaderPositionId = target.leaderPositionId,
                 )
             }
+            is WalletHomeBannerActionTarget.PerpsOpen -> {
+                PerpsActivity.showOpenPosition(
+                    context = requireActivity(),
+                    marketId = target.marketId,
+                    marketSymbol = "",
+                    marketDisplaySymbol = "",
+                    marketTokenSymbol = "",
+                    isLong = target.isLong,
+                    source = AnalyticsTracker.PerpsSource.WALLET_HOME,
+                    leaderPositionId = target.leaderPositionId,
+                    initialLeverage = target.leverage,
+                    initialMargin = target.margin,
+                )
+            }
             WalletHomeBannerActionTarget.PerpsTab -> {
                 AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
                 defaultSharedPreferences.putInt("${TradeFragment.PREF_TRADE_SELECTED_TAB_PREFIX}${Session.getAccountId().orEmpty()}", TradeFragment.TAB_PERPETUAL)
