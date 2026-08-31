@@ -119,6 +119,7 @@ import one.mixin.android.web3.receive.Web3AddressFragment
 import one.mixin.android.web3.solanaRecipientAccountState
 import one.mixin.android.web3.solanaTransferAmountRange
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
+import one.mixin.android.web3.swap.filterSwapTokensByWalletChains
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -1497,13 +1498,8 @@ class TradeFragment : BaseFragment() {
                 return@requestRouteAPI true
             },
         )?.let { remote: List<SwapToken> ->
-            val filteredRemote: List<SwapToken> = (if (chainIdSet == null) {
-                remote
-            } else {
-                remote.filter { token: SwapToken ->
-                    chainIdSet.contains(token.chain.chainId)
-                }
-            }).filter { inMixin() || isWeb3TransferSupported(it.chain.chainId) }
+            val filteredRemote: List<SwapToken> =
+                filterSwapTokensByWalletChains(remote, chainIdSet, inMixin())
             stocks = filteredRemote.map { it.copy(isWeb3 = !inMixin(), walletId = walletId) }.map { token ->
                 val t = web3tokens?.firstOrNull { web3Token ->
                     (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
@@ -1534,13 +1530,8 @@ class TradeFragment : BaseFragment() {
                 return@requestRouteAPI true
             },
         )?.let { remote: List<SwapToken> ->
-            val filteredRemote: List<SwapToken> = (if (chainIdSet == null) {
-                remote
-            } else {
-                remote.filter { token: SwapToken ->
-                    chainIdSet.contains(token.chain.chainId)
-                }
-            }).filter { inMixin() || isWeb3TransferSupported(it.chain.chainId) }
+            val filteredRemote: List<SwapToken> =
+                filterSwapTokensByWalletChains(remote, chainIdSet, inMixin())
             if (!inMixin()) {
                 remoteSwapTokens = filteredRemote.map { it.copy(isWeb3 = true, walletId = walletId) }.mapNotNull { token ->
                     val local = swapViewModel.web3TokenItemById(walletId ?: "", token.assetId)
