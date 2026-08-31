@@ -37,7 +37,6 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.forEachWithIndex
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat2
@@ -481,45 +480,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 hideValueDetails()
             }
 
-            when {
-                transaction.status == TransactionStatus.NOT_FOUND.value || transaction.status == TransactionStatus.FAILED.value || transaction.status == TransactionStatus.PENDING.value -> {
-                    avatar.bg.setImageResource(R.drawable.ic_web3_transaction_contract)
-                }
-
-                transaction.transactionType == TransactionType.TRANSFER_OUT.value -> {
-                    if (transaction.senders.size > 1) {
-                        avatar.bg.setImageResource(R.drawable.ic_snapshot_withdrawal)
-                    } else {
-                        avatar.bg.loadImage(transaction.sendAssetIconUrl, R.drawable.ic_avatar_place_holder)
-                    }
-                }
-
-                transaction.transactionType == TransactionType.TRANSFER_IN.value -> {
-                    if (transaction.receivers.size > 1) {
-                        avatar.bg.setImageResource(R.drawable.ic_snapshot_deposit)
-                    } else {
-                        avatar.bg.loadImage(transaction.receiveAssetIconUrl, R.drawable.ic_avatar_place_holder)
-                    }
-                }
-
-                transaction.transactionType == TransactionType.SWAP.value -> {
-                    avatar.bg.setImageResource(R.drawable.ic_web3_transaction_swap)
-                }
-
-                transaction.transactionType == TransactionType.APPROVAL.value -> {
-                    avatar.bg.setImageResource(R.drawable.ic_web3_transaction_approval)
-                }
-
-                else -> {
-                    avatar.bg.setImageResource(R.drawable.ic_web3_transaction_unknown)
-                }
-            }
+            avatar.bindTransactionHeaderIcon(transaction)
 
             avatar.setOnClickListener {
                 tokenClick(transaction)
             }
-
-            avatar.badge.isVisible = false
 
             dateTv.text = transaction.transactionAt.fullDate()
             feeLl.isVisible = shouldShowFee(transaction.status)
