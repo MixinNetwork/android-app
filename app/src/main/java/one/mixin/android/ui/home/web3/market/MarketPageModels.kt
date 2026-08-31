@@ -104,24 +104,31 @@ fun defaultMarketSortState(
         topTab == MarketTopTab.CRYPTO && subTab == MarketSubTab.ALL ->
             MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING)
         isScoreOrderingAvailable(topTab, subTab) -> scoreMarketSortState()
+        topTab == MarketTopTab.STOCK && subTab == MarketSubTab.PERPETUAL ->
+            volumeMarketSortState()
+        topTab == MarketTopTab.PERPETUAL &&
+            subTab in
+                setOf(
+                    MarketSubTab.MEME,
+                    MarketSubTab.INDICES,
+                    MarketSubTab.COMMODITIES,
+                    MarketSubTab.FOREX,
+                ) -> volumeMarketSortState()
         else -> MarketSortState()
     }
 
 internal fun scoreMarketSortState() =
     MarketSortState(MarketSortColumn.SCORE, MarketSortDirection.DESCENDING)
 
+private fun volumeMarketSortState() =
+    MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+
 internal fun isScoreOrderingAvailable(
     topTab: MarketTopTab,
     subTab: MarketSubTab?,
 ): Boolean =
     when (topTab) {
-        MarketTopTab.PERPETUAL ->
-            subTab == MarketSubTab.TRENDING ||
-                subTab == MarketSubTab.MEME ||
-                subTab == MarketSubTab.INDICES ||
-                subTab == MarketSubTab.COMMODITIES ||
-                subTab == MarketSubTab.FOREX
-        MarketTopTab.STOCK -> subTab == MarketSubTab.PERPETUAL
+        MarketTopTab.PERPETUAL -> subTab == MarketSubTab.TRENDING
         else -> false
     }
 
@@ -298,15 +305,15 @@ object MarketPageMapper {
             MarketSubTab.TRENDING -> markets.sortedByScoreAndVolumeDescending()
             MarketSubTab.TOP_GAINERS -> markets.sortedByDescending { it.changePercentValue() ?: BigDecimal.ZERO }
             MarketSubTab.TOP_LOSERS -> markets.sortedBy { it.changePercentValue() ?: BigDecimal.ZERO }
-            MarketSubTab.INDICES -> markets.filterByCategory(PerpsMarketCategoryKey.INDICES).sortedByScoreAndVolumeDescending()
-            MarketSubTab.COMMODITIES -> markets.filterByCategory(PerpsMarketCategoryKey.COMMODITIES).sortedByScoreAndVolumeDescending()
-            MarketSubTab.FOREX -> markets.filterByCategory(PerpsMarketCategoryKey.FOREX).sortedByScoreAndVolumeDescending()
-            MarketSubTab.MEME -> markets.filterByCategory(PerpsMarketCategoryKey.MEME).sortedByScoreAndVolumeDescending()
+            MarketSubTab.INDICES -> markets.filterByCategory(PerpsMarketCategoryKey.INDICES).sortedByVolumeDescending()
+            MarketSubTab.COMMODITIES -> markets.filterByCategory(PerpsMarketCategoryKey.COMMODITIES).sortedByVolumeDescending()
+            MarketSubTab.FOREX -> markets.filterByCategory(PerpsMarketCategoryKey.FOREX).sortedByVolumeDescending()
+            MarketSubTab.MEME -> markets.filterByCategory(PerpsMarketCategoryKey.MEME).sortedByVolumeDescending()
             else -> markets
         }
 
     fun perpetualStockMarkets(markets: List<PerpsMarket>): List<PerpsMarket> =
-        markets.filterByCategory(PerpsMarketCategoryKey.STOCKS).sortedByScoreAndVolumeDescending()
+        markets.filterByCategory(PerpsMarketCategoryKey.STOCKS).sortedByVolumeDescending()
 
     private fun List<PerpsMarket>.filterByCategory(category: PerpsMarketCategoryKey): List<PerpsMarket> =
         filter { market -> category.matches(market.category) }
@@ -385,6 +392,9 @@ internal fun List<PerpsMarket>.sortedByScoreAndVolumeDescending(): List<PerpsMar
         compareByDescending<PerpsMarket>(PerpsMarket::tradeVolumeScore1D)
             .thenByDescending { market -> market.volume.toBigDecimalOrNull() ?: BigDecimal.ZERO },
     )
+
+internal fun List<PerpsMarket>.sortedByVolumeDescending(): List<PerpsMarket> =
+    sortedByDescending { market -> market.volume.toBigDecimalOrNull() ?: BigDecimal.ZERO }
 
 fun MarketItem.changePercent(period: MarketPriceChangePeriod): BigDecimal? =
     when (period) {

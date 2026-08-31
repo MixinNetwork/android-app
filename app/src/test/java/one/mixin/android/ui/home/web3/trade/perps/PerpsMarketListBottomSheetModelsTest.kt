@@ -4,7 +4,6 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.ui.home.web3.market.MarketSortColumn
 import one.mixin.android.ui.home.web3.market.MarketSortDirection
 import one.mixin.android.ui.home.web3.market.MarketSortState
-import one.mixin.android.ui.home.web3.market.scoreMarketSortState
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
@@ -40,52 +39,53 @@ class PerpsMarketListBottomSheetModelsTest {
     }
 
     @Test
-    fun allMarketsSortByTradeVolumeScore() {
+    fun allMarketsSortByTradeVolume() {
         val visibleMarkets =
             PerpsMarketListUiState(
                 markets =
                     listOf(
                         perpsMarket("second-low-volume", "crypto", tradeVolumeScore1D = 20, volume = "10"),
                         perpsMarket("second-high-volume", "stocks", tradeVolumeScore1D = 20, volume = "100"),
-                        perpsMarket("third", "stocks", tradeVolumeScore1D = 10),
-                        perpsMarket("first", "crypto", tradeVolumeScore1D = 30),
+                        perpsMarket("third", "stocks", tradeVolumeScore1D = 10, volume = "200"),
+                        perpsMarket("first", "crypto", tradeVolumeScore1D = 30, volume = "1"),
                     ),
             ).visibleMarkets
 
         assertEquals(
-            listOf("first", "second-high-volume", "second-low-volume", "third"),
+            listOf("third", "second-high-volume", "second-low-volume", "first"),
             visibleMarkets.map { it.marketId },
         )
     }
 
     @Test
-    fun allCategoryHeaderCyclesBackToScore() {
+    fun allCategoryHeaderCyclesBackToVolumeDefault() {
         val markets =
             listOf(
                 perpsMarket("second", "crypto", tradeVolumeScore1D = 20, volume = "300"),
                 perpsMarket("third", "stocks", tradeVolumeScore1D = 10, volume = "200"),
                 perpsMarket("first", "crypto", tradeVolumeScore1D = 30, volume = "100"),
             )
-        val descending = PerpsMarketListUiState(markets = markets).selectSort(MarketSortColumn.VOLUME)
-        val ascending = descending.selectSort(MarketSortColumn.VOLUME)
-        val score = ascending.selectSort(MarketSortColumn.VOLUME)
+        val ascending = PerpsMarketListUiState(markets = markets).selectSort(MarketSortColumn.VOLUME)
+        val default = ascending.selectSort(MarketSortColumn.VOLUME)
 
-        assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING), descending.sortState)
         assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING), ascending.sortState)
-        assertEquals(scoreMarketSortState(), score.sortState)
-        assertEquals(listOf("first", "second", "third"), score.visibleMarkets.map { it.marketId })
+        assertEquals(defaultPerpsMarketSortState(PerpsMarketCategory.ALL), default.sortState)
+        assertEquals(listOf("second", "third", "first"), default.visibleMarkets.map { it.marketId })
         assertEquals(
-            scoreMarketSortState(),
-            score.selectCategory(PerpsMarketCategory.CRYPTO).sortState,
+            defaultPerpsMarketSortState(PerpsMarketCategory.CRYPTO),
+            default.selectCategory(PerpsMarketCategory.CRYPTO).sortState,
         )
     }
 
     @Test
-    fun marketCategoriesUseHiddenScoreDefaultExceptWatchlist() {
+    fun marketCategoriesUseVolumeDefaultExceptWatchlist() {
         PerpsMarketCategory.entries
             .filterNot { it == PerpsMarketCategory.WATCHLIST }
             .forEach { category ->
-                assertEquals(scoreMarketSortState(), defaultPerpsMarketSortState(category))
+                assertEquals(
+                    MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                    defaultPerpsMarketSortState(category),
+                )
             }
         assertEquals(MarketSortState(), defaultPerpsMarketSortState(PerpsMarketCategory.WATCHLIST))
     }

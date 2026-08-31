@@ -9,9 +9,6 @@ private const val TRENDING_PREVIEW_SIZE = 3
 fun List<PerpsMarket>.trendingPreview(): List<PerpsMarket> =
     sortedByScoreAndVolumeDescending().take(TRENDING_PREVIEW_SIZE)
 
-internal fun List<PerpsMarket>.sortedByScoreAndVolume(): List<PerpsMarket> =
-    sortedByScoreAndVolumeDescending()
-
 fun List<PerpsMarket>.topMoversPreview(): List<PerpsMarket> {
     val topMarkets = sortedByDescending { it.changePercent() }
         .take(TOP_MOVERS_GROUP_SIZE)

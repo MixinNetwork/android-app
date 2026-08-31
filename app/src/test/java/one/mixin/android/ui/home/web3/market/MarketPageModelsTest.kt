@@ -236,6 +236,50 @@ class MarketPageModelsTest {
     }
 
     @Test
+    fun perpetualCategoriesAndStockSortByTradeVolumeOnly() {
+        val categoryMarkets =
+            listOf(
+                MarketSubTab.MEME to
+                    listOf(
+                        perpsMarket("low-volume", category = "memes", tradeVolumeScore1D = 100, volume = "10"),
+                        perpsMarket("high-volume", category = "meme", tradeVolumeScore1D = 1, volume = "100"),
+                    ),
+                MarketSubTab.INDICES to
+                    listOf(
+                        perpsMarket("low-volume", category = "indices", tradeVolumeScore1D = 100, volume = "10"),
+                        perpsMarket("high-volume", category = "index", tradeVolumeScore1D = 1, volume = "100"),
+                    ),
+                MarketSubTab.COMMODITIES to
+                    listOf(
+                        perpsMarket("low-volume", category = "commodities", tradeVolumeScore1D = 100, volume = "10"),
+                        perpsMarket("high-volume", category = "commodity", tradeVolumeScore1D = 1, volume = "100"),
+                    ),
+                MarketSubTab.FOREX to
+                    listOf(
+                        perpsMarket("low-volume", category = "forex", tradeVolumeScore1D = 100, volume = "10"),
+                        perpsMarket("high-volume", category = "fx", tradeVolumeScore1D = 1, volume = "100"),
+                    ),
+            )
+
+        categoryMarkets.forEach { (subTab, markets) ->
+            assertEquals(
+                listOf("high-volume", "low-volume"),
+                MarketPageMapper.perpetualMarkets(markets, subTab).map { it.marketId },
+            )
+        }
+
+        val stocks =
+            listOf(
+                perpsMarket("low-volume", category = "stocks", tradeVolumeScore1D = 100, volume = "10"),
+                perpsMarket("high-volume", category = "stock", tradeVolumeScore1D = 1, volume = "100"),
+            )
+        assertEquals(
+            listOf("high-volume", "low-volume"),
+            MarketPageMapper.perpetualStockMarkets(stocks).map { it.marketId },
+        )
+    }
+
+    @Test
     fun perpetualCategoriesSupportAliasesIgnoringCase() {
         val markets =
             listOf(
@@ -352,7 +396,7 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun sortHeaderCyclesBackToScoreWhenAvailable() {
+    fun sortHeaderCyclesBackToScoreOnlyForTrending() {
         val scoreDefault = scoreMarketSortState()
         val descending = scoreDefault.next(MarketSortColumn.VOLUME, scoreDefault)
         val ascending = descending.next(MarketSortColumn.VOLUME, scoreDefault)
@@ -361,16 +405,16 @@ class MarketPageModelsTest {
         assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING), descending)
         assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING), ascending)
         assertEquals(scoreMarketSortState(), score)
+        assertTrue(isScoreOrderingAvailable(MarketTopTab.PERPETUAL, MarketSubTab.TRENDING))
         listOf(
-            MarketSubTab.TRENDING,
             MarketSubTab.MEME,
             MarketSubTab.INDICES,
             MarketSubTab.COMMODITIES,
             MarketSubTab.FOREX,
         ).forEach { subTab ->
-            assertTrue(isScoreOrderingAvailable(MarketTopTab.PERPETUAL, subTab))
+            assertTrue(!isScoreOrderingAvailable(MarketTopTab.PERPETUAL, subTab))
         }
-        assertTrue(isScoreOrderingAvailable(MarketTopTab.STOCK, MarketSubTab.PERPETUAL))
+        assertTrue(!isScoreOrderingAvailable(MarketTopTab.STOCK, MarketSubTab.PERPETUAL))
         assertTrue(!isScoreOrderingAvailable(MarketTopTab.CRYPTO, MarketSubTab.TRENDING))
     }
 
@@ -413,7 +457,7 @@ class MarketPageModelsTest {
         }
         assertEquals(MarketSortState(), defaultMarketSortState(MarketTopTab.STOCK, MarketSubTab.CRYPTO))
         assertEquals(
-            scoreMarketSortState(),
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
             defaultMarketSortState(MarketTopTab.STOCK, MarketSubTab.PERPETUAL),
         )
         assertEquals(
@@ -442,7 +486,7 @@ class MarketPageModelsTest {
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.TOP_LOSERS),
         )
         assertEquals(
-            scoreMarketSortState(),
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
             defaultMarketSortState(MarketTopTab.PERPETUAL, MarketSubTab.MEME),
         )
         listOf(
@@ -451,7 +495,7 @@ class MarketPageModelsTest {
             MarketSubTab.FOREX,
         ).forEach { subTab ->
             assertEquals(
-                scoreMarketSortState(),
+                MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
                 defaultMarketSortState(MarketTopTab.PERPETUAL, subTab),
             )
         }

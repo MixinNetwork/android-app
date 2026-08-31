@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.ui.home.web3.market.sortedByVolumeDescending
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -23,7 +24,7 @@ class PerpetualMarketPreviewsTest {
     }
 
     @Test
-    fun categoryPreviewsOrderByScoreThenVolume() {
+    fun categoryPreviewsOrderByVolume() {
         val markets =
             listOf(
                 market("second-low-volume", volume = "10", score = 30),
@@ -32,8 +33,8 @@ class PerpetualMarketPreviewsTest {
             )
 
         assertEquals(
-            listOf("first", "second-high-volume", "second-low-volume"),
-            markets.sortedByScoreAndVolume().map { it.marketId },
+            listOf("second-high-volume", "second-low-volume", "first"),
+            markets.sortedByVolumeDescending().map { it.marketId },
         )
     }
 

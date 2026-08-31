@@ -6,8 +6,7 @@ import one.mixin.android.ui.home.web3.market.MarketSortDirection
 import one.mixin.android.ui.home.web3.market.MarketSortState
 import one.mixin.android.ui.home.web3.market.PerpsMarketCategoryKey
 import one.mixin.android.ui.home.web3.market.changePercentValue
-import one.mixin.android.ui.home.web3.market.scoreMarketSortState
-import one.mixin.android.ui.home.web3.market.sortedByScoreAndVolumeDescending
+import one.mixin.android.ui.home.web3.market.sortedByVolumeDescending
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import java.math.BigDecimal
 
@@ -185,8 +184,7 @@ internal data class PerpsMarketListUiState(
                     val order = favoriteMarketIds.withIndex().associate { (index, marketId) -> marketId to index }
                     sortedBy { market -> order[market.marketId] ?: Int.MAX_VALUE }
                 }
-                selectedCategory.isScoreOrderingAvailable -> sortedByScoreAndVolumeDescending()
-                else -> this
+                else -> sortedByVolumeDescending()
             }
         }
         val comparator =
@@ -252,14 +250,11 @@ internal data class PerpsMarketListUiState(
 }
 
 internal fun defaultPerpsMarketSortState(category: PerpsMarketCategory) =
-    if (category.isScoreOrderingAvailable) {
-        scoreMarketSortState()
-    } else {
+    if (category == PerpsMarketCategory.WATCHLIST) {
         MarketSortState()
+    } else {
+        MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
     }
-
-private val PerpsMarketCategory.isScoreOrderingAvailable: Boolean
-    get() = this != PerpsMarketCategory.WATCHLIST
 
 internal fun MarketSort?.toPerpsMarketSortState(category: PerpsMarketCategory): MarketSortState =
     when (this) {

@@ -56,6 +56,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.web3.market.sortedByVolumeDescending
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -109,10 +110,10 @@ fun PerpetualContent(
         markets.topMoversPreview()
     }
     val stocksMarkets = remember(markets) {
-        markets.filter { it.isStocksCategory() }.sortedByScoreAndVolume()
+        markets.filter { it.isStocksCategory() }.sortedByVolumeDescending()
     }
     val commoditiesMarkets = remember(markets) {
-        markets.filter { it.isCommoditiesCategory() }.sortedByScoreAndVolume()
+        markets.filter { it.isCommoditiesCategory() }.sortedByVolumeDescending()
     }
     val stocksMarketsPreview = stocksMarkets.take(3)
     val commoditiesMarketsPreview = commoditiesMarkets.take(3)
