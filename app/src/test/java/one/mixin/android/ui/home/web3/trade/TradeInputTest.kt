@@ -5,6 +5,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
 
 class TradeInputTest {
     @Test
@@ -51,50 +52,26 @@ class TradeInputTest {
     }
 
     @Test
-    fun inMixinNativeSolSwapUsesFullBalance() {
-        assertEquals(
-            BigDecimal("1"),
-            swapSpendableBalance(
-                rawBalance = BigDecimal("1"),
+    fun nativeSolSwapBalanceCheckAllowsFullTransferOrLeavesRent() {
+        val balance = BigDecimal("1")
+
+        assertFalse(isNativeSolSwapBalanceError("1", balance, isNativeSol = true))
+        assertFalse(
+            isNativeSolSwapBalanceError(
+                balance.subtract(SOLANA_RENT_EXEMPTION).toPlainString(),
+                balance,
                 isNativeSol = true,
-                inMixin = true,
             ),
         )
-    }
-
-    @Test
-    fun selfCustodyNativeSolSwapStillReservesRent() {
-        assertEquals(
-            BigDecimal("0.99910912"),
-            swapSpendableBalance(
-                rawBalance = BigDecimal("1"),
+        assertTrue(
+            isNativeSolSwapBalanceError(
+                balance.subtract(SOLANA_RENT_EXEMPTION).add(BigDecimal("0.00000001")).toPlainString(),
+                balance,
                 isNativeSol = true,
-                inMixin = false,
             ),
         )
-    }
-
-    @Test
-    fun nonNativeSwapBalanceIsUnchanged() {
-        assertEquals(
-            BigDecimal("1"),
-            swapSpendableBalance(
-                rawBalance = BigDecimal("1"),
-                isNativeSol = false,
-                inMixin = true,
-            ),
-        )
-    }
-
-    @Test
-    fun selfCustodyNonNativeSwapBalanceIsUnchanged() {
-        assertEquals(
-            BigDecimal("1"),
-            swapSpendableBalance(
-                rawBalance = BigDecimal("1"),
-                isNativeSol = false,
-                inMixin = false,
-            ),
-        )
+        assertTrue(isNativeSolSwapBalanceError("0.9995", balance, isNativeSol = true))
+        assertFalse(isNativeSolSwapBalanceError("0.00000001", balance, isNativeSol = true))
+        assertFalse(isNativeSolSwapBalanceError("0.9995", balance, isNativeSol = false))
     }
 }
