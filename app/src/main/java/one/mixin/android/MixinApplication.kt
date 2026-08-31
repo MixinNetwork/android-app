@@ -19,14 +19,6 @@ import androidx.work.Configuration
 import coil3.ImageLoader
 import coil3.PlatformContext
 import coil3.SingletonImageLoader
-import coil3.annotation.ExperimentalCoilApi
-import coil3.gif.AnimatedImageDecoder
-import coil3.gif.GifDecoder
-import coil3.network.cachecontrol.CacheControlCacheStrategy
-import coil3.network.okhttp.OkHttpNetworkFetcherFactory
-import coil3.svg.SvgDecoder
-import coil3.util.DebugLogger
-import coil3.video.VideoFrameDecoder
 import com.bugsnag.android.Bugsnag
 import com.bugsnag.android.Configuration as BugsnagConfiguration
 import com.appsflyer.AppsFlyerLib
@@ -46,7 +38,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import okhttp3.OkHttpClient
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.clearPendingImportMnemonic
@@ -55,7 +46,6 @@ import one.mixin.android.crypto.PrivacyPreference.clearPrivacyPreferences
 import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.di.AppModule.API_UA
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStackTraceInfo
 import one.mixin.android.extension.isNightMode
@@ -90,6 +80,7 @@ import one.mixin.android.util.MemoryCallback
 import one.mixin.android.util.analytics.ThirdPartyUserIdentity
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.initNativeLibs
+import one.mixin.android.util.image.newMixinImageLoader
 import one.mixin.android.util.mlkit.entityInitialize
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallStateLiveData
@@ -101,7 +92,6 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.system.exitProcess
-import kotlin.time.ExperimentalTime
 
 open class MixinApplication :
     Application(),
@@ -546,36 +536,9 @@ open class MixinApplication :
         return false
     }
 
-    @OptIn(ExperimentalTime::class)
-    @ExperimentalCoilApi
     @RequiresApi(Build.VERSION_CODES.P)
     override fun newImageLoader(context: PlatformContext): ImageLoader {
-        return ImageLoader.Builder(this)
-            .components {
-                add(OkHttpNetworkFetcherFactory(callFactory = {
-                    OkHttpClient.Builder().addInterceptor { chain ->
-                        val original = chain.request()
-                        val requestBuilder =
-                            original.newBuilder()
-                                .header("User-Agent", API_UA)
-                                .method(original.method, original.body)
-                        val request = requestBuilder.build()
-                        chain.proceed(request)
-                    }.build()
-                }, cacheStrategy = { CacheControlCacheStrategy() }))
-                if (SDK_INT >= Build.VERSION_CODES.P) {
-                    add(AnimatedImageDecoder.Factory())
-                } else {
-                    add(GifDecoder.Factory())
-                }
-                add(SvgDecoder.Factory())
-                add(VideoFrameDecoder.Factory())
-            }.apply {
-                if (BuildConfig.DEBUG) {
-                    logger(DebugLogger())
-                }
-            }
-            .build()
+        return newMixinImageLoader(context)
     }
 
 }
