@@ -48,19 +48,41 @@ class MarketSearchModelsTest {
     }
 
     @Test
-    fun recentAssetsAreGroupedBySymbol() {
+    fun recentSearchesKeepOnlySpotAndPerpetualMarkets() {
         val searches =
             listOf(
                 RecentSearch(RecentSearchType.ASSET, title = "USDT", primaryKey = "eth-usdt"),
                 RecentSearch(RecentSearchType.ASSET, title = "BTC", primaryKey = "btc"),
                 RecentSearch(RecentSearchType.ASSET, title = "usdt", primaryKey = "tron-usdt"),
+                RecentSearch(RecentSearchType.MARKET, title = "ETH", primaryKey = "eth"),
                 RecentSearch(RecentSearchType.PERPETUAL, title = "BTCUSDT", primaryKey = "btc-perp"),
             )
 
         assertEquals(
-            listOf("USDT", "BTC", "BTCUSDT"),
+            listOf("ETH", "BTCUSDT"),
             searches.marketRecentSearches().map { it.title },
         )
+    }
+
+    @Test
+    fun addingRecentSearchMovesDuplicateToFrontAndKeepsMarketTypesSeparate() {
+        val searches =
+            listOf(
+                RecentSearch(RecentSearchType.MARKET, title = "BTC", primaryKey = "btc"),
+                RecentSearch(RecentSearchType.PERPETUAL, title = "BTCUSDT", primaryKey = "btc"),
+            )
+
+        val updated =
+            searches.addMarketRecentSearch(
+                RecentSearch(RecentSearchType.MARKET, title = "BTC", primaryKey = "btc"),
+            )
+
+        assertEquals(
+            listOf(RecentSearchType.MARKET, RecentSearchType.PERPETUAL),
+            updated.map(RecentSearch::type),
+        )
+        assertEquals("BTC", updated.first().title)
+        assertEquals("BTCUSDT", updated.last().title)
     }
 
     private fun market(

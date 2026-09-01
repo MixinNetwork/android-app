@@ -12,15 +12,12 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.RxBus
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.event.SearchEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
-import one.mixin.android.ui.search.SearchViewModel
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -35,7 +32,6 @@ class MarketSearchFragment : BaseFragment() {
     }
 
     private val marketSearchViewModel by viewModels<MarketSearchViewModel>()
-    private val searchViewModel by viewModels<SearchViewModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,7 +43,7 @@ class MarketSearchFragment : BaseFragment() {
             setContent {
                 MixinAppTheme(darkTheme = context.isNightMode()) {
                     val state by marketSearchViewModel.uiState.collectAsStateWithLifecycle()
-                    val recentSearches by searchViewModel.recentSearches.collectAsStateWithLifecycle()
+                    val recentSearches by marketSearchViewModel.recentSearches.collectAsStateWithLifecycle()
                     MarketSearchPage(
                         state = state,
                         recentSearches = recentSearches,
@@ -55,8 +51,7 @@ class MarketSearchFragment : BaseFragment() {
                         onCancel = ::closeSearch,
                         onSelectTab = marketSearchViewModel::selectTab,
                         onClearRecentSearches = {
-                            searchViewModel.removeRecentSearch(requireContext().defaultSharedPreferences)
-                            RxBus.publish(SearchEvent())
+                            marketSearchViewModel.removeRecentSearch(requireContext().defaultSharedPreferences)
                         },
                         onRecentSearchClick = ::openRecentSearch,
                         onSpotMarketClick = ::openSpotMarket,
@@ -71,7 +66,7 @@ class MarketSearchFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        searchViewModel.getRecentSearch(requireContext().defaultSharedPreferences)
+        marketSearchViewModel.loadRecentSearches(requireContext().defaultSharedPreferences)
     }
 
     private fun closeSearch() {
@@ -83,25 +78,13 @@ class MarketSearchFragment : BaseFragment() {
             RecentSearchType.MARKET -> {
                 val coinId = search.primaryKey ?: return
                 lifecycleScope.launch {
-                    searchViewModel.findMarketItemByCoinId(coinId)?.let(::openSpotMarket)
+                    marketSearchViewModel.findSpotMarket(coinId)?.let(::openSpotMarket)
                 }
             }
             RecentSearchType.PERPETUAL -> {
                 val marketId = search.primaryKey ?: return
                 lifecycleScope.launch {
-                    searchViewModel.findPerpsMarket(marketId)?.let(::openPerpetualMarket)
-                }
-            }
-            RecentSearchType.ASSET -> {
-                val assetId = search.primaryKey ?: return
-                lifecycleScope.launch {
-                    searchViewModel.findOrSyncTokenItemByAssetId(assetId)?.let { tokenItem ->
-                        WalletActivity.showWithToken(
-                            requireActivity(),
-                            tokenItem,
-                            Destination.Transactions,
-                        )
-                    }
+                    marketSearchViewModel.findPerpetualMarket(marketId)?.let(::openPerpetualMarket)
                 }
             }
             else -> Unit
@@ -146,10 +129,9 @@ class MarketSearchFragment : BaseFragment() {
     }
 
     private fun saveRecentSearch(search: RecentSearch) {
-        searchViewModel.saveRecentSearch(
+        marketSearchViewModel.saveRecentSearch(
             requireContext().defaultSharedPreferences,
             search,
         )
-        RxBus.publish(SearchEvent())
     }
 }

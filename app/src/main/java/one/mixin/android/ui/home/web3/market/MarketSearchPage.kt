@@ -17,9 +17,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -63,7 +64,7 @@ import java.math.BigDecimal
 @Composable
 internal fun MarketSearchPage(
     state: MarketSearchUiState,
-    recentSearches: List<RecentSearch>,
+    recentSearches: List<MarketRecentSearch>,
     onQueryChanged: (String) -> Unit,
     onCancel: () -> Unit,
     onSelectTab: (MarketSearchTab) -> Unit,
@@ -72,11 +73,17 @@ internal fun MarketSearchPage(
     onSpotMarketClick: (MarketItem) -> Unit,
     onPerpetualMarketClick: (PerpsMarket) -> Unit,
 ) {
-    val marketRecentSearches = recentSearches.marketRecentSearches()
+    val marketRecentSearches = recentSearches
     val tabs = marketSearchTabs(state.query)
     val quoteColorReversed =
         androidx.compose.ui.platform.LocalContext.current.defaultSharedPreferences
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val listState = rememberLazyListState()
+    LaunchedEffect(state.hasQuery) {
+        if (!state.hasQuery) {
+            listState.scrollToItem(0)
+        }
+    }
 
     Column(
         modifier =
@@ -91,6 +98,7 @@ internal fun MarketSearchPage(
         )
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
+            state = listState,
         ) {
             if (state.query.isBlank() && marketRecentSearches.isNotEmpty()) {
                 item(key = "recent_header") {
@@ -111,9 +119,9 @@ internal fun MarketSearchPage(
                             modifier = Modifier.size(32.dp),
                         ) {
                             Icon(
-                                painter = painterResource(R.drawable.ic_action_delete),
+                                painter = painterResource(R.drawable.ic_market_search_delete),
                                 contentDescription = stringResource(R.string.Clear),
-                                tint = MixinAppTheme.colors.textAssist,
+                                tint = Color.Unspecified,
                             )
                         }
                     }
@@ -129,7 +137,8 @@ internal fun MarketSearchPage(
                         marketRecentSearches.forEach { search ->
                             MarketRecentSearchChip(
                                 search = search,
-                                onClick = { onRecentSearchClick(search) },
+                                quoteColorReversed = quoteColorReversed,
+                                onClick = { onRecentSearchClick(search.search) },
                             )
                         }
                     }
@@ -139,7 +148,7 @@ internal fun MarketSearchPage(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(6.dp)
-                            .background(MixinAppTheme.colors.backgroundWindow),
+                            .background(MixinAppTheme.colors.borderPrimary),
                     )
                 }
             }
@@ -223,8 +232,16 @@ internal fun MarketSearchPage(
                                                     quoteColorReversed = quoteColorReversed,
                                                     onClick = { onSpotMarketClick(market) },
                                                 )
-                                            }
+                                        }
                                     }
+                                }
+                                if (state.spotResults.isNotEmpty() && state.perpetualResults.isNotEmpty()) {
+                                    Spacer(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(6.dp)
+                                            .background(MixinAppTheme.colors.backgroundWindow),
+                                    )
                                 }
                                 if (state.perpetualResults.isNotEmpty()) {
                                     SearchResultSection(
@@ -341,7 +358,7 @@ private fun MarketSearchBar(
                     ) {
                         if (query.isEmpty()) {
                             Text(
-                                text = stringResource(R.string.search_placeholder_market),
+                                text = stringResource(R.string.Search),
                                 color = MixinAppTheme.colors.textAssist,
                                 fontSize = 14.sp,
                             )
@@ -382,12 +399,14 @@ private fun MarketSearchBar(
 
 @Composable
 private fun MarketRecentSearchChip(
-    search: RecentSearch,
+    search: MarketRecentSearch,
+    quoteColorReversed: Boolean,
     onClick: () -> Unit,
 ) {
+    val recentSearch = search.search
     Row(
         modifier = Modifier
-            .widthIn(min = 76.dp)
+            .wrapContentWidth()
             .border(
                 BorderStroke(1.dp, MixinAppTheme.colors.textPrimary.copy(alpha = 0.06f)),
                 RoundedCornerShape(24.dp),
@@ -397,31 +416,45 @@ private fun MarketRecentSearchChip(
             .padding(start = 6.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MarketIcon(url = search.iconUrl.orEmpty(), size = 32.dp)
+        MarketIcon(url = recentSearch.iconUrl.orEmpty(), size = 32.dp)
         Spacer(modifier = Modifier.width(6.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Column(
+            modifier = Modifier.wrapContentWidth(),
+            verticalArrangement = Arrangement.spacedBy(3.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = recentSearch.title.orEmpty(),
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 14.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                if (recentSearch.type == RecentSearchType.PERPETUAL) {
+                    Spacer(modifier = Modifier.width(3.dp))
+                    Text(
+                        text = stringResource(R.string.Perp),
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 11.sp,
+                        style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+                        modifier = Modifier
+                            .background(
+                                MixinAppTheme.colors.marketBadgeBackground,
+                                RoundedCornerShape(4.dp),
+                            )
+                            .padding(horizontal = 2.dp),
+                    )
+                }
+            }
             Text(
-                text = search.title.orEmpty(),
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp,
+                text = formatSearchPercent(search.change),
+                color = searchChangeColor(search.change, quoteColorReversed),
+                fontSize = 12.sp,
+                lineHeight = 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
+                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             )
-            if (search.type == RecentSearchType.PERPETUAL) {
-                Spacer(modifier = Modifier.width(3.dp))
-                Text(
-                    text = stringResource(R.string.Perp),
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 11.sp,
-                    style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                    modifier = Modifier
-                        .background(
-                            MixinAppTheme.colors.marketBadgeBackground,
-                            RoundedCornerShape(4.dp),
-                        )
-                        .padding(horizontal = 2.dp),
-                )
-            }
         }
     }
 }

@@ -58,28 +58,40 @@ internal data class MarketSearchUiState(
         get() = if (hasQuery) perpetualResults else perpetualTrending
 }
 
+internal data class MarketRecentSearch(
+    val search: RecentSearch,
+    val change: BigDecimal? = null,
+)
+
+internal const val MAX_MARKET_RECENT_SEARCHES = 6
+
 internal fun List<RecentSearch>.marketRecentSearches(): List<RecentSearch> {
-    val assetGroups = mutableSetOf<String>()
     return filter { search ->
-        when (search.type) {
-            RecentSearchType.ASSET,
-            RecentSearchType.MARKET,
-            RecentSearchType.PERPETUAL,
-            -> true
-            else -> false
-        }
-    }.filter { search ->
-        if (search.type != RecentSearchType.ASSET) {
-            true
-        } else {
-            assetGroups.add(search.assetGroupKey())
-        }
+        search.type == RecentSearchType.MARKET || search.type == RecentSearchType.PERPETUAL
     }
 }
 
-private fun RecentSearch.assetGroupKey(): String =
-    title
-        ?.trim()
-        ?.takeIf(String::isNotEmpty)
-        ?.lowercase(Locale.ROOT)
-        ?: primaryKey.orEmpty().trim().lowercase(Locale.ROOT)
+internal fun List<RecentSearch>.addMarketRecentSearch(search: RecentSearch): List<RecentSearch> {
+    if (search.type != RecentSearchType.MARKET && search.type != RecentSearchType.PERPETUAL) {
+        return marketRecentSearches()
+    }
+    val marketSearches = marketRecentSearches()
+    return buildList {
+        add(search)
+        addAll(
+            marketSearches
+                .filterNot { it.isSameMarketRecentSearch(search) }
+                .take(MAX_MARKET_RECENT_SEARCHES - 1),
+        )
+    }
+}
+
+private fun RecentSearch.isSameMarketRecentSearch(other: RecentSearch): Boolean {
+    if (type != other.type) return false
+    return if (!primaryKey.isNullOrBlank() && !other.primaryKey.isNullOrBlank()) {
+        primaryKey == other.primaryKey
+    } else {
+        title.equals(other.title, ignoreCase = true) &&
+            subTitle.equals(other.subTitle, ignoreCase = true)
+    }
+}
