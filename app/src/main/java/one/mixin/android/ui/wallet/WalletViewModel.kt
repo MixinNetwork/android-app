@@ -30,7 +30,7 @@ import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.CashAccount
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
-import one.mixin.android.api.response.WealthProduct
+import one.mixin.android.api.response.EarnProduct
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.web3.vo.WalletItem
@@ -122,7 +122,7 @@ internal constructor(
             cashRepository.cachedAccount()
         }
 
-    suspend fun wealthAccounts(): MixinResponse<List<WealthProduct>> =
+    suspend fun wealthAccounts(): MixinResponse<List<EarnProduct>> =
         withContext(Dispatchers.IO) {
             cashRepository.wealthAccounts()
         }

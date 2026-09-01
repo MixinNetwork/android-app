@@ -2,7 +2,7 @@ package one.mixin.android.ui.wallet.home
 
 import java.math.BigDecimal
 import one.mixin.android.api.response.WealthAccountSummary
-import one.mixin.android.api.response.WealthProduct
+import one.mixin.android.api.response.EarnProduct
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import org.junit.Assert.assertEquals
@@ -307,7 +307,7 @@ class WalletHomeWealthAccountTest {
         totalPrincipal: String = "0",
         totalEarnings: String = "0",
         redeemableEarnings: String = "0",
-    ) = WealthProduct(
+    ) = EarnProduct(
         productionId = productionId,
         assetId = assetId,
         chainId = chainId,

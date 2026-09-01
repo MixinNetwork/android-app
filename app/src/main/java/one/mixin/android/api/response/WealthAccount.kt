@@ -2,7 +2,7 @@ package one.mixin.android.api.response
 
 import com.google.gson.annotations.SerializedName
 
-data class WealthProduct(
+data class EarnProduct(
     @SerializedName("production_id")
     val productionId: String,
     @SerializedName("asset_id")

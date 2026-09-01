@@ -1,7 +1,7 @@
 package one.mixin.android.ui.wallet.home
 
 import one.mixin.android.api.response.WealthAccountSummary
-import one.mixin.android.api.response.WealthProduct
+import one.mixin.android.api.response.EarnProduct
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
@@ -36,7 +36,7 @@ data class WalletWealthDetails(
     val rewardRate: String?,
 )
 
-internal fun List<WealthProduct>.toWalletWealthDetails(
+internal fun List<EarnProduct>.toWalletWealthDetails(
     assetId: String,
     priceUsd: String,
 ): WalletWealthDetails? {
@@ -46,7 +46,7 @@ internal fun List<WealthProduct>.toWalletWealthDetails(
     val selectedProductionId = products
         .groupBy { it.productionId }
         .maxWithOrNull(
-            compareBy<Map.Entry<String, List<WealthProduct>>> { (_, productionProducts) ->
+            compareBy<Map.Entry<String, List<EarnProduct>>> { (_, productionProducts) ->
                 productionProducts.fold(BigDecimal.ZERO) { total, product ->
                     total + decimal(product.account.totalPrincipal)
                 }
@@ -85,7 +85,7 @@ internal fun List<WealthProduct>.toWalletWealthDetails(
     )
 }
 
-internal fun List<WealthProduct>.toWalletHomeWealthAccounts(
+internal fun List<EarnProduct>.toWalletHomeWealthAccounts(
     assetItems: Map<String, TokenItem> = emptyMap(),
 ): List<WalletHomeWealthAccount> =
     groupBy { it.assetId }.map { (assetId, products) ->

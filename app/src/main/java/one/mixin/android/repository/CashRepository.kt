@@ -4,7 +4,7 @@ import one.mixin.android.Constants.MIXIN_CASH_USER_ID
 import one.mixin.android.Constants.MIXIN_EARN_USER_ID
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.CashAccount
-import one.mixin.android.api.response.WealthProduct
+import one.mixin.android.api.response.EarnProduct
 import one.mixin.android.api.service.CashService
 import one.mixin.android.api.service.EarnService
 import one.mixin.android.db.property.PropertyHelper
@@ -35,7 +35,7 @@ class CashRepository
             }
         }
 
-        suspend fun wealthAccounts(): MixinResponse<List<WealthProduct>> {
+        suspend fun wealthAccounts(): MixinResponse<List<EarnProduct>> {
             userRepository.getBotPublicKey(MIXIN_EARN_USER_ID, false)
             val response = earnService.wealthAccounts()
             if (response.errorCode != ErrorHandler.AUTHENTICATION) return response

@@ -52,9 +52,9 @@ class WealthAccountTest {
               ]
             }
             """.trimIndent()
-        val type = object : TypeToken<MixinResponse<List<WealthProduct>>>() {}.type
+        val type = object : TypeToken<MixinResponse<List<EarnProduct>>>() {}.type
 
-        val response = Gson().fromJson<MixinResponse<List<WealthProduct>>>(json, type)
+        val response = Gson().fromJson<MixinResponse<List<EarnProduct>>>(json, type)
         val products = response.data!!
         val product = products.first()
         val account = product.account
