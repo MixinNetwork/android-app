@@ -105,13 +105,20 @@ class PerpsTradeActionTest {
     }
 
     @Test
-    fun directPerpsOpenRequiresOpenActionAndValidSide() {
+    fun directPerpsOpenRequiresOpenActionAndRejectsInvalidSide() {
         val base = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&leader_position=45d4c134-5682-4b1a-baf5-7c73b1590cc1"
 
         assertNull("$base&side=long".toPerpsTradeAction()?.openPosition)
-        assertNull("$base&action=open".toPerpsTradeAction()?.openPosition)
+        assertEquals(
+            PerpsOpenPositionAction(
+                isLong = null,
+                leverage = null,
+                margin = null,
+            ),
+            "$base&action=open".toPerpsTradeAction()?.openPosition,
+        )
         assertNull("$base&action=close&side=long".toPerpsTradeAction()?.openPosition)
-        assertNull("$base&action=open&side=invalid".toPerpsTradeAction()?.openPosition)
+        assertNull("$base&action=open&side=invalid".toPerpsTradeAction())
         assertEquals(
             "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
             "$base&action=open".toPerpsTradeAction()?.leaderPositionId,
@@ -253,6 +260,20 @@ class PerpsTradeActionTest {
                 leaderPositionId = "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
             ),
             "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&action=open&side=long&leverage=10&margin=25.5&leader_position=45d4c134-5682-4b1a-baf5-7c73b1590cc1".toClassicWalletHomeBannerActionTarget(),
+        )
+    }
+
+    @Test
+    fun classicBannerActionParsesIncompletePerpsOpenTarget() {
+        assertEquals(
+            WalletHomeBannerActionTarget.PerpsOpen(
+                marketId = "e015f42e-b0ff-38e7-87b1-7e8d46fea119",
+                isLong = null,
+                leverage = null,
+                margin = null,
+                leaderPositionId = "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
+            ),
+            "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&action=open&leader_position=45d4c134-5682-4b1a-baf5-7c73b1590cc1".toClassicWalletHomeBannerActionTarget(),
         )
     }
 
