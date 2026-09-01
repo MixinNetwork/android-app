@@ -1113,7 +1113,7 @@
     <string name="withdrawal_to">Retirar a %1$s</string>
     <string name="you">tú</string>
     <string name="You">Tú</string>
-    <string name="You_deleted_this_message">Has borrado este mensaje</string>
+    <string name="You_deleted_this_message">Has borrado este mensaje.</string>
     <string name="You_have_left_the_group">Te has ido del grupo</string>
     <string name="Your_emergency_contact_has_been_changed">Tu contacto de emergencia se ha cambiado</string>
     <string name="Receivers">receivers</string>
