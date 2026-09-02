@@ -74,6 +74,7 @@ object Constants {
         const val PREF_HAS_WITHDRAWAL_ADDRESS_SET = "pref_has_withdrawal_address_set"
         const val PREF_RECENT_USED_BOTS = "pref_recent_used_bots"
         const val PREF_RECENT_SEARCH = "pref_recent_search"
+        const val PREF_MARKET_RECENT_SEARCH = "pref_market_recent_search"
         const val PREF_DELETE_MOBILE_CONTACTS = "pref_delete_mobile_contacts"
         const val PREF_FIAT_MAP = "pref_fiat_map"
         const val PREF_BATTERY_OPTIMIZE = "pref_battery_optimize"
