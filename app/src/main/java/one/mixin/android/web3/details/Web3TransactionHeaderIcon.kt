@@ -58,10 +58,8 @@ internal fun BadgeCircleImageView.bindTransactionHeaderIcon(transaction: Web3Tra
     when (val icon = transaction.resolveHeaderIcon()) {
         is Web3TransactionHeaderIcon.Token -> {
             bg.loadImage(icon.iconUrl, R.drawable.ic_avatar_place_holder)
-            badge.isVisible = !icon.chainIconUrl.isNullOrBlank()
-            if (badge.isVisible) {
-                badge.loadImage(icon.chainIconUrl, R.drawable.ic_avatar_place_holder)
-            }
+            badge.isVisible = true
+            badge.loadImage(icon.chainIconUrl, R.drawable.ic_avatar_place_holder)
         }
 
         is Web3TransactionHeaderIcon.Drawable -> {
