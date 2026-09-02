@@ -420,15 +420,15 @@ class MarketPageModelsTest {
 
     @Test
     fun spotAllMarketCapSortStaysExplicit() {
-        val ascendingDefault = defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL)
-        val descending = ascendingDefault.next(MarketSortColumn.VOLUME, ascendingDefault)
+        val descendingDefault = defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL)
+        val ascending = descendingDefault.next(MarketSortColumn.VOLUME, descendingDefault)
 
         assertEquals(
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING),
-            ascendingDefault,
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+            descendingDefault,
         )
-        assertEquals(MarketSortDirection.DESCENDING, descending.direction)
-        assertEquals(ascendingDefault, descending.next(MarketSortColumn.VOLUME, ascendingDefault))
+        assertEquals(MarketSortDirection.ASCENDING, ascending.direction)
+        assertEquals(descendingDefault, ascending.next(MarketSortColumn.VOLUME, descendingDefault))
     }
 
     @Test
@@ -461,7 +461,7 @@ class MarketPageModelsTest {
             defaultMarketSortState(MarketTopTab.STOCK, MarketSubTab.PERPETUAL),
         )
         assertEquals(
-            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING),
+            MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
             defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL),
         )
         assertEquals(
@@ -549,7 +549,7 @@ class MarketPageModelsTest {
     }
 
     @Test
-    fun spotAllDefaultsToAscendingMarketCap() {
+    fun spotAllDefaultsToDescendingMarketCap() {
         val lowerMarketCap =
             MarketListEntry.Spot(
                 market(coinId = "lower-market-cap", marketCap = "100"),
@@ -563,13 +563,13 @@ class MarketPageModelsTest {
 
         val result =
             MarketPageMapper.applySort(
-                entries = listOf(higherMarketCap, lowerMarketCap),
+                entries = listOf(lowerMarketCap, higherMarketCap),
                 sortState = defaultMarketSortState(MarketTopTab.CRYPTO, MarketSubTab.ALL),
                 period = MarketPriceChangePeriod.SEVEN_DAYS,
                 useMarketCapForSpot = true,
             )
 
-        assertEquals(listOf("spot:lower-market-cap", "spot:higher-market-cap"), result.map { it.stableId })
+        assertEquals(listOf("spot:higher-market-cap", "spot:lower-market-cap"), result.map { it.stableId })
     }
 
     @Test
