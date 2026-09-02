@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -113,6 +114,7 @@ internal fun MarketSearchPage(
                             text = stringResource(R.string.Recent),
                             color = MixinAppTheme.colors.textAssist,
                             fontSize = 14.sp,
+                            modifier = Modifier.padding(vertical = 16.dp),
                         )
                         IconButton(
                             onClick = onClearRecentSearches,
@@ -130,7 +132,7 @@ internal fun MarketSearchPage(
                     FlowRow(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
@@ -157,7 +159,7 @@ internal fun MarketSearchPage(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                        .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     tabs.forEach { tab ->
@@ -429,6 +431,7 @@ private fun MarketRecentSearchChip(
                     fontSize = 14.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(min = 34.dp),
                 )
                 if (recentSearch.type == RecentSearchType.PERPETUAL) {
                     Spacer(modifier = Modifier.width(3.dp))
@@ -454,6 +457,7 @@ private fun MarketRecentSearchChip(
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+                modifier = Modifier.widthIn(min = 34.dp),
             )
         }
     }
