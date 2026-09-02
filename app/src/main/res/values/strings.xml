@@ -418,6 +418,12 @@
     <string name="Enable_web_debug">Enable web debug</string>
     <string name="Web_debug">Web debug</string>
     <string name="Bot_sign_debug_apps">Bot sign debug apps</string>
+    <string name="Debug_Wallet_Account_Visibility">Wallet account visibility</string>
+    <string name="Debug_Earn_Account">Earn Account</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">Total Earnings</string>
+    <string name="earn_yesterday_earnings">Yesterday Earnings</string>
+    <string name="earn_reward_rate">Reward Rate</string>
     <string name="Encrypted">Encrypted</string>
     <string name="End_to_End_Encryption">End-to-end Encrypted</string>
     <string name="Enter_new_phone_number">Enter your new phone number</string>
@@ -1804,6 +1810,7 @@
     <string name="Bitcoin_Dominance">Bitcoin Dominance</string>
     <string name="volume_24h">24h Volume</string>
     <string name="market_volume_short">Vol</string>
+    <string name="market_change_short">Change</string>
     <string name="Watchlist">Watchlist</string>
     <string name="Crypto">Crypto</string>
     <string name="market_stock">Stock</string>
@@ -2527,6 +2534,7 @@
     <string name="perps_markets">Trending</string>
     <string name="perps_top_movers">Top Movers</string>
     <string name="perps_market">Market</string>
+    <string name="perps_badge" translatable="false">Perp</string>
     <string name="perps_share_card_title">🚀 Perps %1$s</string>
     <string name="perps_share_card_market">- 📈 Market: %1$s</string>
     <string name="perps_share_card_side">- ↕️ Side: %1$s (%2$dx)</string>
@@ -2649,7 +2657,9 @@
     <string name="wallet_home_cashback_banner_cta">Claim Now</string>
     <string name="wallet_home_referral_banner_title">Referral</string>
     <string name="wallet_home_referral_banner_desc">Invite and get up to 60% trading fee and exclusive revenue sharing.</string>
+    <string name="wallet_home_earn_account">Earn Account</string>
     <string name="cash_balance">Cash Balance</string>
+    <string name="earn_balance">Earn Balance</string>
     <string name="cash_account_apy">%1$s APY</string>
     <string name="cash_account_minimum_receive">Input amount must be worth at least %1$s %2$s. Please re-enter.</string>
     <string name="cash_account_minimum_send">ERROR 10614: Minimum amount is %1$s %2$s.</string>
