@@ -57,8 +57,6 @@ class EditFragment : VisionFragment() {
         const val ARGS_FROM_GALLERY = "args_from_gallery"
         const val ARGS_FROM_SCAN = "args_from_scan"
         private const val IS_VIDEO: String = "IS_VIDEO"
-        private const val MAX_QR_DECODE_DIMENSION = 4096
-        private const val MAX_QR_DECODE_PIXELS = 12_000_000L
 
         fun newInstance(
             path: String,
@@ -224,7 +222,7 @@ class EditFragment : VisionFragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             if (viewDestroyed()) return@launch
 
-            val bitmap = decodeQrBitmap(path) ?: return@launch
+            val bitmap = BitmapFactory.decodeFile(path) ?: return@launch
             try {
                 val visionImage = InputImage.fromBitmap(bitmap, 0)
                 scanner.process(visionImage)
@@ -252,24 +250,6 @@ class EditFragment : VisionFragment() {
                 decodeWithZxing(bitmap)
             }
         }
-
-    private fun decodeQrBitmap(path: String): Bitmap? {
-        val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
-        BitmapFactory.decodeFile(path, bounds)
-        if (bounds.outWidth <= 0 || bounds.outHeight <= 0) return null
-        var sampleSize = 1
-        while (
-            bounds.outWidth / sampleSize > MAX_QR_DECODE_DIMENSION ||
-            bounds.outHeight / sampleSize > MAX_QR_DECODE_DIMENSION ||
-            bounds.outWidth.toLong() / sampleSize * (bounds.outHeight / sampleSize) > MAX_QR_DECODE_PIXELS
-        ) {
-            sampleSize *= 2
-        }
-        return BitmapFactory.decodeFile(
-            path,
-            BitmapFactory.Options().apply { inSampleSize = sampleSize },
-        )
-    }
 
     private suspend fun decodeWithZxing(bitmap: Bitmap) {
         val result = bitmap.decodeQR()

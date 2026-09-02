@@ -200,10 +200,9 @@ class MixinPlayer(val isAudio: Boolean = false) : Player.Listener {
             try {
                 val client = OkHttpClient.Builder().build()
                 val request = Request.Builder().url(url).build()
-                client.newCall(request).execute().use { response ->
-                    response.header("Content-Type")?.let {
-                        contentType = it
-                    }
+                val response = client.newCall(request).execute()
+                response.header("Content-Type")?.let {
+                    contentType = it
                 }
             } catch (e: Exception) {
             }
