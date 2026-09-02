@@ -3,7 +3,7 @@
 -allowaccessmodification
 
 # Preserve third-party names for reflection while allowing shrinking and optimization.
--keep,allowshrinking,allowoptimization class !one.mixin.android.**,** { *; }
+-keep,allowshrinking,allowoptimization class !one.mixin.android.**,!androidx.**,!com.yalantis.ucrop.**,** { *; }
 
 # prevent multi dex caused NoSuchProviderException
 -keep class org.whispersystems.** { *; }
@@ -97,7 +97,6 @@
 -dontwarn groovy.lang.GroovyShell
 
 -dontwarn com.yalantis.ucrop**
--keep class com.yalantis.ucrop** { *; }
 
 -dontwarn com.appsflyer.**
 -keep class kotlin.jvm.internal.** { *; }
