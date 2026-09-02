@@ -126,6 +126,18 @@ class MessageAdapter(
     private val isSecret: Boolean = true,
     var keyword: String? = null,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
+    private val translatedMap = mutableMapOf<String, String>()
+
+    fun updateTranslated(
+        messageId: String,
+        translated: String,
+    ) {
+        translatedMap[messageId] = translated
+        notifyDataSetChanged()
+    }
+
+    fun notTranslated(messageId: String): Boolean = translatedMap[messageId] == null
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -282,6 +294,7 @@ class MessageAdapter(
                     (holder as TextHolder).bind(
                         it,
                         keyword,
+                        translatedMap[it.messageId],
                         isLast(position),
                         isFirst(position),
                         selectSet.size > 0,
