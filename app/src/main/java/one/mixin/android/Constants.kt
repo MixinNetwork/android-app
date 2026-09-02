@@ -30,6 +30,7 @@ object Constants {
         const val Mixin_URL = "https://mixin-api.zeromesh.net/"
         const val Mixin_WS_URL = "wss://mixin-blaze.zeromesh.net"
         const val CASH_URL = "https://api.cash.mixin.one/"
+        const val EARN_URL = "https://api.earn.mixin.one/"
         const val CASH_HOME_URL = "https://cash.mixin.one"
 
         const val GIPHY_URL = "https://api.giphy.com/v1/"
@@ -74,6 +75,7 @@ object Constants {
         const val PREF_HAS_WITHDRAWAL_ADDRESS_SET = "pref_has_withdrawal_address_set"
         const val PREF_RECENT_USED_BOTS = "pref_recent_used_bots"
         const val PREF_RECENT_SEARCH = "pref_recent_search"
+        const val PREF_MARKET_RECENT_SEARCH = "pref_market_recent_search"
         const val PREF_DELETE_MOBILE_CONTACTS = "pref_delete_mobile_contacts"
         const val PREF_FIAT_MAP = "pref_fiat_map"
         const val PREF_BATTERY_OPTIMIZE = "pref_battery_optimize"
@@ -111,6 +113,7 @@ object Constants {
         const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
         const val PREF_CASH_BOT_PK = "pref_cash_bot_pk"
+        const val PREF_EARN_BOT_PK = "pref_earn_bot_pk"
         const val PREF_CASH_ACCOUNT = "pref_cash_account"
 
         const val PREF_REFERRAL_BOT_PK = "pref_referral_bot_pk"
@@ -426,6 +429,8 @@ object Constants {
         const val DB_DEBUG_WARNING = "db_debug_warning"
         const val LOG_AND_DEBUG = "log_and_debug"
         const val WALLET_CONNECT_DEBUG = "wallet_connect_debug"
+        const val SHOW_CASH_ACCOUNT = "debug_show_cash_account"
+        const val SHOW_EARN_ACCOUNT = "debug_show_earn_account"
         const val BOT_SIGN_DEBUG_APP_PREFIX = "bot_sign_debug_app_"
 
         fun botSignDebugAppKey(appId: String) = "$BOT_SIGN_DEBUG_APP_PREFIX$appId"
@@ -501,6 +506,8 @@ object Constants {
     const val MIXIN_BOND_USER_ID = "84c9dfb1-bfcf-4cb4-8404-cc5a1354005b"
 
     const val MIXIN_CASH_USER_ID = "41d16c28-0c3a-493d-a2b4-b57875371abf"
+
+    const val MIXIN_EARN_USER_ID = "bdf06719-2c0c-440f-a2cc-2a92de997dfa"
 
     const val MIXIN_FEE_USER_ID = "674d6776-d600-4346-af46-58e77d8df185"
 
