@@ -6,7 +6,7 @@ import one.mixin.android.api.MixinResponse
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class WealthAccountTest {
+class EarnAccountTest {
     @Test
     fun parsesActualEarnProductsResponse() {
         val json =

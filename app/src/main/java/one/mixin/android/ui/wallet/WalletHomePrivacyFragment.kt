@@ -86,7 +86,7 @@ import one.mixin.android.ui.wallet.home.WalletHomeBalanceHandoff
 import one.mixin.android.ui.wallet.home.WalletHomeBalanceSnapshot
 import one.mixin.android.ui.wallet.home.WalletHomeCashAccount
 import one.mixin.android.ui.wallet.home.WalletHomeType
-import one.mixin.android.ui.wallet.home.WalletHomeWealthAccount
+import one.mixin.android.ui.wallet.home.WalletHomeEarnAccount
 import one.mixin.android.ui.wallet.home.calculateWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.calculateWalletHomeTokenFiat
 import one.mixin.android.ui.wallet.home.calculateWalletHomeTotalFiat
@@ -105,8 +105,8 @@ import one.mixin.android.ui.wallet.home.walletHomeCashBalanceUsd
 import one.mixin.android.ui.wallet.home.walletHomeCacheKey
 import one.mixin.android.ui.wallet.home.withCashAccount
 import one.mixin.android.ui.wallet.home.withDynamicBanners
-import one.mixin.android.ui.wallet.home.withWealthAccounts
-import one.mixin.android.ui.wallet.home.toWalletHomeWealthAccounts
+import one.mixin.android.ui.wallet.home.withEarnAccounts
+import one.mixin.android.ui.wallet.home.toWalletHomeEarnAccounts
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
@@ -165,7 +165,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private var cachedCashAccountLoaded = false
     private var cachedCashAccountJob: Job? = null
     private var cashAccount: WalletHomeCashAccount? = null
-    private var wealthAccounts: List<WalletHomeWealthAccount> = emptyList()
+    private var earnAccounts: List<WalletHomeEarnAccount> = emptyList()
     private var earnAssetIds: Set<String> = emptySet()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
     private val perpetualViewModel by viewModels<PerpetualViewModel>()
@@ -204,7 +204,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         val cacheKey = privacyWalletHomeCacheKey()
         defaultSharedPreferences.getWalletHomeCacheState(cacheKey)?.let {
             _homeState.value = it
-            wealthAccounts = it.wealthAccounts
+            earnAccounts = it.earnAccounts
             walletHomeDataState = WalletHomeDataState.CACHE
             isLoading = false
         }
@@ -414,10 +414,10 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         val currentCashAccount = cashAccount.takeIf {
             defaultSharedPreferences.getBoolean(Constants.Debug.SHOW_CASH_ACCOUNT, true)
         }
-        val currentWealthAccounts = wealthAccounts.takeIf {
+        val currentEarnAccounts = earnAccounts.takeIf {
             defaultSharedPreferences.getBoolean(Constants.Debug.SHOW_EARN_ACCOUNT, true)
         }.orEmpty()
-        val wealthUsd = wealthAccounts.fold(BigDecimal.ZERO) { total, account ->
+        val earnUsd = earnAccounts.fold(BigDecimal.ZERO) { total, account ->
             total + account.balanceUsd
         }
         val totalFiat = calculateWalletHomeTotalFiat(
@@ -425,7 +425,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             positionUsd = positions.positionMarginUsdTotal(),
             fiatRate = fiatRate,
             cashUsd = walletHomeCashBalanceUsd(cashAccount),
-            wealthUsd = wealthUsd,
+            earnUsd = earnUsd,
         )
         val tokenBtc = calculateWalletHomeBtcTotal(
             tokenFiat = tokenFiat,
@@ -454,7 +454,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             showReferral = showReferral,
             hasPositions = positions.isNotEmpty(),
             hasCashAccount = currentCashAccount != null,
-            hasWealthAccount = currentWealthAccounts.isNotEmpty(),
+            hasEarnAccount = currentEarnAccounts.isNotEmpty(),
             hasTopMovers = topMovers.isNotEmpty(),
             hasTransactions = recentSnapshots.isNotEmpty(),
             hasPendingIndicator = pendingDisplays.isNotEmpty(),
@@ -472,7 +472,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             positions = positions.take(WalletHomeSection.PREVIEW_LIMIT),
             positionSummary = positions.toWalletHomePositionSummary(),
             cashAccount = currentCashAccount,
-            wealthAccounts = currentWealthAccounts,
+            earnAccounts = currentEarnAccounts,
             earnAssetIds = earnAssetIds,
             totalTokenCount = tokenSummary.tokenCount,
             totalTransactionCount = recentSnapshots.size,
@@ -489,11 +489,11 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             showBuyBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_BUY, true),
             showSwapBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_SWAP, true),
             showImportSafetyFooter = !isLoading,
-        ).withWealthAccounts(currentWealthAccounts)
+        ).withEarnAccounts(currentEarnAccounts)
         if (walletHomeDataState == WalletHomeDataState.DATABASE) {
             val cacheState = state.copy(
                 cashAccount = cashAccount,
-                wealthAccounts = wealthAccounts,
+                earnAccounts = earnAccounts,
             )
             walletHomeCacheJob?.cancel()
             walletHomeCacheJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
@@ -542,10 +542,10 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
     }
 
-    private fun refreshWealthAccounts() {
+    private fun refreshEarnAccounts() {
         lifecycleScope.launch {
             runCatching {
-                walletViewModel.wealthAccounts()
+                walletViewModel.earnAccounts()
             }.onSuccess { response ->
                 if (response.isSuccess) {
                     earnAssetIds = response.data.orEmpty().map { it.assetId }.toSet()
@@ -557,16 +557,16 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                             walletViewModel.findOrSyncAsset(assetId)?.let { assetId to it }
                         }
                         .toMap()
-                    applyWealthAccounts(products.toWalletHomeWealthAccounts(assetItems))
+                    applyEarnAccounts(products.toWalletHomeEarnAccounts(assetItems))
                 } else {
                     Timber.w(
-                        "Fetch wealth accounts failed code=%s message=%s",
+                        "Fetch earn accounts failed code=%s message=%s",
                         response.errorCode,
                         response.errorDescription,
                     )
                 }
             }.onFailure {
-                Timber.w(it, "Fetch wealth accounts failed")
+                Timber.w(it, "Fetch earn accounts failed")
             }
         }
     }
@@ -604,9 +604,9 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         renderHome()
     }
 
-    private fun applyWealthAccounts(accounts: List<WalletHomeWealthAccount>) {
-        wealthAccounts = accounts
-        _homeState.value = _homeState.value.withWealthAccounts(accounts)
+    private fun applyEarnAccounts(accounts: List<WalletHomeEarnAccount>) {
+        earnAccounts = accounts
+        _homeState.value = _homeState.value.withEarnAccounts(accounts)
         renderHome()
     }
 
@@ -754,7 +754,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             openCashHome()
         }
 
-        override fun onWealthAccountClicked() {
+        override fun onEarnAccountClicked() {
             openEarnHome()
         }
 
@@ -987,7 +987,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         refreshAllPendingDeposit()
         if (!isHidden) {
             refreshCashAccount()
-            refreshWealthAccounts()
+            refreshEarnAccounts()
         }
     }
 
@@ -1002,7 +1002,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             refreshAllPendingDeposit()
             refreshWalletHomeBanners()
             refreshCashAccount()
-            refreshWealthAccounts()
+            refreshEarnAccounts()
         } else {
             stopPerpsPositionsRefresh()
         }

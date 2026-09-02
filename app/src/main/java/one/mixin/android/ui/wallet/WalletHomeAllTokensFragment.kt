@@ -280,7 +280,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     private fun refreshEarnAssetIds() {
         lifecycleScope.launch {
             runCatching {
-                walletViewModel.wealthAccounts()
+                walletViewModel.earnAccounts()
             }.onSuccess { response ->
                 if (response.isSuccess) {
                     earnAssetIds = response.data.orEmpty().map { it.assetId }.toSet()

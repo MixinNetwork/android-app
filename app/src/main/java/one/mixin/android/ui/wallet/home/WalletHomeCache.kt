@@ -34,8 +34,8 @@ data class WalletHomeCache(
     val totalTransactionCount: Int,
     @SerializedName("cashAccount")
     val cashAccount: WalletHomeCashAccount? = null,
-    @SerializedName("wealthAccounts")
-    val wealthAccounts: List<WalletHomeWealthAccount> = emptyList(),
+    @SerializedName("earnAccounts")
+    val earnAccounts: List<WalletHomeEarnAccount> = emptyList(),
     @SerializedName("isWatchWallet")
     val isWatchWallet: Boolean = false,
     @SerializedName("watchAddresses")
@@ -50,7 +50,7 @@ data class WalletHomeCache(
 
     fun toState(): WalletHomeState {
         val cachedImportKeyAction = importKeyAction
-        val cachedWealthAccounts = wealthAccounts.orEmpty()
+        val cachedEarnAccounts = earnAccounts.orEmpty()
         val cards = WalletHomeBuilder.build(
             walletType = walletType,
             hasAssetValue = true,
@@ -58,7 +58,7 @@ data class WalletHomeCache(
             showReferral = false,
             hasPositions = false,
             hasCashAccount = false,
-            hasWealthAccount = cachedWealthAccounts.isNotEmpty(),
+            hasEarnAccount = cachedEarnAccounts.isNotEmpty(),
             hasTopMovers = false,
             hasTransactions = totalTransactionCount > 0,
             hasImportKeyAction = cachedImportKeyAction != null,
@@ -79,13 +79,13 @@ data class WalletHomeCache(
             web3Transactions = web3Transactions.orEmpty(),
             totalTokenCount = totalTokenCount,
             totalTransactionCount = totalTransactionCount,
-            wealthAccounts = cachedWealthAccounts,
+            earnAccounts = cachedEarnAccounts,
             isWatchWallet = isWatchWallet,
             pendingIndicator = pendingIndicator,
             watchIndicator = if (isWatchWallet) walletHomeWatchIndicator(watchAddresses.orEmpty()) else null,
             importKeyAction = cachedImportKeyAction,
             showImportSafetyFooter = false,
-        ).withWealthAccounts(cachedWealthAccounts)
+        ).withEarnAccounts(cachedEarnAccounts)
     }
 }
 
@@ -119,7 +119,7 @@ fun SharedPreferences.putWalletHomeCache(
         state.pendingIndicator == null &&
         state.importKeyAction == null &&
         state.watchIndicator == null &&
-        state.wealthAccounts.isEmpty() &&
+        state.earnAccounts.isEmpty() &&
         !state.isWatchWallet
     ) return
     val cache = WalletHomeCache(
@@ -133,7 +133,7 @@ fun SharedPreferences.putWalletHomeCache(
         web3Transactions = state.web3Transactions.take(WalletHomeSection.PREVIEW_LIMIT),
         totalTokenCount = state.totalTokenCount,
         totalTransactionCount = state.totalTransactionCount,
-        wealthAccounts = state.wealthAccounts,
+        earnAccounts = state.earnAccounts,
         isWatchWallet = state.isWatchWallet,
         watchAddresses = watchAddresses,
         pendingIndicator = state.pendingIndicator,

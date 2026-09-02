@@ -122,9 +122,9 @@ internal constructor(
             cashRepository.cachedAccount()
         }
 
-    suspend fun wealthAccounts(): MixinResponse<List<EarnProduct>> =
+    suspend fun earnAccounts(): MixinResponse<List<EarnProduct>> =
         withContext(Dispatchers.IO) {
-            cashRepository.wealthAccounts()
+            cashRepository.earnAccounts()
         }
 
     suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){

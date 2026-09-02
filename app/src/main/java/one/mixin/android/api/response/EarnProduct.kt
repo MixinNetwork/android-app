@@ -14,10 +14,10 @@ data class EarnProduct(
     @SerializedName("annual_rates")
     val annualRates: List<String> = emptyList(),
     @SerializedName("account")
-    val account: WealthAccountSummary,
+    val account: EarnAccountSummary,
 )
 
-data class WealthAccountSummary(
+data class EarnAccountSummary(
     @SerializedName("total_principal")
     val totalPrincipal: String,
     @SerializedName("total_earnings")

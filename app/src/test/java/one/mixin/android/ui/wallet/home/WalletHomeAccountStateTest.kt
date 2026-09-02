@@ -17,7 +17,7 @@ class WalletHomeAccountStateTest {
         balanceUsd = BigDecimal("5.8"),
         rewardApy = "3.5",
     )
-    private val wealthAccount = WalletHomeWealthAccount(
+    private val earnAccount = WalletHomeEarnAccount(
         assetId = "asset-1",
         assetSymbol = "USDT",
         iconUrl = "https://example.com/usdt.png",
@@ -25,21 +25,21 @@ class WalletHomeAccountStateTest {
         earningsUsd = BigDecimal("1.25"),
         apyText = "5.00%",
     )
-    private val zeroBalanceWealthAccount = wealthAccount.copy(
+    private val zeroBalanceEarnAccount = earnAccount.copy(
         balanceUsd = BigDecimal.ZERO,
         earningsUsd = BigDecimal.ZERO,
     )
 
     @Test
     fun noAccountsDoesNotAddAnAccountCard() {
-        val state = baseState.withWealthAccounts(emptyList())
+        val state = baseState.withEarnAccounts(emptyList())
 
         assertEquals(baseState.cards, state.cards)
     }
 
     @Test
     fun fiatOnlyKeepsTheOriginalCashCard() {
-        val state = baseState.copy(cashAccount = cashAccount).withWealthAccounts(emptyList())
+        val state = baseState.copy(cashAccount = cashAccount).withEarnAccounts(emptyList())
 
         assertEquals(
             listOf(
@@ -53,8 +53,8 @@ class WalletHomeAccountStateTest {
     }
 
     @Test
-    fun wealthOnlyUsesTheStandaloneAccountCard() {
-        val state = baseState.withWealthAccounts(listOf(wealthAccount))
+    fun earnOnlyUsesTheStandaloneAccountCard() {
+        val state = baseState.withEarnAccounts(listOf(earnAccount))
 
         assertEquals(
             listOf(
@@ -68,8 +68,8 @@ class WalletHomeAccountStateTest {
     }
 
     @Test
-    fun zeroBalanceWealthOnlyUsesTheStandaloneAccountCard() {
-        val state = baseState.withWealthAccounts(listOf(zeroBalanceWealthAccount))
+    fun zeroBalanceEarnOnlyUsesTheStandaloneAccountCard() {
+        val state = baseState.withEarnAccounts(listOf(zeroBalanceEarnAccount))
 
         assertEquals(
             listOf(
@@ -83,13 +83,13 @@ class WalletHomeAccountStateTest {
     }
 
     @Test
-    fun fiatAndZeroBalanceWealthStillShowsBothAccountCards() {
-        val wealthThenCash = baseState
-            .withWealthAccounts(listOf(zeroBalanceWealthAccount))
+    fun fiatAndZeroBalanceEarnStillShowsBothAccountCards() {
+        val earnThenCash = baseState
+            .withEarnAccounts(listOf(zeroBalanceEarnAccount))
             .withCashAccount(cashAccount)
-        val cashThenWealth = baseState
+        val cashThenEarn = baseState
             .withCashAccount(cashAccount)
-            .withWealthAccounts(listOf(zeroBalanceWealthAccount))
+            .withEarnAccounts(listOf(zeroBalanceEarnAccount))
 
         val expectedCards = listOf(
             WalletHomeCardType.BALANCE,
@@ -97,15 +97,15 @@ class WalletHomeAccountStateTest {
             WalletHomeCardType.ACCOUNTS,
             WalletHomeCardType.POSITIONS,
         )
-        assertEquals(expectedCards, wealthThenCash.cards)
-        assertEquals(expectedCards, cashThenWealth.cards)
+        assertEquals(expectedCards, earnThenCash.cards)
+        assertEquals(expectedCards, cashThenEarn.cards)
     }
 
     @Test
-    fun fiatAndWealthUseOneStandaloneAccountCard() {
+    fun fiatAndEarnUseOneStandaloneAccountCard() {
         val state = baseState
             .copy(cashAccount = cashAccount)
-            .withWealthAccounts(listOf(wealthAccount))
+            .withEarnAccounts(listOf(earnAccount))
 
         assertEquals(
             listOf(

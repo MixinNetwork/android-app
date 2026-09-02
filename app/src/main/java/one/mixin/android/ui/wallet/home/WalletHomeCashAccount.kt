@@ -66,7 +66,7 @@ internal fun WalletHomeState.withCashAccount(
         cards = cashCards,
         isLoading = false,
     )
-    return state.withWealthAccounts(state.wealthAccounts)
+    return state.withEarnAccounts(state.earnAccounts)
 }
 
 private fun List<WalletHomeCardType>.withCashCard(): List<WalletHomeCardType> {
@@ -90,7 +90,7 @@ internal fun WalletHomeState.withDynamicBanners(
             showReferral = false,
             hasPositions = false,
             hasCashAccount = cashAccount != null,
-            hasWealthAccount = wealthAccounts.isNotEmpty(),
+            hasEarnAccount = earnAccounts.isNotEmpty(),
             hasTopMovers = false,
             hasTransactions = false,
             hasImportKeyAction = importKeyAction != null,
@@ -108,7 +108,7 @@ internal fun WalletHomeState.withDynamicBanners(
         dynamicBanners = dynamicBanners,
         isDynamicBannerLoaded = true,
     )
-    return state.withWealthAccounts(state.wealthAccounts)
+    return state.withEarnAccounts(state.earnAccounts)
 }
 
 private fun List<WalletHomeCardType>.withBannerCard(): List<WalletHomeCardType> {

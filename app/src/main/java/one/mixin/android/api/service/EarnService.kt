@@ -6,5 +6,5 @@ import retrofit2.http.GET
 
 interface EarnService {
     @GET("productions")
-    suspend fun wealthAccounts(): MixinResponse<List<EarnProduct>>
+    suspend fun earnAccounts(): MixinResponse<List<EarnProduct>>
 }

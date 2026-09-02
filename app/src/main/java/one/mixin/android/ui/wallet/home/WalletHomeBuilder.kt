@@ -8,7 +8,7 @@ object WalletHomeBuilder {
         showReferral: Boolean,
         hasPositions: Boolean,
         hasCashAccount: Boolean = false,
-        hasWealthAccount: Boolean = false,
+        hasEarnAccount: Boolean = false,
         hasTopMovers: Boolean,
         hasTransactions: Boolean,
         hasImportKeyAction: Boolean = false,
@@ -25,7 +25,7 @@ object WalletHomeBuilder {
             hasImportKeyAction ||
             hasPendingIndicator ||
             hasCashAccount ||
-            hasWealthAccount ||
+            hasEarnAccount ||
             isWatchWallet
         ) {
             WalletHomeCardType.BALANCE

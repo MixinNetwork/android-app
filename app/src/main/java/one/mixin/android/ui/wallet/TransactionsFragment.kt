@@ -55,7 +55,7 @@ import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
-import one.mixin.android.ui.wallet.home.toWalletWealthDetails
+import one.mixin.android.ui.wallet.home.toWalletEarnDetails
 import one.mixin.android.ui.wallet.home.tokenAmountText
 import one.mixin.android.ui.wallet.home.usdCurrencyAmountText
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -120,7 +120,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     override fun onResume() {
         super.onResume()
-        refreshWealthDetails()
+        refreshEarnDetails()
     }
 
     override fun onViewCreated(
@@ -312,15 +312,15 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     private var snapshotItems: List<SnapshotItem> = emptyList()
     private var earnProductionId: String? = null
 
-    private fun refreshWealthDetails() {
+    private fun refreshEarnDetails() {
         if (!isAdded) return
         lifecycleScope.launch {
             val details = runCatching {
-                val response = walletViewModel.wealthAccounts()
+                val response = walletViewModel.earnAccounts()
                 if (!response.isSuccess) return@runCatching null
                 response.data
                     .orEmpty()
-                    .toWalletWealthDetails(asset.assetId, asset.priceUsd)
+                    .toWalletEarnDetails(asset.assetId, asset.priceUsd)
             }.getOrNull()
             if (viewDestroyed()) return@launch
 

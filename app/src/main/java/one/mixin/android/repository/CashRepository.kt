@@ -35,12 +35,12 @@ class CashRepository
             }
         }
 
-        suspend fun wealthAccounts(): MixinResponse<List<EarnProduct>> {
+        suspend fun earnAccounts(): MixinResponse<List<EarnProduct>> {
             userRepository.getBotPublicKey(MIXIN_EARN_USER_ID, false)
-            val response = earnService.wealthAccounts()
+            val response = earnService.earnAccounts()
             if (response.errorCode != ErrorHandler.AUTHENTICATION) return response
 
             userRepository.getBotPublicKey(MIXIN_EARN_USER_ID, true)
-            return earnService.wealthAccounts()
+            return earnService.earnAccounts()
         }
     }

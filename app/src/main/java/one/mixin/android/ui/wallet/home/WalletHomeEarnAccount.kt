@@ -1,12 +1,12 @@
 package one.mixin.android.ui.wallet.home
 
-import one.mixin.android.api.response.WealthAccountSummary
+import one.mixin.android.api.response.EarnAccountSummary
 import one.mixin.android.api.response.EarnProduct
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 
-data class WalletHomeWealthAccount(
+data class WalletHomeEarnAccount(
     val assetId: String,
     val assetSymbol: String,
     val iconUrl: String,
@@ -28,7 +28,7 @@ data class WalletHomeWealthAccount(
         }
 }
 
-data class WalletWealthDetails(
+data class WalletEarnDetails(
     val productionId: String,
     val totalPrincipal: BigDecimal,
     val totalEarningsUsd: BigDecimal,
@@ -36,10 +36,10 @@ data class WalletWealthDetails(
     val rewardRate: String?,
 )
 
-internal fun List<EarnProduct>.toWalletWealthDetails(
+internal fun List<EarnProduct>.toWalletEarnDetails(
     assetId: String,
     priceUsd: String,
-): WalletWealthDetails? {
+): WalletEarnDetails? {
     val products = filter { it.assetId == assetId }
     if (products.isEmpty()) return null
     val productionIds = products.map { it.productionId }.toSet()
@@ -73,7 +73,7 @@ internal fun List<EarnProduct>.toWalletWealthDetails(
     val assetPriceUsd = priceUsd.toBigDecimalOrNull()
         ?.takeIf { it > BigDecimal.ZERO }
         ?: BigDecimal.ZERO
-    return WalletWealthDetails(
+    return WalletEarnDetails(
         productionId = selectedProductionId,
         totalPrincipal = totalPrincipal,
         totalEarningsUsd = totalEarnings.multiply(assetPriceUsd),
@@ -85,9 +85,9 @@ internal fun List<EarnProduct>.toWalletWealthDetails(
     )
 }
 
-internal fun List<EarnProduct>.toWalletHomeWealthAccounts(
+internal fun List<EarnProduct>.toWalletHomeEarnAccounts(
     assetItems: Map<String, TokenItem> = emptyMap(),
-): List<WalletHomeWealthAccount> =
+): List<WalletHomeEarnAccount> =
     groupBy { it.assetId }.map { (assetId, products) ->
         val asset = assetItems[assetId]
         val accountValues = products.map { product ->
@@ -97,13 +97,13 @@ internal fun List<EarnProduct>.toWalletHomeWealthAccounts(
                 ?: BigDecimal.ZERO
             product.account to priceUsd
         }
-        WalletHomeWealthAccount(
+        WalletHomeEarnAccount(
             assetId = assetId,
             assetSymbol = asset?.symbol.orEmpty(),
             iconUrl = products.firstNotNullOfOrNull { it.iconUrl.takeIf(String::isNotBlank) }
                 ?: asset?.iconUrl.orEmpty(),
             balanceUsd = accountValues.fold(BigDecimal.ZERO) { total, (account, priceUsd) ->
-                total + wealthAccountUsdBalance(account, priceUsd)
+                total + earnAccountUsdBalance(account, priceUsd)
             },
             earningsUsd = accountValues.fold(BigDecimal.ZERO) { total, (account, priceUsd) ->
                 total + decimal(account.totalEarnings).multiply(priceUsd)
@@ -113,8 +113,8 @@ internal fun List<EarnProduct>.toWalletHomeWealthAccounts(
     }
 
 // Matches iOS EarnAccount: (totalPrincipal + redeemableEarnings) * priceUsd.
-internal fun wealthAccountUsdBalance(
-    account: WealthAccountSummary,
+internal fun earnAccountUsdBalance(
+    account: EarnAccountSummary,
     priceUsd: BigDecimal,
 ): BigDecimal = (decimal(account.totalPrincipal) + decimal(account.redeemableEarnings)).multiply(priceUsd)
 
@@ -143,15 +143,15 @@ private fun annualRateValue(rate: String): BigDecimal? {
     return if (normalizedRate.endsWith('%')) value else value.movePointRight(2)
 }
 
-internal fun WalletHomeState.withWealthAccounts(
-    accounts: List<WalletHomeWealthAccount>,
+internal fun WalletHomeState.withEarnAccounts(
+    accounts: List<WalletHomeEarnAccount>,
 ): WalletHomeState {
     val cardsWithoutAccountCards = cards.filterNot {
         it == WalletHomeCardType.CASH || it == WalletHomeCardType.ACCOUNTS
     }
-    val hasWealthAccount = accounts.isNotEmpty()
+    val hasEarnAccount = accounts.isNotEmpty()
     val accountCard = when {
-        hasWealthAccount -> WalletHomeCardType.ACCOUNTS
+        hasEarnAccount -> WalletHomeCardType.ACCOUNTS
         cashAccount != null -> WalletHomeCardType.CASH
         else -> null
     }
@@ -160,7 +160,7 @@ internal fun WalletHomeState.withWealthAccounts(
     } ?: cardsWithoutAccountCards
     return copy(
         cards = cards,
-        wealthAccounts = accounts,
+        earnAccounts = accounts,
     )
 }
 

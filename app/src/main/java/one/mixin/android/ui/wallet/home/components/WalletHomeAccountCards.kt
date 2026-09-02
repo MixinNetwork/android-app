@@ -40,7 +40,7 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeCashAccount
 import one.mixin.android.ui.wallet.home.WalletHomeState
-import one.mixin.android.ui.wallet.home.WalletHomeWealthAccount
+import one.mixin.android.ui.wallet.home.WalletHomeEarnAccount
 import one.mixin.android.ui.wallet.home.WalletAssetIcon
 import java.math.BigDecimal
 
@@ -54,11 +54,11 @@ internal fun WalletHomeAccountCards(
     state: WalletHomeState,
     callbacks: WalletHomeCallbacks,
 ) {
-    if (state.wealthAccounts.isEmpty()) return
+    if (state.earnAccounts.isEmpty()) return
 
     if (state.cashAccount == null) {
-        WealthAccountCard(
-            accounts = state.wealthAccounts,
+        EarnAccountCard(
+            accounts = state.earnAccounts,
             callbacks = callbacks,
             modifier = Modifier.padding(horizontal = 20.dp),
         )
@@ -78,8 +78,8 @@ internal fun WalletHomeAccountCards(
                     .weight(1f)
                     .fillMaxHeight(),
             )
-            CompactWealthAccountCard(
-                accounts = state.wealthAccounts,
+            CompactEarnAccountCard(
+                accounts = state.earnAccounts,
                 callbacks = callbacks,
                 modifier = Modifier
                     .weight(1f)
@@ -141,15 +141,15 @@ private fun CompactCashAccountCard(
 }
 
 @Composable
-private fun CompactWealthAccountCard(
-    accounts: List<WalletHomeWealthAccount>,
+private fun CompactEarnAccountCard(
+    accounts: List<WalletHomeEarnAccount>,
     callbacks: WalletHomeCallbacks,
     modifier: Modifier,
 ) {
     val account = accounts.summary()
     AccountCardSurface(
         modifier = modifier
-            .clickable { callbacks.onWealthAccountClicked() },
+            .clickable { callbacks.onEarnAccountClicked() },
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
     ) {
         Text(
@@ -169,7 +169,7 @@ private fun CompactWealthAccountCard(
         )
         Spacer(modifier = Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            WealthTokenIcons(accounts)
+            EarnTokenIcons(accounts)
             Spacer(modifier = Modifier.weight(1f))
             AccountArrow()
         }
@@ -177,14 +177,14 @@ private fun CompactWealthAccountCard(
 }
 
 @Composable
-private fun WealthAccountCard(
-    accounts: List<WalletHomeWealthAccount>,
+private fun EarnAccountCard(
+    accounts: List<WalletHomeEarnAccount>,
     callbacks: WalletHomeCallbacks,
     modifier: Modifier,
 ) {
     val account = accounts.summary()
     AccountCardSurface(
-        modifier = modifier.clickable { callbacks.onWealthAccountClicked() },
+        modifier = modifier.clickable { callbacks.onEarnAccountClicked() },
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 20.dp),
     ) {
         Row(
@@ -225,7 +225,7 @@ private fun WealthAccountCard(
                         modifier = Modifier.weight(1f),
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    WealthTokenIcons(accounts)
+                    EarnTokenIcons(accounts)
                 }
             }
         }
@@ -302,7 +302,7 @@ internal fun AccountArrow() {
 }
 
 @Composable
-private fun WealthTokenIcons(accounts: List<WalletHomeWealthAccount>) {
+private fun EarnTokenIcons(accounts: List<WalletHomeEarnAccount>) {
     Row(horizontalArrangement = Arrangement.spacedBy((-4).dp)) {
         accounts.distinctBy { it.assetId }.take(2).forEach { account ->
             WalletAssetIcon(
@@ -316,9 +316,9 @@ private fun WealthTokenIcons(accounts: List<WalletHomeWealthAccount>) {
     }
 }
 
-private fun List<WalletHomeWealthAccount>.summary(): WalletHomeWealthAccount {
+private fun List<WalletHomeEarnAccount>.summary(): WalletHomeEarnAccount {
     val first = first()
-    return WalletHomeWealthAccount(
+    return WalletHomeEarnAccount(
         assetId = first.assetId,
         assetSymbol = first.assetSymbol,
         iconUrl = first.iconUrl,

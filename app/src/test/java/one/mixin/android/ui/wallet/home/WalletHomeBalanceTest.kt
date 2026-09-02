@@ -17,12 +17,12 @@ class WalletHomeBalanceTest {
     }
 
     @Test
-    fun totalFiatIncludesWealthUsdConvertedWithFiatRate() {
+    fun totalFiatIncludesEarnUsdConvertedWithFiatRate() {
         val total = calculateWalletHomeTotalFiat(
             tokenFiat = BigDecimal("100"),
             positionUsd = BigDecimal.ZERO,
             fiatRate = BigDecimal("2"),
-            wealthUsd = BigDecimal("10"),
+            earnUsd = BigDecimal("10"),
         )
 
         assertEquals(0, total.compareTo(BigDecimal("120")))

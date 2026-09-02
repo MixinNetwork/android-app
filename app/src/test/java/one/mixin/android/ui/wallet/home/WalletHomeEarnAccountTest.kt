@@ -1,14 +1,14 @@
 package one.mixin.android.ui.wallet.home
 
 import java.math.BigDecimal
-import one.mixin.android.api.response.WealthAccountSummary
+import one.mixin.android.api.response.EarnAccountSummary
 import one.mixin.android.api.response.EarnProduct
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
-class WalletHomeWealthAccountTest {
+class WalletHomeEarnAccountTest {
     @Test
     fun showsAnnualRateRangeRegardlessOfOrder() {
         assertEquals(
@@ -29,8 +29,8 @@ class WalletHomeWealthAccountTest {
     }
 
     @Test
-    fun aggregatesWealthDetailsForTokenDetailCard() {
-        val product = wealthProduct(
+    fun aggregatesEarnDetailsForTokenDetailCard() {
+        val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
             annualRates = listOf("0.0365", "0.1095", "0.0730"),
@@ -75,7 +75,7 @@ class WalletHomeWealthAccountTest {
                         totalEarnings = "1000",
                     ),
                 ),
-            ).toWalletWealthDetails(
+            ).toWalletEarnDetails(
                 assetId = "asset-1",
                 priceUsd = "1",
             ),
@@ -90,7 +90,7 @@ class WalletHomeWealthAccountTest {
 
     @Test
     fun selectsHigherApyWhenProductionBalancesMatch() {
-        val product = wealthProduct(
+        val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
             annualRates = listOf("0.0300"),
@@ -104,7 +104,7 @@ class WalletHomeWealthAccountTest {
                     productionId = "production-2",
                     annualRates = listOf("0.0500"),
                 ),
-            ).toWalletWealthDetails("asset-1", "1"),
+            ).toWalletEarnDetails("asset-1", "1"),
         )
 
         assertEquals("production-2", details.productionId)
@@ -112,13 +112,13 @@ class WalletHomeWealthAccountTest {
 
     @Test
     fun showsTokenDetailCardWhenAllProductsHaveZeroAccounts() {
-        val product = wealthProduct(
+        val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
         )
 
         val details = requireNotNull(
-            listOf(product).toWalletWealthDetails("asset-1", "1"),
+            listOf(product).toWalletEarnDetails("asset-1", "1"),
         )
 
         assertEquals(0, details.totalPrincipal.compareTo(BigDecimal.ZERO))
@@ -128,7 +128,7 @@ class WalletHomeWealthAccountTest {
 
     @Test
     fun tokenDetailPendingEarningUsesRedeemableEarnings() {
-        val product = wealthProduct(
+        val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
             totalPrincipal = "100",
@@ -137,7 +137,7 @@ class WalletHomeWealthAccountTest {
         )
 
         val details = requireNotNull(
-            listOf(product).toWalletWealthDetails("asset-1", "2"),
+            listOf(product).toWalletEarnDetails("asset-1", "2"),
         )
 
         assertEquals(0, details.totalEarningsUsd.compareTo(BigDecimal("40")))
@@ -146,7 +146,7 @@ class WalletHomeWealthAccountTest {
 
     @Test
     fun selectsHigherRedeemableEarningsWhenProductionBalancesMatch() {
-        val product = wealthProduct(
+        val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
             totalPrincipal = "100",
@@ -160,7 +160,7 @@ class WalletHomeWealthAccountTest {
                     productionId = "production-2",
                     account = product.account.copy(redeemableEarnings = "2"),
                 ),
-            ).toWalletWealthDetails("asset-1", "1"),
+            ).toWalletEarnDetails("asset-1", "1"),
         )
 
         assertEquals("production-2", details.productionId)
@@ -168,12 +168,12 @@ class WalletHomeWealthAccountTest {
 
     @Test
     fun mapsZeroBalanceAccountToTheAccountCard() {
-        val product = wealthProduct(
+        val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
         )
 
-        val account = listOf(product).toWalletHomeWealthAccounts(
+        val account = listOf(product).toWalletHomeEarnAccounts(
             assetItems = mapOf("asset-1" to tokenItem("asset-1", "1")),
         ).single()
 
@@ -183,7 +183,7 @@ class WalletHomeWealthAccountTest {
 
     @Test
     fun mapsAccountWithoutLocalPriceAsZeroUsdLikeIos() {
-        val product = wealthProduct(
+        val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
             iconUrl = "https://example.com/usdt.png",
@@ -191,7 +191,7 @@ class WalletHomeWealthAccountTest {
             redeemableEarnings = "5",
         )
 
-        val account = listOf(product).toWalletHomeWealthAccounts().single()
+        val account = listOf(product).toWalletHomeEarnAccounts().single()
 
         assertEquals(0, account.balanceUsd.compareTo(BigDecimal.ZERO))
         assertEquals("https://example.com/usdt.png", account.iconUrl)
@@ -199,7 +199,7 @@ class WalletHomeWealthAccountTest {
 
     @Test
     fun mapsPrincipalAndRedeemableEarningsToTheAccountCard() {
-        val product = wealthProduct(
+        val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
             chainId = "chain-1",
@@ -210,7 +210,7 @@ class WalletHomeWealthAccountTest {
             redeemableEarnings = "18",
         )
 
-        val account = listOf(product).toWalletHomeWealthAccounts(
+        val account = listOf(product).toWalletHomeEarnAccounts(
             assetItems = mapOf("asset-1" to tokenItem("asset-1", "2", symbol = "USDT")),
         ).single()
 
@@ -221,14 +221,14 @@ class WalletHomeWealthAccountTest {
 
     @Test
     fun homeBalanceCountsRedeemableEarningsWhenPrincipalIsZero() {
-        val product = wealthProduct(
+        val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
             totalEarnings = "10",
             redeemableEarnings = "4",
         )
 
-        val account = listOf(product).toWalletHomeWealthAccounts(
+        val account = listOf(product).toWalletHomeEarnAccounts(
             assetItems = mapOf("asset-1" to tokenItem("asset-1", "1")),
         ).single()
 
@@ -238,7 +238,7 @@ class WalletHomeWealthAccountTest {
 
     @Test
     fun homeBalanceIncludesRedeemableEarningsNotPendingTotalEarnings() {
-        val product = wealthProduct(
+        val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
             totalPrincipal = "100",
@@ -246,7 +246,7 @@ class WalletHomeWealthAccountTest {
             redeemableEarnings = "5",
         )
 
-        val account = listOf(product).toWalletHomeWealthAccounts(
+        val account = listOf(product).toWalletHomeEarnAccounts(
             assetItems = mapOf("asset-1" to tokenItem("asset-1", "2")),
         ).single()
 
@@ -256,7 +256,7 @@ class WalletHomeWealthAccountTest {
 
     @Test
     fun mergesProductsByAssetWithoutCombiningDifferentAssets() {
-        val firstAssetProduct = wealthProduct(
+        val firstAssetProduct = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
             iconUrl = "https://example.com/usdt.png",
@@ -269,7 +269,7 @@ class WalletHomeWealthAccountTest {
             firstAssetProduct.copy(
                 productionId = "production-2",
                 annualRates = listOf("0.0500"),
-                account = WealthAccountSummary(
+                account = EarnAccountSummary(
                     totalPrincipal = "50",
                     totalEarnings = "1",
                     redeemableEarnings = "0",
@@ -278,13 +278,13 @@ class WalletHomeWealthAccountTest {
             firstAssetProduct.copy(
                 assetId = "asset-2",
                 annualRates = listOf("0.0400"),
-                account = WealthAccountSummary(
+                account = EarnAccountSummary(
                     totalPrincipal = "25",
                     totalEarnings = "0",
                     redeemableEarnings = "0",
                 ),
             ),
-        ).toWalletHomeWealthAccounts(
+        ).toWalletHomeEarnAccounts(
             assetItems = mapOf(
                 "asset-1" to tokenItem("asset-1", "2", symbol = "USDT"),
                 "asset-2" to tokenItem("asset-2", "2", symbol = "USDC"),
@@ -298,7 +298,7 @@ class WalletHomeWealthAccountTest {
         assertEquals("3.00%-5.00%", firstAccount.apyText)
     }
 
-    private fun wealthProduct(
+    private fun earnProduct(
         productionId: String = "production-1",
         assetId: String = "asset-1",
         chainId: String = "chain-1",
@@ -313,7 +313,7 @@ class WalletHomeWealthAccountTest {
         chainId = chainId,
         iconUrl = iconUrl,
         annualRates = annualRates,
-        account = WealthAccountSummary(
+        account = EarnAccountSummary(
             totalPrincipal = totalPrincipal,
             totalEarnings = totalEarnings,
             redeemableEarnings = redeemableEarnings,

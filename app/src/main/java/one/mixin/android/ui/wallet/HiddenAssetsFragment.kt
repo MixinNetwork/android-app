@@ -129,7 +129,7 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
     private fun refreshEarnAssetIds() {
         lifecycleScope.launch {
             runCatching {
-                walletViewModel.wealthAccounts()
+                walletViewModel.earnAccounts()
             }.onSuccess { response ->
                 if (response.isSuccess) {
                     assetsAdapter.updateEarnAssetIds(response.data.orEmpty().map { it.assetId }.toSet())
