@@ -37,7 +37,6 @@ class WalletHomeEarnAccountTest {
             totalPrincipal = "100",
             totalEarnings = "20",
             yesterdayEarnings = "2",
-            redeemableEarnings = "19.99959998",
         )
 
         val preferredProduct = product.copy(
@@ -50,14 +49,12 @@ class WalletHomeEarnAccountTest {
                     productionId = "lower-principal",
                     account = product.account.copy(
                         totalPrincipal = "99",
-                        redeemableEarnings = "20",
                     ),
                 ),
                 product.copy(
                     productionId = "lower-earnings",
                     account = product.account.copy(
                         totalEarnings = "19",
-                        redeemableEarnings = "19",
                     ),
                 ),
                 preferredProduct,
@@ -65,7 +62,6 @@ class WalletHomeEarnAccountTest {
                     account = product.account.copy(
                         totalPrincipal = "1",
                         totalEarnings = "0",
-                        redeemableEarnings = "0",
                     ),
                 ),
                 preferredProduct.copy(
@@ -178,28 +174,6 @@ class WalletHomeEarnAccountTest {
     }
 
     @Test
-    fun selectsHigherRedeemableEarningsWhenProductionBalancesMatch() {
-        val product = earnProduct(
-            productionId = "production-1",
-            assetId = "asset-1",
-            totalPrincipal = "100",
-            redeemableEarnings = "1",
-        )
-
-        val details = requireNotNull(
-            listOf(
-                product,
-                product.copy(
-                    productionId = "production-2",
-                    account = product.account.copy(redeemableEarnings = "2"),
-                ),
-            ).toWalletEarnDetails("asset-1", "1"),
-        )
-
-        assertEquals("production-2", details.productionId)
-    }
-
-    @Test
     fun mapsZeroBalanceAccountToTheAccountCard() {
         val product = earnProduct(
             productionId = "production-1",
@@ -221,7 +195,6 @@ class WalletHomeEarnAccountTest {
             assetId = "asset-1",
             iconUrl = "https://example.com/usdt.png",
             totalPrincipal = "100",
-            redeemableEarnings = "5",
         )
 
         val account = listOf(product).toWalletHomeEarnAccounts().single()
@@ -231,7 +204,7 @@ class WalletHomeEarnAccountTest {
     }
 
     @Test
-    fun mapsPrincipalAndRedeemableEarningsToTheAccountCard() {
+    fun mapsPrincipalAndEarningsToTheAccountCard() {
         val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
@@ -240,50 +213,31 @@ class WalletHomeEarnAccountTest {
             annualRates = listOf("0.0500"),
             totalPrincipal = "1500",
             totalEarnings = "25",
-            redeemableEarnings = "18",
         )
 
         val account = listOf(product).toWalletHomeEarnAccounts(
             assetItems = mapOf("asset-1" to tokenItem("asset-1", "2", symbol = "USDT")),
         ).single()
 
-        assertEquals(0, account.balanceUsd.compareTo(BigDecimal("3036")))
+        assertEquals(0, account.balanceUsd.compareTo(BigDecimal("3000")))
         assertEquals(0, account.earningsUsd.compareTo(BigDecimal("50")))
         assertEquals("5.00%", account.apyText)
     }
 
     @Test
-    fun homeBalanceCountsRedeemableEarningsWhenPrincipalIsZero() {
-        val product = earnProduct(
-            productionId = "production-1",
-            assetId = "asset-1",
-            totalEarnings = "10",
-            redeemableEarnings = "4",
-        )
-
-        val account = listOf(product).toWalletHomeEarnAccounts(
-            assetItems = mapOf("asset-1" to tokenItem("asset-1", "1")),
-        ).single()
-
-        assertEquals(0, account.balanceUsd.compareTo(BigDecimal("4")))
-        assertEquals(0, account.earningsUsd.compareTo(BigDecimal("10")))
-    }
-
-    @Test
-    fun homeBalanceIncludesRedeemableEarningsNotPendingTotalEarnings() {
+    fun homeBalanceExcludesTotalEarnings() {
         val product = earnProduct(
             productionId = "production-1",
             assetId = "asset-1",
             totalPrincipal = "100",
             totalEarnings = "20",
-            redeemableEarnings = "5",
         )
 
         val account = listOf(product).toWalletHomeEarnAccounts(
             assetItems = mapOf("asset-1" to tokenItem("asset-1", "2")),
         ).single()
 
-        assertEquals(0, account.balanceUsd.compareTo(BigDecimal("210")))
+        assertEquals(0, account.balanceUsd.compareTo(BigDecimal("200")))
         assertEquals(0, account.earningsUsd.compareTo(BigDecimal("40")))
     }
 
@@ -305,7 +259,6 @@ class WalletHomeEarnAccountTest {
                 account = EarnAccountSummary(
                     totalPrincipal = "50",
                     totalEarnings = "1",
-                    redeemableEarnings = "0",
                 ),
             ),
             firstAssetProduct.copy(
@@ -314,7 +267,6 @@ class WalletHomeEarnAccountTest {
                 account = EarnAccountSummary(
                     totalPrincipal = "25",
                     totalEarnings = "0",
-                    redeemableEarnings = "0",
                 ),
             ),
         ).toWalletHomeEarnAccounts(
@@ -340,7 +292,6 @@ class WalletHomeEarnAccountTest {
         totalPrincipal: String = "0",
         totalEarnings: String = "0",
         yesterdayEarnings: String = "0",
-        redeemableEarnings: String = "0",
     ) = EarnProduct(
         productionId = productionId,
         assetId = assetId,
@@ -350,7 +301,6 @@ class WalletHomeEarnAccountTest {
         account = EarnAccountSummary(
             totalPrincipal = totalPrincipal,
             totalEarnings = totalEarnings,
-            redeemableEarnings = redeemableEarnings,
             yesterdayEarnings = yesterdayEarnings,
         ),
     )

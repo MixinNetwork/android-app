@@ -22,7 +22,6 @@ class EarnAccountTest {
                   "account": {
                     "total_principal": "0",
                     "total_earnings": "0",
-                    "redeemable_earnings": "0",
                     "yesterday_earnings": "1.5"
                   }
                 },
@@ -34,8 +33,7 @@ class EarnAccountTest {
                   "annual_rates": ["0.0365"],
                   "account": {
                     "total_principal": "0",
-                    "total_earnings": "0",
-                    "redeemable_earnings": "0"
+                    "total_earnings": "0"
                   }
                 },
                 {
@@ -46,8 +44,7 @@ class EarnAccountTest {
                   "annual_rates": ["0.0200"],
                   "account": {
                     "total_principal": "0",
-                    "total_earnings": "0",
-                    "redeemable_earnings": "0"
+                    "total_earnings": "0"
                   }
                 }
               ]
@@ -69,7 +66,6 @@ class EarnAccountTest {
         assertEquals("https://example.com/usdt.png", product.iconUrl)
         assertEquals("0", account.totalPrincipal)
         assertEquals("0", account.totalEarnings)
-        assertEquals("0", account.redeemableEarnings)
         assertEquals("1.5", account.yesterdayEarnings)
     }
 

@@ -51,10 +51,6 @@ internal fun List<EarnProduct>.toWalletEarnDetails(
                     total + decimal(product.account.totalPrincipal)
                 }
             }.thenBy { (_, productionProducts) ->
-                productionProducts.fold(BigDecimal.ZERO) { total, product ->
-                    total + decimal(product.account.redeemableEarnings)
-                }
-            }.thenBy { (_, productionProducts) ->
                 maxAnnualRateValue(productionProducts.flatMap { it.annualRates })
             },
         )
@@ -69,9 +65,6 @@ internal fun List<EarnProduct>.toWalletEarnDetails(
     }
     val yesterdayEarnings = products.fold(BigDecimal.ZERO) { total, product ->
         total + decimal(product.account.yesterdayEarnings)
-    }
-    val redeemableEarnings = products.fold(BigDecimal.ZERO) { total, product ->
-        total + decimal(product.account.redeemableEarnings)
     }
     val assetPriceUsd = priceUsd.toBigDecimalOrNull()
         ?.takeIf { it > BigDecimal.ZERO }
@@ -115,11 +108,10 @@ internal fun List<EarnProduct>.toWalletHomeEarnAccounts(
         )
     }
 
-// Matches iOS EarnAccount: (totalPrincipal + redeemableEarnings) * priceUsd.
 internal fun earnAccountUsdBalance(
     account: EarnAccountSummary,
     priceUsd: BigDecimal,
-): BigDecimal = (decimal(account.totalPrincipal) + decimal(account.redeemableEarnings)).multiply(priceUsd)
+): BigDecimal = decimal(account.totalPrincipal).multiply(priceUsd)
 
 internal fun annualRateRange(annualRates: List<String>?): String? {
     val rates = annualRates.orEmpty().mapNotNull(::annualRateValue)
