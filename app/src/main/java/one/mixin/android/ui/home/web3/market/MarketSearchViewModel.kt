@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Account.PREF_MARKET_RECENT_SEARCH
 import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
 import one.mixin.android.extension.escapeSql
+import one.mixin.android.extension.mergeLocalAndRefreshed
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.repository.PerpsMarketRepository
@@ -27,6 +28,7 @@ import one.mixin.android.repository.TokenRepository
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
 import javax.inject.Inject
@@ -205,15 +207,18 @@ internal class MarketSearchViewModel
 
     private suspend fun searchSpotMarkets(query: String): List<MarketItem> =
         try {
-            val escapedQuery = query.escapeSql()
-            var markets = tokenRepository.fuzzyMarkets(escapedQuery, CancellationSignal())
-            if (markets.isEmpty()) {
-                tokenRepository.searchMarket(query)
-                markets = tokenRepository.fuzzyMarkets(escapedQuery, CancellationSignal())
-            }
-            markets.map { market ->
-                tokenRepository.findMarketItemByCoinId(market.coinId) ?: MarketItem.fromMarket(market)
-            }
+            searchSpotMarketsOnlineFirst(
+                query = query,
+                searchLocalMarkets = { escapedQuery ->
+                    tokenRepository.fuzzyMarkets(escapedQuery, CancellationSignal())
+                },
+                refreshOnlineMarkets = { normalizedQuery ->
+                    tokenRepository.searchMarket(normalizedQuery)
+                },
+                resolveMarketItem = { market ->
+                    tokenRepository.findMarketItemByCoinId(market.coinId) ?: MarketItem.fromMarket(market)
+                },
+            )
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
@@ -222,11 +227,38 @@ internal class MarketSearchViewModel
 
     private suspend fun searchPerpetualMarkets(query: String) =
         try {
-            initialPerpetualSyncJob.join()
-            perpsMarketRepository.searchMarkets(query)
+            perpsMarketRepository.searchMarketsOnlineFirst(query)
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
             emptyList()
         }
+}
+
+internal suspend fun searchSpotMarketsOnlineFirst(
+    query: String,
+    searchLocalMarkets: suspend (escapedQuery: String) -> List<Market>,
+    refreshOnlineMarkets: suspend (query: String) -> Unit,
+    resolveMarketItem: suspend (Market) -> MarketItem,
+): List<MarketItem> {
+    val normalizedQuery = query.trim()
+    if (normalizedQuery.isBlank()) return emptyList()
+
+    val escapedQuery = normalizedQuery.escapeSql()
+    val localMatches = searchLocalMarkets(escapedQuery)
+
+    val markets =
+        try {
+            refreshOnlineMarkets(normalizedQuery)
+            val refreshedMatches = searchLocalMarkets(escapedQuery)
+            mergeLocalAndRefreshed(localMatches, refreshedMatches, Market::coinId)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            localMatches
+        }
+
+    return markets.map { market ->
+        resolveMarketItem(market)
     }
+}
