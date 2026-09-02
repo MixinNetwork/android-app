@@ -329,7 +329,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                 earnProductionId = details.productionId
                 binding.earnTotalEarnings.text = usdCurrencyAmountText(details.totalEarningsUsd)
                 binding.earnTotalAmountValue.text = "${tokenAmountText(details.totalPrincipal)} ${asset.symbol}"
-                binding.earnPendingValue.text = usdCurrencyAmountText(details.pendingEarningsUsd)
+                binding.earnPendingValue.text = "${tokenAmountText(details.yesterdayEarnings)} ${asset.symbol}"
                 binding.earnRateValue.text = details.rewardRate
                     ?.let { getString(R.string.cash_account_apy, it) }
                     ?: getString(R.string.N_A)

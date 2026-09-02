@@ -2664,8 +2664,8 @@
     <string name="Debug_Earn_Account">Earn 계정</string>
     <string name="Earn">Earn</string>
     <string name="earn_total_earnings">총 수익</string>
-    <string name="earn_pending_earning">대기 중인 수익</string>
     <string name="earn_reward_rate">보상률</string>
     <string name="wallet_home_earn_account">Earn 계정</string>
     <string name="earn_balance">Earn 잔액</string>
+    <string name="earn_yesterday_earnings">어제 수익</string>
 </resources>
