@@ -73,6 +73,32 @@ class PerpsMarketDaoTest {
         }
 
     @Test
+    fun searchMarketsMatchesDisplayTokenAndQuoteSymbols() =
+        runBlocking {
+            database.perpsMarketDao().upsertList(
+                listOf(
+                    market("btc-usdt", volume = "100", score = 0).copy(
+                        displaySymbol = "BTCUSDT",
+                        tokenSymbol = "BTC",
+                        quoteSymbol = "USDT",
+                    ),
+                    market("eth-btc", volume = "50", score = 0).copy(
+                        displaySymbol = "ETHBTC",
+                        tokenSymbol = "ETH",
+                        quoteSymbol = "BTC",
+                    ),
+                    market("zero-volume", volume = "0", score = 0).copy(
+                        displaySymbol = "BTCUSD",
+                    ),
+                ),
+            )
+
+            val result = database.perpsMarketDao().searchMarkets("btc")
+
+            assertEquals(listOf("btc-usdt", "eth-btc"), result.map(PerpsMarket::marketId))
+        }
+
+    @Test
     fun favoriteMarketsOrderByNewestAddition() =
         runBlocking {
             val markets =

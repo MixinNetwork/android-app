@@ -40,6 +40,7 @@ import one.mixin.android.extension.remove
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.ConversationRepository
+import one.mixin.android.repository.PerpsMarketRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.tip.wc.internal.Chain
@@ -53,6 +54,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.RecentSearch
+import one.mixin.android.vo.RecentSearchType
 import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageDetailItem
 import one.mixin.android.vo.SearchMessageItem
@@ -72,6 +74,7 @@ internal constructor(
     val userRepository: UserRepository,
     val conversationRepository: ConversationRepository,
     val tokenRepository: TokenRepository,
+    val perpsMarketRepository: PerpsMarketRepository,
     val accountRepository: AccountRepository,
     val jobManager: MixinJobManager,
     val cleanMessageHelper: CleanMessageHelper,
@@ -342,6 +345,8 @@ internal constructor(
 
     suspend fun findMarketItemByCoinId(coinId: String) = tokenRepository.findMarketItemByCoinId(coinId)
 
+    suspend fun findPerpsMarket(marketId: String) = perpsMarketRepository.getOrRefreshMarket(marketId)
+
     suspend fun findOrSyncTokenItemByAssetId(assetId: String): TokenItem? {
         return tokenRepository.findOrSyncAsset(assetId)
     }
@@ -350,25 +355,61 @@ internal constructor(
     val recentSearches = _recentSearches.asStateFlow()
 
     fun getRecentSearch(sp: SharedPreferences) {
-        val str = sp.getString(PREF_RECENT_SEARCH, null)
-        val searches = if (str.isNullOrBlank()) emptyList() 
-                       else GsonHelper.customGson.fromJson(str, Array<RecentSearch>::class.java).toList()
-        _recentSearches.value = searches
+        _recentSearches.value = readRecentSearches(sp)
     }
 
     fun saveRecentSearch(sp: SharedPreferences, recentSearch: RecentSearch) {
-        viewModelScope.launch {
-            val local = _recentSearches.value.toMutableList()
-            local.removeIf { it.title == recentSearch.title && it.subTitle == recentSearch.subTitle }
+        viewModelScope.launch(Dispatchers.IO) {
+            val local = readRecentSearches(sp).toMutableList()
+            local.removeIf { it.isSameRecentSearch(recentSearch) }
             local.add(0, recentSearch)
-            sp.putString(PREF_RECENT_SEARCH, GsonHelper.customGson.toJson(local.take(4)))
-            _recentSearches.value = local.take(4)
+            val searches = local.take(MAX_RECENT_SEARCHES)
+            sp.putString(PREF_RECENT_SEARCH, GsonHelper.customGson.toJson(searches))
+            _recentSearches.value = searches
         }
     }
 
     fun removeRecentSearch(sp: SharedPreferences) {
         sp.remove(PREF_RECENT_SEARCH)
         _recentSearches.value = emptyList()
+    }
+
+    private fun readRecentSearches(sp: SharedPreferences): List<RecentSearch> {
+        val value = sp.getString(PREF_RECENT_SEARCH, null)
+        return if (value.isNullOrBlank()) {
+            emptyList()
+        } else {
+            runCatching {
+                GsonHelper.customGson.fromJson(value, Array<RecentSearch>::class.java).toList()
+            }.getOrDefault(emptyList())
+        }
+    }
+
+    private fun RecentSearch.isSameRecentSearch(other: RecentSearch): Boolean {
+        if (type != other.type) return false
+        return when (type) {
+            RecentSearchType.ASSET ->
+                if (!primaryKey.isNullOrBlank() && !other.primaryKey.isNullOrBlank()) {
+                    primaryKey == other.primaryKey
+                } else {
+                    title.equals(other.title, ignoreCase = true) &&
+                        subTitle.equals(other.subTitle, ignoreCase = true)
+                }
+            RecentSearchType.LINK,
+            RecentSearchType.DAPP,
+            -> subTitle.equals(other.subTitle, ignoreCase = true)
+            else ->
+                if (!primaryKey.isNullOrBlank() && !other.primaryKey.isNullOrBlank()) {
+                    primaryKey == other.primaryKey
+                } else {
+                    title.equals(other.title, ignoreCase = true) &&
+                        subTitle.equals(other.subTitle, ignoreCase = true)
+                }
+        }
+    }
+
+    private companion object {
+        const val MAX_RECENT_SEARCHES = 6
     }
 
     private val _recentSwapTokens = MutableStateFlow<List<SwapToken>>(emptyList())

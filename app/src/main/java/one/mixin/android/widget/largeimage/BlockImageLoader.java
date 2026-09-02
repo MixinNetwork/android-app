@@ -154,7 +154,7 @@ public class BlockImageLoader {
         if (loadData.thumbnailBlockData == null) {
             int screenWidth = context.getResources().getDisplayMetrics().widthPixels;
             int screenHeight = context.getResources().getDisplayMetrics().heightPixels;
-            int s = (int) Math.ceil(Math.sqrt(1.0 * (imageWidth * imageHeight) / ((screenWidth / 2) * (screenHeight / 2))));
+            int s = (int) Math.ceil(Math.sqrt((double) imageWidth * imageHeight / ((screenWidth / 2) * (screenHeight / 2))));
             int thumbnailScale = getNearScale(s);
             if (thumbnailScale < s) {
                 thumbnailScale *= 2;

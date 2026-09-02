@@ -38,6 +38,8 @@ class PerpsMarketRepository
 
         suspend fun getAllMarkets(): List<PerpsMarket> = marketDao.getAllMarkets()
 
+        suspend fun searchMarkets(query: String): List<PerpsMarket> = marketDao.searchMarkets(query.trim())
+
         suspend fun getMarket(marketId: String): PerpsMarket? = marketDao.getMarket(marketId)
 
         suspend fun syncAllMarkets(): List<PerpsMarket>? {
