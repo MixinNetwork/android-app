@@ -90,6 +90,7 @@ data class Web3TokenItem(
             chainId == Constants.ChainId.Polygon -> "Polygon"
             chainId == Constants.ChainId.BinanceSmartChain -> "BNB Chain"
             chainId == Constants.ChainId.XLayer -> "X Layer"
+            chainId == Constants.ChainId.Robinhood -> "Robinhood"
             chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "Bitcoin"
             chainId == Constants.ChainId.PEARL_CHAIN_ID -> "Pearl"
             chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "Solana"
@@ -199,6 +200,7 @@ fun Web3TokenItem.getChainFromName(): Chain {
         chainId == Constants.ChainId.Avalanche -> Chain.Avalanche
         chainId == Constants.ChainId.HyperEVM -> Chain.HyperEVM
         chainId == Constants.ChainId.XLayer -> Chain.XLayer
+        chainId == Constants.ChainId.Robinhood -> Chain.Robinhood
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> Chain.Solana
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> Chain.Bitcoin
         chainId == Constants.ChainId.PEARL_CHAIN_ID -> Chain.Bitcoin
@@ -226,6 +228,7 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
         chainId == Constants.ChainId.BinanceSmartChain -> "BNB"
         chainId == Constants.ChainId.Polygon -> "POL"
         chainId == Constants.ChainId.XLayer -> "OKB"
+        chainId == Constants.ChainId.Robinhood -> "ETH"
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "BTC"
         chainId == Constants.ChainId.PEARL_CHAIN_ID -> "PRL"
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "SOL"
@@ -246,6 +249,7 @@ fun Web3TokenItem.isNativeEvmAsset(): Boolean =
         Constants.ChainId.HyperEVM,
         Constants.ChainId.BinanceSmartChain,
         Constants.ChainId.XLayer,
+        Constants.ChainId.Robinhood,
         -> assetKey == "0x0000000000000000000000000000000000000000"
         else -> false
     }
