@@ -1140,7 +1140,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         feeToken = feeToken,
                         feeAmount = feeAmount,
                         recipientAccountState = solanaRecipientAccountState,
-                        allowZeroBalance = false,
+                        allowZeroBalance = transferToken.isNativeSolAsset(),
                         includeAtaCreationReserve = transferToken.assetId != chainToken?.assetId,
                     )
                 }
@@ -1161,7 +1161,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun hasCurrentSolanaRentIssue(amount: String): Boolean {
-        return isCurrentWeb3SolanaTransfer() && isBelowCurrentSolanaMinimum(amount)
+        if (!isCurrentWeb3SolanaTransfer()) return false
+        val inputAmount = amount.toBigDecimalOrNull() ?: return false
+        val range = currentSolanaTransferRange() ?: return false
+        return isBelowCurrentSolanaMinimum(amount) ||
+            (web3Token?.isNativeSolAsset() == true && range.hasNativeSolRentIssue(inputAmount))
     }
 
     private fun updateSolanaMinimumAmountHint() {
@@ -2488,6 +2492,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 fromAddress = fromAddress,
                 toAddress = toAddress,
                 payload = payload.payload,
+                feeAssetId = fee.token.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(fee.fee),
                 privateKey = privateKey,
             )
             in Constants.Web3EvmChainIds -> submitEvmGaslessTransfer(
@@ -2497,6 +2503,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 amount = amount,
                 chainId = payload.chainId,
                 payload = payload.payload,
+                feeAssetId = fee.token.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(fee.fee),
                 privateKey = privateKey,
             )
             else -> throw IllegalArgumentException("Gasless is not supported for ${token.chainId}")
@@ -2511,6 +2519,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         fromAddress: String,
         toAddress: String,
         payload: JsonElement,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         val rawPayload = payload.takeIf { it.isJsonPrimitive }?.asString
@@ -2527,13 +2537,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             signature != Base58.encode(ByteArray(SIGNATURE_LENGTH))
         } ?: throw IllegalStateException("Gasless Solana transaction signature is missing")
         val now = nowInUtc()
-        web3ViewModel.insertSignedPendingTransaction(
+        web3ViewModel.insertGaslessSignedPendingTransaction(
             hash = txHash,
             chainId = Constants.ChainId.Solana,
             account = fromAddress,
             assetId = token.assetId,
             amount = amount,
-            fee = "",
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             raw = rawTx,
             createdAt = now,
@@ -2545,7 +2556,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             account = fromAddress,
             to = toAddress,
             assetId = token.assetId,
-            feeType = WEB3_FEE_TYPE_FREE,
+            feeType = WEB3_FEE_TYPE_FREE.takeIf { isFeeWaived },
         )
         if (!response.isSuccess) {
             throw IllegalStateException(response.errorDescription)
@@ -2559,6 +2570,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         amount: String,
         chainId: String,
         payload: JsonElement,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         if (!payload.isJsonObject) {
@@ -2591,7 +2604,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             account = fromAddress,
             assetId = token.assetId,
             amount = amount,
-            fee = "",
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,

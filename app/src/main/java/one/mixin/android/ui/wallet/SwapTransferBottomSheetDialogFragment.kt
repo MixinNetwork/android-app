@@ -72,7 +72,6 @@ import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.GaslessFeeRequest
 import one.mixin.android.api.request.web3.GaslessTxRequest
 import one.mixin.android.api.request.web3.SubmitGaslessTxRequest
-import one.mixin.android.api.request.web3.WEB3_FEE_TYPE_FREE
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.web3.EthGaslessTxPayload
 import one.mixin.android.api.response.web3.GaslessTxResponse
@@ -110,6 +109,8 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
+import one.mixin.android.ui.common.balanceChangePresentation
+import one.mixin.android.ui.common.toColor
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
@@ -1132,8 +1133,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         }.getOrNull() ?: return null
         if (!response.isSuccess || response.data == null) return null
 
-        val sameAssetFee = response.data!!.fees.firstOrNull { it.assetId == token.assetId }
-        return (sameAssetFee ?: response.data!!.fees.firstOrNull())?.amount
+        return selectGaslessFeeEstimate(response.data!!.fees, token.assetId)?.amount
     }
 
     private suspend fun submitGaslessTransfer(pin: String) {
@@ -1150,6 +1150,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 fromAddress = fromAddress,
                 toAddress = toAddress,
                 payload = preparedResponse.payload,
+                feeAssetId = transferToken.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
                 privateKey = privateKey,
             )
             in Constants.Web3EvmChainIds -> submitEvmGaslessTransfer(
@@ -1159,7 +1161,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 amount = amount,
                 chainId = preparedResponse.chainId,
                 payload = preparedResponse.payload,
-                fee = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
+                feeAssetId = transferToken.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(gaslessFeeAmount),
                 privateKey = privateKey,
             )
             else -> throw IllegalArgumentException("Gasless is not supported for ${transferToken.chainId}")
@@ -1172,6 +1175,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         fromAddress: String,
         toAddress: String,
         payload: JsonElement,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         val rawPayload = payload.takeIf { it.isJsonPrimitive }?.asString
@@ -1188,13 +1193,14 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             signature != Base58.encode(ByteArray(SIGNATURE_LENGTH))
         } ?: throw IllegalStateException("Gasless Solana transaction signature is missing")
         val now = nowInUtc()
-        web3ViewModel.insertSignedPendingTransaction(
+        web3ViewModel.insertGaslessSignedPendingTransaction(
             hash = txHash,
             chainId = Constants.ChainId.Solana,
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = "0",
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             raw = rawTx,
             createdAt = now,
@@ -1206,7 +1212,6 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             account = fromAddress,
             to = toAddress,
             assetId = token.assetId,
-            feeType = WEB3_FEE_TYPE_FREE,
         )
         if (!response.isSuccess) {
             throw IllegalStateException(response.errorDescription)
@@ -1220,7 +1225,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         amount: String,
         chainId: String,
         payload: JsonElement,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         if (!payload.isJsonObject) {
@@ -1253,7 +1259,8 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             account = fromAddress,
             assetId = token.assetId,
             amount = amount.stripAmountZero(),
-            fee = fee,
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,
@@ -1437,6 +1444,8 @@ fun AssetChanges(
     outAmount: BigDecimal,
     outAsset: SwapToken,
 ) {
+    val inputPresentation = balanceChangePresentation(inAmount.negate().toPlainString())
+    val outputPresentation = balanceChangePresentation(outAmount.toPlainString())
     Column(
         modifier =
             Modifier
@@ -1465,9 +1474,9 @@ fun AssetChanges(
             Box(modifier = Modifier.width(12.dp))
             BasicText(
                 modifier = Modifier.weight(1f),
-                text = "-${inAmount.toPlainString()} ${inAsset.symbol}",
+                text = "${inputPresentation.amount} ${inAsset.symbol}",
                 style = TextStyle(
-                    color = MixinAppTheme.colors.textPrimary,
+                    color = inputPresentation.tone.toColor(),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W600,
                 ),
@@ -1503,9 +1512,9 @@ fun AssetChanges(
             Box(modifier = Modifier.width(12.dp))
             BasicText(
                 modifier = Modifier.weight(1f),
-                text = "+${outAmount.toPlainString()} ${outAsset.symbol}",
+                text = "${outputPresentation.amount} ${outAsset.symbol}",
                 style = TextStyle(
-                    color = MixinAppTheme.colors.green,
+                    color = outputPresentation.tone.toColor(),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W600,
                 ),

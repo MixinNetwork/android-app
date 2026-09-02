@@ -95,7 +95,13 @@ data class Web3Transaction(
     @ColumnInfo(name = "level")
     @SerializedName("level")
     val level: Int = Constants.AssetLevel.UNKNOWN,
-) : Parcelable
+) : Parcelable {
+    internal fun getSponsorFee(): Pair<String, String>? {
+        val assetId = sponsorFeeAssetId?.takeIf { it.isNotBlank() } ?: return null
+        val amount = sponsorFeeAmount?.takeIf { it.toBigDecimalOrNull()?.signum() == 1 } ?: return null
+        return assetId to amount
+    }
+}
 
 @Parcelize
 data class AssetChange(

@@ -6,6 +6,8 @@ import one.mixin.android.ui.home.web3.market.MarketSortDirection
 import one.mixin.android.ui.home.web3.market.MarketSortState
 import one.mixin.android.ui.home.web3.market.PerpsMarketCategoryKey
 import one.mixin.android.ui.home.web3.market.changePercentValue
+import one.mixin.android.ui.home.web3.market.scoreMarketSortState
+import one.mixin.android.ui.home.web3.market.sortedByVolumeDescending
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import java.math.BigDecimal
 
@@ -32,9 +34,9 @@ internal enum class PerpsMarketCategory(val categoryKey: PerpsMarketCategoryKey?
 internal data class PerpsMarketListUiState(
     val query: String = "",
     val selectedCategory: PerpsMarketCategory = PerpsMarketCategory.ALL,
-    val sortState: MarketSortState = defaultPerpsMarketSortState(),
+    val sortState: MarketSortState = defaultPerpsMarketSortState(PerpsMarketCategory.ALL),
     val markets: List<PerpsMarket> = emptyList(),
-    val favoriteMarketIds: Set<String> = emptySet(),
+    val favoriteMarketIds: List<String> = emptyList(),
     val favoriteOverrides: Map<String, Boolean> = emptyMap(),
     val pendingFavoriteMarketIds: Set<String> = emptySet(),
     val featuredMarkets: List<PerpsMarket> = emptyList(),
@@ -76,21 +78,21 @@ internal data class PerpsMarketListUiState(
         if (selectedCategory == category) return this
         return copy(
             selectedCategory = category,
-            sortState = defaultPerpsMarketSortState(),
+            sortState = defaultPerpsMarketSortState(category),
             scrollToTopRequest = scrollToTopRequest + 1,
         ).normalizeRecommendationSelection()
     }
 
     fun selectSort(column: MarketSortColumn): PerpsMarketListUiState =
         copy(
-            sortState = sortState.next(column),
+            sortState = sortState.next(column, defaultPerpsMarketSortState(selectedCategory)),
             scrollToTopRequest = scrollToTopRequest + 1,
         ).normalizeRecommendationSelection()
 
     fun updateMarkets(markets: List<PerpsMarket>): PerpsMarketListUiState =
         if (this.markets == markets) this else copy(markets = markets).normalizeRecommendationSelection()
 
-    fun updateFavoriteMarketIds(marketIds: Set<String>): PerpsMarketListUiState {
+    fun updateFavoriteMarketIds(marketIds: List<String>): PerpsMarketListUiState {
         val remainingOverrides =
             favoriteOverrides.filter { (marketId, desiredState) ->
                 (marketId in marketIds) != desiredState
@@ -176,15 +178,30 @@ internal data class PerpsMarketListUiState(
     }
 
     private fun List<PerpsMarket>.sortedByCurrentState(): List<PerpsMarket> {
-        val column = sortState.column ?: return this
-        if (sortState.direction == MarketSortDirection.DEFAULT) return this
+        val column = sortState.column
+        if (column == null || sortState.direction == MarketSortDirection.DEFAULT) {
+            return when {
+                selectedCategory == PerpsMarketCategory.WATCHLIST -> {
+                    val order = favoriteMarketIds.withIndex().associate { (index, marketId) -> marketId to index }
+                    sortedBy { market -> order[market.marketId] ?: Int.MAX_VALUE }
+                }
+                else -> sortedByVolumeDescending()
+            }
+        }
         val comparator =
             compareBy<PerpsMarket> { market ->
                 when (column) {
                     MarketSortColumn.VOLUME -> market.volume.toBigDecimalOrNull()
                     MarketSortColumn.PRICE -> market.last.toBigDecimalOrNull()
                     MarketSortColumn.CHANGE -> market.changePercentValue()
+                    MarketSortColumn.SCORE -> market.tradeVolumeScore1D.toBigDecimal()
                 } ?: BigDecimal.ZERO
+            }.let { baseComparator ->
+                if (column == MarketSortColumn.SCORE) {
+                    baseComparator.thenBy { market -> market.volume.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+                } else {
+                    baseComparator
+                }
             }
         return if (sortState.direction == MarketSortDirection.ASCENDING) {
             sortedWith(comparator)
@@ -222,21 +239,29 @@ internal data class PerpsMarketListUiState(
             initialCategory: String?,
             initialSort: MarketSort?,
             quoteColorReversed: Boolean,
-        ): PerpsMarketListUiState =
-            PerpsMarketListUiState(
-                selectedCategory = PerpsMarketCategory.fromInitialCategory(initialCategory),
-                sortState = initialSort.toPerpsMarketSortState(),
+        ): PerpsMarketListUiState {
+            val selectedCategory = PerpsMarketCategory.fromInitialCategory(initialCategory)
+            return PerpsMarketListUiState(
+                selectedCategory = selectedCategory,
+                sortState = initialSort.toPerpsMarketSortState(selectedCategory),
                 quoteColorReversed = quoteColorReversed,
             )
+        }
     }
 }
 
-internal fun defaultPerpsMarketSortState() =
-    MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+internal fun defaultPerpsMarketSortState(category: PerpsMarketCategory) =
+    if (category == PerpsMarketCategory.WATCHLIST) {
+        MarketSortState()
+    } else {
+        MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING)
+    }
 
-internal fun MarketSort?.toPerpsMarketSortState(): MarketSortState =
+internal fun MarketSort?.toPerpsMarketSortState(category: PerpsMarketCategory): MarketSortState =
     when (this) {
-        null, MarketSort.RANK_DESCENDING -> defaultPerpsMarketSortState()
+        null -> defaultPerpsMarketSortState(category)
+        MarketSort.RANK_DESCENDING ->
+            if (category == PerpsMarketCategory.ALL) scoreMarketSortState() else defaultPerpsMarketSortState(category)
         MarketSort.RANK_ASCENDING -> MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING)
         MarketSort.PRICE_ASCENDING -> MarketSortState(MarketSortColumn.PRICE, MarketSortDirection.ASCENDING)
         MarketSort.PRICE_DESCENDING -> MarketSortState(MarketSortColumn.PRICE, MarketSortDirection.DESCENDING)

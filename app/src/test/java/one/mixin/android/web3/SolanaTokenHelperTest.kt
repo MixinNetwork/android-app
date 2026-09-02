@@ -76,6 +76,20 @@ class SolanaTokenHelperTest {
     }
 
     @Test
+    fun solanaTransferAmountRangeAllowsSplTransferWhenNativeFeeAndAtaRentAreCovered() {
+        val range = solanaTransferAmountRange(
+            token = solanaSplToken(balance = "10"),
+            feeToken = solanaNativeToken(balance = "0.00393016"),
+            feeAmount = BigDecimal("0.001"),
+            recipientAccountState = SolanaRecipientAccountState.NEEDS_TOKEN_ACCOUNT,
+            includeAtaCreationReserve = true,
+        )
+
+        assertEquals(BigDecimal("10"), range.maxAmount)
+        assertTrue(range.canTransfer(BigDecimal("10")))
+    }
+
+    @Test
     fun solanaTransferAmountRangeAllowsGaslessSolSendToZero() {
         val range = solanaTransferAmountRange(
             token = solanaNativeToken(balance = "1"),
@@ -90,16 +104,34 @@ class SolanaTokenHelperTest {
     }
 
     @Test
+    fun solanaTransferAmountRangeAllowsFullNativeSolOrLeavesRent() {
+        val range = solanaTransferAmountRange(
+            token = solanaNativeToken(balance = "1"),
+            feeToken = solanaNativeToken(balance = "1"),
+            feeAmount = BigDecimal("0.01"),
+            recipientAccountState = SolanaRecipientAccountState.EXISTS,
+            allowZeroBalance = true,
+        )
+
+        assertEquals(BigDecimal("0.99"), range.maxAmount)
+        assertTrue(range.canTransfer(BigDecimal("0.99")))
+        assertTrue(range.canTransfer(BigDecimal("0.98910912")))
+        assertFalse(range.canTransfer(BigDecimal("0.9895")))
+    }
+
+    @Test
     fun solanaTransferAmountRangeRequiresRentForNewSolRecipient() {
         val range = solanaTransferAmountRange(
             token = solanaNativeToken(balance = "1"),
             feeToken = solanaNativeToken(balance = "1"),
             feeAmount = BigDecimal("0.01"),
             recipientAccountState = SolanaRecipientAccountState.NEEDS_SYSTEM_ACCOUNT,
+            allowZeroBalance = true,
         )
 
         assertEquals(SOLANA_RENT_EXEMPTION, range.minAmount)
-        assertEquals(BigDecimal("0.98910912"), range.maxAmount)
+        assertEquals(BigDecimal("0.99"), range.maxAmount)
+        assertTrue(range.canTransfer(BigDecimal("0.99")))
     }
 
     @Test
