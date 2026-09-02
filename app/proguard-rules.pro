@@ -11,6 +11,8 @@
 # Keep app types and members reachable while allowing optimization and obfuscation.
 -keep,allowoptimization,allowobfuscation class one.mixin.android.** { *; }
 
+-keep class com.google.android.gms.internal.mlkit_entity_extraction.** extends java.util.Random { *; }
+
 # Gson still relies on unannotated app fields in API, websocket, database, and cache models.
 -keepclassmembers class one.mixin.android.** {
     !transient !static <fields>;
@@ -32,17 +34,6 @@
 
 -keep class org.jni_zero.** { *; }
 -dontwarn org.jni_zero.**
-
-# ServiceLoader support
--keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
--keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
--keepnames class kotlinx.coroutines.android.AndroidExceptionPreHandler {}
--keepnames class kotlinx.coroutines.android.AndroidDispatcherFactory {}
-
--keep class kotlinx.coroutines.internal.MainDispatcherFactory {}
--keep class kotlinx.coroutines.CoroutineExceptionHandler {}
--keep class kotlinx.coroutines.android.AndroidExceptionPreHandler {}
--keep class kotlinx.coroutines.android.AndroidDispatcherFactory {}
 
 # Most of volatile fields are updated with AFU and should not be mangled
 -keepclassmembernames class kotlinx.** {
@@ -76,10 +67,7 @@
 # https://r8.googlesource.com/r8/+/refs/heads/master/compatibility-faq.md#r8-full-mode
 
 -keepattributes Signature
--keep class com.google.gson.reflect.TypeToken { *; }
 -keep class * extends com.google.gson.reflect.TypeToken
-
--keep class kotlin.coroutines.Continuation
 
 # web3j
 -keep class org.web3j.protocol.** { *; }
