@@ -188,6 +188,178 @@
             </FrameLayout>
 
             <FrameLayout
+                android:id="@+id/earn_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="2dp"
+                android:background="?attr/bg_market_card"
+                android:foreground="?android:attr/selectableItemBackground"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingStart="16dp"
+                    android:paddingTop="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="14dp">
+
+                    <RelativeLayout
+                        android:id="@+id/earn_card_header"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/earn_total_earnings"
+                            android:textColor="?attr/text_minor"
+                            android:textSize="14sp"
+                            android:lineHeight="16sp"
+                            android:includeFontPadding="false" />
+
+                        <ImageView
+                            android:layout_width="16dp"
+                            android:layout_height="16dp"
+                            android:layout_alignParentEnd="true"
+                            android:src="@drawable/ic_earn_link"
+                            android:contentDescription="@null" />
+                    </RelativeLayout>
+
+                    <TextView
+                        android:id="@+id/earn_total_earnings"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:textColor="?attr/text_primary"
+                        android:textSize="18sp"
+                        android:lineHeight="21sp"
+                        android:textFontWeight="500"
+                        android:includeFontPadding="false"
+                        tools:text="$20.00" />
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp">
+
+                        <ImageView
+                            android:id="@+id/earn_amount_icon"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_centerVertical="true"
+                            android:src="@drawable/ic_earn_amount"
+                            android:contentDescription="@null" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:layout_marginStart="10dp"
+                            android:layout_toEndOf="@id/earn_amount_icon"
+                            android:text="@string/Total_Amount"
+                            android:textColor="?attr/text_assist"
+                            android:textSize="14sp"
+                            android:lineHeight="17sp"
+                            android:includeFontPadding="false" />
+
+                        <TextView
+                            android:id="@+id/earn_total_amount_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:textColor="?attr/text_primary"
+                            android:textSize="14sp"
+                            android:lineHeight="17sp"
+                            android:includeFontPadding="false"
+                            tools:text="100 USDC" />
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp">
+
+                        <ImageView
+                            android:id="@+id/earn_pending_icon"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_centerVertical="true"
+                            android:src="@drawable/ic_earn_pending"
+                            android:contentDescription="@null" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:layout_marginStart="10dp"
+                            android:layout_toEndOf="@id/earn_pending_icon"
+                            android:text="@string/earn_pending_earning"
+                            android:textColor="?attr/text_assist"
+                            android:textSize="14sp"
+                            android:lineHeight="17sp"
+                            android:includeFontPadding="false" />
+
+                        <TextView
+                            android:id="@+id/earn_pending_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:textColor="?attr/text_remarks"
+                            android:textSize="14sp"
+                            android:lineHeight="17sp"
+                            android:includeFontPadding="false"
+                            tools:text="$0.00040002" />
+                    </RelativeLayout>
+
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp">
+
+                        <ImageView
+                            android:id="@+id/earn_rate_icon"
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:layout_centerVertical="true"
+                            android:src="@drawable/ic_earn_rate"
+                            android:contentDescription="@null" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_centerVertical="true"
+                            android:layout_marginStart="10dp"
+                            android:layout_toEndOf="@id/earn_rate_icon"
+                            android:text="@string/earn_reward_rate"
+                            android:textColor="?attr/text_assist"
+                            android:textSize="14sp"
+                            android:lineHeight="17sp"
+                            android:includeFontPadding="false" />
+
+                        <TextView
+                            android:id="@+id/earn_rate_value"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:textColor="@color/wallet_green"
+                            android:textSize="14sp"
+                            android:lineHeight="17sp"
+                            android:textFontWeight="500"
+                            android:includeFontPadding="false"
+                            tools:text="10.95% APY" />
+                    </RelativeLayout>
+                </LinearLayout>
+            </FrameLayout>
+
+            <FrameLayout
                 android:id="@+id/bottom_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -21,6 +21,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.home.components.BannerPager
 import one.mixin.android.ui.wallet.home.components.ImportSafetyFooter
 import one.mixin.android.ui.wallet.home.components.SupportCard
+import one.mixin.android.ui.wallet.home.components.WalletHomeAccountCards
 import one.mixin.android.ui.wallet.home.components.WalletHomeCard
 
 @Composable
@@ -56,6 +57,7 @@ fun WalletHomePage(
                 when (card) {
                     WalletHomeCardType.BANNER -> BannerPager(state, callbacks)
                     WalletHomeCardType.SUPPORT -> SupportCard(callbacks)
+                    WalletHomeCardType.ACCOUNTS -> WalletHomeAccountCards(state, callbacks)
                     else -> WalletHomeCard(card, state, callbacks)
                 }
                 if (index != state.cards.lastIndex || !state.showImportSafetyFooter) {

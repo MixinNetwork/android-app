@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.view.ContextThemeWrapper
@@ -16,6 +17,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.AssetId.USDT_ASSET_ETH_ID
 import one.mixin.android.Constants.AssetId.XIN_ASSET_ID
+import one.mixin.android.Constants.MIXIN_EARN_USER_ID
+import one.mixin.android.Constants.Scheme
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentTransactionsBinding
@@ -30,6 +33,7 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.setQuoteText
@@ -51,6 +55,9 @@ import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_MARKET_SOURCE
 import one.mixin.android.ui.wallet.adapter.OnSnapshotListener
+import one.mixin.android.ui.wallet.home.toWalletEarnDetails
+import one.mixin.android.ui.wallet.home.tokenAmountText
+import one.mixin.android.ui.wallet.home.usdCurrencyAmountText
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
@@ -109,6 +116,11 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     override fun onPause() {
         super.onPause()
         scrollY = binding.scrollView.scrollY
+    }
+
+    override fun onResume() {
+        super.onResume()
+        refreshEarnDetails()
     }
 
     override fun onViewCreated(
@@ -204,13 +216,13 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     },
                 )
             }
+            earnCard.setOnClickListener {
+                openEarnHome()
+            }
             transactionsRv.listener = this@TransactionsFragment
             bottomCard.post {
                 bottomCard.isVisible = true
-                val remainingHeight = requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 70.dp
-                bottomRl.updateLayoutParams {
-                    height = remainingHeight
-                }
+                updateBottomEmptyHeight()
                 transactionsRv.list = snapshotItems
                 if (scrollY > 0) {
                     scrollView.isInvisible = true
@@ -298,6 +310,63 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
     }
 
     private var snapshotItems: List<SnapshotItem> = emptyList()
+    private var earnProductionId: String? = null
+
+    private fun refreshEarnDetails() {
+        if (!isAdded) return
+        lifecycleScope.launch {
+            val details = runCatching {
+                val response = walletViewModel.earnAccounts()
+                if (!response.isSuccess) return@runCatching null
+                response.data
+                    .orEmpty()
+                    .toWalletEarnDetails(asset.assetId, asset.priceUsd)
+            }.getOrNull()
+            if (viewDestroyed()) return@launch
+
+            binding.earnCard.isVisible = details != null
+            if (details != null) {
+                earnProductionId = details.productionId
+                binding.earnTotalEarnings.text = usdCurrencyAmountText(details.totalEarningsUsd)
+                binding.earnTotalAmountValue.text = "${tokenAmountText(details.totalPrincipal)} ${asset.symbol}"
+                binding.earnPendingValue.text = usdCurrencyAmountText(details.pendingEarningsUsd)
+                binding.earnRateValue.text = details.rewardRate
+                    ?.let { getString(R.string.cash_account_apy, it) }
+                    ?: getString(R.string.N_A)
+            }
+            updateBottomEmptyHeight()
+        }
+    }
+
+    private fun openEarnHome() {
+        Uri.parse("${Scheme.APPS}/$MIXIN_EARN_USER_ID")
+            .buildUpon()
+            .appendQueryParameter("action", "open")
+            .apply {
+                earnProductionId?.let { appendQueryParameter("production", it) }
+            }
+            .build()
+            .toString()
+            .openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
+    }
+
+    private fun updateBottomEmptyHeight() {
+        if (!isAdded) return
+        binding.bottomCard.post {
+            val earnCardHeight = if (binding.earnCard.isVisible) binding.earnCard.height + 12.dp else 0
+            val remainingHeight = requireContext().screenHeight() -
+                requireContext().statusBarHeight() -
+                requireContext().navigationBarHeight() -
+                binding.titleView.height -
+                binding.topLl.height -
+                binding.marketRl.height -
+                earnCardHeight -
+                70.dp
+            binding.bottomRl.updateLayoutParams {
+                height = remainingHeight.coerceAtLeast(0)
+            }
+        }
+    }
 
     override fun onDestroyView() {
         _bottomBinding = null

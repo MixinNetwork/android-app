@@ -1108,4 +1108,14 @@
     <string name="Bitcoin_Dominance">Доминирование биткоина</string>
     <string name="Perp">Бесср.</string>
     <string name="classic_wallet_pearl_intro_title">Common Wallet теперь поддерживает Pearl</string>
+    <string name="Debug_Wallet_Account_Visibility">Отображение счетов кошелька</string>
+    <string name="Debug_Earn_Account">Счёт Earn</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">Общий доход</string>
+    <string name="Total_Amount">Общая сумма</string>
+    <string name="Cash_Account">Денежный счет</string>
+    <string name="earn_pending_earning">Ожидаемый доход</string>
+    <string name="earn_reward_rate">Ставка доходности</string>
+    <string name="wallet_home_earn_account">Счёт Earn</string>
+    <string name="earn_balance">Баланс Earn</string>
 </resources>

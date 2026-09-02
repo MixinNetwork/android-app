@@ -1167,4 +1167,14 @@
     <string name="Bitcoin_Dominance">Dominancia de Bitcoin</string>
     <string name="Perp">Perp</string>
     <string name="classic_wallet_pearl_intro_title">Common Wallet ahora es compatible con Pearl</string>
+    <string name="Debug_Wallet_Account_Visibility">Visibilidad de cuentas de la cartera</string>
+    <string name="Debug_Earn_Account">Cuenta Earn</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">Ganancias totales</string>
+    <string name="Total_Amount">Importe total</string>
+    <string name="Cash_Account">Cuenta de efectivo</string>
+    <string name="earn_pending_earning">Ganancias pendientes</string>
+    <string name="earn_reward_rate">Tasa de recompensa</string>
+    <string name="wallet_home_earn_account">Cuenta Earn</string>
+    <string name="earn_balance">Saldo de Earn</string>
 </resources>

@@ -1113,4 +1113,14 @@
     <string name="Bitcoin_Dominance">ビットコインドミナンス</string>
     <string name="Perp">無期限</string>
     <string name="classic_wallet_pearl_intro_title">Common WalletがPearlに対応しました</string>
+    <string name="Debug_Wallet_Account_Visibility">ウォレットアカウントの表示</string>
+    <string name="Debug_Earn_Account">Earnアカウント</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">総収益</string>
+    <string name="Total_Amount">合計金額</string>
+    <string name="Cash_Account">現金口座</string>
+    <string name="earn_pending_earning">保留中の収益</string>
+    <string name="earn_reward_rate">報酬率</string>
+    <string name="wallet_home_earn_account">Earnアカウント</string>
+    <string name="earn_balance">Earn残高</string>
 </resources>
