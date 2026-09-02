@@ -188,6 +188,7 @@ public class Base64
     
     /** Maximum line length (76) of Base64 output. */
     private final static int MAX_LINE_LENGTH = 76;
+    private final static int MAX_GUNZIP_BYTES = 8 * 1024 * 1024;
     
     
     /** The equals sign (=) as a byte. */
@@ -1307,6 +1308,9 @@ public class Base64
                     gzis = new java.util.zip.GZIPInputStream( bais );
 
                     while( ( length = gzis.read( buffer ) ) >= 0 ) {
+                        if (baos.size() + length > MAX_GUNZIP_BYTES) {
+                            throw new java.io.IOException("GZIP payload exceeds maximum size");
+                        }
                         baos.write(buffer,0,length);
                     }   // end while: reading input
 
@@ -1315,8 +1319,7 @@ public class Base64
 
                 }   // end try
                 catch( java.io.IOException e ) {
-                    e.printStackTrace();
-                    // Just return originally-decoded bytes
+                    throw e;
                 }   // end catch
                 finally {
                     try{ baos.close(); } catch( Exception e ){}
