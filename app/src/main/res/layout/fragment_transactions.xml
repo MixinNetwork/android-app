@@ -299,7 +299,7 @@
                             android:layout_centerVertical="true"
                             android:layout_marginStart="10dp"
                             android:layout_toEndOf="@id/earn_pending_icon"
-                            android:text="@string/earn_pending_earning"
+                            android:text="@string/earn_yesterday_earnings"
                             android:textColor="?attr/text_assist"
                             android:textSize="14sp"
                             android:lineHeight="17sp"
@@ -311,11 +311,11 @@
                             android:layout_height="wrap_content"
                             android:layout_alignParentEnd="true"
                             android:layout_centerVertical="true"
-                            android:textColor="?attr/text_remarks"
+                            android:textColor="?attr/text_primary"
                             android:textSize="14sp"
                             android:lineHeight="17sp"
                             android:includeFontPadding="false"
-                            tools:text="$0.00040002" />
+                            tools:text="0.0023 USDC" />
                     </RelativeLayout>
 
                     <RelativeLayout

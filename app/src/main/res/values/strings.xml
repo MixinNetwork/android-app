@@ -422,7 +422,7 @@
     <string name="Debug_Earn_Account">Earn Account</string>
     <string name="Earn">Earn</string>
     <string name="earn_total_earnings">Total Earnings</string>
-    <string name="earn_pending_earning">Pending Earning</string>
+    <string name="earn_yesterday_earnings">Yesterday Earnings</string>
     <string name="earn_reward_rate">Reward Rate</string>
     <string name="Encrypted">Encrypted</string>
     <string name="End_to_End_Encryption">End-to-end Encrypted</string>

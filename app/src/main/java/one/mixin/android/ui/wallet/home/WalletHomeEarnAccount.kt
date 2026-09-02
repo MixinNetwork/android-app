@@ -31,8 +31,8 @@ data class WalletHomeEarnAccount(
 data class WalletEarnDetails(
     val productionId: String,
     val totalPrincipal: BigDecimal,
+    val yesterdayEarnings: BigDecimal,
     val totalEarningsUsd: BigDecimal,
-    val pendingEarningsUsd: BigDecimal,
     val rewardRate: String?,
 )
 
@@ -67,6 +67,9 @@ internal fun List<EarnProduct>.toWalletEarnDetails(
     val totalEarnings = products.fold(BigDecimal.ZERO) { total, product ->
         total + decimal(product.account.totalEarnings)
     }
+    val yesterdayEarnings = products.fold(BigDecimal.ZERO) { total, product ->
+        total + decimal(product.account.yesterdayEarnings)
+    }
     val redeemableEarnings = products.fold(BigDecimal.ZERO) { total, product ->
         total + decimal(product.account.redeemableEarnings)
     }
@@ -76,8 +79,8 @@ internal fun List<EarnProduct>.toWalletEarnDetails(
     return WalletEarnDetails(
         productionId = selectedProductionId,
         totalPrincipal = totalPrincipal,
+        yesterdayEarnings = yesterdayEarnings,
         totalEarningsUsd = totalEarnings.multiply(assetPriceUsd),
-        pendingEarningsUsd = redeemableEarnings.multiply(assetPriceUsd),
         rewardRate = annualRateRange(
             filter { it.productionId in productionIds }
                 .flatMap { it.annualRates },

@@ -2604,6 +2604,6 @@
     <string name="Debug_Earn_Account">Earn 账户</string>
     <string name="Earn">理财</string>
     <string name="earn_total_earnings">总收益</string>
-    <string name="earn_pending_earning">待结算收益</string>
+    <string name="earn_yesterday_earnings">昨日收益</string>
     <string name="earn_reward_rate">收益率</string>
 </resources>

@@ -24,4 +24,6 @@ data class EarnAccountSummary(
     val totalEarnings: String,
     @SerializedName("redeemable_earnings")
     val redeemableEarnings: String,
+    @SerializedName("yesterday_earnings")
+    val yesterdayEarnings: String = "0",
 )

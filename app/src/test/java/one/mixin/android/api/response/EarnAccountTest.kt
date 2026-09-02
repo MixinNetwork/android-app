@@ -22,7 +22,8 @@ class EarnAccountTest {
                   "account": {
                     "total_principal": "0",
                     "total_earnings": "0",
-                    "redeemable_earnings": "0"
+                    "redeemable_earnings": "0",
+                    "yesterday_earnings": "1.5"
                   }
                 },
                 {
@@ -69,6 +70,7 @@ class EarnAccountTest {
         assertEquals("0", account.totalPrincipal)
         assertEquals("0", account.totalEarnings)
         assertEquals("0", account.redeemableEarnings)
+        assertEquals("1.5", account.yesterdayEarnings)
     }
 
 }
