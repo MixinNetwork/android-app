@@ -67,12 +67,8 @@ class Web3TransactionHolder(
 
     fun formatAmountWithSign(amount: String?, positive: Boolean): String {
         if (amount.isNullOrEmpty()) return "N/A"
-        val formattedAmount = amount.numberFormat8()
-        return if (positive) {
-            if (formattedAmount.startsWith("+")) formattedAmount else "+$formattedAmount"
-        } else {
-            if (formattedAmount.startsWith("-")) formattedAmount else "-$formattedAmount"
-        }
+        val magnitude = amount.numberFormat8().trimStart('+', '-')
+        return if (positive) "+$magnitude" else "-$magnitude"
     }
 
     @SuppressLint("SetTextI18s")
@@ -248,13 +244,14 @@ fun AmountList(
 
 @Composable
 fun AmountRow(amount: String, symbol: String, isSender: Boolean) {
+    val magnitude = amount.numberFormat8().trimStart('+', '-')
     Row(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.End,
         modifier = Modifier.wrapContentWidth()
     ) {
         Text(
-            text = "${if (isSender) "-" else "+"}${amount.numberFormat8()}",
+            text = "${if (isSender) "-" else "+"}$magnitude",
             color = colorResource(id = if (isSender) R.color.wallet_pink else R.color.wallet_green),
             fontSize = 16.sp,
             fontFamily = FontFamily(Font(R.font.mixin_font)),

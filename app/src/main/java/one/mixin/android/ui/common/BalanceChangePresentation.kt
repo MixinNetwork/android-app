@@ -2,10 +2,7 @@ package one.mixin.android.ui.common
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import one.mixin.android.Constants
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.defaultSharedPreferences
 
 internal enum class BalanceChangeTone {
     POSITIVE,
@@ -26,7 +23,7 @@ internal fun balanceChangePresentation(
         amount.withBalanceChangeSign()
     } else {
         val magnitude = amount.toBigDecimalOrNull()?.let { it.abs().toPlainString() }
-            ?: amount.removePrefix("+").removePrefix("-")
+            ?: amount.trimStart('+', '-')
         if (isReceive) "+$magnitude" else "-$magnitude"
     }
     val tone = when (displayAmount.toBigDecimalOrNull()?.signum()) {
@@ -39,19 +36,9 @@ internal fun balanceChangePresentation(
 
 @Composable
 internal fun BalanceChangeTone.toColor(): Color {
-    val quoteColorReversed = LocalContext.current.defaultSharedPreferences
-        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     return when (this) {
-        BalanceChangeTone.POSITIVE -> if (quoteColorReversed) {
-            MixinAppTheme.colors.walletRed
-        } else {
-            MixinAppTheme.colors.walletGreen
-        }
-        BalanceChangeTone.NEGATIVE -> if (quoteColorReversed) {
-            MixinAppTheme.colors.walletGreen
-        } else {
-            MixinAppTheme.colors.walletRed
-        }
+        BalanceChangeTone.POSITIVE -> MixinAppTheme.colors.walletGreen
+        BalanceChangeTone.NEGATIVE -> MixinAppTheme.colors.walletRed
         BalanceChangeTone.PLAIN -> MixinAppTheme.colors.textPrimary
     }
 }

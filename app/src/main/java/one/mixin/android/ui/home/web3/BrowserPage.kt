@@ -336,11 +336,18 @@ fun BrowserPage(
                 val customFeeValue = feeAmount?.toBigDecimalOrNull()
                 val feePrice = feeToken?.priceUsd?.toBigDecimalOrNull() ?: asset.priceUSD()
                 val fee = customFeeValue ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros()?: utxoFee?.stripTrailingZeros() ?: BigDecimal.ZERO
+                val isFeeLoading = step != WalletConnectBottomSheetDialogFragment.Step.Error && when {
+                    transaction != null -> tipGas == null
+                    chain == Chain.Solana && type == JsSignMessage.TYPE_RAW_TRANSACTION -> solanaFee == null
+                    else -> false
+                }
+                val isFeeReady = step != WalletConnectBottomSheetDialogFragment.Step.Error && !isFeeLoading
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",
                         fee = fee.multiply(feePrice),
-                        isFree = isFeeWaived,
+                        isFree = isFeeWaived && isFeeReady,
+                        isLoading = isFeeLoading,
                         onFreeClick = onFreeClick,
                     )
                 } else {
@@ -348,7 +355,8 @@ fun BrowserPage(
                         amount = "$fee ${feeToken?.symbol ?: asset?.symbol ?: ""}",
                         fee = fee.multiply(feePrice),
                         gasPrice = tipGas?.displayGas(transaction?.maxFeePerGas)?.toPlainString(),
-                        isFree = isFeeWaived,
+                        isFree = isFeeWaived && isFeeReady,
+                        isLoading = isFeeLoading,
                         onFreeClick = onFreeClick,
                     )
                 }
