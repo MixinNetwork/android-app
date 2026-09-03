@@ -68,6 +68,8 @@ import one.mixin.android.vo.isAppCardWithMediaCover
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageItem
+import one.mixin.android.vo.isImage
+import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.MessageMention
 import one.mixin.android.vo.MessageMinimal
 import one.mixin.android.vo.Participant
@@ -198,12 +200,16 @@ class ConversationRepository
             conversationId: String,
             messageId: String,
             excludeLive: Boolean,
-        ): Int =
-            if (excludeLive) {
+        ): Int {
+            val item = messageDao.getMediaMessage(conversationId, messageId) ?: return -1
+            if (excludeLive && !item.isImage() && !item.isVideo()) return -1
+            if (item.isAppCard() && !item.isAppCardWithMediaCover()) return -1
+            return if (excludeLive) {
                 messageDao.indexMediaMessagesExcludeLive(conversationId, messageId)
             } else {
                 messageDao.indexMediaMessages(conversationId, messageId)
             }
+        }
 
         suspend fun countIndexMediaMessages(
             conversationId: String,
