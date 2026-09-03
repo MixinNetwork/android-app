@@ -5,7 +5,18 @@
 # runtime identifier (SPI, JNI, or persisted Java serialization).
 
 # Gson/Room models that still use source field names as JSON/column keys.
--keepclassmembers class one.mixin.android.api.**,
+-keepclassmembers,allowoptimization class one.mixin.android.api.**,
+                         one.mixin.android.vo.**,
+                         one.mixin.android.websocket.**,
+                         one.mixin.android.db.**,
+                         one.mixin.android.crypto.**,
+                         one.mixin.android.web3.**,
+                         one.mixin.android.tip.**,
+                         one.mixin.android.media.**,
+                         one.mixin.android.webrtc.** {
+    !transient !static <fields>;
+}
+-keepclassmembers,allowoptimization,allowobfuscation class one.mixin.android.api.**,
                          one.mixin.android.vo.**,
                          one.mixin.android.websocket.**,
                          one.mixin.android.db.**,
@@ -18,7 +29,6 @@
                          one.mixin.android.ui.wallet.**,
                          one.mixin.android.ui.landing.**,
                          one.mixin.android.ui.transfer.** {
-    !transient !static <fields>;
     <init>(...);
 }
 
@@ -40,17 +50,19 @@
 -keep class com.google.android.gms.internal.mlkit_entity_extraction.** extends java.util.Random { *; }
 
 # Java serialization stores class names and field names across app updates.
--keep class one.mixin.android.** implements java.io.Serializable
--keepclassmembers class one.mixin.android.** implements java.io.Serializable {
+-keep,allowoptimization class one.mixin.android.** implements java.io.Serializable
+-keepclassmembers,allowoptimization class one.mixin.android.** implements java.io.Serializable {
     static final long serialVersionUID;
     !transient <fields>;
 }
 
 # JobQueue persists jobs by class name and serializes non-transient fields.
 -keep class one.mixin.android.job.**
--keepclassmembers class one.mixin.android.job.** {
+-keepclassmembers,allowoptimization class one.mixin.android.job.** {
     static final long serialVersionUID;
     !transient <fields>;
+}
+-keepclassmembers,allowoptimization,allowobfuscation class one.mixin.android.job.** {
     <init>(...);
 }
 -keep class com.birbit.android.jobqueue.Job
