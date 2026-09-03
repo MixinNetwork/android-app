@@ -77,6 +77,7 @@ import one.mixin.android.ui.web.releaseAll
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.CursorWindowFixer
 import one.mixin.android.util.MemoryCallback
+import one.mixin.android.util.UserBatchProcessor
 import one.mixin.android.util.analytics.ThirdPartyUserIdentity
 import one.mixin.android.util.debug.FileLogTree
 import one.mixin.android.util.initNativeLibs
@@ -323,6 +324,7 @@ open class MixinApplication :
         }
 
         if (force || isOnline.compareAndSet(true, false)) {
+            UserBatchProcessor.getInstance().shutdown()
             val sessionId = Session.getSessionId()
             val identityNumber = Session.getAccount()?.identityNumber
             stopRealtimeServices()
