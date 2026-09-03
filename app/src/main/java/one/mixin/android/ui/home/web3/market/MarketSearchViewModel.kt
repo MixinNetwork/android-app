@@ -31,6 +31,7 @@ import one.mixin.android.vo.RecentSearchType
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -258,7 +259,9 @@ internal suspend fun searchSpotMarketsOnlineFirst(
             localMatches
         }
 
-    return markets.map { market ->
-        resolveMarketItem(market)
-    }
+    return markets
+        .sortedByDescending { it.marketCap.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+        .map { market ->
+            resolveMarketItem(market)
+        }
 }

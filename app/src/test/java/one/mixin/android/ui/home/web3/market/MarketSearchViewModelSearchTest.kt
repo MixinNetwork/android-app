@@ -47,6 +47,39 @@ class MarketSearchViewModelSearchTest {
         }
 
     @Test
+    fun spotSearch_sortsCombinedResultsByMarketCapDescending() =
+        runBlocking {
+            val initialLocal =
+                listOf(
+                    market("btc-low", marketCap = "10"),
+                    market("btc-high", marketCap = "100"),
+                )
+            val refreshedLocal =
+                listOf(
+                    market("btc-high", marketCap = "100"),
+                    market("btc-new", marketCap = "50"),
+                    market("btc-low", marketCap = "10"),
+                )
+            var searchCalls = 0
+
+            val result =
+                searchSpotMarketsOnlineFirst(
+                    query = "btc",
+                    searchLocalMarkets = {
+                        searchCalls += 1
+                        if (searchCalls == 1) initialLocal else refreshedLocal
+                    },
+                    refreshOnlineMarkets = {},
+                    resolveMarketItem = { MarketItem.fromMarket(it) },
+                )
+
+            assertEquals(
+                listOf("btc-high", "btc-new", "btc-low"),
+                result.map(MarketItem::coinId),
+            )
+        }
+
+    @Test
     fun spotSearch_preservesLocalOrderButUsesRefreshedOverlappingMatches() =
         runBlocking {
             val staleLocal = listOf(market("btc").copy(name = "Local BTC"), market("eth").copy(name = "Local ETH"))
@@ -124,14 +157,14 @@ class MarketSearchViewModelSearchTest {
             assertEquals(0, remoteCalls)
         }
 
-    private fun market(coinId: String) =
+    private fun market(coinId: String, marketCap: String = "1") =
         Market(
             coinId = coinId,
             name = coinId.uppercase(),
             symbol = coinId.uppercase(),
             iconUrl = "",
             currentPrice = "1",
-            marketCap = "1",
+            marketCap = marketCap,
             marketCapRank = "1",
             totalVolume = "1",
             high24h = "1",

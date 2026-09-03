@@ -527,7 +527,7 @@ private fun PerpetualMarketSearchRow(
         title = market.displaySymbol.ifBlank { market.tokenSymbol },
         badge = stringResource(R.string.Perp),
         volume = formatSearchPerpetualVolume(market.volume),
-        price = "$${market.last}",
+        price = formatPerpsMarketListPrice(market.last),
         change = market.changePercentValue(),
         quoteColorReversed = quoteColorReversed,
         onClick = onClick,
