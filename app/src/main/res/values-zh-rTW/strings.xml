@@ -2279,16 +2279,6 @@
     <string name="delete_common_wallet_description">請確保您在刪除錢包之前記下恢復短語或私鑰。否則你將無法找回錢包。</string>
     <string name="delete_watch_wallet_description">這是一個觀察錢包，刪除此錢包不會影響你的資產。</string>
     <string name="words">%1$d 字</string>
-    <string name="other_words">12 或 24 個字</string>
-    <string name="mnemonic_12_24_instruction_title">使用12字或24字助記詞錢包，請依照下列步驟操作：</string>
-    <string name="mnemonic_12_24_step_1">註冊一個Mixin帳號。</string>
-    <string name="mnemonic_12_24_step_2">進入錢包清單→新增錢包→選擇導入助記詞。</string>
-    <string name="mnemonic_12_24_step_3">輸入您的12或24字助記詞或私密金鑰即可完成匯入。</string>
-    <string name="mnemonic_12_24_step_4">開始使用。</string>
-    <string name="mnemonic_12_24_privacy_info">建立Mixin帳號後，會預設產生隱私錢包。您的餘額、轉帳、交易等功能將預設受到隱私保護，</string>
-    <string name="mnemonic_12_24_privacy_info_with_link">建立Mixin帳號後，會預設產生隱私錢包。您的餘額、轉帳、交易等功能將預設為隱私保護，%1$s。</string>
-    <string name="create_mixin_account">建立Mixin帳戶</string>
-    <string name="register_in_15_seconds">15 秒內註冊</string>
     <string name="import_private_key">匯入私鑰</string>
     <string name="add_watch_address">新增觀看地址</string>
     <string name="private_key_hint">輸入您的私鑰</string>
