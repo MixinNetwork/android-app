@@ -403,6 +403,7 @@ class PerpetualViewModel @Inject constructor(
                 liquidationPriceResult(
                     price = null,
                     errorCode = response.errorCode,
+                    limit = parseLiquidationPriceLimit(response.error?.extra),
                 )
             }
         } catch (e: CancellationException) {

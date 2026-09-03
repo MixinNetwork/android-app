@@ -246,6 +246,7 @@
     <string name="error_old_version">KESALAHAN 10006: Harap perbarui Mixin(%1$s) untuk terus menggunakan layanan.</string>
     <string name="error_open_location">Tidak dapat menemukan aplikasi peta</string>
     <string name="error_permission">Harap buka izin yang diperlukan</string>
+    <string name="error_perps_order_value_too_small">KESALAHAN %1$d: Ukuran posisi terlalu kecil.</string>
     <string name="error_phone_invalid_format">KESALAHAN 20110: Nomor telepon tidak valid</string>
     <string name="error_phone_sms_delivery">KESALAHAN 10003: Gagal mengirim SMS</string>
     <string name="error_phone_verification_code_expired">KESALAHAN 20114: Kode verifikasi telepon sudah tidak berlaku</string>
@@ -265,6 +266,7 @@
     <string name="error_unknown_with_code">KESALAHAN %1$d</string>
     <string name="error_unknown_with_message">KESALAHAN: %1$s</string>
     <string name="error_used_phone">KESALAHAN 20122: Ponsel digunakan oleh orang lain.</string>
+    <string name="error_watch_address_not_supported">ERROR 10633: Saat ini belum mendukung penambahan alamat ini</string>
     <string name="error_user_invalid_format">ID pengguna tidak valid</string>
     <string name="error_withdrawal_memo_format_incorrect">KESALAHAN 20131: Format memo penarikan salah.</string>
     <string name="Everybody">Semua orang</string>

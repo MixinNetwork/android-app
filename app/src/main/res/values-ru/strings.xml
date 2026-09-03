@@ -377,6 +377,7 @@
     <string name="error_old_version">ОШИБКА 10006: Обновите Mixin(%1$s), чтобы продолжить использование сервиса.</string>
     <string name="error_open_location">Не могу найти приложение карты</string>
     <string name="error_permission">Пожалуйста, Откройте необходимые разрешения</string>
+    <string name="error_perps_order_value_too_small">ОШИБКА %1$d: Размер позиции слишком мал.</string>
     <string name="error_phone_invalid_format">ОШИБКА 20110: Неверный номер телефона</string>
     <string name="error_phone_sms_delivery">ОШИБКА 10003: Не удалось доставить SMS</string>
     <string name="error_phone_verification_code_expired">ОШИБКА 20114: Срок действия кода подтверждения телефона истек</string>
@@ -404,6 +405,7 @@
     <string name="error_unknown_with_code">ОШИБКА %1$d</string>
     <string name="error_unknown_with_message">ОШИБКА: %1$s</string>
     <string name="error_used_phone">ОШИБКА 20122: этот номер телефона уже связан с другой учетной записью.</string>
+    <string name="error_watch_address_not_supported">ОШИБКА 10633: Добавление этого адреса в настоящее время не поддерживается</string>
     <string name="error_user_invalid_format">Недопустимый идентификатор пользователя</string>
     <string name="error_withdrawal_memo_format_incorrect">ОШИБКА 20131: Неверный формат уведомления о снятии средств.</string>
     <string name="Everybody">Все</string>

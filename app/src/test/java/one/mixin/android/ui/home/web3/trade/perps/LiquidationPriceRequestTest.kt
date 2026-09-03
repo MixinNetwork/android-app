@@ -1,6 +1,8 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import com.google.gson.JsonParser
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.util.ErrorHandler
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
@@ -51,6 +53,48 @@ class LiquidationPriceRequestTest {
         assertSame(
             LiquidationPriceResult.Failure,
             liquidationPriceResult(price = null, errorCode = null),
+        )
+        assertEquals(
+            LiquidationPriceResult.LimitExceeded(
+                LiquidationPriceLimit(maxAmount = "100", maxLeverage = 5),
+            ),
+            liquidationPriceResult(
+                price = null,
+                errorCode = ErrorHandler.PERPS_POSITION_SIZE_EXCEEDS_LEVERAGE_LIMIT,
+                limit = LiquidationPriceLimit(maxAmount = "100", maxLeverage = 5),
+            ),
+        )
+    }
+
+    @Test
+    fun leverageLimitStopsAndReturnsRetryValues() = runBlocking {
+        var requestCount = 0
+        var limit: LiquidationPriceLimit? = null
+
+        val price = requestLiquidationPrice(
+            retryDelayMillis = 0L,
+            onLimitExceeded = { limit = it },
+        ) {
+            requestCount += 1
+            LiquidationPriceResult.LimitExceeded(
+                LiquidationPriceLimit(maxAmount = "25.5", maxLeverage = 3),
+            )
+        }
+
+        assertNull(price)
+        assertEquals(1, requestCount)
+        assertEquals(LiquidationPriceLimit(maxAmount = "25.5", maxLeverage = 3), limit)
+    }
+
+    @Test
+    fun parsesLeverageLimitExtra() {
+        val extra = JsonParser.parseString(
+            """{"max_amount":"42.50","max_leverage":7}""",
+        )
+
+        assertEquals(
+            LiquidationPriceLimit(maxAmount = "42.50", maxLeverage = 7),
+            parseLiquidationPriceLimit(extra),
         )
     }
 
