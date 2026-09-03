@@ -25,6 +25,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.ConversationRequest
 import one.mixin.android.api.request.DisappearRequest
 import one.mixin.android.api.request.ParticipantRequest
+import one.mixin.android.api.request.RelationshipAction
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.db.MixinDatabase
@@ -36,6 +37,7 @@ import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putString
 import one.mixin.android.job.AttachmentDownloadJob
+import one.mixin.android.job.ConversationJob
 import one.mixin.android.job.ConvertVideoJob
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshStickerAlbumJob
@@ -722,6 +724,35 @@ class ConversationViewModel
             userId: String,
         ) =
             conversationRepository.isSilence(conversationId, userId) == 0
+
+        suspend fun findInviterId(
+            conversationId: String,
+            userId: String,
+        ) = conversationRepository.findInviterId(conversationId, userId)
+
+        suspend fun invitationFromStranger(
+            conversationId: String,
+            userId: String,
+            inviterId: String?,
+        ) = conversationRepository.invitationFromStranger(conversationId, userId, inviterId)
+
+        fun exitGroupAndReport(
+            conversationId: String,
+            userId: String,
+        ) {
+            jobManager.addJobInBackground(
+                UpdateRelationshipJob(
+                    RelationshipRequest(userId, RelationshipAction.BLOCK.name),
+                    true,
+                ),
+            )
+            jobManager.addJobInBackground(
+                ConversationJob(
+                    conversationId = conversationId,
+                    type = ConversationJob.TYPE_EXIT,
+                ),
+            )
+        }
 
         fun refreshUser(
             userId: String,

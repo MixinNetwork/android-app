@@ -37,6 +37,7 @@ import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
+import one.mixin.android.db.UserDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
@@ -84,6 +85,7 @@ class ConversationRepository
     internal constructor(
         private val appDatabase: MixinDatabase,
         private val messageDao: MessageDao,
+        private val userDao: UserDao,
         private val conversationDao: ConversationDao,
         private val conversationExtDao: ConversationExtDao,
         private val circleConversationDao: CircleConversationDao,
@@ -468,6 +470,20 @@ class ConversationRepository
             userId: String,
         ): Int =
             messageDao.isSilence(conversationId, userId) ?: 0
+
+        suspend fun findInviterId(
+            conversationId: String,
+            userId: String,
+        ): String? = messageDao.findInviterId(conversationId, userId)
+
+        suspend fun invitationFromStranger(
+            conversationId: String,
+            userId: String,
+            inviterId: String?,
+        ): Boolean {
+            inviterId ?: return false
+            return userDao.notFriend(inviterId) != null && messageDao.isSilence(conversationId, userId) == null
+        }
 
         suspend fun findNextAudioMessage(
             conversationId: String,
