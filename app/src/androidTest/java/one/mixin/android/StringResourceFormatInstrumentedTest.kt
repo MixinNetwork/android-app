@@ -166,6 +166,7 @@ class StringResourceFormatInstrumentedTest {
                 R.string.Avalanche to "Avalanche",
                 R.string.HyperEVM to "HyperEVM",
                 R.string.XLayer to "X Layer",
+                R.string.Robinhood to "Robinhood",
                 R.string.Toncoin to "TON",
             )
 
