@@ -125,7 +125,7 @@ private fun resolveCurrentToken(
 @Composable
 fun OpenPositionPage(
     market: PerpsMarket,
-    isLong: Boolean,
+    isLong: Boolean?,
     source: String,
     onBack: () -> Unit,
     onOrderCreated: () -> Unit = {},
@@ -148,6 +148,7 @@ fun OpenPositionPage(
     val acceptedPerpAssetIds = remember(acceptedPerpAssetIdsOrdered) { acceptedPerpAssetIdsOrdered.toSet() }
 
     var currentMarket by remember(marketId) { mutableStateOf(market) }
+    var selectedIsLong by rememberSaveable(marketId, isLong) { mutableStateOf(isLong ?: true) }
     var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
     var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
     var usdtAmount by rememberSaveable(marketId, initialMargin) {
@@ -229,7 +230,7 @@ fun OpenPositionPage(
         onCurrentTokenChange(currentToken)
     }
     val maxLeverage = currentMarket.leverage.coerceAtLeast(1)
-    LaunchedEffect(usdtAmount, leverage, currentToken?.assetId, takeProfitPrice, stopLossPrice) {
+    LaunchedEffect(selectedIsLong, usdtAmount, leverage, currentToken?.assetId, takeProfitPrice, stopLossPrice) {
         errorInfo = null
     }
     LaunchedEffect(maxLeverage, marketId) {
@@ -242,7 +243,7 @@ fun OpenPositionPage(
         }
     }
 
-    LaunchedEffect(usdtAmount, leverage, currentMarket.minAmount) {
+    LaunchedEffect(selectedIsLong, usdtAmount, leverage, currentMarket.minAmount) {
         val amount = usdtAmount.toBigDecimalOrNull()
         val minimumAmount = currentMarket.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         if (!shouldRequestLiquidationPrice(amount, minimumAmount)) {
@@ -264,7 +265,7 @@ fun OpenPositionPage(
                 viewModel.estimateLiquidationPrice(
                     marketId = currentMarket.marketId,
                     amount = normalizedAmount,
-                    side = if (isLong) "long" else "short",
+                    side = if (selectedIsLong) "long" else "short",
                     leverage = leverage.toInt(),
                 )
             }
@@ -327,7 +328,7 @@ fun OpenPositionPage(
                 stopLossPrice
             },
             currentPrice = currentMarket.last,
-            isLong = isLong,
+            isLong = selectedIsLong,
             marketIconUrl = currentMarket.iconUrl,
             marketSymbol = currentMarket.tokenSymbol,
             marginAmount = usdtAmount,
@@ -374,6 +375,13 @@ fun OpenPositionPage(
                             .verticalScroll(rememberScrollState())
                             .padding(horizontal = 16.dp)
                     ) {
+                if (isLong == null) {
+                    PerpsSideSelector(
+                        isLong = selectedIsLong,
+                        onSideChange = { selectedIsLong = it },
+                    )
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically
@@ -389,7 +397,7 @@ fun OpenPositionPage(
                     Spacer(modifier = Modifier.width(12.dp))
                     Column {
                         Text(
-                            text = "${if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)} ${currentMarket.tokenSymbol}",
+                            text = "${if (selectedIsLong) stringResource(R.string.Long) else stringResource(R.string.Short)} ${currentMarket.tokenSymbol}",
                             fontSize = 16.sp,
                             color = MixinAppTheme.colors.textPrimary
                         )
@@ -530,7 +538,7 @@ fun OpenPositionPage(
                             currentLeverage = leverage,
                             maxLeverage = maxLeverage,
                             amount = usdtAmount,
-                            isLong = isLong
+                            isLong = selectedIsLong
                         ).setOnLeverageSelected { newLeverage ->
                             leverage = newLeverage
                             context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
@@ -564,7 +572,7 @@ fun OpenPositionPage(
                                 currentLeverage = leverage,
                                 maxLeverage = maxLeverage,
                                 amount = usdtAmount,
-                                isLong = isLong
+                                isLong = selectedIsLong
                             ).setOnLeverageSelected { newLeverage ->
                                 leverage = newLeverage
                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
@@ -623,7 +631,7 @@ fun OpenPositionPage(
                                                 currentLeverage = leverage,
                                                 maxLeverage = maxLeverage,
                                                 amount = usdtAmount,
-                                                isLong = isLong
+                                                isLong = selectedIsLong
                                             ).setOnLeverageSelected { newLeverage ->
                                                 leverage = newLeverage
                                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
@@ -660,7 +668,7 @@ fun OpenPositionPage(
                     val profitInfo = calculateProfitInfo(
                         amount = usdtAmount,
                         leverage = leverage,
-                        isLong = isLong,
+                        isLong = selectedIsLong,
                         priceChangePercent = 1.0,
                     )
 
@@ -798,7 +806,7 @@ fun OpenPositionPage(
                             viewModel.openPerpsOrder(
                                 assetId = token.assetId,
                                 marketId = m.marketId,
-                                side = if (isLong) "long" else "short",
+                                side = if (selectedIsLong) "long" else "short",
                                 amount = normalizedAmount,
                                 leverage = leverage.toInt(),
                                 walletId = walletId,
@@ -812,7 +820,7 @@ fun OpenPositionPage(
                                     PerpsConfirmBottomSheetDialogFragment.newInstance(
                                         marketSymbol = m.displaySymbol,
                                         marketIcon = m.iconUrl,
-                                        isLong = isLong,
+                                        isLong = selectedIsLong,
                                         amount = response.payAmount,
                                         leverage = leverage.toInt(),
                                         entryPrice = m.last,
@@ -908,6 +916,42 @@ fun OpenPositionPage(
         }
     }
 
+}
+
+@Composable
+private fun PerpsSideSelector(
+    isLong: Boolean,
+    onSideChange: (Boolean) -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(MixinAppTheme.colors.backgroundGrayLight)
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        listOf(true to R.string.Long, false to R.string.Short).forEach { (sideIsLong, labelRes) ->
+            val selected = sideIsLong == isLong
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(
+                        if (selected) MixinAppTheme.colors.accent else Color.Transparent,
+                    )
+                    .clickable { onSideChange(sideIsLong) }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Text(
+                    text = stringResource(labelRes),
+                    fontSize = 14.sp,
+                    color = if (selected) Color.White else MixinAppTheme.colors.textPrimary,
+                )
+            }
+        }
+    }
 }
 
 internal fun resolveInitialPerpsLeverage(
