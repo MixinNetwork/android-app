@@ -33,12 +33,14 @@ import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
+import one.mixin.android.Constants.ChainId.XLayer
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
+import one.mixin.android.db.web3.vo.isWeb3TransferSupported
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.getSafeAreaInsetsTop
@@ -134,19 +136,18 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     @SuppressLint("NotifyDataSetChanged")
     fun setLoading(loading: Boolean, list: List<SwapToken>? = null, remote: List<SwapToken>? = null) {
-        if (isLoading == loading) return
+        val loadingChanged = isLoading != loading
         isLoading = loading
-        if (list != null && isFrom) {
-            tokens = list
-            binding.radio.isVisible = !isLoading
-            initRadio()
-            filter(binding.searchEt.et.text?.toString() ?: "")
-        } else if (remote != null && !isFrom) {
-            tokens = remote
-            binding.radio.isVisible = !isLoading
-            initRadio()
-            filter(binding.searchEt.et.text?.toString() ?: "")
+        val data = if (isFrom) list else remote
+        if (data == null) {
+            return
         }
+        tokens = data
+        binding.radio.isVisible = !isLoading
+        if (loadingChanged) {
+            initRadio()
+        }
+        filter(binding.searchEt.et.text?.toString() ?: "")
     }
 
     private fun initRadio() {
@@ -222,6 +223,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                                 HyperEVM
                             }
 
+                            R.id.radio_xlayer -> {
+                                XLayer
+                            }
+
                             R.id.radio_toncoin -> {
                                 TON_CHAIN_ID
                             }
@@ -262,9 +267,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
 
         binding.apply {
+            val visibleTokens = defaultTokens(tokens)
+            val visibleStocks = supportedTokens(stocks)
             assetRv.adapter = adapter
-            adapter.tokens = tokens.sortByKeywordAndBalance()
-            adapter.stocks = stocks.sortByKeywordAndBalance()
+            adapter.tokens = visibleTokens.sortByKeywordAndBalance()
+            adapter.stocks = visibleStocks.sortByKeywordAndBalance()
             radio.isVisible = !isLoading
             initRadio()
             searchEt.et.setHint(if (inMixin()) R.string.search_placeholder_asset else R.string.search_swap_token)
@@ -272,10 +279,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 searchEt.hideKeyboard()
                 dismiss()
             }
-            val hasVisibleTokens = if (initialStockMode && stocks.isNotEmpty()) {
-                stocks.isNotEmpty()
+            val hasVisibleTokens = if (initialStockMode) {
+                visibleStocks.isNotEmpty()
             } else {
-                tokens.isNotEmpty()
+                visibleTokens.isNotEmpty()
             }
             if (isLoading) {
                 rvVa.displayedChild = 3
@@ -314,14 +321,16 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         id = View.generateViewId()
                         setContent {
                             RecentSwapTokens(key) {
-                                AnalyticsTracker.trackTradeTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
-                                AnalyticsTracker.trackSpotTokenSelect(
-                                    method = AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK,
-                                    side = spotTokenType(),
-                                    chain = it.chain.name,
-                                    assetSymbol = it.symbol,
-                                )
-                                adapter.onClick(it)
+                                if (inMixin() || isWeb3TransferSupported(it.chain.chainId)) {
+                                    AnalyticsTracker.trackTradeTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
+                                    AnalyticsTracker.trackSpotTokenSelect(
+                                        method = AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK,
+                                        side = spotTokenType(),
+                                        chain = it.chain.name,
+                                        assetSymbol = it.symbol,
+                                    )
+                                    adapter.onClick(it)
+                                }
                             }
                         }
                     }
@@ -357,11 +366,12 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private fun filter(s: String) =
         lifecycleScope.launch {
             if (s.isBlank() && currentChain == null && !isStockMode) {
-                adapter.tokens = tokens.sortByKeywordAndBalance()
+                val visibleTokens = defaultTokens(tokens)
+                adapter.tokens = visibleTokens.sortByKeywordAndBalance()
                 adapter.isSearch = false
                 if (isLoading) {
                     binding.rvVa.displayedChild = 3
-                } else if (tokens.isEmpty()) {
+                } else if (visibleTokens.isEmpty()) {
                     binding.rvVa.displayedChild = 2
                 } else {
                     binding.rvVa.displayedChild = 0
@@ -369,10 +379,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 scrollListToTop()
                 return@launch
             }
-            val assetList = if (isStockMode && s.isBlank()) {
-                stocks.toMutableList()
-            } else {
-                tokens.toMutableList()
+            val assetList = when {
+                isStockMode && s.isBlank() -> supportedTokens(stocks).toMutableList()
+                s.isBlank() -> defaultTokens(tokens).toMutableList()
+                else -> supportedTokens(tokens).toMutableList()
             }
 
             adapter.isSearch = true
@@ -426,10 +436,11 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     ): List<SwapToken> {
         if (s.isBlank()) return localTokens
         binding.pb.isVisible = true
-        val filterLocal = localTokens.filter {
-            it.name.containsIgnoreCase(s) ||
-                    it.symbol.containsIgnoreCase(s) ||
-                    it.chain.name.containsIgnoreCase(s)
+        val filterLocal = localTokens.filter { token ->
+            (inMixin() || isWeb3TransferSupported(token.chain.chainId)) &&
+                (token.name.containsIgnoreCase(s) ||
+                    token.symbol.containsIgnoreCase(s) ||
+                    token.chain.name.containsIgnoreCase(s))
         }
         val remoteList = handleMixinResponse(
             invokeNetwork = { swapViewModel.searchTokens(s, inMixin) },
@@ -445,9 +456,9 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                         val chainIds =
                             swapViewModel.getAddresses(Web3Signer.currentWalletId).map {
                                 it.chainId
-                            }
+                            }.toSet()
                         this.filter {
-                            it.chain.chainId in chainIds
+                            isSwapSearchChainAvailable(it.chain.chainId, chainIds)
                         }
                     } else {
                         this
@@ -476,7 +487,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 binding.pb.isVisible = false
             }
         )
-        val result = filterLocal + (remoteList?.filterNot { r ->
+        val result = filterLocal + (remoteList?.let(::supportedTokens)?.filterNot { r ->
             localTokens.any { l ->
                 l.chain.chainId == r.chain.chainId && l.assetId == r.assetId
             }
@@ -493,6 +504,18 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     }
 
     private var onDepositListener: (() -> Unit)? = null
+
+    private fun supportedTokens(tokens: List<SwapToken>): List<SwapToken> =
+        if (inMixin()) tokens else tokens.filter { isWeb3TransferSupported(it.chain.chainId) }
+
+    private fun defaultTokens(tokens: List<SwapToken>): List<SwapToken> {
+        val visibleTokens = supportedTokens(tokens)
+        return if (isFrom) {
+            visibleTokens.filter { it.balanceValue.signum() > 0 }
+        } else {
+            visibleTokens
+        }
+    }
 
     private fun inMixin(): Boolean = 
         key == Constants.Account.PREF_TO_SWAP || 

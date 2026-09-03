@@ -1071,8 +1071,8 @@
     <string name="Stop_Playing">停止播放</string>
     <string name="Stop_playing_this_list">确定要停止并关闭播放列表？</string>
     <string name="storage_low_message">手机存储空间严重不足，建议清理不重要的视频和文件、卸载不常用的软件，以免影响 Mixin 的使用体验，甚至可能造成聊天丢失或数据损坏</string>
-    <string name="storage_low_title">手机储存空间即将用尽</string>
-    <string name="Storage_Usage">储存空间</string>
+    <string name="storage_low_title">手机存储空间即将用尽</string>
+    <string name="Storage_Usage">存储空间</string>
     <string name="stranger_hint">对方不是你的联系人</string>
     <string name="Stranger_Transfer_Confirmation">陌生人转账确认</string>
     <string name="strikethrough">删除线</string>
@@ -1220,6 +1220,7 @@
     <string name="wallet_withdrawal_changed">手续费已从 %1$s 变更为 %2$s，要更新手续费并继续提现吗？</string>
     <string name="wallet_withdrawal_not_in_addresses">%1$s 该地址不在提现地址白名单，请仔细核对地址。</string>
     <string name="wallet_withdrawal_recent_tip">你已经在 %1$s 前提现 %3$s 到 %2$s，确认还要再提一次吗？</string>
+    <string name="web_bot_cannot_reached_desc">无法访问 %1$s 网页，请检查你的网络并尝试切换 4G、Wi-Fi 或 VPN 后重新载入页面。</string>
     <string name="web_cannot_reached_desc">无法访问 %1$s，请检查你的网络并尝试切换 4G、Wi-Fi 或 VPN 后重新载入页面。</string>
     <string name="web_cannot_reached_title">无法访问此网页</string>
     <string name="web_floating_permission">你的手机没有授权 Mixin 获得浮窗权限，浮窗不能正常使用</string>
@@ -1248,6 +1249,7 @@
     <string name="you">你</string>
     <string name="You">你</string>
     <string name="You_deleted_this_message">你撤回了一条消息</string>
+    <string name="User_deleted_this_message">%1$s 撤回了这条消息</string>
     <string name="You_have_left_the_group">你不在此群组</string>
     <string name="Your_emergency_contact_has_been_changed">恢复联系人已更改</string>
     <string name="text_size">字体大小</string>
@@ -1757,6 +1759,7 @@
     <string name="Bitcoin_Dominance">比特币市占率</string>
     <string name="volume_24h">24 小时交易量</string>
     <string name="market_volume_short">交易量</string>
+    <string name="market_change_short">涨跌幅</string>
     <string name="Watchlist">自选</string>
     <string name="Crypto">现货</string>
     <string name="market_stock">股票</string>
@@ -2007,6 +2010,7 @@
     <string name="Privacy_Wallet">隐私钱包</string>
     <string name="Other">其他</string>
     <string name="classic_wallet_btc_intro_title">普通钱包现已支持比特币</string>
+    <string name="classic_wallet_pearl_intro_title">普通钱包现已支持 Pearl</string>
     <string name="feature_decentralized">去中心化</string>
     <string name="feature_decentralized_description">完全去中心化的钱包，你掌控私钥。</string>
     <string name="feature_privacy_by_default">默认隐私保护</string>
@@ -2327,6 +2331,14 @@
     <string name="perps_funding_frequency">频率</string>
     <string name="perps_funding_frequency_value">1/4/8 小时</string>
     <string name="perps_receive">收到</string>
+    <string name="Trading_Fee">手续费</string>
+    <string name="perps_funding_title_interval">资金费率（%1$d小时）</string>
+    <string name="Open_Fee">开仓费</string>
+    <string name="Close_Fee">平仓费</string>
+    <string name="perps_trading_fee_overview">开仓、加仓和平仓均会产生手续费，费用按仓位价值计算，而不是按保证金计算。</string>
+    <string name="perps_trading_fee_pnl_1">仓位越大，手续费越高</string>
+    <string name="perps_trading_fee_pnl_2">仓位越小，手续费越低</string>
+    <string name="perps_trading_fee_pnl_3">已实现盈亏已扣除相关手续费</string>
     <string name="perps_liquidation_price_short">强平价格</string>
     <string name="Take_Profit_When">止盈条件</string>
     <string name="Stop_Loss_When">止损条件</string>
@@ -2559,7 +2571,9 @@
     <string name="wallet_home_cashback_banner_cta">立即领取</string>
     <string name="wallet_home_referral_banner_title">邀请返佣</string>
     <string name="wallet_home_referral_banner_desc">邀请好友可获得高达 60% 的交易返利和会员佣金。</string>
+    <string name="wallet_home_earn_account">理财账户</string>
     <string name="cash_balance">现金余额</string>
+    <string name="earn_balance">理财余额</string>
     <string name="cash_account_apy">年化 %1$s</string>
     <string name="cash_account_minimum_receive">输入金额至少价值 %1$s %2$s，请重新输入。</string>
     <string name="cash_account_minimum_send">错误 10614: 输入金额至少为 %1$s %2$s，请重新输入。</string>
@@ -2586,4 +2600,10 @@
     <string name="wallet_home_privacy_wallet_reason_2">不必输入复杂地址，彻底告别转账错误</string>
     <string name="wallet_home_privacy_wallet_reason_3">拦截恶意授权，杜绝应用偷转资产</string>
     <string name="no_tokens">没有代币</string>
+    <string name="Debug_Wallet_Account_Visibility">钱包账户显示</string>
+    <string name="Debug_Earn_Account">Earn 账户</string>
+    <string name="Earn">理财</string>
+    <string name="earn_total_earnings">总收益</string>
+    <string name="earn_yesterday_earnings">昨日收益</string>
+    <string name="earn_reward_rate">收益率</string>
 </resources>

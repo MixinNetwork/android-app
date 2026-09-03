@@ -7,7 +7,17 @@ import one.mixin.android.extension.toSpotTradeAction
 
 internal sealed interface WalletHomeBannerActionTarget {
     data class SpotTrade(val action: SpotTradeAction) : WalletHomeBannerActionTarget
-    data class PerpsMarket(val marketId: String) : WalletHomeBannerActionTarget
+    data class PerpsMarket(
+        val marketId: String,
+        val leaderPositionId: String? = null,
+    ) : WalletHomeBannerActionTarget
+    data class PerpsOpen(
+        val marketId: String,
+        val isLong: Boolean,
+        val leverage: Int?,
+        val margin: String?,
+        val leaderPositionId: String?,
+    ) : WalletHomeBannerActionTarget
     data object PerpsTab : WalletHomeBannerActionTarget
     data object Buy : WalletHomeBannerActionTarget
     data class Web(val url: String) : WalletHomeBannerActionTarget
@@ -18,7 +28,15 @@ internal fun String.toClassicWalletHomeBannerActionTarget(): WalletHomeBannerAct
     toPerpsTradeAction()?.let { action ->
         return when (val marketId = action.marketId) {
             null -> WalletHomeBannerActionTarget.PerpsTab
-            else -> WalletHomeBannerActionTarget.PerpsMarket(marketId)
+            else -> action.openPosition?.let { openPosition ->
+                WalletHomeBannerActionTarget.PerpsOpen(
+                    marketId = marketId,
+                    isLong = openPosition.isLong,
+                    leverage = openPosition.leverage,
+                    margin = openPosition.margin,
+                    leaderPositionId = action.leaderPositionId,
+                )
+            } ?: WalletHomeBannerActionTarget.PerpsMarket(marketId, action.leaderPositionId)
         }
     }
     return if (isBuyAction()) {

@@ -1014,6 +1014,7 @@
     <string name="wallet_transfer_recent_tip">あなたは%1$sに%2$sへ同額の送金をしています。再度%3$sを送金しますか？</string>
     <string name="wallet_withdrawal_changed">出金手数料が%1$sから%2$sへ変更されました。このまま出金を行いますか？</string>
     <string name="wallet_withdrawal_recent_tip">あなたは%1$sに同額の出金を%2$sへ送っています。再度%3$sを出金しますか？</string>
+    <string name="web_bot_cannot_reached_desc">%1$s のウェブページにアクセスできません。ネットワーク設定を確認してページをリロードしてください。</string>
     <string name="web_cannot_reached_desc">%1$s 接続に時間がかかり過ぎています、ネットワーク設定を確認してページをリロードしてください。</string>
     <string name="web_cannot_reached_title">アクセスできません</string>
     <string name="web_floating_permission">Floating機能を使うため、設定から許可してください</string>
@@ -1101,6 +1102,25 @@
     <string name="watchlist_remove_desc">%1$s がウォッチリストから削除されました</string>
     <string name="perps_category_meme">ミーム</string>
     <string name="perps_funding_frequency_value">1/4/8 時間</string>
+    <string name="Trading_Fee">取引手数料</string>
+    <string name="perps_funding_title_interval">資金調達（%1$d時間）</string>
+    <string name="Open_Fee">新規建て手数料</string>
+    <string name="Close_Fee">決済手数料</string>
+    <string name="perps_trading_fee_overview">ポジションの新規建て、追加、決済時に手数料が発生します。手数料は証拠金ではなく、ポジションの価値を基に計算されます。</string>
+    <string name="perps_trading_fee_pnl_1">ポジションが大きいほど手数料が高くなります</string>
+    <string name="perps_trading_fee_pnl_2">ポジションが小さいほど手数料が低くなります</string>
+    <string name="perps_trading_fee_pnl_3">実現損益には関連する手数料が含まれています</string>
     <string name="Bitcoin_Dominance">ビットコインドミナンス</string>
     <string name="Perp">無期限</string>
+    <string name="classic_wallet_pearl_intro_title">Common WalletがPearlに対応しました</string>
+    <string name="Debug_Wallet_Account_Visibility">ウォレットアカウントの表示</string>
+    <string name="Debug_Earn_Account">Earnアカウント</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">総収益</string>
+    <string name="Total_Amount">合計金額</string>
+    <string name="Cash_Account">現金口座</string>
+    <string name="earn_reward_rate">報酬率</string>
+    <string name="wallet_home_earn_account">Earnアカウント</string>
+    <string name="earn_balance">Earn残高</string>
+    <string name="earn_yesterday_earnings">昨日の収益</string>
 </resources>

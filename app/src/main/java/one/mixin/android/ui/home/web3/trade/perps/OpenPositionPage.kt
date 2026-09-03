@@ -34,6 +34,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -127,10 +128,14 @@ fun OpenPositionPage(
     isLong: Boolean,
     source: String,
     onBack: () -> Unit,
+    onOrderCreated: () -> Unit = {},
     onOpenSuccess: (String) -> Unit = { onBack() },
     selectedToken: TokenItem?,
     onTokenSelect: () -> Unit = {},
     onCurrentTokenChange: (TokenItem?) -> Unit = {},
+    leaderPositionId: String? = null,
+    initialLeverage: Int? = null,
+    initialMargin: String? = null,
 ) {
     val context = LocalContext.current
     val waitingOtherOrdersError = stringResource(R.string.error_waiting_other_orders)
@@ -145,7 +150,14 @@ fun OpenPositionPage(
     var currentMarket by remember(marketId) { mutableStateOf(market) }
     var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
     var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
-    var usdtAmount by remember { mutableStateOf("") }
+    var usdtAmount by rememberSaveable(marketId, initialMargin) {
+        mutableStateOf(
+            limitTradeInputDecimalPlaces(
+                initialMargin.orEmpty(),
+                TRADE_INPUT_MAX_DECIMAL_PLACES,
+            ),
+        )
+    }
     var takeProfitPrice by remember { mutableStateOf("") }
     var stopLossPrice by remember { mutableStateOf("") }
     var remoteLiquidationPrice by remember { mutableStateOf<String?>(null) }
@@ -160,7 +172,15 @@ fun OpenPositionPage(
             .getInt(getLeveragePrefKey(marketId), DEFAULT_LEVERAGE)
             .coerceAtLeast(1)
     }
-    var leverage by remember(marketId) { mutableFloatStateOf(savedLeverage.toFloat()) }
+    var leverage by rememberSaveable(marketId, initialLeverage) {
+        mutableFloatStateOf(
+            resolveInitialPerpsLeverage(
+                requestedLeverage = initialLeverage,
+                savedLeverage = savedLeverage,
+                maxLeverage = market.leverage,
+            ).toFloat(),
+        )
+    }
 
     LaunchedEffect(marketId) {
         while (true) {
@@ -216,7 +236,9 @@ fun OpenPositionPage(
         val boundedLeverage = leverage.coerceIn(1f, maxLeverage.toFloat())
         if (boundedLeverage != leverage) {
             leverage = boundedLeverage
-            context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), boundedLeverage.toInt())
+            if (initialLeverage == null) {
+                context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), boundedLeverage.toInt())
+            }
         }
     }
 
@@ -783,8 +805,10 @@ fun OpenPositionPage(
                                 // Null means "leave TP/SL unset" when creating a new position.
                                 takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
                                 stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
+                                leaderPositionId = leaderPositionId,
                                 entryPrice = m.last,
                                 onSuccess = { response ->
+                                    onOrderCreated()
                                     PerpsConfirmBottomSheetDialogFragment.newInstance(
                                         marketSymbol = m.displaySymbol,
                                         marketIcon = m.iconUrl,
@@ -885,6 +909,12 @@ fun OpenPositionPage(
     }
 
 }
+
+internal fun resolveInitialPerpsLeverage(
+    requestedLeverage: Int?,
+    savedLeverage: Int,
+    maxLeverage: Int,
+): Int = (requestedLeverage ?: savedLeverage).coerceIn(1, maxLeverage.coerceAtLeast(1))
 
 private fun generateLeverageOptions(maxLeverage: Int): List<Int> {
     val safeMaxLeverage = maxLeverage.coerceAtLeast(1)

@@ -81,6 +81,7 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         setCallback(
             object : Callback() {
                 override fun onDismiss(success: Boolean) {
+                    onResult?.invoke(success)
                     if (success) {
                         continueCallback?.invoke(this@VerifyBottomSheetDialogFragment)
                     }
@@ -125,7 +126,14 @@ class VerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
         return this
     }
 
+    fun setOnResult(callback: (Boolean) -> Unit): VerifyBottomSheetDialogFragment {
+        onResult = callback
+        return this
+    }
+
     private var continueCallback: ((DialogFragment) -> Unit)? = null
 
     private var onPinSuccess: ((String) -> Unit)? = null
+
+    private var onResult: ((Boolean) -> Unit)? = null
 }

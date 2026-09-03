@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
@@ -42,6 +43,7 @@ import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.market.MarketRefreshResult
+import one.mixin.android.vo.market.marketRefreshLimit
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
@@ -53,6 +55,11 @@ internal class TradeQuoteMixinErrorException(
     val min: String?,
     val max: String?,
 ) : Exception()
+
+internal fun recommendedMarketsFromDatabase(
+    markets: Flow<List<MarketItem>>,
+    limit: Int,
+): Flow<List<MarketItem>> = markets.map { items -> items.take(limit) }
 
 @HiltViewModel
 class SwapViewModel
@@ -79,16 +86,19 @@ class SwapViewModel
         duration: String? = null,
     ): MixinResponse<List<Market>> = tokenRepository.markets(category = category, limit = limit, sort = sort, duration = duration)
 
-    fun observeMarketsByCategory(category: MarketCategory): Flow<List<MarketItem>> =
-        tokenRepository.observeMarketsByCategory(category)
+    fun observeRecommendedMarkets(category: MarketCategory): Flow<List<MarketItem>> =
+        recommendedMarketsFromDatabase(
+            markets = tokenRepository.observeMarketsByCategory(category),
+            limit = SWAP_RECOMMENDED_MARKET_LIMIT,
+        )
 
-    internal suspend fun refreshMarketsByCategory(
+    internal suspend fun refreshRecommendedMarkets(
         category: MarketCategory,
-        limit: Int? = null,
     ): MarketRefreshResult =
         tokenRepository.fetchMarketsResult(
             category = category.apiValue,
-            limit = limit,
+            limit = marketRefreshLimit(category),
+            persist = true,
         )
 
     suspend fun web3Quote(

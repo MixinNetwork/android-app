@@ -11,6 +11,19 @@ class WalletConnectNamespaceTest {
     private val legacySolanaChainId = "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"
 
     @Test
+    fun xLayerUsesExpectedWalletConnectMetadata() {
+        assertEquals("37f5a4d1-905f-3b34-8291-c37438c7dcfc", Chain.XLayer.assetId)
+        assertEquals("eip155:196", Chain.XLayer.chainId)
+        assertEquals("0xc4", Chain.XLayer.hexReference)
+        assertEquals("X Layer", Chain.XLayer.name)
+        assertEquals("OKB", Chain.XLayer.symbol)
+        assertEquals(Chain.XLayer.assetId, Chain.XLayer.getWeb3ChainId())
+        assertEquals(Chain.XLayer, getChainByChainId("eip155:196"))
+        assertEquals(Chain.XLayer, "196".getChain())
+        assertTrue(Chain.XLayer in evmChainList)
+    }
+
+    @Test
     fun solanaChainIdUsesMainnetCaip2Reference() {
         assertEquals("solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp", Chain.Solana.chainId)
         assertEquals(Chain.Solana, getChainByChainId("solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"))

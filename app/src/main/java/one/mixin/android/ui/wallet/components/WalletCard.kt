@@ -349,6 +349,8 @@ fun WalletCard(
                                 listOf(R.drawable.ic_chain_sol)
                             } else if (address.any { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }) {
                                 listOf(R.drawable.ic_chain_btc)
+                            } else if (address.any { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }) {
+                                listOf(R.drawable.ic_chain_pearl)
                             } else {
                                 evmChain
                             }
@@ -385,6 +387,7 @@ fun WalletCard(
 
 val privacyChain = listOf(
     R.drawable.ic_chain_btc,
+    R.drawable.ic_chain_pearl,
     R.drawable.ic_chain_eth,
     R.drawable.ic_chain_sol,
     R.drawable.ic_chain_polygon,
@@ -401,6 +404,7 @@ val privacyChain = listOf(
 
 val classicChain = listOf(
     R.drawable.ic_chain_btc,
+    R.drawable.ic_chain_pearl,
     R.drawable.ic_chain_eth,
     R.drawable.ic_chain_polygon,
     R.drawable.ic_chain_bsc,

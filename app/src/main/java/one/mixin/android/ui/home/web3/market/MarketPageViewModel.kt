@@ -115,7 +115,11 @@ class MarketPageViewModel
 
         fun updateSort(column: MarketSortColumn) {
             val state = _uiState.value
-            val sortState = state.sortState.next(column)
+            val sortState =
+                state.sortState.next(
+                    column,
+                    defaultMarketSortState(state.selectedTopTab, state.selectedSubTab),
+                )
             _uiState.value = state.copy(sortState = sortState)
             rebuildEntries()
             sortState.direction.analyticsValue()?.let { direction ->
@@ -123,7 +127,7 @@ class MarketPageViewModel
                     sortDirection = direction,
                     primaryTab = state.selectedTopTab.analyticsValue(),
                     secondaryTab = state.selectedSubTab.analyticsValue(),
-                    sortField = state.analyticsSortField(column),
+                    sortField = state.analyticsSortField(sortState.column ?: column),
                 )
             }
         }
@@ -459,8 +463,6 @@ class MarketPageViewModel
                             .spotMarkets(
                                 markets = source.withFavoriteState(),
                                 fallbackMarkets = fallbackMarkets.withFavoriteState(),
-                                subTab = subTab,
-                                period = state.effectivePriceChangePeriod,
                             )
                             .filterNot { it.coinId in stockCoinIds }
                             .map { MarketListEntry.Spot(it, SpotMarketType.CRYPTO) }
@@ -485,6 +487,20 @@ class MarketPageViewModel
                             )
                         }
                     }
+
+                    MarketTopTab.STOCK ->
+                        if (state.selectedSubTab == MarketSubTab.PERPETUAL) {
+                            MarketPageMapper.perpetualStockMarkets(perpetualMarkets).map { market ->
+                                MarketListEntry.Perpetual(
+                                    market = market,
+                                    isFavored = market.marketId in favoritePerpetualMarketIds,
+                                )
+                            }
+                        } else {
+                            stockMarkets
+                                .withFavoriteState()
+                                .map { MarketListEntry.Spot(it, SpotMarketType.STOCK) }
+                        }
 
                     MarketTopTab.INDICATOR -> emptyList()
                 }
@@ -533,6 +549,12 @@ class MarketPageViewModel
                     }
                 MarketTopTab.CRYPTO -> hasLoadedSpotMarkets
                 MarketTopTab.PERPETUAL -> hasLoadedPerpetualMarkets
+                MarketTopTab.STOCK ->
+                    if (state.selectedSubTab == MarketSubTab.PERPETUAL) {
+                        hasLoadedPerpetualMarkets
+                    } else {
+                        hasLoadedSpotMarkets
+                    }
                 MarketTopTab.INDICATOR -> true
             }
 
@@ -581,6 +603,13 @@ class MarketPageViewModel
                                 MarketPageDataSource.PERPETUAL_FAVORITE
                             }
                         else -> MarketPageDataSource.PERPETUAL_ALL
+                    }
+
+                MarketTopTab.STOCK ->
+                    if (state.selectedSubTab == MarketSubTab.PERPETUAL) {
+                        MarketPageDataSource.PERPETUAL_ALL
+                    } else {
+                        MarketPageDataSource.SPOT_STOCK
                     }
 
                 MarketTopTab.INDICATOR -> MarketPageDataSource.GLOBAL

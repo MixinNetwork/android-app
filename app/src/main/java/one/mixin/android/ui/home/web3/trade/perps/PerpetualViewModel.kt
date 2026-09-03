@@ -65,8 +65,8 @@ class PerpetualViewModel @Inject constructor(
     private val perpsMarketRepository: PerpsMarketRepository,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
-    private val _favoriteMarketIds = MutableStateFlow<Set<String>>(emptySet())
-    val favoriteMarketIds: StateFlow<Set<String>> = _favoriteMarketIds.asStateFlow()
+    private val _favoriteMarketIds = MutableStateFlow<List<String>>(emptyList())
+    val favoriteMarketIds: StateFlow<List<String>> = _favoriteMarketIds.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -444,6 +444,7 @@ class PerpetualViewModel @Inject constructor(
         takeProfitPrice: String? = null,
         stopLossPrice: String? = null,
         destination: String? = null,
+        leaderPositionId: String? = null,
         entryPrice: String,
         onSuccess: (OpenOrderResponse) -> Unit,
         onError: (Int, String) -> Unit
@@ -459,7 +460,8 @@ class PerpetualViewModel @Inject constructor(
                     walletId = walletId,
                     takeProfitPrice = takeProfitPrice,
                     stopLossPrice = stopLossPrice,
-                    destination = destination
+                    destination = destination,
+                    leaderPositionId = leaderPositionId,
                 )
                 
                 val response = withContext(Dispatchers.IO) {
@@ -1041,20 +1043,10 @@ class PerpetualViewModel @Inject constructor(
     private suspend fun upsertSyncedOrders(orders: List<PerpsOrder>) {
         if (orders.isEmpty()) return
 
-        val updatedOrders = orders.map { order ->
-            val cachedLeverage = perpsOrderDao.getCachedLeverage(order.positionId)
-            if (order.leverage == 0 && cachedLeverage != null) {
-                order.copy(leverage = cachedLeverage)
-            } else {
-                order
-            }
-        }
-
-        perpsOrderDao.deleteLocalByPositionIds(updatedOrders.map { it.positionId }.distinct())
-        perpsOrderDao.insertAll(updatedOrders)
+        perpsOrderDao.insertAll(orders)
 
         // Sync position status if it's a close order
-        updatedOrders.filter { it.orderType == PerpsOrder.TYPE_CLOSE && it.status == PerpsOrder.STATUS_FILLED }
+        orders.filter { it.orderType == PerpsOrder.TYPE_CLOSE && it.status == PerpsOrder.STATUS_FILLED }
             .forEach { closeOrder ->
                 perpsPositionDao.updateStatus(
                     closeOrder.positionId,

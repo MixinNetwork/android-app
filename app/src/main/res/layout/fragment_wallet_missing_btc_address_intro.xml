@@ -12,6 +12,7 @@
         android:paddingBottom="24dp">
 
         <ImageView
+            android:id="@+id/intro_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:src="@drawable/bg_missing_btc" />
@@ -24,6 +25,7 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/intro_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"

@@ -39,6 +39,7 @@ import one.mixin.android.databinding.FragmentInputBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainSymbolFromName
+import one.mixin.android.db.web3.vo.isTransferSupported
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
@@ -61,7 +62,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.job.MixinJobManager
-import one.mixin.android.job.RefreshWeb3BitCoinJob
+import one.mixin.android.job.RefreshWeb3UtxoJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.address.ReceiveSelectionBottom.OnReceiveSelectionClicker
@@ -106,6 +107,7 @@ import one.mixin.android.web3.isNativeSolAsset
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.nativeSolSpendableBalance
+import one.mixin.android.web3.send.BtcTransactionBuilder
 import one.mixin.android.web3.send.InsufficientBtcBalanceException
 import one.mixin.android.web3.solanaRecipientAccountState
 import one.mixin.android.web3.solanaTransferAmountRange
@@ -408,6 +410,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 when (web3Token?.chainId) {
                                                     Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
                                                     Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                                                    Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
                                                     in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
                                                     else -> null
                                                 }
@@ -472,6 +475,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             when (web3Token?.chainId) {
                                                 Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
                                                 Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                                                Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
                                                 in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
                                                 else -> null
                                             }
@@ -507,6 +511,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             when (web3Token?.chainId) {
                                                 Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
                                                 Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                                                Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
                                                 in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
                                                 else -> null
                                             }
@@ -670,6 +675,10 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     alertDialog.dismiss()
                                 },
                             ) {
+                                if (!token.isTransferSupported()) {
+                                    toast(R.string.Not_support)
+                                    return@launch
+                                }
                                 if (shouldUseGaslessFlow()) {
                                     if (!isGaslessFeeEnough(amount)) {
                                         binding.insufficientFeeBalance.isVisible = true
@@ -704,17 +713,17 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                     )
                                     return@launch
                                 }
-                                if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                                    val minBtcAmount = BigDecimal("0.00001") // 1,000 sat
+                                if (token.chainId in Constants.Web3UtxoChainIds) {
+                                    val minimumAmount = BtcTransactionBuilder.minimumTransferAmount(token.chainId)
                                     val inputAmount: BigDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                                    if (inputAmount < minBtcAmount) {
-                                        toast(getString(R.string.single_transaction_should_be_greater_than, minBtcAmount.toPlainString(), token.symbol))
+                                    if (inputAmount < minimumAmount) {
+                                        toast(getString(R.string.single_transaction_should_be_greater_than, minimumAmount.toPlainString(), token.symbol))
                                         return@launch
                                     }
                                 }
-                                val transaction = if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+                                val transaction = if (token.chainId in Constants.Web3UtxoChainIds) {
                                     runCatching {
-                                        token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByAddress(fromAddress, token.assetId), rate, miniFee)
+                                        token.buildTransaction(rpc, fromAddress, toAddress, amount, web3ViewModel.outputsByAddress(fromAddress, token.chainId), rate, miniFee)
                                     }.onFailure { e ->
                                         Timber.e("Build Transaction Error: ${e.message}")
                                         if (e is EmptyUtxoException) {
@@ -1131,7 +1140,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         feeToken = feeToken,
                         feeAmount = feeAmount,
                         recipientAccountState = solanaRecipientAccountState,
-                        allowZeroBalance = false,
+                        allowZeroBalance = transferToken.isNativeSolAsset(),
                         includeAtaCreationReserve = transferToken.assetId != chainToken?.assetId,
                     )
                 }
@@ -1152,7 +1161,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun hasCurrentSolanaRentIssue(amount: String): Boolean {
-        return isCurrentWeb3SolanaTransfer() && isBelowCurrentSolanaMinimum(amount)
+        if (!isCurrentWeb3SolanaTransfer()) return false
+        val inputAmount = amount.toBigDecimalOrNull() ?: return false
+        val range = currentSolanaTransferRange() ?: return false
+        return isBelowCurrentSolanaMinimum(amount) ||
+            (web3Token?.isNativeSolAsset() == true && range.hasNativeSolRentIssue(inputAmount))
     }
 
     private fun updateSolanaMinimumAmountHint() {
@@ -1333,7 +1346,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             }
         }
         val balanceText =
-            if (transferToken.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
+            if (transferToken.chainId in Constants.Web3UtxoChainIds) {
                 displayBalance.numberFormat8()
             } else {
                 displayBalance.numberFormat12()
@@ -1640,7 +1653,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
 
     private fun scheduleRefreshBtcFeeIfNeeded(amount: String) {
         val token: Web3TokenItem = web3Token ?: return
-        if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) return
+        if (token.chainId !in Constants.Web3UtxoChainIds) return
         if (amount.toBigDecimalOrNull() == null) return
         if (amount.toBigDecimalOrNull() == BigDecimal.ZERO) return
         if (isAdjustingBtcAmount) return
@@ -1658,7 +1671,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val token: Web3TokenItem = web3Token ?: return
         val from: String = fromAddress ?: return
         val to: String = toAddress ?: return
-        val localUtxos = web3ViewModel.outputsByAddress(from, token.assetId)
+        val localUtxos = web3ViewModel.outputsByAddress(from, token.chainId)
         val currentRate: BigDecimal = rate ?: BigDecimal.ONE
         val currentMiniFee: String? = miniFee
         val tx = try {
@@ -1706,7 +1719,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     private fun updateAvailableBalanceForBtcFee() {
         val binding = bindingOrNull() ?: return
         val token: Web3TokenItem = web3Token ?: return
-        if (token.chainId != Constants.ChainId.BITCOIN_CHAIN_ID) return
+        if (token.chainId !in Constants.Web3UtxoChainIds) return
         val reservedFee: BigDecimal = gas ?: return
         val availableBalance: BigDecimal = tokenBalance.toBigDecimalOrNull() ?: return
         val availableAfterFee: BigDecimal = availableBalance.subtract(reservedFee).max(BigDecimal.ZERO)
@@ -1804,6 +1817,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         when (web3Token?.chainId) {
                             Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
                             Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
+                            Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
                             else -> Web3Signer.evmAddress
                         }
                     view?.navigate(
@@ -2296,6 +2310,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private suspend fun refreshWeb3Fees(t: Web3TokenItem) {
+        if (!t.isTransferSupported()) return
         setFeeLoading(true)
         try {
             refreshGas(t)
@@ -2317,13 +2332,13 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         val binding = bindingOrNull() ?: return
         val toAddress = toAddress?: return
         val fromAddress = fromAddress ?: return
-        if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-            jobManager.addJobInBackground(RefreshWeb3BitCoinJob(t.walletId))
+        if (t.chainId in Constants.Web3UtxoChainIds) {
+            jobManager.addJobInBackground(RefreshWeb3UtxoJob(t.walletId, t.chainId))
         }
         val transaction =
             try {
-                if (t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                    t.buildTransaction(rpc, fromAddress, toAddress, (tokenBalance.toBigDecimalOrNull()?: BigDecimal.ZERO).divide(BigDecimal.valueOf(2L)).setScale(8, RoundingMode.CEILING).toPlainString(), web3ViewModel.outputsByAddress(fromAddress, t.assetId), rate, miniFee)
+                if (t.chainId in Constants.Web3UtxoChainIds) {
+                    t.buildTransaction(rpc, fromAddress, toAddress, (tokenBalance.toBigDecimalOrNull()?: BigDecimal.ZERO).divide(BigDecimal.valueOf(2L)).setScale(8, RoundingMode.CEILING).toPlainString(), web3ViewModel.outputsByAddress(fromAddress, t.chainId), rate, miniFee)
                 } else {
                     t.buildTransaction(rpc, fromAddress, toAddress, tokenBalance)
                 }
@@ -2335,7 +2350,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 null
             }
         if (transaction == null) {
-            val handledByBtcFallback = t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID &&
+            val handledByBtcFallback = t.chainId in Constants.Web3UtxoChainIds &&
                 isAdded &&
                 applyFallbackBtcFeeWithoutRawTransaction(t)
             if (handledByBtcFallback) {
@@ -2354,7 +2369,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             rate = estimate.rate
             miniFee = estimate.minFee
             if (gas == null) {
-                val handledByBtcFallback = t.chainId == Constants.ChainId.BITCOIN_CHAIN_ID &&
+                val handledByBtcFallback = t.chainId in Constants.Web3UtxoChainIds &&
                     applyFallbackBtcFeeWithoutRawTransaction(t)
                 if (handledByBtcFallback) {
                     binding.iconImageView.isVisible = false
@@ -2477,6 +2492,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 fromAddress = fromAddress,
                 toAddress = toAddress,
                 payload = payload.payload,
+                feeAssetId = fee.token.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(fee.fee),
                 privateKey = privateKey,
             )
             in Constants.Web3EvmChainIds -> submitEvmGaslessTransfer(
@@ -2486,6 +2503,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 amount = amount,
                 chainId = payload.chainId,
                 payload = payload.payload,
+                feeAssetId = fee.token.assetId,
+                feeAmount = normalizeGaslessPendingFeeAmount(fee.fee),
                 privateKey = privateKey,
             )
             else -> throw IllegalArgumentException("Gasless is not supported for ${token.chainId}")
@@ -2500,6 +2519,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         fromAddress: String,
         toAddress: String,
         payload: JsonElement,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         val rawPayload = payload.takeIf { it.isJsonPrimitive }?.asString
@@ -2516,13 +2537,14 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             signature != Base58.encode(ByteArray(SIGNATURE_LENGTH))
         } ?: throw IllegalStateException("Gasless Solana transaction signature is missing")
         val now = nowInUtc()
-        web3ViewModel.insertSignedPendingTransaction(
+        web3ViewModel.insertGaslessSignedPendingTransaction(
             hash = txHash,
             chainId = Constants.ChainId.Solana,
             account = fromAddress,
             assetId = token.assetId,
             amount = amount,
-            fee = "",
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             raw = rawTx,
             createdAt = now,
@@ -2534,7 +2556,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             account = fromAddress,
             to = toAddress,
             assetId = token.assetId,
-            feeType = WEB3_FEE_TYPE_FREE,
+            feeType = WEB3_FEE_TYPE_FREE.takeIf { isFeeWaived },
         )
         if (!response.isSuccess) {
             throw IllegalStateException(response.errorDescription)
@@ -2548,6 +2570,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         amount: String,
         chainId: String,
         payload: JsonElement,
+        feeAssetId: String,
+        feeAmount: String,
         privateKey: ByteArray,
     ) {
         if (!payload.isJsonObject) {
@@ -2580,7 +2604,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
             account = fromAddress,
             assetId = token.assetId,
             amount = amount,
-            fee = "",
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
             to = toAddress,
             nonce = ethPayload.userOperation.nonce,
             createdAt = now,
@@ -2589,7 +2614,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private suspend fun applyFallbackBtcFeeWithoutRawTransaction(t: Web3TokenItem): Boolean {
-        val estimate = web3ViewModel.estimateBtcFeeRate(currentRate = rate?.toPlainString()) ?: return false
+        val estimate = web3ViewModel.estimateUtxoFeeRate(t.chainId, currentRate = rate?.toPlainString()) ?: return false
         rate = estimate.feeRate?.toBigDecimalOrNull() ?: rate
         miniFee = estimate.minFee ?: miniFee
         val fallbackFee: BigDecimal = estimate.minFee?.toBigDecimalOrNull()?.movePointLeft(1) ?: return false

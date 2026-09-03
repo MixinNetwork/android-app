@@ -6,6 +6,7 @@ import one.mixin.android.Constants.MAX_THUMB_IMAGE_LENGTH
 import one.mixin.android.RxBus
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
@@ -136,7 +137,7 @@ open class SendMessageJob(
         messageDao.findMessageById(recallMessageId)?.let { msg ->
             RxBus.publish(RecallEvent(msg.messageId))
             messageDao.recallFailedMessage(msg.messageId)
-            messageDao.recallMessage(msg.messageId)
+            messageDao.recallMessage(msg.messageId, message.userId)
             messageDao.recallPinMessage(msg.messageId, msg.conversationId)
             pinMessageDao.deleteByMessageId(msg.messageId)
             messageMentionDao.deleteMessage(msg.messageId)
@@ -188,10 +189,12 @@ open class SendMessageJob(
         val expiredMessageCallback = fun(expireIn: Long?) {
             expireIn?.let { e -> // Update local expiration time after success
                 if (expireIn > 0) {
+                    val expireAt = currentTimeSeconds() + e
                     expiredMessageDao.updateExpiredMessage(
                         message.messageId,
-                        currentTimeSeconds() + e,
+                        expireAt,
                     )
+                    RxBus.publish(ExpiredEvent(message.messageId, null, expireAt))
                 }
             }
         }

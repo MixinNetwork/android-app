@@ -115,7 +115,7 @@ fun RecentSearchPage(dappClick: (Dapp) -> Unit, searchClick: (RecentSearch) -> U
                     modifier = Modifier
                         .height(6.dp)
                         .fillMaxWidth()
-                        .background(color = MixinAppTheme.colors.backgroundWindow)
+                        .background(color = MixinAppTheme.colors.borderPrimary)
                 )
             }
             if (dapps.isNotEmpty()) {

@@ -34,6 +34,8 @@ sealed class Chain(
 
     object HyperEVM : Chain(Constants.ChainId.HyperEVM, "eip155", "999", "0x3e7", "HyperEVM", "HYPE", listOf("https://rpc.hyperliquid.xyz/evm"))
 
+    object XLayer : Chain(Constants.ChainId.XLayer, "eip155", "196", "0xc4", "X Layer", "OKB", listOf("https://rpc.xlayer.tech"))
+
     object Solana : Chain(
         SOLANA_CHAIN_ID,
         "solana",
@@ -73,13 +75,14 @@ sealed class Chain(
             Base ->  Constants.ChainId.Base
             Avalanche -> Constants.ChainId.Avalanche
             HyperEVM -> Constants.ChainId.HyperEVM
+            XLayer -> Constants.ChainId.XLayer
             Solana -> Constants.ChainId.Solana
             Bitcoin -> BITCOIN_CHAIN_ID
         }
 }
 // Chain.Blast
-internal val supportChainList = listOf(Chain.Solana, Chain.Bitcoin, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM)
-internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM)
+internal val supportChainList = listOf(Chain.Solana, Chain.Bitcoin, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM, Chain.XLayer)
+internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM, Chain.XLayer)
 
 data class WalletConnectAddresses(
     val evm: String,

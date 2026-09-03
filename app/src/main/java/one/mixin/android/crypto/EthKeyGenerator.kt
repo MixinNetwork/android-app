@@ -1,11 +1,17 @@
 package one.mixin.android.crypto
 
+import blockchain.Blockchain
+import one.mixin.android.extension.hexString
+import one.mixin.android.tip.bip44.Bip44Path
+import one.mixin.android.tip.bip44.generateBip44Key
 import org.bitcoinj.crypto.ChildNumber
 import org.bitcoinj.crypto.DeterministicKey
 import org.bitcoinj.crypto.HDKeyDerivation
 import org.bitcoinj.crypto.MnemonicCode
+import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Keys
+import org.web3j.utils.Numeric
 
 object EthKeyGenerator {
 
@@ -39,5 +45,17 @@ object EthKeyGenerator {
     fun privateKeyToAddress(privateKey: ByteArray): String {
         val ecKeyPair = ECKeyPair.create(privateKey)
         return Keys.toChecksumAddress(Keys.getAddress(ecKeyPair.publicKey))
+    }
+
+    internal fun deriveFromTipSeed(seed: ByteArray, index: Int): TipDerivedKey {
+        val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
+        val keyPair = generateBip44Key(masterKeyPair, Bip44Path.ethereum(index))
+        val privateKey = Numeric.toBytesPadded(keyPair.privateKey, 32)
+        val address = Keys.toChecksumAddress(Keys.getAddress(keyPair.publicKey))
+        val expectedAddress = Blockchain.generateEthereumAddress(seed.hexString(), Bip44Path.ethereumPathString(index))
+        if (address != expectedAddress) {
+            throw IllegalArgumentException("Generate illegal Ethereum Address")
+        }
+        return TipDerivedKey(privateKey, address)
     }
 }

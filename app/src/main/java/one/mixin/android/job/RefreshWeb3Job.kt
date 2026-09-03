@@ -64,9 +64,11 @@ class RefreshWeb3Job : BaseJob(
                     MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
                     Timber.d("Inserted ${web3Addresses.size} addresses into database")
                     if (category in listOf(WalletCategory.CLASSIC.value, WalletCategory.IMPORTED_MNEMONIC.value, WalletCategory.IMPORTED_PRIVATE_KEY.value)) {
-                        val btcAddress = web3Addresses.firstOrNull { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }?.destination
-                        if (btcAddress.isNullOrBlank().not()) {
-                            fetchBtcOutputs(walletId = walletId, address = btcAddress)
+                        Constants.Web3UtxoChainIds.forEach { assetId ->
+                            val address = web3Addresses.firstOrNull { it.chainId == assetId }?.destination
+                            if (address.isNullOrBlank().not()) {
+                                fetchUtxoOutputs(walletId = walletId, address = address, assetId = assetId)
+                            }
                         }
                     }
                 } else {
@@ -84,25 +86,24 @@ class RefreshWeb3Job : BaseJob(
         )
     }
 
-    private suspend fun fetchBtcOutputs(walletId: String, address: String) {
+    private suspend fun fetchUtxoOutputs(walletId: String, address: String, assetId: String) {
         requestRouteAPI(
             invokeNetwork = {
-                routeService.getWalletOutputs(walletId = walletId, address = address, assetId = Constants.ChainId.BITCOIN_CHAIN_ID)
+                routeService.getWalletOutputs(walletId = walletId, address = address, assetId = assetId)
             },
             successBlock = { response ->
                 val outputs = response.data
                 try {
-                    // use suspend insert to let Room handle the list insertion in coroutine
-                    val safeOutputs: List<WalletOutput> = outputs ?: emptyList()
-                    walletOutputDao.mergeOutputsForAddress(address, Constants.ChainId.BITCOIN_CHAIN_ID, safeOutputs)
-                    refreshBitcoinTokenAmountByOutputs(walletId, address)
-                    Timber.d("Merged ${safeOutputs.size} BTC outputs into database for walletId=$walletId")
+                    val safeOutputs: List<WalletOutput> = (outputs ?: emptyList()).filter { it.assetId == assetId }
+                    walletOutputDao.mergeOutputsForAddress(address, assetId, safeOutputs)
+                    refreshUtxoTokenAmountByOutputs(walletId, address, assetId)
+                    Timber.d("Merged ${safeOutputs.size} $assetId outputs into database for walletId=$walletId")
                 } catch (e: Exception) {
-                    Timber.e(e, "Failed to insert BTC outputs for walletId=$walletId into DB")
+                    Timber.e(e, "Failed to insert $assetId outputs for walletId=$walletId into DB")
                 }
             },
             failureBlock = { response ->
-                Timber.e("Failed to fetch BTC outputs for walletId=$walletId address=$address: ${response.errorCode} - ${response.errorDescription}")
+                Timber.e("Failed to fetch $assetId outputs for walletId=$walletId address=$address: ${response.errorCode} - ${response.errorDescription}")
                 false
             },
             requestSession = {
@@ -133,9 +134,11 @@ class RefreshWeb3Job : BaseJob(
                     web3AddressDao.insertList(embeddedAddresses)
                     MixinApplication.appContext.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
                     if (wallet.isImported() || wallet.isClassic()) {
-                        val btcAddress: String? = embeddedAddresses.firstOrNull { it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID }?.destination
-                        if (!btcAddress.isNullOrBlank()) {
-                            fetchBtcOutputs(walletId = wallet.id, address = btcAddress)
+                        Constants.Web3UtxoChainIds.forEach { assetId ->
+                            val address = embeddedAddresses.firstOrNull { it.chainId == assetId }?.destination
+                            if (!address.isNullOrBlank()) {
+                                fetchUtxoOutputs(walletId = wallet.id, address = address, assetId = assetId)
+                            }
                         }
                     }
                 }
@@ -179,7 +182,7 @@ class RefreshWeb3Job : BaseJob(
                     if (extrasToInsert.isNotEmpty()) {
                         web3TokensExtraDao.insertList(extrasToInsert)
                     }
-                    val tokensToInsert = applyBitcoinTokenBalanceBeforeInsert(walletId, assets)
+                    val tokensToInsert = applyUtxoTokenBalanceBeforeInsert(walletId, assets)
                     web3TokenDao.insertList(tokensToInsert)
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")

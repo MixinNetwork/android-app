@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -46,7 +46,6 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
         const val maxAlertsPerAsset = 10
 
         const val ARGS_COIN = "args_coin"
-        const val ARGS_GO_ALERT = "args_go_alert"
         const val ARGS_SOURCE = "args_source"
 
         fun newInstance(): AlertFragment {
@@ -60,7 +59,6 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
 
     private val alertViewModel by viewModels<AlertViewModel>()
 
-    private val goAlert by lazy { requireArguments().getBoolean(ARGS_GO_ALERT, false) }
     private val coin by lazy { requireArguments().getParcelableCompat(ARGS_COIN, CoinItem::class.java)!! }
     private val alertSource by lazy {
         requireArguments().getString(ARGS_SOURCE) ?: AnalyticsTracker.MarketSource.MARKET_DETAIL
@@ -91,7 +89,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = if (goAlert) AlertDestination.Edit.name else AlertDestination.All.name,
+                        startDestination = AlertDestination.All.name,
                         enterTransition = {
                             slideIntoContainer(
                                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -144,16 +142,7 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                                     if (created) {
                                         AnalyticsTracker.trackMarketPriceAlertAdd(alertSource, frequency, type)
                                     }
-                                    if (created && goAlert) {
-                                        navController.navigate(AlertDestination.All.name) {
-                                            popUpTo(AlertDestination.Edit.name) {
-                                                inclusive = true
-                                            }
-                                            launchSingleTop = true
-                                        }
-                                    } else {
-                                        navigateUp(navController)
-                                    }
+                                    navigateUp(navController)
                                 },
                                 onShowTypeSelector = { selectedType, onSelected ->
                                     AlertSelectionBottomSheetDialogFragment.newTypeInstance(selectedType).apply {
@@ -169,13 +158,10 @@ class AlertFragment : BaseFragment(), MultiSelectCoinListBottomSheetDialogFragme
                         }
                     }
 
-                    LaunchedEffect(Unit) {
+                    SideEffect(Unit) {
                         AnalyticsTracker.trackMarketPriceAlerts(
-                            if (goAlert) AnalyticsTracker.MarketAlertsType.ONE else AnalyticsTracker.MarketAlertsType.ALL,
+                            AnalyticsTracker.MarketAlertsType.ALL,
                         )
-                        if (goAlert) {
-                            selectCoin = coin
-                        }
                     }
                 }
             }

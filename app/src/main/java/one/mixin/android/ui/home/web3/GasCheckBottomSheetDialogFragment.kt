@@ -28,6 +28,7 @@ import one.mixin.android.db.web3.vo.Web3TokenFeeItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.getChainFromName
+import one.mixin.android.db.web3.vo.isTransferSupported
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.isNightMode
@@ -173,10 +174,18 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
         }
         binding.linkLoadingInfo.text = ""
         lifecycleScope.launch {
+            if (token?.isTransferSupported() == false) {
+                showError(getString(R.string.Not_support))
+                return@launch
+            }
             if (swapResult != null) {
                 val web3TokenItem = viewModel.web3TokenItemById(Web3Signer.currentWalletId, fromToken.assetId)
                 val chainTokenItem = viewModel.web3TokenItemById(Web3Signer.currentWalletId, fromToken.chain.chainId)
                 if (web3TokenItem != null) {
+                    if (!web3TokenItem.isTransferSupported()) {
+                        showError(getString(R.string.Not_support))
+                        return@launch
+                    }
                     val fromAddress = if (web3TokenItem.chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
                         Web3Signer.solanaAddress
                     } else {
@@ -430,7 +439,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             feeToken = feeToken,
             feeAmount = fee,
             recipientAccountState = recipientState,
-            allowZeroBalance = false,
+            allowZeroBalance = transferToken.isNativeSolAsset(),
             includeAtaCreationReserve = !transferToken.isNativeSolAsset(),
         )
 
