@@ -1160,31 +1160,10 @@ class TokenRepository
             rate: BigDecimal?,
         ): Web3Transaction {
             val resolvedAddress = gaslessPendingTransaction?.address ?: raw.account
-            val senders = mutableListOf<AssetChange>()
-            val receivers = mutableListOf<AssetChange>()
+            val pendingChanges = pendingAssetChanges(raw.simulateTx?.balanceChanges)
+            val senders = pendingChanges.senders
+            val receivers = pendingChanges.receivers
             val approvals = mutableListOf<AssetChange>()
-
-            raw.simulateTx?.balanceChanges?.forEach { bc ->
-                val amt = bc.amount.toBigDecimalOrNull()
-                if (amt != null) {
-                    receivers.add(
-                        AssetChange(
-                            assetId = bc.assetId,
-                            amount = amt.abs().toPlainString(),
-                            from = bc.from,
-                            to = bc.to
-                        )
-                    )
-                    senders.add(
-                        AssetChange(
-                            assetId = bc.assetId,
-                            amount = amt.toPlainString(),
-                            from = bc.from,
-                            to = bc.to,
-                        )
-                    )
-                }
-            }
 
             raw.simulateTx?.approves?.forEach { approve ->
                 approvals.add(
