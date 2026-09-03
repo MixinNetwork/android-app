@@ -1,37 +1,43 @@
--optimizations !code/simplification/arithmetic,!code/simplification/cast,!field/*,!class/merging/*
--optimizationpasses 5
 -allowaccessmodification
 
-# Preserve third-party names for reflection while allowing shrinking and optimization.
--keep,allowshrinking,allowoptimization class !one.mixin.android.**,!androidx.**,!com.yalantis.ucrop.**,** { *; }
-
-# prevent multi dex caused NoSuchProviderException
--keep class org.whispersystems.** { *; }
-
-# Keep app types and members reachable while allowing optimization and obfuscation.
--keep,allowoptimization,allowobfuscation class one.mixin.android.** { *; }
-
--keep class com.google.android.gms.internal.mlkit_entity_extraction.** extends java.util.Random { *; }
-
-# Gson still relies on unannotated app fields in API, websocket, database, and cache models.
--keepclassmembers class one.mixin.android.** {
+# Gson model fields are addressed by their JSON names at runtime.
+-keepclassmembers,allowoptimization class one.mixin.android.api.** {
+    !transient !static <fields>;
+}
+-keepclassmembers,allowoptimization class one.mixin.android.vo.** {
+    !transient !static <fields>;
+}
+-keepclassmembers,allowoptimization class one.mixin.android.websocket.** {
+    !transient !static <fields>;
+}
+-keepclassmembers,allowoptimization class one.mixin.android.db.** {
+    !transient !static <fields>;
+}
+-keepclassmembers,allowoptimization class one.mixin.android.ui.transfer.** {
     !transient !static <fields>;
 }
 
-# Persisted jobs and payloads must remain Java-serialization compatible across updates.
--keep class one.mixin.android.** implements java.io.Serializable { *; }
+-keep class com.google.android.gms.internal.mlkit_entity_extraction.** extends java.util.Random { *; }
+
+# Preserve classes passed through Android Serializable extras.
+-keep,allowoptimization class one.mixin.android.websocket.BlazeMessageData { *; }
+-keep,allowoptimization class one.mixin.android.ui.wallet.WalletActivity$Destination { *; }
+-keep,allowoptimization class one.mixin.android.ui.wallet.WalletActivity$Destination$* { *; }
+
+# JobQueue persists these objects with Java serialization.
+-keepnames class one.mixin.android.job.**
+-keepclassmembers,allowshrinking,allowoptimization class one.mixin.android.job.** {
+    !transient <fields>;
+}
 
 # These fragment arguments persist nested type names in saved state.
 -keepnames class one.mixin.android.ui.wallet.ImportKeyBottomSheetDialogFragment$PopupType$*
 -keepnames class one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment$PopupType$*
 
--keep class io.jsonwebtoken.** { *; }
-
 # webrtc
 -dontwarn org.webrtc.NetworkMonitorAutoDetect
 -dontwarn android.net.Network
 -keep class org.webrtc.** { *; }
-
 -keep class org.jni_zero.** { *; }
 -dontwarn org.jni_zero.**
 
@@ -50,9 +56,7 @@
 
 -dontwarn sun.net.spi.nameservice.**
 
--keep class com.birbit.android.jobqueue.** { *; }
-
--keepclassmembers enum * {
+-keepclassmembers,allowshrinking,allowoptimization,allowobfuscation enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
@@ -63,16 +67,9 @@
 -keep,allowobfuscation,allowshrinking class io.reactivex.Observable
 -keep,allowobfuscation,allowshrinking class io.reactivex.Completable
 
-
-# https://r8.googlesource.com/r8/+/refs/heads/master/compatibility-faq.md#r8-full-mode
-
 -keepattributes Signature
--keep class * extends com.google.gson.reflect.TypeToken
 
 # web3j
--keep class org.web3j.protocol.** { *; }
--keep class org.web3j.abi.** { *; }
--keep class org.web3j.crypto.** { *; }
 -dontwarn org.web3j.crypto.**
 -dontwarn jnr.unixsocket.**
 -dontwarn org.web3j.protocol.ipc.**
@@ -80,13 +77,14 @@
 -dontwarn org.web3j.protocol.websocket.**
 
 -dontwarn com.fasterxml.jackson.databind.**
--keep class com.fasterxml.jackson.core.** { *; }
--keep class com.fasterxml.jackson.databind.** { *; }
--keep class com.fasterxml.jackson.annotation.** { *; }
 #-dontwarn java.lang.SafeVarargs
 -dontwarn org.slf4j.**
 
--keep public class com.reown.walletkit.** { *; }
+# JJWT discovers these implementations through META-INF/services.
+-keep class io.jsonwebtoken.impl.compression.DeflateCompressionCodec { *; }
+-keep class io.jsonwebtoken.impl.compression.GzipCompressionCodec { *; }
+-keep class io.jsonwebtoken.orgjson.io.OrgJsonSerializer { *; }
+-keep class io.jsonwebtoken.orgjson.io.OrgJsonDeserializer { *; }
 
 -dontwarn com.sun.jna.**
 -keep class com.sun.jna.** { *; }
@@ -94,9 +92,13 @@
 -dontwarn uniffi.**
 -keep class uniffi.** { *; }
 
+-keep,allowshrinking,allowoptimization,allowobfuscation class org.whispersystems.libsignal.** { *; }
+-keep class org.whispersystems.curve25519.NativeCurve25519Provider { *; }
+-keep class org.whispersystems.curve25519.JavaCurve25519Provider { *; }
+-keep class org.whispersystems.curve25519.OpportunisticCurve25519Provider { *; }
+
 -dontwarn groovy.lang.GroovyShell
 
 -dontwarn com.yalantis.ucrop**
 
 -dontwarn com.appsflyer.**
--keep class kotlin.jvm.internal.** { *; }
