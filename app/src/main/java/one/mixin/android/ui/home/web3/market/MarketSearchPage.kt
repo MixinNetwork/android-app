@@ -421,8 +421,10 @@ private fun MarketRecentSearchChip(
         MarketIcon(url = recentSearch.iconUrl.orEmpty(), size = 32.dp)
         Spacer(modifier = Modifier.width(6.dp))
         Column(
-            modifier = Modifier.wrapContentWidth(),
-            verticalArrangement = Arrangement.spacedBy(3.dp),
+            modifier = Modifier
+                .wrapContentWidth()
+                .height(32.dp),
+            verticalArrangement = Arrangement.SpaceBetween,
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -431,6 +433,7 @@ private fun MarketRecentSearchChip(
                     fontSize = 14.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    lineHeight = 14.sp,
                     modifier = Modifier.widthIn(min = 34.dp),
                 )
                 if (recentSearch.type == RecentSearchType.PERPETUAL) {
@@ -452,8 +455,8 @@ private fun MarketRecentSearchChip(
             Text(
                 text = formatSearchPercent(search.change),
                 color = searchChangeColor(search.change, quoteColorReversed),
-                fontSize = 12.sp,
-                lineHeight = 12.sp,
+                fontSize = 13.sp,
+                lineHeight = 13.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
