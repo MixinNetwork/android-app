@@ -1182,31 +1182,25 @@ class TokenRepository
             val txType = when {
                 assetId in Constants.Web3UtxoChainIds -> TransactionType.TRANSFER_OUT.value
                 raw.simulateTx?.approves?.isNotEmpty() == true -> TransactionType.APPROVAL.value
-                (raw.simulateTx?.balanceChanges?.size ?: 0) > 1 -> TransactionType.SWAP.value
-                raw.simulateTx?.balanceChanges?.size == 1 -> TransactionType.TRANSFER_OUT.value
+                senders.isNotEmpty() && receivers.isNotEmpty() -> TransactionType.SWAP.value
+                senders.isNotEmpty() -> TransactionType.TRANSFER_OUT.value
+                receivers.isNotEmpty() -> TransactionType.TRANSFER_IN.value
                 else -> TransactionType.UNKNOWN.value
             }
 
             when (txType) {
                 TransactionType.SWAP.value -> {
-                    raw.simulateTx?.balanceChanges?.forEach { bc ->
-                        val amt = bc.amount.toBigDecimalOrNull()
-                        if (amt != null) {
-                            if (amt < BigDecimal.ZERO) {
-                                sendAssetId = bc.assetId
-                            } else if (amt > BigDecimal.ZERO) {
-                                receiveAssetId = bc.assetId
-                            }
-                        }
-                    }
+                    sendAssetId = senders.firstOrNull()?.assetId
+                    receiveAssetId = receivers.firstOrNull()?.assetId
                 }
                 TransactionType.TRANSFER_OUT.value -> {
-                    raw.simulateTx?.balanceChanges?.firstOrNull {
-                        it.amount.toBigDecimalOrNull()?.let { amt -> amt < BigDecimal.ZERO } == true
-                    }?.let {
+                    senders.firstOrNull()?.let {
                         sendAssetId = it.assetId
                         receiveAssetId = it.assetId
                     }
+                }
+                TransactionType.TRANSFER_IN.value -> {
+                    receiveAssetId = receivers.firstOrNull()?.assetId
                 }
                 else -> {
                     sendAssetId = assetId
