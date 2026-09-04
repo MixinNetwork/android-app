@@ -43,22 +43,23 @@ class MarketSearchViewModelSearchTest {
                     resolveMarketItem = { MarketItem.fromMarket(it) },
                 )
 
-            assertEquals(listOf("btc-usdt", "btc-usdc"), result.map(MarketItem::coinId))
+            assertEquals(listOf("btc-usdc", "btc-usdt"), result.map(MarketItem::coinId))
         }
 
     @Test
-    fun spotSearch_sortsCombinedResultsByMarketCapDescending() =
+    fun spotSearch_sortsByExactSymbolThenNameThenVolume() =
         runBlocking {
             val initialLocal =
                 listOf(
-                    market("btc-low", marketCap = "10"),
-                    market("btc-high", marketCap = "100"),
+                    market("volume-low", symbol = "BTC-X", totalVolume = "1"),
+                    market("name-exact", symbol = "AAA", name = "BTC", totalVolume = "1"),
                 )
             val refreshedLocal =
                 listOf(
-                    market("btc-high", marketCap = "100"),
-                    market("btc-new", marketCap = "50"),
-                    market("btc-low", marketCap = "10"),
+                    market("volume-low", symbol = "BTC-X", totalVolume = "1"),
+                    market("volume-high", symbol = "BTC-Y", totalVolume = "100"),
+                    market("symbol-exact", symbol = "BTC", totalVolume = "0"),
+                    market("name-exact", symbol = "AAA", name = "BTC", totalVolume = "1"),
                 )
             var searchCalls = 0
 
@@ -74,7 +75,7 @@ class MarketSearchViewModelSearchTest {
                 )
 
             assertEquals(
-                listOf("btc-high", "btc-new", "btc-low"),
+                listOf("symbol-exact", "name-exact", "volume-high", "volume-low"),
                 result.map(MarketItem::coinId),
             )
         }
@@ -102,9 +103,9 @@ class MarketSearchViewModelSearchTest {
                     resolveMarketItem = { MarketItem.fromMarket(it) },
                 )
 
-            assertEquals(listOf("btc", "eth", "btc-cash"), result.map(MarketItem::coinId))
+            assertEquals(listOf("btc", "btc-cash", "eth"), result.map(MarketItem::coinId))
             assertEquals("Remote BTC", result.first().name)
-            assertEquals("Remote ETH", result[1].name)
+            assertEquals("Remote ETH", result.last().name)
         }
 
     @Test
@@ -157,16 +158,22 @@ class MarketSearchViewModelSearchTest {
             assertEquals(0, remoteCalls)
         }
 
-    private fun market(coinId: String, marketCap: String = "1") =
+    private fun market(
+        coinId: String,
+        marketCap: String = "1",
+        name: String = coinId.uppercase(),
+        symbol: String = coinId.uppercase(),
+        totalVolume: String = "1",
+    ) =
         Market(
             coinId = coinId,
-            name = coinId.uppercase(),
-            symbol = coinId.uppercase(),
+            name = name,
+            symbol = symbol,
             iconUrl = "",
             currentPrice = "1",
             marketCap = marketCap,
             marketCapRank = "1",
-            totalVolume = "1",
+            totalVolume = totalVolume,
             high24h = "1",
             low24h = "1",
             priceChange24h = "0",

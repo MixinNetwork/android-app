@@ -48,6 +48,30 @@ class MarketSearchModelsTest {
     }
 
     @Test
+    fun marketSearchRanksExactFieldsThenVolumeAndAlphabetically() {
+        val markets =
+            listOf(
+                market("volume", volume = "100", tokenSymbol = "BTC-X"),
+                market("name", volume = "1", tokenSymbol = "AAA", displaySymbol = "BTC"),
+                market("symbol", volume = "0", tokenSymbol = "BTC"),
+                market("alpha-b", volume = "10", tokenSymbol = "ETH"),
+                market("alpha-a", volume = "10", tokenSymbol = "AAA"),
+            )
+
+        assertEquals(
+            listOf("symbol", "name", "volume", "alpha-a", "alpha-b"),
+            markets
+                .sortedForMarketSearch(
+                    query = "btc",
+                    symbol = PerpsMarket::tokenSymbol,
+                    name = PerpsMarket::displaySymbol,
+                    volume = PerpsMarket::volume,
+                )
+                .map(PerpsMarket::marketId),
+        )
+    }
+
+    @Test
     fun recentSearchesKeepOnlySpotAndPerpetualMarkets() {
         val searches =
             listOf(
@@ -88,11 +112,13 @@ class MarketSearchModelsTest {
     private fun market(
         marketId: String,
         volume: String,
-        score: Int,
+        score: Int = 0,
+        displaySymbol: String = marketId,
+        tokenSymbol: String = marketId,
     ) = PerpsMarket(
         marketId = marketId,
-        displaySymbol = marketId,
-        tokenSymbol = marketId,
+        displaySymbol = displaySymbol,
+        tokenSymbol = tokenSymbol,
         quoteSymbol = "USD",
         markPrice = "1",
         leverage = 10,

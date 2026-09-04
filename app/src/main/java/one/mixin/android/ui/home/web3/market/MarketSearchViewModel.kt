@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.Constants.Account.PREF_MARKET_RECENT_SEARCH
 import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
 import one.mixin.android.extension.escapeSql
@@ -31,7 +32,6 @@ import one.mixin.android.vo.RecentSearchType
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
-import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -228,7 +228,12 @@ internal class MarketSearchViewModel
 
     private suspend fun searchPerpetualMarkets(query: String) =
         try {
-            perpsMarketRepository.searchMarketsOnlineFirst(query)
+            perpsMarketRepository.searchMarketsOnlineFirst(query).sortedForMarketSearch(
+                query = query,
+                symbol = PerpsMarket::tokenSymbol,
+                name = PerpsMarket::displaySymbol,
+                volume = PerpsMarket::volume,
+            )
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
@@ -260,8 +265,11 @@ internal suspend fun searchSpotMarketsOnlineFirst(
         }
 
     return markets
-        .sortedByDescending { it.marketCap.toBigDecimalOrNull() ?: BigDecimal.ZERO }
-        .map { market ->
-            resolveMarketItem(market)
-        }
+        .map { market -> resolveMarketItem(market) }
+        .sortedForMarketSearch(
+            query = normalizedQuery,
+            symbol = MarketItem::symbol,
+            name = MarketItem::name,
+            volume = MarketItem::totalVolume,
+        )
 }

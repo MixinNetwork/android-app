@@ -39,6 +39,22 @@ internal fun List<PerpsMarket>.sortedForTrendingSearch(): List<PerpsMarket> =
             .thenBy { it.marketId },
     )
 
+internal fun <T> List<T>.sortedForMarketSearch(
+    query: String,
+    symbol: (T) -> String,
+    name: (T) -> String,
+    volume: (T) -> String,
+): List<T> {
+    val normalizedQuery = query.trim()
+    return sortedWith(
+        compareByDescending<T> { symbol(it).equals(normalizedQuery, ignoreCase = true) }
+            .thenByDescending { name(it).equals(normalizedQuery, ignoreCase = true) }
+            .thenByDescending { volume(it).toBigDecimalOrNull() ?: BigDecimal.ZERO }
+            .thenBy { symbol(it).lowercase(Locale.ROOT) }
+            .thenBy { name(it).lowercase(Locale.ROOT) },
+    )
+}
+
 internal data class MarketSearchUiState(
     val query: String = "",
     val selectedTab: MarketSearchTab = MarketSearchTab.CRYPTO,
