@@ -131,11 +131,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     lateinit var rpc: Rpc
 
     private fun formatAmountWithSign(amount: String, positive: Boolean): String {
-        return if (positive) {
-            if (amount.startsWith("+")) amount else "+$amount"
-        } else {
-            if (amount.startsWith("-")) amount else "-$amount"
-        }
+        val magnitude = amount.trimStart('+', '-')
+        return if (positive) "+$magnitude" else "-$magnitude"
     }
 
     private fun bindMainValue(state: Web3TransactionDetailState) {

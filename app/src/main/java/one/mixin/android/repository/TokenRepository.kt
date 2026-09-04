@@ -1160,31 +1160,10 @@ class TokenRepository
             rate: BigDecimal?,
         ): Web3Transaction {
             val resolvedAddress = gaslessPendingTransaction?.address ?: raw.account
-            val senders = mutableListOf<AssetChange>()
-            val receivers = mutableListOf<AssetChange>()
+            val pendingChanges = pendingAssetChanges(raw.simulateTx?.balanceChanges)
+            val senders = pendingChanges.senders
+            val receivers = pendingChanges.receivers
             val approvals = mutableListOf<AssetChange>()
-
-            raw.simulateTx?.balanceChanges?.forEach { bc ->
-                val amt = bc.amount.toBigDecimalOrNull()
-                if (amt != null) {
-                    receivers.add(
-                        AssetChange(
-                            assetId = bc.assetId,
-                            amount = amt.abs().toPlainString(),
-                            from = bc.from,
-                            to = bc.to
-                        )
-                    )
-                    senders.add(
-                        AssetChange(
-                            assetId = bc.assetId,
-                            amount = amt.toPlainString(),
-                            from = bc.from,
-                            to = bc.to,
-                        )
-                    )
-                }
-            }
 
             raw.simulateTx?.approves?.forEach { approve ->
                 approvals.add(
@@ -1203,31 +1182,25 @@ class TokenRepository
             val txType = when {
                 assetId in Constants.Web3UtxoChainIds -> TransactionType.TRANSFER_OUT.value
                 raw.simulateTx?.approves?.isNotEmpty() == true -> TransactionType.APPROVAL.value
-                (raw.simulateTx?.balanceChanges?.size ?: 0) > 1 -> TransactionType.SWAP.value
-                raw.simulateTx?.balanceChanges?.size == 1 -> TransactionType.TRANSFER_OUT.value
+                senders.isNotEmpty() && receivers.isNotEmpty() -> TransactionType.SWAP.value
+                senders.isNotEmpty() -> TransactionType.TRANSFER_OUT.value
+                receivers.isNotEmpty() -> TransactionType.TRANSFER_IN.value
                 else -> TransactionType.UNKNOWN.value
             }
 
             when (txType) {
                 TransactionType.SWAP.value -> {
-                    raw.simulateTx?.balanceChanges?.forEach { bc ->
-                        val amt = bc.amount.toBigDecimalOrNull()
-                        if (amt != null) {
-                            if (amt < BigDecimal.ZERO) {
-                                sendAssetId = bc.assetId
-                            } else if (amt > BigDecimal.ZERO) {
-                                receiveAssetId = bc.assetId
-                            }
-                        }
-                    }
+                    sendAssetId = senders.firstOrNull()?.assetId
+                    receiveAssetId = receivers.firstOrNull()?.assetId
                 }
                 TransactionType.TRANSFER_OUT.value -> {
-                    raw.simulateTx?.balanceChanges?.firstOrNull {
-                        it.amount.toBigDecimalOrNull()?.let { amt -> amt < BigDecimal.ZERO } == true
-                    }?.let {
+                    senders.firstOrNull()?.let {
                         sendAssetId = it.assetId
                         receiveAssetId = it.assetId
                     }
+                }
+                TransactionType.TRANSFER_IN.value -> {
+                    receiveAssetId = receivers.firstOrNull()?.assetId
                 }
                 else -> {
                     sendAssetId = assetId
