@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -113,6 +114,7 @@ internal fun MarketSearchPage(
                             text = stringResource(R.string.Recent),
                             color = MixinAppTheme.colors.textAssist,
                             fontSize = 14.sp,
+                            modifier = Modifier.padding(vertical = 16.dp),
                         )
                         IconButton(
                             onClick = onClearRecentSearches,
@@ -130,7 +132,7 @@ internal fun MarketSearchPage(
                     FlowRow(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 8.dp),
+                            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
                         horizontalArrangement = Arrangement.spacedBy(10.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
@@ -157,7 +159,7 @@ internal fun MarketSearchPage(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                        .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     tabs.forEach { tab ->
@@ -417,10 +419,10 @@ private fun MarketRecentSearchChip(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MarketIcon(url = recentSearch.iconUrl.orEmpty(), size = 32.dp)
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(4.dp))
         Column(
             modifier = Modifier.wrapContentWidth(),
-            verticalArrangement = Arrangement.spacedBy(3.dp),
+            verticalArrangement = Arrangement.spacedBy((-2).dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
@@ -429,6 +431,9 @@ private fun MarketRecentSearchChip(
                     fontSize = 14.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    lineHeight = 18.sp,
+                    style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+                    modifier = Modifier.widthIn(min = 34.dp),
                 )
                 if (recentSearch.type == RecentSearchType.PERPETUAL) {
                     Spacer(modifier = Modifier.width(3.dp))
@@ -449,11 +454,12 @@ private fun MarketRecentSearchChip(
             Text(
                 text = formatSearchPercent(search.change),
                 color = searchChangeColor(search.change, quoteColorReversed),
-                fontSize = 12.sp,
-                lineHeight = 12.sp,
+                fontSize = 13.sp,
+                lineHeight = 16.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+                modifier = Modifier.widthIn(min = 34.dp),
             )
         }
     }
@@ -523,7 +529,7 @@ private fun PerpetualMarketSearchRow(
         title = market.displaySymbol.ifBlank { market.tokenSymbol },
         badge = stringResource(R.string.Perp),
         volume = formatSearchPerpetualVolume(market.volume),
-        price = "$${market.last}",
+        price = formatPerpsMarketListPrice(market.last),
         change = market.changePercentValue(),
         quoteColorReversed = quoteColorReversed,
         onClick = onClick,

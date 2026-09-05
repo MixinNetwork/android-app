@@ -17,9 +17,12 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.Constants.Account.PREF_MARKET_RECENT_SEARCH
 import one.mixin.android.Constants.Account.PREF_RECENT_SEARCH
 import one.mixin.android.extension.escapeSql
+import one.mixin.android.extension.mergeLocalAndRefreshed
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
 import one.mixin.android.repository.PerpsMarketRepository
@@ -27,6 +30,7 @@ import one.mixin.android.repository.TokenRepository
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
+import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketItem
 import javax.inject.Inject
@@ -131,7 +135,6 @@ internal class MarketSearchViewModel
             viewModelScope.launch(Dispatchers.IO) {
                 val searches = readRecentSearches(sp).addMarketRecentSearch(search)
                 sp.putString(PREF_MARKET_RECENT_SEARCH, GsonHelper.customGson.toJson(searches))
-                publishRecentSearches(searches)
             }
     }
 
@@ -142,13 +145,27 @@ internal class MarketSearchViewModel
     }
 
     suspend fun findSpotMarket(coinId: String): MarketItem? =
-        tokenRepository.findMarketItemByCoinId(coinId)
+        withContext(Dispatchers.IO) {
+            try {
+                tokenRepository.checkMarketById(coinId)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                null
+            }
+        }
 
     suspend fun findPerpetualMarket(marketId: String) =
         perpsMarketRepository.getOrRefreshMarket(marketId)
 
     private suspend fun publishRecentSearches(searches: List<RecentSearch>) {
-        _recentSearches.value = searches.map { MarketRecentSearch(it) }
+        val previousSearches = _recentSearches.value
+        _recentSearches.value = searches.map { search ->
+            val change = previousSearches.firstOrNull {
+                it.search.type == search.type && it.search.primaryKey == search.primaryKey
+            }?.change
+            MarketRecentSearch(search, change)
+        }
         val resolvedSearches = mutableListOf<MarketRecentSearch>()
         for (search in searches) {
             resolvedSearches += resolveRecentSearch(search)
@@ -162,7 +179,7 @@ internal class MarketSearchViewModel
                 when (search.type) {
                     RecentSearchType.MARKET ->
                         search.primaryKey
-                            ?.let { tokenRepository.findMarketItemByCoinId(it) }
+                            ?.let { findSpotMarket(it) }
                             ?.priceChangePercentage24H
                             ?.toBigDecimalOrNull()
                     RecentSearchType.PERPETUAL ->
@@ -205,15 +222,18 @@ internal class MarketSearchViewModel
 
     private suspend fun searchSpotMarkets(query: String): List<MarketItem> =
         try {
-            val escapedQuery = query.escapeSql()
-            var markets = tokenRepository.fuzzyMarkets(escapedQuery, CancellationSignal())
-            if (markets.isEmpty()) {
-                tokenRepository.searchMarket(query)
-                markets = tokenRepository.fuzzyMarkets(escapedQuery, CancellationSignal())
-            }
-            markets.map { market ->
-                tokenRepository.findMarketItemByCoinId(market.coinId) ?: MarketItem.fromMarket(market)
-            }
+            searchSpotMarketsOnlineFirst(
+                query = query,
+                searchLocalMarkets = { escapedQuery ->
+                    tokenRepository.fuzzyMarkets(escapedQuery, CancellationSignal())
+                },
+                refreshOnlineMarkets = { normalizedQuery ->
+                    tokenRepository.searchMarket(normalizedQuery)
+                },
+                resolveMarketItem = { market ->
+                    tokenRepository.findMarketItemByCoinId(market.coinId) ?: MarketItem.fromMarket(market)
+                },
+            )
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
@@ -222,11 +242,48 @@ internal class MarketSearchViewModel
 
     private suspend fun searchPerpetualMarkets(query: String) =
         try {
-            initialPerpetualSyncJob.join()
-            perpsMarketRepository.searchMarkets(query)
+            perpsMarketRepository.searchMarketsOnlineFirst(query).sortedForMarketSearch(
+                query = query,
+                symbol = PerpsMarket::tokenSymbol,
+                name = PerpsMarket::displaySymbol,
+                volume = PerpsMarket::volume,
+            )
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
             emptyList()
         }
-    }
+}
+
+internal suspend fun searchSpotMarketsOnlineFirst(
+    query: String,
+    searchLocalMarkets: suspend (escapedQuery: String) -> List<Market>,
+    refreshOnlineMarkets: suspend (query: String) -> Unit,
+    resolveMarketItem: suspend (Market) -> MarketItem,
+): List<MarketItem> {
+    val normalizedQuery = query.trim()
+    if (normalizedQuery.isBlank()) return emptyList()
+
+    val escapedQuery = normalizedQuery.escapeSql()
+    val localMatches = searchLocalMarkets(escapedQuery)
+
+    val markets =
+        try {
+            refreshOnlineMarkets(normalizedQuery)
+            val refreshedMatches = searchLocalMarkets(escapedQuery)
+            mergeLocalAndRefreshed(localMatches, refreshedMatches, Market::coinId)
+        } catch (e: CancellationException) {
+            throw e
+        } catch (_: Exception) {
+            localMatches
+        }
+
+    return markets
+        .map { market -> resolveMarketItem(market) }
+        .sortedForMarketSearch(
+            query = normalizedQuery,
+            symbol = MarketItem::symbol,
+            name = MarketItem::name,
+            volume = MarketItem::totalVolume,
+        )
+}
