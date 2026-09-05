@@ -50,6 +50,9 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
     @Query("SELECT category, id, conversation_id, media_url FROM pending_messages WHERE id = :messageId")
     fun findMessageMediaById(messageId: String): MessageMedia?
 
+    @Query("SELECT category, id, conversation_id, media_url FROM pending_messages WHERE id IN (:messageIds)")
+    fun findMessageMediaByIds(messageIds: List<String>): List<MessageMedia>
+
     @Query("UPDATE pending_messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :messageId")
     fun updateQuoteContentByQuoteId(
         conversationId: String,

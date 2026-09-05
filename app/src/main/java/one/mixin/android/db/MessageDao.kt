@@ -718,6 +718,9 @@ interface MessageDao : BaseDao<Message> {
     @Query("SELECT * FROM messages WHERE id = :messageId")
     fun findMessageMediaById(messageId: String): MessageMedia?
 
+    @Query("SELECT category, id, conversation_id, media_url FROM messages WHERE id IN (:messageIds)")
+    fun findMessageMediaByIds(messageIds: List<String>): List<MessageMedia>
+
     @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND quote_message_id = :quoteMessageId")
     fun findQuoteMessageIdByQuoteId(
         conversationId: String,

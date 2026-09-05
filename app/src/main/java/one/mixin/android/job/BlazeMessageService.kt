@@ -26,6 +26,7 @@ import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
@@ -34,7 +35,6 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlinx.coroutines.yield
 import one.mixin.android.Constants.DB_EXPIRED_LIMIT
 import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
@@ -86,7 +86,6 @@ import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.math.max
 
 internal suspend fun runExpiredCleanupWithRetry(
     retryDelayMillis: Long,
@@ -106,6 +105,34 @@ internal suspend fun runExpiredCleanupWithRetry(
     }
 }
 
+internal class ExpiredCleanupWakeup {
+    private val signals = Channel<Unit>(Channel.CONFLATED)
+    @Volatile
+    private var scheduledAt: Long? = null
+
+    fun signal(expireAt: Long? = null) {
+        val scheduled = scheduledAt
+        if (expireAt == null || scheduled == null || expireAt < scheduled) {
+            signals.trySend(Unit)
+        }
+    }
+
+    suspend fun await(expireAt: Long?) {
+        scheduledAt = expireAt
+        try {
+            if (expireAt == null) {
+                signals.receive()
+            } else {
+                withTimeoutOrNull((expireAt * 1000 - System.currentTimeMillis()).coerceAtLeast(1)) {
+                    signals.receive()
+                }
+            }
+        } finally {
+            scheduledAt = null
+        }
+    }
+}
+
 @AndroidEntryPoint
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
     companion object {
@@ -117,6 +144,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         private const val EXPIRED_OBSERVE_DELAY_MS = 1_500L
         private const val EXPIRED_CLEANUP_RETRY_DELAY_MS = 1_000L
         private const val EXPIRED_ACK_WAIT_TIMEOUT_MS = 100L
+        private const val EXPIRED_CLEANUP_BATCH_DELAY_MS = 25L
 
         fun startService(
             ctx: Context,
@@ -233,15 +261,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                         val expiredIn = event.expireIn
                         if (expiredIn != null) {
                             val currentTime = currentTimeSeconds()
-                            if (expiredMessageDao().markRead(event.messageId, currentTime) > 0) {
-                                lifecycleScope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        startExpiredJob(currentTime + expiredIn)
-                                    }
-                                }
-                            } else {
-                                expiredMessageDao().getExpiredMessageById(event.messageId)?.expireAt?.let { expiredAt ->
-                                    startExpiredJob(expiredAt)
+                            val message = expiredMessageDao().getExpiredMessageById(event.messageId)
+                            if (message != null && (message.expireAt == null || message.expireAt > currentTime + message.expireIn)) {
+                                if (expiredMessageDao().markRead(event.messageId, currentTime) > 0) {
+                                    startExpiredJob(currentTime + message.expireIn)
                                 }
                             }
                         } else {
@@ -503,6 +526,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
     }
 
     private val expiredCleanupMutex = Mutex()
+    private val expiredWakeup = ExpiredCleanupWakeup()
     private var expiredJob: Job? = null
     private var expiredObserveJob: Job? = null
 
@@ -518,11 +542,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                 try {
                     withContext(Dispatchers.IO) {
                         val expireAt = expiredMessageDao().getFirstExpiredMessage()?.expireAt
-                        if (expireAt == null) {
-                            runExpiredJob()
-                        } else {
-                            startExpiredJob(expireAt)
-                        }
+                        expiredWakeup.signal(expireAt)
+                        runExpiredJob()
                     }
                 } catch (e: CancellationException) {
                     throw e
@@ -605,23 +626,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
             }
     }
 
-    @Synchronized
     private fun startExpiredJob(expiredTime: Long) {
-        val scheduled = nextExpirationTime
-        val shouldRestart =
-            expiredTime <= currentTimeSeconds() ||
-                expiredJob?.isActive != true ||
-                (scheduled != null && expiredTime < scheduled)
-        if (!shouldRestart) {
-            return
-        }
-        expiredJob?.cancel()
-        expiredJob = null
+        expiredWakeup.signal(expiredTime)
         runExpiredJob()
     }
-
-    @Volatile
-    private var nextExpirationTime: Long? = null
 
     private suspend fun awaitAckJob() {
         if (!networkConnected()) {
@@ -643,53 +651,32 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         if (messages.isEmpty()) {
             val firstExpiredMessage = expiredMessageDao().getFirstExpiredMessage()
             currentCoroutineContext().ensureActive()
-            if (firstExpiredMessage == null) {
-                nextExpirationTime = null
-            } else {
-                nextExpirationTime = firstExpiredMessage.expireAt
-                val delayTime =
-                    max(
-                        requireNotNull(firstExpiredMessage.expireAt) * 1000 - System.currentTimeMillis(),
-                        0,
-                    )
-                Timber.e("Expired job: delay $delayTime")
-                delay(delayTime)
-                currentCoroutineContext().ensureActive()
-                processExpiredMessage()
-            }
+            expiredWakeup.await(firstExpiredMessage?.expireAt)
+            currentCoroutineContext().ensureActive()
+            processExpiredMessage()
         } else {
             awaitAckJob()
             currentCoroutineContext().ensureActive()
             val ids = messages.map { it.messageId }
-            val cIds = messageDao().findConversationsByMessages(ids)
-            val transcriptIds = mutableListOf<String>()
-            ids.forEach { messageId ->
-                val messageMedia = pendingDatabase().findMessageMediaById(messageId) ?: messageDao().findMessageMediaById(messageId)
-                Timber.d("Expired job: delete messages ${messageMedia?.type} - ${messageMedia?.messageId}")
-                messageMedia?.absolutePath(
-                    MixinApplication.appContext,
-                    messageMedia.conversationId,
-                    messageMedia.mediaUrl,
-                )?.let {
-                    jobManager.addJobInBackground(AttachmentDeleteJob(it))
-                }
-                if (messageMedia?.isTranscript() == true) {
-                    transcriptIds.add(messageId)
-                }
+            val media = (
+                messageDao().findMessageMediaByIds(ids) +
+                    pendingDatabase().pendingMessageDao().findMessageMediaByIds(ids)
+                ).associateBy { it.messageId }.values
+            val paths = media.mapNotNull {
+                it.absolutePath(MixinApplication.appContext, it.conversationId, it.mediaUrl)
+            }.distinct()
+            if (paths.isNotEmpty()) {
+                jobManager.addJobInBackground(AttachmentDeleteJob(*paths.toTypedArray()))
             }
+            val transcriptIds = media.filter { it.isTranscript() }.map { it.messageId }
             if (transcriptIds.isNotEmpty()) {
                 jobManager.addJobInBackground(TranscriptDeleteJob(transcriptIds))
             }
+            ftsDatabase().deleteByMessageIds(ids)
             pendingDatabase().deletePendingMessageByIds(ids)
             mixinDatabase().deleteMessageByIds(ids)
-            ftsDatabase().deleteByMessageIds(ids)
             MessageFlow.delete(ANY_ID, ids)
-
-            cIds.forEach { id ->
-                conversationDao().refreshLastMessageId(id)
-            }
-            nextExpirationTime = null
-            yield()
+            delay(EXPIRED_CLEANUP_BATCH_DELAY_MS)
             currentCoroutineContext().ensureActive()
             processExpiredMessage()
         }

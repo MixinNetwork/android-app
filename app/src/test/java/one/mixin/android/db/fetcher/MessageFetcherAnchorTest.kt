@@ -328,6 +328,17 @@ class MessageFetcherAnchorTest {
         assertEquals("arrival", db.messageDao().findLastMessageId(CONVERSATION_ID))
     }
 
+    @Test
+    fun cleanupLoadsOnlyRequestedMessageMetadata() {
+        insertMessage(1, "expired", "2024-01-01T00:00:00.000Z")
+        insertMessage(2, "retained", "2024-01-02T00:00:00.000Z")
+        val result = db.messageDao().findMessageMediaByIds(listOf("expired", "missing"))
+        assertEquals(1, result.size)
+        assertEquals("expired", result.single().messageId)
+        assertEquals(CONVERSATION_ID, result.single().conversationId)
+        assertEquals("PLAIN_TEXT", result.single().type)
+    }
+
     private fun insertUser() {
         RoomDatabaseCompat.execute(
             db,
