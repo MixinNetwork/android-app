@@ -109,6 +109,8 @@ import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.UtxoConsolidationBottomSheetDialogFragment
+import one.mixin.android.ui.common.balanceChangePresentation
+import one.mixin.android.ui.common.toColor
 import one.mixin.android.ui.common.biometric.BiometricInfo
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
@@ -1442,6 +1444,8 @@ fun AssetChanges(
     outAmount: BigDecimal,
     outAsset: SwapToken,
 ) {
+    val inputPresentation = balanceChangePresentation(inAmount.negate().toPlainString())
+    val outputPresentation = balanceChangePresentation(outAmount.toPlainString())
     Column(
         modifier =
             Modifier
@@ -1470,9 +1474,9 @@ fun AssetChanges(
             Box(modifier = Modifier.width(12.dp))
             BasicText(
                 modifier = Modifier.weight(1f),
-                text = "-${inAmount.toPlainString()} ${inAsset.symbol}",
+                text = "${inputPresentation.amount} ${inAsset.symbol}",
                 style = TextStyle(
-                    color = MixinAppTheme.colors.textPrimary,
+                    color = inputPresentation.tone.toColor(),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W600,
                 ),
@@ -1508,9 +1512,9 @@ fun AssetChanges(
             Box(modifier = Modifier.width(12.dp))
             BasicText(
                 modifier = Modifier.weight(1f),
-                text = "+${outAmount.toPlainString()} ${outAsset.symbol}",
+                text = "${outputPresentation.amount} ${outAsset.symbol}",
                 style = TextStyle(
-                    color = MixinAppTheme.colors.green,
+                    color = outputPresentation.tone.toColor(),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.W600,
                 ),

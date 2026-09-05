@@ -40,7 +40,6 @@ import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
 import androidx.paging.PagingData
 import androidx.viewpager2.widget.ViewPager2
-import coil3.annotation.ExperimentalCoilApi
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -56,11 +55,13 @@ import one.mixin.android.databinding.ViewDragImageBottomBinding
 import one.mixin.android.databinding.ViewDragVideoBottomBinding
 import one.mixin.android.extension.backgroundDrawable
 import one.mixin.android.extension.checkInlinePermissions
+import one.mixin.android.extension.copy
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createPngTemp
 import one.mixin.android.extension.fadeOut
+import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.isAutoRotate
@@ -84,6 +85,7 @@ import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.SensorOrientationChangeNotifier
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.util.image.withDiskCacheFile
 import one.mixin.android.util.reportEvent
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.MediaStatus
@@ -451,7 +453,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         bottomSheet.show()
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     private suspend fun resolveLocalFile(item: MessageItem): File? {
         val coverUrl = item.appCardMediaCoverUrl()
         if (coverUrl != null) {
@@ -461,7 +462,16 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 if (result !is SuccessResult) {
                     null
                 } else {
-                    loader.diskCache?.openSnapshot(coverUrl)?.data?.toFile()
+                    loader.withDiskCacheFile(result) { cachedFile ->
+                        val destination = createAppCardCoverCacheFile()
+                        try {
+                            cachedFile.copy(destination)
+                            destination
+                        } catch (e: Exception) {
+                            destination.delete()
+                            throw e
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 null
@@ -469,6 +479,14 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
         val path = item.absolutePath() ?: return null
         return Uri.parse(path).toFile()
+    }
+
+    private fun createAppCardCoverCacheFile(): File {
+        val directory = File(getImageCachePath(), APP_CARD_COVER_CACHE_DIR)
+        directory.mkdirs()
+        val expiration = System.currentTimeMillis() - APP_CARD_COVER_CACHE_MAX_AGE
+        directory.listFiles()?.filter { it.lastModified() < expiration }?.forEach { it.delete() }
+        return File.createTempFile("cover-", ".cache", directory)
     }
 
     private fun save(item: MessageItem) {
@@ -503,7 +521,13 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                                 noMedia = false,
                             )
                 }
-            outFile.copyFromInputStream(FileInputStream(file))
+            try {
+                outFile.copyFromInputStream(FileInputStream(file))
+            } finally {
+                if (item.appCardMediaCoverUrl() != null) {
+                    file.delete()
+                }
+            }
             MediaScannerConnection.scanFile(
                 this@MediaPagerActivity,
                 arrayOf(outFile.toString()),
@@ -943,6 +967,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         private const val MEDIA_SOURCE = "media_source"
         private const val INITIAL_ITEM = "initial_item"
         private const val ALPHA_MAX = 0xFF
+        private const val APP_CARD_COVER_CACHE_DIR = "AppCardCover"
+        private const val APP_CARD_COVER_CACHE_MAX_AGE = 24 * 60 * 60 * 1000L
         const val PREFIX = "media"
         const val PAGE_SIZE = 3
 

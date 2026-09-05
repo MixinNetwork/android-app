@@ -1240,6 +1240,7 @@
     <string name="wallet_withdrawal_changed">인출 수수료가 %1$s에서 %2$s로 변경되었습니다. 요청을 계속하시겠습니까?</string>
     <string name="wallet_withdrawal_not_in_addresses">%1$s 이 주소는 출금 주소 화이트리스트에 포함되어 있지 않으니 주소를 잘 확인해주세요.</string>
     <string name="wallet_withdrawal_recent_tip">이미 %3$s를 %2$s %1$s로 출금하셨습니다. 다시 출금하시겠습니까?</string>
+    <string name="web_bot_cannot_reached_desc">%1$s 웹페이지에 접속할 수 없습니다. 네트워크를 확인하고 4G, Wi-Fi 또는 VPN을 전환하여 페이지를 새로고침해 보세요.</string>
     <string name="web_cannot_reached_desc">%1$s 응답하는 데 너무 오랜 시간이 걸렸습니다. 네트워크를 확인하고 4G, Wi-Fi 또는 VPN을 전환하여 페이지를 새로고침해 보세요.</string>
     <string name="web_cannot_reached_title">이 웹페이지에 접속할 수 없습니다</string>
     <string name="web_floating_permission">Mixin는 플로팅 창을 사용할 권한이 없으므로 플로팅할 수 없습니다.</string>
@@ -2659,4 +2660,12 @@
     <string name="volume_label">VOL: %1$s</string>
     <string name="watchlist_remove_desc">%1$s이(가) 관심 목록에서 제거되었습니다</string>
     <string name="perps_category_meme">밈</string>
+    <string name="Debug_Wallet_Account_Visibility">지갑 계정 표시</string>
+    <string name="Debug_Earn_Account">Earn 계정</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">총 수익</string>
+    <string name="earn_reward_rate">보상률</string>
+    <string name="wallet_home_earn_account">Earn 계정</string>
+    <string name="earn_balance">Earn 잔액</string>
+    <string name="earn_yesterday_earnings">어제 수익</string>
 </resources>

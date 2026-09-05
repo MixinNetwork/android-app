@@ -65,8 +65,8 @@ class PerpetualViewModel @Inject constructor(
     private val perpsMarketRepository: PerpsMarketRepository,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
-    private val _favoriteMarketIds = MutableStateFlow<Set<String>>(emptySet())
-    val favoriteMarketIds: StateFlow<Set<String>> = _favoriteMarketIds.asStateFlow()
+    private val _favoriteMarketIds = MutableStateFlow<List<String>>(emptyList())
+    val favoriteMarketIds: StateFlow<List<String>> = _favoriteMarketIds.asStateFlow()
 
     init {
         viewModelScope.launch {
@@ -444,6 +444,7 @@ class PerpetualViewModel @Inject constructor(
         takeProfitPrice: String? = null,
         stopLossPrice: String? = null,
         destination: String? = null,
+        leaderPositionId: String? = null,
         entryPrice: String,
         onSuccess: (OpenOrderResponse) -> Unit,
         onError: (Int, String) -> Unit
@@ -459,7 +460,8 @@ class PerpetualViewModel @Inject constructor(
                     walletId = walletId,
                     takeProfitPrice = takeProfitPrice,
                     stopLossPrice = stopLossPrice,
-                    destination = destination
+                    destination = destination,
+                    leaderPositionId = leaderPositionId,
                 )
                 
                 val response = withContext(Dispatchers.IO) {

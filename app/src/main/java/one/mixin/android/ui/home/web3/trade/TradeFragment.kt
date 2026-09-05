@@ -116,9 +116,10 @@ import one.mixin.android.web3.isNativeSolAsset
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3AddressFragment
-import one.mixin.android.web3.requiredSolBalance
 import one.mixin.android.web3.solanaRecipientAccountState
+import one.mixin.android.web3.solanaTransferAmountRange
 import one.mixin.android.web3.swap.SwapTokenListBottomSheetDialogFragment
+import one.mixin.android.web3.swap.filterSwapTokensByWalletChains
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -1095,23 +1096,20 @@ class TradeFragment : BaseFragment() {
         )
         val fee = estimate.fee
         if (fee == null) {
-            val fallbackRequiredBalance = if (usesSolRentRule) {
-                requiredSolBalance(
-                    transferAmount = transferAmount,
-                    solFee = extraSolReserve,
-                    sendingNativeSol = token.isNativeSolAsset(),
-                )
+            val insufficientByFullBalanceFallback = if (usesSolRentRule) {
+                !solanaTransferAmountRange(
+                    token = token,
+                    feeToken = chainToken,
+                    feeAmount = BigDecimal.ZERO,
+                    recipientAccountState = solanaRecipientAccountState,
+                    allowZeroBalance = token.isNativeSolAsset(),
+                    includeAtaCreationReserve = !token.isNativeSolAsset(),
+                ).canTransfer(transferAmount)
             } else if (sameAssetFee) {
-                transferAmount
+                transferAmount >= chainBalance
             } else {
-                BigDecimal.ZERO
+                false
             }
-            val insufficientByFullBalanceFallback =
-                if (usesSolRentRule) {
-                    fallbackRequiredBalance >= chainBalance
-                } else {
-                    sameAssetFee && fallbackRequiredBalance >= chainBalance
-                }
             if (!insufficientByFullBalanceFallback) {
                 return FeeCheckResult(true)
             }
@@ -1126,19 +1124,25 @@ class TradeFragment : BaseFragment() {
             return FeeCheckResult(false)
         }
         val effectiveFee = if (usesSolRentRule) fee + SOLANA_RENT_EXEMPTION + extraSolReserve else fee
-        val requiredBalance = if (usesSolRentRule) {
-            requiredSolBalance(
-                transferAmount = transferAmount,
-                solFee = fee + extraSolReserve,
-                sendingNativeSol = token.isNativeSolAsset(),
-            )
-        } else if (sameAssetFee) {
-            transferAmount + fee
+        val isBalanceSufficient = if (usesSolRentRule) {
+            solanaTransferAmountRange(
+                token = token,
+                feeToken = chainToken,
+                feeAmount = fee,
+                recipientAccountState = solanaRecipientAccountState,
+                allowZeroBalance = token.isNativeSolAsset(),
+                includeAtaCreationReserve = !token.isNativeSolAsset(),
+            ).canTransfer(transferAmount)
         } else {
-            fee
+            val requiredBalance = if (sameAssetFee) {
+                transferAmount + fee
+            } else {
+                fee
+            }
+            requiredBalance <= chainBalance
         }
 
-        if (requiredBalance <= chainBalance) {
+        if (isBalanceSufficient) {
             return FeeCheckResult(true, estimate.swapPreviewData)
         }
 
@@ -1348,12 +1352,8 @@ class TradeFragment : BaseFragment() {
                 toast(R.string.Data_error)
                 return
             }
-            swappable = swapViewModel.findWeb3AssetItemsWithBalance(walletId!!)
+            swappable = swapViewModel.findWeb3AssetItems(walletId!!)
                 .filter { it.isTransferSupported() }
-            if (swappable.isEmpty()) {
-                swappable = swapViewModel.findWeb3AssetItems(walletId!!)
-                    .filter { it.isTransferSupported() }
-            }
             web3tokens = swappable
         } else if (swappable.isNullOrEmpty()) {
             swappable = swapViewModel.findAssetItemsWithBalance()
@@ -1445,7 +1445,6 @@ class TradeFragment : BaseFragment() {
                     async {
                         swapViewModel.refreshRecommendedMarkets(
                             category = category,
-                            limit = SWAP_RECOMMENDED_MARKET_LIMIT,
                         )
                     }
                 }.map { it.await() }
@@ -1495,13 +1494,8 @@ class TradeFragment : BaseFragment() {
                 return@requestRouteAPI true
             },
         )?.let { remote: List<SwapToken> ->
-            val filteredRemote: List<SwapToken> = (if (chainIdSet == null) {
-                remote
-            } else {
-                remote.filter { token: SwapToken ->
-                    chainIdSet.contains(token.chain.chainId)
-                }
-            }).filter { inMixin() || isWeb3TransferSupported(it.chain.chainId) }
+            val filteredRemote: List<SwapToken> =
+                filterSwapTokensByWalletChains(remote, chainIdSet, inMixin())
             stocks = filteredRemote.map { it.copy(isWeb3 = !inMixin(), walletId = walletId) }.map { token ->
                 val t = web3tokens?.firstOrNull { web3Token ->
                     (web3Token.assetKey == token.address && web3Token.assetId == token.assetId)
@@ -1532,13 +1526,8 @@ class TradeFragment : BaseFragment() {
                 return@requestRouteAPI true
             },
         )?.let { remote: List<SwapToken> ->
-            val filteredRemote: List<SwapToken> = (if (chainIdSet == null) {
-                remote
-            } else {
-                remote.filter { token: SwapToken ->
-                    chainIdSet.contains(token.chain.chainId)
-                }
-            }).filter { inMixin() || isWeb3TransferSupported(it.chain.chainId) }
+            val filteredRemote: List<SwapToken> =
+                filterSwapTokensByWalletChains(remote, chainIdSet, inMixin())
             if (!inMixin()) {
                 remoteSwapTokens = filteredRemote.map { it.copy(isWeb3 = true, walletId = walletId) }.mapNotNull { token ->
                     val local = swapViewModel.web3TokenItemById(walletId ?: "", token.assetId)

@@ -34,7 +34,7 @@ data class ConversationItem(
     val appId: String?,
     val mentions: String?,
     val mentionCount: Int?,
-    val membership: Membership?
+    val membership: Membership?,
 ) : ICategory, IConversationCategory {
     companion object {
         val DIFF_CALLBACK =

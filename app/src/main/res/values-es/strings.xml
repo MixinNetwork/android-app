@@ -1084,6 +1084,7 @@
     <string name="wallet_withdrawal_changed">La tarifa de retiro se ha cambiado de %1$s a %2$s, ¿quieres continuar con la solicitud?</string>
     <string name="wallet_withdrawal_not_in_addresses">%1$s Esta dirección no está en la lista blanca de direcciones de retiro, verifíquela cuidadosamente.</string>
     <string name="wallet_withdrawal_recent_tip">Ya has retirado %3$s a %2$s hace %1$s, ¿quieres retirarlo de nuevo?</string>
+    <string name="web_bot_cannot_reached_desc">No se puede acceder a la página web de %1$s. Verifica tu red e intenta cambiar 4G, Wi-Fi o VPN para recargar la página.</string>
     <string name="web_cannot_reached_desc">%1$s ha tardado demasiado en responder. Verifica tu red e intenta cambiar 4G, Wi-Fi o VPN para recargar la página.</string>
     <string name="web_cannot_reached_title">No se puede acceder a esta página web</string>
     <string name="web_floating_permission">No puedes usar la ventana flotante porque Mixin no tiene permiso para usar ventanas flotantes</string>
@@ -1112,7 +1113,7 @@
     <string name="withdrawal_to">Retirar a %1$s</string>
     <string name="you">tú</string>
     <string name="You">Tú</string>
-    <string name="You_deleted_this_message">Has borrado este mensaje</string>
+    <string name="You_deleted_this_message">Has borrado este mensaje.</string>
     <string name="You_have_left_the_group">Te has ido del grupo</string>
     <string name="Your_emergency_contact_has_been_changed">Tu contacto de emergencia se ha cambiado</string>
     <string name="Receivers">receivers</string>
@@ -1166,4 +1167,14 @@
     <string name="Bitcoin_Dominance">Dominancia de Bitcoin</string>
     <string name="Perp">Perp</string>
     <string name="classic_wallet_pearl_intro_title">Common Wallet ahora es compatible con Pearl</string>
+    <string name="Debug_Wallet_Account_Visibility">Visibilidad de cuentas de la cartera</string>
+    <string name="Debug_Earn_Account">Cuenta Earn</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">Ganancias totales</string>
+    <string name="Total_Amount">Importe total</string>
+    <string name="Cash_Account">Cuenta de efectivo</string>
+    <string name="earn_reward_rate">Tasa de recompensa</string>
+    <string name="wallet_home_earn_account">Cuenta Earn</string>
+    <string name="earn_balance">Saldo de Earn</string>
+    <string name="earn_yesterday_earnings">Ganancias de ayer</string>
 </resources>

@@ -35,7 +35,7 @@ import kotlin.math.min
         PerpsFavorite::class,
         PerpsMarketCategoryRelation::class,
     ],
-    version = 8,
+    version = 9,
 )
 @DaoReturnTypeConverters(PagingSourceDaoReturnTypeConverter::class)
 abstract class PerpsDatabase : RoomDatabase() {
@@ -118,6 +118,12 @@ abstract class PerpsDatabase : RoomDatabase() {
                     db.execSQL("ALTER TABLE `markets` ADD COLUMN `open_interest` TEXT NOT NULL DEFAULT '0'")
                 }
             }
+        val MIGRATION_8_9 =
+            object : Migration(8, 9) {
+                override suspend fun migrate(db: SQLiteConnection) {
+                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `trade_volume_score_1d` INTEGER NOT NULL DEFAULT 0")
+                }
+            }
 
         @Suppress("DEPRECATION")
         fun getDatabase(
@@ -137,7 +143,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                         context,
                         PerpsDatabase::class.java,
                         File(dir, Constants.DataBase.PERPS_DB_NAME).absolutePath,
-                    ).setDriver(ReportingAndroidSQLiteDriver("Perps", 8))
+                    ).setDriver(ReportingAndroidSQLiteDriver("Perps", 9))
                         .addCallback(
                         object : Callback() {
                             override suspend fun onOpen(db: SQLiteConnection) {
@@ -145,7 +151,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                                 db.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
                         .fallbackToDestructiveMigration()
                         .enableMultiInstanceInvalidation()
                         .setQueryCoroutineContext(

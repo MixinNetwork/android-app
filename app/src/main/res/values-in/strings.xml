@@ -725,4 +725,14 @@
     <string name="Bitcoin_Dominance">Dominasi Bitcoin</string>
     <string name="Perp">Perp</string>
     <string name="classic_wallet_pearl_intro_title">Common Wallet kini mendukung Pearl</string>
+    <string name="Debug_Wallet_Account_Visibility">Visibilitas akun dompet</string>
+    <string name="Debug_Earn_Account">Akun Earn</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">Total Penghasilan</string>
+    <string name="Total_Amount">Jumlah Total</string>
+    <string name="Cash_Account">Rekening Tunai</string>
+    <string name="earn_reward_rate">Tingkat Imbalan</string>
+    <string name="wallet_home_earn_account">Akun Earn</string>
+    <string name="earn_balance">Saldo Earn</string>
+    <string name="earn_yesterday_earnings">Pendapatan kemarin</string>
 </resources>

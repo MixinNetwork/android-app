@@ -735,6 +735,7 @@
     <string name="wallet_transactions_asset_key_warning">Kunci aset BUKAN alamat deposit!</string>
     <string name="wallet_transfer_recent_tip">Anda telah memindahkan %3$s ke %2$s %1$s. Adakah anda mahu memindahkannya lagi?</string>
     <string name="wallet_withdrawal_recent_tip">Anda telah menarik balik %3$s ke %2$s %1$s, Adakah anda mahu menariknya semula?</string>
+    <string name="web_bot_cannot_reached_desc">Laman web %1$s tidak dapat dicapai. Sila periksa rangkaian anda dan cuba tukar 4G, Wi-Fi atau VPN untuk memuat semula halaman.</string>
     <string name="web_cannot_reached_desc">%1$s mengambil masa terlalu lama untuk beri maklum balas. Sila periksa rangkaian anda dan cuba tukar 4G, Wi-Fi atau VPN untuk memuat semula halaman.</string>
     <string name="web_cannot_reached_title">Laman web ini tidak dapat dicapai</string>
     <string name="web_floating_permission">Anda tidak boleh terapung kerana Mixin tidak diberi kebenaran menggunakan tetingkap terapung</string>
@@ -789,4 +790,14 @@
     <string name="Bitcoin_Dominance">Dominasi Bitcoin</string>
     <string name="Perp">Perp</string>
     <string name="classic_wallet_pearl_intro_title">Common Wallet kini menyokong Pearl</string>
+    <string name="Debug_Wallet_Account_Visibility">Keterlihatan akaun dompet</string>
+    <string name="Debug_Earn_Account">Akaun Earn</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">Jumlah Pendapatan</string>
+    <string name="Total_Amount">Jumlah Amaun</string>
+    <string name="Cash_Account">Akaun Tunai</string>
+    <string name="earn_reward_rate">Kadar Ganjaran</string>
+    <string name="wallet_home_earn_account">Akaun Earn</string>
+    <string name="earn_balance">Baki Earn</string>
+    <string name="earn_yesterday_earnings">Pendapatan semalam</string>
 </resources>

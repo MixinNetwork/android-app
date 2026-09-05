@@ -5,6 +5,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.DEVICE_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EdKeyPair
 import one.mixin.android.crypto.clearPendingImportMnemonic
@@ -15,7 +16,6 @@ import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.putString
-import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.database.clearJobsAndRawTransaction
 import one.mixin.android.vo.Account
 
@@ -33,7 +33,7 @@ suspend fun initializeAccountSession(
     Session.storeEd25519Seed(privateKey.base64Encode())
     Session.storePinToken(pinToken.base64Encode())
     Session.storeAccount(account)
-    AnalyticsTracker.setAppsFlyerCustomerUserId(account)
+    MixinApplication.get().startAppsFlyer(account.userId)
 
     // Enter the user scope and migrate databases BEFORE clearing anything
     // This ensures we operate on the correct scoped database after migration

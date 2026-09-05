@@ -1140,7 +1140,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                         feeToken = feeToken,
                         feeAmount = feeAmount,
                         recipientAccountState = solanaRecipientAccountState,
-                        allowZeroBalance = false,
+                        allowZeroBalance = transferToken.isNativeSolAsset(),
                         includeAtaCreationReserve = transferToken.assetId != chainToken?.assetId,
                     )
                 }
@@ -1161,7 +1161,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     }
 
     private fun hasCurrentSolanaRentIssue(amount: String): Boolean {
-        return isCurrentWeb3SolanaTransfer() && isBelowCurrentSolanaMinimum(amount)
+        if (!isCurrentWeb3SolanaTransfer()) return false
+        val inputAmount = amount.toBigDecimalOrNull() ?: return false
+        val range = currentSolanaTransferRange() ?: return false
+        return isBelowCurrentSolanaMinimum(amount) ||
+            (web3Token?.isNativeSolAsset() == true && range.hasNativeSolRentIssue(inputAmount))
     }
 
     private fun updateSolanaMinimumAmountHint() {

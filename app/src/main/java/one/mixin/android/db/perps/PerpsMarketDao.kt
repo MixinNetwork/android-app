@@ -4,6 +4,7 @@ import androidx.room3.Dao
 import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
+import androidx.room3.Transaction
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.db.BaseDao
@@ -15,6 +16,25 @@ interface PerpsMarketDao : BaseDao<PerpsMarket> {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(markets: List<PerpsMarket>)
+
+    @Query("SELECT * FROM markets WHERE market_id IN (:marketIds)")
+    suspend fun getMarkets(marketIds: List<String>): List<PerpsMarket>
+
+    @Transaction
+    suspend fun upsertPreservingTradeVolumeScores(markets: List<PerpsMarket>): List<PerpsMarket> {
+        if (markets.isEmpty()) return emptyList()
+        val existingScores =
+            getMarkets(markets.map(PerpsMarket::marketId))
+                .associate { market -> market.marketId to market.tradeVolumeScore1D }
+        val mergedMarkets =
+            markets.map { market ->
+                market.copy(
+                    tradeVolumeScore1D = existingScores[market.marketId] ?: 0,
+                )
+            }
+        upsertList(mergedMarkets)
+        return mergedMarkets
+    }
 
     @Query(
         """

@@ -18,7 +18,7 @@ private const val WEB3_TRANSACTION_QUERY_SQL =
     r.symbol as receive_asset_symbol,
     sf.symbol as sponsor_fee_asset_symbol
     FROM transactions w
-    LEFT JOIN tokens c ON c.asset_id = w.chain_id AND c.wallet_id = '{{walletId}}'
+    LEFT JOIN chains c ON c.chain_id = w.chain_id
     LEFT JOIN tokens s ON s.asset_id = w.send_asset_id AND s.wallet_id = '{{walletId}}'
     LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id AND r.wallet_id = '{{walletId}}'
     LEFT JOIN tokens sf ON sf.asset_id = w.sponsor_fee_asset_id AND sf.wallet_id = '{{walletId}}'

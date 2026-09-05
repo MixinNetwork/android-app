@@ -42,10 +42,8 @@ interface MarketCategoryDao : BaseDao<MarketCategoryRelation> {
         FROM market_categories mc
         INNER JOIN markets m ON m.coin_id = mc.coin_id
         LEFT JOIN market_favored mf ON mf.coin_id = m.coin_id
-        LEFT JOIN market_cap_ranks mr ON mr.coin_id = m.coin_id
         WHERE mc.category = :category
-        ORDER BY CASE WHEN mr.market_cap_rank IS NULL THEN 1 ELSE 0 END,
-            CAST(mr.market_cap_rank AS INTEGER) ASC
+        ORDER BY mc.rowid ASC
         """,
     )
     fun observeMarketsByCategory(category: Int): Flow<List<MarketItem>>
@@ -56,10 +54,8 @@ interface MarketCategoryDao : BaseDao<MarketCategoryRelation> {
         FROM market_categories mc
         INNER JOIN markets m ON m.coin_id = mc.coin_id
         LEFT JOIN market_favored mf ON mf.coin_id = m.coin_id
-        LEFT JOIN market_cap_ranks mr ON mr.coin_id = m.coin_id
         WHERE mc.category = :category
-        ORDER BY CASE WHEN mr.market_cap_rank IS NULL THEN 1 ELSE 0 END,
-            CAST(mr.market_cap_rank AS INTEGER) ASC
+        ORDER BY mc.rowid ASC
         """,
     )
     suspend fun marketsByCategory(category: Int): List<MarketItem>

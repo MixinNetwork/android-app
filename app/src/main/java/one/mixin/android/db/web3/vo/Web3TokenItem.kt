@@ -89,6 +89,7 @@ data class Web3TokenItem(
             chainId == Constants.ChainId.Optimism -> "Optimism"
             chainId == Constants.ChainId.Polygon -> "Polygon"
             chainId == Constants.ChainId.BinanceSmartChain -> "BNB Chain"
+            chainId == Constants.ChainId.XLayer -> "X Layer"
             chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "Bitcoin"
             chainId == Constants.ChainId.PEARL_CHAIN_ID -> "Pearl"
             chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "Solana"
@@ -197,6 +198,7 @@ fun Web3TokenItem.getChainFromName(): Chain {
         chainId == Constants.ChainId.BinanceSmartChain-> Chain.BinanceSmartChain
         chainId == Constants.ChainId.Avalanche -> Chain.Avalanche
         chainId == Constants.ChainId.HyperEVM -> Chain.HyperEVM
+        chainId == Constants.ChainId.XLayer -> Chain.XLayer
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> Chain.Solana
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> Chain.Bitcoin
         chainId == Constants.ChainId.PEARL_CHAIN_ID -> Chain.Bitcoin
@@ -223,12 +225,30 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
         chainId == Constants.ChainId.HyperEVM -> "HYPE"
         chainId == Constants.ChainId.BinanceSmartChain -> "BNB"
         chainId == Constants.ChainId.Polygon -> "POL"
+        chainId == Constants.ChainId.XLayer -> "OKB"
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "BTC"
         chainId == Constants.ChainId.PEARL_CHAIN_ID -> "PRL"
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "SOL"
         else -> throw IllegalArgumentException("Not support: $chainId")
     }
 }
+
+fun Web3TokenItem.isNativeEvmAsset(): Boolean =
+    when (chainId) {
+        Constants.ChainId.Polygon ->
+            assetKey == "0x0000000000000000000000000000000000000000" ||
+                assetKey == "0x0000000000000000000000000000000000001010"
+        Constants.ChainId.ETHEREUM_CHAIN_ID,
+        Constants.ChainId.Base,
+        Constants.ChainId.Optimism,
+        Constants.ChainId.Arbitrum,
+        Constants.ChainId.Avalanche,
+        Constants.ChainId.HyperEVM,
+        Constants.ChainId.BinanceSmartChain,
+        Constants.ChainId.XLayer,
+        -> assetKey == "0x0000000000000000000000000000000000000000"
+        else -> false
+    }
 
 
 suspend fun Web3TokenItem.buildTransaction(
@@ -315,17 +335,8 @@ suspend fun Web3TokenItem.buildTransaction(
         return JsSignMessage(0, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx, solanaTxSource = SolanaTxSource.InnerTransfer)
     } else if (chainId in Constants.Web3EvmChainIds) {
         Web3Signer.useEvm()
-        // (chainId.equals("blast", true) && assetKey == "0x0000000000000000000000000000000000000000") ||
         val transaction =
-            if ((chainId == Constants.ChainId.Base && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId == Constants.ChainId.ETHEREUM_CHAIN_ID && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId == Constants.ChainId.Polygon && (assetKey == "0x0000000000000000000000000000000000000000" || assetKey == "0x0000000000000000000000000000000000001010")) ||
-                (chainId == Constants.ChainId.BinanceSmartChain && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId == Constants.ChainId.Optimism && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId == Constants.ChainId.Arbitrum && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId == Constants.ChainId.Avalanche && assetKey == "0x0000000000000000000000000000000000000000") ||
-                (chainId == Constants.ChainId.HyperEVM && assetKey == "0x0000000000000000000000000000000000000000")
-            ) {
+            if (isNativeEvmAsset()) {
                 val value = Numeric.toHexStringWithPrefix(Convert.toWei(v, Convert.Unit.ETHER).toBigInteger())
                 WCEthereumTransaction(fromAddress, toAddress, null, null, null, null, null, null, value, null)
             } else {

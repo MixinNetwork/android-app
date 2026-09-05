@@ -242,6 +242,29 @@ class PerpsMigrationTest {
         }
     }
 
+    @Test
+    fun migrate_8_9_addsTradeVolumeScore() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 8).apply {
+            insertMarket()
+            close()
+        }
+
+        val migratedDb =
+            migrationTestHelper.runMigrationsAndValidate(
+                Constants.DataBase.PERPS_DB_NAME,
+                9,
+                true,
+                PerpsDatabase.MIGRATION_8_9,
+            )
+
+        migratedDb.query(
+            "SELECT trade_volume_score_1d FROM markets WHERE market_id = 'market-1'",
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+    }
+
     private fun SQLiteConnection.insertMarket() {
         execSQL(
             """
