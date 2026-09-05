@@ -122,12 +122,13 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
                 return@Comparator 1
             }
 
-            if (query.isNullOrBlank().not()) {
-                val equal2Keyword1 = o1.symbol.equalsIgnoreCase(query)
-                val equal2Keyword2 = o2.symbol.equalsIgnoreCase(query)
-                if (equal2Keyword1 && !equal2Keyword2) {
+            val keyword = query?.takeUnless { it.isBlank() }
+            if (keyword != null) {
+                val symbolPriority1 = o1.symbol.symbolPriority(keyword)
+                val symbolPriority2 = o2.symbol.symbolPriority(keyword)
+                if (symbolPriority1 > symbolPriority2) {
                     return@Comparator -1
-                } else if (!equal2Keyword1 && equal2Keyword2) {
+                } else if (symbolPriority1 < symbolPriority2) {
                     return@Comparator 1
                 }
             }
@@ -162,4 +163,11 @@ fun List<SwapToken>.sortByKeywordAndBalance(query: String? = null): List<SwapTok
             return@Comparator o1.name.compareTo(o2.name)
         }
     )
+}
+
+private fun String.symbolPriority(keyword: String): Int = when {
+    equalsIgnoreCase(keyword) -> 3
+    startsWith(keyword, ignoreCase = true) -> 2
+    contains(keyword, ignoreCase = true) -> 1
+    else -> 0
 }

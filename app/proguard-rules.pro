@@ -2,12 +2,28 @@
 -optimizationpasses 5
 -allowaccessmodification
 
--dontobfuscate
+# Preserve third-party names for reflection while allowing shrinking and optimization.
+-keep,allowshrinking,allowoptimization class !one.mixin.android.**,!androidx.**,!com.yalantis.ucrop.**,** { *; }
 
 # prevent multi dex caused NoSuchProviderException
 -keep class org.whispersystems.** { *; }
 
--keep class one.mixin.android.** { *; }
+# Keep app types and members reachable while allowing optimization and obfuscation.
+-keep,allowoptimization,allowobfuscation class one.mixin.android.** { *; }
+
+-keep class com.google.android.gms.internal.mlkit_entity_extraction.** extends java.util.Random { *; }
+
+# Gson still relies on unannotated app fields in API, websocket, database, and cache models.
+-keepclassmembers class one.mixin.android.** {
+    !transient !static <fields>;
+}
+
+# Persisted jobs and payloads must remain Java-serialization compatible across updates.
+-keep class one.mixin.android.** implements java.io.Serializable { *; }
+
+# These fragment arguments persist nested type names in saved state.
+-keepnames class one.mixin.android.ui.wallet.ImportKeyBottomSheetDialogFragment$PopupType$*
+-keepnames class one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment$PopupType$*
 
 -keep class io.jsonwebtoken.** { *; }
 
@@ -18,21 +34,6 @@
 
 -keep class org.jni_zero.** { *; }
 -dontwarn org.jni_zero.**
-
-# androidx paging
--keep class androidx.paging.PagedListAdapter.** { *; }
--keep class androidx.paging.AsyncPagedListDiffer.** { *; }
-
-# ServiceLoader support
--keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
--keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
--keepnames class kotlinx.coroutines.android.AndroidExceptionPreHandler {}
--keepnames class kotlinx.coroutines.android.AndroidDispatcherFactory {}
-
--keep class kotlinx.coroutines.internal.MainDispatcherFactory {}
--keep class kotlinx.coroutines.CoroutineExceptionHandler {}
--keep class kotlinx.coroutines.android.AndroidExceptionPreHandler {}
--keep class kotlinx.coroutines.android.AndroidDispatcherFactory {}
 
 # Most of volatile fields are updated with AFU and should not be mangled
 -keepclassmembernames class kotlinx.** {
@@ -65,15 +66,8 @@
 
 # https://r8.googlesource.com/r8/+/refs/heads/master/compatibility-faq.md#r8-full-mode
 
--keepclassmembers,allowobfuscation class * {
- @com.google.gson.annotations.SerializedName <fields>;
-}
-
 -keepattributes Signature
--keep class com.google.gson.reflect.TypeToken { *; }
 -keep class * extends com.google.gson.reflect.TypeToken
-
--keep class kotlin.coroutines.Continuation
 
 # web3j
 -keep class org.web3j.protocol.** { *; }
@@ -87,20 +81,15 @@
 
 -dontwarn com.fasterxml.jackson.databind.**
 -keep class com.fasterxml.jackson.core.** { *; }
--keep interface com.fasterxml.jackson.core.* { *; }
 -keep class com.fasterxml.jackson.databind.** { *; }
--keep interface com.fasterxml.jackson.databind.* { *; }
 -keep class com.fasterxml.jackson.annotation.** { *; }
--keep interface com.fasterxml.jackson.annotation.** { *; }
 #-dontwarn java.lang.SafeVarargs
 -dontwarn org.slf4j.**
 
--keep public class com.reown.android.** { *; }
 -keep public class com.reown.walletkit.** { *; }
 
 -dontwarn com.sun.jna.**
 -keep class com.sun.jna.** { *; }
--keepclassmembers class com.sun.jna.Native { *; }
 
 -dontwarn uniffi.**
 -keep class uniffi.** { *; }
@@ -108,12 +97,6 @@
 -dontwarn groovy.lang.GroovyShell
 
 -dontwarn com.yalantis.ucrop**
--keep class com.yalantis.ucrop** { *; }
--keep interface com.yalantis.ucrop** { *; }
 
--keep class com.appsflyer.** { *; }
 -dontwarn com.appsflyer.**
--keepclassmembers class com.appsflyer.** {
-    *;
-}
 -keep class kotlin.jvm.internal.** { *; }

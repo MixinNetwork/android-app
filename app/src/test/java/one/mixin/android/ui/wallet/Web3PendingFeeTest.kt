@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 import org.junit.Test
 
@@ -38,6 +39,20 @@ class Web3PendingFeeTest {
 
         assertEquals("0.0001", transaction.displayFeeAmount())
         assertEquals("ETH", transaction.displayFeeSymbol())
+    }
+
+    @Test
+    fun chainFeeIsUsedWhenSponsorFeeIsZero() {
+        val transaction = transactionItem(
+            fee = "0.0001",
+            sponsorFeeAmount = "0",
+            chainSymbol = "ETH",
+            sponsorFeeAssetSymbol = "USDT",
+        )
+
+        assertEquals("0.0001", transaction.displayFeeAmount())
+        assertEquals("ETH", transaction.displayFeeSymbol())
+        assertFalse(transaction.hasSponsorFee())
     }
 
     private fun transactionItem(

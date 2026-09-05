@@ -9,11 +9,14 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import android.view.ViewGroup
 import android.widget.RelativeLayout
+import androidx.core.text.buildSpannedString
+import androidx.core.text.color
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.numberFormat
@@ -32,6 +35,15 @@ class WalletAssetAdapter(
     private val slideShow: Boolean,
     private val compact: Boolean = false,
 ) : HeaderAdapter<TokenItem>() {
+    private var earnAssetIds: Set<String> = emptySet()
+
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateEarnAssetIds(assetIds: Set<String>) {
+        if (earnAssetIds == assetIds) return
+        earnAssetIds = assetIds
+        notifyDataSetChanged()
+    }
+
     fun setAssetList(newAssets: List<TokenItem>) {
         if (data == null) {
             data = newAssets
@@ -152,7 +164,18 @@ class WalletAssetAdapter(
                     asset.balance.numberFormat()
                 }
             binding.symbolTv.text = asset.symbol
-            binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+            val fiatValue = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+            binding.balanceAs.text = if (asset.assetId in earnAssetIds) {
+                buildSpannedString {
+                    append(fiatValue)
+                    append(" · ")
+                    color(holder.itemView.context.colorAttr(R.attr.color_accent)) {
+                        append(holder.itemView.context.getString(R.string.Earn))
+                    }
+                }
+            } else {
+                fiatValue
+            }
             if (asset.priceUsd == "0") {
                 binding.naTv.visibility = VISIBLE
                 binding.priceTv.visibility = GONE

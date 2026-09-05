@@ -107,6 +107,7 @@ fun PerpsMarketDetailPage(
     onBack: () -> Unit,
     onSharePosition: (PerpsPositionItem) -> Unit,
     source: String,
+    leaderPositionId: String? = null,
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
@@ -706,6 +707,7 @@ fun PerpsMarketDetailPage(
                                         isLong = true,
                                         source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
                                         returnToDetail = true,
+                                        leaderPositionId = leaderPositionId,
                                     )
                                 },
                                 backgroundColor = risingColor,
@@ -732,6 +734,7 @@ fun PerpsMarketDetailPage(
                                         isLong = false,
                                         source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
                                         returnToDetail = true,
+                                        leaderPositionId = leaderPositionId,
                                     )
                                 },
                                 backgroundColor = fallingColor,

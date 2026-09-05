@@ -939,6 +939,21 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                     "",
                     "",
                     AnalyticsTracker.PerpsSource.WALLET_HOME,
+                    leaderPositionId = target.leaderPositionId,
+                )
+            }
+            is WalletHomeBannerActionTarget.PerpsOpen -> {
+                PerpsActivity.showOpenPosition(
+                    context = requireActivity(),
+                    marketId = target.marketId,
+                    marketSymbol = "",
+                    marketDisplaySymbol = "",
+                    marketTokenSymbol = "",
+                    isLong = target.isLong,
+                    source = AnalyticsTracker.PerpsSource.WALLET_HOME,
+                    leaderPositionId = target.leaderPositionId,
+                    initialLeverage = target.leverage,
+                    initialMargin = target.margin,
                 )
             }
             WalletHomeBannerActionTarget.PerpsTab -> {

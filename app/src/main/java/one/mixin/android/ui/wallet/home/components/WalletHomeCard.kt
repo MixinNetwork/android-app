@@ -22,12 +22,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -49,6 +48,10 @@ import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.Web3TokenRecycler
 import one.mixin.android.ui.wallet.home.Web3TransactionRecycler
+
+private val CashAccountTextStyle = TextStyle(
+    platformStyle = PlatformTextStyle(includeFontPadding = false),
+)
 
 @Composable
 internal fun WalletHomeCard(
@@ -96,6 +99,7 @@ internal fun WalletHomeCard(
                 cashAccount = state.cashAccount,
                 callbacks = callbacks,
             )
+            WalletHomeCardType.ACCOUNTS -> Unit
             WalletHomeCardType.POSITIONS -> SectionCard(
                 title = stringResource(R.string.positions_count, state.totalPositionCount),
                 showViewAll = WalletHomeSection.hasMore(state.totalPositionCount),
@@ -149,6 +153,7 @@ internal fun WalletHomeCard(
                         if (state.walletType == WalletHomeType.PRIVACY) {
                             PrivacyTokenRecycler(
                                 tokens = privacyTokens.take(PREVIEW_LIMIT),
+                                earnAssetIds = state.earnAssetIds,
                                 onClick = callbacks::onTokenClicked,
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -217,33 +222,18 @@ private fun CashAccountCard(
                     fontSize = 14.sp,
                     lineHeight = 17.sp,
                     fontWeight = FontWeight.W400,
+                    style = CashAccountTextStyle,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
                 Spacer(modifier = Modifier.width(10.dp))
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_gray_right),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(16.dp).offset(x = 4.dp),
-                )
+                AccountArrow()
             }
             Spacer(modifier = Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = buildAnnotatedString {
-                        withStyle(SpanStyle(fontSize = 18.sp, fontWeight = FontWeight.W600)) {
-                            append(cashAccount.balanceAmountText)
-                        }
-                        append(" ")
-                        withStyle(SpanStyle(fontSize = 12.sp, fontWeight = FontWeight.W500)) {
-                            append("USD")
-                        }
-                    },
-                    color = MixinAppTheme.colors.textPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                WalletHomeAccountBalance(
+                    balanceAmountText = cashAccount.balanceAmountText,
                     modifier = Modifier.weight(1f),
                 )
                 cashAccount.apyText?.let { apyText ->
@@ -254,6 +244,7 @@ private fun CashAccountCard(
                         fontSize = 14.sp,
                         lineHeight = 16.sp,
                         fontWeight = FontWeight.W400,
+                        style = CashAccountTextStyle,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )

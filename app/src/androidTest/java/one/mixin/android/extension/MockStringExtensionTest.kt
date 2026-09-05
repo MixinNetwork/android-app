@@ -18,10 +18,15 @@ class MockStringExtensionTest {
 
         val u1 = "http://example.com?a=b&c=d&e=f"
         val u2 = "http://example.com?action=open&a=b&c=d&e=f"
+        val u3 = "mixin://apps/app-id?action=open&production=019e6289-1277-7d9f-b38f-d641fc5cb7b8"
 
         assertEquals("http://example.com?a=b&c=d&e=f", Uri.decode(t1.appendQueryParamsFromOtherUri(u1.toUri())))
         assertEquals("http://example.com?a=b&c=d&e=f", Uri.decode(t1.appendQueryParamsFromOtherUri(u2.toUri())))
         assertEquals("http://example.com?ab=cd&a=b&c=d&e=f", Uri.decode(t2.appendQueryParamsFromOtherUri(u1.toUri())))
         assertEquals("http://example.com?ab=cd&a=b&c=d&e=f", Uri.decode(t2.appendQueryParamsFromOtherUri(u2.toUri())))
+        assertEquals(
+            "http://example.com?production=019e6289-1277-7d9f-b38f-d641fc5cb7b8",
+            Uri.decode(t1.appendQueryParamsFromOtherUri(u3.toUri())),
+        )
     }
 }

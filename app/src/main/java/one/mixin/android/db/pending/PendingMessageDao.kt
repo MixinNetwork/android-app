@@ -140,11 +140,14 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
         """
         UPDATE pending_messages SET category = 'MESSAGE_RECALL', content = NULL, media_url = NULL, media_mime_type = NULL, media_size = NULL, 
         media_duration = NULL, media_width = NULL, media_height = NULL, media_hash = NULL, thumb_image = NULL, media_key = NULL, 
-        media_digest = NUll, media_status = NULL, `action` = NULL, participant_id = NULL, snapshot_id = NULL, hyperlink = NULL, name = NULL, 
+        media_digest = NUll, media_status = NULL, `action` = NULL, participant_id = :participantId, snapshot_id = NULL, hyperlink = NULL, name = NULL, 
         album_id = NULL, sticker_id = NULL, shared_user_id = NULL, media_waveform = NULL, quote_message_id = NULL, quote_content = NULL WHERE id = :id
         """,
     )
-    fun recallMessage(id: String)
+    fun recallMessage(
+        id: String,
+        participantId: String,
+    )
 
     @Query("UPDATE pending_messages SET content = NULL WHERE category = 'MESSAGE_PIN' AND quote_message_id = :id AND conversation_id = :conversationId")
     fun recallPinMessage(

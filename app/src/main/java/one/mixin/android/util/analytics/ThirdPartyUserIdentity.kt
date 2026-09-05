@@ -20,9 +20,6 @@ object ThirdPartyUserIdentity {
         Bugsnag.setUser(userId, account.identityNumber, account.fullName)
         FirebaseCrashlytics.getInstance().setUserId(userId)
         FirebaseAnalytics.getInstance(MixinApplication.get()).setUserId(userId)
-        if (BuildConfig.APPSFLYER_DEV_KEY.isNotBlank()) {
-            AppsFlyerLib.getInstance().setCustomerUserId(userId)
-        }
     }
 
     fun clearUser() {

@@ -104,6 +104,16 @@ internal fun generateDepositUri(
             }
         }
 
+        ChainId.XLayer -> {
+            if (assetId == ChainId.XLayer) {
+                val weiAmount = nativeEvmWeiAmount(cleanAmount)
+                "ethereum:$address@196?value=$weiAmount"
+            } else {
+                val uint256Amount = erc20Amount(cleanAmount, precision)
+                "ethereum:${assetKey}@196/transfer?address=$address&amount=$cleanAmount&uint256=$uint256Amount"
+            }
+        }
+
         ChainId.Litecoin -> {
             "litecoin:$address?amount=$cleanAmount"
         }

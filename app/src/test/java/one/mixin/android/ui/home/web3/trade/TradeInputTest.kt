@@ -1,9 +1,11 @@
 package one.mixin.android.ui.home.web3.trade
 
+import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
+import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
 
 class TradeInputTest {
     @Test
@@ -47,5 +49,29 @@ class TradeInputTest {
             "12.123456789",
             limitTradeInputDecimalPlaces("12.123456789", maxDecimalPlaces = null)
         )
+    }
+
+    @Test
+    fun nativeSolSwapBalanceCheckAllowsFullTransferOrLeavesRent() {
+        val balance = BigDecimal("1")
+
+        assertFalse(isNativeSolSwapBalanceError("1", balance, isNativeSol = true))
+        assertFalse(
+            isNativeSolSwapBalanceError(
+                balance.subtract(SOLANA_RENT_EXEMPTION).toPlainString(),
+                balance,
+                isNativeSol = true,
+            ),
+        )
+        assertTrue(
+            isNativeSolSwapBalanceError(
+                balance.subtract(SOLANA_RENT_EXEMPTION).add(BigDecimal("0.00000001")).toPlainString(),
+                balance,
+                isNativeSol = true,
+            ),
+        )
+        assertTrue(isNativeSolSwapBalanceError("0.9995", balance, isNativeSol = true))
+        assertFalse(isNativeSolSwapBalanceError("0.00000001", balance, isNativeSol = true))
+        assertFalse(isNativeSolSwapBalanceError("0.9995", balance, isNativeSol = false))
     }
 }

@@ -110,7 +110,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         )
         binding.apply {
             titleView.apply {
-                setSubTitle(marketItem.symbol, marketItem.name)
+                setSubTitle(marketItem.symbol, null)
                 leftIb.setOnClickListener { activity?.onBackPressedDispatcher?.onBackPressed() }
                 rightExtraIb.isVisible = true
                 rightExtraIb.setMarketFavoriteIcon(marketItem.isFavored == true)
@@ -253,11 +253,11 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             }
 
             if (marketItem.coinId.isBlank()) {
-                assetRank.isVisible = false
                 titleView.rightExtraIb.isVisible = false
             }
             assetSymbol.text = marketItem.symbol
             assetName.text = marketItem.name
+            bindAssetRank(marketItem.marketCapRank)
             nameTitle.text = getString(R.string.Name).uppercase()
             symbolTitle.text = getString(R.string.Symbol).uppercase()
             marketCapTitle.text = getString(R.string.Market_Cap).uppercase()
@@ -345,11 +345,11 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 loadBalance(info)
                 setupPerpsAction(info)
                 binding.apply {
-                    assetRank.isVisible = true
                     titleView.rightExtraIb.isVisible = true
                     assetSymbol.text = info.symbol
                     assetName.text = info.name
-                    assetRank.text = "#${info.marketCapRank}"
+                    titleView.setSubTitle(info.symbol, null)
+                    bindAssetRank(info.marketCapRank)
                     currentPrice = priceFormat(info.currentPrice)
                     priceValue.text = currentPrice
                     marketHigh.text = priceFormat(info.high24h)
@@ -607,6 +607,13 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                 }
             }
         }
+    }
+
+    private fun bindAssetRank(rank: String) {
+        val normalizedRank = rank.trim()
+        val isValid = normalizedRank.toLongOrNull()?.let { it > 0 } == true
+        binding.assetRank.isVisible = isValid
+        binding.assetRank.text = if (isValid) "#$normalizedRank" else ""
     }
 
     private fun capFormat(vol: String, rate: BigDecimal, symbol: String): String {
