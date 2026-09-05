@@ -3,7 +3,6 @@ buildscript {
     val hiltGradlePluginVersion = "2.60.1"
     val googleServicesPluginVersion = "4.5.0"
     val firebaseCrashlyticsPluginVersion = "3.0.8"
-    val bugsnagGradlePluginVersion = "8.2.0"
 
     repositories {
         google()
@@ -16,11 +15,11 @@ buildscript {
         classpath("com.google.dagger:hilt-android-gradle-plugin:$hiltGradlePluginVersion")
         classpath("com.google.gms:google-services:$googleServicesPluginVersion")
         classpath("com.google.firebase:firebase-crashlytics-gradle:$firebaseCrashlyticsPluginVersion")
-        classpath("com.bugsnag:bugsnag-android-gradle-plugin:$bugsnagGradlePluginVersion")
     }
 }
 
 plugins {
+    id("com.bugsnag.gradle") version "1.1.1" apply false
     id("com.android.application") apply false
     id("com.android.library") apply false
     id("org.jetbrains.kotlin.plugin.parcelize") apply false

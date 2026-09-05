@@ -9,7 +9,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.firebase.firebase-perf")
-    id("com.bugsnag.android.gradle")
+    id("com.bugsnag.gradle")
 }
 
 apply(plugin = "com.google.gms.google-services")
@@ -325,8 +325,13 @@ android {
     }
 }
 
-bugsnag {
-    uploadNdkMappings = false
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        val variantName = variant.name.replaceFirstChar { it.uppercaseChar() }
+        tasks.matching { it.name == "assemble$variantName" || it.name == "bundle$variantName" }.configureEach {
+            finalizedBy("bugsnagUpload${variantName}ProguardMapping", "bugsnagCreate${variantName}Build")
+        }
+    }
 }
 
 room3 {
