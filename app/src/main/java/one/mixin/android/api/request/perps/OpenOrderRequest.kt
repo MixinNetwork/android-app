@@ -20,7 +20,9 @@ data class OpenOrderRequest(
     @SerializedName("stop_loss_price")
     val stopLossPrice: String? = null,
     @SerializedName("destination")
-    val destination: String? = null
+    val destination: String? = null,
+    @SerializedName("leader_position_id")
+    val leaderPositionId: String? = null,
 )
 
 data class OpenOrderResponse(

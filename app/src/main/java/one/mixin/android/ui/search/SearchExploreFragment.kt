@@ -275,12 +275,28 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                         }
                         RecentSearchType.MARKET->{
                             lifecycleScope.launch {
-                                searchViewModel.findMarketItemByCoinId(search.primaryKey!!)?.let { marketItem ->
+                                val coinId = search.primaryKey ?: return@launch
+                                searchViewModel.findMarketItemByCoinId(coinId)?.let { marketItem ->
                                     WalletActivity.showWithMarket(
                                         requireActivity(),
                                         marketItem,
                                         Destination.Market,
                                         AnalyticsTracker.MarketSource.MORE_SEARCH,
+                                    )
+                                }
+                            }
+                        }
+                        RecentSearchType.PERPETUAL -> {
+                            lifecycleScope.launch {
+                                val marketId = search.primaryKey ?: return@launch
+                                searchViewModel.findPerpsMarket(marketId)?.let { market ->
+                                    one.mixin.android.ui.home.web3.trade.perps.PerpsActivity.showDetail(
+                                        context = requireContext(),
+                                        marketId = market.marketId,
+                                        marketSymbol = market.displaySymbol,
+                                        marketDisplaySymbol = market.displaySymbol,
+                                        marketTokenSymbol = market.tokenSymbol,
+                                        source = AnalyticsTracker.PerpsSource.MORE_EXPLORE,
                                     )
                                 }
                             }

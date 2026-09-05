@@ -34,9 +34,9 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.home.web3.market.MarketListEntry
 import one.mixin.android.ui.home.web3.market.MarketPage
 import one.mixin.android.ui.home.web3.market.MarketPageViewModel
+import one.mixin.android.ui.home.web3.market.MarketSearchFragment
 import one.mixin.android.ui.home.web3.market.MarketTopTab
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
-import one.mixin.android.ui.search.SearchExploreFragment
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.WalletActivity.Destination
@@ -139,8 +139,8 @@ class MarketFragment : Web3Fragment() {
     private fun showSearch() {
         activity?.addFragment(
             this,
-            SearchExploreFragment.newInstance(true),
-            SearchExploreFragment.TAG,
+            MarketSearchFragment(),
+            MarketSearchFragment.TAG,
             id = R.id.internal_container,
         )
     }

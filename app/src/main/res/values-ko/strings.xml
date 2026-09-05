@@ -2660,4 +2660,12 @@
     <string name="volume_label">VOL: %1$s</string>
     <string name="watchlist_remove_desc">%1$s이(가) 관심 목록에서 제거되었습니다</string>
     <string name="perps_category_meme">밈</string>
+    <string name="Debug_Wallet_Account_Visibility">지갑 계정 표시</string>
+    <string name="Debug_Earn_Account">Earn 계정</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">총 수익</string>
+    <string name="earn_reward_rate">보상률</string>
+    <string name="wallet_home_earn_account">Earn 계정</string>
+    <string name="earn_balance">Earn 잔액</string>
+    <string name="earn_yesterday_earnings">어제 수익</string>
 </resources>
