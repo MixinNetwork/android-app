@@ -1,14 +1,15 @@
 package one.mixin.android.messenger
 
 import android.database.sqlite.SQLiteBlobTooBigException
-import androidx.room.InvalidationTracker
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
 import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.flow.MessageFlow
+import one.mixin.android.db.insertConversationMessages
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.db.pending.PendingDatabase
 import one.mixin.android.job.DecryptCallMessage
@@ -83,24 +84,20 @@ class HedwigImp(
     private fun jobDao() = pendingDatabase().jobDao()
 
     private var floodJob: Job? = null
-    private var floodObservedDatabase: PendingDatabase? = null
-    private val floodObserver =
-        object : InvalidationTracker.Observer("flood_messages") {
-            override fun onInvalidated(tables: Set<String>) {
-                runFloodJob()
-            }
-        }
+    private var floodObserverJob: Job? = null
 
     private fun startObserveFlood() {
         runFloodJob()
-        val db = pendingDatabase()
-        floodObservedDatabase = db
-        db.addObserver(floodObserver)
+        floodObserverJob?.cancel()
+        floodObserverJob =
+            pendingDatabase().observeInvalidation(lifecycleScope, "flood_messages") {
+                runFloodJob()
+            }
     }
 
     private fun stopObserveFlood() {
-        floodObservedDatabase?.removeObserver(floodObserver)
-        floodObservedDatabase = null
+        floodObserverJob?.cancel()
+        floodObserverJob = null
     }
 
     @Synchronized
@@ -165,24 +162,20 @@ class HedwigImp(
     }
 
     private var pendingJob: Job? = null
-    private var pendingObservedDatabase: PendingDatabase? = null
-    private val pendingObserver =
-        object : InvalidationTracker.Observer("pending_messages") {
-            override fun onInvalidated(tables: Set<String>) {
-                runPendingJob()
-            }
-        }
+    private var pendingObserverJob: Job? = null
 
     private fun startObservePending() {
         runPendingJob()
-        val db = pendingDatabase()
-        pendingObservedDatabase = db
-        db.addObserver(pendingObserver)
+        pendingObserverJob?.cancel()
+        pendingObserverJob =
+            pendingDatabase().observeInvalidation(lifecycleScope, "pending_messages") {
+                runPendingJob()
+            }
     }
 
     private fun stopObservePending() {
-        pendingObservedDatabase?.removeObserver(pendingObserver)
-        pendingObservedDatabase = null
+        pendingObserverJob?.cancel()
+        pendingObserverJob = null
     }
 
     @Synchronized
@@ -194,28 +187,23 @@ class HedwigImp(
             lifecycleScope.launch(PENDING_DB_THREAD) {
                 try {
                     val db = pendingDatabase()
-                    val list = db.getPendingMessages()
-                    list.groupBy { it.conversationId }.filter { (conversationId, _) ->
-                        conversationId != SYSTEM_USER && conversationId != Session.getAccountId() && checkConversation(conversationId) != null
-                    }.forEach { (conversationId, messages) ->
-                        messageDao().insertList(messages)
-                        db.deletePendingMessageByIds(messages.map { it.messageId })
-                        conversationExtDao().increment(conversationId, messages.size)
-                        messages.filter { message ->
-                            !message.isMine() && message.status != MessageStatus.READ.name && (pendingMessageStatusLruCache[message.messageId] != MessageStatus.READ.name)
-                        }.map { message ->
-                            RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name)
-                        }.let { remoteMessageStatus ->
-                            remoteMessageStatusDao().insertList(remoteMessageStatus)
+                    while (true) {
+                        val list = db.getPendingMessages()
+                        val conversations = list.groupBy { it.conversationId }.filter { (conversationId, _) ->
+                            conversationId != SYSTEM_USER && conversationId != Session.getAccountId() && checkConversation(conversationId) != null
                         }
-                        messages.last().let { message ->
-                            conversationDao().updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
+                        conversations.forEach { (conversationId, messages) ->
+                            val statuses = messages.filter { message ->
+                                !message.isMine() && message.status != MessageStatus.READ.name && (pendingMessageStatusLruCache[message.messageId] != MessageStatus.READ.name)
+                            }.map { message ->
+                                RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name)
+                            }
+                            mixinDatabase().insertConversationMessages(conversationId, messages, statuses)
+                            db.deletePendingMessageByIds(messages.map { it.messageId })
+                            MessageFlow.insert(conversationId, messages.map { it.messageId })
                         }
-                        remoteMessageStatusDao().updateConversationUnseen(conversationId)
-                        MessageFlow.insert(conversationId, messages.map { it.messageId })
-                    }
-                    if (list.size == 100) {
-                        runPendingJob()
+                        if (list.size < 100 || conversations.isEmpty()) break
+                        yield()
                     }
                 } catch (e: Exception) {
                     Timber.e(e)

@@ -1,10 +1,10 @@
 package one.mixin.android.vo
 
-import androidx.room.ColumnInfo
-import androidx.room.ColumnInfo.Companion.TEXT
-import androidx.room.Entity
-import androidx.room.Fts4
-import androidx.room.FtsOptions
+import androidx.room3.ColumnInfo
+import androidx.room3.ColumnInfo.Companion.TEXT
+import androidx.room3.Entity
+import androidx.room3.Fts4
+import androidx.room3.FtsOptions
 
 @Entity(tableName = "messages_fts4")
 @Fts4(notIndexed = ["message_id"], tokenizer = FtsOptions.TOKENIZER_UNICODE61)

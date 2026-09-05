@@ -10,13 +10,13 @@ import one.mixin.android.R
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
-import one.mixin.android.ui.common.recyclerview.PagedHeaderAdapter
+import one.mixin.android.ui.common.recyclerview.PagingHeaderAdapter
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.SnapshotItem
 import kotlin.math.abs
 
 class TransactionsAdapter :
-    PagedHeaderAdapter<SnapshotItem>(SnapshotItem.DIFF_CALLBACK),
+    PagingHeaderAdapter<SnapshotItem>(SnapshotItem.DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<SnapshotHeaderViewHolder> {
     var listener: OnSnapshotListener? = null
 

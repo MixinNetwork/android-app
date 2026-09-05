@@ -3,7 +3,6 @@ buildscript {
     val hiltGradlePluginVersion = "2.60.1"
     val googleServicesPluginVersion = "4.5.0"
     val firebaseCrashlyticsPluginVersion = "3.0.8"
-    val bugsnagGradlePluginVersion = "8.2.0"
 
     repositories {
         google()
@@ -16,11 +15,11 @@ buildscript {
         classpath("com.google.dagger:hilt-android-gradle-plugin:$hiltGradlePluginVersion")
         classpath("com.google.gms:google-services:$googleServicesPluginVersion")
         classpath("com.google.firebase:firebase-crashlytics-gradle:$firebaseCrashlyticsPluginVersion")
-        classpath("com.bugsnag:bugsnag-android-gradle-plugin:$bugsnagGradlePluginVersion")
     }
 }
 
 plugins {
+    id("com.bugsnag.gradle") version "1.1.1" apply false
     id("com.android.application") apply false
     id("com.android.library") apply false
     id("org.jetbrains.kotlin.plugin.parcelize") apply false
@@ -28,7 +27,9 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") apply false
     id("org.jetbrains.kotlin.plugin.serialization") apply false
     id("com.google.devtools.ksp") apply false
+    id("androidx.room3") version "3.0.0" apply false
     id("org.jetbrains.kotlin.plugin.compose") apply false
+    id("org.jetbrains.kotlin.jvm") apply false
     id("com.google.firebase.firebase-perf") apply false
 }
 
@@ -51,7 +52,8 @@ extra.set("appcompatVersion", "1.8.0")
 extra.set("pagingVersion", "3.5.1")
 extra.set("coilVersion", "3.6.0")
 extra.set("collectionVersion", "1.6.0")
-extra.set("roomVersion", "2.8.4")
+extra.set("roomVersion", "3.0.0")
+extra.set("sqliteVersion", "2.7.0")
 extra.set("navigationVersion", "2.10.0")
 extra.set("workManagerVersion", "2.11.2")
 extra.set("constraintLayoutVersion", "2.2.2")
