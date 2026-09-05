@@ -10,6 +10,11 @@ import one.mixin.android.db.datasource.RoomDatabaseCompat
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertNull
+import one.mixin.android.db.runInTransaction
+import one.mixin.android.db.deleteMessageByIds
+import one.mixin.android.db.insertConversationMessages
+import one.mixin.android.vo.RemoteMessageStatus
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -95,7 +100,7 @@ class MessageFetcherAnchorTest {
     }
 
     @Test
-    fun initMessagesUsesUnreadCountToBuildFastInitialWindow() = runBlocking {
+    fun initMessagesFillsWindowAroundUnreadAnchor() = runBlocking {
         repeat(120) { offset ->
             val index = offset + 1
             val suffix = index.toString().padStart(3, '0')
@@ -219,6 +224,108 @@ class MessageFetcherAnchorTest {
         assertEquals("middle", normalized.third)
         assertEquals("middle", normalized.second[normalized.first].messageId)
         assertEquals(normalized.third, wholeNumber.third)
+    }
+
+    @Test
+    fun initialLoadDoesNotPopulateCountCache() = runBlocking {
+        insertMessage(1, "unread", "2024-01-01T00:00:00.000Z")
+        insertRemoteStatus("unread")
+        val (position, data) = fetcher.initMessages(CONVERSATION_ID)
+        assertEquals("unread", data[position].messageId)
+        assertNull(db.conversationExtDao().getMessageCountByConversationId(CONVERSATION_ID))
+    }
+
+    @Test
+    fun receiveReplayAndBatchDeleteKeepCountsExact() {
+        insertConversationExt(0)
+        insertMessage(1, "template", "2024-01-01T00:00:00.000Z")
+        val message = requireNotNull(db.messageDao().findMessageById("template"))
+        db.messageDao().deleteMessageById("template")
+        val status = RemoteMessageStatus(message.messageId, CONVERSATION_ID, "DELIVERED")
+        repeat(2) {
+            db.insertConversationMessages(CONVERSATION_ID, listOf(message), listOf(status))
+        }
+        assertEquals(1, db.conversationExtDao().getMessageCountByConversationId(CONVERSATION_ID))
+        assertEquals(1, MessageFetcherGenerated.findInitialPosition(db, CONVERSATION_ID))
+        db.remoteMessageStatusDao().markRead(CONVERSATION_ID)
+        db.insertConversationMessages(CONVERSATION_ID, listOf(message), listOf(status))
+        assertEquals(0, MessageFetcherGenerated.findInitialPosition(db, CONVERSATION_ID))
+        repeat(2) { db.deleteMessageByIds(listOf("template", "template", "missing")) }
+        assertEquals(0, db.conversationExtDao().getMessageCountByConversationId(CONVERSATION_ID))
+        assertEquals(0, MessageFetcherGenerated.countMessages(db, CONVERSATION_ID))
+    }
+
+    @Test
+    fun deletingUnreadMessagesUpdatesBothCounts() {
+        insertConversationExt(2)
+        updateUnseenCount(2)
+        insertMessage(1, "first", "2024-01-01T00:00:00.000Z")
+        insertMessage(2, "last", "2024-01-02T00:00:00.000Z")
+        insertRemoteStatus("first")
+        insertRemoteStatus("last")
+        db.deleteMessageByIds(listOf("first", "missing"))
+        assertEquals(1, db.conversationExtDao().getMessageCountByConversationId(CONVERSATION_ID))
+        assertEquals(1, MessageFetcherGenerated.findInitialPosition(db, CONVERSATION_ID))
+        assertEquals("last", db.messageDao().findMessageById("last")?.messageId)
+    }
+
+    @Test
+    fun trimmedPagesCanBeLoadedAgainInBothDirections() = runBlocking {
+        repeat(180) { index ->
+            insertMessage(index + 1, "message-$index", index.toString().padStart(12, '0'))
+        }
+        val (_, initial) = fetcher.initMessages(CONVERSATION_ID, forceBottom = true)
+        val previous = fetcher.previousPage(CONVERSATION_ID, initial.first().messageId)
+        assertTrue(previous.isNotEmpty())
+        fetcher.onWindowTrimmed(fromStart = false)
+        val next = fetcher.nextPage(CONVERSATION_ID, previous.last().messageId)
+        assertEquals(initial.take(30).map { it.messageId }, next.map { it.messageId })
+        fetcher.onWindowTrimmed(fromStart = true)
+        val previousAgain = fetcher.previousPage(CONVERSATION_ID, initial.first().messageId)
+        assertEquals(previous.map { it.messageId }, previousAgain.map { it.messageId })
+    }
+
+    @Test
+    fun markReadDrainsMultipleBatchesAndPreservesReceipts() {
+        db.runInTransaction {
+            repeat(1100) { insertRemoteStatus("unread-$it") }
+            updateUnseenCount(1100)
+        }
+        assertEquals(500, db.remoteMessageStatusDao().markReadBatch(CONVERSATION_ID))
+        assertEquals(600, MessageFetcherGenerated.findInitialPosition(db, CONVERSATION_ID))
+        db.remoteMessageStatusDao().markRead(CONVERSATION_ID)
+        assertEquals(0, MessageFetcherGenerated.findInitialPosition(db, CONVERSATION_ID))
+        assertEquals(0, db.remoteMessageStatusDao().countUnread(CONVERSATION_ID))
+        RoomDatabaseCompat.query(db, "SELECT count(*) FROM remote_messages_status WHERE status = 'READ'").use {
+            assertTrue(it.moveToFirst())
+            assertEquals(1100, it.getInt(0))
+        }
+    }
+
+    @Test
+    fun clearHistoryBatchesPreserveNewArrivalsAndFindLaterTranscripts() = runBlocking {
+        db.runInTransaction {
+            repeat(1100) { index ->
+                insertMessage(index + 1, "old-$index", (1100 - index).toString().padStart(12, '0'))
+            }
+            insertConversationExt(1101)
+            RoomDatabaseCompat.execute(db, "UPDATE messages SET category = 'PLAIN_TRANSCRIPT' WHERE id = 'old-1099'")
+        }
+        val cutoff = requireNotNull(db.messageDao().getLastMessageRowId())
+        insertMessage(2000, "arrival", "999999999999")
+        val transcripts = mutableListOf<String>()
+        var deleted = 0
+        while (true) {
+            val ids = db.messageDao().getMessageIdsByConversationId(CONVERSATION_ID, cutoff, 500)
+            if (ids.isEmpty()) break
+            transcripts += db.messageDao().getMessagesForDeletion(ids).map { it.messageId }
+            db.deleteMessageByIds(ids)
+            deleted += ids.size
+        }
+        assertEquals(1100, deleted)
+        assertEquals(listOf("old-1099"), transcripts)
+        assertEquals(1, db.conversationExtDao().getMessageCountByConversationId(CONVERSATION_ID))
+        assertEquals("arrival", db.messageDao().findLastMessageId(CONVERSATION_ID))
     }
 
     private fun insertUser() {

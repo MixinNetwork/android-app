@@ -575,7 +575,7 @@ interface MessageDao : BaseDao<Message> {
         offset: Long,
     ): List<String>
 
-    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId AND rowid <= :rowid ORDER BY rowid LIMIT :limit")
+    @Query("SELECT id FROM messages WHERE conversation_id =:conversationId AND rowid <= :rowid LIMIT :limit")
     suspend fun getMessageIdsByConversationId(
         conversationId: String,
         rowid: Long,
@@ -915,6 +915,15 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET thumb_image = 'K0OWvn_3fQ~qj[fQfQfQfQ' WHERE LENGTH(thumb_image) > 5120")
     fun cleanupBigThumb()
 
+    @Query("SELECT category AS type, id AS messageId, media_url AS mediaUrl FROM messages WHERE id IN (:ids) AND ((media_url IS NOT NULL AND media_status = 'DONE') OR category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT'))")
+    fun getMessagesForDeletion(ids: List<String>): List<MediaMessageMinimal>
+
+    @Query("SELECT count(1) FROM messages WHERE id IN (:ids)")
+    fun countExistingMessages(ids: List<String>): Int
+
+    @Query("SELECT conversation_id AS conversationId, count(1) AS count FROM messages WHERE id IN (:ids) GROUP BY conversation_id")
+    fun countMessagesByConversation(ids: List<String>): List<ConversationMessageCount>
+
     // Delete SQL
     @Query("DELETE FROM messages WHERE id = :id")
     fun deleteMessageById(id: String)
@@ -1001,3 +1010,8 @@ interface MessageDao : BaseDao<Message> {
         createdAt: String,
     ): Long
 }
+
+data class ConversationMessageCount(
+    val conversationId: String,
+    val count: Int,
+)

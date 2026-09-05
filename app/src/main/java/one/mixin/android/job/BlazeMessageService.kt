@@ -687,7 +687,6 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
 
             cIds.forEach { id ->
                 conversationDao().refreshLastMessageId(id)
-                conversationExtDao().refreshCountByConversationId(id)
             }
             nextExpirationTime = null
             yield()

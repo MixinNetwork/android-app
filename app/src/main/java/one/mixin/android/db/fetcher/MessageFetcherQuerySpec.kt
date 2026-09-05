@@ -229,6 +229,17 @@ interface MessageFetcherQuerySpec {
     ): ChatMessageAnchor?
 
     @GeneratedRawCursorQuery(
+        sql = "SELECT rowid, created_at, id FROM messages WHERE conversation_id = ? ORDER BY created_at DESC, rowid DESC LIMIT 1 OFFSET ?",
+        binds = ["conversationId", "offset"],
+        converter = "convertToChatMessageAnchor",
+    )
+    fun findAnchorByPositionFromEnd(
+        db: MixinDatabase,
+        conversationId: String,
+        offset: Int,
+    ): ChatMessageAnchor?
+
+    @GeneratedRawCursorQuery(
         sql = "SELECT count(1) FROM messages WHERE conversation_id = ?",
         binds = ["conversationId"],
         converter = "convertToMessageCount",

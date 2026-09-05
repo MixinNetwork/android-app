@@ -37,46 +37,10 @@ internal class MessageDataSource(
 ) {
     fun loadInitial(
         conversationId: String,
-        initialUnreadMessageId: String?,
-        initialUnreadCount: Int?,
         loadSize: Int,
     ): InitialMessagePage {
-        val totalCount = countMessages(conversationId)
         val unreadMessageId = MessageFetcherGenerated.findFirstUnreadMessageId(db, conversationId)
-        if (unreadMessageId == null) {
-            return loadBottom(conversationId, loadSize)
-        }
-
-        val storedInitialPosition = MessageFetcherGenerated.findInitialPosition(db, conversationId)
-        val initialPosition =
-            when {
-                storedInitialPosition > 0 -> storedInitialPosition
-                initialUnreadMessageId == unreadMessageId && initialUnreadCount != null -> initialUnreadCount
-                else -> MessageFetcherGenerated.countUnreadMessages(db, conversationId)
-            }
-        if (initialPosition <= 0) {
-            return loadBottom(conversationId, loadSize)
-        }
-
-        val effectiveCount = maxOf(totalCount, initialPosition)
-        val targetOffset = (initialPosition - 1).coerceAtLeast(0)
-        val maxStartOffset = (effectiveCount - loadSize).coerceAtLeast(0)
-        val startOffset =
-            (targetOffset - loadSize / 2)
-                .coerceAtLeast(0)
-                .coerceAtMost(maxStartOffset)
-        val page = loadOffsetWindow(conversationId, startOffset, loadSize)
-        val position = page.messages.indexOfFirst { it.messageId == unreadMessageId }
-        if (position >= 0) {
-            return InitialMessagePage(
-                position = position,
-                messages = page.messages,
-                unreadMessageId = unreadMessageId,
-                canLoadAbove = page.canLoadAbove,
-                canLoadBelow = page.canLoadBelow,
-            )
-        }
-
+            ?: return loadBottom(conversationId, loadSize)
         val anchor = findAnchorByMessageId(unreadMessageId)
             ?: return loadBottom(conversationId, loadSize)
         return loadAroundAnchor(conversationId, anchor, loadSize)
@@ -203,8 +167,13 @@ internal class MessageDataSource(
     fun findAnchorByPosition(
         conversationId: String,
         offset: Int,
+        totalCount: Int,
     ): ChatMessageAnchor? =
-        MessageFetcherGenerated.findAnchorByPosition(db, conversationId, offset)
+        if (offset < totalCount / 2) {
+            MessageFetcherGenerated.findAnchorByPosition(db, conversationId, offset)
+        } else {
+            MessageFetcherGenerated.findAnchorByPositionFromEnd(db, conversationId, totalCount - offset - 1)
+        }
 
     fun countMessages(conversationId: String): Int {
         MessageFetcherGenerated.findCachedMessageCount(db, conversationId)?.let { return it }

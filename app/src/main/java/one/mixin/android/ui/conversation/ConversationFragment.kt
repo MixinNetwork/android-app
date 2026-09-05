@@ -1487,7 +1487,9 @@ class ConversationFragment() :
                 if (viewDestroyed()) return@launch
 
                 binding.messageRv.post {
-                    messageAdapter.submitPrevious(pageData)
+                    if (messageAdapter.data.first()?.messageId == id) {
+                        messageAdapter.submitPrevious(pageData)
+                    }
                 }
             }
         }
@@ -1500,7 +1502,9 @@ class ConversationFragment() :
                 if (viewDestroyed()) return@launch
 
                 binding.messageRv.post {
-                    messageAdapter.submitNext(pageData)
+                    if (messageAdapter.data.last()?.messageId == id) {
+                        messageAdapter.submitNext(pageData)
+                    }
                 }
             }
         }
@@ -1997,6 +2001,7 @@ class ConversationFragment() :
                     onItemListener,
                     previousAction,
                     nextAction,
+                    messageFetcher::onWindowTrimmed,
                     isGroup = isGroup,
                     unreadMessageId = if (initialMessageId != null) null else unreadMessageId,
                     recipient = recipient,
@@ -2038,7 +2043,7 @@ class ConversationFragment() :
                         if (messageFetcher.isBottom()) {
                             val message = messageFetcher.findMessageById(event.ids)
                             if (message.isNotEmpty()) {
-                                (binding.messageRv.adapter as MessageAdapter).insert(message)
+                                (binding.messageRv.adapter as MessageAdapter).insert(message, isBottom)
                             }
                             if (isBottom) {
                                 scrollToDown()

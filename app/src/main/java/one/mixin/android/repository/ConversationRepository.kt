@@ -29,6 +29,7 @@ import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
+import one.mixin.android.db.deleteMessageByIds
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
@@ -531,7 +532,7 @@ class ConversationRepository
             val count = messageDao.countDeleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
             repeat((count / DB_DELETE_LIMIT) + 1) {
                 val ids = messageDao.findMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory, DB_DELETE_LIMIT)
-                messageDao.deleteMessageById(ids)
+                appDatabase.deleteMessageByIds(ids)
                 MessageFlow.delete(conversationId, ids)
             }
         }
