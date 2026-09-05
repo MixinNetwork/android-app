@@ -80,6 +80,7 @@ private class PersistentImageCacheStrategy : CacheStrategy {
 
 private fun newImageCallFactory(): Call.Factory =
     OkHttpClient.Builder()
+        .enforcePublicImageTargets()
         .addInterceptor { chain ->
             val original = chain.request()
             val request =

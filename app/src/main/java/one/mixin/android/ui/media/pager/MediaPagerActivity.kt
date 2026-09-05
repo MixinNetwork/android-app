@@ -42,8 +42,6 @@ import androidx.media3.common.util.UnstableApi
 import androidx.paging.PagedList
 import androidx.viewpager2.widget.ViewPager2
 import coil3.imageLoader
-import coil3.request.ImageRequest
-import coil3.request.SuccessResult
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -86,7 +84,6 @@ import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.SensorOrientationChangeNotifier
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
-import one.mixin.android.util.image.withDiskCacheFile
 import one.mixin.android.util.reportEvent
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.FixedMessageDataSource
@@ -471,20 +468,14 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         val coverUrl = item.appCardMediaCoverUrl()
         if (coverUrl != null) {
             return try {
-                val loader = imageLoader
-                val result = loader.execute(ImageRequest.Builder(this).data(coverUrl).build())
-                if (result !is SuccessResult) {
-                    null
-                } else {
-                    loader.withDiskCacheFile(result) { cachedFile ->
-                        val destination = createAppCardCoverCacheFile()
-                        try {
-                            cachedFile.copy(destination)
-                            destination
-                        } catch (e: Exception) {
-                            destination.delete()
-                            throw e
-                        }
+                imageLoader.diskCache?.openSnapshot(coverUrl)?.use { snapshot ->
+                    val destination = createAppCardCoverCacheFile()
+                    try {
+                        snapshot.data.toFile().copy(destination)
+                        destination
+                    } catch (e: Exception) {
+                        destination.delete()
+                        throw e
                     }
                 }
             } catch (e: Exception) {
