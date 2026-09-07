@@ -36,7 +36,7 @@ class PerpsMigrationTest {
     @Test
     fun migrate_2_3_preservesDataAndAddsPerpsColumns() {
         migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 2).apply {
-            insertMarketV2()
+            insertMarket()
             insertPositionV2()
             close()
         }
@@ -139,7 +139,130 @@ class PerpsMigrationTest {
         }
     }
 
-    private fun SupportSQLiteDatabase.insertMarketV2() {
+    @Test
+    fun migrate_5_6_addsNullableDescriptions() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 5).close()
+
+        val migratedDb = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME,
+            6,
+            true,
+            PerpsDatabase.MIGRATION_5_6,
+        )
+
+        migratedDb.query("PRAGMA table_info(markets)").use { cursor ->
+            val nameIndex = cursor.getColumnIndexOrThrow("name")
+            val notNullIndex = cursor.getColumnIndexOrThrow("notnull")
+            var foundDescriptions = false
+            while (cursor.moveToNext()) {
+                if (cursor.getString(nameIndex) == "descriptions") {
+                    foundDescriptions = true
+                    assertEquals(0, cursor.getInt(notNullIndex))
+                }
+            }
+            assertTrue(foundDescriptions)
+        }
+    }
+
+    @Test
+    fun migrate_6_7_preservesMarkets() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 6).apply {
+            insertMarket()
+            close()
+        }
+
+        val migratedDb =
+            migrationTestHelper.runMigrationsAndValidate(
+                Constants.DataBase.PERPS_DB_NAME,
+                7,
+                true,
+                PerpsDatabase.MIGRATION_6_7,
+            )
+
+        migratedDb.query("SELECT market_id FROM markets").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("market-1", cursor.getString(0))
+        }
+
+    }
+
+    @Test
+    fun migrate_7_8_clearsOrdersAndAddsFeeAndMarketMetrics() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 7).apply {
+            insertMarket()
+            insertOrderV7()
+            close()
+        }
+
+        val migratedDb = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME,
+            8,
+            true,
+            PerpsDatabase.MIGRATION_7_8,
+        )
+
+        migratedDb.query("SELECT market_id FROM markets").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("market-1", cursor.getString(0))
+        }
+
+        migratedDb.query("SELECT COUNT(*) FROM perps_orders").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+
+        assertColumn(migratedDb, "perps_orders", "fee_amount", "'0'")
+        assertColumn(migratedDb, "markets", "funding_interval_hours", "0")
+        assertColumn(migratedDb, "markets", "next_funding_at", "''")
+        assertColumn(migratedDb, "markets", "open_interest", "'0'")
+    }
+
+    private fun assertColumn(
+        db: SupportSQLiteDatabase,
+        table: String,
+        column: String,
+        defaultValue: String,
+    ) {
+        db.query("PRAGMA table_info(`$table`)").use { cursor ->
+            val nameIndex = cursor.getColumnIndexOrThrow("name")
+            val notNullIndex = cursor.getColumnIndexOrThrow("notnull")
+            val defaultValueIndex = cursor.getColumnIndexOrThrow("dflt_value")
+            var found = false
+            while (cursor.moveToNext()) {
+                if (cursor.getString(nameIndex) == column) {
+                    found = true
+                    assertEquals(1, cursor.getInt(notNullIndex))
+                    assertEquals(defaultValue, cursor.getString(defaultValueIndex))
+                }
+            }
+            assertTrue(found)
+        }
+    }
+
+    @Test
+    fun migrate_8_9_addsTradeVolumeScore() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 8).apply {
+            insertMarket()
+            close()
+        }
+
+        val migratedDb =
+            migrationTestHelper.runMigrationsAndValidate(
+                Constants.DataBase.PERPS_DB_NAME,
+                9,
+                true,
+                PerpsDatabase.MIGRATION_8_9,
+            )
+
+        migratedDb.query(
+            "SELECT trade_volume_score_1d FROM markets WHERE market_id = 'market-1'",
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+    }
+
+    private fun SupportSQLiteDatabase.insertMarket() {
         execSQL(
             """
             INSERT INTO markets (
@@ -196,6 +319,22 @@ class PerpsMigrationTest {
             ) VALUES (
                 'order-1', 'position-1', 'market-1', 'long', 'open', 'filled', 10, '1',
                 '99000', '0', '0', '0', NULL, NULL,
+                '2026-05-15T15:00:00Z', '2026-05-15T15:00:00Z'
+            )
+            """.trimIndent(),
+        )
+    }
+
+    private fun SupportSQLiteDatabase.insertOrderV7() {
+        execSQL(
+            """
+            INSERT INTO perps_orders (
+                order_id, position_id, market_id, side, order_type, status, leverage, quantity,
+                pay_amount, entry_price, close_price, realized_pnl, roe, close_reason, trigger_price,
+                created_at, updated_at
+            ) VALUES (
+                'order-1', 'position-1', 'market-1', 'long', 'open', 'filled', 10, '1',
+                '100', '99000', '0', '0', '0', NULL, NULL,
                 '2026-05-15T15:00:00Z', '2026-05-15T15:00:00Z'
             )
             """.trimIndent(),

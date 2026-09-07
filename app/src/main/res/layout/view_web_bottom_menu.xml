@@ -25,22 +25,22 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <TextView
+        <one.mixin.android.widget.NameTextView
             android:id="@+id/name_tv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:maxLines="1"
             android:textColor="?attr/text_primary"
-            android:textSize="16sp"
             android:layout_marginStart="@dimen/margin16"
             android:layout_marginEnd="@dimen/margin16"
+            app:ellipsize="end"
             app:layout_constraintBottom_toTopOf="@id/desc_tv"
             app:layout_constraintEnd_toStartOf="@id/close_iv"
             app:layout_constraintVertical_bias="0"
             app:layout_constraintHorizontal_bias="0"
             app:layout_constraintStart_toEndOf="@id/avatar"
-            app:layout_constraintTop_toTopOf="@id/avatar" />
+            app:layout_constraintTop_toTopOf="@id/avatar"
+            app:lines="1"
+            app:textSize="16sp" />
 
         <TextView
             android:id="@+id/desc_tv"

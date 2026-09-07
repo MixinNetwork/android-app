@@ -34,6 +34,7 @@ import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -127,10 +128,14 @@ fun OpenPositionPage(
     isLong: Boolean,
     source: String,
     onBack: () -> Unit,
+    onOrderCreated: () -> Unit = {},
     onOpenSuccess: (String) -> Unit = { onBack() },
     selectedToken: TokenItem?,
     onTokenSelect: () -> Unit = {},
     onCurrentTokenChange: (TokenItem?) -> Unit = {},
+    leaderPositionId: String? = null,
+    initialLeverage: Int? = null,
+    initialMargin: String? = null,
 ) {
     val context = LocalContext.current
     val waitingOtherOrdersError = stringResource(R.string.error_waiting_other_orders)
@@ -145,7 +150,14 @@ fun OpenPositionPage(
     var currentMarket by remember(marketId) { mutableStateOf(market) }
     var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
     var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
-    var usdtAmount by remember { mutableStateOf("") }
+    var usdtAmount by rememberSaveable(marketId, initialMargin) {
+        mutableStateOf(
+            limitTradeInputDecimalPlaces(
+                initialMargin.orEmpty(),
+                TRADE_INPUT_MAX_DECIMAL_PLACES,
+            ),
+        )
+    }
     var takeProfitPrice by remember { mutableStateOf("") }
     var stopLossPrice by remember { mutableStateOf("") }
     var remoteLiquidationPrice by remember { mutableStateOf<String?>(null) }
@@ -160,7 +172,15 @@ fun OpenPositionPage(
             .getInt(getLeveragePrefKey(marketId), DEFAULT_LEVERAGE)
             .coerceAtLeast(1)
     }
-    var leverage by remember(marketId) { mutableFloatStateOf(savedLeverage.toFloat()) }
+    var leverage by rememberSaveable(marketId, initialLeverage) {
+        mutableFloatStateOf(
+            resolveInitialPerpsLeverage(
+                requestedLeverage = initialLeverage,
+                savedLeverage = savedLeverage,
+                maxLeverage = market.leverage,
+            ).toFloat(),
+        )
+    }
 
     LaunchedEffect(marketId) {
         while (true) {
@@ -216,39 +236,39 @@ fun OpenPositionPage(
         val boundedLeverage = leverage.coerceIn(1f, maxLeverage.toFloat())
         if (boundedLeverage != leverage) {
             leverage = boundedLeverage
-            context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), boundedLeverage.toInt())
+            if (initialLeverage == null) {
+                context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), boundedLeverage.toInt())
+            }
         }
     }
 
-    LaunchedEffect(usdtAmount, leverage) {
+    LaunchedEffect(usdtAmount, leverage, currentMarket.minAmount) {
         val amount = usdtAmount.toBigDecimalOrNull()
-        if (amount == null || amount <= BigDecimal.ZERO) {
+        val minimumAmount = currentMarket.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        if (!shouldRequestLiquidationPrice(amount, minimumAmount)) {
             remoteLiquidationPrice = null
             isLiquidationLoading = false
             return@LaunchedEffect
         }
+        val requestAmount = amount ?: return@LaunchedEffect
         liquidationJob?.cancel()
         liquidationJob = launch {
+            remoteLiquidationPrice = null
             isLiquidationLoading = true
             delay(200L)
-            while (true) {
-                val normalizedAmount = amount
-                    .stripTrailingZeros()
-                    .toPlainString()
-                    .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
-                val result = viewModel.estimateLiquidationPrice(
+            val normalizedAmount = requestAmount
+                .stripTrailingZeros()
+                .toPlainString()
+                .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
+            remoteLiquidationPrice = requestLiquidationPrice {
+                viewModel.estimateLiquidationPrice(
                     marketId = currentMarket.marketId,
                     amount = normalizedAmount,
                     side = if (isLong) "long" else "short",
                     leverage = leverage.toInt(),
                 )
-                if (result != null) {
-                    remoteLiquidationPrice = result
-                    isLiquidationLoading = false
-                    break
-                }
-                delay(1000L)
             }
+            isLiquidationLoading = false
         }
     }
 
@@ -262,7 +282,12 @@ fun OpenPositionPage(
     val aboveMaximumMargin = hasInputAmount && maximumMargin > BigDecimal.ZERO && inputAmount > maximumMargin
     val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
     val showAddAction = insufficientBalance || tokenBalance <= BigDecimal.ZERO
-    val canReview = hasInputAmount && !belowMinimumMargin && !aboveMaximumMargin && !insufficientBalance && !isLiquidationLoading
+    val canReview = hasInputAmount &&
+        !belowMinimumMargin &&
+        !aboveMaximumMargin &&
+        !insufficientBalance &&
+        !isLiquidationLoading &&
+        !remoteLiquidationPrice.isNullOrBlank()
     val minimumMarginError = stringResource(
         R.string.perps_minimum_margin,
         minimumMargin.stripTrailingZeros().toPlainString(),
@@ -414,11 +439,12 @@ fun OpenPositionPage(
                         token = currentToken?.toSwapToken(),
                         text = usdtAmount,
                         selectClick = {
-                            AnalyticsTracker.trackPerpsMarginTokenSelect(currentToken?.chainName, currentToken?.symbol)
+                            AnalyticsTracker.trackPerpsOpenMarginSelect(currentToken?.chainName, currentToken?.symbol)
                             onTokenSelect()
                         },
                         onInputChanged = { usdtAmount = it },
                         tokenIconSize = 25.dp,
+                        autoFocus = true,
                         maxDecimalPlaces = TRADE_INPUT_MAX_DECIMAL_PLACES,
                     )
 
@@ -441,7 +467,7 @@ fun OpenPositionPage(
                                 textAlign = TextAlign.Start,
                             ),
                             modifier = Modifier.clickable {
-                                AnalyticsTracker.trackPerpsAmountInputBalance()
+                                AnalyticsTracker.trackPerpsOpenAmountBalance()
                                 usdtAmount = limitTradeInputDecimalPlaces(currentToken?.balance ?: "0", TRADE_INPUT_MAX_DECIMAL_PLACES)
                             }
                         )
@@ -508,7 +534,7 @@ fun OpenPositionPage(
                         ).setOnLeverageSelected { newLeverage ->
                             leverage = newLeverage
                             context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
-                            AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
+                            AnalyticsTracker.trackPerpsOpenLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                         }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                     }
                 }
@@ -542,7 +568,7 @@ fun OpenPositionPage(
                             ).setOnLeverageSelected { newLeverage ->
                                 leverage = newLeverage
                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
-                                AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
+                                AnalyticsTracker.trackPerpsOpenLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                         }.widthIn(min = 52.dp),
                         text = "${leverage.toInt()}x",
@@ -591,7 +617,7 @@ fun OpenPositionPage(
                                     )
                                     .clickable {
                                         if (lev == -1) {
-                                            AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_TAB)
+                                            AnalyticsTracker.trackPerpsOpenLeverageSelect(PERPS_LEVERAGE_CUSTOM_TAB)
                                             val activity = context as? FragmentActivity ?: return@clickable
                                             LeverageBottomSheetDialogFragment.newInstance(
                                                 currentLeverage = leverage,
@@ -601,12 +627,12 @@ fun OpenPositionPage(
                                             ).setOnLeverageSelected { newLeverage ->
                                                 leverage = newLeverage
                                                 context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), newLeverage.toInt())
-                                                AnalyticsTracker.trackPerpsLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
+                                                AnalyticsTracker.trackPerpsOpenLeverageSelect(PERPS_LEVERAGE_CUSTOM_INPUT)
                                             }.show(activity.supportFragmentManager, LeverageBottomSheetDialogFragment.TAG)
                                         } else {
                                             leverage = lev.toFloat()
                                             context.defaultSharedPreferences.putInt(getLeveragePrefKey(marketId), lev)
-                                            AnalyticsTracker.trackPerpsLeverageSelect(
+                                            AnalyticsTracker.trackPerpsOpenLeverageSelect(
                                                 if (lev == maxLeverage) {
                                                     PERPS_LEVERAGE_MAX
                                                 } else {
@@ -730,7 +756,7 @@ fun OpenPositionPage(
                     onClick = {
                         if (isProcessing) return@MixinButton
                         isProcessing = true
-                        AnalyticsTracker.trackPerpsPreview(leverage.toInt().toPerpsLeverageValue())
+                        AnalyticsTracker.trackPerpsOpenPreview()
                         errorInfo = null
                         val token = currentToken ?: run { isProcessing = false; return@MixinButton }
                         val amount = usdtAmount.toBigDecimalOrNull() ?: run { isProcessing = false; return@MixinButton }
@@ -779,8 +805,10 @@ fun OpenPositionPage(
                                 // Null means "leave TP/SL unset" when creating a new position.
                                 takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
                                 stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
+                                leaderPositionId = leaderPositionId,
                                 entryPrice = m.last,
                                 onSuccess = { response ->
+                                    onOrderCreated()
                                     PerpsConfirmBottomSheetDialogFragment.newInstance(
                                         marketSymbol = m.displaySymbol,
                                         marketIcon = m.iconUrl,
@@ -788,6 +816,7 @@ fun OpenPositionPage(
                                         amount = response.payAmount,
                                         leverage = leverage.toInt(),
                                         entryPrice = m.last,
+                                        marginAssetPrice = token.priceUsd,
                                         tokenSymbol = token.symbol,
                                         takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
                                         stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
@@ -858,15 +887,15 @@ fun OpenPositionPage(
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
                         InputAction("25%", showBorder = true) {
-                            AnalyticsTracker.trackPerpsAmountInputPercent("25%")
+                            AnalyticsTracker.trackPerpsOpenAmountPercent("25%")
                             applyBalancePercent(BigDecimal("0.25"))
                         }
                         InputAction("50%", showBorder = true) {
-                            AnalyticsTracker.trackPerpsAmountInputPercent("50%")
+                            AnalyticsTracker.trackPerpsOpenAmountPercent("50%")
                             applyBalancePercent(BigDecimal("0.5"))
                         }
                         InputAction("100%", showBorder = true) {
-                            AnalyticsTracker.trackPerpsAmountInputPercent("max")
+                            AnalyticsTracker.trackPerpsOpenAmountPercent("max")
                             applyBalancePercent(BigDecimal.ONE)
                         }
                         InputAction(stringResource(R.string.Done), showBorder = false) {
@@ -880,6 +909,12 @@ fun OpenPositionPage(
     }
 
 }
+
+internal fun resolveInitialPerpsLeverage(
+    requestedLeverage: Int?,
+    savedLeverage: Int,
+    maxLeverage: Int,
+): Int = (requestedLeverage ?: savedLeverage).coerceIn(1, maxLeverage.coerceAtLeast(1))
 
 private fun generateLeverageOptions(maxLeverage: Int): List<Int> {
     val safeMaxLeverage = maxLeverage.coerceAtLeast(1)

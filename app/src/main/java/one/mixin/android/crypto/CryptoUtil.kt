@@ -1,4 +1,4 @@
-@file:Suppress("NOTHING_TO_INLINE")
+@file:Suppress("NOTHING_TO_INLINE", "DEPRECATION")
 
 package one.mixin.android.crypto
 
@@ -328,6 +328,7 @@ fun storeValueInEncryptedPreferences(context: Context, alias: String, entropy: B
     encryptedPrefs.edit(commit = true) { putString(alias, encodedKey) }
 }
 
+@Suppress("DEPRECATION")
 fun removeValueFromEncryptedPreferences(context: Context, alias: String) {
     runCatching {
         val encryptedPrefs = EncryptedSharedPreferences.create(

@@ -40,7 +40,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import kotlin.math.hypot
 
-private val MarketPerpsButtonOverlap = 13.dp
+private val MarketPerpsButtonOverlap = 16.dp
 private val MarketPerpsButtonSlant = 27.dp
 private val MarketPerpsButtonContentOffset = 6.dp
 private val MarketPerpsButtonVerticalPadding = 7.dp

@@ -24,12 +24,18 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlinx.coroutines.yield
 import one.mixin.android.Constants.DB_EXPIRED_LIMIT
 import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
@@ -40,7 +46,7 @@ import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.deleteMessageById
+import one.mixin.android.db.deleteMessageByIds
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.flow.MessageFlow.ANY_ID
 import one.mixin.android.db.pending.PendingDatabase
@@ -51,7 +57,7 @@ import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.fts.FtsDatabase
-import one.mixin.android.fts.deleteByMessageId
+import one.mixin.android.fts.deleteByMessageIds
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.messenger.Hedwig
 import one.mixin.android.messenger.HedwigImp
@@ -82,6 +88,24 @@ import timber.log.Timber
 import javax.inject.Inject
 import kotlin.math.max
 
+internal suspend fun runExpiredCleanupWithRetry(
+    retryDelayMillis: Long,
+    onFailure: (Exception) -> Unit,
+    cleanup: suspend () -> Unit,
+) {
+    while (true) {
+        try {
+            cleanup()
+            return
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            onFailure(e)
+            delay(retryDelayMillis)
+        }
+    }
+}
+
 @AndroidEntryPoint
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
     companion object {
@@ -90,6 +114,9 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         const val ACTION_TO_BACKGROUND = "mixin.intent.action.TO_BACKGROUND"
         const val ACTION_ACTIVITY_RESUME = "action_activity_resume"
         const val ACTION_ACTIVITY_PAUSE = "action_activity_pause"
+        private const val EXPIRED_OBSERVE_DELAY_MS = 1_500L
+        private const val EXPIRED_CLEANUP_RETRY_DELAY_MS = 1_000L
+        private const val EXPIRED_ACK_WAIT_TIMEOUT_MS = 100L
 
         fun startService(
             ctx: Context,
@@ -270,6 +297,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         ackJob = null
         statusJob?.cancel()
         statusJob = null
+        expiredObserveJob?.cancel()
+        expiredObserveJob = null
         expiredJob?.cancel()
         expiredJob = null
         webSocket.disconnect()
@@ -362,6 +391,7 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         ackObservedDatabase = null
     }
 
+    @Volatile
     private var ackJob: Job? = null
     private val ackObserver =
         object : InvalidationTracker.Observer("jobs") {
@@ -476,13 +506,47 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         expiredObservedDatabase = null
     }
 
+    private val expiredCleanupMutex = Mutex()
     private var expiredJob: Job? = null
+    private var expiredObserveJob: Job? = null
     private val expiredObserver =
         object : InvalidationTracker.Observer("expired_messages") {
             override fun onInvalidated(tables: Set<String>) {
-                runExpiredJob()
+                scheduleExpiredObserveJob()
             }
         }
+
+    @Synchronized
+    private fun scheduleExpiredObserveJob() {
+        if (expiredObserveJob?.isActive == true) {
+            return
+        }
+        expiredObserveJob =
+            lifecycleScope.launch {
+                delay(EXPIRED_OBSERVE_DELAY_MS)
+                clearExpiredObserveJob()
+                try {
+                    withContext(Dispatchers.IO) {
+                        val expireAt = expiredMessageDao().getFirstExpiredMessage()?.expireAt
+                        if (expireAt == null) {
+                            runExpiredJob()
+                        } else {
+                            startExpiredJob(expireAt)
+                        }
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e)
+                    scheduleExpiredObserveJob()
+                }
+            }
+    }
+
+    @Synchronized
+    private fun clearExpiredObserveJob() {
+        expiredObserveJob = null
+    }
 
     @Synchronized
     private fun runStatusJob() {
@@ -531,39 +595,64 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
+    @Synchronized
     private fun runExpiredJob() {
         if (expiredJob?.isActive == true) {
             return
         }
         expiredJob =
             lifecycleScope.launch {
-                try {
-                    withContext(Dispatchers.IO) {
-                        processExpiredMessage()
+                expiredCleanupMutex.withLock {
+                    runExpiredCleanupWithRetry(
+                        retryDelayMillis = EXPIRED_CLEANUP_RETRY_DELAY_MS,
+                        onFailure = { Timber.e(it) },
+                    ) {
+                        withContext(Dispatchers.IO) {
+                            processExpiredMessage()
+                        }
                     }
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    runExpiredJob()
                 }
             }
     }
 
+    @Synchronized
     private fun startExpiredJob(expiredTime: Long) {
-        val nextExpirationTime = this.nextExpirationTime
-        if (expiredTime <= currentTimeSeconds() || (nextExpirationTime != null && expiredTime < nextExpirationTime)) {
-            expiredJob?.cancel()
-            runExpiredJob()
+        val scheduled = nextExpirationTime
+        val shouldRestart =
+            expiredTime <= currentTimeSeconds() ||
+                expiredJob?.isActive != true ||
+                (scheduled != null && expiredTime < scheduled)
+        if (!shouldRestart) {
+            return
         }
+        expiredJob?.cancel()
+        expiredJob = null
         runExpiredJob()
     }
 
+    @Volatile
     private var nextExpirationTime: Long? = null
+
+    private suspend fun awaitAckJob() {
+        if (!networkConnected()) {
+            return
+        }
+        val currentAckJob = ackJob
+        if (currentAckJob?.isActive != true) {
+            return
+        }
+        withTimeoutOrNull(EXPIRED_ACK_WAIT_TIMEOUT_MS) {
+            currentAckJob.join()
+        }
+    }
 
     private tailrec suspend fun processExpiredMessage() {
         val messages =
             expiredMessageDao().getExpiredMessages(currentTimeSeconds(), DB_EXPIRED_LIMIT)
+        currentCoroutineContext().ensureActive()
         if (messages.isEmpty()) {
             val firstExpiredMessage = expiredMessageDao().getFirstExpiredMessage()
+            currentCoroutineContext().ensureActive()
             if (firstExpiredMessage == null) {
                 nextExpirationTime = null
             } else {
@@ -575,15 +664,18 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     )
                 Timber.e("Expired job: delay $delayTime")
                 delay(delayTime)
-                expiredJob?.ensureActive()
+                currentCoroutineContext().ensureActive()
                 processExpiredMessage()
             }
         } else {
+            awaitAckJob()
+            currentCoroutineContext().ensureActive()
             val ids = messages.map { it.messageId }
             val cIds = messageDao().findConversationsByMessages(ids)
+            val transcriptIds = mutableListOf<String>()
             ids.forEach { messageId ->
                 val messageMedia = pendingDatabase().findMessageMediaById(messageId) ?: messageDao().findMessageMediaById(messageId)
-                Timber.e("Expired job: delete messages ${messageMedia?.type} - ${messageMedia?.messageId}")
+                Timber.d("Expired job: delete messages ${messageMedia?.type} - ${messageMedia?.messageId}")
                 messageMedia?.absolutePath(
                     MixinApplication.appContext,
                     messageMedia.conversationId,
@@ -592,20 +684,24 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                     jobManager.addJobInBackground(AttachmentDeleteJob(it))
                 }
                 if (messageMedia?.isTranscript() == true) {
-                    jobManager.addJobInBackground(TranscriptDeleteJob(listOf(messageId)))
+                    transcriptIds.add(messageId)
                 }
-                pendingDatabase().deletePendingMessageById(messageId)
-                mixinDatabase().deleteMessageById(messageId)
-                ftsDatabase().deleteByMessageId(messageId)
-                MessageFlow.delete(ANY_ID, messageId)
             }
+            if (transcriptIds.isNotEmpty()) {
+                jobManager.addJobInBackground(TranscriptDeleteJob(transcriptIds))
+            }
+            pendingDatabase().deletePendingMessageByIds(ids)
+            mixinDatabase().deleteMessageByIds(ids)
+            ftsDatabase().deleteByMessageIds(ids)
+            MessageFlow.delete(ANY_ID, ids)
 
             cIds.forEach { id ->
                 conversationDao().refreshLastMessageId(id)
                 conversationExtDao().refreshCountByConversationId(id)
             }
             nextExpirationTime = null
-            expiredJob?.ensureActive()
+            yield()
+            currentCoroutineContext().ensureActive()
             processExpiredMessage()
         }
     }

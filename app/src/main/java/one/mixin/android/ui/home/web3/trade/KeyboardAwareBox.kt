@@ -28,6 +28,7 @@ import timber.log.Timber
 @Composable
 fun KeyboardAwareBox(
     modifier: Modifier = Modifier,
+    showFloating: Boolean = true,
     content: @Composable BoxScope.(Dp?) -> Unit,
     floating: @Composable BoxScope.() -> Unit,
 ) {
@@ -62,7 +63,7 @@ fun KeyboardAwareBox(
     Box(modifier = modifier) {
         content(availableHeight)
 
-        if (isKeyboardVisible) {
+        if (isKeyboardVisible && showFloating) {
             Timber.e("imeBottom: $imeBottom, systemBarsBottom: $systemBarsBottom")
 
             Surface(

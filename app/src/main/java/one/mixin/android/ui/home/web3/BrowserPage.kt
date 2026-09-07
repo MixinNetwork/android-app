@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.home.web3
 
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -94,7 +96,7 @@ fun BrowserPage(
     isSpeedUp: Boolean,
     tipGas: TipGas?,
     solanaFee: BigDecimal?,
-    btcFee: BigDecimal?,
+    utxoFee: BigDecimal?,
     parsedTx: ParsedTx?,
     solanaTxSource: SolanaTxSource,
     asset: Token?,
@@ -333,7 +335,7 @@ fun BrowserPage(
                 }
                 val customFeeValue = feeAmount?.toBigDecimalOrNull()
                 val feePrice = feeToken?.priceUsd?.toBigDecimalOrNull() ?: asset.priceUSD()
-                val fee = customFeeValue ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros()?: btcFee?.stripTrailingZeros() ?: BigDecimal.ZERO
+                val fee = customFeeValue ?: tipGas?.displayValue(transaction?.maxFeePerGas) ?: solanaFee?.stripTrailingZeros()?: utxoFee?.stripTrailingZeros() ?: BigDecimal.ZERO
                 if (fee == BigDecimal.ZERO) {
                     FeeInfo(
                         amount = "$fee",
@@ -416,7 +418,7 @@ fun BrowserPage(
                     ItemContent(title = stringResource(id = R.string.Wallet).uppercase(), subTitle = account)
                 })
                 Box(modifier = Modifier.height(20.dp))
-                ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = chain.name)
+                ItemContent(title = stringResource(id = R.string.network).uppercase(), subTitle = token?.getChainDisplayName() ?: chain.name)
                 Box(modifier = Modifier.height(20.dp))
             }
             Box(modifier = Modifier.fillMaxWidth()) {

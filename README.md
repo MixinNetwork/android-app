@@ -29,6 +29,13 @@ This project uses [ktlint](https://github.com/pinterest/ktlint)
 
 * [Docker](https://www.docker.com/) ensure has at least 6 GB of RAM
 * [ADB](https://developer.android.com/studio/releases/platform-tools)
+* Android SDK Build Tools with `ANDROID_HOME` configured
+* The trusted release signing certificate SHA-256 digest
     ```shell
-    verify-mixin-apk.sh
+    EXPECTED_CERT_SHA256=<certificate-sha256> ./verify-mixin-apk.sh
     ```
+
+The verification script builds the Google Play app bundle, generates the APK
+set for the connected device, and compares every installed base and ABI split
+APK. It downloads a pinned Bundletool release and verifies its checksum before
+use.

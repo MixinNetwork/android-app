@@ -209,7 +209,7 @@ fun MixinMemberUpgradePage(
 
                             if (isGooglePlayChannel) {
                                 plan.playStoreSubscriptionId?.let { playStoreId ->
-                                    onGooglePlay(orderResponse.data!!.orderId!!, playStoreId)
+                                    onGooglePlay(orderResponse.data!!.orderId, playStoreId)
                                 }
                             } else {
                                 onUrlGenerated(orderResponse.data!!.paymentUrl!!)

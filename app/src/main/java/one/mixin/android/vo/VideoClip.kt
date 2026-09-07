@@ -1,10 +1,14 @@
 package one.mixin.android.vo
 
+import com.google.gson.annotations.SerializedName
 import one.mixin.android.util.GsonHelper
 
 class VideoClip(
+    @SerializedName("uri")
     val uri: String,
+    @SerializedName("startProgress")
     val startProgress: Float,
+    @SerializedName("endProgress")
     val endProgress: Float,
 )
 

@@ -55,6 +55,7 @@ import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
@@ -224,5 +225,12 @@ class ReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         }
     }
     override fun showError(error: String) {
+    }
+
+    override fun onDetach() {
+        super.onDetach()
+        if (activity is UrlInterpreterActivity && parentFragmentManager.fragments.isEmpty()) {
+            activity?.finish()
+        }
     }
 }

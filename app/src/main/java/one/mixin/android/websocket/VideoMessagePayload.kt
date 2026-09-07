@@ -3,6 +3,7 @@ package one.mixin.android.websocket
 import com.google.gson.annotations.SerializedName
 
 data class VideoMessagePayload(
+    @SerializedName("url")
     val url: String,
     @SerializedName("message_id")
     val messageId: String? = null,

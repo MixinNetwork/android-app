@@ -22,7 +22,8 @@ import one.mixin.android.compose.theme.MixinAppTheme
 @Composable
 fun MultiColorProgressBar(
     distributions: List<AssetDistribution>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    segmentColors: List<Color>? = null,
 ) {
     val density = LocalDensity.current
     val strokeHeight = 4.dp
@@ -83,11 +84,14 @@ fun MultiColorProgressBar(
                 val filteredDistributions = distributions.take(3)
                 
                 filteredDistributions.forEachIndexed { index, asset ->
-                    val brush = when (index) {
-                        0 -> blueGradient
-                        1 -> purpleGradient
-                        else -> yellowGradient
-                    }
+                    val brush =
+                        segmentColors?.getOrNull(index)?.let { color ->
+                            Brush.horizontalGradient(listOf(color, color))
+                        } ?: when (index) {
+                            0 -> blueGradient
+                            1 -> purpleGradient
+                            else -> yellowGradient
+                        }
                     
                     val shape = when {
                         filteredDistributions.size == 1 -> RoundedCornerShape(cornerRadius)

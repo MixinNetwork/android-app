@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <TextView
+        android:id="@+id/home_toolbar_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_centerVertical="true"
+        android:layout_marginStart="16dp"
+        android:textColor="?attr/text_primary"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:ignore="RelativeOverlap"
+        tools:text="@string/More" />
+
+    <ImageButton
+        android:id="@+id/home_toolbar_search"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="14dp"
+        android:layout_toStartOf="@id/home_toolbar_scan"
+        android:background="@drawable/mixin_ripple"
+        android:padding="8dp"
+        app:srcCompat="@drawable/ic_search_home"
+        tools:ignore="ContentDescription" />
+
+    <ImageButton
+        android:id="@+id/home_toolbar_scan"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="14dp"
+        android:layout_toStartOf="@id/home_toolbar_settings"
+        android:background="@drawable/mixin_ripple"
+        android:padding="8dp"
+        app:srcCompat="@drawable/ic_bot_category_scan"
+        tools:ignore="ContentDescription" />
+
+    <ImageButton
+        android:id="@+id/home_toolbar_settings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="12dp"
+        android:background="@drawable/mixin_ripple"
+        android:padding="8dp"
+        app:srcCompat="@drawable/ic_home_setting"
+        tools:ignore="ContentDescription" />
+
+</merge>

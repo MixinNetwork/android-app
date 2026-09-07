@@ -1,16 +1,22 @@
 package one.mixin.android.websocket
 
 import com.google.gson.JsonElement
+import com.google.gson.annotations.SerializedName
 import one.mixin.android.api.ResponseError
 import one.mixin.android.extension.notNullWithElse
 import java.io.Serializable
 import java.util.UUID
 
 data class BlazeMessage(
+    @SerializedName("id")
     var id: String,
+    @SerializedName("action")
     val action: String,
+    @SerializedName("params")
     val params: BlazeMessageParam?,
+    @SerializedName("data")
     val data: JsonElement? = null,
+    @SerializedName("error")
     val error: ResponseError? = null,
 ) : Serializable {
     companion object {

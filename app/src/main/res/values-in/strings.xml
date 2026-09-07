@@ -382,8 +382,8 @@
     <plurals name="Minute" tools:ignore="UnusedQuantity">
         <item quantity="other">%d Menit</item>
     </plurals>
-    <string name="Mixin">Mixin</string>
     <string name="Mixin_ID">Mixin ID</string>
+    <string name="Mixin_One">Mixin One</string>
     <string name="Mixin_Messenger_Desktop">Mixin Desktop</string>
     <string name="Monday">Senin</string>
     <string name="More">Lebih banyak</string>
@@ -698,4 +698,41 @@
     <string name="withdrawal_to">Penarikan ke %1$s</string>
     <string name="You">Anda</string>
     <string name="You_deleted_this_message">Anda menghapus pesan ini</string>
+    <string name="hours_count_short">%1$dh</string>
+    <string name="days_count_short">%1$dd</string>
+    <string name="hours_count_long">%1$d jam</string>
+    <string name="days_count_long">%1$d hari</string>
+    <string name="Add_to_Watchlist">Tambahkan ke daftar pantauan</string>
+    <string name="Remove_from_Watchlist">Hapus dari daftar pantauan</string>
+    <string name="Keep">Simpan</string>
+    <string name="market_volume_short">Vol</string>
+    <string name="Crypto">Spot</string>
+    <string name="market_stock">Saham</string>
+    <string name="Indicator">Indikator</string>
+    <string name="market_display">Tampilan Pasar</string>
+    <string name="volume_label">VOL: %1$s</string>
+    <string name="watchlist_remove_desc">%1$s telah dihapus dari daftar pantauan Anda</string>
+    <string name="perps_category_meme">Meme</string>
+    <string name="perps_funding_frequency_value">1/4/8 jam</string>
+    <string name="Trading_Fee">Biaya Trading</string>
+    <string name="perps_funding_title_interval">Pendanaan (%1$d jam)</string>
+    <string name="Open_Fee">Biaya Pembukaan</string>
+    <string name="Close_Fee">Biaya Penutupan</string>
+    <string name="perps_trading_fee_overview">Biaya berlaku saat membuka, menambah, atau menutup posisi. Biaya dihitung berdasarkan nilai posisi, bukan margin.</string>
+    <string name="perps_trading_fee_pnl_1">Semakin besar posisi, semakin tinggi biayanya</string>
+    <string name="perps_trading_fee_pnl_2">Semakin kecil posisi, semakin rendah biayanya</string>
+    <string name="perps_trading_fee_pnl_3">Biaya sudah termasuk dalam PnL terealisasi Anda</string>
+    <string name="Bitcoin_Dominance">Dominasi Bitcoin</string>
+    <string name="Perp">Perp</string>
+    <string name="classic_wallet_pearl_intro_title">Common Wallet kini mendukung Pearl</string>
+    <string name="Debug_Wallet_Account_Visibility">Visibilitas akun dompet</string>
+    <string name="Debug_Earn_Account">Akun Earn</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">Total Penghasilan</string>
+    <string name="Total_Amount">Jumlah Total</string>
+    <string name="Cash_Account">Rekening Tunai</string>
+    <string name="earn_reward_rate">Tingkat Imbalan</string>
+    <string name="wallet_home_earn_account">Akun Earn</string>
+    <string name="earn_balance">Saldo Earn</string>
+    <string name="earn_yesterday_earnings">Pendapatan kemarin</string>
 </resources>

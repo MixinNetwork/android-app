@@ -29,19 +29,24 @@ data class StickerAlbum(
     @ColumnInfo(name = "user_id")
     val userId: String,
     @ColumnInfo(name = "category")
+    @SerializedName("category")
     val category: String,
     @ColumnInfo(name = "description")
+    @SerializedName("description")
     val description: String,
     @ColumnInfo(name = "banner")
+    @SerializedName("banner")
     val banner: String?,
     @SerializedName("is_verified")
     @ColumnInfo(name = "is_verified")
     val isVerified: Boolean = false,
     @Expose
     @ColumnInfo(name = "ordered_at", defaultValue = "0")
+    @SerializedName("orderedAt")
     var orderedAt: Int = 0,
     @Expose
     @ColumnInfo(name = "added", defaultValue = "0")
+    @SerializedName("added")
     var added: Boolean = false,
 ) {
     companion object {

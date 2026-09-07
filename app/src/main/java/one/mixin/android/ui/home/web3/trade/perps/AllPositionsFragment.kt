@@ -67,7 +67,7 @@ class AllPositionsFragment : BaseFragment() {
             AnalyticsTracker.trackPerpsAllPositions(source)
         }
         if (positionType == AllPositionsType.CLOSED) {
-            AnalyticsTracker.trackPerpsActivity(source)
+            AnalyticsTracker.trackPerpsActivities(source)
         }
 
         return ComposeView(inflater.context).apply {
@@ -110,6 +110,11 @@ class AllPositionsFragment : BaseFragment() {
                                     )
                                 }
                             }
+                        },
+                        onCloseAllPositions = { positions ->
+                            AnalyticsTracker.trackPerpsCloseStart(AnalyticsTracker.PerpsCloseType.MULTIPLE)
+                            PerpsBatchCloseBottomSheetDialogFragment.newInstance(positions)
+                                .show(parentFragmentManager, PerpsBatchCloseBottomSheetDialogFragment.TAG)
                         },
                         onClosedPositionClick = { position ->
                             activity?.supportFragmentManager?.let { fm ->

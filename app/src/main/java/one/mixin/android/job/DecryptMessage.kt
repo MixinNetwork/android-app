@@ -56,9 +56,10 @@ import one.mixin.android.ui.web.replaceApp
 import one.mixin.android.util.ColorUtil
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.PENDING_DB_THREAD
-import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.cancelConversationNotifications
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.mention.resolveMentionUsers
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCap
@@ -275,6 +276,18 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 data.status,
             )
         val appCardData = gson.fromJson(message.content, AppCardData::class.java)
+        appCardData.description?.let { description ->
+            parseMentionData(
+                description,
+                data.messageId,
+                data.conversationId,
+                userDao,
+                messageMentionDao,
+                data.userId,
+            ) { identityNumbers ->
+                resolveMentionUsers(identityNumbers, userApi, userDao, appDao)
+            }
+        }
         appCardData.appId?.let { id ->
             runBlocking {
                 var app = appDao.findAppById(id)
@@ -432,9 +445,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 messageDao.insert(it)
             }
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
+                syncUser(data.userId, data.conversationId)
                 RxBus.publish(RecallEvent(msg.messageId))
                 messageDao.recallFailedMessage(msg.messageId)
-                messageDao.recallMessage(msg.messageId)
+                messageDao.recallMessage(msg.messageId, data.userId)
                 ftsDatabase.deleteByMessageId(msg.messageId)
                 messageDao.recallPinMessage(msg.messageId, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.messageId)
@@ -460,7 +474,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
 
                 jobManager.cancelJobByMixinJobId(msg.messageId)
                 if (messageDao.findLastMessageId(msg.conversationId) == msg.messageId) {
-                    notificationManager.cancel(msg.conversationId.hashCode())
+                    notificationManager.cancelConversationNotifications(msg.conversationId)
                 }
                 MessageFlow.update(msg.conversationId, msg.messageId)
                 conversationDao.updateLastMessageId(
@@ -520,7 +534,7 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                             updateConversationList.forEach { cId ->
                                 remoteMessageStatusDao.updateConversationUnseen(cId)
                                 MessageFlow.update(cId, updateMessageIds)
-                                notificationManager.cancel(cId.hashCode())
+                                notificationManager.cancelConversationNotifications(cId)
                             }
                         }
 
@@ -1160,7 +1174,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         snapshotDao.insert(snapshot)
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshAssetsJob(snapshot.assetId))
-        runBlocking { AnalyticsTracker.setAssetLevel(tokenDao.findTotalUSDBalance() ?: 0) }
 
         if (snapshot.type == SnapshotType.transfer.name && snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)
@@ -1194,7 +1207,6 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
         insertMessage(message, data)
         jobManager.addJobInBackground(RefreshTokensJob(snapshot.assetId, data.conversationId, data.messageId))
         jobManager.addJobInBackground(SyncOutputJob())
-        runBlocking { AnalyticsTracker.setAssetLevel(tokenDao.findTotalUSDBalance() ?: 0) }
 
         if (snapshot.amount.toFloat() > 0) {
             generateNotification(message, data)

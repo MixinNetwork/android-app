@@ -32,16 +32,22 @@ data class Web3TransactionItem(
     
     @ColumnInfo(name = "fee")
     val fee: String,
+
+    @ColumnInfo(name = "sponsor_fee_asset_id")
+    val sponsorFeeAssetId: String? = null,
+
+    @ColumnInfo(name = "sponsor_fee_amount")
+    val sponsorFeeAmount: String? = null,
     
-    @TypeConverters(AssetChangeListConverter::class)
+    @field:TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "senders")
     val senders: List<AssetChange>,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @field:TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "receivers")
     val receivers: List<AssetChange>,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @field:TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "approvals")
     val approvals: List<AssetChange>? = null,
     
@@ -75,6 +81,9 @@ data class Web3TransactionItem(
     @ColumnInfo(name = "receive_asset_symbol")
     val receiveAssetSymbol: String? = null,
 
+    @ColumnInfo(name = "sponsor_fee_asset_symbol")
+    val sponsorFeeAssetSymbol: String? = null,
+
     @ColumnInfo(name = "level")
     val level: Int,
 ) : Parcelable {
@@ -97,6 +106,15 @@ data class Web3TransactionItem(
     }
 
     fun isNotVerified() = level < Constants.AssetLevel.VERIFIED
+
+    fun displayFeeAmount(): String = if (hasSponsorFee()) sponsorFeeAmount.orEmpty() else fee
+
+    fun displayFeeSymbol(): String? = if (hasSponsorFee()) sponsorFeeAssetSymbol ?: chainSymbol else chainSymbol
+
+    fun hasSponsorFee(): Boolean {
+        val amount = sponsorFeeAmount?.takeIf { it.isNotBlank() } ?: return false
+        return amount.toBigDecimalOrNull()?.signum()?.let { it != 0 } ?: true
+    }
 
     fun getMainAmount(): String {
         return when (transactionType) {

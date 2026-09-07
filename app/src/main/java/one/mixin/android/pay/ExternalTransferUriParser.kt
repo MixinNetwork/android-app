@@ -172,6 +172,7 @@ fun String.addSlashesIfNeeded(): String {
 val externalTransferAssetIdMap by lazy {
     mapOf(
         "bitcoin" to Constants.ChainId.BITCOIN_CHAIN_ID,
+        "pearl" to Constants.ChainId.PEARL_CHAIN_ID,
         "ethereum" to Constants.ChainId.ETHEREUM_CHAIN_ID,
         "litecoin" to Constants.ChainId.Litecoin,
         "dash" to Constants.ChainId.Dash,

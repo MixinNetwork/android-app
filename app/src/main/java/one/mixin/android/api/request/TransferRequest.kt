@@ -17,6 +17,7 @@ class TransferRequest(
     val memo: String? = null,
     @SerializedName("address_id")
     val addressId: String? = null,
+    @SerializedName("destination")
     val destination: String? = null,
     @SerializedName("raw_payment_url")
     val rawPaymentUrl: String? = null,

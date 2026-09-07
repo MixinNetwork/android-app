@@ -1,5 +1,6 @@
 package one.mixin.android.widget.picker
 
+import android.content.res.Resources
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 
@@ -14,13 +15,24 @@ val timeIntervalUnits by lazy {
 }
 
 private fun timeString(
-    isPlurals: Boolean,
+    resources: Resources,
+    count: Long,
     index: Int,
 ) =
-    MixinApplication.get().resources.getQuantityString(
+    resources.getQuantityString(
         timeIntervalUnits[index],
-        if (isPlurals) 2 else 1,
+        count.toInt(),
     )
+
+private fun intervalString(
+    resources: Resources,
+    interval: Long,
+    unit: Long,
+    index: Int,
+): String {
+    val count = interval / unit
+    return "$count ${timeString(resources, count, index)}"
+}
 
 val numberList by lazy {
     listOf(
@@ -32,14 +44,20 @@ val numberList by lazy {
     )
 }
 
-fun toTimeInterval(interval: Long): String =
+internal fun toTimeInterval(
+    resources: Resources,
+    interval: Long,
+): String =
     when {
-        interval < 60L -> "${interval / 1L} ${timeString(interval != 1L, 0)}"
-        interval < 3600L -> "${interval / 60L} ${timeString(interval != 60L, 1)}"
-        interval < 86400L -> "${interval / 3600L} ${timeString(interval != 3600L, 2)}"
-        interval < 604800L -> "${interval / 86400L} ${timeString(interval != 86400L, 3)}"
-        else -> "${interval / 604800L} ${timeString(interval != 604800L, 4)}"
+        interval < 60L -> intervalString(resources, interval, 1L, 0)
+        interval < 3600L -> intervalString(resources, interval, 60L, 1)
+        interval < 86400L -> intervalString(resources, interval, 3600L, 2)
+        interval < 604800L -> intervalString(resources, interval, 86400L, 3)
+        else -> intervalString(resources, interval, 604800L, 4)
     }
+
+fun toTimeInterval(interval: Long): String =
+    toTimeInterval(MixinApplication.get().resources, interval)
 
 fun toTimeIntervalIndex(interval: Long): Pair<Int, Int> =
     when {

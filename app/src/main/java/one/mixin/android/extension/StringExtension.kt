@@ -848,12 +848,10 @@ fun BigDecimal.currencyFormat(): String {
 
 fun String?.isValidMao(): Boolean {
     if (this.isNullOrBlank()) return false
-    val text = this.lowercase()
-    val regex = Regex("^[^\\sA-Z]{1,128}\\.mao$")
-    if (!regex.matches(text)) return false
-    val name = text.removeSuffix(".mao")
-    if (name.isBlank() || name.all { it.isDigit() }) return false
-    return true
+    val text = this.trimEnd('.').lowercase()
+    if (text.all { it.isDigit() }) return false
+    val regex = Regex("^[^\\sA-Z]{1,128}$")
+    return regex.matches(text)
 }
 
 fun String.isMao(): Boolean {

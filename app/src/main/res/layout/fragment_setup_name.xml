@@ -109,8 +109,8 @@
             android:gravity="center"
             android:text="@string/Continue"
             android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:textFontWeight="600"
+            android:textSize="14sp" />
 
         <ProgressBar
             style="?android:attr/progressBarStyleSmall"

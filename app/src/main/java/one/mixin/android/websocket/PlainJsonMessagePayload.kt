@@ -25,8 +25,11 @@ data class PlainJsonMessagePayload(
 }
 
 data class ResendData(
+    @SerializedName("userId")
     val userId: String,
+    @SerializedName("messageId")
     val messageId: String,
+    @SerializedName("sessionId")
     val sessionId: String? = null,
 ) : Serializable {
     companion object {

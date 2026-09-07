@@ -24,6 +24,7 @@ import one.mixin.android.api.response.web3.GaslessSponsorTransactionResponse
 import one.mixin.android.api.response.web3.SubmitGaslessTxResponse
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.OrderDao
 import one.mixin.android.db.perps.PerpsMarketDao
@@ -44,15 +45,16 @@ import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.isWatch
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.wallet.Web3FilterParams
+import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
 import org.bitcoinj.base.Address
-import org.bitcoinj.base.AddressParser
-import org.bitcoinj.base.BitcoinNetwork
 import timber.log.Timber
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.script.Script
@@ -66,7 +68,7 @@ import javax.inject.Inject
 class Web3Repository
 @Inject
 constructor(
-    @ApplicationContext private val context: Context,
+    @param:ApplicationContext private val context: Context,
     val routeService: RouteService,
     val web3TokenDao: Web3TokenDao,
     val web3TransactionDao: Web3TransactionDao,
@@ -99,17 +101,21 @@ constructor(
         }
     }
 
-    suspend fun refreshBitcoinTokenAmount(walletId: String, address: String) {
-        if (walletId.isBlank() || address.isBlank()) return
+    suspend fun refreshUtxoTokenAmount(walletId: String, address: String, assetId: String) {
+        if (walletId.isBlank() || address.isBlank() || assetId !in Constants.Web3UtxoChainIds) return
         val wallet = web3WalletDao.getWalletById(walletId) ?:return
         if (wallet.isWatch()) return
-        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(address, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val totalAmount: BigDecimal = walletOutputDao.sumPendingAndUnspentAmount(address, assetId)
         val amount: String = totalAmount.stripTrailingZeros().toPlainString()
-        web3TokenDao.updateTokenAmount(walletId, Constants.ChainId.BITCOIN_CHAIN_ID, amount)
+        web3TokenDao.updateTokenAmount(walletId, assetId, amount)
     }
 
-    suspend fun insertBitcoinChangeOutputs(fromAddress: String, signedHex: String): Int {
-        val addressParser = AddressParser.getDefault(BitcoinNetwork.MAINNET)
+    suspend fun refreshBitcoinTokenAmount(walletId: String, address: String) {
+        refreshUtxoTokenAmount(walletId, address, Constants.ChainId.BITCOIN_CHAIN_ID)
+    }
+
+    suspend fun insertUtxoChangeOutputs(fromAddress: String, signedHex: String, assetId: String): Int {
+        if (assetId !in Constants.Web3UtxoChainIds) return 0
         val cleanedHex: String = signedHex.removePrefix("0x").trim()
         if (fromAddress.isBlank() || cleanedHex.isBlank()) return 0
         val tx: Transaction = runCatching {
@@ -120,11 +126,11 @@ constructor(
             val outPoint = input.outpoint ?: return@mapNotNull null
             val previousHash: String = outPoint.hash().toString()
             val outputIndex: Long = outPoint.index()
-            walletOutputDao.outputByOutpoint(previousHash, outputIndex, Constants.ChainId.BITCOIN_CHAIN_ID)?.address
+            walletOutputDao.outputByOutpoint(previousHash, outputIndex, assetId)?.address
         }.toSet()
         if (inputAddresses.isEmpty()) return 0
         val inputScriptBytesByAddress: Map<String, ByteArray> = inputAddresses.mapNotNull { address ->
-            val parsedAddress: Address = runCatching { addressParser.parseAddress(address) }.getOrNull() ?: return@mapNotNull null
+            val parsedAddress: Address = runCatching { parseUtxoAddress(assetId, address) }.getOrNull() ?: return@mapNotNull null
             val script: Script = runCatching { ScriptBuilder.createOutputScript(parsedAddress) }.getOrNull() ?: return@mapNotNull null
             address to script.program()
         }.toMap()
@@ -138,7 +144,7 @@ constructor(
             val outputId: String = UUID.nameUUIDFromBytes("$txHash:$index".toByteArray()).toString()
             WalletOutput(
                 outputId = outputId,
-                assetId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                assetId = assetId,
                 transactionHash = txHash,
                 outputIndex = index.toLong(),
                 amount = amount,
@@ -155,19 +161,28 @@ constructor(
         return changeOutputs.size
     }
 
-    suspend fun deleteBitcoinUnspentChangeOutputs(fromAddress: String, rawTransactionHex: String): Int {
+    suspend fun insertBitcoinChangeOutputs(fromAddress: String, signedHex: String): Int {
+        return insertUtxoChangeOutputs(fromAddress, signedHex, Constants.ChainId.BITCOIN_CHAIN_ID)
+    }
+
+    private fun parseUtxoAddress(assetId: String, address: String): Address =
+        UtxoKeyGenerator.parseAddress(address, assetId)
+
+    suspend fun deleteUtxoUnspentChangeOutputs(fromAddress: String, rawTransactionHex: String, assetId: String): Int {
+        if (assetId !in Constants.Web3UtxoChainIds) return 0
         val cleanedHex: String = rawTransactionHex.removePrefix("0x").trim()
         if (fromAddress.isBlank() || cleanedHex.isBlank()) return 0
         val tx: Transaction = runCatching {
             Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
         }.getOrNull() ?: return 0
         val txHash: String = tx.txId.toString()
-        val deletedOutputsCount: Int = walletOutputDao.deleteByTransactionHash(txHash, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val deletedOutputsCount: Int = walletOutputDao.deleteByTransactionHash(txHash, assetId)
         return deletedOutputsCount
     }
 
-    suspend fun hasBitcoinSignedOutputsByTransactionHash(transactionHash: String): Boolean {
-        val signedCount: Int = walletOutputDao.countSignedByTransactionHash(transactionHash, Constants.ChainId.BITCOIN_CHAIN_ID)
+    suspend fun hasUtxoSignedOutputsByTransactionHash(transactionHash: String, assetId: String): Boolean {
+        if (assetId !in Constants.Web3UtxoChainIds) return false
+        val signedCount: Int = walletOutputDao.countSignedByTransactionHash(transactionHash, assetId)
         return signedCount > 0
     }
 
@@ -268,8 +283,8 @@ constructor(
         web3TransactionDao.getPendingTransactionItems(walletId).map { mapWeb3Transaction(it, walletId) }
 
     suspend fun mapWeb3Transaction(transaction: Web3TransactionItem, walletId: String): Web3TransactionItem = withContext(Dispatchers.IO) {
-        val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList())
-        val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds.distinct()).associateBy { it.assetId }
+        val assetIds = transaction.senders.map { it.assetId } + transaction.receivers.map { it.assetId } + (transaction.approvals?.map { it.assetId } ?: emptyList()) + transaction.sponsorFeeAssetId.orEmpty()
+        val tokens = web3TokenDao.findWeb3TokenItemsByIdsSync(walletId, assetIds.filter(String::isNotBlank).distinct()).associateBy { it.assetId }
         transaction.copy(
             senders = transaction.senders.map {
                 it.copy(symbol = tokens[it.assetId]?.symbol)
@@ -279,7 +294,8 @@ constructor(
             },
             approvals = transaction.approvals?.map {
                 it.copy(symbol = tokens[it.assetId]?.symbol)
-            }
+            },
+            sponsorFeeAssetSymbol = tokens[transaction.sponsorFeeAssetId]?.symbol ?: transaction.sponsorFeeAssetSymbol,
         )
     }
 
@@ -301,6 +317,58 @@ constructor(
     suspend fun createWallet(request: WalletRequest) = routeService.createWallet(request)
 
     suspend fun updateWallet(walletId: String, request: WalletRequest) = routeService.updateWallet(walletId, request)
+
+    suspend fun syncWalletsFromRoute(): List<Web3Wallet>? {
+        return requestRouteAPI(
+            invokeNetwork = { routeService.getWallets() },
+            successBlock = { response ->
+                val wallets = response.data ?: emptyList()
+                if (wallets.isEmpty()) {
+                    return@requestRouteAPI wallets
+                }
+                web3WalletDao.insertListSuspend(wallets)
+                wallets.forEach { wallet ->
+                    val embeddedAddresses = wallet.addresses
+                    if (embeddedAddresses.isNullOrEmpty()) {
+                        syncWalletAddressesFromRoute(wallet.id)
+                    } else {
+                        web3AddressDao.insertListSuspend(embeddedAddresses)
+                        context.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
+                    }
+                }
+                wallets
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to sync wallets from route ${response.errorCode} - ${response.errorDescription}")
+                false
+            },
+            requestSession = { ids ->
+                userRepository.fetchSessionsSuspend(ids)
+            },
+            defaultErrorHandle = {},
+        )
+    }
+
+    private suspend fun syncWalletAddressesFromRoute(walletId: String) {
+        requestRouteAPI(
+            invokeNetwork = { routeService.getWalletAddresses(walletId) },
+            successBlock = { response ->
+                val addresses = response.data ?: emptyList()
+                if (addresses.isNotEmpty()) {
+                    web3AddressDao.insertListSuspend(addresses)
+                    context.defaultSharedPreferences.putBoolean(Constants.Account.PREF_WEB3_ADDRESSES_SYNCED, true)
+                }
+            },
+            failureBlock = { response ->
+                Timber.e("Failed to sync wallet addresses from route ${response.errorCode} - ${response.errorDescription}")
+                false
+            },
+            requestSession = { ids ->
+                userRepository.fetchSessionsSuspend(ids)
+            },
+            defaultErrorHandle = {},
+        )
+    }
 
     suspend fun insertWallet(wallet: Web3Wallet) = web3WalletDao.insertSuspend(wallet)
 

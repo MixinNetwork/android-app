@@ -1,9 +1,12 @@
 package one.mixin.android.repository
 
 import one.mixin.android.Constants.MIXIN_CASH_USER_ID
+import one.mixin.android.Constants.MIXIN_EARN_USER_ID
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.CashAccount
+import one.mixin.android.api.response.EarnProduct
 import one.mixin.android.api.service.CashService
+import one.mixin.android.api.service.EarnService
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.util.ErrorHandler
 import javax.inject.Inject
@@ -12,8 +15,12 @@ class CashRepository
     @Inject
     constructor(
         private val cashService: CashService,
+        private val earnService: EarnService,
         private val userRepository: UserRepository,
     ) {
+        suspend fun cachedAccount(): CashAccount? =
+            PropertyHelper.findCashAccount()
+
         suspend fun account(): MixinResponse<CashAccount> {
             userRepository.getBotPublicKey(MIXIN_CASH_USER_ID, false)
             val response = cashService.account()
@@ -26,5 +33,14 @@ class CashRepository
             return cashService.account().also {
                 if (it.isSuccess) PropertyHelper.updateCashAccount(it.data)
             }
+        }
+
+        suspend fun earnAccounts(): MixinResponse<List<EarnProduct>> {
+            userRepository.getBotPublicKey(MIXIN_EARN_USER_ID, false)
+            val response = earnService.earnAccounts()
+            if (response.errorCode != ErrorHandler.AUTHENTICATION) return response
+
+            userRepository.getBotPublicKey(MIXIN_EARN_USER_ID, true)
+            return earnService.earnAccounts()
         }
     }

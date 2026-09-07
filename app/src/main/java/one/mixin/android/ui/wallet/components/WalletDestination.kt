@@ -5,6 +5,8 @@ import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.WalletCategory
 import timber.log.Timber
 
 sealed class WalletDestination {
@@ -15,6 +17,39 @@ sealed class WalletDestination {
     data class Safe(val walletId: String, val isOwner: Boolean, val chainId: String?, val url: String?) : WalletDestination()
 }
 
+data class WalletSignerTarget(
+    val walletId: String,
+    val category: String,
+)
+
+fun WalletDestination.signerTarget(): WalletSignerTarget? =
+    when (this) {
+        is WalletDestination.Classic -> WalletSignerTarget(walletId, WalletCategory.CLASSIC.value)
+        is WalletDestination.Import -> WalletSignerTarget(walletId, category)
+        is WalletDestination.Privacy,
+        is WalletDestination.Safe,
+        is WalletDestination.Watch -> null
+    }
+
+fun walletDestinationForWallet(walletId: String, category: String): WalletDestination {
+    return when (category) {
+        WalletCategory.CLASSIC.value -> WalletDestination.Classic(walletId)
+        WalletCategory.WATCH_ADDRESS.value -> WalletDestination.Watch(walletId, category)
+        else -> WalletDestination.Import(walletId, category)
+    }
+}
+
+fun walletDestinationToJson(destination: WalletDestination): String {
+    return GsonHelper.customGson.toJson(destination)
+}
+
+fun walletDestinationFromJson(json: String): WalletDestination? {
+    return try {
+        GsonHelper.customGson.fromJson(json, WalletDestination::class.java)
+    } catch (_: Exception) {
+        null
+    }
+}
 
 class WalletDestinationTypeAdapter : TypeAdapter<WalletDestination>() {
 

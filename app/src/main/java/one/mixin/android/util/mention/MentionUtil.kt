@@ -3,6 +3,8 @@ package one.mixin.android.util.mention
 import android.graphics.Color
 import android.widget.EditText
 import androidx.collection.arraySetOf
+import one.mixin.android.api.service.UserService
+import one.mixin.android.db.AppDao
 import one.mixin.android.db.MessageMentionDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.session.Session
@@ -63,6 +65,7 @@ fun parseMentionData(
     userDao: UserDao,
     messageMentionDao: MessageMentionDao,
     userId: String,
+    resolveMissingUsers: (Set<String>) -> List<MentionUser> = { emptyList() },
 ): Pair<List<MentionUser>?, Boolean> {
     val matcher = mentionNumberPattern.matcher(text)
     val numbers = arraySetOf<String>()
@@ -74,7 +77,15 @@ fun parseMentionData(
         return Pair(null, false)
     }
     val account = Session.getAccount()
-    val mentions = userDao.findUserByIdentityNumbers(numbers)
+    val localMentions = userDao.findUserByIdentityNumbers(numbers)
+    val missingNumbers = numbers - localMentions.mapTo(mutableSetOf()) { it.identityNumber }
+    val mentions =
+        if (missingNumbers.isEmpty()) {
+            localMentions
+        } else {
+            (localMentions + resolveMissingUsers(missingNumbers))
+                .distinctBy { it.identityNumber }
+        }
     if (mentions.isEmpty()) {
         return Pair(null, false)
     }
@@ -83,6 +94,24 @@ fun parseMentionData(
     messageMentionDao.insert(MessageMention(messageId, conversationId, mentionData, !mentionMe))
     return Pair(mentions, mentionMe)
 }
+
+fun resolveMentionUsers(
+    identityNumbers: Set<String>,
+    userService: UserService,
+    userDao: UserDao,
+    appDao: AppDao,
+): List<MentionUser> =
+    identityNumbers.mapNotNull { identityNumber ->
+        try {
+            val response = userService.search(identityNumber).blockingFirst()
+            val user = response.data?.takeIf { response.isSuccess && it.identityNumber == identityNumber } ?: return@mapNotNull null
+            val fullName = user.fullName?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
+            userDao.insertUpdate(user, appDao)
+            MentionUser(user.identityNumber, fullName)
+        } catch (e: Exception) {
+            null
+        }
+    }
 
 fun parseMentionData(
     text: String,

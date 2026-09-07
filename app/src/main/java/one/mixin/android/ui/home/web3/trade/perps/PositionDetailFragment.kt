@@ -147,6 +147,9 @@ class PositionDetailFragment : BaseFragment() {
                                 onShare = {
                                     sharePosition(closeOrder, leverage ?: closeOrder.leverage)
                                 },
+                                onFeeTipClick = {
+                                    showTradingFeeGuide()
+                                },
                                 onSupport = {
                                     context?.openUrl(
                                         Constants.HelpLink.CUSTOMER_SERVICE,
@@ -196,6 +199,9 @@ class PositionDetailFragment : BaseFragment() {
                                         }
                                     }
                                 },
+                                onFeeTipClick = {
+                                    showTradingFeeGuide()
+                                },
                                 onSupport = {
                                     context?.openUrl(
                                         Constants.HelpLink.CUSTOMER_SERVICE,
@@ -213,7 +219,7 @@ class PositionDetailFragment : BaseFragment() {
 
     private fun showCloseDialog(position: PerpsPositionItem) {
         val perpsPosition = position.toPosition()
-        AnalyticsTracker.trackPerpsClosePositionStart()
+        AnalyticsTracker.trackPerpsCloseStart(AnalyticsTracker.PerpsCloseType.SINGLE)
         PerpsCloseBottomSheetDialogFragment.newInstance(perpsPosition)
             .setOnDone {
                 openMarket(
@@ -262,5 +268,11 @@ class PositionDetailFragment : BaseFragment() {
     private fun sharePosition(order: PerpsOrderItem, leverage: Int) {
         PerpsPositionShareBottomFragment.newInstance(order, leverage)
             .show(parentFragmentManager, PerpsPositionShareBottomFragment.TAG)
+    }
+
+    private fun showTradingFeeGuide() {
+        PerpetualGuideBottomSheetDialogFragment.newInstance(
+            PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE
+        ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
     }
 }

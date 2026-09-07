@@ -41,6 +41,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+internal fun lineChartGradientColors(color: Color): List<Color> =
+    listOf(color.copy(alpha = 0.7f), color.copy(alpha = 0f))
+
 @Composable
 fun normalizeValues(values: List<Float>, minRange: Float = 0.2f, normalizedMaxRange: Float? = null): Triple<List<Float>, Int, Int> {
     if (values.isEmpty()) return Triple(emptyList(), -1, -1)
@@ -180,7 +183,7 @@ fun LineChart(
 
                 drawPath(
                     path = gradientPath, brush = Brush.verticalGradient(
-                        colors = listOf(color.copy(alpha = 0.7f), Color.Transparent), endY = size.height
+                        colors = lineChartGradientColors(color), endY = size.height
                     )
                 )
 

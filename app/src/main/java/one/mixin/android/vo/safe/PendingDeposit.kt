@@ -7,13 +7,17 @@ data class PendingDeposit(
     val depositId: String,
     @SerializedName("asset_id")
     val assetId: String,
+    @SerializedName("destination")
     val destination: String,
+    @SerializedName("tag")
     val tag: String?,
     @SerializedName("transaction_hash")
     val transactionHash: String,
     @SerializedName("sender")
     val sender: String?,
+    @SerializedName("amount")
     val amount: String,
+    @SerializedName("confirmations")
     val confirmations: Long,
     @SerializedName("created_at")
     val createdAt: String,

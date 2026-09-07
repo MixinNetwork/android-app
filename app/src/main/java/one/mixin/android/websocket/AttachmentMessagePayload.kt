@@ -29,6 +29,7 @@ data class AttachmentMessagePayload(
     var caption: String? = null,
     @SerializedName("created_at")
     var createdAt: String? = null,
+    @SerializedName("shareable")
     val shareable: Boolean? = null,
 )
 

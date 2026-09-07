@@ -6,6 +6,7 @@ import one.mixin.android.Constants.MAX_THUMB_IMAGE_LENGTH
 import one.mixin.android.RxBus
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
+import one.mixin.android.event.ExpiredEvent
 import one.mixin.android.event.RecallEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
@@ -20,9 +21,11 @@ import one.mixin.android.session.Session
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
+import one.mixin.android.util.mention.resolveMentionUsers
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ExpiredMessage
+import one.mixin.android.vo.ICategory
 import one.mixin.android.vo.MentionUser
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
@@ -40,6 +43,7 @@ import one.mixin.android.vo.isSignal
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
+import one.mixin.android.vo.toAppCardDataOrNull
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.KrakenParam
@@ -85,13 +89,24 @@ open class SendMessageJob(
             if (message.isRecall()) {
                 recallMessage(message.conversationId)
             } else if (!message.isPin()) {
-                if (message.isText()) {
-                    message.content?.let { content ->
+                message.content?.let { content ->
+                    if (message.isText()) {
                         content.findLastUrl()?.let {
                             message.hyperlink = it
                             parseHyperlink(it, hyperlinkDao)
                         }
-                        parseMentionData(content, message.messageId, message.conversationId, userDao, messageMentionDao, message.userId)
+                    }
+                    outgoingMentionContent(message, content)?.let { mentionContent ->
+                        parseMentionData(
+                            mentionContent,
+                            message.messageId,
+                            message.conversationId,
+                            userDao,
+                            messageMentionDao,
+                            message.userId,
+                        ) { identityNumbers ->
+                            resolveMentionUsers(identityNumbers, userService, userDao, appDao)
+                        }
                     }
                 }
                 if (!message.isTranscript()) {
@@ -122,7 +137,7 @@ open class SendMessageJob(
         messageDao.findMessageById(recallMessageId)?.let { msg ->
             RxBus.publish(RecallEvent(msg.messageId))
             messageDao.recallFailedMessage(msg.messageId)
-            messageDao.recallMessage(msg.messageId)
+            messageDao.recallMessage(msg.messageId, message.userId)
             messageDao.recallPinMessage(msg.messageId, msg.conversationId)
             pinMessageDao.deleteByMessageId(msg.messageId)
             messageMentionDao.deleteMessage(msg.messageId)
@@ -174,10 +189,12 @@ open class SendMessageJob(
         val expiredMessageCallback = fun(expireIn: Long?) {
             expireIn?.let { e -> // Update local expiration time after success
                 if (expireIn > 0) {
+                    val expireAt = currentTimeSeconds() + e
                     expiredMessageDao.updateExpiredMessage(
                         message.messageId,
-                        currentTimeSeconds() + e,
+                        expireAt,
                     )
+                    RxBus.publish(ExpiredEvent(message.messageId, null, expireAt))
                 }
             }
         }
@@ -275,7 +292,7 @@ open class SendMessageJob(
             encryptedProtocol.encryptMessage(
                 keyPair,
                 plaintext,
-                participantSessionKey.publicKey!!.base64RawURLDecode(),
+                participantSessionKey.publicKey.base64RawURLDecode(),
                 participantSessionKey.sessionId,
                 extensionSessionKey?.publicKey?.base64RawURLDecode(),
                 extensionSessionKey?.sessionId,
@@ -360,3 +377,13 @@ open class SendMessageJob(
         }
     }
 }
+
+internal fun outgoingMentionContent(
+    category: ICategory,
+    content: String?,
+): String? =
+    when {
+        category.isText() -> content
+        category.type == MessageCategory.APP_CARD.name -> content?.toAppCardDataOrNull()?.description
+        else -> null
+    }

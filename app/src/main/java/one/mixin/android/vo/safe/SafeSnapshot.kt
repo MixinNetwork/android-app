@@ -10,7 +10,7 @@ import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
-@Entity(tableName = "safe_snapshots", indices = [Index(value = arrayOf("created_at")), Index(value = arrayOf("type", "asset_id"))])
+@Entity(tableName = "safe_snapshots", indices = [Index(value = arrayOf("created_at")), Index(value = arrayOf("type", "asset_id", "created_at"))])
 @Serializable
 data class SafeSnapshot(
     @PrimaryKey

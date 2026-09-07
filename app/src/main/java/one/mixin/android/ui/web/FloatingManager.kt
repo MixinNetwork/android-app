@@ -10,6 +10,7 @@ import androidx.annotation.MainThread
 import androidx.core.graphics.scale
 import androidx.core.graphics.toColorInt
 import androidx.core.view.drawToBitmap
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -128,13 +129,21 @@ fun collapse() {
 var clips = mutableListOf<WebClip>()
 
 data class WebClip(
+    @SerializedName("url")
     var url: String,
+    @SerializedName("app")
     var app: App?,
+    @SerializedName("titleColor")
     val titleColor: Int,
+    @SerializedName("name")
     val name: String?,
+    @SerializedName("thumb")
     val thumb: Bitmap?,
+    @SerializedName("icon")
     val icon: Bitmap?,
+    @SerializedName("conversationId")
     val conversationId: String?,
+    @SerializedName("shareable")
     val shareable: Boolean?,
     @Transient val webView: MixinWebView?,
     @Transient val isFinished: Boolean = false,

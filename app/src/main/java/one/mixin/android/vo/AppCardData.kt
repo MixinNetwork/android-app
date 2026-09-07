@@ -27,12 +27,17 @@ data class AppCardData(
     val coverUrl: String?,
     @SerializedName("cover")
     val cover: Cover?,
+    @SerializedName("title")
     var title: String?,
+    @SerializedName("description")
     var description: String?,
+    @SerializedName("action")
     val action: String?,
     @SerializedName("updated_at")
     val updatedAt: String?,
+    @SerializedName("shareable")
     val shareable: Boolean?,
+    @SerializedName("actions")
     val actions: List<ActionButtonData>? = null,
 ) : Parcelable {
     init {
@@ -102,7 +107,9 @@ private const val APP_CARD_DESCRIPTION_MIN_LENGTH = 1
 private const val APP_CARD_DESCRIPTION_MAX_LENGTH = 1024
 
 private fun String.isValidShareUrl(): Boolean {
-    return isValidSendUrl() || ((startsWith("HTTPS://", true) || startsWith("HTTP://", true)) && !startsWith(HTTPS_SEND, true))
+    return !startsWith(SEND, true) &&
+        !startsWith(MIXIN_SEND, true) &&
+        !startsWith(HTTPS_SEND, true)
 }
 
 fun String.isValidSendUrl(): Boolean {
@@ -139,8 +146,11 @@ fun String.getSendText(): String? {
 
 @Parcelize
 data class ActionButtonData(
+    @SerializedName("label")
     val label: String,
+    @SerializedName("color")
     val color: String,
+    @SerializedName("action")
     val action: String,
 ) : Parcelable {
     @IgnoredOnParcel
@@ -158,11 +168,15 @@ data class ActionButtonData(
 
 @Parcelize
 data class Cover(
+    @SerializedName("height")
     val height: Int,
+    @SerializedName("width")
     val width: Int,
     @SerializedName("mime_type")
     val mimeType: String,
+    @SerializedName("url")
     val url: String?,
+    @SerializedName("thumbnail")
     val thumbnail: String?,
 ) : Parcelable {
     @IgnoredOnParcel

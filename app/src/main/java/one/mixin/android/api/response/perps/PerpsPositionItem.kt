@@ -64,6 +64,7 @@ data class PerpsPositionItem(
     @ColumnInfo(name = "roe")
     val roe: String? = null,
     @ColumnInfo(name = "wallet_id")
+    @SerializedName("walletId")
     val walletId: String? = null,
     @SerializedName("created_at")
     @ColumnInfo(name = "created_at")
@@ -72,11 +73,15 @@ data class PerpsPositionItem(
     @ColumnInfo(name = "updated_at")
     val updatedAt: String? = null,
     @ColumnInfo(name = "display_symbol")
+    @SerializedName("displaySymbol")
     val displaySymbol: String? = null,
     @ColumnInfo(name = "icon_url")
+    @SerializedName("iconUrl")
     val iconUrl: String? = null,
     @ColumnInfo(name = "token_symbol")
+    @SerializedName("tokenSymbol")
     val tokenSymbol: String? = null,
     @ColumnInfo(name = "price_scale")
+    @SerializedName("priceScale")
     val priceScale: Int = 2,
 ) : Parcelable

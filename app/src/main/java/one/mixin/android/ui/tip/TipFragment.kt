@@ -19,6 +19,7 @@ import one.mixin.android.extension.buildBulletLines
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.navTo
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -65,6 +66,12 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
 
     private var disallowClose = true
 
+    private fun customerServiceSource(): String =
+        when (tipBundle.tipType) {
+            TipType.Create -> AnalyticsTracker.CustomerServiceSource.SIGN_UP_PIN_SETTING
+            TipType.Change, TipType.Upgrade -> AnalyticsTracker.CustomerServiceSource.LOGIN_PIN_VERIFY
+        }
+
     override fun onViewCreated(
         view: View,
         savedInstanceState: Bundle?,
@@ -76,7 +83,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
             support.setOnClickListener {
-                context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                openCustomerService(source = customerServiceSource())
             }
 
             val tip1 = SpannableStringBuilder(getString(R.string.Please_use_when_network_is_connected))
@@ -259,7 +266,7 @@ class TipFragment : BaseFragment(R.layout.fragment_tip) {
                     innerVa.displayedChild = 0
                     innerTv.text = getString(R.string.View_Document)
                     innerTv.setOnClickListener {
-                        context?.openUrl(Constants.HelpLink.CUSTOMER_SERVICE)
+                        openCustomerService(source = customerServiceSource())
                     }
                     bottomHintTv.text = tipStep.message
                     bottomHintTv.setTextColor(requireContext().getColor(R.color.colorRed))

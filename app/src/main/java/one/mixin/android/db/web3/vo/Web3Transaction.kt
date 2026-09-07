@@ -49,17 +49,25 @@ data class Web3Transaction(
     @SerializedName("fee")
     val fee: String,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @ColumnInfo(name = "sponsor_fee_asset_id")
+    @SerializedName("sponsor_fee_asset_id")
+    val sponsorFeeAssetId: String? = null,
+
+    @ColumnInfo(name = "sponsor_fee_amount")
+    @SerializedName("sponsor_fee_amount")
+    val sponsorFeeAmount: String? = null,
+
+    @param:TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "senders")
     @SerializedName("senders")
     val senders: List<AssetChange>?,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @param:TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "receivers")
     @SerializedName("receivers")
     val receivers: List<AssetChange>?,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @param:TypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "approvals")
     @SerializedName("approvals")
     val approvals: List<AssetChange>? = null,
@@ -87,7 +95,13 @@ data class Web3Transaction(
     @ColumnInfo(name = "level")
     @SerializedName("level")
     val level: Int = Constants.AssetLevel.UNKNOWN,
-) : Parcelable
+) : Parcelable {
+    internal fun getSponsorFee(): Pair<String, String>? {
+        val assetId = sponsorFeeAssetId?.takeIf { it.isNotBlank() } ?: return null
+        val amount = sponsorFeeAmount?.takeIf { it.toBigDecimalOrNull()?.signum() == 1 } ?: return null
+        return assetId to amount
+    }
+}
 
 @Parcelize
 data class AssetChange(

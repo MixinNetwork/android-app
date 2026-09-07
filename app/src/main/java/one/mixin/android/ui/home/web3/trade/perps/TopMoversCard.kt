@@ -140,6 +140,7 @@ private fun TopMoverGridItem(
                 style = TextStyle(
                     fontSize = 12.sp,
                     lineHeight = 14.sp,
+                    fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textAssist,
                 ),
                 maxLines = 1,
@@ -152,7 +153,7 @@ private fun TopMoverGridItem(
                     .offset(y = 32.dp)
                     .topMoverLeverageShadow()
                     .clip(RoundedCornerShape(4.dp))
-                    .background(MixinAppTheme.colors.background)
+                    .background(MixinAppTheme.colors.borderPrimary)
                     .padding(horizontal = 3.dp, vertical = 1.dp),
             )
         }

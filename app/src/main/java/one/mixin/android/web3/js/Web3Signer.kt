@@ -1,5 +1,7 @@
 package one.mixin.android.web3.js
 
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import okio.Buffer
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
@@ -55,15 +57,32 @@ import java.math.BigInteger
 import java.nio.ByteBuffer
 import org.sol4k.Constants as ConstantsSolana
 
+internal fun findChainByHexReference(hex: String?): Chain? =
+    listOf(
+        Chain.Ethereum,
+        Chain.Base,
+        Chain.Arbitrum,
+        Chain.Optimism,
+        Chain.Avalanche,
+        Chain.Polygon,
+        Chain.BinanceSmartChain,
+        Chain.HyperEVM,
+        Chain.XLayer,
+        Chain.Solana,
+    ).firstOrNull { it.hexReference == hex }
+
 object Web3Signer {
     sealed class JsSignerNetwork(val name: String) {
         data object Ethereum : JsSignerNetwork("ethereum")
 
         data object Solana : JsSignerNetwork("solana")
+
+        data object Pearl : JsSignerNetwork("pearl")
     }
 
     private const val TAG = "Web3Signer"
     private const val GASLESS_EIP7702_AUTHORIZED_ADDRESS = "0xe6cae83bde06e4c305530e199d7217f42808555b"
+    private val walletSelectionMutex = Mutex()
 
     private val sp by lazy {
         MixinApplication.appContext.defaultSharedPreferences
@@ -74,6 +93,7 @@ object Web3Signer {
         const val EVM_ADDRESS = "signer_evm_address"
         const val SOLANA_ADDRESS = "signer_solana_address"
         const val BTC_ADDRESS = "signer_btc_address"
+        const val PEARL_ADDRESS = "signer_pearl_address"
         const val PATH = "signer_path"
         const val CURRENT_WALLET_CATEGORY = "signer_current_wallet_category"
         const val CLASSIC_WALLET_ID = "signer_classic_wallet_id"
@@ -88,6 +108,8 @@ object Web3Signer {
     var solanaAddress: String = ""
         private set
     var btcAddress: String = ""
+        private set
+    var pearlAddress: String = ""
         private set
     var path: String = ""
         private set
@@ -113,12 +135,13 @@ object Web3Signer {
         evmAddress = sp.getString(Keys.EVM_ADDRESS, "") ?: ""
         solanaAddress = sp.getString(Keys.SOLANA_ADDRESS, "") ?: ""
         btcAddress = sp.getString(Keys.BTC_ADDRESS, "") ?: ""
+        pearlAddress = sp.getString(Keys.PEARL_ADDRESS, "") ?: ""
         path = sp.getString(Keys.PATH, "") ?: ""
         currentWalletId = sp.getString(Keys.SELECTED_WEB3_WALLET_ID, "") ?: ""
         currentWalletCategory = sp.getString(Keys.CURRENT_WALLET_CATEGORY, WalletCategory.CLASSIC.value)
             ?: WalletCategory.CLASSIC.value
         classicWalletId = sp.getString(Keys.CLASSIC_WALLET_ID, "") ?: ""
-        currentChain = findChainByHex(sp.getString(Keys.CURRENT_CHAIN, Chain.Ethereum.hexReference))
+        currentChain = findChainByHexReference(sp.getString(Keys.CURRENT_CHAIN, Chain.Ethereum.hexReference))
             ?: Chain.Ethereum
         currentNetwork = if (currentChain == Chain.Solana) JsSignerNetwork.Solana.name else JsSignerNetwork.Ethereum.name
     }
@@ -128,6 +151,7 @@ object Web3Signer {
         sp.putString(Keys.EVM_ADDRESS, evmAddress)
         sp.putString(Keys.SOLANA_ADDRESS, solanaAddress)
         sp.putString(Keys.BTC_ADDRESS, btcAddress)
+        sp.putString(Keys.PEARL_ADDRESS, pearlAddress)
         sp.putString(Keys.PATH, path)
         sp.putString(Keys.SELECTED_WEB3_WALLET_ID, currentWalletId)
         sp.putString(Keys.CURRENT_WALLET_CATEGORY, currentWalletCategory)
@@ -135,29 +159,14 @@ object Web3Signer {
         sp.putString(Keys.CURRENT_CHAIN, currentChain.hexReference)
     }
 
-    private fun findChainByHex(hex: String?): Chain? {
-        return when (hex) {
-            Chain.Ethereum.hexReference -> Chain.Ethereum
-            Chain.Base.hexReference -> Chain.Base
-            Chain.Arbitrum.hexReference -> Chain.Arbitrum
-            Chain.Optimism.hexReference -> Chain.Optimism
-            Chain.Avalanche.hexReference -> Chain.Avalanche
-            Chain.Polygon.hexReference -> Chain.Polygon
-            Chain.BinanceSmartChain.hexReference -> Chain.BinanceSmartChain
-            Chain.HyperEVM.hexReference -> Chain.HyperEVM
-            Chain.Solana.hexReference -> Chain.Solana
-            else -> null
-        }
-    }
-
     fun updateAddress(
         network: String,
         address: String,
     ) {
-        if (network == JsSignerNetwork.Solana.name) {
-            solanaAddress = address
-        } else {
-            evmAddress = address
+        when (network) {
+            JsSignerNetwork.Solana.name -> solanaAddress = address
+            JsSignerNetwork.Pearl.name -> pearlAddress = address
+            else -> evmAddress = address
         }
         persist()
     }
@@ -178,19 +187,46 @@ object Web3Signer {
         persist()
     }
 
-    suspend fun init(classicQuery: () -> String?, queryAddress: (String) -> List<Web3Address>, queryWallet: (String) -> WalletItem?) {
-        classicWalletId = PropertyHelper.findValueByKey(Keys.CLASSIC_WALLET_ID, classicQuery() ?: "")
-        currentWalletId = PropertyHelper.findValueByKey(
-            Keys.SELECTED_WEB3_WALLET_ID,
-            classicWalletId
-        )
-        currentWalletCategory = PropertyHelper.findValueByKey(Keys.CURRENT_WALLET_CATEGORY, queryWallet(currentWalletId)?.category ?: WalletCategory.CLASSIC.value)
-        updateAddressesAndPaths(currentWalletId, queryAddress)
-        persist()
-    }
+    suspend fun init(classicQuery: () -> String?, queryAddress: (String) -> List<Web3Address>, queryWallet: (String) -> WalletItem?) =
+        walletSelectionMutex.withLock {
+            classicWalletId = PropertyHelper.findValueByKey(Keys.CLASSIC_WALLET_ID, classicQuery() ?: "")
+            currentWalletId = PropertyHelper.findValueByKey(
+                Keys.SELECTED_WEB3_WALLET_ID,
+                classicWalletId
+            )
+            currentWalletCategory = PropertyHelper.findValueByKey(Keys.CURRENT_WALLET_CATEGORY, queryWallet(currentWalletId)?.category ?: WalletCategory.CLASSIC.value)
+            updateAddressesAndPaths(currentWalletId, queryAddress)
+            persist()
+        }
 
     suspend fun setWallet(walletId: String, category: String, queryAddress: (String) -> List<Web3Address>) {
         if (category == WalletCategory.WATCH_ADDRESS.value) return
+        walletSelectionMutex.withLock {
+            setWalletLocked(walletId, category, queryAddress)
+        }
+    }
+
+    suspend fun currentWalletIdSnapshot(): String = walletSelectionMutex.withLock { currentWalletId }
+
+    suspend fun setWalletIfCurrent(
+        expectedWalletId: String,
+        walletId: String,
+        category: String,
+        queryAddress: (String) -> List<Web3Address>,
+    ): Boolean {
+        if (category == WalletCategory.WATCH_ADDRESS.value) return false
+        return walletSelectionMutex.withLock {
+            if (currentWalletId != expectedWalletId) return@withLock false
+            setWalletLocked(walletId, category, queryAddress)
+            true
+        }
+    }
+
+    private suspend fun setWalletLocked(
+        walletId: String,
+        category: String,
+        queryAddress: (String) -> List<Web3Address>,
+    ) {
         currentWalletId = walletId
         PropertyHelper.updateKeyValue(Keys.SELECTED_WEB3_WALLET_ID, walletId)
         currentWalletCategory = category
@@ -204,7 +240,11 @@ object Web3Signer {
     ) {
         if (walletId.isNotBlank()) {
             val addresses = queryAddress(walletId)
-            path = addresses.firstOrNull { it.chainId in Constants.Web3ChainIds || it.chainId == SOLANA_CHAIN_ID }?.path ?: ""
+            path = addresses.firstOrNull {
+                it.chainId in Constants.Web3ChainIds ||
+                    it.chainId == SOLANA_CHAIN_ID ||
+                    it.chainId in Constants.Web3UtxoChainIds
+            }?.path ?: ""
             evmAddress =
                 addresses.firstOrNull { it.chainId in Constants.Web3ChainIds }?.destination
                     ?: ""
@@ -212,11 +252,13 @@ object Web3Signer {
                 addresses.firstOrNull { it.chainId == SOLANA_CHAIN_ID }?.destination
                     ?: ""
             btcAddress = addresses.firstOrNull {it.chainId == BITCOIN_CHAIN_ID}?.destination ?:""
+            pearlAddress = addresses.firstOrNull { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }?.destination ?: ""
             address = evmAddress
         } else {
             evmAddress = ""
             solanaAddress = ""
             btcAddress = ""
+            pearlAddress = ""
             address = ""
             path = ""
         }
@@ -268,6 +310,11 @@ object Web3Signer {
                 currentChain = Chain.HyperEVM
                 persist()
                 Result.success(Chain.HyperEVM.name)
+            }
+            Chain.XLayer.hexReference -> {
+                currentChain = Chain.XLayer
+                persist()
+                Result.success(Chain.XLayer.name)
             }
             Chain.Solana.hexReference -> {
                 currentChain = Chain.Solana

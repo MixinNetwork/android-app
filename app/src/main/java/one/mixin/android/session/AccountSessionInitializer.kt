@@ -5,8 +5,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.Constants.DEVICE_ID
+import one.mixin.android.MixinApplication
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.EdKeyPair
+import one.mixin.android.crypto.clearPendingImportMnemonic
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.clear
@@ -31,6 +33,7 @@ suspend fun initializeAccountSession(
     Session.storeEd25519Seed(privateKey.base64Encode())
     Session.storePinToken(pinToken.base64Encode())
     Session.storeAccount(account)
+    MixinApplication.get().startAppsFlyer(account.userId)
 
     // Enter the user scope and migrate databases BEFORE clearing anything
     // This ensures we operate on the correct scoped database after migration
@@ -46,6 +49,7 @@ suspend fun initializeAccountSession(
     if (!isSameUser) {
         context.defaultSharedPreferences.clear()
     }
+    clearPendingImportMnemonic(context)
 
     if (Session.hasPhone()) {
         removeValueFromEncryptedPreferences(context, Constants.Tip.MNEMONIC)

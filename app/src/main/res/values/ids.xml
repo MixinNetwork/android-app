@@ -14,4 +14,5 @@
     <item name="dock_4" type="id" />
 
     <item name="circle_progress" type="id" />
+    <item name="market_favorite_icon_request" type="id" />
 </resources>

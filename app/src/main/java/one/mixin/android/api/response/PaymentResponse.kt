@@ -5,11 +5,17 @@ package one.mixin.android.api.response
 import com.google.gson.annotations.SerializedName
 
 data class PaymentResponse(
+    @SerializedName("amount")
     val amount: String?,
+    @SerializedName("minimum")
     val minimum: String?,
+    @SerializedName("maximum")
     val maximum: String?,
+    @SerializedName("destination")
     val destination: String?,
+    @SerializedName("asset")
     val asset: TransferAsset?,
+    @SerializedName("status")
     val status: String
 )
 

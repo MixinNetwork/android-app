@@ -1,6 +1,9 @@
 package one.mixin.android.api.response.web3
 
+import com.google.gson.annotations.SerializedName
+
 data class Tx(
+    @SerializedName("state")
     val state: String,
 )
 

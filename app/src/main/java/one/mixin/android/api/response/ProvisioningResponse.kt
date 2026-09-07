@@ -1,5 +1,15 @@
 package one.mixin.android.api.response
 
-data class ProvisioningResponseCode(val code: String)
+import com.google.gson.annotations.SerializedName
 
-data class ProvisioningResponse(val device_id: String, val description: String)
+data class ProvisioningResponseCode(
+    @SerializedName("code")
+    val code: String,
+)
+
+data class ProvisioningResponse(
+    @SerializedName("device_id")
+    val device_id: String,
+    @SerializedName("description")
+    val description: String,
+)

@@ -180,14 +180,14 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
         inputStream: InputStream,
         expectedLength: Int,
     ): ByteArray? {
+        if (expectedLength < IV_LENGTH || expectedLength >= MAX_DATA_SIZE) {
+            return null
+        }
         val data = safeRead(inputStream, expectedLength)
         val checksum = safeRead(inputStream, H_MAC_LENGTH)
         if (!checksum.contentEquals(checksum(data))) {
             Timber.e("ChecksumException $expectedLength ${checksum.base64Encode()} ${checksum(data).base64Encode()}")
             throw ChecksumException()
-        }
-        if (expectedLength >= MAX_DATA_SIZE) {
-            return null
         }
         return data
     }
@@ -196,6 +196,7 @@ class TransferProtocol(private val serializationJson: Json, private val secretBy
         inputStream: InputStream,
         expectedLength: Int,
     ): ByteArray {
+        require(expectedLength >= 0) { "Negative packet length" }
         val data = ByteArray(expectedLength)
         var readLength = 0
         while (readLength < expectedLength) {

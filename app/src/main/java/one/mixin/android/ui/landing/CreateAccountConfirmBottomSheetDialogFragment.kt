@@ -11,12 +11,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -50,11 +53,17 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
     }
 
     private var onCreateAccount: (() -> Unit)? = null
+    private var onImportWallet: (() -> Unit)? = null
     private var onPrivacyPolicy: (() -> Unit)? = null
     private var onTermsOfService: (() -> Unit)? = null
 
     fun setOnCreateAccount(callback: () -> Unit): CreateAccountConfirmBottomSheetDialogFragment {
         onCreateAccount = callback
+        return this
+    }
+
+    fun setOnImportWallet(callback: () -> Unit): CreateAccountConfirmBottomSheetDialogFragment {
+        onImportWallet = callback
         return this
     }
 
@@ -75,71 +84,105 @@ class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDia
         MixinAppTheme {
             Column(
                 modifier = Modifier
-                    .fillMaxWidth()
+                    .fillMaxSize()
                     .clip(RoundedCornerShape(topEnd = 8.dp, topStart = 8.dp))
                     .background(MixinAppTheme.colors.background)
                     .padding(horizontal = 20.dp)
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp)) {
-                    Spacer(modifier = Modifier.weight(1f))
-                    Icon(
-                        modifier = Modifier.clickable {
-                            dismiss()
-                        },
-                        painter = painterResource(id = R.drawable.ic_circle_close),
-                        tint = Color.Unspecified,
-                        contentDescription = stringResource(id = R.string.close)
-                    )
-                }
-                Spacer(modifier = Modifier.height(22.dp))
-                Icon(
+                Column(
                     modifier = Modifier
-                        .size(64.dp)
-                        .align(Alignment.CenterHorizontally),
-                    painter = painterResource(R.drawable.ic_mnemonic_phrase_creaeting),
-                    contentDescription = null,
-                    tint = Color.Unspecified
-                )
-                Spacer(modifier = Modifier.height(24.dp))
-                Text(
-                    text = stringResource(R.string.create_account_confirm_title),
-                    modifier = Modifier.align(Alignment.CenterHorizontally),
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.W600,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-                Spacer(modifier = Modifier.height(48.dp))
-                FeatureRow(
-                    iconResId = R.drawable.ic_account_truly,
-                    titleResId = R.string.feature_truly_decentralized,
-                    descriptionResId = R.string.feature_truly_decentralized_description,
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                FeatureRow(
-                    iconResId = R.drawable.ic_account_privacy,
-                    titleResId = R.string.feature_privacy_by_default,
-                    descriptionResId = R.string.feature_privacy_by_default_description,
-                )
-                Spacer(modifier = Modifier.height(14.dp))
-                FeatureRow(
-                    iconResId = R.drawable.ic_account_all_in_one,
-                    titleResId = R.string.feature_all_in_one,
-                    descriptionResId = R.string.feature_all_in_one_description,
-                )
-                Spacer(modifier = Modifier.weight(1f))
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .verticalScroll(rememberScrollState())
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 32.dp)) {
+                        Spacer(modifier = Modifier.weight(1f))
+                        Icon(
+                            modifier = Modifier.clickable {
+                                dismiss()
+                            },
+                            painter = painterResource(id = R.drawable.ic_circle_close),
+                            tint = Color.Unspecified,
+                            contentDescription = stringResource(id = R.string.close)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(22.dp))
+                    Icon(
+                        modifier = Modifier
+                            .size(64.dp)
+                            .align(Alignment.CenterHorizontally),
+                        painter = painterResource(R.drawable.ic_mnemonic_phrase_creaeting),
+                        contentDescription = null,
+                        tint = Color.Unspecified,
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Text(
+                        text = stringResource(R.string.create_account_confirm_title),
+                        modifier = Modifier.align(Alignment.CenterHorizontally),
+                        fontSize = 20.sp,
+                        fontWeight = FontWeight.W600,
+                        color = MixinAppTheme.colors.textPrimary
+                    )
+                    Spacer(modifier = Modifier.height(48.dp))
+                    FeatureRow(
+                        iconResId = R.drawable.ic_account_truly,
+                        titleResId = R.string.feature_truly_decentralized,
+                        descriptionResId = R.string.feature_truly_decentralized_description,
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    FeatureRow(
+                        iconResId = R.drawable.ic_account_privacy,
+                        titleResId = R.string.feature_privacy_by_default,
+                        descriptionResId = R.string.feature_privacy_by_default_description,
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
+                    FeatureRow(
+                        iconResId = R.drawable.ic_account_all_in_one,
+                        titleResId = R.string.feature_all_in_one,
+                        descriptionResId = R.string.feature_all_in_one_description,
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
                 MixinButton(
                     modifier = Modifier
-                        .fillMaxWidth(),
+                        .fillMaxWidth()
+                        .height(48.dp),
                     onClick = {
                         onCreateAccount?.invoke()
                         dismiss()
                     },
                     shape = RoundedCornerShape(30.dp),
-                    contentPadding = PaddingValues(horizontal = 36.dp, vertical = 11.dp),
+                    contentPadding = PaddingValues(horizontal = 36.dp),
                 ) {
-                    Text(text = stringResource(R.string.create_account_confirm_action_create), fontSize = 16.sp, color = Color.White)
+                    Text(
+                        text = stringResource(R.string.create_account_confirm_action_create),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W500,
+                        color = Color.White,
+                    )
+                }
+                Spacer(modifier = Modifier.height(10.dp))
+                MixinButton(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(48.dp),
+                    onClick = {
+                        onImportWallet?.invoke()
+                        dismiss()
+                    },
+                    shape = RoundedCornerShape(30.dp),
+                    contentPadding = PaddingValues(horizontal = 36.dp),
+                    backgroundColor = MixinAppTheme.colors.backgroundWindow,
+                    contentColor = MixinAppTheme.colors.accent,
+                ) {
+                    Text(
+                        text = stringResource(R.string.import_from_another_wallet),
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W500,
+                        color = MixinAppTheme.colors.accent,
+                    )
                 }
                 Spacer(modifier = Modifier.height(10.dp))
                 val privacyPolicyText = stringResource(R.string.Privacy_Policy)

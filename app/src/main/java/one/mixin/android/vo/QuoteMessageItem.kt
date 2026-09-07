@@ -23,10 +23,13 @@ data class QuoteMessageItem(
     val userFullName: String,
     @SerializedName(value = "user_identity_number", alternate = ["userIdentityNumber"])
     val userIdentityNumber: String,
+    @SerializedName("type")
     val type: String,
+    @SerializedName("content")
     val content: String?,
     @SerializedName(value = "created_at", alternate = ["createdAt"])
     val createdAt: String,
+    @SerializedName("status")
     val status: String,
     @SerializedName(value = "media_status", alternate = ["mediaStatus"])
     val mediaStatus: String?,
@@ -70,8 +73,14 @@ data class QuoteMessageItem(
     val sharedUserIdentityNumber: String? = null,
     @SerializedName(value = "shared_user_avatar_url", alternate = ["sharedUserAvatarUrl"])
     val sharedUserAvatarUrl: String? = null,
+    @SerializedName("mentions")
     val mentions: String? = null,
+    @SerializedName("membership")
     val membership: Membership? = null,
+    @SerializedName(value = "participant_id", alternate = ["participantId", "participantUserId"])
+    val participantUserId: String? = null,
+    @SerializedName(value = "participant_full_name", alternate = ["participantFullName"])
+    val participantFullName: String? = null,
 ) : Parcelable {
     constructor(messageItem: MessageItem) : this(
         messageItem.messageId,
@@ -109,7 +118,9 @@ data class QuoteMessageItem(
         messageItem.sharedUserIdentityNumber,
         messageItem.sharedUserAvatarUrl,
         messageItem.mentions,
-        messageItem.membership
+        messageItem.membership,
+        messageItem.participantUserId,
+        messageItem.participantFullName,
     )
 }
 

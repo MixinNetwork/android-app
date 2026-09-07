@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -57,6 +58,7 @@ import androidx.paging.compose.itemKey
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrder
@@ -64,11 +66,12 @@ import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 private const val CLOSED_POSITION_REFRESH_LIMIT = 100
@@ -86,6 +89,7 @@ fun AllPositionsPage(
     onSupport: () -> Unit,
     onShowTradingGuide: () -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
+    onCloseAllPositions: (List<PerpsPositionItem>) -> Unit,
     onClosedPositionClick: (PerpsOrderItem) -> Unit,
 ) {
     val context = LocalContext.current
@@ -93,6 +97,8 @@ fun AllPositionsPage(
     val walletId = Session.getAccountId().orEmpty()
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val coroutineScope = rememberCoroutineScope()
+    var isRefreshingBeforeCloseAll by remember(walletId) { mutableStateOf(false) }
 
     val openPositionsSnapshot by remember(walletId) {
         if (walletId.isNotEmpty()) {
@@ -160,7 +166,12 @@ fun AllPositionsPage(
         total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
     }
     val totalPnlAmount = BigDecimal.valueOf(totalUnrealizedPnl)
-    val totalPnlPercent = calculatePnlPercent(totalPnlAmount, totalMargin)
+    val totalPnlPercent = calculateTotalPnlPercent(
+        positionCount = openPositionsSnapshot.size,
+        singlePositionRoe = openPositionsSnapshot.singleOrNull()?.roe,
+        totalPnl = totalPnlAmount,
+        totalMargin = totalMargin,
+    )
     val titleRes = if (positionType == AllPositionsType.OPEN) {
         R.string.perps_positions
     } else {
@@ -197,6 +208,26 @@ fun AllPositionsPage(
                         quoteColorReversed = quoteColorReversed,
                         onShowTradingGuide = onShowTradingGuide,
                         onPositionClick = onOpenPositionClick,
+                        openPositions = openPositionsSnapshot,
+                        isCloseAllLoading = isRefreshingBeforeCloseAll,
+                        onCloseAllPositions = {
+                            if (!isRefreshingBeforeCloseAll) {
+                                isRefreshingBeforeCloseAll = true
+                                coroutineScope.launch {
+                                    viewModel.refreshPositionsForBatchClose(walletId)
+                                        .onSuccess { refreshedPositions ->
+                                            isRefreshingBeforeCloseAll = false
+                                            if (refreshedPositions.isNotEmpty()) {
+                                                onCloseAllPositions(refreshedPositions)
+                                            }
+                                        }
+                                        .onFailure {
+                                            isRefreshingBeforeCloseAll = false
+                                            toast(R.string.Data_error)
+                                        }
+                                }
+                            }
+                        },
                     )
                 } else {
                     ClosedPositionsContent(
@@ -220,6 +251,9 @@ private fun OpenPositionsContent(
     quoteColorReversed: Boolean,
     onShowTradingGuide: () -> Unit,
     onPositionClick: (PerpsPositionItem) -> Unit,
+    openPositions: List<PerpsPositionItem>,
+    isCloseAllLoading: Boolean,
+    onCloseAllPositions: () -> Unit,
 ) {
     val refreshState = positions.loadState.refresh
     val isEmpty = refreshState is LoadState.NotLoading && positions.itemCount == 0
@@ -228,7 +262,7 @@ private fun OpenPositionsContent(
         if (!isEmpty) {
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 16.dp),
+                contentPadding = PaddingValues(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 88.dp),
             ) {
                 item {
                     TotalPositionValueCard(
@@ -265,6 +299,32 @@ private fun OpenPositionsContent(
                     onActionClick = onShowTradingGuide,
                     modifier = Modifier.align(Alignment.Center),
                 )
+            }
+        }
+
+        if (openPositions.isNotEmpty()) {
+            MixinButton(
+                onClick = onCloseAllPositions,
+                enabled = !isCloseAllLoading,
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 20.dp)
+                    .height(48.dp),
+                shape = RoundedCornerShape(24.dp),
+            ) {
+                if (isCloseAllLoading) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(20.dp),
+                        color = Color.White,
+                        strokeWidth = 2.dp,
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.Close_All_Positions, openPositions.size),
+                        fontSize = 16.sp,
+                    )
+                }
             }
         }
     }
@@ -428,13 +488,9 @@ private fun LazyListScope.closedPositionItems(
         } else {
             null
         }
-        val nextDate = if (index < positions.itemCount - 1) {
-            positions.peek(index + 1)?.createdAtDateLabel(context)
-        } else {
-            null
-        }
-        val isFirst = index == 0 || previousDate != date
-        val isLast = index == positions.itemCount - 1 || nextDate != date
+        val showDateHeader = index == 0 || previousDate != date
+        val isFirst = index == 0
+        val isLast = index == positions.itemCount - 1
         val shape = when {
             isFirst && isLast -> RoundedCornerShape(8.dp)
             isFirst -> RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
@@ -444,7 +500,6 @@ private fun LazyListScope.closedPositionItems(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = if (isFirst && index > 0) 16.dp else 0.dp)
                 .clip(shape)
                 .groupedItemBorder(
                     backgroundColor = MixinAppTheme.colors.background,
@@ -453,7 +508,7 @@ private fun LazyListScope.closedPositionItems(
                     isLast = isLast,
                 ),
         ) {
-            if (isFirst) {
+            if (showDateHeader) {
                 PerpsActivityDateHeader(
                     date = date,
                     modifier = Modifier.padding(
@@ -615,18 +670,6 @@ private fun EmptyPositionsState(
             )
         }
     }
-}
-
-private fun calculatePnlPercent(
-    pnl: BigDecimal,
-    margin: BigDecimal,
-): BigDecimal {
-    if (margin <= BigDecimal.ZERO) {
-        return BigDecimal.ZERO
-    }
-    return pnl
-        .divide(margin, 8, RoundingMode.HALF_UP)
-        .multiply(BigDecimal(100))
 }
 
 @Preview(showBackground = true)

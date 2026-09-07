@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.home.web3.trade.perps
 
 import android.annotation.SuppressLint
@@ -93,6 +95,7 @@ import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
@@ -228,11 +231,16 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         currentAssetId = selectedToken?.assetId,
                     ).setOnAssetClick { token ->
                         selectedToken = token
+                        AnalyticsTracker.trackPerpsAddMarginSelect(token.chainName, token.symbol)
                     }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                 },
-                onCancel = { dismiss() },
+                onCancel = {
+                    dismiss()
+                    AnalyticsTracker.trackPerpsAddCancel()
+                },
                 onAdd = { token, amount, liquidationPrice ->
                     onAddAction?.let { action ->
+                        AnalyticsTracker.trackPerpsAddPreview()
                         action(token, amount, liquidationPrice)
                         dismiss()
                     }
@@ -282,7 +290,13 @@ private fun PerpsAddContent(
     val aboveMaximumMargin = amountValue != null && maximumMargin > BigDecimal.ZERO && amountValue > maximumMargin
 
     val insufficientBalance = amountValue != null && amountValue > BigDecimal.ZERO && amountValue > tokenBalance
-    val canAdd = selectedToken != null && hasInputAmount && !insufficientBalance && !belowMinimumMargin && !aboveMaximumMargin && !isLiquidationLoading
+    val canAdd = selectedToken != null &&
+        hasInputAmount &&
+        !insufficientBalance &&
+        !belowMinimumMargin &&
+        !aboveMaximumMargin &&
+        !isLiquidationLoading &&
+        !remoteLiquidationPrice.isNullOrBlank()
     val marketSymbol = position.tokenSymbol ?: position.displaySymbol.orEmpty()
     val currentPrice = market?.last.orEmpty()
         .ifBlank { market?.markPrice.orEmpty() }
@@ -292,32 +306,29 @@ private fun PerpsAddContent(
 
     LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin) {
         val addMargin = amount.toBigDecimalOrNull()
-        if (addMargin == null || addMargin <= BigDecimal.ZERO || belowMinimumMargin || aboveMaximumMargin) {
+        if (!shouldRequestLiquidationPrice(addMargin, minimumMargin) || aboveMaximumMargin) {
             liquidationJob?.cancel()
             remoteLiquidationPrice = null
             isLiquidationLoading = false
             return@LaunchedEffect
         }
+        val requestAmount = addMargin ?: return@LaunchedEffect
         liquidationJob?.cancel()
         liquidationJob = launch {
+            remoteLiquidationPrice = null
             isLiquidationLoading = true
             delay(200L)
-            while (true) {
-                val normalizedAmount = addMargin
-                    .stripTrailingZeros()
-                    .toPlainString()
-                    .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
-                val result = viewModel.estimateLiquidationPrice(
+            val normalizedAmount = requestAmount
+                .stripTrailingZeros()
+                .toPlainString()
+                .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
+            remoteLiquidationPrice = requestLiquidationPrice {
+                viewModel.estimateLiquidationPrice(
                     amount = normalizedAmount,
                     positionId = position.positionId,
                 )
-                if (result != null) {
-                    remoteLiquidationPrice = result
-                    isLiquidationLoading = false
-                    break
-                }
-                delay(1000L)
             }
+            isLiquidationLoading = false
         }
     }
 
@@ -340,7 +351,11 @@ private fun PerpsAddContent(
     val currentPriceText = formatPerpsPrice(currentPrice, priceScale)
     val defaultLiquidationPrice = position.liquidationPrice
         ?.takeIf { showLiquidationPrice && it.isNotBlank() }
-    val displayLiquidationPrice = remoteLiquidationPrice ?: defaultLiquidationPrice
+    val displayLiquidationPrice = if (hasInputAmount) {
+        remoteLiquidationPrice
+    } else {
+        defaultLiquidationPrice
+    }
     val entryPriceText = position.entryPrice
         .takeIf { it.isNotBlank() }
         ?.let { formatPerpsPrice(it, priceScale) }

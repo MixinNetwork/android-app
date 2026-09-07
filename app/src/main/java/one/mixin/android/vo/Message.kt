@@ -158,6 +158,7 @@ class Message(
         DeprecationLevel.WARNING,
     )
     @SerializedName("media_mine_type")
+    @SerialName("media_mine_type")
     @ColumnInfo(name = "media_mine_type")
     val mediaMineType: String? = mediaMimeType,
     @SerializedName("quote_message_id")

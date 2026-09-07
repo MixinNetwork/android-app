@@ -7,18 +7,22 @@ data class Account(
     val userId: String,
     @SerializedName("session_id")
     val sessionId: String,
+    @SerializedName("type")
     val type: String,
     @SerializedName("identity_number")
     val identityNumber: String,
     /**
      * @see UserRelationship
      */
+    @SerializedName("relationship")
     val relationship: String,
     @SerializedName("full_name")
     val fullName: String?,
+    @SerializedName("biography")
     var biography: String?,
     @SerializedName("avatar_url")
     val avatarUrl: String?,
+    @SerializedName("phone")
     var phone: String,
     @SerializedName("phone_verified_at")
     var phoneVerifiedAt: String?,

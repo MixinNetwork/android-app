@@ -5,10 +5,11 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.google.gson.annotations.SerializedName
+import one.mixin.android.db.converter.DescriptionsConverter
 import one.mixin.android.db.converter.ListConverter
 
 @Entity(tableName = "markets")
-@TypeConverters(ListConverter::class)
+@TypeConverters(ListConverter::class, DescriptionsConverter::class)
 data class PerpsMarket(
     @PrimaryKey @SerializedName("market_id")
     @ColumnInfo(name = "market_id")
@@ -54,6 +55,18 @@ data class PerpsMarket(
     @ColumnInfo(name = "funding_rate")
     val fundingRate: String,
 
+    @SerializedName("funding_interval_hours")
+    @ColumnInfo(name = "funding_interval_hours", defaultValue = "0")
+    val fundingIntervalHours: Int = 0,
+
+    @SerializedName("next_funding_at")
+    @ColumnInfo(name = "next_funding_at", defaultValue = "''")
+    val nextFundingAt: String = "",
+
+    @SerializedName("open_interest")
+    @ColumnInfo(name = "open_interest", defaultValue = "'0'")
+    val openInterest: String = "0",
+
     @SerializedName("min_amount")
     @ColumnInfo(name = "min_amount")
     val minAmount: String,
@@ -69,6 +82,10 @@ data class PerpsMarket(
     @SerializedName("volume")
     @ColumnInfo(name = "volume")
     val volume: String,
+
+    @SerializedName("trade_volume_score_1d")
+    @ColumnInfo(name = "trade_volume_score_1d", defaultValue = "0")
+    val tradeVolumeScore1D: Int = 0,
 
     @SerializedName("high")
     @ColumnInfo(name = "high")
@@ -101,6 +118,10 @@ data class PerpsMarket(
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String,
+
+    @SerializedName("descriptions")
+    @ColumnInfo(name = "descriptions")
+    val descriptions: Map<String, String>? = null,
 )
 
 fun PerpsMarket.withDefaults(): PerpsMarket =
@@ -108,4 +129,7 @@ fun PerpsMarket.withDefaults(): PerpsMarket =
         category = (category as String?) ?: "",
         tags = (tags as? List<*>)?.mapNotNull { it as? String }.orEmpty(),
         priceScale = priceScale.coerceAtLeast(0),
+        fundingIntervalHours = fundingIntervalHours.coerceAtLeast(0),
+        nextFundingAt = (nextFundingAt as String?) ?: "",
+        openInterest = (openInterest as String?) ?: "0",
     )

@@ -41,8 +41,10 @@ import coil3.request.allowHardware
 import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants.HelpLink.INSCRIPTION
 import one.mixin.android.Constants.HelpLink.MARKETPLACE
@@ -60,6 +62,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getPublicDownloadPath
@@ -79,6 +82,7 @@ import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.image.withDiskCacheFile
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
@@ -91,6 +95,7 @@ import javax.inject.Inject
 class InscriptionActivity : BaseActivity() {
     companion object {
         private const val ARGS_HASH = "args_hash"
+        private const val STATE_CROP_INPUT_FILE = "state_crop_input_file"
 
         fun show(
             context: Context,
@@ -130,6 +135,7 @@ class InscriptionActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         skipSystemUi = true
         super.onCreate(savedInstanceState)
+        cropInputFile = savedInstanceState?.getString(STATE_CROP_INPUT_FILE)?.let(::File)
         getSendResult =
             registerForActivityResult(
                 InscriptionSendActivity.SendContract(),
@@ -300,8 +306,9 @@ class InscriptionActivity : BaseActivity() {
     private val imageUri: Uri by lazy {
         Uri.fromFile(this.getOtherPath().createImageTemp())
     }
+    private var cropInputFile: File? = null
 
-    private suspend fun setAvatar(url:String?){
+    private suspend fun setAvatar(url: String?) {
         if (url == null) {
             toast(R.string.Please_wait_a_bit)
             return
@@ -312,21 +319,36 @@ class InscriptionActivity : BaseActivity() {
                 .allowHardware(false) // Disable hardware bitmaps since we're getting a Bitmap
                 .build()
 
-        val result = applicationContext.imageLoader.execute(request)
+        val loader = applicationContext.imageLoader
+        val result = loader.execute(request)
         if (result !is SuccessResult) {
             toast(R.string.Try_Again)
             return
         }
-        val f = applicationContext.imageLoader.diskCache?.openSnapshot(url)?.data?.toFile()
-        if (f == null) {
+        val sourceFile =
+            withContext(Dispatchers.IO) {
+                loader.withDiskCacheFile(result) { cachedFile ->
+                    val destination = applicationContext.getImageCachePath().createImageTemp()
+                    try {
+                        cachedFile.copy(destination)
+                        destination
+                    } catch (e: Exception) {
+                        destination.delete()
+                        throw e
+                    }
+                }
+            }
+        if (sourceFile == null) {
             toast(R.string.Try_Again)
             return
         }
+        cropInputFile?.delete()
+        cropInputFile = sourceFile
         val options = UCrop.Options()
         options.setToolbarColor(ContextCompat.getColor(this@InscriptionActivity, R.color.black))
         options.setToolbarWidgetColor(Color.WHITE)
         options.setHideBottomControls(true)
-        UCrop.of(f.toUri(), imageUri)
+        UCrop.of(sourceFile.toUri(), imageUri)
             .withOptions(options)
             .withAspectRatio(1f, 1f)
             .withMaxResultSize(
@@ -347,22 +369,28 @@ class InscriptionActivity : BaseActivity() {
                 .data(url)
                 .build()
 
-        val result = applicationContext.imageLoader.execute(request)
+        val loader = applicationContext.imageLoader
+        val result = loader.execute(request)
         if (result !is SuccessResult) {
             toast(R.string.Try_Again)
             return
         }
-        val f = applicationContext.imageLoader.diskCache?.openSnapshot(url)?.data?.toFile()
-        if (f == null) {
+        val file =
+            withContext(Dispatchers.IO) {
+                val dir = getPublicDownloadPath()
+                dir.mkdirs()
+                val destination = File(dir, "$name.png")
+                loader.withDiskCacheFile(result) { cachedFile ->
+                    cachedFile.copy(destination)
+                    destination
+                }
+            }
+        if (file == null) {
             toast(R.string.Try_Again)
             return
         }
-        val dir = getPublicDownloadPath()
-        dir.mkdirs()
-        val file = File(dir, "$name.png")
-        f.copy(file)
         MediaScannerConnection.scanFile(this@InscriptionActivity, arrayOf(file.toString()), null, null)
-        toast(getString(R.string.Save_to, dir.path))
+        toast(getString(R.string.Save_to, file.parent))
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -379,6 +407,23 @@ class InscriptionActivity : BaseActivity() {
                 toast(cropError.toString())
             }
         }
+        if (requestCode == UCrop.REQUEST_CROP) {
+            cropInputFile?.delete()
+            cropInputFile = null
+        }
+    }
+
+    override fun onDestroy() {
+        if (isFinishing) {
+            cropInputFile?.delete()
+            cropInputFile = null
+        }
+        super.onDestroy()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        cropInputFile?.let { outState.putString(STATE_CROP_INPUT_FILE, it.absolutePath) }
+        super.onSaveInstanceState(outState)
     }
 
     private fun update(

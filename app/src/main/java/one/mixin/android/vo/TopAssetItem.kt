@@ -17,8 +17,10 @@ data class TopAssetItem(
     @SerializedName("asset_id")
     val assetId: String,
     @ColumnInfo(name = "symbol")
+    @SerializedName("symbol")
     val symbol: String,
     @ColumnInfo(name = "name")
+    @SerializedName("name")
     val name: String,
     @ColumnInfo(name = "icon_url")
     @SerializedName("icon_url")
@@ -32,7 +34,9 @@ data class TopAssetItem(
     @SerializedName("asset_key")
     @ColumnInfo(name = "asset_key")
     val assetKey: String?,
+    @SerializedName("priceUsd")
     val priceUsd: String,
+    @SerializedName("changeUsd")
     val changeUsd: String,
     @SerializedName("collection_hash")
     @ColumnInfo(name = "collection_hash")

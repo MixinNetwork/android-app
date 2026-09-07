@@ -11,9 +11,13 @@ import one.mixin.android.util.reportException
 @SuppressLint("ParcelCreator")
 @Parcelize
 data class LocationPayload(
+    @SerializedName("latitude")
     val latitude: Double,
+    @SerializedName("longitude")
     val longitude: Double,
+    @SerializedName("name")
     val name: String?,
+    @SerializedName("address")
     val address: String?,
     @SerializedName("venue_type")
     val venueType: String? = null,

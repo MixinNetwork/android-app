@@ -49,7 +49,7 @@ data class MixAddress(
         }
 
         fun newStorageRecipient(): MixAddress {
-            return requireNotNull("MIXSK624cFT3CXbbjYxU17CeYWCwj6CZgkp2VsfiRsDMXw4MzpfYKPKKYwLmfDby2z85MLAbSWZbAB1dfPetCxUf7vwwJnToaG8".toMixAddress())
+            return requireNotNull("MIXSK6TsZiYZ8uUxjggvf5CmfYmny8qf831CrXaGEZ2KwkwWguJn1Y21Nh1Rw1sN5GFnFW1R2Qc3p6KtAbqpEGXq4MMSTZET3YP".toMixAddress())
         }
     }
 

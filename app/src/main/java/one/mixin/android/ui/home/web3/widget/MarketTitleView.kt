@@ -148,9 +148,9 @@ class MarketTitleView : RelativeLayout {
 
     private fun updatePercentageText() {
         _binding.percentage.text = if (isSevenDays) {
-            context.getString(R.string.change_percent_period_day, 7)
+            context.getString(R.string.days_count_short, 7)
         } else {
-            context.getString(R.string.change_24h, 24)
+            context.getString(R.string.hours_count_short, 24)
         }
     }
 

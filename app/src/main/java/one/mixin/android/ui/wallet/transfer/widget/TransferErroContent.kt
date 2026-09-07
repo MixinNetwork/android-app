@@ -56,26 +56,26 @@ class TransferErrorContent : LinearLayout {
                 balance.isVisible = true
                 balance.setContent(
                     R.string.Balance,
-                    "${feeExtra?.balance?.numberFormat8() ?: "0"} ${fee.symbol ?: ""}",
+                    "${feeExtra?.balance?.numberFormat8() ?: "0"} ${fee.symbol}",
                     amountAs(feeExtra?.balance ?: "0", fee)
                 )
             } else {
-                val asset = assetBiometricItem.asset?:return
+                val asset = assetBiometricItem.asset ?: return
                 amount.isVisible = true
                 amount.setContent(
                     R.string.Amount,
-                    "${assetBiometricItem.amount} ${asset?.symbol}",
-                    amountAs(assetBiometricItem.amount, asset!!)
+                    "${assetBiometricItem.amount} ${asset.symbol}",
+                    amountAs(assetBiometricItem.amount, asset)
                 )
                 network.setContent(
                     R.string.network,
                     getChainName(
-                        asset!!.chainId,
-                        asset!!.chainName,
-                        asset!!.assetKey
+                        asset.chainId,
+                        asset.chainName,
+                        asset.assetKey
                     ) ?: ""
                 )
-                if (assetBiometricItem is WithdrawBiometricItem && assetBiometricItem.fee?.token != null && asset?.assetId == assetBiometricItem.fee?.token?.assetId) {
+                if (assetBiometricItem is WithdrawBiometricItem && assetBiometricItem.fee?.token != null && asset.assetId == assetBiometricItem.fee?.token?.assetId) {
                     val (totalAmount, totalPrice) = formatWithdrawBiometricItem(assetBiometricItem)
                     total.isVisible = true
                     total.setContent(R.string.Total, totalAmount, totalPrice)
@@ -96,8 +96,8 @@ class TransferErrorContent : LinearLayout {
                 balance.isVisible = true
                 balance.setContent(
                     R.string.Balance,
-                    "${extra?.balance?.numberFormat8() ?: "0"} ${asset?.symbol ?: ""}",
-                    amountAs(extra?.balance ?: "0", asset!!)
+                    "${extra?.balance?.numberFormat8() ?: "0"} ${asset.symbol}",
+                    amountAs(extra?.balance ?: "0", asset)
                 )
             }
         }

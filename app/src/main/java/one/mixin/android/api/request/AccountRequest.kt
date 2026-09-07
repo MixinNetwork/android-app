@@ -5,11 +5,13 @@ import com.google.gson.annotations.SerializedName
 import one.mixin.android.BuildConfig
 
 data class AccountRequest(
+    @SerializedName("code")
     val code: String? = null,
     @SerializedName("notification_token")
     val notificationToken: String? = null,
     @SerializedName("registration_id")
     val registrationId: Int? = null,
+    @SerializedName("platform")
     val platform: String = "Android",
     @SerializedName("platform_version")
     val platformVersion: String = Build.VERSION.RELEASE,
@@ -17,7 +19,9 @@ data class AccountRequest(
     val appVersion: String = BuildConfig.VERSION_NAME,
     @SerializedName("package_name")
     val packageName: String = BuildConfig.APPLICATION_ID,
+    @SerializedName("purpose")
     var purpose: String = VerificationPurpose.SESSION.name,
+    @SerializedName("pin")
     val pin: String? = null,
     @SerializedName("session_secret")
     val sessionSecret: String? = null,

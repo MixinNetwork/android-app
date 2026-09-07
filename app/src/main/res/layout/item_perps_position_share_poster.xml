@@ -37,7 +37,7 @@
                 android:id="@+id/header"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:contentDescription="@string/mixin_messenger"
+                android:contentDescription="@string/Mixin"
                 android:src="@drawable/perpetual_logo"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -213,7 +213,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:includeFontPadding="false"
-                    android:text="@string/mixin_messenger"
+                    android:text="@string/Mixin"
                     android:textColor="@color/white"
                     android:textSize="16sp"
                     android:textStyle="bold" />

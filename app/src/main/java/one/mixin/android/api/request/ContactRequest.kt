@@ -7,6 +7,7 @@ import one.mixin.android.util.rxcontact.Contact
 import java.util.Locale
 
 data class ContactRequest(
+    @SerializedName("phone")
     val phone: String,
     @SerializedName("full_name")
     val fullName: String,

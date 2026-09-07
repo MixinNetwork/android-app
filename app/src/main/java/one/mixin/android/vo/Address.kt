@@ -23,6 +23,7 @@ data class Address(
     @SerializedName("address_id")
     val addressId: String,
     @ColumnInfo(name = "type")
+    @SerializedName("type")
     val type: String,
     @ColumnInfo(name = "asset_id")
     @SerializedName("asset_id")
@@ -34,6 +35,7 @@ data class Address(
     @SerializedName("destination")
     val destination: String,
     @ColumnInfo(name = "label")
+    @SerializedName("label")
     val label: String,
     @ColumnInfo(name = "updated_at")
     @SerializedName("updated_at")

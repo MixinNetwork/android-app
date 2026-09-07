@@ -1,5 +1,6 @@
 package one.mixin.android.tip.wc.internal
 
+import com.google.gson.annotations.SerializedName
 import java.math.BigDecimal
 import java.math.RoundingMode
 
@@ -58,7 +59,10 @@ data class WcBitcoinAccountAddress(
 )
 
 data class WcBitcoinSignature(
+    @SerializedName("address")
     val address: String,
+    @SerializedName("signature")
     val signature: String,
+    @SerializedName("messageHash")
     val messageHash: String? = null,
 )

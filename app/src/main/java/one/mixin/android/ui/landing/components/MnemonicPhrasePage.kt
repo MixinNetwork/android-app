@@ -118,7 +118,9 @@ fun MnemonicPhrasePage(
                 ) {
                     Text(
                         stringResource(R.string.Retry),
-                        color = Color.White
+                        color = Color.White,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.W500,
                     )
                 }
             }

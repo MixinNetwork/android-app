@@ -142,7 +142,7 @@ fun InputContent(
     } else {
         val focusRequester = remember { FocusRequester() }
         val keyboardController = LocalSoftwareKeyboardController.current
-        LaunchedEffect(Unit) {
+        LaunchedEffect(autoFocus) {
             if (autoFocus) {
                 focusRequester.requestFocus()
                 keyboardController?.show()
