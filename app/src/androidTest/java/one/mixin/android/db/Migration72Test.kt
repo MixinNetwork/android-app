@@ -1,6 +1,7 @@
 package one.mixin.android.db
 
 import one.mixin.android.Constants
+import one.mixin.android.db.datasource.query
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
