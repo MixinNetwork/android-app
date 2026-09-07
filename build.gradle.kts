@@ -27,7 +27,7 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") apply false
     id("org.jetbrains.kotlin.plugin.serialization") apply false
     id("com.google.devtools.ksp") apply false
-    id("androidx.room3") version "3.0.0" apply false
+    id("androidx.room3") version "3.0.2" apply false
     id("org.jetbrains.kotlin.plugin.compose") apply false
     id("org.jetbrains.kotlin.jvm") apply false
     id("com.google.firebase.firebase-perf") apply false
