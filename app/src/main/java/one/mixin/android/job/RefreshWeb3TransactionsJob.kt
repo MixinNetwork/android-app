@@ -130,7 +130,7 @@ class RefreshWeb3TransactionsJob(
                     successBlock = { response ->
                         val asset = response.data
                         if (asset != null) {
-                            val tokenToInsert = applyBitcoinTokenBalanceBeforeInsertByDestination(destination, asset)
+                            val tokenToInsert = applyUtxoTokenBalanceBeforeInsertByDestination(destination, asset)
                             web3TokenDao.insert(tokenToInsert)
                             chainId.add(asset.chainId)
                             Timber.d("Inserted ${asset.symbol} into database")

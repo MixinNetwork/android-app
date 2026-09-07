@@ -231,4 +231,27 @@ class WalletHomeBuilderTest {
             cards,
         )
     }
+
+    @Test
+    fun watchingWalletDoesNotShowFundEmptyGuide() {
+        val cards = WalletHomeBuilder.build(
+            walletType = WalletHomeType.CLASSIC,
+            hasAssetValue = false,
+            showBanner = false,
+            showReferral = false,
+            hasPositions = false,
+            hasTopMovers = false,
+            hasTransactions = false,
+            isWatchWallet = true,
+        )
+
+        assertEquals(
+            listOf(
+                WalletHomeCardType.BALANCE,
+                WalletHomeCardType.TOKENS,
+                WalletHomeCardType.SUPPORT,
+            ),
+            cards,
+        )
+    }
 }

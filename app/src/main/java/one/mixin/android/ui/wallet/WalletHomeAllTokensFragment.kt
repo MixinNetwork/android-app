@@ -94,6 +94,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
     private val _walletId = MutableLiveData<String>()
     private val homeState = MutableStateFlow(WalletHomeState(walletType = WalletHomeType.PRIVACY))
     private var privacyTokens: List<TokenItem> = emptyList()
+    private var earnAssetIds: Set<String> = emptySet()
     private var web3Tokens: List<Web3TokenItem> = emptyList()
     private var balanceSnapshot: WalletHomeBalanceSnapshot? = null
     private var positions: List<PerpsPositionItem> = emptyList()
@@ -188,6 +189,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
         }
         if (walletType == WalletHomeType.PRIVACY) {
             refreshAllPendingDeposit()
+            refreshEarnAssetIds()
         }
 
         if (walletType == WalletHomeType.CLASSIC) {
@@ -275,6 +277,19 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             )
         }
 
+    private fun refreshEarnAssetIds() {
+        lifecycleScope.launch {
+            runCatching {
+                walletViewModel.earnAccounts()
+            }.onSuccess { response ->
+                if (response.isSuccess) {
+                    earnAssetIds = response.data.orEmpty().map { it.assetId }.toSet()
+                    renderHome()
+                }
+            }
+        }
+    }
+
     @SuppressLint("InflateParams")
     private fun showPrivacyBottom() {
         val bottomView = View.inflate(
@@ -339,6 +354,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
                     btcTotal = snapshot.btcTotal,
                     fiatSymbol = snapshot.fiatSymbol,
                     totalTokenCount = snapshot.totalTokenCount,
+                    earnAssetIds = earnAssetIds,
                     pendingIndicator = pendingDisplays.toWalletHomePendingIndicator(),
                 )
             }
@@ -368,6 +384,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             btcTotal = formatWalletHomeBtcTotal(totalBtc),
             fiatSymbol = Fiats.getSymbol(),
             privacyTokens = privacyTokens,
+            earnAssetIds = earnAssetIds,
             totalTokenCount = privacyTokens.size,
             pendingIndicator = pendingDisplays.toWalletHomePendingIndicator(),
         )

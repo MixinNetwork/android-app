@@ -142,6 +142,7 @@ fun LimitOrderContent(
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
+    autoFocus: Boolean,
     onSelectToken: (Boolean, SelectTokenType) -> Unit,
     onLimitReview: (SwapToken, SwapToken, CreateLimitOrderResponse) -> Unit,
     onDeposit: (SwapToken) -> Unit,
@@ -325,7 +326,7 @@ fun LimitOrderContent(
                                 if (it.isFocused) {
                                     focusedField = FocusedField.IN_AMOUNT
                                 }
-                            }, token = fromToken, text = inputText, title = stringResource(id = R.string.swap_send), readOnly = false, selectClick = {
+                            }, token = fromToken, text = inputText, title = stringResource(id = R.string.swap_send), readOnly = false, autoFocus = autoFocus, selectClick = {
                                 keyboardController?.hide()
                                 focusManager.clearFocus()
                                 onSelectToken(isReverse, if (isReverse) SelectTokenType.To else SelectTokenType.From)

@@ -86,7 +86,7 @@ data class Lockup(
 @Parcelize
 data class Stake(
     @SerializedName("creditsObserved")
-    val creditsObserved: Int,
+    val creditsObserved: BigInteger,
     @SerializedName("delegation")
     val delegation: Delegation
 ) : Parcelable

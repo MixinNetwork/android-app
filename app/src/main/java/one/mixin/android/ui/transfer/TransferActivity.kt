@@ -1,3 +1,5 @@
+@file:Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
+
 package one.mixin.android.ui.transfer
 
 import android.Manifest
@@ -598,10 +600,8 @@ class TransferActivity : BaseActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        intent?.let {
-            it.getParcelableExtraCompat(ARGS_COMMAND, TransferCommand::class.java)?.apply {
-                handleCommand(this)
-            }
+        intent.getParcelableExtraCompat(ARGS_COMMAND, TransferCommand::class.java)?.apply {
+            handleCommand(this)
         }
     }
 
@@ -733,7 +733,6 @@ class TransferActivity : BaseActivity() {
                     }
                     return@launch
                 }
-            Timber.e("qrcode:$content")
             if (transferCommandData.userId != Session.getAccountId()) {
                 toast(R.string.not_yours)
                 finish()
@@ -792,9 +791,7 @@ class TransferActivity : BaseActivity() {
             gson.toJson(
                 TransferCommand(
                     TransferCommandAction.PULL.value,
-                ).apply {
-                    Timber.e("pull ${gson.toJson(this)}")
-                },
+                ),
             )
         status.value = TransferStatus.WAITING_MESSAGE
         sendMessage(encodeText)
@@ -803,7 +800,6 @@ class TransferActivity : BaseActivity() {
     private fun pushRequest() {
         lifecycleScope.launch {
             transferServer.startServer(selectConversation, selectDate) { transferData ->
-                Timber.e("push ${gson.toJson(transferData)}")
                 val encodeText =
                     gson.toJson(
                         transferData,

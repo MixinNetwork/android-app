@@ -30,6 +30,7 @@ import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.CashAccount
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.EarnProduct
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.web3.vo.WalletItem
@@ -119,6 +120,11 @@ internal constructor(
     suspend fun cachedCashAccount(): CashAccount? =
         withContext(Dispatchers.IO) {
             cashRepository.cachedAccount()
+        }
+
+    suspend fun earnAccounts(): MixinResponse<List<EarnProduct>> =
+        withContext(Dispatchers.IO) {
+            cashRepository.earnAccounts()
         }
 
     suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){
@@ -428,7 +434,14 @@ internal constructor(
 
     suspend fun findMarketItemByAssetId(assetId: String) = tokenRepository.findMarketItemByAssetId(assetId)
 
-    fun updateMarketFavored(symbol: String, coinId: String, isFavored: Boolean?) = viewModelScope.launch(Dispatchers.IO) { tokenRepository.updateMarketFavored(symbol, coinId, isFavored) }
+    suspend fun updateMarketFavored(
+        symbol: String,
+        coinId: String,
+        isFavored: Boolean?,
+    ): Boolean =
+        withContext(Dispatchers.IO) {
+            tokenRepository.updateMarketFavored(symbol, coinId, isFavored)
+        }
 
     suspend fun simpleCoinItem(coinId: String) = tokenRepository.simpleCoinItem(coinId)
 

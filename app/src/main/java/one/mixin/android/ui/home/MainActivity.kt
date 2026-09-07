@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.home
 
 import android.Manifest
@@ -26,6 +28,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import com.appsflyer.AppsFlyerLib
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.play.core.appupdate.AppUpdateManagerFactory
@@ -67,6 +70,8 @@ import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.SessionRequest
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.UserService
+import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.CryptoWalletHelper.MissingUtxoAddress
 import one.mixin.android.crypto.PrivacyPreference.getIsLoaded
 import one.mixin.android.crypto.PrivacyPreference.getIsSyncSession
 import one.mixin.android.crypto.hasPendingImportMnemonic
@@ -100,6 +105,7 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
 import one.mixin.android.job.CleanCacheJob
+import one.mixin.android.job.CleanupMarketJob
 import one.mixin.android.job.CleanupQuoteContentJob
 import one.mixin.android.job.CleanupThumbJob
 import one.mixin.android.job.InscriptionCollectionMigrationJob
@@ -280,6 +286,9 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     override fun onCreate(savedInstanceState: Bundle?) {
         val restoreState = if (Session.checkToken()) savedInstanceState else null
         super.onCreate(restoreState)
+        if (BuildConfig.APPSFLYER_DEV_KEY.isNotBlank()) {
+            AppsFlyerLib.getInstance().collectDataFromLauncherActivity(this)
+        }
         navigationController = NavigationController()
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
@@ -430,7 +439,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     jobManager.addJobInBackground(RefreshAccountJob(checkTip = true))
                     val isLoginVerified: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_VERIFY, false)
                     val shouldGoWallet: Boolean = defaultSharedPreferences.getBoolean(PREF_LOGIN_OR_SIGN_UP, false)
-                    val shouldBlockNavigation: Boolean = shouldShowWalletMissingBtcAddress()
+                    val shouldBlockNavigation: Boolean = findMissingUtxoAddress() != null
                     Timber.e("isLoginVerified: $isLoginVerified, shouldGoWallet: $shouldGoWallet, shouldBlockNavigation: $shouldBlockNavigation")
                     if (hasPendingImportMnemonic(this@MainActivity)) {
                         if (isLoginVerified) {
@@ -694,6 +703,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
             jobManager.addJobInBackground(RefreshContactJob())
             jobManager.addJobInBackground(RefreshSafeAccountsJob())
+            jobManager.addJobInBackground(CleanupMarketJob())
 
             jobManager.addJobInBackground(RefreshWeb3Job())
         }
@@ -1247,9 +1257,9 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                 Timber.e("nav_wallet: ${Session.getAccount()?.hasPin}")
                 if (Session.getAccount()?.hasPin == true) {
                     lifecycleScope.launch {
-                        val shouldBlockNavigation: Boolean = shouldShowWalletMissingBtcAddress()
-                        if (shouldBlockNavigation) {
-                            showWalletMissingBtcAddressFragment()
+                        val missingUtxoAddress = findMissingUtxoAddress()
+                        if (missingUtxoAddress != null) {
+                            showWalletMissingBtcAddressFragment(missingUtxoAddress)
                             isRestoringBottomNavSelection = true
                             binding.bottomNav.selectedItemId = lastBottomNavItemId
                             return@launch
@@ -1292,25 +1302,32 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         findFragmentByTagTyped<ConversationListFragment>(NavigationController.ConversationList.tag)?.hideContainer()
     }
 
-    private suspend fun shouldShowWalletMissingBtcAddress(): Boolean {
+    private suspend fun findMissingUtxoAddress(): MissingUtxoAddress? {
         return withContext(Dispatchers.IO) {
-            if (!defaultSharedPreferences.getBoolean(Account.PREF_WEB3_ADDRESSES_SYNCED, false)) return@withContext false
+            if (!defaultSharedPreferences.getBoolean(Account.PREF_WEB3_ADDRESSES_SYNCED, false)) return@withContext null
             val wallets = web3Repository.getAllWallets().filter { walletItem ->
                 walletItem.category == WalletCategory.CLASSIC.value || (walletItem.category == WalletCategory.IMPORTED_MNEMONIC.value && walletItem.hasLocalPrivateKey)
             }
-            if (wallets.isEmpty()) return@withContext false
-            val shouldShowBtcAddress: Boolean = wallets.any { walletItem ->
-                web3Repository.getAddressesByChainId(walletItem.id, Constants.ChainId.BITCOIN_CHAIN_ID) == null
+            if (wallets.isEmpty()) return@withContext null
+            val missingUtxoAddresses = wallets.mapNotNull { walletItem ->
+                val addresses = web3Repository.getAddresses(walletItem.id)
+                CryptoWalletHelper.missingUtxoAddress(
+                    chainIds = addresses.map { it.chainId },
+                )
             }
-            return@withContext shouldShowBtcAddress
+            return@withContext when {
+                MissingUtxoAddress.PEARL in missingUtxoAddresses -> MissingUtxoAddress.PEARL
+                MissingUtxoAddress.BITCOIN in missingUtxoAddresses -> MissingUtxoAddress.BITCOIN
+                else -> null
+            }
         }
     }
 
-    private fun showWalletMissingBtcAddressFragment() {
+    private fun showWalletMissingBtcAddressFragment(missingUtxoAddress: MissingUtxoAddress) {
         val fragment = supportFragmentManager.findFragmentByTag(WalletMissingBtcAddressFragment.TAG)
         if (fragment != null) return
         val newFragment = WalletMissingBtcAddressFragment
-            .newInstance()
+            .newInstance(showPearlTitle = missingUtxoAddress == MissingUtxoAddress.PEARL)
         supportFragmentManager
             .beginTransaction()
             .setReorderingAllowed(true)
@@ -1334,7 +1351,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         lastBottomNavItemId = R.id.nav_wallet
     }
 
-    private fun <T : Fragment> findFragmentByTagTyped(tag: String): T? =
+    private inline fun <reified T : Fragment> findFragmentByTagTyped(tag: String): T? =
         supportFragmentManager.findFragmentByTag(tag) as? T
 
     fun showUpdate(releaseUrl: String?) {

@@ -1,3 +1,5 @@
+@file:Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
+
 package one.mixin.android.ui.web
 
 import android.Manifest
@@ -68,7 +70,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.webkit.WebSettingsCompat
 import androidx.webkit.WebViewFeature
-import coil3.annotation.ExperimentalCoilApi
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -92,6 +93,7 @@ import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.databinding.FragmentWebBinding
 import one.mixin.android.databinding.ViewWebBottomMenuBinding
+import one.mixin.android.db.property.PropertyHelper.findValueByKey
 import one.mixin.android.event.SearchEvent
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.alert
@@ -139,6 +141,8 @@ import one.mixin.android.tip.wc.WalletConnectTIP
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.BottomSheetViewModel
+import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.BiometricBottomSheetDialogFragment
 import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuList
@@ -167,6 +171,7 @@ import one.mixin.android.util.getCountry
 import one.mixin.android.util.getLanguage
 import one.mixin.android.util.isFollowSystem
 import one.mixin.android.util.reportException
+import one.mixin.android.util.image.withDiskCacheFile
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCap
@@ -183,6 +188,7 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.SwitchChain
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.js.WalletErrorCode
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.FailLoadView
 import one.mixin.android.widget.MixinWebView
@@ -590,8 +596,17 @@ class WebFragment : BaseFragment() {
                         errorCode == ERROR_TIMEOUT
                     ) {
                         _binding?.apply {
+                            val descriptionRes =
+                                if (isBot()) {
+                                    R.string.web_bot_cannot_reached_desc
+                                } else {
+                                    R.string.web_cannot_reached_desc
+                                }
                             failLoadView.webFailDescription.text =
-                                getString(R.string.web_cannot_reached_desc, failingUrl)
+                                getString(
+                                    descriptionRes,
+                                    webLoadErrorTarget(app, failingUrl),
+                                )
                             failLoadView.isVisible = true
                         }
                     }
@@ -960,6 +975,9 @@ class WebFragment : BaseFragment() {
                     openInBrowserAction = { url ->
                         openInBrowser(url)
                     },
+                    verifyPinAction = { callback ->
+                        verifyPin(callback)
+                    },
                 )
             webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
             webView.addJavascriptInterface(
@@ -969,9 +987,9 @@ class WebFragment : BaseFragment() {
                             webView.evaluateJavascript(e, Timber::d)
                         }
                     },
-                    onWalletActionError = { id ->
+                    onWalletActionError = { id, code, message ->
                         lifecycleScope.launch {
-                            webView.evaluateJavascript("window.${Web3Signer.currentNetwork}.sendResponse($id, null)") {}
+                            webView.evaluateJavascript(walletErrorScript(id, code, message)) {}
                         }
                     },
                     onBrowserSign = { message ->
@@ -985,7 +1003,13 @@ class WebFragment : BaseFragment() {
                                 currentTitle = currentTitle,
                                 onReject = {
                                     lifecycleScope.launch {
-                                        webView.evaluateJavascript("window.${Web3Signer.currentNetwork}.sendResponse(${message.callbackId}, null)") {}
+                                        webView.evaluateJavascript(
+                                            walletErrorScript(
+                                                message.callbackId,
+                                                WalletErrorCode.USER_REJECTED_REQUEST,
+                                                "User rejected the request",
+                                            ),
+                                        ) {}
                                     }
                                 },
                                 onDone = { callback ->
@@ -1151,7 +1175,6 @@ class WebFragment : BaseFragment() {
             val sameHost =
                 try {
                     Uri.parse(webView.url).host == Uri.parse(app?.homeUri ?: "").host
-                    true
                 } catch (e: Exception) {
                     false
                 }
@@ -1164,9 +1187,11 @@ class WebFragment : BaseFragment() {
                 webView.evaluateJavascript("$callbackFunction('[]')") {}
                 return@launch
             }
-            val auth = bottomViewModel.getAuthorizationByAppId(app!!.appId)
+            val appId = app!!.appId
+            val isVerified = isVerifiedBot(appId)
+            val auth = if (isVerified) null else bottomViewModel.getAuthorizationByAppId(appId)
             val result =
-                if (auth?.scopes?.contains("ASSETS:READ") == true) {
+                if (isVerified || auth?.scopes?.contains("ASSETS:READ") == true) {
                     val tokens =
                         if (ids.isEmpty()) {
                             bottomViewModel.tokenEntry()
@@ -1184,9 +1209,17 @@ class WebFragment : BaseFragment() {
     private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
         if (viewDestroyed()) return
 
+        if (appId != app?.appId) {
+            webView.evaluateJavascript("$callbackFunction('[]')") {}
+            return
+        }
         lifecycleScope.launch {
             val app = bottomViewModel.findAndSync(appId)
             if (app == null) {
+                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                return@launch
+            }
+            if (!isVerifiedBot(appId)) {
                 webView.evaluateJavascript("$callbackFunction('[]')") {}
                 return@launch
             }
@@ -1203,6 +1236,32 @@ class WebFragment : BaseFragment() {
             val (ts, signature) = getBotSignature(publicKey, method, path, body)
             webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
         }
+    }
+
+    private fun verifyPin(callbackFunction: String) {
+        if (viewDestroyed()) return
+
+        lifecycleScope.launch {
+            if (viewDestroyed()) return@launch
+            val currentAppId = app?.appId
+            if (currentAppId.isNullOrBlank() || !isVerifiedBot(currentAppId)) {
+                webView.evaluateJavascript("$callbackFunction(false)") {}
+                return@launch
+            }
+
+            VerifyBottomSheetDialogFragment.newInstance().apply {
+                setOnResult { success ->
+                    lifecycleScope.launch {
+                        webView.evaluateJavascript("$callbackFunction($success)") {}
+                    }
+                }
+            }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+        }
+    }
+
+    private suspend fun isVerifiedBot(appId: String): Boolean {
+        return bottomViewModel.findUserByAppId(appId)?.isVerified == true ||
+            findValueByKey(Constants.Debug.botSignDebugAppKey(appId), false)
     }
 
     private fun tipSign(
@@ -1353,14 +1412,19 @@ class WebFragment : BaseFragment() {
             )
         val viewBinding = ViewWebBottomMenuBinding.bind(view)
         if (isBot()) {
-            app?.let {
-                viewBinding.avatar.loadImage(it.iconUrl)
-                viewBinding.nameTv.text = it.name
-                viewBinding.descTv.text = it.appNumber
+            app?.let { app ->
+                viewBinding.avatar.loadImage(app.iconUrl)
+                viewBinding.nameTv.setTextOnly(app.name)
+                viewBinding.descTv.text = app.appNumber
+                lifecycleScope.launch {
+                    bottomViewModel.findUserByAppId(app.appId)?.let { user ->
+                        viewBinding.nameTv.setVerifiedName(app.name, user.isVerified == true)
+                    }
+                }
             }
             viewBinding.avatar.isVisible = true
         } else {
-            viewBinding.nameTv.text = binding.titleTv.text
+            viewBinding.nameTv.setTextOnly(binding.titleTv.text.toString())
             viewBinding.descTv.text = webView.url
             viewBinding.avatar.isVisible = false
         }
@@ -1681,7 +1745,6 @@ class WebFragment : BaseFragment() {
         super.onResume()
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     private fun saveImageFromUrl(url: String?) {
         if (viewDestroyed()) return
 
@@ -1704,8 +1767,9 @@ class WebFragment : BaseFragment() {
                         val request = ImageRequest.Builder(requireContext()).data(url).build()
                         val result = loader.execute(request)
                         if (result !is SuccessResult) return@launch
-                        val f = loader.diskCache?.openSnapshot(url)?.data?.toFile() ?: return@launch
-                        f.copy(outFile)
+                        loader.withDiskCacheFile(result) { cachedFile ->
+                            cachedFile.copy(outFile)
+                        } ?: return@launch
                     }
                     MediaScannerConnection.scanFile(
                         requireContext(),
@@ -1972,9 +2036,16 @@ class WebFragment : BaseFragment() {
         }
     }
 
+    private fun walletErrorScript(
+        id: Long,
+        code: Int,
+        message: String,
+    ): String =
+        "mixinwallet.${Web3Signer.currentNetwork}.sendError($id, {code: $code, message: ${JSONObject.quote(message)}});"
+
     class Web3Interface(
         val onWalletActionSuccessful: (String) -> Unit,
-        val onWalletActionError: (Long) -> Unit,
+        val onWalletActionError: (Long, Int, String) -> Unit,
         val onBrowserSign: (JsSignMessage) -> Unit,
         val onEmptyAddress: (String) -> Unit,
     ) {
@@ -1983,20 +2054,27 @@ class WebFragment : BaseFragment() {
             if (BuildConfig.DEBUG) Timber.d("postMessage $json")
             val obj = JSONObject(json)
             val id = obj.getLong("id")
-            val method = DAppMethod.fromValue(obj.getString("name"))
-            val network = obj.getString("network")
-            if (network == Web3Signer.JsSignerNetwork.Solana.name) {
-                Web3Signer.useSolana()
-            } else {
-                Web3Signer.useEvm()
-            }
-            if (isAddressEmpty(network)) {
-                return
-            }
-            when (method) {
+            try {
+                val method = DAppMethod.fromValue(obj.getString("name"))
+                val network = obj.getString("network")
+                if (network == Web3Signer.JsSignerNetwork.Solana.name) {
+                    Web3Signer.useSolana()
+                } else {
+                    Web3Signer.useEvm()
+                }
+                if (isAddressEmpty(network, id)) {
+                    return
+                }
+                when (method) {
                 DAppMethod.REQUESTACCOUNTS -> {
-                    onWalletActionSuccessful("window.$network.setAddress(\"${Web3Signer.address}\");")
-                    onWalletActionSuccessful("window.$network.sendResponse($id, [\"${Web3Signer.address}\"]);")
+                    if (network == Web3Signer.JsSignerNetwork.Ethereum.name) {
+                        onWalletActionSuccessful("mixinwallet.$network.setAddress(\"${Web3Signer.address}\");")
+                    }
+                    onWalletActionSuccessful("mixinwallet.$network.sendResponse($id, [\"${Web3Signer.address}\"]);")
+                }
+
+                DAppMethod.REQUESTPERMISSIONS -> {
+                    onWalletActionError(id, WalletErrorCode.UNSUPPORTED_METHOD, "wallet_requestPermissions is not supported")
                 }
 
                 DAppMethod.SWITCHETHEREUMCHAIN -> {
@@ -2005,13 +2083,11 @@ class WebFragment : BaseFragment() {
 
                 DAppMethod.SIGNMESSAGE -> {
                     val o = obj.getJSONObject("object")
-                    val data =
-                        if (network == Web3Signer.JsSignerNetwork.Solana.name) {
-                            o.getString("data")
-                        } else {
-                            o.toString()
-                        }
-                    signMessage(id, data)
+                    if (network == Web3Signer.JsSignerNetwork.Solana.name) {
+                        signMessage(id, o.getString("data"))
+                    } else {
+                        signEvmMessage(id, o)
+                    }
                 }
 
                 DAppMethod.SIGNPERSONALMESSAGE -> {
@@ -2058,7 +2134,7 @@ class WebFragment : BaseFragment() {
                         }
 
                     if (!from.equals(Web3Signer.evmAddress, ignoreCase = true)) {
-                        onWalletActionError(id)
+                        onWalletActionError(id, WalletErrorCode.INVALID_PARAMS, "Transaction sender does not match the selected account")
                         return
                     }
                     signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
@@ -2076,15 +2152,24 @@ class WebFragment : BaseFragment() {
                     onBrowserSign(JsSignMessage(id, JsSignMessage.TYPE_SIGN_IN, data = data.toString()))
                 }
 
-                else -> {
-                    Timber.e("json $json")
+                    else -> {
+                        Timber.e("json $json")
+                        onWalletActionError(id, WalletErrorCode.UNSUPPORTED_METHOD, "Unsupported wallet method: ${obj.getString("name")}")
+                    }
                 }
+            } catch (e: Exception) {
+                Timber.e(e, "Invalid wallet request: $json")
+                onWalletActionError(id, WalletErrorCode.INVALID_PARAMS, e.message ?: "Invalid request")
             }
         }
 
-        private fun isAddressEmpty(network: String): Boolean {
+        private fun isAddressEmpty(
+            network: String,
+            callbackId: Long,
+        ): Boolean {
             if (Web3Signer.address.isBlank()) {
                 onEmptyAddress(network)
+                onWalletActionError(callbackId, WalletErrorCode.UNAUTHORIZED, "No account is available for $network")
                 return true
             }
             return false
@@ -2111,6 +2196,21 @@ class WebFragment : BaseFragment() {
             onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
         }
 
+        private fun signEvmMessage(
+            callbackId: Long,
+            data: JSONObject,
+        ) {
+            try {
+                val address = data.optString("address")
+                if (address.isNotBlank() && !address.equals(Web3Signer.address, true)) {
+                    throw IllegalArgumentException("Address unequal")
+                }
+                signMessage(callbackId, data.getString("data"))
+            } catch (e: Exception) {
+                onWalletActionError(callbackId, WalletErrorCode.INVALID_PARAMS, "Invalid signing request")
+            }
+        }
+
         private fun signPersonalMessage(
             callbackId: Long,
             data: JSONObject,
@@ -2122,7 +2222,7 @@ class WebFragment : BaseFragment() {
                 }
                 onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data.getString("data")))
             } catch (e: Exception) {
-                onWalletActionError(callbackId)
+                onWalletActionError(callbackId, WalletErrorCode.INVALID_PARAMS, "Invalid personal signing request")
             }
         }
 
@@ -2137,7 +2237,7 @@ class WebFragment : BaseFragment() {
                 }
                 onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data.getString("raw")))
             } catch (e: Exception) {
-                onWalletActionError(callbackId)
+                onWalletActionError(callbackId, WalletErrorCode.INVALID_PARAMS, "Invalid typed-data signing request")
             }
         }
 
@@ -2168,16 +2268,18 @@ class WebFragment : BaseFragment() {
                     var config = {
                     ethereum: {
                         address: "${Web3Signer.address}",
-                        chainId: ${Web3Signer.currentChain.chainReference},
+                        chainId: "${Web3Signer.currentChain.hexReference}",
                         rpcUrl: "${Web3Signer.currentChain.rpcUrl}"
                     }
                 };
                 mixinwallet.${Web3Signer.currentNetwork}.setConfig(config);
                 """,
                 )
-                onWalletActionSuccessful("window.${Web3Signer.currentNetwork}.emitChainChanged('${Web3Signer.currentChain.hexReference}');")
+                onWalletActionSuccessful("mixinwallet.${Web3Signer.currentNetwork}.emitChainChanged('${Web3Signer.currentChain.hexReference}');")
+                onWalletActionSuccessful("mixinwallet.${Web3Signer.currentNetwork}.sendResponse($callbackId, null);")
+            } else {
+                onWalletActionError(callbackId, WalletErrorCode.UNRECOGNIZED_CHAIN, result.exceptionOrNull()?.message ?: "Unrecognized chain")
             }
-            onWalletActionSuccessful("window.${Web3Signer.currentNetwork}.sendResponse($callbackId, null);")
         }
     }
 
@@ -2193,6 +2295,7 @@ class WebFragment : BaseFragment() {
         var getAssetAction: ((Array<String>, String) -> Unit)? = null,
         var signBotSignature: ((String, Boolean, String, String, String, String) -> Unit)? = null,
         var openInBrowserAction: ((String) -> Boolean)? = null,
+        var verifyPinAction: ((String) -> Unit)? = null,
     ) {
         @JavascriptInterface
         fun showToast(toast: String) {
@@ -2240,6 +2343,11 @@ class WebFragment : BaseFragment() {
         @JavascriptInterface
         fun openInBrowser(url: String): Boolean {
             return openInBrowserAction?.invoke(url) ?: false
+        }
+
+        @JavascriptInterface
+        fun verifyPin(callbackFunction: String) {
+            verifyPinAction?.invoke(callbackFunction)
         }
 
         @JavascriptInterface

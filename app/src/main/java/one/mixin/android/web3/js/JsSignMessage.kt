@@ -20,8 +20,9 @@ class JsSignMessage(
     val solanaTxSource: SolanaTxSource = SolanaTxSource.InnerTransfer,
     val isSpeedUp: Boolean = false,
     val isCancelTx: Boolean = false,
-    val fee: BigDecimal? = null, // only btc
-    val virtualSize: Int? = null, // only btc, vbytes
+    val fee: BigDecimal? = null, // UTXO chain fee
+    val virtualSize: Int? = null, // UTXO chain vbytes
+    val utxoChainId: String? = null,
 ) : Parcelable {
     companion object {
         const val TYPE_TYPED_MESSAGE = 0
@@ -31,7 +32,7 @@ class JsSignMessage(
         const val TYPE_RAW_TRANSACTION = 4
         const val TYPE_SIGN_IN = 5
 
-        const val TYPE_BTC_TRANSACTION = 6
+        const val TYPE_UTXO_TRANSACTION = 6
         const val TYPE_GASLESS_TRANSFER = 7
 
         fun isSignMessage(type: Int): Boolean =
@@ -49,7 +50,7 @@ class JsSignMessage(
         }
 
     // TYPE_MESSAGE Any chain could be
-    fun isBtcMessage() = type == TYPE_BTC_TRANSACTION
+    fun isUtxoMessage() = type == TYPE_UTXO_TRANSACTION
     fun isSolMessage() = type == TYPE_RAW_TRANSACTION || type == TYPE_SIGN_IN
     fun isEvmMessage() = type == TYPE_TYPED_MESSAGE || type == TYPE_PERSONAL_MESSAGE || type == TYPE_TRANSACTION
     fun isGaslessTransfer() = type == TYPE_GASLESS_TRANSFER

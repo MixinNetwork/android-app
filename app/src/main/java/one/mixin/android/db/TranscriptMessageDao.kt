@@ -31,7 +31,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
     @Query("SELECT * FROM transcript_messages WHERE message_id = :messageId AND category IN ($IMAGES, $VIDEOS, $DATA, $AUDIOS) AND (media_status = 'DONE' OR media_status = 'READ')")
     fun findAttachmentMessage(messageId: String): TranscriptMessage?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT * FROM transcript_messages WHERE transcript_id = :transcriptId")
     fun getTranscript(transcriptId: String): List<TranscriptMessage>
 
@@ -62,7 +62,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         mediaStatus: String,
     )
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT t.transcript_id AS transcriptId, t.message_id AS messageId, t.user_id AS userId , IFNULL(u.full_name, t.user_full_name) AS userFullName, u.app_id AS appId, u.identity_number AS userIdentityNumber,
@@ -71,11 +71,14 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         st.asset_height AS assetHeight, st.asset_url AS assetUrl, st.asset_type AS assetType,t.media_duration AS mediaDuration, 
         t.media_waveform AS mediaWaveform, su.user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.avatar_url AS sharedUserAvatarUrl, 
         su.app_id AS sharedUserAppId, su.identity_number AS sharedUserIdentityNumber, su.is_verified AS sharedUserIsVerified, t.quote_id AS quoteId,
-        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership 
+        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership,
+        om.participant_id AS participantUserId, ru.full_name AS participantFullName
         FROM transcript_messages t
         LEFT JOIN users u on t.user_id = u.user_id
         LEFT JOIN users su ON t.shared_user_id = su.user_id
         LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
+        LEFT JOIN messages om ON t.message_id = om.id
+        LEFT JOIN users ru ON ru.user_id = om.participant_id
         WHERE t.transcript_id = :transcriptId
         ORDER BY t.created_at ASC, t.rowid ASC
         """,
@@ -88,7 +91,7 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         messageId: String,
     ): Int
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """  SELECT t.transcript_id AS transcriptId, t.message_id AS messageId, t.user_id AS userId , IFNULL(u.full_name, t.user_full_name) AS userFullName, u.app_id AS appId, u.identity_number AS userIdentityNumber,
         t.category AS type, t.content, t.created_at AS createdAt, t.media_status AS mediaStatus, t.media_name AS mediaName, 
@@ -96,11 +99,14 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         st.asset_height AS assetHeight, st.asset_url AS assetUrl, st.asset_type AS assetType,t.media_duration AS mediaDuration, 
         t.media_waveform AS mediaWaveform, su.user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.avatar_url AS sharedUserAvatarUrl, 
         su.app_id AS sharedUserAppId, su.identity_number AS sharedUserIdentityNumber, su.is_verified AS sharedUserIsVerified, t.quote_id AS quoteId,
-        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership
+        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership,
+        om.participant_id AS participantUserId, ru.full_name AS participantFullName
         FROM transcript_messages t
         LEFT JOIN users u on t.user_id = u.user_id
         LEFT JOIN users su ON t.shared_user_id = su.user_id
         LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
+        LEFT JOIN messages om ON t.message_id = om.id
+        LEFT JOIN users ru ON ru.user_id = om.participant_id
         WHERE t.transcript_id = :transcriptId
         AND t.category IN ($IMAGES, $VIDEOS, $LIVES)
         ORDER BY t.created_at ASC, t.rowid ASC

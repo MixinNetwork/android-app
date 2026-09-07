@@ -78,6 +78,7 @@
         <item>Bahasa Indonesia</item>
         <item>Bahasa Melayu</item>
         <item>Español</item>
+        <item>한국어</item>
     </string-array>
 
     <string-array name="setting_night_array">

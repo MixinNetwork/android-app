@@ -1,8 +1,14 @@
 package one.mixin.android.ui.wallet
 
+import one.mixin.android.api.response.web3.GaslessFeeEstimate
 import one.mixin.android.web3.hasSolBalanceAfterFeeAndRent
 import one.mixin.android.web3.isNativeSolAsset
 import java.math.BigDecimal
+
+internal fun selectGaslessFeeEstimate(
+    estimates: List<GaslessFeeEstimate>,
+    preferredAssetId: String,
+): GaslessFeeEstimate? = estimates.firstOrNull { it.assetId == preferredAssetId }
 
 internal fun selectPreferredGaslessFeeOption(
     options: List<NetworkFee>,

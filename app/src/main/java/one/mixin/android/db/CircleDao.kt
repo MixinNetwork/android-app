@@ -106,7 +106,7 @@ interface CircleDao : BaseDao<Circle> {
     @Query("SELECT * FROM circles WHERE circle_id = :circleId")
     fun findCircleById(circleId: String): Circle?
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,

@@ -79,6 +79,9 @@ import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
+import one.mixin.android.ui.home.web3.market.MarketFavoriteAnimationIntent
+import one.mixin.android.ui.home.web3.market.MarketFavoriteIcon
+import one.mixin.android.ui.home.web3.market.shouldClearFavoriteAnimationIntent
 import one.mixin.android.ui.home.web3.trade.CandleChart
 import one.mixin.android.ui.wallet.MarketDescriptionTextView
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -86,11 +89,12 @@ import one.mixin.android.ui.wallet.selectLocalizedMarketDescription
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.components.MixinButton
+import org.threeten.bp.Instant
 import java.math.BigDecimal
 import java.util.Locale
 
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
-private const val MARKET_REFRESH_INTERVAL_MS = 10_000L
+private const val MARKET_REFRESH_INTERVAL_MS = 30_000L
 private const val PREF_MARKET_DETAIL_TIME_FRAME = "perps_market_detail_time_frame"
 
 @Composable
@@ -103,6 +107,7 @@ fun PerpsMarketDetailPage(
     onBack: () -> Unit,
     onSharePosition: (PerpsPositionItem) -> Unit,
     source: String,
+    leaderPositionId: String? = null,
 ) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
@@ -110,6 +115,16 @@ fun PerpsMarketDetailPage(
     val lifecycleOwner = LocalLifecycleOwner.current
     var market by remember(marketId, initialMarket) { mutableStateOf(initialMarket) }
     var isLoading by remember(marketId, initialMarket) { mutableStateOf(initialMarket == null) }
+    val favoriteMarketIds by viewModel.favoriteMarketIds.collectAsStateWithLifecycle()
+    var isUpdatingFavorite by remember(marketId) { mutableStateOf(false) }
+    var favoriteAnimationIntent by
+        remember(marketId) {
+            mutableStateOf<MarketFavoriteAnimationIntent?>(null)
+        }
+    var favoriteAnimationIntentId by remember(marketId) { mutableStateOf(0) }
+    var completedFavoriteAnimationIntentId by remember(marketId) { mutableStateOf<Int?>(null) }
+    var favoriteRequestResult by remember(marketId) { mutableStateOf<Boolean?>(null) }
+    val isFavored = marketId in favoriteMarketIds
     val timeFramePreferenceKey = PREF_MARKET_DETAIL_TIME_FRAME
     val walletId = Session.getAccountId().orEmpty()
     val openPositions by remember(walletId) {
@@ -149,6 +164,31 @@ fun PerpsMarketDetailPage(
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+
+    LaunchedEffect(marketId) {
+        viewModel.refreshFavoriteMarkets()
+    }
+
+    LaunchedEffect(
+        isFavored,
+        favoriteAnimationIntent,
+        favoriteRequestResult,
+        completedFavoriteAnimationIntentId,
+    ) {
+        val intent = favoriteAnimationIntent ?: return@LaunchedEffect
+        if (
+            shouldClearFavoriteAnimationIntent(
+                intent = intent,
+                requestResult = favoriteRequestResult,
+                isFavored = isFavored,
+                completedIntentId = completedFavoriteAnimationIntentId,
+            )
+        ) {
+            favoriteAnimationIntent = null
+            favoriteRequestResult = null
+            isUpdatingFavorite = false
+        }
+    }
 
     LaunchedEffect(marketId, walletId, lifecycleOwner) {
         lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
@@ -191,6 +231,59 @@ fun PerpsMarketDetailPage(
         verticalScrollable = false,
         pop = onBack,
         actions = {
+            IconButton(
+                onClick = {
+                    if (isUpdatingFavorite) return@IconButton
+                    isUpdatingFavorite = true
+                    favoriteAnimationIntentId += 1
+                    val intent =
+                        MarketFavoriteAnimationIntent(
+                            id = favoriteAnimationIntentId,
+                            targetFavored = !isFavored,
+                        )
+                    favoriteAnimationIntent = intent
+                    favoriteRequestResult = null
+                    viewModel.updateMarketFavorite(marketId, isFavored) { success ->
+                        if (favoriteAnimationIntent?.id == intent.id) {
+                            favoriteRequestResult = success
+                        }
+                        if (success) {
+                            AnalyticsTracker.trackMarketWatchlist(
+                                adding = !isFavored,
+                                type = AnalyticsTracker.MarketType.PERPS,
+                                source = AnalyticsTracker.MarketWatchlistSource.MARKET_DETAIL,
+                            )
+                            toast(
+                                context.getString(
+                                    if (isFavored) {
+                                        R.string.watchlist_remove_desc
+                                    } else {
+                                        R.string.watchlist_add_desc
+                                    },
+                                    tokenSymbol,
+                                ),
+                            )
+                        }
+                    }
+                },
+                enabled = !isUpdatingFavorite,
+            ) {
+                MarketFavoriteIcon(
+                    isFavored = isFavored,
+                    unselectedIconRes = R.drawable.ic_title_favorites,
+                    contentDescription =
+                        stringResource(
+                            if (isFavored) {
+                                R.string.Remove_from_Watchlist
+                            } else {
+                                R.string.Add_to_Watchlist
+                            },
+                        ),
+                    modifier = Modifier.size(24.dp),
+                    animationIntent = favoriteAnimationIntent,
+                    onAnimationFinished = { completedFavoriteAnimationIntentId = it },
+                )
+            }
             IconButton(onClick = {
                 context.openUrl(
                     Constants.HelpLink.CUSTOMER_SERVICE,
@@ -200,7 +293,7 @@ fun PerpsMarketDetailPage(
             }) {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_support),
-                    contentDescription = null,
+                    contentDescription = stringResource(R.string.Contact_Support),
                     tint = MixinAppTheme.colors.icon,
                 )
             }
@@ -614,6 +707,7 @@ fun PerpsMarketDetailPage(
                                         isLong = true,
                                         source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
                                         returnToDetail = true,
+                                        leaderPositionId = leaderPositionId,
                                     )
                                 },
                                 backgroundColor = risingColor,
@@ -640,6 +734,7 @@ fun PerpsMarketDetailPage(
                                         isLong = false,
                                         source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL,
                                         returnToDetail = true,
+                                        leaderPositionId = leaderPositionId,
                                     )
                                 },
                                 backgroundColor = fallingColor,
@@ -732,6 +827,28 @@ private fun MarketInfoCard(
     market: PerpsMarket,
     onFundingRateTipClick: () -> Unit,
 ) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val nextFundingAtMillis = remember(market.nextFundingAt) {
+        market.nextFundingAt
+            .takeIf { it.isNotBlank() }
+            ?.let { runCatching { Instant.parse(it).toEpochMilli() }.getOrNull() }
+    }
+    var fundingRemainingSeconds by remember(nextFundingAtMillis) {
+        mutableStateOf(nextFundingAtMillis?.let { calculateFundingRemainingSeconds(it, System.currentTimeMillis()) })
+    }
+
+    LaunchedEffect(nextFundingAtMillis, lifecycleOwner) {
+        val targetMillis = nextFundingAtMillis ?: return@LaunchedEffect
+        lifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+            while (isActive) {
+                val remainingSeconds = calculateFundingRemainingSeconds(targetMillis, System.currentTimeMillis())
+                fundingRemainingSeconds = remainingSeconds
+                if (remainingSeconds == 0L) break
+                delay(1_000L)
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -751,10 +868,30 @@ private fun MarketInfoCard(
             color = MixinAppTheme.colors.textPrimary
         )
 
+        if (market.openInterest.toBigDecimalOrNull()?.let { it.signum() != 0 } == true) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.Open_Interest).uppercase(),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = formatOpenInterest(market.openInterest, market.markPrice),
+                fontSize = 16.sp,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+
         Spacer(modifier = Modifier.height(12.dp))
+        val fundingRateTitle = if (market.fundingIntervalHours > 0) {
+            stringResource(R.string.perps_funding_title_interval, market.fundingIntervalHours)
+        } else {
+            stringResource(R.string.Funding_Rate)
+        }
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                text = stringResource(R.string.Funding_Rate).uppercase(),
+                text = fundingRateTitle.uppercase(),
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist
             )
@@ -774,7 +911,44 @@ private fun MarketInfoCard(
             fontSize = 16.sp,
             color = MixinAppTheme.colors.textPrimary
         )
+        fundingRemainingSeconds?.takeIf { it > 0L }?.let { remainingSeconds ->
+            Spacer(modifier = Modifier.height(4.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val intervalSeconds = market.fundingIntervalHours.toLong() * 60L * 60L
+                val progress = if (intervalSeconds > 0L) {
+                    (1f - remainingSeconds.toFloat() / intervalSeconds).coerceIn(0f, 1f)
+                } else {
+                    0f
+                }
+                CircularProgressIndicator(
+                    progress = progress,
+                    modifier = Modifier.size(14.dp),
+                    color = MixinAppTheme.colors.textAssist,
+                    backgroundColor = MixinAppTheme.colors.borderColor,
+                    strokeWidth = 2.dp,
+                )
+                Spacer(modifier = Modifier.width(4.dp))
+                Text(
+                    text = formatFundingCountdown(remainingSeconds),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                )
+            }
+        }
     }
+}
+
+private fun calculateFundingRemainingSeconds(targetMillis: Long, nowMillis: Long): Long {
+    if (targetMillis <= nowMillis) return 0L
+    return (targetMillis - nowMillis - 1L) / 1_000L + 1L
+}
+
+private fun formatFundingCountdown(remainingSeconds: Long): String {
+    val seconds = remainingSeconds.coerceAtLeast(0L)
+    val hours = seconds / 3_600L
+    val minutes = seconds % 3_600L / 60L
+    val secondsPart = seconds % 60L
+    return listOf(hours, minutes, secondsPart).joinToString(":") { it.toString().padStart(2, '0') }
 }
 
 @Composable
@@ -784,6 +958,19 @@ private fun formatVolume(
     return try {
         val vol = BigDecimal(volume)
         "$PERPS_USD_SYMBOL${vol.numberFormatCompact()}"
+    } catch (e: NumberFormatException) {
+        stringResource(R.string.N_A)
+    }
+}
+
+@Composable
+private fun formatOpenInterest(
+    openInterest: String,
+    markPrice: String,
+): String {
+    return try {
+        val notionalValue = BigDecimal(openInterest).multiply(BigDecimal(markPrice))
+        "$PERPS_USD_SYMBOL${notionalValue.numberFormatCompact()}"
     } catch (e: NumberFormatException) {
         stringResource(R.string.N_A)
     }

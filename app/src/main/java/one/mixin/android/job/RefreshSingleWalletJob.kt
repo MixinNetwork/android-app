@@ -98,11 +98,14 @@ class RefreshSingleWalletJob(
                     if (extrasToInsert.isNotEmpty()) {
                         web3TokensExtraDao.insertList(extrasToInsert)
                     }
-                    val tokensToInsert = applyBitcoinTokenBalanceBeforeInsert(wallet.id, assets)
+                    val tokensToInsert = applyUtxoTokenBalanceBeforeInsert(wallet.id, assets)
                     web3TokenDao.insertList(tokensToInsert)
-                    if (assets.any { it.assetId == Constants.ChainId.BITCOIN_CHAIN_ID }) {
-                        jobManager.addJobInBackground(RefreshWeb3BitCoinJob(walletId))
-                    }
+                    assets.map { it.assetId }
+                        .filter { it in Constants.Web3UtxoChainIds }
+                        .distinct()
+                        .forEach { assetId ->
+                            jobManager.addJobInBackground(RefreshWeb3UtxoJob(walletId, assetId))
+                        }
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
                 } else {

@@ -106,7 +106,7 @@ class RefreshOrdersJob(
             )
         }
         if (web3Tokens.isNotEmpty()) {
-            val tokensToInsert = applyBitcoinTokenBalanceBeforeInsert(walletId, web3Tokens)
+            val tokensToInsert = applyUtxoTokenBalanceBeforeInsert(walletId, web3Tokens)
             web3TokenDao.insertList(tokensToInsert)
         }
     }

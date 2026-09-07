@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -37,15 +37,21 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import coil3.request.ImageRequest
+import coil3.request.transformations
+import coil3.transform.CircleCropTransformation
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.isWeb3TransferSupported
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.priceFormat2
 import one.mixin.android.ui.search.SearchViewModel
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
+
+internal fun isWeb3RecentTokenChain(chainId: String): Boolean = isWeb3TransferSupported(chainId)
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -54,7 +60,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
     val viewModel = hiltViewModel<SearchViewModel>()
     val source by viewModel.recentTokenItems.collectAsState(initial = emptyList())
     val recentToken = if (web3) {
-        source.filter { it.chainId in listOf(Constants.ChainId.Solana, Constants.ChainId.ETHEREUM_CHAIN_ID, Constants.ChainId.Base, Constants.ChainId.Polygon, Constants.ChainId.BinanceSmartChain) }
+        source.filter { isWeb3RecentTokenChain(it.chainId) }
     } else {
         source
     }
@@ -127,21 +133,31 @@ fun RecentToken(recent: TokenItem, tokenItemClick: (TokenItem) -> Unit) {
             }
             .padding(start = 6.dp, top = 5.dp, bottom = 5.dp, end = 10.dp), verticalAlignment = Alignment.CenterVertically
     ) {
-        Box {
+        Box(modifier = Modifier.size(32.dp)) {
             CoilImage(
-                model = recent.iconUrl,
+                model = ImageRequest.Builder(context)
+                    .data(recent.iconUrl)
+                    .transformations(CircleCropTransformation())
+                    .build(),
                 modifier = Modifier
                     .size(32.dp)
                     .clip(CircleShape),
-                placeholder = R.drawable.ic_avatar_place_holder
+                placeholder = R.drawable.ic_avatar_place_holder,
+                contentScale = ContentScale.Crop,
             )
             CoilImage(
-                model = recent.chainIconUrl,
+                model = ImageRequest.Builder(context)
+                    .data(recent.chainIconUrl)
+                    .transformations(CircleCropTransformation())
+                    .build(),
                 modifier = Modifier
                     .size(13.dp)
-                    .offset(x = 0.dp, y = (19).dp)
+                    .align(Alignment.BottomStart)
+                    .clip(CircleShape)
+                    .background(MixinAppTheme.colors.background)
                     .border(1.dp, MixinAppTheme.colors.background, CircleShape),
-                placeholder = R.drawable.ic_avatar_place_holder
+                placeholder = R.drawable.ic_avatar_place_holder,
+                contentScale = ContentScale.Crop,
             )
         }
         Spacer(modifier = Modifier.width(4.dp))
