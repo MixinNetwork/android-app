@@ -19,7 +19,7 @@ buildscript {
 }
 
 plugins {
-    id("com.bugsnag.gradle") version "1.1.1" apply false
+    id("com.bugsnag.gradle") version "1.2.0" apply false
     id("com.android.application") apply false
     id("com.android.library") apply false
     id("org.jetbrains.kotlin.plugin.parcelize") apply false
