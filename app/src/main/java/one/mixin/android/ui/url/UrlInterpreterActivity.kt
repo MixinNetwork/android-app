@@ -157,6 +157,8 @@ class UrlInterpreterActivity : BaseActivity() {
                     afterShareText = { finish() },
                     onError = { err ->
                         Timber.e(IllegalStateException(err))
+                        toast(R.string.Invalid_Link)
+                        finish()
                     },
                 )
             }
