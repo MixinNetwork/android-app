@@ -43,6 +43,7 @@ import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
@@ -51,6 +52,7 @@ import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
+import one.mixin.android.vo.ShareImageData
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getShareCategory
@@ -695,6 +697,11 @@ fun Uri.handleSchemeSend(
         val data = this.getRawQueryParameter("data")
         val shareCategory = category?.getShareCategory()
         if (shareCategory != null && data != null) {
+            val message = parseSchemeShareMessage(shareCategory, data)
+            if (message == null) {
+                onError?.invoke("Error data")
+                return
+            }
             if (userId != null) {
                 scope.launch {
                     val identityNumber = Session.getAccount()?.identityNumber ?: return@launch
@@ -705,7 +712,7 @@ fun Uri.handleSchemeSend(
                         val bottomSheet = LinkBottomSheetDialogFragment.newInstance(this@handleSchemeSend.toString())
                         bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
                     } else {
-                        sendMessage(context, scope, user, currentConversation, message = ForwardMessage(shareCategory, String(Base64.decode(data))))
+                        sendMessage(context, scope, user, currentConversation, message = message)
                     }
                 }
             } else {
@@ -713,7 +720,7 @@ fun Uri.handleSchemeSend(
                     afterShareData?.invoke()
                     val fragment =
                         ShareMessageBottomSheetDialogFragment.newInstance(
-                            ForwardMessage(shareCategory, String(Base64.decode(data))),
+                            message,
                             conversationId,
                             app,
                             host,
@@ -732,6 +739,24 @@ fun Uri.handleSchemeSend(
         }
     }
 }
+
+internal fun parseSchemeShareMessage(category: ShareCategory, data: String): ForwardMessage? =
+    try {
+        val content = String(Base64.decode(data))
+        if (category == ShareCategory.Image) {
+            val image = GsonHelper.customGson.fromJson(content, ShareImageData::class.java)
+            val uri = URI(image.url)
+            if ((uri.scheme.equals("https", true) || uri.scheme.equals("http", true)) && uri.host != null && uri.rawUserInfo == null) {
+                ForwardMessage(category, GsonHelper.customGson.toJson(ShareImageData(image.url)))
+            } else {
+                null
+            }
+        } else {
+            ForwardMessage(category, content)
+        }
+    } catch (_: Exception) {
+        null
+    }
 
 fun sendMessage(context: Context, scope: CoroutineScope, user: User, currentConversation: String?, message: ForwardMessage) {
     val toConversation = generateConversationId(Session.getAccountId()!!, user.userId)

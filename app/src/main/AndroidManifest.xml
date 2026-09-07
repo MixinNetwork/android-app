@@ -188,7 +188,15 @@
         <activity
             android:name=".ui.forward.ForwardActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:exported="false"
             android:launchMode="singleTask"
+            android:theme="@style/AppTheme.NoActionBar"
+            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+
+        <activity
+            android:name=".ui.forward.ShareActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:exported="false"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
 
@@ -196,7 +204,7 @@
             android:name="one.mixin.messenger.ShareActivity"
             android:excludeFromRecents="true"
             android:exported="true"
-            android:targetActivity=".ui.forward.ForwardActivity">
+            android:targetActivity=".ui.forward.ShareActivity">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />

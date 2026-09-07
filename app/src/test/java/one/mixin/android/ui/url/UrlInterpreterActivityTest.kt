@@ -5,6 +5,11 @@ import org.junit.Test
 
 class UrlInterpreterActivityTest {
     @Test
+    fun emptyPathHasNoReferralCode() {
+        assertEquals("", referralCodeFromMixinPath(emptyList()))
+    }
+
+    @Test
     fun routeWithoutCodeDoesNotUseRouteNameAsReferral() {
         assertEquals("", referralCodeFromMixinPath(listOf("referrals")))
     }

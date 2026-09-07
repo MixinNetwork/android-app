@@ -37,6 +37,7 @@ import one.mixin.android.extension.getMimeType
 import one.mixin.android.extension.getVideoModel
 import one.mixin.android.extension.getVideoPath
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.util.ShareHelper
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.vo.EncryptCategory
@@ -82,6 +83,7 @@ class ConvertVideoJob(
     override fun onAdded() {
         val mimeType = getMimeType(uri)
         if (video == null) {
+            ShareHelper.releaseJobSource(MixinApplication.appContext, uri)
             return
         }
         if (mimeType != "video/mp4") {
@@ -273,6 +275,7 @@ class ConvertVideoJob(
                 messageDao.updateMediaDuration(duration.toString(), messageId)
                 MessageFlow.update(message.conversationId, message.messageId)
                 jobManager.addJobInBackground(SendAttachmentMessageJob(message))
+                ShareHelper.releaseJobSource(MixinApplication.appContext, uri)
             }
 
             removeJob()
