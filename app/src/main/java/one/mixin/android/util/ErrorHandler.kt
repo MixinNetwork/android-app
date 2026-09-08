@@ -68,7 +68,7 @@ open class ErrorHandler {
                             toast(R.string.error_connection_error)
                         }
                     }
-                    else -> toast(getString(R.string.error_unknown_with_message, throwable.msg()))
+                    else -> toast(getErrorMessage(throwable))
                 }
             }
         }
@@ -76,6 +76,7 @@ open class ErrorHandler {
         fun getErrorMessage(throwable: Throwable): String {
             val ctx = MixinApplication.appContext
             return when (throwable) {
+                is android.database.sqlite.SQLiteException, is androidx.sqlite.SQLiteException -> ctx.getString(R.string.Data_error)
                 is IOException ->
                     when (throwable) {
                         is SocketTimeoutException -> ctx.getString(R.string.error_connection_timeout)
