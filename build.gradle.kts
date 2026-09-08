@@ -19,7 +19,7 @@ buildscript {
 }
 
 plugins {
-    id("com.bugsnag.gradle") version "1.1.1" apply false
+    id("com.bugsnag.gradle") version "1.2.0" apply false
     id("com.android.application") apply false
     id("com.android.library") apply false
     id("org.jetbrains.kotlin.plugin.parcelize") apply false
@@ -27,7 +27,7 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") apply false
     id("org.jetbrains.kotlin.plugin.serialization") apply false
     id("com.google.devtools.ksp") apply false
-    id("androidx.room3") version "3.0.0" apply false
+    id("androidx.room3") version "3.0.2" apply false
     id("org.jetbrains.kotlin.plugin.compose") apply false
     id("org.jetbrains.kotlin.jvm") apply false
     id("com.google.firebase.firebase-perf") apply false
@@ -50,9 +50,9 @@ extra.set("activityVersion", "1.13.0")
 extra.set("lifecycleVersion", "2.11.0")
 extra.set("appcompatVersion", "1.8.0")
 extra.set("pagingVersion", "3.5.1")
-extra.set("coilVersion", "3.6.1")
+extra.set("coilVersion", "3.6.2")
 extra.set("collectionVersion", "1.6.0")
-extra.set("roomVersion", "3.0.0")
+extra.set("roomVersion", "3.0.2")
 extra.set("sqliteVersion", "2.7.0")
 extra.set("navigationVersion", "2.10.0")
 extra.set("workManagerVersion", "2.11.2")

@@ -68,13 +68,16 @@ open class ErrorHandler {
                             toast(R.string.error_connection_error)
                         }
                     }
-                    else -> toast(getString(R.string.error_unknown_with_message, throwable.msg()))
+                    else -> toast(getErrorMessage(throwable))
                 }
             }
         }
 
         fun getErrorMessage(throwable: Throwable): String {
             val ctx = MixinApplication.appContext
+            if (generateSequence(throwable) { it.cause }.any { it is androidx.sqlite.SQLiteException }) {
+                return ctx.getString(R.string.Data_error)
+            }
             return when (throwable) {
                 is IOException ->
                     when (throwable) {
