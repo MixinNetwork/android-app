@@ -298,6 +298,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 },
                                 toWallet = { fromWalletId ->
                                     requireView().hideKeyboard()
+                                    web3Token?.let { tokenToSend ->
+                                        this@TransferDestinationInputFragment.lifecycleScope.launch {
+                                            runCatching { web3ViewModel.findAndSyncDepositEntry(tokenToSend) }
+                                        }
+                                    }
                                     WalletListBottomSheetDialogFragment.newInstance(fromWalletId, web3Token?.chainId ?: token!!.chainId).apply {
                                         setOnWalletClickListener { destinationWallet ->
                                             this@TransferDestinationInputFragment.lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
@@ -341,11 +346,22 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                                         val tokenToSend = web3Token!!
                                                         val fromAddress = web3ViewModel.getAddressesByChainId(fromWalletId!!, tokenToSend.chainId)
                                                         val toAddress = if (destinationWallet == null) {
-                                                            try {
-                                                                val depositEntry = web3ViewModel.findAndSyncDepositEntry(tokenToSend)
-                                                                depositEntry?.destination
-                                                            } catch (e: Exception) {
-                                                                null
+                                                            val cachedDestination = web3ViewModel.findDepositEntry(tokenToSend.chainId)?.destination
+                                                            if (!cachedDestination.isNullOrBlank()) {
+                                                                cachedDestination
+                                                            } else {
+                                                                val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                                                                    setCancelable(false)
+                                                                }
+                                                                dialog.show()
+                                                                try {
+                                                                    web3ViewModel.findAndSyncDepositEntry(tokenToSend)?.destination
+                                                                } catch (e: Exception) {
+                                                                    Timber.e(e)
+                                                                    null
+                                                                } finally {
+                                                                    dialog.dismiss()
+                                                                }
                                                             }
                                                         } else {
                                                             web3ViewModel.getAddressesByChainId(destinationWallet.id, tokenToSend.chainId)?.destination

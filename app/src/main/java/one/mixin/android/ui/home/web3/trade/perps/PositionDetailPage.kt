@@ -317,15 +317,29 @@ private fun PositionDetailItem(
     icon: String? = null,
     subtitle: String? = null,
     valueColor: Color = MixinAppTheme.colors.textPrimary,
+    onTipClick: (() -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text(
-            text = label,
-            fontSize = 14.sp,
-            color = MixinAppTheme.colors.textAssist
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = label,
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            if (onTipClick != null) {
+                Spacer(modifier = Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_tip),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clickable(onClick = onTipClick),
+                    tint = MixinAppTheme.colors.textAssist,
+                )
+            }
+        }
         Spacer(modifier = Modifier.height(4.dp))
 
         if (icon != null) {
@@ -374,6 +388,7 @@ fun PositionDetailPage(
     pop: () -> Unit,
     onTradeAgain: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
+    onFeeTipClick: (() -> Unit)? = null,
     onSupport: (() -> Unit)? = null,
 ) {
     val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
@@ -424,6 +439,7 @@ fun PositionDetailPage(
     val absQuantity = quantity.abs()
     val effectiveLeverage = leverage ?: closeOrder.leverage
     val roe = (closeOrder.roe.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
+    val fee = closeOrder.feeAmount.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
 
     fun formatFiat(value: BigDecimal): String {
         return formatPerpsUsdDecimal(value)
@@ -587,6 +603,16 @@ fun PositionDetailPage(
                     valueColor = pnlColor,
                 )
 
+                if (fee.signum() != 0) {
+                    Spacer(modifier = Modifier.height(20.dp))
+
+                    PositionDetailItem(
+                        label = stringResource(R.string.Fee).uppercase(),
+                        value = formatPerpsSignedExactUsdDecimal(fee.negate()),
+                        onTipClick = onFeeTipClick,
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
@@ -635,6 +661,7 @@ fun OpenedOrderDetailPage(
     pop: () -> Unit,
     onViewMarket: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
+    onFeeTipClick: (() -> Unit)? = null,
     onSupport: (() -> Unit)? = null,
 ) {
     val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
@@ -819,6 +846,17 @@ fun OpenedOrderDetailPage(
                         label = stringResource(R.string.Entry_Price).uppercase(),
                         value = formatPerpsPrice(openedOrder.entryPrice, openedOrder.priceScale)
                     )
+
+                    val fee = openedOrder.feeAmount.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
+                    if (fee.signum() != 0) {
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        PositionDetailItem(
+                            label = stringResource(R.string.Fee).uppercase(),
+                            value = formatPerpsSignedExactUsdDecimal(fee.negate()),
+                            onTipClick = onFeeTipClick,
+                        )
+                    }
 
                     Spacer(modifier = Modifier.height(20.dp))
 

@@ -1,9 +1,9 @@
 package one.mixin.android.api.response.perps
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
@@ -38,6 +38,9 @@ data class PerpsOrder(
     @SerializedName("pay_amount")
     @ColumnInfo(name = "pay_amount")
     val payAmount: String = "0",
+    @SerializedName("fee_amount")
+    @ColumnInfo(name = "fee_amount", defaultValue = "'0'")
+    val feeAmount: String = "0",
     @SerializedName("entry_price")
     @ColumnInfo(name = "entry_price")
     val entryPrice: String,

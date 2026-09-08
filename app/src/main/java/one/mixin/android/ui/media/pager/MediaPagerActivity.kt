@@ -31,7 +31,6 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.view.ContextThemeWrapper
-import androidx.arch.core.executor.ArchTaskExecutor
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.net.toFile
 import androidx.core.view.doOnPreDraw
@@ -39,9 +38,8 @@ import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.paging.PagedList
+import androidx.paging.PagingData
 import androidx.viewpager2.widget.ViewPager2
-import coil3.annotation.ExperimentalCoilApi
 import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
@@ -57,11 +55,13 @@ import one.mixin.android.databinding.ViewDragImageBottomBinding
 import one.mixin.android.databinding.ViewDragVideoBottomBinding
 import one.mixin.android.extension.backgroundDrawable
 import one.mixin.android.extension.checkInlinePermissions
+import one.mixin.android.extension.copy
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createPngTemp
 import one.mixin.android.extension.fadeOut
+import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.isAutoRotate
@@ -85,9 +85,9 @@ import one.mixin.android.util.AnimationProperties
 import one.mixin.android.util.SensorOrientationChangeNotifier
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.VideoPlayer
+import one.mixin.android.util.image.withDiskCacheFile
 import one.mixin.android.util.reportEvent
 import one.mixin.android.util.rxpermission.RxPermissions
-import one.mixin.android.vo.FixedMessageDataSource
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -290,22 +290,9 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 } else {
                     viewModel.getMediaMessage(conversationId, messageId) ?: return@launch
                 }
-            val pagedConfig =
-                PagedList.Config.Builder()
-                    .setInitialLoadSizeHint(1)
-                    .setPageSize(1)
-                    .build()
-            val pagedList =
-                PagedList.Builder(
-                    FixedMessageDataSource(listOf(messageItem), 1),
-                    pagedConfig,
-                ).setNotifyExecutor(ArchTaskExecutor.getMainThreadExecutor())
-                    .setFetchExecutor(ArchTaskExecutor.getIOThreadExecutor())
-                    .build()
             adapter.initialPos = initialIndex
-            adapter.submitList(pagedList) {
-                observeAllDataSource()
-            }
+            adapter.submitData(lifecycle, PagingData.from(listOf(messageItem)))
+            observeAllDataSource()
             if (messageItem.isVideo() || messageItem.isLive()) {
                 checkPip()
                 messageItem.loadVideoOrLive {
@@ -318,38 +305,39 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         lifecycleScope.launch {
             val excludeLive = mediaSource == MediaSource.SharedMedia
             initialIndex = viewModel.indexMediaMessages(conversationId, messageId, excludeLive)
+            adapter.addOnPagesUpdatedListener {
+                positionInitialItem(excludeLive)
+            }
             viewModel.getMediaMessages(conversationId, initialIndex, excludeLive)
                 .observe(
                     this@MediaPagerActivity,
                 ) {
-                    if (it.isEmpty()) return@observe
-                    adapter.submitList(it) {
-                        if (firstLoad) {
-                            runCatching {
-                                adapter.initialPos = initialIndex
-                                it.loadAround(initialIndex)
-                                if (excludeLive) {
-                                    binding.viewPager.setCurrentItem(initialIndex, false)
-                                } else if (it.getOrNull(initialIndex)?.messageId == messageId) { // Only change when data is same
-                                    binding.viewPager.setCurrentItem(initialIndex, false)
-                                } else {
-                                    lifecycleScope.launch {
-                                        val total = viewModel.countIndexMediaMessages(conversationId, excludeLive)
-                                        reportEvent("Initial index not found，conversationId: $conversationId，messageId: $messageId, initialIndex: $initialIndex, total: $total")
-                                    }
-                                }
-                            }.onFailure {
-                                lifecycleScope.launch {
-                                    val total = viewModel.countIndexMediaMessages(conversationId, excludeLive)
-                                    reportEvent("${it.message}，conversationId: $conversationId，messageId: $messageId, initialIndex: $initialIndex, total: $total")
-                                }
-                            }
-                            checkOrientation()
-                            firstLoad = false
-                        }
-                    }
+                    adapter.submitData(lifecycle, it)
                 }
         }
+
+    private fun positionInitialItem(excludeLive: Boolean) {
+        if (!firstLoad || adapter.itemCount <= initialIndex) return
+        runCatching {
+            adapter.initialPos = initialIndex
+            val item = adapter.peek(initialIndex) ?: return
+            if (excludeLive || item.messageId == messageId) {
+                binding.viewPager.setCurrentItem(initialIndex, false)
+            } else {
+                lifecycleScope.launch {
+                    val total = viewModel.countIndexMediaMessages(conversationId, excludeLive)
+                    reportEvent("Initial index not found，conversationId: $conversationId，messageId: $messageId, initialIndex: $initialIndex, total: $total")
+                }
+            }
+        }.onFailure {
+            lifecycleScope.launch {
+                val total = viewModel.countIndexMediaMessages(conversationId, excludeLive)
+                reportEvent("${it.message}，conversationId: $conversationId，messageId: $messageId, initialIndex: $initialIndex, total: $total")
+            }
+        }
+        checkOrientation()
+        firstLoad = false
+    }
 
     private fun checkPip() {
         if (pipVideoView.shown) {
@@ -465,7 +453,6 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         bottomSheet.show()
     }
 
-    @OptIn(ExperimentalCoilApi::class)
     private suspend fun resolveLocalFile(item: MessageItem): File? {
         val coverUrl = item.appCardMediaCoverUrl()
         if (coverUrl != null) {
@@ -475,7 +462,16 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 if (result !is SuccessResult) {
                     null
                 } else {
-                    loader.diskCache?.openSnapshot(coverUrl)?.data?.toFile()
+                    loader.withDiskCacheFile(result) { cachedFile ->
+                        val destination = createAppCardCoverCacheFile()
+                        try {
+                            cachedFile.copy(destination)
+                            destination
+                        } catch (e: Exception) {
+                            destination.delete()
+                            throw e
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 null
@@ -483,6 +479,14 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
         val path = item.absolutePath() ?: return null
         return Uri.parse(path).toFile()
+    }
+
+    private fun createAppCardCoverCacheFile(): File {
+        val directory = File(getImageCachePath(), APP_CARD_COVER_CACHE_DIR)
+        directory.mkdirs()
+        val expiration = System.currentTimeMillis() - APP_CARD_COVER_CACHE_MAX_AGE
+        directory.listFiles()?.filter { it.lastModified() < expiration }?.forEach { it.delete() }
+        return File.createTempFile("cover-", ".cache", directory)
     }
 
     private fun save(item: MessageItem) {
@@ -517,7 +521,13 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                                 noMedia = false,
                             )
                 }
-            outFile.copyFromInputStream(FileInputStream(file))
+            try {
+                outFile.copyFromInputStream(FileInputStream(file))
+            } finally {
+                if (item.appCardMediaCoverUrl() != null) {
+                    file.delete()
+                }
+            }
             MediaScannerConnection.scanFile(
                 this@MediaPagerActivity,
                 arrayOf(outFile.toString()),
@@ -722,7 +732,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     private fun getMessageItemByPosition(position: Int): MessageItem? =
         try {
-            adapter.currentList?.get(position)
+            adapter.peek(position)
         } catch (e: IndexOutOfBoundsException) {
             null
         }
@@ -957,6 +967,8 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         private const val MEDIA_SOURCE = "media_source"
         private const val INITIAL_ITEM = "initial_item"
         private const val ALPHA_MAX = 0xFF
+        private const val APP_CARD_COVER_CACHE_DIR = "AppCardCover"
+        private const val APP_CARD_COVER_CACHE_MAX_AGE = 24 * 60 * 60 * 1000L
         const val PREFIX = "media"
         const val PAGE_SIZE = 3
 

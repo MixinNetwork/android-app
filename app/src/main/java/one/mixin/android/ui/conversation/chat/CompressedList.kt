@@ -61,11 +61,17 @@ class CompressedList<E : Any> : AbstractList<E?> {
         index: Int,
         item: E,
     ) {
-        wrapped.removeAt(index)
-        wrapped.add(index, item)
+        wrapped[index] = item
     }
 
-    fun deleteByPosition(p: Int) {
-        wrapped.removeAt(p)
+    fun removeAll(predicate: (E?) -> Boolean): Boolean = wrapped.removeAll(predicate)
+
+    fun trim(maxSize: Int, fromStart: Boolean): Int {
+        val count = (size - maxSize).coerceAtLeast(0)
+        if (count > 0) {
+            val start = if (fromStart) 0 else size - count
+            wrapped.subList(start, start + count).clear()
+        }
+        return count
     }
 }

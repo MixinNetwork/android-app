@@ -445,9 +445,10 @@ class DecryptMessage(private val lifecycleScope: CoroutineScope) : Injector() {
                 messageDao.insert(it)
             }
             messageDao.findMessageById(transferRecallData.messageId)?.let { msg ->
+                syncUser(data.userId, data.conversationId)
                 RxBus.publish(RecallEvent(msg.messageId))
                 messageDao.recallFailedMessage(msg.messageId)
-                messageDao.recallMessage(msg.messageId)
+                messageDao.recallMessage(msg.messageId, data.userId)
                 ftsDatabase.deleteByMessageId(msg.messageId)
                 messageDao.recallPinMessage(msg.messageId, msg.conversationId)
                 pinMessageDao.deleteByMessageId(msg.messageId)

@@ -1,10 +1,10 @@
 package one.mixin.android.db.perps
 
 import androidx.paging.PagingSource
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Query
+import androidx.room3.Dao
+import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
+import androidx.room3.Query
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
@@ -81,20 +81,6 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
 
     @Query("DELETE FROM perps_orders")
     suspend fun deleteAll()
-
-    @Query(
-        """
-        SELECT leverage
-        FROM perps_orders
-        WHERE position_id = :positionId AND leverage > 0
-        ORDER BY CASE WHEN order_id LIKE 'local_%' THEN 0 ELSE 1 END, updated_at DESC
-        LIMIT 1
-    """
-    )
-    suspend fun getCachedLeverage(positionId: String): Int?
-
-    @Query("DELETE FROM perps_orders WHERE order_id LIKE 'local_%' AND position_id IN (:positionIds)")
-    suspend fun deleteLocalByPositionIds(positionIds: List<String>)
 
     @Query("SELECT MAX(updated_at) FROM perps_orders")
     suspend fun getLatestUpdatedAt(): String?

@@ -1,8 +1,8 @@
 package one.mixin.android.db
 
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.Transaction
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.vo.market.MarketCategoryRelation
 import one.mixin.android.vo.market.MarketItem
@@ -42,10 +42,8 @@ interface MarketCategoryDao : BaseDao<MarketCategoryRelation> {
         FROM market_categories mc
         INNER JOIN markets m ON m.coin_id = mc.coin_id
         LEFT JOIN market_favored mf ON mf.coin_id = m.coin_id
-        LEFT JOIN market_cap_ranks mr ON mr.coin_id = m.coin_id
         WHERE mc.category = :category
-        ORDER BY CASE WHEN mr.market_cap_rank IS NULL THEN 1 ELSE 0 END,
-            CAST(mr.market_cap_rank AS INTEGER) ASC
+        ORDER BY mc.rowid ASC
         """,
     )
     fun observeMarketsByCategory(category: Int): Flow<List<MarketItem>>
@@ -56,10 +54,8 @@ interface MarketCategoryDao : BaseDao<MarketCategoryRelation> {
         FROM market_categories mc
         INNER JOIN markets m ON m.coin_id = mc.coin_id
         LEFT JOIN market_favored mf ON mf.coin_id = m.coin_id
-        LEFT JOIN market_cap_ranks mr ON mr.coin_id = m.coin_id
         WHERE mc.category = :category
-        ORDER BY CASE WHEN mr.market_cap_rank IS NULL THEN 1 ELSE 0 END,
-            CAST(mr.market_cap_rank AS INTEGER) ASC
+        ORDER BY mc.rowid ASC
         """,
     )
     suspend fun marketsByCategory(category: Int): List<MarketItem>

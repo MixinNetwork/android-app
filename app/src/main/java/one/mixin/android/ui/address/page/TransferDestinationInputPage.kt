@@ -53,10 +53,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import one.mixin.android.Constants
-import one.mixin.android.Constants.ChainId
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.isWeb3TransferSupported
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.openUrl
@@ -394,11 +394,7 @@ fun TransferDestinationInputPage(
                             isPrivacy = false
                         )
                         Spacer(modifier = Modifier.height(16.dp))
-                    } else if (
-                        token?.chainId == ChainId.SOLANA_CHAIN_ID ||
-                        token?.chainId == ChainId.BITCOIN_CHAIN_ID ||
-                        token?.chainId in Constants.Web3EvmChainIds
-                    ) {
+                    } else if (token?.chainId?.let { isWeb3TransferSupported(it) } == true) {
                         DestinationMenu(
                             R.drawable.ic_destination_wallet,
                             stringResource(R.string.My_Wallet),

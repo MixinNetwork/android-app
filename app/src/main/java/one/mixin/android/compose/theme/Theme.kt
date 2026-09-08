@@ -1,6 +1,7 @@
 package one.mixin.android.compose.theme
 
 import androidx.annotation.DrawableRes
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
 import androidx.compose.foundation.text.selection.TextSelectionColors
 import androidx.compose.material.ExperimentalMaterialApi
@@ -13,15 +14,12 @@ import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.platform.LocalContext
-import one.mixin.android.MixinApplication
-import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isScreenWideColorGamut
 import one.mixin.android.util.isCurrChinese
-
-val isP3Supported = MixinApplication.appContext.isScreenWideColorGamut()
 
 class AppColors(
     val primary: Color,
@@ -45,20 +43,8 @@ class AppColors(
     val walletRed: Color = Color(0xFFF67070),
     val walletGreen: Color = Color(0xFF50BD5C),
     val walletOrange: Color = Color(0xFFFFAA00),
-    val marketRed: Color = if (isP3Supported) Color(
-        colorSpace = ColorSpaces.DisplayP3,
-        red = 0.898f,
-        green = 0.471f,
-        blue = 0.455f,
-        alpha = 1f
-    ) else Color(0xFFE57874),
-    val marketGreen: Color = if (isP3Supported) Color(
-        colorSpace = ColorSpaces.DisplayP3,
-        red = 0.314f,
-        green = 0.741f,
-        blue = 0.361f,
-        alpha = 1f
-    ) else Color(0xFF50BD5C),
+    val marketRed: Color = Color(0xFFE57874),
+    val marketGreen: Color = Color(0xFF50BD5C),
     val shadow: Color = Color(0x33AAAAAA),
     val unchecked: Color,
     val tipWarning: Color,
@@ -90,7 +76,7 @@ object MixinAppTheme {
 
 }
 
-private val LightColorPalette =
+private fun lightColorPalette(isP3Supported: Boolean) =
     AppColors(
         primary = Color(0xFFFFFFFF),
         accent = Color(0xFF3D75E3),
@@ -111,6 +97,8 @@ private val LightColorPalette =
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0xFFE5E8EE),
         marketBadgeBackground = Color(0xFFF6F7FA),
+        marketRed = marketRed(isP3Supported),
+        marketGreen = marketGreen(isP3Supported),
         bgGradientStart = Color(0xFFFFFFFF),
         bgGradientEnd = Color(0xFFE7EFFF),
         borderColor = Color(0xFFE5E8EE),
@@ -123,7 +111,7 @@ private val LightColorPalette =
         borderGray = Color(0xFFD6D6D6),
     )
 
-private val DarkColorPalette =
+private fun darkColorPalette(isP3Supported: Boolean) =
     AppColors(
         primary = Color(0xFF2c3136),
         accent = Color(0xFF3D75E3),
@@ -144,6 +132,8 @@ private val DarkColorPalette =
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0x33FFFFFF),
         marketBadgeBackground = Color.White.copy(alpha = 0.12f),
+        marketRed = marketRed(isP3Supported),
+        marketGreen = marketGreen(isP3Supported),
         bgGradientStart = Color(0xFF2C3136),
         bgGradientEnd = Color(0xFF1C2029),
         borderColor = Color(0xFF6E7073),
@@ -156,18 +146,47 @@ private val DarkColorPalette =
         borderGray = Color(0xFFD6D6D6),
     )
 
-private val LocalColors = compositionLocalOf { LightColorPalette }
+private fun marketRed(isP3Supported: Boolean) =
+    if (isP3Supported) {
+        Color(
+            colorSpace = ColorSpaces.DisplayP3,
+            red = 0.898f,
+            green = 0.471f,
+            blue = 0.455f,
+            alpha = 1f,
+        )
+    } else {
+        Color(0xFFE57874)
+    }
+
+private fun marketGreen(isP3Supported: Boolean) =
+    if (isP3Supported) {
+        Color(
+            colorSpace = ColorSpaces.DisplayP3,
+            red = 0.314f,
+            green = 0.741f,
+            blue = 0.361f,
+            alpha = 1f,
+        )
+    } else {
+        Color(0xFF50BD5C)
+    }
+
+private val LocalColors = compositionLocalOf { lightColorPalette(false) }
 
 @Composable
 fun MixinAppTheme(
-    darkTheme: Boolean = MixinApplication.get().isNightMode(),
+    darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit,
 ) {
+    val isP3Supported = LocalContext.current.isScreenWideColorGamut()
     val colors =
-        if (darkTheme) {
-            DarkColorPalette
-        } else {
-            LightColorPalette
+        remember(darkTheme, isP3Supported) {
+            if (darkTheme) {
+                darkColorPalette(isP3Supported)
+            } else {
+                lightColorPalette(isP3Supported)
+            }
         }
     val textSelectionColors =
         TextSelectionColors(

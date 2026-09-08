@@ -1,6 +1,11 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.ui.home.web3.market.MarketSortColumn
+import one.mixin.android.ui.home.web3.market.MarketSortDirection
+import one.mixin.android.ui.home.web3.market.MarketSortState
+import one.mixin.android.ui.home.web3.market.scoreMarketSortState
+import one.mixin.android.ui.home.web3.widget.MarketSort
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertSame
@@ -33,6 +38,80 @@ class PerpsMarketListBottomSheetModelsTest {
             ).visibleMarkets
 
         assertEquals(setOf("stock", "stocks"), visibleMarkets.mapTo(mutableSetOf()) { it.marketId })
+    }
+
+    @Test
+    fun allMarketsSortByTradeVolume() {
+        val visibleMarkets =
+            PerpsMarketListUiState(
+                markets =
+                    listOf(
+                        perpsMarket("second-low-volume", "crypto", tradeVolumeScore1D = 20, volume = "10"),
+                        perpsMarket("second-high-volume", "stocks", tradeVolumeScore1D = 20, volume = "100"),
+                        perpsMarket("third", "stocks", tradeVolumeScore1D = 10, volume = "200"),
+                        perpsMarket("first", "crypto", tradeVolumeScore1D = 30, volume = "1"),
+                    ),
+            ).visibleMarkets
+
+        assertEquals(
+            listOf("third", "second-high-volume", "second-low-volume", "first"),
+            visibleMarkets.map { it.marketId },
+        )
+    }
+
+    @Test
+    fun trendingOpeningUsesScoreOrderWithoutChangingCategoryDefaults() {
+        val state =
+            PerpsMarketListUiState.initial(
+                initialCategory = null,
+                initialSort = MarketSort.RANK_DESCENDING,
+                quoteColorReversed = false,
+            ).updateMarkets(
+                listOf(
+                    perpsMarket("volume-first", "crypto", tradeVolumeScore1D = 10, volume = "100"),
+                    perpsMarket("trending-first", "stocks", tradeVolumeScore1D = 30, volume = "1"),
+                ),
+            )
+
+        assertEquals(scoreMarketSortState(), state.sortState)
+        assertEquals(listOf("trending-first", "volume-first"), state.visibleMarkets.map { it.marketId })
+        assertEquals(
+            defaultPerpsMarketSortState(PerpsMarketCategory.CRYPTO),
+            state.selectCategory(PerpsMarketCategory.CRYPTO).sortState,
+        )
+    }
+
+    @Test
+    fun allCategoryHeaderCyclesBackToVolumeDefault() {
+        val markets =
+            listOf(
+                perpsMarket("second", "crypto", tradeVolumeScore1D = 20, volume = "300"),
+                perpsMarket("third", "stocks", tradeVolumeScore1D = 10, volume = "200"),
+                perpsMarket("first", "crypto", tradeVolumeScore1D = 30, volume = "100"),
+            )
+        val ascending = PerpsMarketListUiState(markets = markets).selectSort(MarketSortColumn.VOLUME)
+        val default = ascending.selectSort(MarketSortColumn.VOLUME)
+
+        assertEquals(MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.ASCENDING), ascending.sortState)
+        assertEquals(defaultPerpsMarketSortState(PerpsMarketCategory.ALL), default.sortState)
+        assertEquals(listOf("second", "third", "first"), default.visibleMarkets.map { it.marketId })
+        assertEquals(
+            defaultPerpsMarketSortState(PerpsMarketCategory.CRYPTO),
+            default.selectCategory(PerpsMarketCategory.CRYPTO).sortState,
+        )
+    }
+
+    @Test
+    fun marketCategoriesUseVolumeDefaultExceptWatchlist() {
+        PerpsMarketCategory.entries
+            .filterNot { it == PerpsMarketCategory.WATCHLIST }
+            .forEach { category ->
+                assertEquals(
+                    MarketSortState(MarketSortColumn.VOLUME, MarketSortDirection.DESCENDING),
+                    defaultPerpsMarketSortState(category),
+                )
+            }
+        assertEquals(MarketSortState(), defaultPerpsMarketSortState(PerpsMarketCategory.WATCHLIST))
     }
 
     @Test
@@ -70,7 +149,7 @@ class PerpsMarketListBottomSheetModelsTest {
 
         assertSame(state, state.updateMarkets(markets.toList()))
         assertSame(state, state.updateFeaturedMarkets(featuredMarkets.toList()))
-        assertSame(state, state.updateFavoriteMarketIds(emptySet()))
+        assertSame(state, state.updateFavoriteMarketIds(emptyList()))
     }
 
     @Test
@@ -85,12 +164,32 @@ class PerpsMarketListBottomSheetModelsTest {
 
         assertTrue(emptyWatchlist.isShowingRecommendations)
         assertFalse(emptyWatchlist.updateQuery("btc").isShowingRecommendations)
-        assertFalse(emptyWatchlist.updateFavoriteMarketIds(setOf("btc")).isShowingRecommendations)
+        assertFalse(emptyWatchlist.updateFavoriteMarketIds(listOf("btc")).isShowingRecommendations)
+    }
+
+    @Test
+    fun watchlistOrdersMarketsByNewestAddition() {
+        val visibleMarkets =
+            PerpsMarketListUiState(
+                selectedCategory = PerpsMarketCategory.WATCHLIST,
+                sortState = defaultPerpsMarketSortState(PerpsMarketCategory.WATCHLIST),
+                markets =
+                    listOf(
+                        perpsMarket("old", "crypto"),
+                        perpsMarket("new", "stocks"),
+                        perpsMarket("middle", "crypto"),
+                    ),
+                favoriteMarketIds = listOf("new", "middle", "old"),
+            ).visibleMarkets
+
+        assertEquals(listOf("new", "middle", "old"), visibleMarkets.map { it.marketId })
     }
 
     private fun perpsMarket(
         marketId: String,
         category: String,
+        tradeVolumeScore1D: Int = 0,
+        volume: String = "10",
     ) = PerpsMarket(
         marketId = marketId,
         displaySymbol = marketId,
@@ -104,7 +203,8 @@ class PerpsMarketListBottomSheetModelsTest {
         minAmount = "0",
         maxAmount = "0",
         last = "1",
-        volume = "10",
+        volume = volume,
+        tradeVolumeScore1D = tradeVolumeScore1D,
         high = "1",
         low = "1",
         open = "1",

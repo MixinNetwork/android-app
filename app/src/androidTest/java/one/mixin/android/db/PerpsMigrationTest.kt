@@ -1,10 +1,12 @@
 package one.mixin.android.db
 
-import androidx.room.testing.MigrationTestHelper
-import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import androidx.room3.testing.MigrationTestHelper
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.platform.app.InstrumentationRegistry
 import one.mixin.android.Constants
+import one.mixin.android.db.datasource.execSQL
+import one.mixin.android.db.datasource.query
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -16,8 +18,9 @@ class PerpsMigrationTest {
     val migrationTestHelper =
         MigrationTestHelper(
             InstrumentationRegistry.getInstrumentation(),
-            PerpsDatabase::class.java.canonicalName,
-            FrameworkSQLiteOpenHelperFactory(),
+            InstrumentationRegistry.getInstrumentation().targetContext.getDatabasePath(Constants.DataBase.PERPS_DB_NAME),
+            AndroidSQLiteDriver(),
+            PerpsDatabase::class,
         )
 
     @Test
@@ -179,18 +182,90 @@ class PerpsMigrationTest {
                 PerpsDatabase.MIGRATION_6_7,
             )
 
-        migratedDb.query(
-            """
-            SELECT market_id
-            FROM markets
-            """.trimIndent(),
-        ).use { cursor ->
+        migratedDb.query("SELECT market_id FROM markets").use { cursor ->
             assertTrue(cursor.moveToFirst())
             assertEquals("market-1", cursor.getString(0))
         }
+
     }
 
-    private fun SupportSQLiteDatabase.insertMarket() {
+    @Test
+    fun migrate_7_8_clearsOrdersAndAddsFeeAndMarketMetrics() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 7).apply {
+            insertMarket()
+            insertOrderV7()
+            close()
+        }
+
+        val migratedDb = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME,
+            8,
+            true,
+            PerpsDatabase.MIGRATION_7_8,
+        )
+
+        migratedDb.query("SELECT market_id FROM markets").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("market-1", cursor.getString(0))
+        }
+
+        migratedDb.query("SELECT COUNT(*) FROM perps_orders").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+
+        assertColumn(migratedDb, "perps_orders", "fee_amount", "'0'")
+        assertColumn(migratedDb, "markets", "funding_interval_hours", "0")
+        assertColumn(migratedDb, "markets", "next_funding_at", "''")
+        assertColumn(migratedDb, "markets", "open_interest", "'0'")
+    }
+
+    private fun assertColumn(
+        db: SQLiteConnection,
+        table: String,
+        column: String,
+        defaultValue: String,
+    ) {
+        db.query("PRAGMA table_info(`$table`)").use { cursor ->
+            val nameIndex = cursor.getColumnIndexOrThrow("name")
+            val notNullIndex = cursor.getColumnIndexOrThrow("notnull")
+            val defaultValueIndex = cursor.getColumnIndexOrThrow("dflt_value")
+            var found = false
+            while (cursor.moveToNext()) {
+                if (cursor.getString(nameIndex) == column) {
+                    found = true
+                    assertEquals(1, cursor.getInt(notNullIndex))
+                    assertEquals(defaultValue, cursor.getString(defaultValueIndex))
+                }
+            }
+            assertTrue(found)
+        }
+    }
+
+    @Test
+    fun migrate_8_9_addsTradeVolumeScore() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 8).apply {
+            insertMarket()
+            close()
+        }
+
+        val migratedDb =
+            migrationTestHelper.runMigrationsAndValidate(
+                Constants.DataBase.PERPS_DB_NAME,
+                9,
+                true,
+                PerpsDatabase.MIGRATION_8_9,
+            )
+
+        migratedDb.query(
+            "SELECT trade_volume_score_1d FROM markets WHERE market_id = 'market-1'",
+        ).use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+    }
+
+    private fun SQLiteConnection.insertMarket() {
         execSQL(
             """
             INSERT INTO markets (
@@ -207,7 +282,7 @@ class PerpsMigrationTest {
         )
     }
 
-    private fun SupportSQLiteDatabase.insertPositionV2() {
+    private fun SQLiteConnection.insertPositionV2() {
         execSQL(
             """
             INSERT INTO positions (
@@ -223,7 +298,7 @@ class PerpsMigrationTest {
         )
     }
 
-    private fun SupportSQLiteDatabase.insertPositionHistoryV3() {
+    private fun SQLiteConnection.insertPositionHistoryV3() {
         execSQL(
             """
             INSERT INTO position_histories (
@@ -237,7 +312,7 @@ class PerpsMigrationTest {
         )
     }
 
-    private fun SupportSQLiteDatabase.insertOrderV4() {
+    private fun SQLiteConnection.insertOrderV4() {
         execSQL(
             """
             INSERT INTO perps_orders (
@@ -247,6 +322,22 @@ class PerpsMigrationTest {
             ) VALUES (
                 'order-1', 'position-1', 'market-1', 'long', 'open', 'filled', 10, '1',
                 '99000', '0', '0', '0', NULL, NULL,
+                '2026-05-15T15:00:00Z', '2026-05-15T15:00:00Z'
+            )
+            """.trimIndent(),
+        )
+    }
+
+    private fun SQLiteConnection.insertOrderV7() {
+        execSQL(
+            """
+            INSERT INTO perps_orders (
+                order_id, position_id, market_id, side, order_type, status, leverage, quantity,
+                pay_amount, entry_price, close_price, realized_pnl, roe, close_reason, trigger_price,
+                created_at, updated_at
+            ) VALUES (
+                'order-1', 'position-1', 'market-1', 'long', 'open', 'filled', 10, '1',
+                '100', '99000', '0', '0', '0', NULL, NULL,
                 '2026-05-15T15:00:00Z', '2026-05-15T15:00:00Z'
             )
             """.trimIndent(),

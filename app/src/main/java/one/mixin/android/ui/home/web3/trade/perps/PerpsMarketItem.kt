@@ -25,6 +25,7 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.ui.home.web3.market.formatPerpsMarketListPrice
 import java.math.BigDecimal
 
 @Composable
@@ -49,7 +50,7 @@ fun PerpsMarketItem(
         }
     }
     val changeText = formatPerpsSignedPercent(changePercent)
-    val displayPrice = market.last
+    val displayPrice = formatPerpsMarketListPrice(market.last)
 
     val formattedVolume = try {
         BigDecimal(market.volume).numberFormatCompact()
@@ -61,7 +62,7 @@ fun PerpsMarketItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         CoilImage(
@@ -92,7 +93,7 @@ fun PerpsMarketItem(
                     PerpsLeverageBadge(leverage = market.leverage)
                 }
                 Text(
-                    text = "$PERPS_USD_SYMBOL$displayPrice",
+                    text = displayPrice,
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )

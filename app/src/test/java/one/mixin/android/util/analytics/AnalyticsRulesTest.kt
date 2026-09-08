@@ -1,6 +1,7 @@
 package one.mixin.android.util.analytics
 
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.Test
 
 class AnalyticsRulesTest {
@@ -90,10 +91,10 @@ class AnalyticsRulesTest {
     }
 
     @Test
-    fun marketAndAssetVisibilityEventsSyncToAppsFlyer() {
-        assertEquals("market_share", AnalyticsRules.appsFlyerEventName("market_share"))
-        assertEquals("hide_asset", AnalyticsRules.appsFlyerEventName("hide_asset"))
-        assertEquals("show_asset", AnalyticsRules.appsFlyerEventName("show_asset"))
+    fun marketAndAssetVisibilityEventsDoNotSyncToAppsFlyer() {
+        assertNull(AnalyticsRules.appsFlyerEventName("market_share"))
+        assertNull(AnalyticsRules.appsFlyerEventName("hide_asset"))
+        assertNull(AnalyticsRules.appsFlyerEventName("show_asset"))
     }
 
     @Test
@@ -103,6 +104,24 @@ class AnalyticsRulesTest {
         assertEquals("trade_perps_open_end", AnalyticsRules.appsFlyerEventName("trade_perps_open_end"))
         assertEquals("trade_perps_close_start", AnalyticsRules.appsFlyerEventName("trade_perps_close_start"))
         assertEquals("trade_perps_close_end", AnalyticsRules.appsFlyerEventName("trade_perps_close_end"))
+    }
+
+    @Test
+    fun nonOrganicConversionMapsSourceAndCampaign() {
+        assertEquals(
+            mapOf(
+                "af_source" to "Non-organic",
+                "af_media_source" to "example_media",
+                "af_campaign" to "example_campaign",
+            ),
+            AnalyticsRules.conversionUserProperties(
+                mapOf(
+                    "af_status" to "Non-organic",
+                    "media_source" to "example_media",
+                    "campaign" to "example_campaign",
+                ),
+            ),
+        )
     }
 
     @Test

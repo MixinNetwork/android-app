@@ -34,6 +34,7 @@ import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.QuoteMessageItem
+import one.mixin.android.vo.recalledMessageText
 import timber.log.Timber
 import java.io.File
 
@@ -95,13 +96,14 @@ class QuoteView constructor(context: Context, attrs: AttributeSet) :
                     setIcon()
                 }
                 quoteMessageItem.type == MessageCategory.MESSAGE_RECALL.name -> {
-                    binding.replyContentTv.setText(
-                        if (quoteMessageItem.userId == Session.getAccountId()) {
-                            R.string.You_deleted_this_message
-                        } else {
-                            R.string.This_message_was_deleted
-                        },
-                    )
+                    binding.replyContentTv.text =
+                        recalledMessageText(
+                            context,
+                            Session.getAccountId(),
+                            quoteMessageItem.userId,
+                            quoteMessageItem.participantUserId,
+                            quoteMessageItem.participantFullName,
+                        )
                     binding.replyIv.visibility = View.GONE
                     binding.replyAvatar.visibility = View.GONE
                     (binding.replyContentTv.layoutParams as LayoutParams).marginEnd =

@@ -14,13 +14,15 @@ object Web3ChainId {
     const val OptimismChainId = 10
     const val BscChainId = 56
     const val PolygonChainId = 137
+    const val XLayerChainId = 196
     const val BaseChainId = 8453
     const val ArbitrumChainId = 42161
     const val AvalancheChainId = 43114
     const val BlastChainId = 81457
     const val HyperEvmChainId = 999
+    const val RobinhoodChainId = 4663
 
-    val eip155ChainIds = listOf(EthChainId, OptimismChainId, BscChainId, PolygonChainId, BaseChainId, ArbitrumChainId, AvalancheChainId, BlastChainId, HyperEvmChainId)
+    val eip155ChainIds = listOf(EthChainId, OptimismChainId, BscChainId, PolygonChainId, XLayerChainId, BaseChainId, ArbitrumChainId, AvalancheChainId, BlastChainId, HyperEvmChainId, RobinhoodChainId)
 
     fun getChainType(id: Int): ChainType =
         when {
@@ -35,10 +37,12 @@ object Web3ChainId {
             OptimismChainId -> Chain.Optimism
             BscChainId -> Chain.BinanceSmartChain
             PolygonChainId -> Chain.Polygon
+            XLayerChainId -> Chain.XLayer
             BaseChainId -> Chain.Base
             ArbitrumChainId -> Chain.Arbitrum
             AvalancheChainId -> Chain.Avalanche
             HyperEvmChainId -> Chain.HyperEVM
+            RobinhoodChainId -> Chain.Robinhood
             else -> Chain.Solana
         }
 }

@@ -26,22 +26,24 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.AssetChange
-import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.numberFormat2
+import one.mixin.android.ui.common.BalanceChangePresentation
+import one.mixin.android.ui.common.BalanceChangeTone
+import one.mixin.android.ui.common.balanceChangePresentation
+import one.mixin.android.ui.common.toColor
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
 @Composable
 fun AssetChangeItem(
-    status: String,
     amount: String,
     symbol: String,
     iconUrl: String?,
     fiatValue: String? = null,
     isReceive: Boolean = false,
     isUnlimited: Boolean = false,
-    isApproval: Boolean = false
+    isApproval: Boolean = false,
 ) {
     val amountValue = if (isUnlimited) {
         stringResource(R.string.unlimited).replaceFirstChar { it.uppercase() }
@@ -53,12 +55,16 @@ fun AssetChangeItem(
         }
     }
 
-    val prefix =
-        if (amount.startsWith("+") || amount.startsWith("-")) "" else if (isReceive) "+" else "-"
-    val textColor =
-        if (status == TransactionStatus.PENDING.value) MixinAppTheme.colors.textPrimary
-        else if (isApproval) MixinAppTheme.colors.walletRed
-        else if (isReceive) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val presentation = if (isUnlimited) {
+        BalanceChangePresentation(amountValue, BalanceChangeTone.NEGATIVE)
+    } else {
+        balanceChangePresentation(amountValue, isReceive)
+    }
+    val textColor = if (isApproval) {
+        MixinAppTheme.colors.walletRed
+    } else {
+        presentation.tone.toColor()
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -77,7 +83,7 @@ fun AssetChangeItem(
             Spacer(modifier = Modifier.width(4.dp))
 
             Text(
-                text = if (isUnlimited) amountValue else "$prefix$amountValue ",
+                text = if (isUnlimited) amountValue else "${presentation.amount} ",
                 fontSize = 14.sp,
                 color = textColor
             )
@@ -101,7 +107,6 @@ fun AssetChangeItem(
 
 @Composable
 fun AssetChangesList(
-    status: String,
     senders: List<AssetChange>,
     receivers: List<AssetChange>,
     fetchToken: suspend (String) -> Web3TokenItem?,
@@ -133,14 +138,13 @@ fun AssetChangesList(
             approvals?.forEachIndexed { index, approval ->
                 val token = tokens[approval.assetId]
                 AssetChangeItem(
-                    status = status,
                     amount = approval.amount,
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
                     fiatValue = approval.amount.toFiatValue(token, approval.type == "unlimited"),
                     isReceive = false,
                     isUnlimited = approval.type == "unlimited",
-                    isApproval = approvals.isEmpty().not()
+                    isApproval = true,
                 )
                 if (index < approvals.size - 1) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -154,7 +158,6 @@ fun AssetChangesList(
             receivers.forEachIndexed { index, receiver ->
                 val token = tokens[receiver.assetId]
                 AssetChangeItem(
-                    status = status,
                     amount = receiver.amount,
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
@@ -173,7 +176,6 @@ fun AssetChangesList(
             senders.forEachIndexed { index, sender ->
                 val token = tokens[sender.assetId]
                 AssetChangeItem(
-                    status = status,
                     amount = sender.amount,
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,

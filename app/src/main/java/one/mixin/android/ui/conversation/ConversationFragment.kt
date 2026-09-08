@@ -61,7 +61,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.twilio.audioswitch.AudioSwitch
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -94,6 +93,7 @@ import one.mixin.android.event.GroupEvent
 import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.event.MessageEventAction
 import one.mixin.android.event.RecallEvent
+import one.mixin.android.extension.AudioSwitch
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
@@ -127,7 +127,6 @@ import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.isVideo
 import one.mixin.android.extension.isWebp
-import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openAsUrlOrWeb
@@ -243,7 +242,7 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.absolutePath
-import one.mixin.android.vo.canRecall
+import one.mixin.android.vo.canRecallBy
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getEncryptedCategory
 import one.mixin.android.vo.getSendText
@@ -311,6 +310,8 @@ class ConversationFragment() :
         const val RECIPIENT_ID = "recipient_id"
         const val RECIPIENT = "recipient"
         const val MESSAGE_ID = "initial_position_message_id"
+        const val INITIAL_UNREAD_MESSAGE_ID = "initial_unread_message_id"
+        const val INITIAL_UNREAD_COUNT = "initial_unread_count"
         const val TRANSCRIPT_DATA = "transcript_data"
         private const val KEY_WORD = "key_word"
         private const val START_PARAM = "start_param"
@@ -321,7 +322,8 @@ class ConversationFragment() :
             keyword: String?,
             messageId: String? = null,
             transcriptData: TranscriptData? = null,
-            startParam: String? = null
+            startParam: String? = null,
+            initialUnreadCount: Int? = null,
         ): Bundle =
             Bundle().apply {
                 require(!(conversationId == null && recipientId == null)) { "lose data" }
@@ -333,6 +335,7 @@ class ConversationFragment() :
                 putString(MESSAGE_ID, messageId)
                 putParcelable(TRANSCRIPT_DATA, transcriptData)
                 startParam?.let { putString(START_PARAM, startParam) }
+                initialUnreadCount?.let { putInt(INITIAL_UNREAD_COUNT, it) }
             }
 
         fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
@@ -1009,6 +1012,20 @@ class ConversationFragment() :
         requireArguments().getString(MESSAGE_ID, null)
     }
 
+    private val initialUnreadMessageId: String? by lazy {
+        requireArguments().getString(INITIAL_UNREAD_MESSAGE_ID, null)
+    }
+
+    private val initialUnreadCount: Int? by lazy {
+        requireArguments().let { arguments ->
+            if (arguments.containsKey(INITIAL_UNREAD_COUNT)) {
+                arguments.getInt(INITIAL_UNREAD_COUNT)
+            } else {
+                null
+            }
+        }
+    }
+
     private var keyword: String? = null
 
     private val sender: User by lazy { Session.getAccount()!!.toUser() }
@@ -1470,7 +1487,9 @@ class ConversationFragment() :
                 if (viewDestroyed()) return@launch
 
                 binding.messageRv.post {
-                    messageAdapter.submitPrevious(pageData)
+                    if (messageAdapter.data.first()?.messageId == id) {
+                        messageAdapter.submitPrevious(pageData)
+                    }
                 }
             }
         }
@@ -1483,7 +1502,9 @@ class ConversationFragment() :
                 if (viewDestroyed()) return@launch
 
                 binding.messageRv.post {
-                    messageAdapter.submitNext(pageData)
+                    if (messageAdapter.data.last()?.messageId == id) {
+                        messageAdapter.submitNext(pageData)
+                    }
                 }
             }
         }
@@ -1865,37 +1886,49 @@ class ConversationFragment() :
     private var deleteDialog: AlertDialog? = null
 
     private fun deleteMessage(messages: List<MessageItem>) {
-        deleteDialog?.dismiss()
-        val showRecall =
-            messages.all { item ->
-                item.userId == sender.userId && item.status != MessageStatus.SENDING.name && !item.createdAt.lateOneHours() && item.canRecall()
-            }
-        val deleteDialogLayoutBinding = generateDeleteDialogLayout()
-        deleteDialog =
-            alertDialogBuilder()
-                .setMessage(requireContext().resources.getQuantityString(R.plurals.chat_delete_message, messages.size, messages.size))
-                .setView(deleteDialogLayoutBinding.root)
-                .create()
-        if (showRecall) {
-            deleteDialogLayoutBinding.deleteEveryone.setOnClickListener {
-                if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RECALL_SHOW, true)) {
-                    deleteDialog?.dismiss()
-                    deleteAlert(messages)
-                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_RECALL_SHOW, false)
+        lifecycleScope.launch {
+            val canRecallOthers =
+                if (isGroup) {
+                    val role =
+                        withContext(Dispatchers.IO) {
+                            chatViewModel.findParticipantById(conversationId, sender.userId)?.role
+                        }
+                    role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
                 } else {
-                    chatViewModel.sendRecallMessage(conversationId, sender, messages)
-                    deleteDialog?.dismiss()
+                    true
                 }
-            }
-            deleteDialogLayoutBinding.deleteEveryone.visibility = VISIBLE
-        } else {
-            deleteDialogLayoutBinding.deleteEveryone.visibility = GONE
-        }
-        deleteDialogLayoutBinding.deleteMe.setOnClickListener {
-            chatViewModel.deleteMessages(messages)
             deleteDialog?.dismiss()
+            val showRecall =
+                messages.all { item ->
+                    item.canRecallBy(sender.userId, isGroup, canRecallOthers)
+                }
+            val deleteDialogLayoutBinding = generateDeleteDialogLayout()
+            deleteDialog =
+                alertDialogBuilder()
+                    .setMessage(requireContext().resources.getQuantityString(R.plurals.chat_delete_message, messages.size, messages.size))
+                    .setView(deleteDialogLayoutBinding.root)
+                    .create()
+            if (showRecall) {
+                deleteDialogLayoutBinding.deleteEveryone.setOnClickListener {
+                    if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RECALL_SHOW, true)) {
+                        deleteDialog?.dismiss()
+                        deleteAlert(messages)
+                        defaultSharedPreferences.putBoolean(Constants.Account.PREF_RECALL_SHOW, false)
+                    } else {
+                        chatViewModel.sendRecallMessage(conversationId, sender, messages)
+                        deleteDialog?.dismiss()
+                    }
+                }
+                deleteDialogLayoutBinding.deleteEveryone.visibility = VISIBLE
+            } else {
+                deleteDialogLayoutBinding.deleteEveryone.visibility = GONE
+            }
+            deleteDialogLayoutBinding.deleteMe.setOnClickListener {
+                chatViewModel.deleteMessages(messages)
+                deleteDialog?.dismiss()
+            }
+            deleteDialog?.show()
         }
-        deleteDialog?.show()
     }
 
     private var permissionAlert: AlertDialog? = null
@@ -1954,7 +1987,13 @@ class ConversationFragment() :
     private fun initMessageRecyclerView() {
         lifecycleScope.launch {
             // init message data
-            val (position, data, unreadMessageId) = messageFetcher.initMessages(conversationId, initialMessageId)
+            val (position, data, unreadMessageId) =
+                messageFetcher.initMessages(
+                    conversationId = conversationId,
+                    messageId = initialMessageId,
+                    initialUnreadMessageId = initialUnreadMessageId,
+                    initialUnreadCount = initialUnreadCount,
+                )
             if (isFirstMessage && data.isNotEmpty()) {
                 isFirstMessage = false
             }
@@ -1965,6 +2004,7 @@ class ConversationFragment() :
                     onItemListener,
                     previousAction,
                     nextAction,
+                    messageFetcher::onWindowTrimmed,
                     isGroup = isGroup,
                     unreadMessageId = if (initialMessageId != null) null else unreadMessageId,
                     recipient = recipient,
@@ -2006,7 +2046,7 @@ class ConversationFragment() :
                         if (messageFetcher.isBottom()) {
                             val message = messageFetcher.findMessageById(event.ids)
                             if (message.isNotEmpty()) {
-                                (binding.messageRv.adapter as MessageAdapter).insert(message)
+                                (binding.messageRv.adapter as MessageAdapter).insert(message, isBottom)
                             }
                             if (isBottom) {
                                 scrollToDown()

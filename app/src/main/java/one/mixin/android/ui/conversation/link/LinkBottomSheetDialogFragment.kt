@@ -38,7 +38,6 @@ import one.mixin.android.api.response.getScopes
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentBottomSheetBinding
-import one.mixin.android.extension.appendQueryParamsFromOtherUri
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.booleanFromAttribute
@@ -46,6 +45,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
+import one.mixin.android.extension.homeUriWithSchemeParameters
 import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
@@ -55,6 +55,7 @@ import one.mixin.android.extension.isValidStartParam
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toast
+import one.mixin.android.extension.toPerpsTradeAction
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
@@ -236,28 +237,29 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 dismiss()
             } else {
                 lifecycleScope.launch(errorHandler) {
+                    val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
+                    if (isOpenApp) {
+                        val localApp = oldLinkViewModel.findAppById(userId)
+                        if (localApp != null) {
+                            AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, localApp.appNumber)
+                            WebActivity.show(requireActivity(), localApp.homeUriWithSchemeParameters(uri), null, localApp)
+                            dismiss()
+                            return@launch
+                        }
+                    }
                     val user = oldLinkViewModel.refreshUser(userId)
                     if (user == null) {
                         toast(getUserOrAppNotFoundTip(isAppScheme))
                         dismiss()
                         return@launch
                     }
-                    val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
                     if (isOpenApp && user.appId != null) {
-                        lifecycleScope.launch(errorHandler) {
-                            val app = oldLinkViewModel.findAppById(user.appId!!)
-                            if (app != null) {
-                                val url =
-                                    try {
-                                        app.homeUri.appendQueryParamsFromOtherUri(uri)
-                                    } catch (e: Exception) {
-                                        app.homeUri
-                                    }
-                                AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
-                                WebActivity.show(requireActivity(), url, null, app)
-                            } else {
-                                showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
-                            }
+                        val app = oldLinkViewModel.findAppById(user.appId!!)
+                        if (app != null) {
+                            AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
+                            WebActivity.show(requireActivity(), app.homeUriWithSchemeParameters(uri), null, app)
+                        } else {
+                            showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
                         }
                     } else {
                         showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
@@ -1105,8 +1107,13 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         val type = uri.getQueryParameter("type")
         
         if (type.equals("perps", true) || type.equals("perpetual", true)) {
-            val marketId = uri.getQueryParameter("market")
-            if (marketId.isNullOrBlank() || !marketId.isUUID()) {
+            val action = uri.toString().toPerpsTradeAction()
+            if (action == null) {
+                showError(R.string.Data_error)
+                return
+            }
+            val marketId = action.marketId
+            if (marketId == null) {
                 defaultSharedPreferences.putInt(
                     "$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}",
                     TAB_PERPETUAL,
@@ -1127,18 +1134,36 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 return
             }
 
-            PerpsActivity.showDetail(
-                requireContext(),
-                market.marketId,
-                market.displaySymbol,
-                market.displaySymbol,
-                market.tokenSymbol,
-                if (activity is ConversationActivity) {
-                    AnalyticsTracker.MarketDetailSource.APP_CARD
-                } else {
-                    AnalyticsTracker.MarketDetailSource.SCHEMA
-                },
-            )
+            val source = if (activity is ConversationActivity) {
+                AnalyticsTracker.MarketDetailSource.APP_CARD
+            } else {
+                AnalyticsTracker.MarketDetailSource.SCHEMA
+            }
+            val openPosition = action.openPosition
+            if (openPosition == null) {
+                PerpsActivity.showDetail(
+                    requireContext(),
+                    market.marketId,
+                    market.displaySymbol,
+                    market.displaySymbol,
+                    market.tokenSymbol,
+                    source,
+                    leaderPositionId = action.leaderPositionId,
+                )
+            } else {
+                PerpsActivity.showOpenPosition(
+                    context = requireContext(),
+                    marketId = market.marketId,
+                    marketSymbol = market.displaySymbol,
+                    marketDisplaySymbol = market.displaySymbol,
+                    marketTokenSymbol = market.tokenSymbol,
+                    isLong = openPosition.isLong,
+                    source = source,
+                    leaderPositionId = action.leaderPositionId,
+                    initialLeverage = openPosition.leverage,
+                    initialMargin = openPosition.margin,
+                )
+            }
             closeSourceWebActivityIfNeeded()
             dismiss()
             return

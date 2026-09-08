@@ -66,11 +66,14 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.extension.formatPublicKey
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.ui.common.balanceChangePresentation
+import one.mixin.android.ui.common.toColor
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
+import one.mixin.android.web3.details.AssetChangeItem
 import one.mixin.android.web3.js.SolanaTxSource
 import java.math.BigDecimal
 
@@ -82,6 +85,7 @@ fun TransactionPreview(
     chain: Chain,
     asset: Token?,
 ) {
+    val presentation = balanceChangePresentation(balance.negate().toPlainString())
     Column(
         modifier =
         Modifier
@@ -106,8 +110,8 @@ fun TransactionPreview(
         ) {
             Text(
                 modifier = Modifier.alignByBaseline(),
-                text = "-$balance",
-                color = Color(0xFFE86B67),
+                text = presentation.amount,
+                color = presentation.tone.toColor(),
                 fontFamily = FontFamily(Font(R.font.mixin_font)),
                 fontSize = 30.sp,
             )
@@ -142,6 +146,7 @@ fun TokenTransactionPreview(
     amount: String,
     token: Web3TokenItem,
 ) {
+    val presentation = balanceChangePresentation(amount, isReceive = false)
     Column(
         modifier =
         Modifier
@@ -178,10 +183,10 @@ fun TokenTransactionPreview(
             )
             Box(modifier = Modifier.width(8.dp))
             BasicText(
-                text = "-${amount} ${token.symbol}",
+                text = "${presentation.amount} ${token.symbol}",
                 modifier = Modifier.weight(1f),
                 style = TextStyle(
-                    color = MixinAppTheme.colors.red,
+                    color = presentation.tone.toColor(),
                     fontSize = 14.sp,
                     textAlign = TextAlign.End,
                 ),
@@ -503,14 +508,15 @@ private fun SingleBalanceChangeItem(
     val priceUsd: String? by viewModel.getTokenPriceUsdFlow(bc.assetId)
         .collectAsStateWithLifecycle(initialValue = null)
     val fiatPrice = bc.formatPrice(priceUsd)
+    val presentation = balanceChangePresentation(bc.amount)
 
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.Bottom
     ) {
         Text(
-            text = "${bc.amountString()}",
-            color = if ((bc.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) >= BigDecimal.ZERO) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
+            text = presentation.amount,
+            color = presentation.tone.toColor(),
             maxLines = 1,
             fontSize = 28.sp,
             fontWeight = FontWeight.Medium,
@@ -550,6 +556,7 @@ private fun BalanceChangeItem(
     val priceUsd: String? by viewModel.getTokenPriceUsdFlow(balanceChange.assetId)
         .collectAsStateWithLifecycle(initialValue = null)
     val fiatPrice = balanceChange.formatPrice(priceUsd)
+    val presentation = balanceChangePresentation(balanceChange.amount)
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -563,8 +570,8 @@ private fun BalanceChangeItem(
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = "${balanceChange.amountString()} ${balanceChange.symbol}",
-            color = if ((balanceChange.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) >= BigDecimal.ZERO) MixinAppTheme.colors.green else MixinAppTheme.colors.red,
+            text = "${presentation.amount} ${balanceChange.symbol}",
+            color = presentation.tone.toColor(),
             maxLines = 1,
             fontSize = 14.sp,
         )
@@ -697,12 +704,6 @@ fun PreviewMessage() {
 
 @Preview
 @Composable
-private fun TransactionPreview() {
-    TransactionPreview(balance = BigDecimal(0.134), chain = Chain.Ethereum, null)
-}
-
-@Preview
-@Composable
 private fun WarningPreview() {
     Box(
         modifier =
@@ -800,11 +801,170 @@ fun TransferBottomPreview() {
     }
 }
 
-@Preview
+@Preview(showBackground = true, widthDp = 390)
 @Composable
 fun BalanceChangePreview() {
-    // val token = Web3Token(assert = "", name = "Solana", symbol = "SOL", chainId = "solana", chainName = "Solana", chainIconUrl = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", balance = "0.01605982", price = "132.9102434930042", changeAbsolute = "-0.030625", changePercent = "-0.023036555963245636", decimals = 9, assetKey = "asset_key", iconUrl = "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/So11111111111111111111111111111111111111112/logo.png", assetId = "64692c23-8971-4cf4-84a7-4dd1271dd887")
-    // BalanceChangeItem(token = token, balanceChange = BalanceChange("So11111111111111111111111111111111111111112", -10000000))
+    val previewAsset = Token(
+        assetId = "ethereum",
+        asset = "ethereum",
+        symbol = "ETH",
+        name = "Ethereum",
+        iconUrl = "",
+        priceBtc = "0",
+        priceUsd = "2000",
+        chainId = "ethereum",
+        changeUsd = "0",
+        changeBtc = "0",
+        confirmations = 0,
+        assetKey = "ethereum",
+        dust = "0",
+        collectionHash = null,
+        precision = 18,
+    )
+    val previewToken = Web3TokenItem(
+        walletId = "",
+        assetId = "ethereum",
+        chainId = "ethereum",
+        name = "Ethereum",
+        assetKey = "ethereum",
+        symbol = "ETH",
+        iconUrl = "",
+        precision = 18,
+        balance = "0",
+        priceUsd = "2000",
+        changeUsd = "0",
+        chainIcon = null,
+        chainName = "Ethereum",
+        chainSymbol = "ETH",
+        hidden = false,
+        level = 0,
+    )
+    MixinAppTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MixinAppTheme.colors.background)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Text(
+                text = "Estimated native transfer",
+                color = MixinAppTheme.colors.textRemarks,
+                fontSize = 14.sp,
+            )
+            TransactionPreview(
+                balance = BigDecimal("0.134"),
+                chain = Chain.Ethereum,
+                asset = previewAsset,
+            )
+
+            Text(
+                text = "Estimated token transfer",
+                color = MixinAppTheme.colors.textRemarks,
+                fontSize = 14.sp,
+            )
+            TokenTransactionPreview(amount = "0.134", token = previewToken)
+
+            Text(
+                text = "Balance change states",
+                color = MixinAppTheme.colors.textRemarks,
+                fontSize = 14.sp,
+            )
+            PreviewBalanceChangeItem("1.25", "ETH", fiatValue = "$2500.00", large = true)
+            PreviewBalanceChangeItem("-0.01", "ETH", fiatValue = "$20.00")
+            PreviewBalanceChangeItem("24.30", "USDC", fiatValue = "$24.30")
+
+            Text(
+                text = "Private wallet swap",
+                color = MixinAppTheme.colors.textRemarks,
+                fontSize = 14.sp,
+            )
+            PreviewBalanceChangeItem("0.01", "ETH", isReceive = false, fiatValue = "$20.00")
+            PreviewBalanceChangeItem("24.30", "USDC", isReceive = true, fiatValue = "$24.30")
+
+            Text(
+                text = "Zero balance change",
+                color = MixinAppTheme.colors.textRemarks,
+                fontSize = 14.sp,
+            )
+            PreviewBalanceChangeItem("0", "ETH")
+
+            Text(
+                text = "Asset change states",
+                color = MixinAppTheme.colors.textRemarks,
+                fontSize = 14.sp,
+            )
+            AssetChangeItem(
+                amount = "1.25",
+                symbol = "SOL",
+                iconUrl = null,
+                fiatValue = "$166.13",
+                isReceive = true,
+            )
+            AssetChangeItem(
+                amount = "0.01",
+                symbol = "ETH",
+                iconUrl = null,
+                fiatValue = "$20.00",
+                isReceive = false,
+            )
+            AssetChangeItem(
+                amount = "100",
+                symbol = "USDC",
+                iconUrl = null,
+                isApproval = true,
+            )
+            AssetChangeItem(
+                amount = "unlimited",
+                symbol = "USDC",
+                iconUrl = null,
+                isUnlimited = true,
+                isApproval = true,
+            )
+            AssetChangeItem(
+                amount = "0",
+                symbol = "SOL",
+                iconUrl = null,
+                isReceive = true,
+            )
+        }
+    }
+}
+
+@Composable
+private fun PreviewBalanceChangeItem(
+    amount: String,
+    symbol: String,
+    isReceive: Boolean? = null,
+    fiatValue: String? = null,
+    large: Boolean = false,
+) {
+    val presentation = balanceChangePresentation(amount, isReceive)
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = presentation.amount,
+            color = presentation.tone.toColor(),
+            fontSize = if (large) 28.sp else 16.sp,
+            fontWeight = FontWeight.W600,
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            text = symbol,
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 14.sp,
+        )
+        if (!fiatValue.isNullOrBlank()) {
+            Spacer(modifier = Modifier.weight(1f))
+            Text(
+                text = fiatValue,
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 12.sp,
+            )
+        }
+    }
 }
 
 @Preview
@@ -861,10 +1021,55 @@ fun SolanaParsedTxBalanceChangeNullInnerPreview() {
     ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
 }
 
-@Preview
+@Preview(showBackground = true, widthDp = 390)
 @Composable
 fun SolanaParsedTxTokenNullPreview() {
-    val data = """{"balance_changes":[{"address":"So11111111111111111111111111111111111111112","amount":-10000000},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264}],"instructions":[{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitLimit","items":[{"key":"Compute Unit Limit","value":"600000 compute units"}]},{"program_id":"ComputeBudget111111111111111111111111111111","program_name":"ComputeBudget","instruction_name":"SetComputeUnitPrice","items":[{"key":"Compute Unit Price","value":"0.1 lamports per compute unit"}]},{"program_id":"ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL","program_name":"AssociatedTokenAccount","instruction_name":"Create"},{"program_id":"11111111111111111111111111111111","program_name":"System","instruction_name":"Transfer","items":[{"key":"Transfer Amount (SOL)","value":"0.01"}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"SyncNative"},{"program_id":"JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4","program_name":"Jupiter","instruction_name":"Route","items":[{"key":"Route Plan","value":""},{"key":"In Amount","value":"824635312696"},{"key":"Quoted Out Amount","value":"824635312704"},{"key":"Slippage Bps","value":"824635312712"},{"key":"Platform Fee Bps","value":"50"}],"token_changes":[{"address":"So11111111111111111111111111111111111111112","amount":10000000,"is_pay":true},{"address":"EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v","amount":1323264,"is_pay":false}]},{"program_id":"TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA","program_name":"Token","instruction_name":"CloseAccount"}]}"""
-    val parsedTx = GsonHelper.customGson.fromJson(data, ParsedTx::class.java)
-    ParsedTxPreview(parsedTx = parsedTx, asset = null, solanaTxSource = SolanaTxSource.InnerSwap)
+    val parsedTx = ParsedTx(
+        balanceChanges = listOf(
+            BalanceChange(
+                assetId = "solana",
+                address = "So11111111111111111111111111111111111111112",
+                amount = "-0.01",
+                decimals = 9,
+                name = "Solana",
+                symbol = "SOL",
+                icon = null,
+                from = null,
+                to = null,
+            ),
+            BalanceChange(
+                assetId = "usdc",
+                address = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+                amount = "1.323264",
+                decimals = 6,
+                name = "USD Coin",
+                symbol = "USDC",
+                icon = null,
+                from = null,
+                to = null,
+            ),
+        ),
+    )
+    MixinAppTheme {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(MixinAppTheme.colors.background)
+                .padding(20.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Text(
+                text = "Solana parsed transaction (token unavailable)",
+                color = MixinAppTheme.colors.textRemarks,
+                fontSize = 14.sp,
+            )
+            BalanceChangeHead()
+            parsedTx.balanceChanges.orEmpty().forEach { balanceChange ->
+                PreviewBalanceChangeItem(
+                    amount = balanceChange.amount,
+                    symbol = balanceChange.symbol,
+                )
+            }
+        }
+    }
 }

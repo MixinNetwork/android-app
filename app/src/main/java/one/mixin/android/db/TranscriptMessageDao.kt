@@ -1,9 +1,9 @@
 package one.mixin.android.db
 
-import androidx.paging.DataSource
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
+import androidx.paging.PagingSource
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
 import one.mixin.android.db.contants.AUDIOS
 import one.mixin.android.db.contants.DATA
 import one.mixin.android.db.contants.IMAGES
@@ -71,16 +71,19 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         st.asset_height AS assetHeight, st.asset_url AS assetUrl, st.asset_type AS assetType,t.media_duration AS mediaDuration, 
         t.media_waveform AS mediaWaveform, su.user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.avatar_url AS sharedUserAvatarUrl, 
         su.app_id AS sharedUserAppId, su.identity_number AS sharedUserIdentityNumber, su.is_verified AS sharedUserIsVerified, t.quote_id AS quoteId,
-        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership 
+        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership,
+        om.participant_id AS participantUserId, ru.full_name AS participantFullName
         FROM transcript_messages t
         LEFT JOIN users u on t.user_id = u.user_id
         LEFT JOIN users su ON t.shared_user_id = su.user_id
         LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
+        LEFT JOIN messages om ON t.message_id = om.id
+        LEFT JOIN users ru ON ru.user_id = om.participant_id
         WHERE t.transcript_id = :transcriptId
         ORDER BY t.created_at ASC, t.rowid ASC
         """,
     )
-    fun getTranscriptMessages(transcriptId: String): DataSource.Factory<Int, ChatHistoryMessageItem>
+    fun getTranscriptMessages(transcriptId: String): PagingSource<Int, ChatHistoryMessageItem>
 
     @Query("SELECT count(1) FROM transcript_messages WHERE created_at < (SELECT created_at FROM transcript_messages WHERE transcript_id = :transcriptId AND message_id = :messageId) AND transcript_id = :transcriptId")
     suspend fun findTranscriptMessageIndex(
@@ -96,11 +99,14 @@ interface TranscriptMessageDao : BaseDao<TranscriptMessage> {
         st.asset_height AS assetHeight, st.asset_url AS assetUrl, st.asset_type AS assetType,t.media_duration AS mediaDuration, 
         t.media_waveform AS mediaWaveform, su.user_id AS sharedUserId, su.full_name AS sharedUserFullName, su.avatar_url AS sharedUserAvatarUrl, 
         su.app_id AS sharedUserAppId, su.identity_number AS sharedUserIdentityNumber, su.is_verified AS sharedUserIsVerified, t.quote_id AS quoteId,
-        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership
+        t.quote_content AS quoteContent, t.mentions AS mentions, u.membership as membership,
+        om.participant_id AS participantUserId, ru.full_name AS participantFullName
         FROM transcript_messages t
         LEFT JOIN users u on t.user_id = u.user_id
         LEFT JOIN users su ON t.shared_user_id = su.user_id
         LEFT JOIN stickers st ON st.sticker_id = t.sticker_id
+        LEFT JOIN messages om ON t.message_id = om.id
+        LEFT JOIN users ru ON ru.user_id = om.participant_id
         WHERE t.transcript_id = :transcriptId
         AND t.category IN ($IMAGES, $VIDEOS, $LIVES)
         ORDER BY t.created_at ASC, t.rowid ASC

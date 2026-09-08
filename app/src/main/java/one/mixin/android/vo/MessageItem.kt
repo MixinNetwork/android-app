@@ -14,11 +14,10 @@ import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
-import androidx.paging.PositionalDataSource
 import androidx.recyclerview.widget.DiffUtil
-import androidx.room.Entity
-import androidx.room.Ignore
-import androidx.room.PrimaryKey
+import androidx.room3.Entity
+import androidx.room3.Ignore
+import androidx.room3.PrimaryKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.IgnoredOnParcel
@@ -36,6 +35,7 @@ import one.mixin.android.extension.getPublicMusicPath
 import one.mixin.android.extension.getPublicPicturePath
 import one.mixin.android.extension.hasWritePermission
 import one.mixin.android.extension.isImageSupport
+import one.mixin.android.extension.lateThirtyDays
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.timeFormat
@@ -120,7 +120,7 @@ data class MessageItem(
     val expireIn: Long? = null,
     val expireAt: Long? = null,
     val caption: String? = null,
-    val membership: Membership? = null
+    val membership: Membership? = null,
 ) : Parcelable, ICategory {
     @IgnoredOnParcel
     @Ignore
@@ -231,6 +231,36 @@ data class MessageItem(
 
     fun isSharedMembership() = sharedMembership?.isMembership() == true
 }
+
+fun MessageItem.canRecallBy(
+    currentUserId: String,
+    isGroup: Boolean,
+    canManageGroup: Boolean,
+): Boolean =
+    (userId == currentUserId || !isGroup || canManageGroup) &&
+        status != MessageStatus.SENDING.name &&
+        !createdAt.lateThirtyDays() &&
+        canRecall()
+
+fun recalledMessageText(
+    context: Context,
+    meId: String?,
+    userId: String?,
+    participantUserId: String?,
+    participantFullName: String?,
+): String {
+    val actorId = participantUserId ?: userId
+    return when {
+        actorId == meId -> context.getString(R.string.You_deleted_this_message)
+        !participantFullName.isNullOrBlank() -> context.getString(R.string.User_deleted_this_message, participantFullName)
+        else -> context.getString(R.string.This_message_was_deleted)
+    }
+}
+
+fun MessageItem.recalledText(
+    context: Context,
+    meId: String?,
+): String = recalledMessageText(context, meId, userId, participantUserId, participantFullName)
 
 fun create(
     type: String,
@@ -416,23 +446,6 @@ private fun MessageItem.simpleChat(): String {
         isPost() -> content!!
         isLocation() -> "[LOCATION https://maps.google.com/?q=${toLocationData(content).run { "${this?.latitude}&${this?.longitude}" }}]"
         else -> throw IllegalArgumentException()
-    }
-}
-
-class FixedMessageDataSource<T : Any>(private val items: List<T>, private val totalCount: Int) :
-    PositionalDataSource<T>() {
-    override fun loadRange(
-        params: LoadRangeParams,
-        callback: LoadRangeCallback<T>,
-    ) {
-        callback.onResult(items)
-    }
-
-    override fun loadInitial(
-        params: LoadInitialParams,
-        callback: LoadInitialCallback<T>,
-    ) {
-        callback.onResult(items, 0, totalCount)
     }
 }
 

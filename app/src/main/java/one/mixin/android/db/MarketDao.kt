@@ -3,9 +3,9 @@ package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.ui.wallet.alert.vo.CoinItem
 import one.mixin.android.vo.market.Market
@@ -90,10 +90,8 @@ interface MarketDao : BaseDao<Market> {
         SELECT m.*, mf.is_favored
         FROM markets m
         INNER JOIN market_favored mf ON mf.coin_id = m.coin_id
-        LEFT JOIN market_cap_ranks mr ON mr.coin_id = m.coin_id
         WHERE mf.is_favored = 1
-        ORDER BY CASE WHEN mr.market_cap_rank IS NULL THEN 1 ELSE 0 END,
-            CAST(mr.market_cap_rank AS INTEGER) ASC
+        ORDER BY mf.created_at DESC, mf.rowid ASC
         """
     )
     fun observeFavoredMarkets(): Flow<List<MarketItem>>

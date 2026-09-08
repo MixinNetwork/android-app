@@ -16,7 +16,6 @@ import androidx.core.content.getSystemService
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
-import androidx.room.InvalidationTracker
 import com.birbit.android.jobqueue.network.NetworkEventProvider
 import com.birbit.android.jobqueue.network.NetworkUtil
 import com.uber.autodispose.android.lifecycle.scope
@@ -24,12 +23,18 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import one.mixin.android.Constants.DB_EXPIRED_LIMIT
 import one.mixin.android.Constants.MARK_REMOTE_LIMIT
 import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
@@ -40,7 +45,8 @@ import one.mixin.android.api.service.CircleService
 import one.mixin.android.api.service.ConversationService
 import one.mixin.android.api.service.MessageService
 import one.mixin.android.db.MixinDatabase
-import one.mixin.android.db.deleteMessageById
+import one.mixin.android.db.datasource.RoomDatabaseCompat
+import one.mixin.android.db.deleteMessageByIds
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.flow.MessageFlow.ANY_ID
 import one.mixin.android.db.pending.PendingDatabase
@@ -51,7 +57,7 @@ import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
 import one.mixin.android.fts.FtsDatabase
-import one.mixin.android.fts.deleteByMessageId
+import one.mixin.android.fts.deleteByMessageIds
 import one.mixin.android.job.BaseJob.Companion.PRIORITY_ACK_MESSAGE
 import one.mixin.android.messenger.Hedwig
 import one.mixin.android.messenger.HedwigImp
@@ -80,7 +86,52 @@ import one.mixin.android.websocket.createParamBlazeMessage
 import one.mixin.android.websocket.createPlainJsonParam
 import timber.log.Timber
 import javax.inject.Inject
-import kotlin.math.max
+
+internal suspend fun runExpiredCleanupWithRetry(
+    retryDelayMillis: Long,
+    onFailure: (Exception) -> Unit,
+    cleanup: suspend () -> Unit,
+) {
+    while (true) {
+        try {
+            cleanup()
+            return
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            onFailure(e)
+            delay(retryDelayMillis)
+        }
+    }
+}
+
+internal class ExpiredCleanupWakeup {
+    private val signals = Channel<Unit>(Channel.CONFLATED)
+    @Volatile
+    private var scheduledAt: Long? = null
+
+    fun signal(expireAt: Long? = null) {
+        val scheduled = scheduledAt
+        if (expireAt == null || scheduled == null || expireAt < scheduled) {
+            signals.trySend(Unit)
+        }
+    }
+
+    suspend fun await(expireAt: Long?) {
+        scheduledAt = expireAt
+        try {
+            if (expireAt == null) {
+                signals.receive()
+            } else {
+                withTimeoutOrNull((expireAt * 1000 - System.currentTimeMillis()).coerceAtLeast(1)) {
+                    signals.receive()
+                }
+            }
+        } finally {
+            scheduledAt = null
+        }
+    }
+}
 
 @AndroidEntryPoint
 class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, ChatWebSocket.WebSocketObserver {
@@ -90,6 +141,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         const val ACTION_TO_BACKGROUND = "mixin.intent.action.TO_BACKGROUND"
         const val ACTION_ACTIVITY_RESUME = "action_activity_resume"
         const val ACTION_ACTIVITY_PAUSE = "action_activity_pause"
+        private const val EXPIRED_OBSERVE_DELAY_MS = 1_500L
+        private const val EXPIRED_CLEANUP_RETRY_DELAY_MS = 1_000L
+        private const val EXPIRED_ACK_WAIT_TIMEOUT_MS = 100L
+        private const val EXPIRED_CLEANUP_BATCH_DELAY_MS = 25L
 
         fun startService(
             ctx: Context,
@@ -206,15 +261,10 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
                         val expiredIn = event.expireIn
                         if (expiredIn != null) {
                             val currentTime = currentTimeSeconds()
-                            if (expiredMessageDao().markRead(event.messageId, currentTime) > 0) {
-                                lifecycleScope.launch {
-                                    withContext(Dispatchers.IO) {
-                                        startExpiredJob(currentTime + expiredIn)
-                                    }
-                                }
-                            } else {
-                                expiredMessageDao().getExpiredMessageById(event.messageId)?.expireAt?.let { expiredAt ->
-                                    startExpiredJob(expiredAt)
+                            val message = expiredMessageDao().getExpiredMessageById(event.messageId)
+                            if (message != null && (message.expireAt == null || message.expireAt > currentTime + message.expireIn)) {
+                                if (expiredMessageDao().markRead(event.messageId, currentTime) > 0) {
+                                    startExpiredJob(currentTime + message.expireIn)
                                 }
                             }
                         } else {
@@ -270,6 +320,8 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         ackJob = null
         statusJob?.cancel()
         statusJob = null
+        expiredObserveJob?.cancel()
+        expiredObserveJob = null
         expiredJob?.cancel()
         expiredJob = null
         webSocket.disconnect()
@@ -349,26 +401,23 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private var ackObservedDatabase: PendingDatabase? = null
+    private var ackObserverJob: Job? = null
 
     private fun startObserveAck() {
-        val db = pendingDatabase()
-        ackObservedDatabase = db
-        db.addObserver(ackObserver)
+        ackObserverJob?.cancel()
+        ackObserverJob =
+            pendingDatabase().observeInvalidation(lifecycleScope, "jobs") {
+                runAckJob()
+            }
     }
 
     private fun stopObserveAck() {
-        ackObservedDatabase?.removeObserver(ackObserver)
-        ackObservedDatabase = null
+        ackObserverJob?.cancel()
+        ackObserverJob = null
     }
 
+    @Volatile
     private var ackJob: Job? = null
-    private val ackObserver =
-        object : InvalidationTracker.Observer("jobs") {
-            override fun onInvalidated(tables: Set<String>) {
-                runAckJob()
-            }
-        }
 
     @Synchronized
     private fun runAckJob() {
@@ -442,47 +491,73 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
-    private var statusObservedDatabase: MixinDatabase? = null
+    private var statusObserverJob: Job? = null
 
     private fun startObserveStatus() {
         val db = mixinDatabase()
-        statusObservedDatabase = db
-        db.invalidationTracker.addObserver(statusObserver)
+        statusObserverJob?.cancel()
+        statusObserverJob =
+            RoomDatabaseCompat.observeInvalidation(lifecycleScope, db, "remote_messages_status") {
+                runStatusJob()
+            }
     }
 
     private fun stopObserveStatus() {
-        statusObservedDatabase?.invalidationTracker?.removeObserver(statusObserver)
-        statusObservedDatabase = null
+        statusObserverJob?.cancel()
+        statusObserverJob = null
     }
 
     private var statusJob: Job? = null
-    private val statusObserver =
-        object : InvalidationTracker.Observer("remote_messages_status") {
-            override fun onInvalidated(tables: Set<String>) {
-                runStatusJob()
-            }
-        }
 
-    private var expiredObservedDatabase: MixinDatabase? = null
+    private var expiredObserverJob: Job? = null
 
     private fun startObserveExpired() {
         val db = mixinDatabase()
-        expiredObservedDatabase = db
-        db.invalidationTracker.addObserver(expiredObserver)
+        expiredObserverJob?.cancel()
+        expiredObserverJob =
+            RoomDatabaseCompat.observeInvalidation(lifecycleScope, db, "expired_messages") {
+                scheduleExpiredObserveJob()
+            }
     }
 
     private fun stopObserveExpired() {
-        expiredObservedDatabase?.invalidationTracker?.removeObserver(expiredObserver)
-        expiredObservedDatabase = null
+        expiredObserverJob?.cancel()
+        expiredObserverJob = null
     }
 
+    private val expiredCleanupMutex = Mutex()
+    private val expiredWakeup = ExpiredCleanupWakeup()
     private var expiredJob: Job? = null
-    private val expiredObserver =
-        object : InvalidationTracker.Observer("expired_messages") {
-            override fun onInvalidated(tables: Set<String>) {
-                runExpiredJob()
-            }
+    private var expiredObserveJob: Job? = null
+
+    @Synchronized
+    private fun scheduleExpiredObserveJob() {
+        if (expiredObserveJob?.isActive == true) {
+            return
         }
+        expiredObserveJob =
+            lifecycleScope.launch {
+                delay(EXPIRED_OBSERVE_DELAY_MS)
+                clearExpiredObserveJob()
+                try {
+                    withContext(Dispatchers.IO) {
+                        val expireAt = expiredMessageDao().getFirstExpiredMessage()?.expireAt
+                        expiredWakeup.signal(expireAt)
+                        runExpiredJob()
+                    }
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.e(e)
+                    scheduleExpiredObserveJob()
+                }
+            }
+    }
+
+    @Synchronized
+    private fun clearExpiredObserveJob() {
+        expiredObserveJob = null
+    }
 
     @Synchronized
     private fun runStatusJob() {
@@ -531,81 +606,78 @@ class BlazeMessageService : LifecycleService(), NetworkEventProvider.Listener, C
         }
     }
 
+    @Synchronized
     private fun runExpiredJob() {
         if (expiredJob?.isActive == true) {
             return
         }
         expiredJob =
             lifecycleScope.launch {
-                try {
-                    withContext(Dispatchers.IO) {
-                        processExpiredMessage()
+                expiredCleanupMutex.withLock {
+                    runExpiredCleanupWithRetry(
+                        retryDelayMillis = EXPIRED_CLEANUP_RETRY_DELAY_MS,
+                        onFailure = { Timber.e(it) },
+                    ) {
+                        withContext(Dispatchers.IO) {
+                            processExpiredMessage()
+                        }
                     }
-                } catch (e: Exception) {
-                    Timber.e(e)
-                    runExpiredJob()
                 }
             }
     }
 
     private fun startExpiredJob(expiredTime: Long) {
-        val nextExpirationTime = this.nextExpirationTime
-        if (expiredTime <= currentTimeSeconds() || (nextExpirationTime != null && expiredTime < nextExpirationTime)) {
-            expiredJob?.cancel()
-            runExpiredJob()
-        }
+        expiredWakeup.signal(expiredTime)
         runExpiredJob()
     }
 
-    private var nextExpirationTime: Long? = null
+    private suspend fun awaitAckJob() {
+        if (!networkConnected()) {
+            return
+        }
+        val currentAckJob = ackJob
+        if (currentAckJob?.isActive != true) {
+            return
+        }
+        withTimeoutOrNull(EXPIRED_ACK_WAIT_TIMEOUT_MS) {
+            currentAckJob.join()
+        }
+    }
 
     private tailrec suspend fun processExpiredMessage() {
         val messages =
             expiredMessageDao().getExpiredMessages(currentTimeSeconds(), DB_EXPIRED_LIMIT)
+        currentCoroutineContext().ensureActive()
         if (messages.isEmpty()) {
             val firstExpiredMessage = expiredMessageDao().getFirstExpiredMessage()
-            if (firstExpiredMessage == null) {
-                nextExpirationTime = null
-            } else {
-                nextExpirationTime = firstExpiredMessage.expireAt
-                val delayTime =
-                    max(
-                        requireNotNull(firstExpiredMessage.expireAt) * 1000 - System.currentTimeMillis(),
-                        0,
-                    )
-                Timber.e("Expired job: delay $delayTime")
-                delay(delayTime)
-                expiredJob?.ensureActive()
-                processExpiredMessage()
-            }
+            currentCoroutineContext().ensureActive()
+            expiredWakeup.await(firstExpiredMessage?.expireAt)
+            currentCoroutineContext().ensureActive()
+            processExpiredMessage()
         } else {
+            awaitAckJob()
+            currentCoroutineContext().ensureActive()
             val ids = messages.map { it.messageId }
-            val cIds = messageDao().findConversationsByMessages(ids)
-            ids.forEach { messageId ->
-                val messageMedia = pendingDatabase().findMessageMediaById(messageId) ?: messageDao().findMessageMediaById(messageId)
-                Timber.e("Expired job: delete messages ${messageMedia?.type} - ${messageMedia?.messageId}")
-                messageMedia?.absolutePath(
-                    MixinApplication.appContext,
-                    messageMedia.conversationId,
-                    messageMedia.mediaUrl,
-                )?.let {
-                    jobManager.addJobInBackground(AttachmentDeleteJob(it))
-                }
-                if (messageMedia?.isTranscript() == true) {
-                    jobManager.addJobInBackground(TranscriptDeleteJob(listOf(messageId)))
-                }
-                pendingDatabase().deletePendingMessageById(messageId)
-                mixinDatabase().deleteMessageById(messageId)
-                ftsDatabase().deleteByMessageId(messageId)
-                MessageFlow.delete(ANY_ID, messageId)
+            val media = (
+                messageDao().findMessageMediaByIds(ids) +
+                    pendingDatabase().pendingMessageDao().findMessageMediaByIds(ids)
+                ).associateBy { it.messageId }.values
+            val paths = media.mapNotNull {
+                it.absolutePath(MixinApplication.appContext, it.conversationId, it.mediaUrl)
+            }.distinct()
+            if (paths.isNotEmpty()) {
+                jobManager.addJobInBackground(AttachmentDeleteJob(*paths.toTypedArray()))
             }
-
-            cIds.forEach { id ->
-                conversationDao().refreshLastMessageId(id)
-                conversationExtDao().refreshCountByConversationId(id)
+            val transcriptIds = media.filter { it.isTranscript() }.map { it.messageId }
+            if (transcriptIds.isNotEmpty()) {
+                jobManager.addJobInBackground(TranscriptDeleteJob(transcriptIds))
             }
-            nextExpirationTime = null
-            expiredJob?.ensureActive()
+            ftsDatabase().deleteByMessageIds(ids)
+            pendingDatabase().deletePendingMessageByIds(ids)
+            mixinDatabase().deleteMessageByIds(ids)
+            MessageFlow.delete(ANY_ID, ids)
+            delay(EXPIRED_CLEANUP_BATCH_DELAY_MS)
+            currentCoroutineContext().ensureActive()
             processExpiredMessage()
         }
     }
