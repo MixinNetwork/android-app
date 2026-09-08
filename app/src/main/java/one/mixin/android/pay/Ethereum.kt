@@ -148,5 +148,6 @@ private val ethereumChainIdMap by lazy {
         8453 to Constants.ChainId.Base,
         42161 to Constants.ChainId.Arbitrum,
         999 to Constants.ChainId.HyperEVM,
+        4663 to Constants.ChainId.Robinhood,
     )
 }

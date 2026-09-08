@@ -111,6 +111,7 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.widget.MixinStickyRecyclerHeadersAdapter
+import one.mixin.android.db.fetcher.MessageFetcher.Companion.MAX_LOADED_MESSAGES
 import kotlin.math.abs
 
 class MessageAdapter(
@@ -119,6 +120,7 @@ class MessageAdapter(
     val onItemListener: OnItemListener,
     val previousPage: (String) -> Unit,
     val nextPage: (String) -> Unit,
+    private val onWindowTrimmed: (Boolean) -> Unit,
     val isGroup: Boolean,
     var unreadMessageId: String?,
     var recipient: User? = null,
@@ -1004,26 +1006,39 @@ class MessageAdapter(
     fun submitNext(list: List<MessageItem>) {
         val size = data.size
         data.append(list)
-        notifyItemRangeInserted(size, list.count())
+        notifyItemRangeInserted(layoutPosition(size), list.size)
+        trimWindow(fromStart = true)
     }
 
     fun submitPrevious(list: List<MessageItem>) {
         data.prepend(list)
-        notifyItemRangeInserted(0, list.count())
+        notifyItemRangeInserted(layoutPosition(0), list.size)
+        trimWindow(fromStart = false)
     }
 
-    fun insert(list: List<MessageItem>) {
-        val position = layoutPosition(itemCount - 1)
-        data.append(list)
-        notifyItemChanged(position) // change last holder background
-        notifyItemRangeInserted(position + 1, list.count())
+    fun insert(list: List<MessageItem>, atBottom: Boolean) {
+        val ids = data.mapNotNull { it?.messageId }.toHashSet()
+        val added = list.filter { it.messageId !in ids }
+        if (added.isEmpty()) return
+        val size = data.size
+        data.append(added)
+        if (size > 0) notifyItemChanged(layoutPosition(size - 1))
+        notifyItemRangeInserted(layoutPosition(size), added.size)
+        trimWindow(fromStart = atBottom)
+    }
+
+    private fun trimWindow(fromStart: Boolean) {
+        val removed = data.trim(MAX_LOADED_MESSAGES, fromStart)
+        if (removed == 0) return
+        onWindowTrimmed(fromStart)
+        notifyItemRangeRemoved(layoutPosition(if (fromStart) 0 else data.size), removed)
     }
 
     fun update(list: List<MessageItem>) {
-        list.forEach { item ->
-            val index = data.indexOfFirst { it?.messageId == item.messageId }
-            if (index != -1) {
-                data.update(index, item)
+        val updates = list.associateBy { it.messageId }
+        data.forEachIndexed { index, item ->
+            updates[item?.messageId]?.let { updated ->
+                data.update(index, updated)
                 notifyItemChanged(layoutPosition(index))
             }
         }
@@ -1031,10 +1046,8 @@ class MessageAdapter(
 
     @SuppressLint("NotifyDataSetChanged")
     fun delete(list: List<String>) {
-        list.mapNotNull { id ->
-            data.indexOfFirst { item -> id == item?.messageId }.takeIf { it != -1 }
-        }.sortedDescending().forEach { p ->
-            data.deleteByPosition(p)
+        val ids = list.toHashSet()
+        if (data.removeAll { it?.messageId in ids }) {
             notifyDataSetChanged()
         }
     }

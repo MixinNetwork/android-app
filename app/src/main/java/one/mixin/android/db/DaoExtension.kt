@@ -29,37 +29,27 @@ fun JobDao.insertNoReplace(job: Job) {
 
 // Delete SQL
 fun MixinDatabase.deleteMessageById(messageId: String) {
-    runInTransaction {
-        pinMessageDao().deleteByMessageId(messageId)
-        mentionMessageDao().deleteMessage(messageId)
-        messageDao().deleteMessageById(messageId)
-        remoteMessageStatusDao().deleteByMessageId(messageId)
-        expiredMessageDao().deleteByMessageId(messageId)
-    }
-}
-
-fun MixinDatabase.deleteMessageById(
-    messageId: String,
-    conversationId: String,
-) {
-    runInTransaction {
-        pinMessageDao().deleteByMessageId(messageId)
-        mentionMessageDao().deleteMessage(messageId)
-        messageDao().deleteMessageById(messageId)
-        conversationExtDao().decrement(conversationId)
-        remoteMessageStatusDao().deleteByMessageId(messageId)
-        expiredMessageDao().deleteByMessageId(messageId)
-        conversationDao().refreshLastMessageId(conversationId, messageId)
-    }
+    deleteMessageByIds(listOf(messageId))
 }
 
 fun MixinDatabase.deleteMessageByIds(messageIds: List<String>) {
-    runInTransaction {
-        pinMessageDao().deleteByIds(messageIds)
-        mentionMessageDao().deleteMessage(messageIds)
-        messageDao().deleteMessageById(messageIds)
-        remoteMessageStatusDao().deleteByMessageIds(messageIds)
-        expiredMessageDao().deleteByMessageId(messageIds)
+    messageIds.chunked(500).forEach { ids ->
+        runInTransaction {
+            val counts = messageDao().countMessagesByConversation(ids)
+            val unreadCounts = remoteMessageStatusDao().countDeliveredByConversation(ids)
+            pinMessageDao().deleteByIds(ids)
+            mentionMessageDao().deleteMessage(ids)
+            messageDao().deleteMessageById(ids)
+            remoteMessageStatusDao().deleteByMessageIds(ids)
+            expiredMessageDao().deleteByMessageId(ids)
+            counts.forEach { (conversationId, count) ->
+                conversationExtDao().increment(conversationId, -count)
+                conversationDao().refreshLastMessageId(conversationId)
+            }
+            unreadCounts.forEach { (conversationId, count) ->
+                remoteMessageStatusDao().incrementUnseen(conversationId, -count)
+            }
+        }
     }
 }
 
@@ -108,20 +98,34 @@ fun PendingDatabase.makeMessageStatus(
 
 // Insert message SQL
 fun MixinDatabase.insertAndNotifyConversation(message: Message) {
-    runInTransaction {
-        messageDao().insert(message)
-        conversationExtDao().increment(message.conversationId)
+    val statuses =
         if (!message.isMine() && message.status != MessageStatus.READ.name && !message.isKraken()) {
-            remoteMessageStatusDao().insert(RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name))
+            listOf(RemoteMessageStatus(message.messageId, message.conversationId, MessageStatus.DELIVERED.name))
+        } else {
+            emptyList()
         }
-        conversationDao().updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
-        remoteMessageStatusDao().updateConversationUnseen(message.conversationId)
-        MessageFlow.insert(message.conversationId, message.messageId)
+    insertConversationMessages(message.conversationId, listOf(message), statuses)
+    MessageFlow.insert(message.conversationId, message.messageId)
+}
+
+fun MixinDatabase.insertConversationMessages(
+    conversationId: String,
+    messages: List<Message>,
+    statuses: List<RemoteMessageStatus>,
+) {
+    if (messages.isEmpty()) return
+    runInTransaction {
+        val uniqueMessages = messages.distinctBy { it.messageId }
+        val existingCount = messageDao().countExistingMessages(uniqueMessages.map { it.messageId })
+        messageDao().insertList(uniqueMessages)
+        conversationExtDao().increment(conversationId, uniqueMessages.size - existingCount)
+        remoteMessageStatusDao().insertDelivered(conversationId, statuses)
+        uniqueMessages.asReversed().maxBy { it.createdAt }.let { message ->
+            conversationDao().updateLastMessageId(message.messageId, message.createdAt, conversationId)
+        }
     }
 }
 
 fun MixinDatabase.insertMessage(message: Message) {
-    messageDao().insert(message)
-    conversationExtDao().increment(message.conversationId)
-    conversationDao().updateLastMessageId(message.messageId, message.createdAt, message.conversationId)
+    insertConversationMessages(message.conversationId, listOf(message), emptyList())
 }
