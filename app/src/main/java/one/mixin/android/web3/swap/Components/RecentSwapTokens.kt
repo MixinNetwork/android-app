@@ -56,11 +56,12 @@ import java.math.BigDecimal
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun RecentSwapTokens(key: String, grouped: Boolean = false, callback: (SwapToken) -> Unit) {
+fun RecentSwapTokens(key: String, grouped: Boolean = false, walletId: String? = null, callback: (SwapToken) -> Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SearchViewModel>()
     val source by viewModel.recentSwapTokens.collectAsState()
-    val recentToken = if (grouped) source.groupSwapTokens().map { it.first() } else source
+    val walletTokens = source.filter { it.walletId == walletId }
+    val recentToken = if (grouped) walletTokens.groupSwapTokens().map { it.first() } else walletTokens
     LaunchedEffect(Unit) {
         viewModel.getRecentSwapTokens(context.defaultSharedPreferences, key)
     }

@@ -695,8 +695,9 @@ class TokenRepository
                     tokenItemList
                 }
                 return if (web3) {
-                    (result + localLike
-                        .filter { t -> result.any { r -> r.assetId == t.assetId }.not() })
+                    val combined = result + localLike.filter { t -> result.none { r -> r.assetId == t.assetId } }
+                    val coins = findCoinIds(combined.map { it.assetId }, web3 = true).associate { it.assetId to it.coinId }
+                    combined.map { it.copy(coinId = coins[it.assetId] ?: it.coinId) }
                 } else {
                     val coins = marketCoinDao.findByAssetIds(result.map { it.assetId }).associate { it.assetId to it.coinId }
                     result.map { it.copy(coinId = coins[it.assetId] ?: it.coinId) }
@@ -1498,7 +1499,10 @@ class TokenRepository
 
     suspend fun findTokensByCoinId(coinId: String) = marketCoinDao.findTokensByCoinId(coinId)
 
-    suspend fun findCoinIds(assetIds: List<String>) = assetIds.distinct().chunked(MARKET_COINS_DELETE_BATCH_SIZE).flatMap { marketCoinDao.findByAssetIds(it) }
+    suspend fun findCoinIds(assetIds: List<String>, web3: Boolean = false) =
+        assetIds.distinct().chunked(MARKET_COINS_DELETE_BATCH_SIZE).flatMap {
+            if (web3) walletDatabase.web3MarketCoinDao().findByAssetIds(it) else marketCoinDao.findByAssetIds(it)
+        }
 
     suspend fun findTokenIdsByCoinId(coinId: String) = marketCoinDao.findTokenIdsByCoinId(coinId)
 

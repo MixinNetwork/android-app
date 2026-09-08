@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.vo.safe.groupTokens
+import one.mixin.android.db.web3.vo.groupWeb3Tokens
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -42,6 +43,7 @@ fun WalletHomeAllTokensPage(
 ) {
     MixinAppTheme {
         val privacyGroups = state.privacyTokens.groupTokens().sortedByDescending { it.fiat }
+        val web3Groups = state.web3Tokens.groupWeb3Tokens().sortedByDescending { it.fiat }
         val isPrivacy = state.walletType == WalletHomeType.PRIVACY
         val tokensEmpty = if (isPrivacy) {
             state.privacyTokens.isEmpty()
@@ -72,7 +74,7 @@ fun WalletHomeAllTokensPage(
                 Spacer(modifier = Modifier.height(20.dp))
             }
         } else {
-            val count = if (isPrivacy) privacyGroups.size else state.web3Tokens.size
+            val count = if (isPrivacy) privacyGroups.size else web3Groups.size
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -91,8 +93,8 @@ fun WalletHomeAllTokensPage(
                         if (isPrivacy) {
                             privacyGroups[index].representative.assetId
                         } else {
-                            val token = state.web3Tokens[index]
-                            "${token.assetId}-${token.chainId}"
+                            val token = web3Groups[index].representative
+                            "${token.walletId}-${token.assetId}"
                         }
                     },
                 ) { index ->
@@ -110,8 +112,9 @@ fun WalletHomeAllTokensPage(
                             )
                         } else {
                             Web3WalletTokenItem(
-                                token = state.web3Tokens[index],
-                                onClick = { callbacks.onTokenClicked(index) },
+                                token = web3Groups[index].representative,
+                                group = web3Groups[index],
+                                onClick = { callbacks.onTokenClicked(state.web3Tokens.indexOf(web3Groups[index].representative)) },
                             )
                         }
                     }

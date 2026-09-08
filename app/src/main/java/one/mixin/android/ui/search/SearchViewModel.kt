@@ -427,7 +427,7 @@ internal constructor(
                 it.changeUsd = tokenRepository.findChangeUsdByAssetId(it.assetId)
             }
         }
-        val coins = tokenRepository.findCoinIds(list.map { it.assetId }).associate { it.assetId to it.coinId }
+        val coins = tokenRepository.findCoinIds(list.map { it.assetId }, web3 = list.any { it.isWeb3 }).associate { it.assetId to it.coinId }
         _recentSwapTokens.value = list.map { it.copy(coinId = coins[it.assetId] ?: it.coinId) }
     }
 

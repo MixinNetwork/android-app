@@ -17,8 +17,27 @@ import one.mixin.android.vo.safe.UnifiedAssetItem
 
 @Dao
 interface Web3TokenDao : BaseDao<Web3Token> {
+    companion object {
+        const val GROUPED_ASSET_CONDITION = """t.wallet_id = :walletId AND (t.asset_id = :assetId OR t.asset_id IN (
+            SELECT asset_id FROM market_coins WHERE TRIM(coin_id) != '' AND coin_id = (
+                SELECT coin_id FROM market_coins WHERE asset_id = :assetId
+            )
+        ))"""
+    }
+
+    @Query("""SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id,
+        c.icon_url AS chain_icon_url, c.name AS chain_name, c.symbol AS chain_symbol, te.hidden
+        FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id
+        LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
+        WHERE $GROUPED_ASSET_CONDITION
+        ORDER BY t.amount * t.price_usd DESC, CAST(t.amount AS REAL) DESC, t.asset_id""")
+    fun groupedTokenItems(walletId: String, assetId: String): LiveData<List<Web3TokenItem>>
+
+    @Query("SELECT t.asset_id FROM tokens t WHERE $GROUPED_ASSET_CONDITION")
+    suspend fun findGroupTokenIds(walletId: String, assetId: String): List<String>
+
     @Query(
-        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        """SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
         WHERE t.wallet_id = :walletId 
         ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
@@ -27,7 +46,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     fun web3TokenItems(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
 
     @Query(
-        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        """SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
         WHERE t.wallet_id = :walletId AND t.level >= :level
         ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
@@ -35,17 +54,17 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     )
     fun web3TokenItems(walletId: String, level:Int, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
 
-    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId")
+    @Query("SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId")
     suspend fun findWeb3TokenItems(walletId: String): List<Web3TokenItem>
 
     @Query("SELECT t.symbol, t.icon_url AS iconUrl, t.amount AS balance, t.price_usd AS priceUsd FROM tokens t LEFT JOIN tokens_extra te ON t.asset_id = te.asset_id AND t.wallet_id = te.wallet_id WHERE t.amount * t.price_usd > 0 AND t.wallet_id = :walletId AND (te.hidden IS NULL OR te.hidden = 0) ORDER BY t.amount * t.price_usd")
     suspend fun findUnifiedAssetItem(walletId: String): List<UnifiedAssetItem>
 
-    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.amount > 0 AND t.wallet_id = :walletId AND (te.hidden IS NULL OR te.hidden = 0)")
+    @Query("SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.amount > 0 AND t.wallet_id = :walletId AND (te.hidden IS NULL OR te.hidden = 0)")
     suspend fun findAssetItemsWithBalance(walletId: String): List<Web3TokenItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+    @Query("""SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id 
         LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
         WHERE t.wallet_id = :walletId AND (te.hidden != 1 OR te.hidden IS NULL) 
@@ -54,28 +73,27 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     fun web3TokenItemsExcludeHidden(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+    @Query("""SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id
         LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
         WHERE t.wallet_id = :walletId AND (te.hidden != 1 OR te.hidden IS NULL)
         ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
-        LIMIT :limit
     """)
     fun walletHomeWeb3TokenPreview(
         walletId: String,
-        limit: Int,
         defaultIconUrl: String = Constants.DEFAULT_ICON_URL,
     ): LiveData<List<Web3TokenItem>>
 
     @Query(
         """
         SELECT
-            CAST(COALESCE(SUM(CASE WHEN te.hidden != 1 OR te.hidden IS NULL THEN 1 ELSE 0 END), 0) AS INTEGER) AS token_count,
+            COUNT(DISTINCT CASE WHEN te.hidden != 1 OR te.hidden IS NULL THEN CASE WHEN TRIM(mc.coin_id) != '' THEN 'coin:' || mc.coin_id ELSE 'asset:' || t.asset_id END END) AS token_count,
             COALESCE(SUM(CASE WHEN te.hidden != 1 OR te.hidden IS NULL THEN CAST(COALESCE(t.amount, '0') AS REAL) * CAST(COALESCE(t.price_usd, '0') AS REAL) ELSE 0 END), 0) AS total_usd,
             0.0 AS total_btc,
             MAX(CASE WHEN t.asset_id = :bitcoinAssetId THEN t.price_usd ELSE NULL END) AS bitcoin_price_usd,
-            CAST(COALESCE(SUM(CASE WHEN te.hidden = 1 THEN 1 ELSE 0 END), 0) AS INTEGER) AS hidden_token_count
+            COUNT(DISTINCT CASE WHEN te.hidden = 1 THEN CASE WHEN TRIM(mc.coin_id) != '' THEN 'coin:' || mc.coin_id ELSE 'asset:' || t.asset_id END END) AS hidden_token_count
         FROM tokens t
+        LEFT JOIN market_coins mc ON mc.asset_id = t.asset_id
         LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
         WHERE t.wallet_id = :walletId
         """
@@ -86,7 +104,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     ): LiveData<WalletHomeTokenSummary>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+    @Query("""SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id
         LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
         WHERE t.wallet_id = :walletId AND (te.hidden != 1 OR te.hidden IS NULL)
@@ -96,7 +114,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     fun topWeb3TokenItems(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+    @Query("""SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id 
         LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
         WHERE t.wallet_id = :walletId AND t.amount > 0 AND (te.hidden != 1 OR te.hidden IS NULL) 
@@ -109,7 +127,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     fun web3TokenItemsExcludeHiddenRaw(query: RoomRawQuery): List<Web3TokenItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE te.hidden = 1 AND (:walletId IS NULL OR t.wallet_id = :walletId) ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC""")
+    @Query("""SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE te.hidden = 1 AND (:walletId IS NULL OR t.wallet_id = :walletId) ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC""")
     fun hiddenAssetItems(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
 
     @Query("SELECT * FROM tokens WHERE amount * price_usd > 0 AND wallet_id = :walletId ORDER BY amount * price_usd")
@@ -118,13 +136,13 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("SELECT t.symbol, t.icon_url AS iconUrl, t.amount AS balance, t.price_usd AS priceUsd FROM tokens t LEFT JOIN tokens_extra te ON t.asset_id = te.asset_id AND t.wallet_id = te.wallet_id WHERE t.amount * t.price_usd > 0 AND t.wallet_id IN (:walletIds) AND (te.hidden IS NULL OR te.hidden = 0) ORDER BY t.amount * t.price_usd")
     suspend fun allWeb3Tokens(walletIds: List<String>): List<UnifiedAssetItem>
 
-    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id = :assetId")
+    @Query("SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id = :assetId")
     fun web3TokenItemById(walletId: String, assetId: String): Web3TokenItem?
 
-    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id = :assetId")
+    @Query("SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id = :assetId")
     fun observeWeb3TokenItemById(walletId: String, assetId: String): Flow<Web3TokenItem?>
 
-    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.asset_key = :address")
+    @Query("SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.asset_key = :address")
     suspend fun web3TokenItemByAddress(address: String): Web3TokenItem?
 
     @Query("SELECT * FROM tokens WHERE asset_id = :assetId AND wallet_id = :walletId")
@@ -142,10 +160,10 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     @Query("UPDATE tokens SET amount = :amount WHERE wallet_id = :walletId AND asset_id = :assetId")
     suspend fun updateTokenAmount(walletId: String, assetId: String, amount: String): Int
 
-    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id IN (:assetIds)")
+    @Query("SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id IN (:assetIds)")
     suspend fun findWeb3TokenItemsByIds(walletId: String, assetIds: List<String>): List<Web3TokenItem>
 
-    @Query("SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id IN (:assetIds)")
+    @Query("SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE t.wallet_id = :walletId AND t.asset_id IN (:assetIds)")
     fun findWeb3TokenItemsByIdsSync(walletId: String, assetIds: List<String>): List<Web3TokenItem>
 
     @Query("SELECT amount FROM tokens WHERE asset_id = :assetId AND wallet_id = :walletId")
@@ -153,7 +171,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
-        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t 
+        """SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id 
         LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
         WHERE t.wallet_id = :walletId 
@@ -185,7 +203,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     suspend fun deleteNotIn(walletId: String, assetIds: List<String>)
 
     @Query(
-        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        """SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
         WHERE t.wallet_id IN (:walletIds) 
         GROUP BY t.asset_id
@@ -195,7 +213,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     fun web3TokenItemsByWalletIds(walletIds: List<String>, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
 
     @Query(
-        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        """SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id 
         LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
         GROUP BY t.asset_id
@@ -205,7 +223,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     fun web3TokenItemsAll(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
 
     @Query(
-        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        """SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id 
         LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
         WHERE t.asset_id IN (
@@ -220,7 +238,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     fun web3TokenItemsFromAllOrders(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
 
     @Query(
-        """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+        """SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id 
         LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
         WHERE t.asset_id IN (

@@ -79,6 +79,8 @@ data class Web3TokenItem(
     val hidden: Boolean?,
     @ColumnInfo(name = "level")
     val level: Int,
+    @ColumnInfo(name = "coin_id")
+    val coinId: String? = null,
 ) : Parcelable, Swappable {
     
     fun getChainDisplayName(): String {
@@ -121,7 +123,8 @@ data class Web3TokenItem(
             balance = balance,
             price = priceUsd,
             isWeb3 =  true,
-            level = level
+            level = level,
+            coinId = coinId,
         )
     }
     
@@ -184,7 +187,8 @@ data class Web3TokenItem(
             withdrawalMemoPossibility = null,
             collectionHash = null,
             level = level,
-            precision = precision
+            precision = precision,
+            coinId = coinId,
         )
     }
 }

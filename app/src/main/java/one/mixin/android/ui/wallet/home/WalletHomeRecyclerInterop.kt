@@ -55,6 +55,8 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.ItemWeb3TransactionsBinding
 import one.mixin.android.db.web3.vo.TransactionType
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3TokenGroup
+import one.mixin.android.db.web3.vo.groupWeb3Tokens
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.formatTransactionHashIfNeeded
@@ -104,15 +106,18 @@ fun Web3TokenRecycler(
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     itemSpacing: Dp = 20.dp,
+    limit: Int = Int.MAX_VALUE,
 ) {
+    val groups = tokens.groupWeb3Tokens().sortedByDescending { it.fiat }.take(limit)
     WalletHomeItemColumn(
-        count = tokens.size,
+        count = groups.size,
         modifier = modifier,
         itemSpacing = itemSpacing,
     ) { index ->
         Web3WalletTokenItem(
-            token = tokens[index],
-            onClick = { onClick(index) },
+            token = groups[index].representative,
+            group = groups[index],
+            onClick = { onClick(tokens.indexOf(groups[index].representative)) },
         )
     }
 }
@@ -325,17 +330,18 @@ fun PrivacyWalletTokenItem(
 @Composable
 fun Web3WalletTokenItem(
     token: Web3TokenItem,
+    group: Web3TokenGroup = Web3TokenGroup(listOf(token)),
     onClick: () -> Unit,
 ) {
     WalletTokenItemLayout(
         iconUrl = token.iconUrl,
-        chainIconUrl = token.chainIcon,
+        chainIconUrl = null,
         collectionHash = null,
         showSpam = token.isSpam(),
-        amount = formatWeb3TokenBalance(token.balance),
+        amount = formatWeb3TokenBalance(group.balance.toPlainString()),
         amountFontSize = 22.sp,
         symbol = token.symbol,
-        fiatValue = "≈ ${Fiats.getSymbol()}${token.fiat().numberFormat2()}",
+        fiatValue = "≈ ${Fiats.getSymbol()}${group.fiat.numberFormat2()}",
         showEarn = false,
         price = tokenPriceText(token.priceUsd, token.priceFiat()),
         change = token.changeUsd.toBigDecimalOrNull()?.let { "${it.numberFormat2()}%" },

@@ -6,6 +6,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.EntryPointAccessors
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import one.mixin.android.db.web3.syncMarketCoins
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.PerpsDatabase
 import one.mixin.android.db.WalletDatabase
@@ -39,6 +43,7 @@ class CurrentUserScopeManager
         private var perpsDatabase: PerpsDatabase? = null
         private var pendingDatabase: PendingDatabase? = null
         private var ftsDatabase: FtsDatabase? = null
+        private var marketCoinSyncJob: Job? = null
 
         fun enter(account: Account) {
             synchronized(lock) {
@@ -143,10 +148,13 @@ class CurrentUserScopeManager
             walletDatabase = scopedWalletDatabase
             perpsDatabase = scopedPerpsDatabase
             ftsDatabase = scopedFtsDatabase
+            marketCoinSyncJob = CoroutineScope(Dispatchers.IO).syncMarketCoins(scopedMixinDatabase.marketCoinDao(), scopedWalletDatabase)
             scopeVersion++
         }
 
         private fun closeScopeLocked() {
+            marketCoinSyncJob?.cancel()
+            marketCoinSyncJob = null
             (pendingDatabase as? PendingDatabaseImp)?.close()
             pendingDatabase = null
             mixinDatabase = null

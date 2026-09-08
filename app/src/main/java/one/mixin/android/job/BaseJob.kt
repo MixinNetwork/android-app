@@ -481,6 +481,13 @@ abstract class BaseJob(params: Params) : Job(params) {
         refreshUtxoTokenAmountByOutputs(walletId, destination, assetId)
     }
 
+    protected suspend fun refreshMarketMappings(assetIds: List<String>) {
+        assetIds.distinct().chunked(500).forEach { ids ->
+            val mappedIds = marketCoinDao.findByAssetIds(ids).filter { it.coinId.isNotBlank() }.map { it.assetId }.toSet()
+            ids.filter { it.isNotBlank() && it !in mappedIds }.forEach { jobManager.addJobInBackground(RefreshMarketJob(it)) }
+        }
+    }
+
     protected suspend fun applyUtxoTokenBalanceBeforeInsert(walletId: String, token: Web3Token): Web3Token {
         if (token.assetId !in Constants.Web3UtxoChainIds) return token
         val address: String = web3AddressDao.getAddressesByChainId(walletId, token.assetId)?.destination ?: return token

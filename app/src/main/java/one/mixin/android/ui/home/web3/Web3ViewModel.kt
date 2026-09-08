@@ -128,6 +128,11 @@ class Web3ViewModel @Inject constructor(
 
     fun hiddenAssetItems(walletId: String) = web3Repository.hiddenAssetItems(walletId)
 
+    fun groupedTokenItems(walletId: String, assetId: String) = web3Repository.groupedTokenItems(walletId, assetId)
+
+    suspend fun updateTokensHidden(tokenIds: List<String>, walletId: String, hidden: Boolean) =
+        web3Repository.updateTokensHidden(tokenIds, walletId, hidden)
+
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) =
         web3Repository.updateTokenHidden(tokenId, walletId, hidden)
 
@@ -145,7 +150,7 @@ class Web3ViewModel @Inject constructor(
         emit(null)
     }.flowOn(Dispatchers.IO)
 
-    fun web3Transactions(walletId: String, assetId: String) = web3Repository.web3Transactions(walletId, assetId)
+    fun web3Transactions(walletId: String, assetIds: List<String>) = web3Repository.web3Transactions(walletId, assetIds)
 
     fun recentWeb3Transactions(walletId: String) = web3Repository.recentWeb3Transactions(walletId)
 

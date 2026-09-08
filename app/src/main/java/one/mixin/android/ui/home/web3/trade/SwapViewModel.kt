@@ -245,7 +245,9 @@ class SwapViewModel
     suspend fun findAssetItems() = tokenRepository.allAssetItems()
 
     suspend fun withCoinIds(tokens: List<SwapToken>): List<SwapToken> {
-        val coins = tokenRepository.findCoinIds(tokens.map { it.assetId }).associate { it.assetId to it.coinId }
+        val coins = tokens.groupBy { it.isWeb3 }.flatMap { (web3, items) ->
+            tokenRepository.findCoinIds(items.map { it.assetId }, web3)
+        }.associate { it.assetId to it.coinId }
         return tokens.map { it.copy(coinId = coins[it.assetId] ?: it.coinId) }
     }
 

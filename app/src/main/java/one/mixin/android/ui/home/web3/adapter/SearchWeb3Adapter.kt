@@ -10,6 +10,8 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletSearchBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3TokenGroup
+import one.mixin.android.db.web3.vo.groupId
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.priceFormat
@@ -18,7 +20,7 @@ import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
-class SearchWeb3Adapter : ListAdapter<Web3TokenItem, SearchWeb3Adapter.TokenHolder>(TOKEN_DIFF) {
+class SearchWeb3Adapter : ListAdapter<Web3TokenGroup, SearchWeb3Adapter.TokenHolder>(TOKEN_DIFF) {
     var callback: Web3SearchCallback? = null
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TokenHolder {
@@ -31,16 +33,18 @@ class SearchWeb3Adapter : ListAdapter<Web3TokenItem, SearchWeb3Adapter.TokenHold
     }
 
     inner class TokenHolder(private val binding: ItemWalletSearchBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(token: Web3TokenItem) {
+        fun bind(group: Web3TokenGroup) {
+            val token = group.representative
             binding.apply {
                 badgeCircleIv.loadToken(token)
+                badgeCircleIv.badge.isVisible = false
                 nameTv.text = token.name
                 icSpam.isVisible = token.isSpam()
-                val balance = runCatching { BigDecimal(token.balance) }.getOrDefault(BigDecimal.ZERO)
+                val balance = group.balance
                 
                 balanceTv.text = "${balance.numberFormat8()} ${token.symbol}"
                 val chainNetwork = getChainNetwork(token.assetId, token.chainId, token.assetKey)
-                binding.networkTv.isVisible = chainNetwork != null
+                binding.networkTv.isVisible = false
                 if (chainNetwork != null) {
                     binding.networkTv.text = chainNetwork
                 }
@@ -64,12 +68,12 @@ class SearchWeb3Adapter : ListAdapter<Web3TokenItem, SearchWeb3Adapter.TokenHold
     }
 
     companion object {
-        private val TOKEN_DIFF = object : DiffUtil.ItemCallback<Web3TokenItem>() {
-            override fun areItemsTheSame(oldItem: Web3TokenItem, newItem: Web3TokenItem): Boolean {
-                return oldItem.assetId == newItem.assetId
+        private val TOKEN_DIFF = object : DiffUtil.ItemCallback<Web3TokenGroup>() {
+            override fun areItemsTheSame(oldItem: Web3TokenGroup, newItem: Web3TokenGroup): Boolean {
+                return oldItem.representative.groupId == newItem.representative.groupId
             }
 
-            override fun areContentsTheSame(oldItem: Web3TokenItem, newItem: Web3TokenItem): Boolean {
+            override fun areContentsTheSame(oldItem: Web3TokenGroup, newItem: Web3TokenGroup): Boolean {
                 return oldItem == newItem
             }
         }

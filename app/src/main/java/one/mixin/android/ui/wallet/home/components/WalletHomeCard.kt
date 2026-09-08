@@ -160,7 +160,8 @@ internal fun WalletHomeCard(
                             )
                         } else {
                             Web3TokenRecycler(
-                                tokens = web3Tokens.take(PREVIEW_LIMIT),
+                                tokens = web3Tokens,
+                                limit = PREVIEW_LIMIT,
                                 onClick = callbacks::onTokenClicked,
                                 modifier = Modifier.fillMaxWidth(),
                             )

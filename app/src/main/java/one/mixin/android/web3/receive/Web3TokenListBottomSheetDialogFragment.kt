@@ -53,6 +53,9 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.RecentTokens
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.web3.swap.showTokenNetworks
+import one.mixin.android.vo.safe.toWeb3TokenItem
+import one.mixin.android.extension.toast
 import timber.log.Timber
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
@@ -89,7 +92,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private val binding by viewBinding(FragmentAssetListBottomSheetBinding::inflate)
 
-    private val adapter by lazy { Web3TokenAdapter() }
+    private val adapter by lazy { Web3TokenAdapter(grouped = type == TYPE_FROM_SEND) }
     private val walletId: String? by lazy { arguments?.getString(ARGS_WALLET_ID) }
 
     private var disposable: Disposable? = null
@@ -208,16 +211,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 dismiss()
             }
             assetRv.adapter = adapter
-            adapter.setOnClickListener { tokenItem ->
-                searchEt.hideKeyboard()
-                if (asyncOnAsset != null) {
-                    asyncClick(tokenItem)
-                } else {
-                    requireContext().defaultSharedPreferences.addToList(key, tokenItem.assetId)
-                    onAsset?.invoke(tokenItem)
-                }
-                dismiss()
-            }
+            adapter.setOnClickListener { tokenItem -> selectAsset(tokenItem) }
             searchEt.setHint(getString(R.string.search_placeholder_asset))
             depositTv.isVisible = false
 
@@ -278,7 +272,11 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     val composeView = ComposeView(requireContext()).apply {
                         id = composeId
                         setContent {
-                            RecentTokens(true, key) { tokenItem ->
+                            RecentTokens(true, key, grouped = type == TYPE_FROM_SEND) { tokenItem ->
+                                if (type == TYPE_FROM_SEND) {
+                                    selectAsset(tokenItem.toWeb3TokenItem(walletId ?: ""))
+                                    return@RecentTokens
+                                }
                                 if (shouldHandleRecentTokenClick(type, tokenItem.chainId)) {
                                     requireContext().defaultSharedPreferences.addToList(key, tokenItem.assetId)
                                     this@Web3TokenListBottomSheetDialogFragment.lifecycleScope.launch {
@@ -427,6 +425,25 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 }
             }).sortedByDescending {
             (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(it.priceUsd.toBigDecimalOrNull() ?: BigDecimal.ZERO)
+        }
+    }
+
+    private fun selectAsset(token: Web3TokenItem) {
+        binding.searchEt.hideKeyboard()
+        val assets = if (type == TYPE_FROM_SEND) adapter.groupAssets(token) else listOf(token)
+        if (assets.isEmpty()) {
+            toast(R.string.insufficient_balance)
+            return
+        }
+        showTokenNetworks(assets.map { it.toSwapToken() }) { selected ->
+            val asset = assets.firstOrNull { it.walletId == selected.walletId && it.assetId == selected.assetId } ?: return@showTokenNetworks
+            if (asyncOnAsset != null) {
+                asyncClick(asset)
+            } else {
+                requireContext().defaultSharedPreferences.addToList(key, asset.assetId)
+                onAsset?.invoke(asset)
+                dismiss()
+            }
         }
     }
 

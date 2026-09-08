@@ -24,6 +24,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletSearchBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.groupWeb3Tokens
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.viewDestroyed
@@ -137,7 +138,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                 return@launch
             }
             val tokens = withContext(Dispatchers.IO) {
-                val allTokens = viewModel.web3TokensExcludeHidden(walletId!!).value ?: emptyList()
+                val allTokens = viewModel.web3TokensExcludeHiddenRaw(walletId!!)
                 allTokens.sortedByDescending {
                     runCatching { it.balance.toBigDecimal() * it.priceUsd.toBigDecimal() }.getOrDefault(0.toBigDecimal())
                 }
@@ -150,7 +151,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                 binding.rvVa.displayedChild = POS_SEARCH
             }
             
-            searchAdapter.submitList(tokens)
+            searchAdapter.submitList(tokens.groupWeb3Tokens().sortedByDescending { it.fiat })
             binding.pb.isVisible = false
         }
     }
@@ -186,20 +187,23 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             }
 
             val localTokens = withContext(Dispatchers.IO) {
-                viewModel.web3TokensExcludeHidden(walletId!!).value?.filter { token ->
-                    token.name.contains(query, ignoreCase = true) ||
-                        token.symbol.contains(query, ignoreCase = true) ||
-                        token.chainName?.contains(query, ignoreCase = true) == true
-                } ?: emptyList()
+                viewModel.web3TokensExcludeHiddenRaw(walletId!!).groupWeb3Tokens().filter { group ->
+                    group.tokens.any { token ->
+                        token.name.contains(query, ignoreCase = true) ||
+                            token.symbol.contains(query, ignoreCase = true) ||
+                            token.chainName?.contains(query, ignoreCase = true) == true
+                    }
+                }.flatMap { it.tokens }
             }
 
-            searchAdapter.submitList(localTokens)
+            searchAdapter.submitList(localTokens.groupWeb3Tokens().sortedByDescending { it.fiat })
             
             if (localTokens.isEmpty()) {
                 isSearchingRemote = true
                 searchRemote(query)
             } else {
                 binding.rvVa.displayedChild = POS_SEARCH
+                binding.pb.isVisible = false
             }
         }
     }
@@ -240,16 +244,17 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         chainName = tokenItem.chainName ?: c?.name,
                         chainSymbol = tokenItem.chainSymbol ?: c?.chainSymbol,
                         hidden = false,
-                        level = tokenItem.level ?: Constants.AssetLevel.UNKNOWN
+                        level = tokenItem.level ?: Constants.AssetLevel.UNKNOWN,
+                        coinId = t?.coinId ?: tokenItem.coinId.takeIf { tokenItem.collectionHash.isNullOrEmpty() },
                     )
                 }
-                val currentList = searchAdapter.currentList
+                val currentList = searchAdapter.currentList.flatMap { it.tokens }
 
                 val combinedList = currentList + remoteWeb3Tokens.filter { remote ->
                     currentList.none { it.assetId == remote.assetId }
                 }
 
-                searchAdapter.submitList(combinedList)
+                searchAdapter.submitList(combinedList.groupWeb3Tokens().sortedByDescending { it.fiat })
                 binding.rvVa.displayedChild = POS_SEARCH
             } else if (isSearchingRemote) {
                 binding.rvVa.displayedChild = POS_EMPTY

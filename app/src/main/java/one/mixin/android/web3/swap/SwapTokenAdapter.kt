@@ -54,7 +54,7 @@ class SwapTokenAdapter(private val selectUnique: String? = null, var grouped: Bo
 
     fun groupAssets(token: SwapToken): List<SwapToken> {
         val groups = rawFilteredTokens().groupSwapTokens()
-        return groups.firstOrNull { group -> group.any { it == token } }
+        return groups.firstOrNull { group -> group.any { it.walletId == token.walletId && it.assetId == token.assetId } }
             ?: groups.firstOrNull { grouped && it.first().groupId == token.groupId }.orEmpty()
     }
 
@@ -156,7 +156,7 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
             if (chainNetwork != null) {
                 binding.networkTv.text = chainNetwork
             }
-            if (token.isWeb3) {
+            if (token.isWeb3 && !networkSelection) {
                 alert.isVisible = true
                 select.isVisible = false
                 alert.setOnClickListener {

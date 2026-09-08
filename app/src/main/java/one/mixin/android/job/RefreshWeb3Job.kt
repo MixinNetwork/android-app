@@ -184,6 +184,7 @@ class RefreshWeb3Job : BaseJob(
                     }
                     val tokensToInsert = applyUtxoTokenBalanceBeforeInsert(walletId, assets)
                     web3TokenDao.insertList(tokensToInsert)
+                    refreshMarketMappings(assetIds)
                     fetchChain(assets.map { it.chainId }.distinct())
                     Timber.d("Inserted ${assets.size} tokens into database")
                 } else {

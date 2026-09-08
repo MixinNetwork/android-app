@@ -28,12 +28,12 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
         LEFT JOIN tokens s ON s.asset_id = w.send_asset_id AND s.wallet_id = :walletId
         LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id AND r.wallet_id = :walletId
         LEFT JOIN tokens sf ON sf.asset_id = w.sponsor_fee_asset_id AND sf.wallet_id = :walletId
-        WHERE (w.send_asset_id = :assetId OR w.receive_asset_id = :assetId) AND (s.wallet_id = :walletId OR ct.wallet_id = :walletId) AND w.level >= (SELECT level FROM tokens WHERE asset_id = :assetId)
+        WHERE (w.send_asset_id IN (:assetIds) OR w.receive_asset_id IN (:assetIds)) AND w.level >= (SELECT MIN(level) FROM tokens WHERE wallet_id = :walletId AND asset_id IN (:assetIds))
         AND w.address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)
         ORDER BY w.transaction_at DESC 
         LIMIT 21
     """)
-    fun web3Transactions(walletId: String, assetId: String): LiveData<List<Web3TransactionItem>>
+    fun web3Transactions(walletId: String, assetIds: List<String>): LiveData<List<Web3TransactionItem>>
 
     @Query("""
         SELECT DISTINCT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, w.address, w.fee, w.sponsor_fee_asset_id, w.sponsor_fee_amount, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, w.transaction_at, w.updated_at, w.level,

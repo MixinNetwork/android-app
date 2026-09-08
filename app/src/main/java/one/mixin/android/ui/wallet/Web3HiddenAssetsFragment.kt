@@ -81,10 +81,11 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
                         override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
                             val hiddenPos = viewHolder.absoluteAdapterPosition
                             val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
+                            val groupIds = assetsAdapter.groupAssets(asset).map { it.assetId }
                             val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
                             lifecycleScope.launch {
                                 AnalyticsTracker.trackAssetVisibility(false, TradeWallet.WEB3, AnalyticsTracker.AssetSource.WALLET_HOME)
-                                web3ViewModel.updateTokenHidden(asset.assetId, asset.walletId, false)
+                                web3ViewModel.updateTokensHidden(groupIds, asset.walletId, false)
                                 val anchorView = assetsRv
 
                                 snackbar =
@@ -93,7 +94,7 @@ class Web3HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), 
                                             assetsAdapter.restoreItem(deleteItem, hiddenPos)
                                             lifecycleScope.launch {
                                                 AnalyticsTracker.trackAssetVisibility(true, TradeWallet.WEB3, AnalyticsTracker.AssetSource.WALLET_HOME)
-                                                web3ViewModel.updateTokenHidden(asset.assetId, asset.walletId, true)
+                                                web3ViewModel.updateTokensHidden(groupIds, asset.walletId, true)
                                             }
                                         }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
                                             (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text))

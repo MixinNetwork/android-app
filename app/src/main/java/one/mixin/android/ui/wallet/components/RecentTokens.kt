@@ -56,15 +56,12 @@ internal fun isWeb3RecentTokenChain(chainId: String): Boolean = isWeb3TransferSu
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Unit) {
+fun RecentTokens(web3: Boolean = false, key: String, grouped: Boolean = !web3, callback: (TokenItem) -> Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SearchViewModel>()
     val source by viewModel.recentTokenItems.collectAsState(initial = emptyList())
-    val recentToken = if (web3) {
-        source.filter { isWeb3RecentTokenChain(it.chainId) }
-    } else {
-        source.groupTokens().map { it.representative }
-    }
+    val tokens = if (web3) source.filter { isWeb3RecentTokenChain(it.chainId) } else source
+    val recentToken = if (grouped) tokens.groupTokens().map { it.representative } else tokens
     LaunchedEffect(Unit) {
         viewModel.getRecentTokenItems(context.defaultSharedPreferences, key)
     }
@@ -104,7 +101,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 recentToken.forEach {
-                    RecentToken(it, showNetwork = web3) {
+                    RecentToken(it, showNetwork = !grouped) {
                         callback.invoke(it)
                     }
                 }

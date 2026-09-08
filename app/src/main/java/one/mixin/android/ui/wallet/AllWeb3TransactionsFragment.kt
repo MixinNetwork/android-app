@@ -30,6 +30,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAllTransactionsBinding
 import one.mixin.android.databinding.ViewReputationBottomBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.groupWeb3Tokens
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.toWeb3Wallet
 import one.mixin.android.extension.dpToPx
@@ -213,7 +214,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment(R.layout.fragment_a
     private fun loadFilter() {
         binding.apply {
             filterType.updateWeb3TokenFilterType(filterParams.tokenFilterType)
-            filterAsset.updateWeb3Tokens(R.string.Assets, filterParams.tokenItems)
+            filterAsset.updateWeb3Tokens(R.string.Assets, filterParams.tokenItems?.groupWeb3Tokens()?.map { it.representative })
             filterTime.setTitle(filterParams.selectTime ?: getString(R.string.Date))
             filterReputation.updateLevel(getString(R.string.Reputation), filterParams.level)
             titleView.setSubTitle(

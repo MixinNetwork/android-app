@@ -27,6 +27,7 @@ import one.mixin.android.databinding.ViewPrivacyWalletBottomBinding
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.groupWeb3Tokens
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.isClassic
 import one.mixin.android.db.web3.vo.isImported
@@ -422,7 +423,7 @@ class WalletHomeAllTokensFragment : BaseFragment() {
             btcTotal = formatWalletHomeBtcTotal(totalBtc),
             fiatSymbol = Fiats.getSymbol(),
             web3Tokens = web3Tokens,
-            totalTokenCount = web3Tokens.size,
+            totalTokenCount = web3Tokens.groupWeb3Tokens().size,
             isWatchWallet = wallet?.isWatch() == true,
             importKeyAction = importKeyAction,
             pendingIndicator = walletHomePendingTransactionIndicator(pendingTxCount) ?: pendingDisplays.toWalletHomePendingIndicator(),

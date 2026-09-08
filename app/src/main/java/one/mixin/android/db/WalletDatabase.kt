@@ -20,6 +20,7 @@ import one.mixin.android.db.web3.SafeWalletsDao
 import one.mixin.android.db.web3.WalletOutputDao
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3ChainDao
+import one.mixin.android.db.web3.Web3MarketCoinDao
 import one.mixin.android.db.web3.Web3RawTransactionDao
 import one.mixin.android.db.web3.Web3TokenDao
 import one.mixin.android.db.web3.Web3TokensExtraDao
@@ -35,6 +36,7 @@ import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.util.database.dbDir
 import one.mixin.android.vo.Property
+import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.route.Order
 import kotlinx.coroutines.asCoroutineDispatcher
 import java.io.File
@@ -55,8 +57,9 @@ import kotlin.math.min
         Order::class,
         SafeWallets::class,
         WalletOutput::class,
+        MarketCoin::class,
     ],
-    version = 8,
+    version = 9,
 )
 @ColumnTypeConverters(Web3TypeConverters::class, AssetChangeListConverter::class)
 @DaoReturnTypeConverters(
@@ -127,6 +130,12 @@ abstract class WalletDatabase : RoomDatabase() {
             }
         }
 
+        val MIGRATION_8_9 = object : Migration(8, 9) {
+            override suspend fun migrate(db: SQLiteConnection) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS `market_coins` (`asset_id` TEXT NOT NULL, `coin_id` TEXT NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`asset_id`))")
+            }
+        }
+
         fun getDatabase(
             context: Context,
             identityNumber: String,
@@ -145,7 +154,7 @@ abstract class WalletDatabase : RoomDatabase() {
                             context,
                             WalletDatabase::class.java,
                             File(dir, Constants.DataBase.WEB3_DB_NAME).absolutePath,
-                        ).setDriver(ReportingAndroidSQLiteDriver("Wallet", 8))
+                        ).setDriver(ReportingAndroidSQLiteDriver("Wallet", 9))
                             .addCallback(
                             object : Callback() {
                                 override suspend fun onOpen(db: SQLiteConnection) {
@@ -153,7 +162,7 @@ abstract class WalletDatabase : RoomDatabase() {
                                     db.execSQL("PRAGMA synchronous = NORMAL")
                                 }
                             },
-                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
+                        ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
                             .enableMultiInstanceInvalidation()
                             .setQueryCoroutineContext(
                                 Executors.newFixedThreadPool(
@@ -173,6 +182,7 @@ abstract class WalletDatabase : RoomDatabase() {
     }
 
     abstract fun web3TokenDao(): Web3TokenDao
+    abstract fun web3MarketCoinDao(): Web3MarketCoinDao
     abstract fun web3TransactionDao(): Web3TransactionDao
     abstract fun web3WalletDao(): Web3WalletDao
     abstract fun web3AddressDao(): Web3AddressDao

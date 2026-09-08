@@ -7,24 +7,30 @@ import android.content.ClipData
 import android.os.Bundle
 import android.view.View
 import android.view.ViewTreeObserver
+import android.widget.RadioGroup
 import androidx.appcompat.view.ContextThemeWrapper
+import androidx.appcompat.widget.AppCompatRadioButton
+import androidx.core.content.ContextCompat
 import androidx.core.view.isInvisible
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.switchMap
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.StakeAccount
 import one.mixin.android.databinding.FragmentWeb3TransactionsBinding
+import one.mixin.android.databinding.ItemAssetAllocationBinding
 import one.mixin.android.databinding.ViewWalletWeb3TokenBottomBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3TokenGroup
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
@@ -83,6 +89,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.web3.isNativeSolAsset
+import one.mixin.android.web3.swap.showTokenNetworks
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
 import java.math.BigDecimal
@@ -94,6 +101,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         const val TAG = "Web3TransactionsFragment"
         const val ARGS_TOKEN = "args_token"
         const val ARGS_ADDRESS = "args_address"
+        const val ARGS_NETWORK = "args_network"
 
         fun newInstance(
             address: String,
@@ -117,15 +125,38 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     @Inject
     lateinit var tip: Tip
 
-    private val address: String? by lazy {
+    private val initialAddress: String? by lazy {
         requireArguments().getString(ARGS_ADDRESS)
     }
 
-    private val token: Web3TokenItem by lazy {
+    private val initialToken: Web3TokenItem by lazy {
         requireNotNull(requireArguments().getParcelable<Web3TokenItem>(ARGS_TOKEN) ?: requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java))
     }
 
+    private var groupedTokens: List<Web3TokenItem> = emptyList()
+    private var selectedNetwork: String? = null
+    private var networkIds: List<String> = emptyList()
+    private var addresses: Map<String, String> = emptyMap()
+    private val selectedTokens: List<Web3TokenItem>
+        get() = groupedTokens.filter { selectedNetwork == null || it.chainId == selectedNetwork }.ifEmpty { listOf(initialToken) }
+    private val token: Web3TokenItem get() = selectedTokens.first()
+    private val address: String? get() = addresses[token.chainId] ?: initialAddress.takeIf { token.chainId == initialToken.chainId }
+    private val transactionAssetIds = MutableLiveData<List<String>>()
+    private var stakeAssetId: String? = null
+
     private var refreshJob: Job? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        groupedTokens = listOf(initialToken)
+        selectedNetwork = if (savedInstanceState != null) savedInstanceState.getString(ARGS_NETWORK)
+            else requireArguments().getString(ARGS_NETWORK)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putString(ARGS_NETWORK, selectedNetwork)
+        super.onSaveInstanceState(outState)
+    }
 
     override fun onViewCreated(
         view: View,
@@ -136,15 +167,10 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
             val wallet = web3ViewModel.findWalletById(token.walletId)
             binding.sendReceiveView.isVisible = wallet?.isWatch() != true
             binding.empty.isVisible = wallet?.isWatch() == true
-            if (token.isNativeSolAsset() && wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
-                binding.stake.root.visibility = View.VISIBLE
-                address?.let { address -> getStakeAccounts(address)}
-            } else{
-                binding.stake.root.visibility = View.GONE
-            }
         }
 
         jobManager.addJobInBackground(RefreshPriceJob(token.assetId))
+        jobManager.addJobInBackground(RefreshMarketJob(initialToken.assetId))
         refreshToken(token.assetId)
         binding.titleView.apply {
             val sub = getChainName(token.chainId, token.chainName, token.assetKey)
@@ -190,21 +216,13 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                         )
                     }
                 }
-                if (token.isNativeSolAsset()) {
-                    stake.root.visibility = View.VISIBLE
-                    lifecycleScope.launch {
-                        address?.let { address ->
-                            getStakeAccounts(address)
-                        }
-                    }
-                }
                 transactionsRv.listener = this@Web3TransactionsFragment
                 bottomCard.post {
                     bottomCard.isVisible = true
                     val remainingHeight =
-                        requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - 70.dp
+                        requireContext().screenHeight() - requireContext().statusBarHeight() - requireContext().navigationBarHeight() - titleView.height - topLl.height - marketRl.height - binding.networkTabsScroll.height - binding.allocationCard.height - 70.dp
                     bottomRl.updateLayoutParams {
-                        height = remainingHeight
+                        height = remainingHeight.coerceAtLeast(0)
                     }
 
                     if (scrollY > 0) {
@@ -219,121 +237,127 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 }
 
                 sendReceiveView.send.setOnClickListener {
-                    lifecycleScope.launch {
-                        val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
-                        val wallet = web3ViewModel.findWalletById(token.walletId)
-                        if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet())) return@launch
-                        if (
-                            showRecoveryReminderForRiskAction {
-                                lifecycleScope.launch {
-                                    val chainResume = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
-                                    val walletResume = web3ViewModel.findWalletById(token.walletId)
-                                    if (showImportKeyReminderIfNeeded(walletResume?.toWeb3Wallet())) return@launch
-                                    if (chainResume == null) {
-                                        refreshToken(token.chainId)
-                                        toast(R.string.Please_wait_a_bit)
-                                    } else {
+                    chooseToken { token, address ->
+                        lifecycleScope.launch {
+                            val chain = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
+                            val wallet = web3ViewModel.findWalletById(token.walletId)
+                            if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet(), token.chainId)) return@launch
+                            if (
+                                showRecoveryReminderForRiskAction {
+                                    lifecycleScope.launch {
+                                        val chainResume = web3ViewModel.web3TokenItemById(token.walletId, token.chainId)
+                                        val walletResume = web3ViewModel.findWalletById(token.walletId)
+                                        if (showImportKeyReminderIfNeeded(walletResume?.toWeb3Wallet(), token.chainId)) return@launch
+                                        if (chainResume == null) {
+                                            refreshToken(token.chainId, address)
+                                            toast(R.string.Please_wait_a_bit)
+                                        } else {
+                                            requireView().navigate(
+                                                R.id.action_web3_transactions_to_transfer_destination,
+                                                Bundle().apply {
+                                                    address?.let {
+                                                        putString(TransferDestinationInputFragment.ARGS_ADDRESS, it)
+                                                    }
+                                                    putParcelable(TransferDestinationInputFragment.ARGS_WALLET, walletResume?.toWeb3Wallet())
+                                                    putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
+                                                    putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chainResume)
+                                                }
+                                            )
+                                        }
+                                    }
+                                }
+                            ) {
+                                return@launch
+                            }
+                            if (chain == null) {
+                                refreshToken(token.chainId, address)
+                                toast(R.string.Please_wait_a_bit)
+                            } else {
+                                requireView().navigate(
+                                    R.id.action_web3_transactions_to_transfer_destination,
+                                    Bundle().apply {
+                                        address?.let {
+                                            putString(TransferDestinationInputFragment.ARGS_ADDRESS, it)
+                                        }
+                                        putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet?.toWeb3Wallet())
+                                        putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
+                                        putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
+                                    }
+                                )
+                            }
+                        }
+                    }
+                }
+                sendReceiveView.receive.setOnClickListener {
+                    chooseToken { token, address ->
+                        lifecycleScope.launch {
+                            val wallet = web3ViewModel.findWalletById(token.walletId)
+                            if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet(), token.chainId)) return@launch
+                            if (
+                                showRecoveryReminderForRiskAction {
+                                    lifecycleScope.launch {
+                                        val walletResume = web3ViewModel.findWalletById(token.walletId)
+                                        if (showImportKeyReminderIfNeeded(walletResume?.toWeb3Wallet(), token.chainId)) return@launch
                                         requireView().navigate(
-                                            R.id.action_web3_transactions_to_transfer_destination,
+                                            R.id.action_web3_transactions_to_web3_address,
                                             Bundle().apply {
                                                 address?.let {
-                                                    putString(TransferDestinationInputFragment.ARGS_ADDRESS, it)
+                                                    putString("address", it)
                                                 }
-                                                putParcelable(TransferDestinationInputFragment.ARGS_WALLET, walletResume?.toWeb3Wallet())
-                                                putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
-                                                putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chainResume)
+                                                putParcelable("web3_token", token)
                                             }
                                         )
                                     }
                                 }
+                            ) {
+                                return@launch
                             }
-                        ) {
-                            return@launch
-                        }
-                        if (chain == null) {
-                            refreshToken(token.chainId)
-                            toast(R.string.Please_wait_a_bit)
-                        } else {
                             requireView().navigate(
-                                R.id.action_web3_transactions_to_transfer_destination,
+                                R.id.action_web3_transactions_to_web3_address,
                                 Bundle().apply {
                                     address?.let {
-                                        putString(TransferDestinationInputFragment.ARGS_ADDRESS, it)
+                                        putString("address", it)
                                     }
-                                    putParcelable(TransferDestinationInputFragment.ARGS_WALLET, wallet?.toWeb3Wallet())
-                                    putParcelable(TransferDestinationInputFragment.ARGS_WEB3_TOKEN, token)
-                                    putParcelable(TransferDestinationInputFragment.ARGS_CHAIN_TOKEN, chain)
+                                    putParcelable("web3_token", token)
                                 }
                             )
                         }
                     }
                 }
-                sendReceiveView.receive.setOnClickListener {
-                    lifecycleScope.launch {
-                        val wallet = web3ViewModel.findWalletById(token.walletId)
-                        if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet())) return@launch
-                        if (
-                            showRecoveryReminderForRiskAction {
-                                lifecycleScope.launch {
-                                    val walletResume = web3ViewModel.findWalletById(token.walletId)
-                                    if (showImportKeyReminderIfNeeded(walletResume?.toWeb3Wallet())) return@launch
-                                    requireView().navigate(
-                                        R.id.action_web3_transactions_to_web3_address,
-                                        Bundle().apply {
-                                            address?.let {
-                                                putString("address", it)
-                                            }
-                                            putParcelable("web3_token", token)
-                                        }
-                                    )
-                                }
-                            }
-                        ) {
-                            return@launch
-                        }
-                        requireView().navigate(
-                            R.id.action_web3_transactions_to_web3_address,
-                            Bundle().apply {
-                                address?.let {
-                                    putString("address", it)
-                                }
-                                putParcelable("web3_token", token)
-                            }
-                        )
-                    }
-                }
                 sendReceiveView.swap.setOnClickListener {
-                    lifecycleScope.launch {
-                        val wallet = web3ViewModel.findWalletById(token.walletId)
-                        if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet())) return@launch
-                        if (
-                            showRecoveryReminderForRiskAction {
-                                lifecycleScope.launch {
-                                    val walletResume = web3ViewModel.findWalletById(token.walletId)
-                                    if (showImportKeyReminderIfNeeded(walletResume?.toWeb3Wallet())) return@launch
-                                    AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.ASSET_DETAIL)
-                                    requireView().navigate(
-                                        R.id.action_web3_transactions_to_swap,
-                                        Bundle().apply {
-                                            putString(TradeFragment.ARGS_INPUT, token.assetId)
-                                            putBoolean(TradeFragment.ARGS_IN_MIXIN, false)
-                                            putString(TradeFragment.ARGS_WALLET_ID, token.walletId)
-                                        }
-                                    )
+                    chooseToken { token, address ->
+                        lifecycleScope.launch {
+                            val wallet = web3ViewModel.findWalletById(token.walletId)
+                            if (showImportKeyReminderIfNeeded(wallet?.toWeb3Wallet(), token.chainId)) return@launch
+                            if (
+                                showRecoveryReminderForRiskAction {
+                                    lifecycleScope.launch {
+                                        val walletResume = web3ViewModel.findWalletById(token.walletId)
+                                        if (showImportKeyReminderIfNeeded(walletResume?.toWeb3Wallet(), token.chainId)) return@launch
+                                        AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.ASSET_DETAIL)
+                                        requireView().navigate(
+                                            R.id.action_web3_transactions_to_swap,
+                                            Bundle().apply {
+                                                putString(TradeFragment.ARGS_INPUT, token.assetId)
+                                                putBoolean(TradeFragment.ARGS_IN_MIXIN, false)
+                                                putString(TradeFragment.ARGS_WALLET_ID, token.walletId)
+                                            }
+                                        )
+                                    }
                                 }
+                            ) {
+                                return@launch
                             }
-                        ) {
-                            return@launch
+                            AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.ASSET_DETAIL)
+                            requireView().navigate(
+                                R.id.action_web3_transactions_to_swap,
+                                Bundle().apply {
+                                    putString(TradeFragment.ARGS_INPUT, token.assetId)
+                                    putBoolean(TradeFragment.ARGS_IN_MIXIN, false)
+                                    putString(TradeFragment.ARGS_WALLET_ID, token.walletId)
+                                }
+                            )
                         }
-                        AnalyticsTracker.trackTradeStart(TradeWallet.WEB3, TradeSource.ASSET_DETAIL)
-                        requireView().navigate(
-                            R.id.action_web3_transactions_to_swap,
-                            Bundle().apply {
-                                putString(TradeFragment.ARGS_INPUT, token.assetId)
-                                putBoolean(TradeFragment.ARGS_IN_MIXIN, false)
-                                putString(TradeFragment.ARGS_WALLET_ID, token.walletId)
-                            }
-                        )
                     }
                 }
 
@@ -341,7 +365,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     view.navigate(
                         R.id.action_web3_transactions_to_all_web3_transactions,
                         Bundle().apply {
-                            putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(walletId = token.walletId, level = if (token.isSpam()) FILTER_GOOD_AND_SPAM else Web3FilterParams.FILTER_GOOD_ONLY, tokenItems = listOf(token)))
+                            putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(walletId = token.walletId, level = if (token.isSpam()) FILTER_GOOD_AND_SPAM else Web3FilterParams.FILTER_GOOD_ONLY, tokenItems = selectedTokens))
                         }
                     )
                 }
@@ -378,28 +402,118 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         val offset = web3ViewModel.scrollOffset
 
         binding.scrollView.viewTreeObserver.addOnScrollChangedListener(this@Web3TransactionsFragment)
-        updateHeader(token)
-        lifecycleScope.launch {
-            web3ViewModel.web3Transactions(token.walletId, token.assetId)
-                .observe(viewLifecycleOwner) { list ->
-                binding.transactionsRv.isVisible = list.isNotEmpty()
-                binding.bottomRl.isVisible = list.isEmpty()
-                binding.transactionsRv.list = list
+        transactionAssetIds.switchMap { ids ->
+            web3ViewModel.web3Transactions(initialToken.walletId, ids)
+        }.observe(viewLifecycleOwner) { list ->
+            binding.transactionsRv.isVisible = list.isNotEmpty()
+            binding.bottomRl.isVisible = list.isEmpty()
+            binding.transactionsRv.list = list
+            if (!hasScrolled && isAdded) {
+                hasScrolled = true
+                binding.scrollView.post { binding.scrollView.scrollTo(0, offset) }
+            }
+        }
+        web3ViewModel.groupedTokenItems(initialToken.walletId, initialToken.assetId).observe(viewLifecycleOwner) { tokens ->
+            groupedTokens = tokens.filter { (it.hidden == true) == (initialToken.hidden == true) }.ifEmpty { listOf(initialToken) }
+            if (selectedNetwork != null && groupedTokens.none { it.chainId == selectedNetwork }) selectedNetwork = null
+            renderSelection()
+        }
+        viewLifecycleOwner.lifecycleScope.launch {
+            addresses = web3ViewModel.getAddresses(initialToken.walletId).associate { it.chainId to it.destination }
+            renderSelection()
+        }
+        renderSelection()
+    }
 
-                if (!hasScrolled && isAdded) {
-                    hasScrolled = true
-                    binding.scrollView.post {
-                        binding.scrollView.scrollTo(0, offset)
+    private fun renderSelection() {
+        val chains = groupedTokens.distinctBy { it.chainId }.sortedBy { it.getChainDisplayName() }
+        binding.networkTabsScroll.isVisible = chains.size > 1
+        val ids = chains.map { it.chainId }
+        if (networkIds != ids || binding.networkTabs.childCount == 0) {
+            networkIds = ids
+            binding.networkTabs.setOnCheckedChangeListener(null)
+            binding.networkTabs.removeAllViews()
+            val tabs = listOf(null to getString(R.string.All)) + chains.map { it.chainId to it.getChainDisplayName() }
+            tabs.forEach { (chainId, name) ->
+                binding.networkTabs.addView(AppCompatRadioButton(requireContext()).apply {
+                    id = View.generateViewId()
+                    tag = chainId
+                    text = name
+                    buttonDrawable = null
+                    setBackgroundResource(R.drawable.selector_radio)
+                    setTextColor(ContextCompat.getColorStateList(requireContext(), R.drawable.radio_button_text_selector))
+                    textSize = 14f
+                    minHeight = 48.dp
+                    setPadding(16.dp, 0, 16.dp, 0)
+                    layoutParams = RadioGroup.LayoutParams(RadioGroup.LayoutParams.WRAP_CONTENT, RadioGroup.LayoutParams.WRAP_CONTENT).apply { marginEnd = 12.dp }
+                })
+            }
+        }
+        binding.networkTabs.setOnCheckedChangeListener(null)
+        for (index in 0 until binding.networkTabs.childCount) {
+            val button = binding.networkTabs.getChildAt(index) as AppCompatRadioButton
+            button.isChecked = button.tag == selectedNetwork
+        }
+        binding.networkTabs.setOnCheckedChangeListener { group, checkedId ->
+            val button = group.findViewById<AppCompatRadioButton>(checkedId) ?: return@setOnCheckedChangeListener
+            selectedNetwork = button.tag as? String
+            renderSelection()
+        }
+        binding.allocationCard.isVisible = selectedTokens.size > 1
+        binding.allocationRows.removeAllViews()
+        if (binding.allocationCard.isVisible) {
+            selectedTokens.sortedByDescending { it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO }.forEach { asset ->
+                val row = ItemAssetAllocationBinding.inflate(layoutInflater, binding.allocationRows, false)
+                row.avatar.loadToken(asset)
+                row.symbol.text = asset.symbol
+                row.network.text = getString(R.string.asset_on_network, asset.getChainDisplayName())
+                row.value.text = "${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                row.amount.text = "${asset.balance.numberFormat()} ${asset.symbol}"
+                row.root.setOnClickListener {
+                    selectedNetwork = asset.chainId
+                    renderSelection()
+                }
+                binding.allocationRows.addView(row.root)
+            }
+        }
+        val selectedIds = selectedTokens.map { it.assetId }.sorted()
+        if (transactionAssetIds.value != selectedIds) {
+            binding.transactionsRv.list = emptyList()
+            transactionAssetIds.value = selectedIds
+        }
+        binding.titleView.setSubTitle(token.name, if (selectedNetwork == null && groupedTokens.size > 1) getString(R.string.Common_Wallet) else token.getChainDisplayName())
+        updateHeader(token)
+        val stakeToken = selectedTokens.singleOrNull()?.takeIf { it.isNativeSolAsset() }
+        val stakeKey = stakeToken?.let { "${it.assetId}:$address" }
+        binding.stake.root.isVisible = stakeToken != null && stakeAssetId == stakeKey && stakeAccounts != null
+        if (stakeAssetId != stakeKey) {
+            stakeAssetId = stakeKey
+            stakeAccounts = null
+            if (stakeToken != null) {
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val wallet = web3ViewModel.findWalletById(stakeToken.walletId)
+                    if (stakeAssetId != stakeKey) return@launch
+                    if (wallet != null && (wallet.category == WalletCategory.CLASSIC.value || (wallet.isImported() && wallet.hasLocalPrivateKey))) {
+                        binding.stake.root.isVisible = true
+                        address?.let { getStakeAccounts(it) }
                     }
                 }
             }
-            web3ViewModel.web3TokenExtraFlow(token.walletId, token.assetId).flowOn(Dispatchers.Main).collect { balance ->
-                balance?.let {
-                    if (isAdded) {
-                        updateHeader(token.copy(balance = it))
-                    }
-                }
+        }
+    }
+
+    private fun chooseToken(action: (Web3TokenItem, String?) -> Unit) {
+        fun select(asset: Web3TokenItem) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                val latest = web3ViewModel.web3TokenItemById(asset.walletId, asset.assetId) ?: asset
+                val destination = web3ViewModel.getAddressesByChainId(asset.walletId, asset.chainId)?.destination
+                    ?: initialAddress.takeIf { asset.chainId == initialToken.chainId }
+                action(latest, destination)
             }
+        }
+        val assets = selectedTokens
+        showTokenNetworks(assets.map { it.toSwapToken() }) { selected ->
+            assets.firstOrNull { it.walletId == selected.walletId && it.assetId == selected.assetId }?.let(::select)
         }
     }
 
@@ -419,12 +533,15 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         bottomBinding.apply {
             title.text = token.name
             addressTv.text = token.assetKey
+            addressTv.isVisible = selectedTokens.size == 1
             explorer.setOnClickListener {
-                val url = "${Constants.API.URL}external/explore/${token.chainId}/assets/${token.assetKey}"
-                context?.openUrl(url)
+                chooseToken { token, _ ->
+                    val url = "${Constants.API.URL}external/explore/${token.chainId}/assets/${token.assetKey}"
+                    context?.openUrl(url)
+                }
                 bottomSheet.dismiss()
             }
-            stakeSolTv.isVisible = token.isNativeSolAsset() && binding.stake.root.isVisible
+            stakeSolTv.isVisible = selectedTokens.size == 1 && token.isNativeSolAsset() && binding.stake.root.isVisible
             stakeSolTv.setOnClickListener {
                 this@Web3TransactionsFragment.navTo(
                     ValidatorsFragment.newInstance().apply {
@@ -441,9 +558,10 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 bottomSheet.dismiss()
             }
             copy.setOnClickListener {
-                context?.getClipboardManager()
-                    ?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))
-                toast(R.string.copied_to_clipboard)
+                chooseToken { token, _ ->
+                    context?.getClipboardManager()?.setPrimaryClip(ClipData.newPlainText(null, token.assetKey))
+                    toast(R.string.copied_to_clipboard)
+                }
                 bottomSheet.dismiss()
             }
             
@@ -467,29 +585,32 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     private fun updateHeader(asset: Web3TokenItem) {
         binding.apply {
+            val group = Web3TokenGroup(selectedTokens)
+            val amount = group.balance.toPlainString()
             val amountText =
                 try {
-                    if (asset.balance.toFloat() == 0f) {
+                    if (amount.toFloat() == 0f) {
                         "0.00"
                     } else {
-                        asset.balance.numberFormat()
+                        amount.numberFormat()
                     }
                 } catch (ignored: NumberFormatException) {
-                    asset.balance.numberFormat()
+                    amount.numberFormat()
                 }
             val color = requireContext().colorFromAttribute(R.attr.text_primary)
             balance.text = buildBalanceAmountSymbol(requireContext(), amountText, asset.symbol, color, color)
             balanceAs.text =
                 try {
-                    if (asset.fiat().toFloat() == 0f) {
+                    if (group.fiat.toFloat() == 0f) {
                         "≈ ${Fiats.getSymbol()}0.00"
                     } else {
-                        "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                        "≈ ${Fiats.getSymbol()}${group.fiat.numberFormat2()}"
                     }
                 } catch (ignored: NumberFormatException) {
-                    "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+                    "≈ ${Fiats.getSymbol()}${group.fiat.numberFormat2()}"
                 }
             avatar.loadToken(asset)
+            avatar.badge.isVisible = selectedNetwork != null || groupedTokens.size == 1
             avatar.setOnClickListener(
                 object : DebugClickListener() {
                     override fun onDebugClick() {
@@ -529,8 +650,9 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
 
     private suspend fun getStakeAccounts(address: String) {
         val stakeAccounts = web3ViewModel.getStakeAccounts(address)
-        if (!isAdded) { return }
+        if (!isAdded || selectedTokens.size != 1 || this.address != address) { return }
         
+        this.stakeAccounts = stakeAccounts.orEmpty()
         if (stakeAccounts.isNullOrEmpty()) {
             updateStake(StakeAccountSummary(0, "0"))
             return
@@ -546,7 +668,6 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         val amountStr = amount.solLamportToAmount().stripTrailingZeros().toPlainString()
         
         val stakeAccountSummary = StakeAccountSummary(count, amountStr)
-        this.stakeAccounts = stakeAccounts
         
         updateStake(stakeAccountSummary)
     }
@@ -570,15 +691,15 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         }
     }
 
-    private fun refreshToken(assetId: String) {
-        jobManager.addJobInBackground(RefreshWeb3TokenJob(null, assetId, address))
+    private fun refreshToken(assetId: String, destination: String? = address) {
+        jobManager.addJobInBackground(RefreshWeb3TokenJob(null, assetId, destination))
     }
 
     private fun showRecoveryReminderForRiskAction(onContinue: (() -> Unit)? = null): Boolean {
         return RecoveryReminderBottomSheetDialogFragment.showForRiskAction(parentFragmentManager, onContinue)
     }
 
-    private fun showImportKeyReminderIfNeeded(wallet: Web3Wallet?): Boolean {
+    private fun showImportKeyReminderIfNeeded(wallet: Web3Wallet?, chainId: String = token.chainId): Boolean {
         if (wallet?.isImported() != true || wallet.hasLocalPrivateKey) return false
         ImportKeyBottomSheetDialogFragment.newInstance(
             if (wallet.category == WalletCategory.IMPORTED_MNEMONIC.value) {
@@ -587,7 +708,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 ImportKeyBottomSheetDialogFragment.PopupType.ImportPrivateKey
             },
             walletId = wallet.id,
-            chainId = token.chainId,
+            chainId = chainId,
         ).showNow(parentFragmentManager, ImportKeyBottomSheetDialogFragment.TAG)
         return true
     }
@@ -595,10 +716,13 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
     override fun <T> onNormalItemClick(item: T) {
         item as Web3TransactionItem
         lifecycleScope.launch {
-            val wallet = web3ViewModel.findWalletById(token.walletId)
+            val wallet = web3ViewModel.findWalletById(initialToken.walletId)
+            val transactionToken = groupedTokens.firstOrNull {
+                it.chainId == item.chainId && (it.assetId == item.sendAssetId || it.assetId == item.receiveAssetId)
+            } ?: token
             val bundle = Bundle().apply {
                 putParcelable(Web3TransactionFragment.ARGS_TRANSACTION, item)
-                putParcelable(ARGS_TOKEN, token)
+                putParcelable(ARGS_TOKEN, transactionToken)
                 putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet?.toWeb3Wallet())
             }
             findNavController().navigate(
@@ -615,7 +739,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         requireView().navigate(
             R.id.action_web3_transactions_to_all_web3_transactions,
             Bundle().apply {
-                putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(walletId = token.walletId, level = if (token.isSpam()) FILTER_GOOD_AND_SPAM else Web3FilterParams.FILTER_GOOD_ONLY, tokenItems = listOf(token)))
+                putParcelable(AllWeb3TransactionsFragment.ARGS_FILTER_PARAMS, Web3FilterParams(walletId = token.walletId, level = if (token.isSpam()) FILTER_GOOD_AND_SPAM else Web3FilterParams.FILTER_GOOD_ONLY, tokenItems = selectedTokens))
             }
         )
     }

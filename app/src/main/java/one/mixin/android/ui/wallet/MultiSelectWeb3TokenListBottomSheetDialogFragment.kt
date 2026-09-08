@@ -21,6 +21,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentSelectListBottomSheetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.groupId
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
@@ -73,8 +74,11 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
         arguments?.getStringArrayList(ARGS_WALLET_IDS)?.toList()
     }
 
+    private val grouped get() = walletId != null && walletIds == null
+    private fun selectionId(token: Web3TokenItem) = if (grouped) token.groupId else token.walletId to token.assetId
+
     private val selectedTokenItems = mutableListOf<Web3TokenItem>()
-    private val adapter by lazy { SelectableWeb3TokenAdapter(selectedTokenItems, walletIds != null) }
+    private val adapter by lazy { SelectableWeb3TokenAdapter(selectedTokenItems, walletIds != null, grouped) }
 
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
@@ -83,8 +87,8 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
 
     private val groupAdapter: SelectedWeb3TokenAdapter by lazy {
         SelectedWeb3TokenAdapter { tokenItem ->
-            selectedTokenItems.remove(tokenItem)
-            adapter.notifyItemChanged(adapter.currentList.indexOf(tokenItem))
+            selectedTokenItems.removeAll { selectionId(it) == selectionId(tokenItem) }
+            adapter.currentList.indexOfFirst { selectionId(it) == selectionId(tokenItem) }.takeIf { it >= 0 }?.let(adapter::notifyItemChanged)
             groupAdapter.notifyDataSetChanged()
         }
     }
@@ -97,7 +101,8 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
         super.setupDialog(dialog, style)
         dataProvider?.let { provider ->
             selectedTokenItems.clear()
-            selectedTokenItems.addAll(provider.getCurrentTokens())
+            selectedTokenItems.addAll(provider.getCurrentTokens().distinctBy(::selectionId))
+            groupAdapter.checkedTokenItems = selectedTokenItems
         }
         contentView = binding.root
         binding.ph.doOnPreDraw { binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -119,12 +124,12 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
                 object : WalletSearchWeb3TokenItemCallback {
                     override fun onTokenItemClick(tokenItem: Web3TokenItem) {
                         binding.searchEt.hideKeyboard()
-                        if (selectedTokenItems.contains(tokenItem)) {
-                            selectedTokenItems.remove(tokenItem)
+                        if (selectedTokenItems.any { selectionId(it) == selectionId(tokenItem) }) {
+                            selectedTokenItems.removeAll { selectionId(it) == selectionId(tokenItem) }
                         } else {
                             selectedTokenItems.add(tokenItem)
                         }
-                        adapter.notifyItemChanged(adapter.currentList.indexOf(tokenItem))
+                        adapter.currentList.indexOfFirst { selectionId(it) == selectionId(tokenItem) }.takeIf { it >= 0 }?.let(adapter::notifyItemChanged)
                         groupAdapter.checkedTokenItems = selectedTokenItems
                         groupAdapter.notifyDataSetChanged()
                         selectRv.scrollToPosition(selectedTokenItems.size - 1)
@@ -139,7 +144,10 @@ class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialog
                 dismiss()
             }
             applyButton.setOnClickListener {
-                onMultiSelectTokenListener?.onTokenSelect(selectedTokenItems.toList())
+                val selected = if (grouped) selectedTokenItems.flatMap { token ->
+                    defaultAssets.filter { it.groupId == token.groupId }.ifEmpty { listOf(token) }
+                } else selectedTokenItems.toList()
+                onMultiSelectTokenListener?.onTokenSelect(selected)
                 dismiss()
             }
             disposable =

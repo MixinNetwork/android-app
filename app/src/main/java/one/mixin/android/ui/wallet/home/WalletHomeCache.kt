@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet.home
 import android.content.SharedPreferences
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.groupWeb3Tokens
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.extension.putString
 import one.mixin.android.util.GsonHelper
@@ -129,7 +130,7 @@ fun SharedPreferences.putWalletHomeCache(
         btcTotal = state.btcTotal,
         fiatSymbol = state.fiatSymbol,
         privacyTokens = state.privacyTokens.groupTokens().sortedByDescending { it.fiat }.take(WalletHomeSection.PREVIEW_LIMIT).flatMap { it.tokens },
-        web3Tokens = state.web3Tokens.take(WalletHomeSection.PREVIEW_LIMIT),
+        web3Tokens = state.web3Tokens.groupWeb3Tokens().sortedByDescending { it.fiat }.take(WalletHomeSection.PREVIEW_LIMIT).flatMap { it.tokens },
         privacyTransactions = state.privacyTransactions.take(WalletHomeSection.PREVIEW_LIMIT),
         web3Transactions = state.web3Transactions.take(WalletHomeSection.PREVIEW_LIMIT),
         totalTokenCount = state.totalTokenCount,

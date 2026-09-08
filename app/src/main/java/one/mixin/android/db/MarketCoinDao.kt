@@ -3,6 +3,7 @@ package one.mixin.android.db
 import androidx.room3.Dao
 import androidx.room3.Query
 import androidx.room3.RoomWarnings
+import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.safe.TokenItem
@@ -10,6 +11,9 @@ import one.mixin.android.vo.safe.TokenItem
 @Dao
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface MarketCoinDao : BaseDao<MarketCoin> {
+    @Query("SELECT * FROM market_coins ORDER BY asset_id")
+    fun observeAll(): Flow<List<MarketCoin>>
+
     @Query("SELECT * FROM market_coins WHERE asset_id IN (:assetIds)")
     suspend fun findByAssetIds(assetIds: List<String>): List<MarketCoin>
 

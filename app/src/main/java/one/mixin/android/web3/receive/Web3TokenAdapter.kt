@@ -11,6 +11,9 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWeb3TokenBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3TokenGroup
+import one.mixin.android.db.web3.vo.groupWeb3Tokens
+import one.mixin.android.db.web3.vo.groupId
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat2
@@ -19,7 +22,7 @@ import one.mixin.android.extension.setQuoteText
 import one.mixin.android.vo.Fiats
 import java.math.BigDecimal
 
-class Web3TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class Web3TokenAdapter(private val grouped: Boolean = false) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun isEmpty() = getFilteredTokens().isEmpty()
 
     var tokens: ArrayList<Web3TokenItem> = ArrayList(0)
@@ -31,11 +34,20 @@ class Web3TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             }
         }
 
-    private fun getFilteredTokens() = if (chain.isNullOrBlank()) {
+    private fun rawFilteredTokens() = if (chain.isNullOrBlank()) {
         tokens
     } else {
         tokens.filter { it.chainId == chain }
     }
+
+    private fun getFilteredTokens(): List<Web3TokenItem> =
+        if (grouped) rawFilteredTokens().groupWeb3Tokens().map { it.representative } else rawFilteredTokens()
+
+    fun groupAssets(token: Web3TokenItem): List<Web3TokenItem> =
+        rawFilteredTokens().groupWeb3Tokens().firstOrNull { group ->
+            group.tokens.any { it.walletId == token.walletId && it.assetId == token.assetId } ||
+                (grouped && group.representative.groupId == token.groupId)
+        }?.tokens.orEmpty()
 
     var chain: String? = null
         @SuppressLint("NotifyDataSetChanged")
@@ -76,7 +88,9 @@ class Web3TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
         position: Int,
     ) {
         val filteredTokens = getFilteredTokens()
-        (holder as Web3Holder).bind(filteredTokens[position])
+        val token = filteredTokens[position]
+        val group = if (grouped) Web3TokenGroup(groupAssets(token)) else null
+        (holder as Web3Holder).bind(token, group)
         holder.itemView.setOnClickListener {
             onClickListener?.invoke(filteredTokens[position])
         }
@@ -85,7 +99,8 @@ class Web3TokenAdapter() : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
 class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(binding.root) {
     @SuppressLint("SetTextI18n")
-    fun bind(token: Web3TokenItem) {
+    fun bind(token: Web3TokenItem, group: Web3TokenGroup? = null) {
+        val amount = group?.balance?.toPlainString() ?: token.balance
         binding.apply {
             icSpam.isVisible = token.isSpam()
             if (token.isSpam()) {
@@ -99,19 +114,20 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
             }
             avatar.bg.loadImage(token.iconUrl, holder = R.drawable.ic_avatar_place_holder)
             avatar.badge.loadImage(token.chainIcon ?: "", holder = R.drawable.ic_avatar_place_holder)
+            avatar.badge.isVisible = group == null
 
             balance.text =
                 try {
-                    if (token.balance.numberFormat8().toFloat() == 0f) {
+                    if (amount.numberFormat8().toFloat() == 0f) {
                         "0.00"
                     } else {
-                        token.balance.numberFormat8()
+                        amount.numberFormat8()
                     }
                 } catch (ignored: NumberFormatException) {
-                    token.balance.numberFormat8()
+                    amount.numberFormat8()
                 }
             symbolTv.text = token.symbol
-            balanceAs.text = "≈ ${Fiats.getSymbol()}${token.fiat().numberFormat2()}"
+            balanceAs.text = "≈ ${Fiats.getSymbol()}${(group?.fiat ?: token.fiat()).numberFormat2()}"
             val changePercent =
                 if (token.changeUsd.isBlank()) {
                     BigDecimal.ZERO

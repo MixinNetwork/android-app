@@ -15,6 +15,9 @@ import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.databinding.ItemWalletAssetBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3TokenGroup
+import one.mixin.android.db.web3.vo.groupId
+import one.mixin.android.db.web3.vo.groupWeb3Tokens
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.numberFormat2
@@ -32,7 +35,15 @@ class WalletWeb3TokenAdapter(
     private val slideShow: Boolean,
     private val compact: Boolean = false,
 ) : HeaderAdapter<Web3TokenItem>() {
-    fun setAssetList(newAssets: List<Web3TokenItem>) {
+    private var groups: Map<Pair<String, String>, Web3TokenGroup> = emptyMap()
+
+    fun groupAssets(token: Web3TokenItem): List<Web3TokenItem> = groups[token.groupId]?.tokens.orEmpty()
+
+    fun setAssetList(assets: List<Web3TokenItem>) {
+        val previousGroups = groups
+        val groupedAssets = assets.groupWeb3Tokens().sortedByDescending { it.fiat }
+        groups = groupedAssets.associateBy { it.representative.groupId }
+        val newAssets = groupedAssets.map { it.representative }
         if (data == null) {
             data = newAssets
             notifyItemRangeInserted(0, newAssets.size)
@@ -46,7 +57,7 @@ class WalletWeb3TokenAdapter(
                         ): Boolean {
                             val old = data!![oldItemPosition]
                             val new = newAssets[newItemPosition]
-                            return old.assetId == new.assetId
+                            return old.groupId == new.groupId
                         }
 
                         override fun getOldListSize() = data!!.size
@@ -59,7 +70,7 @@ class WalletWeb3TokenAdapter(
                         ): Boolean {
                             val old = data!![oldItemPosition]
                             val new = newAssets[newItemPosition]
-                            return old == new
+                            return old == new && previousGroups[old.groupId] == groups[new.groupId]
                         }
                     },
                 )
@@ -100,6 +111,8 @@ class WalletWeb3TokenAdapter(
         if (holder is NormalHolder) {
             val binding = ItemWalletAssetBinding.bind(holder.itemView)
             val asset = data!![getPos(position)]
+            val group = groups[asset.groupId] ?: Web3TokenGroup(listOf(asset))
+            val amount = group.balance.toPlainString()
             if (compact) {
                 holder.itemView.updateLayoutParams<ViewGroup.LayoutParams> {
                     height = ViewGroup.LayoutParams.WRAP_CONTENT
@@ -142,15 +155,15 @@ class WalletWeb3TokenAdapter(
             }
             binding.balance.text =
                 try {
-                    if (asset.balance.isBlank()) {
+                    if (amount.isBlank()) {
                         "0.00"
-                    } else if (asset.balance.numberFormat8().toFloat() == 0f) {
+                    } else if (amount.numberFormat8().toFloat() == 0f) {
                         "0.00"
                     } else {
-                        asset.balance.numberFormat8()
+                        amount.numberFormat8()
                     }
                 } catch (ignored: NumberFormatException) {
-                    asset.balance.numberFormat8()
+                    amount.numberFormat8()
                 }
             binding.symbolTv.text = asset.symbol
             binding.icSpam.isVisible = asset.isSpam()
@@ -163,7 +176,7 @@ class WalletWeb3TokenAdapter(
                     marginStart = if (compact) 14.dp else 16.dp
                 }
             }
-            binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+            binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${group.fiat.numberFormat2()}"
             if (asset.priceUsd == "0") {
                 binding.naTv.visibility = View.VISIBLE
                 binding.priceTv.visibility = View.GONE
@@ -182,6 +195,7 @@ class WalletWeb3TokenAdapter(
             binding.backLeftTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)
             binding.backRightTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)
             binding.avatar.loadToken(asset)
+            binding.avatar.badge.isVisible = false
             holder.itemView.setOnClickListener { onItemListener?.onNormalItemClick(asset) }
             debugLongClick(
                 holder.itemView,

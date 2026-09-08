@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.room3.Room
 import androidx.room3.RoomDatabase
+import androidx.room3.migration.Migration
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.JsonParser
 import java.io.File
@@ -42,6 +43,18 @@ class Room3DatabaseCompatibilityTest {
             "INSERT INTO raw_transactions(hash, chain_id, account, nonce, raw, state, created_at, updated_at) VALUES('hash', 'chain', 'account', '7', 'signed-wallet', 'pending', '2026-09-08T00:00:00Z', '2026-09-08T00:00:00Z')",
             "SELECT hash || ':' || raw || ':' || nonce FROM raw_transactions",
             "hash:signed-wallet:7",
+        )
+    }
+
+    @Test
+    fun walletDatabaseAddsMarketCoinsWithoutLosingRawTransaction() {
+        verifyLegacyDatabase(
+            WalletDatabase::class.java,
+            "INSERT INTO raw_transactions(hash, chain_id, account, nonce, raw, state, created_at, updated_at) VALUES('hash', 'chain', 'account', '7', 'signed-wallet', 'pending', '2026-09-08T00:00:00Z', '2026-09-08T00:00:00Z')",
+            "SELECT hash || ':' || raw || ':' || (SELECT COUNT(*) FROM market_coins) FROM raw_transactions",
+            "hash:signed-wallet:0",
+            legacyVersion = 8,
+            migrations = listOf(WalletDatabase.MIGRATION_8_9),
         )
     }
 
@@ -92,14 +105,18 @@ class Room3DatabaseCompatibilityTest {
         selectSql: String,
         expectedValue: String,
         schemaName: String = databaseClass.name,
+        legacyVersion: Int? = null,
+        migrations: List<Migration> = emptyList(),
     ) {
         val schemaDirectory = listOf(File("schemas/googlePlay/$schemaName"), File("app/schemas/googlePlay/$schemaName"))
             .firstOrNull(File::isDirectory)
         requireNotNull(schemaDirectory) { "Missing exported schema for $schemaName in ${File(".").absolutePath}" }
         val schemaFile = requireNotNull(schemaDirectory.listFiles()?.filter { it.extension == "json" }?.maxByOrNull { it.nameWithoutExtension.toInt() })
-        val schema = JsonParser.parseString(schemaFile.readText()).asJsonObject.getAsJsonObject("database")
-        val version = schema.get("version").asInt
-        val identityHash = schema.get("identityHash").asString
+        val currentSchema = JsonParser.parseString(schemaFile.readText()).asJsonObject.getAsJsonObject("database")
+        val schema = if (legacyVersion == null) currentSchema else
+            JsonParser.parseString(File(schemaDirectory, "$legacyVersion.json").readText()).asJsonObject.getAsJsonObject("database")
+        val version = currentSchema.get("version").asInt
+        val identityHash = currentSchema.get("identityHash").asString
         val file = File(temporaryFolder.root, "${databaseClass.simpleName}.db")
         SQLiteDatabase.openOrCreateDatabase(file, null).use { legacy ->
             schema.getAsJsonArray("entities").forEach { entityElement ->
@@ -116,7 +133,7 @@ class Room3DatabaseCompatibilityTest {
                 legacy.execSQL(view.get("createSql").asString.replace("\${VIEW_NAME}", view.get("viewName").asString))
             }
             schema.getAsJsonArray("setupQueries").forEach { legacy.execSQL(it.asString) }
-            legacy.version = version
+            legacy.version = schema.get("version").asInt
             legacy.execSQL(insertSql)
         }
         val context = ApplicationProvider.getApplicationContext<Context>()
@@ -124,6 +141,7 @@ class Room3DatabaseCompatibilityTest {
             val database = Room.databaseBuilder(context, databaseClass, file.absolutePath)
                 .setDriver(ReportingAndroidSQLiteDriver(databaseClass.simpleName, version))
                 .allowMainThreadQueries()
+                .addMigrations(*migrations.toTypedArray())
                 .build()
             try {
                 assertScalar(database, selectSql, expectedValue)

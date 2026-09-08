@@ -138,6 +138,7 @@ fun TokenItem.toWeb3TokenItem(walletId: String): Web3TokenItem {
         chainName = chainName,
         chainSymbol = chainSymbol,
         hidden = hidden,
-        level = 0
+        level = 0,
+        coinId = coinId.takeIf { collectionHash.isNullOrEmpty() },
     )
 }

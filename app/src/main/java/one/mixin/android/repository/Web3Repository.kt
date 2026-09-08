@@ -2,6 +2,7 @@ package one.mixin.android.repository
 
 import android.content.Context
 import androidx.lifecycle.liveData
+import androidx.lifecycle.map
 import androidx.lifecycle.switchMap
 import androidx.paging.PagingSource
 import androidx.room3.RoomRawQuery
@@ -10,6 +11,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.db.web3.vo.groupWeb3Tokens
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.request.AddressSearchRequest
 import one.mixin.android.api.MixinResponse
@@ -197,7 +199,11 @@ constructor(
     fun walletHomeWeb3TokenPreview(
         walletId: String,
         limit: Int,
-    ) = web3TokenDao.walletHomeWeb3TokenPreview(walletId, limit)
+    ) = web3TokenDao.walletHomeWeb3TokenPreview(walletId).map { tokens ->
+        tokens.groupWeb3Tokens().sortedByDescending { it.fiat }.take(limit).flatMap { it.tokens }
+    }
+
+    fun groupedTokenItems(walletId: String, assetId: String) = web3TokenDao.groupedTokenItems(walletId, assetId)
 
     fun walletHomeWeb3TokenSummary(walletId: String) = web3TokenDao.walletHomeWeb3TokenSummary(walletId)
 
@@ -205,7 +211,7 @@ constructor(
 
     fun web3TokensExcludeHiddenRaw(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL) = web3TokenDao.web3TokenItemsExcludeHiddenRaw(
         RoomRawQuery(
-            """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
+            """SELECT t.*, (SELECT coin_id FROM market_coins WHERE asset_id = t.asset_id) AS coin_id, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id 
         LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
         WHERE t.wallet_id = :walletId AND (te.hidden != 1 OR te.hidden IS NULL) 
@@ -219,16 +225,14 @@ constructor(
     fun hiddenAssetItems(walletId: String) = web3TokenDao.hiddenAssetItems(walletId)
     
     suspend fun updateTokenHidden(tokenId: String, walletId: String, hidden: Boolean) {
-        val tokensExtra = web3TokensExtraDao.findByAssetId(tokenId,  walletId)
-        if (tokensExtra != null) {
-            web3TokensExtraDao.updateHidden(tokenId, walletId, hidden)
-        } else {
-            web3TokensExtraDao.insertSuspend(Web3TokensExtra(walletId, tokenId, hidden))
-        }
+        updateTokensHidden(web3TokenDao.findGroupTokenIds(walletId, tokenId).ifEmpty { listOf(tokenId) }, walletId, hidden)
     }
 
-    fun web3Transactions(walletId: String, assetId: String) =
-        web3TransactionDao.web3Transactions(walletId, assetId).switchMap { list ->
+    suspend fun updateTokensHidden(tokenIds: List<String>, walletId: String, hidden: Boolean) =
+        web3TokensExtraDao.insertListSuspend(tokenIds.distinct().map { Web3TokensExtra(walletId, it, hidden) })
+
+    fun web3Transactions(walletId: String, assetIds: List<String>) =
+        web3TransactionDao.web3Transactions(walletId, assetIds).switchMap { list ->
             liveData {
                 val assetIds = list.flatMap { it.senders.map { it.assetId } + it.receivers.map { it.assetId } + (it.approvals?.map { it.assetId } ?: emptyList()) }.distinct()
                 val tokens = web3TokenDao.findWeb3TokenItemsByIds(walletId, assetIds).associateBy { it.assetId }
