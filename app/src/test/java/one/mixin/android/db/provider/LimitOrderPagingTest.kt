@@ -9,6 +9,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import one.mixin.android.db.WalletDatabase
+import one.mixin.android.ui.wallet.OrderFilterParams
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.route.OrderItem
 import org.junit.runner.RunWith
@@ -76,12 +77,59 @@ class LimitOrderPagingTest {
         source.invalidate()
     }
 
-    private fun source() = LimitOrderDataProviderGenerated.allOrders(database, "", "", "o.created_at DESC")
+    @Test
+    fun filteredPagesKeepOrderAndKeysAcrossRefreshAppendAndPrepend() = runBlocking<Unit> {
+        for (index in 0..8) {
+            database.orderDao().insertSuspend(
+                order().copy(
+                    orderId = "order-$index",
+                    state = if (index == 4) "done" else "pending",
+                    createdAt = "2026-09-08T00:00:0${index}Z",
+                ),
+            )
+        }
+        val source = LimitOrderDataProvider.allOrders(database, OrderFilterParams(statuses = listOf("pending")))
+        val first = load(source, PagingSource.LoadParams.Refresh(null, 3, true))
+        assertEquals(listOf("order-8", "order-7", "order-6"), first.data.map { it.orderId })
+        assertEquals(null, first.prevKey)
+        assertEquals(3, first.nextKey)
+        assertEquals(0, first.itemsBefore)
+        assertEquals(5, first.itemsAfter)
 
-    private suspend fun load(source: PagingSource<Int, OrderItem>): PagingSource.LoadResult.Page<Int, OrderItem> =
+        val second = load(source, PagingSource.LoadParams.Append(checkNotNull(first.nextKey), 2, true))
+        assertEquals(listOf("order-5", "order-3"), second.data.map { it.orderId })
+        assertEquals(3, second.prevKey)
+        assertEquals(5, second.nextKey)
+        assertEquals(3, second.itemsBefore)
+        assertEquals(3, second.itemsAfter)
+
+        val last = load(source, PagingSource.LoadParams.Append(checkNotNull(second.nextKey), 3, true))
+        assertEquals(listOf("order-2", "order-1", "order-0"), last.data.map { it.orderId })
+        assertEquals(null, last.nextKey)
+        assertEquals(0, last.itemsAfter)
+
+        val previous = load(source, PagingSource.LoadParams.Prepend(checkNotNull(second.prevKey), 5, true))
+        assertEquals(first.data.map { it.orderId }, previous.data.map { it.orderId })
+        assertEquals(null, previous.prevKey)
+        assertEquals(3, previous.nextKey)
+
+        assertInvalidatedBy(source) { database.orderDao().deleteAllOrders() }
+        withTimeout(5_000) {
+            assertIs<PagingSource.LoadResult.Invalid<Int, OrderItem>>(
+                source.load(PagingSource.LoadParams.Append(checkNotNull(second.nextKey), 3, true)),
+            )
+        }
+    }
+
+    private fun source() = LimitOrderDataProvider.allOrders(database, OrderFilterParams())
+
+    private suspend fun load(
+        source: PagingSource<Int, OrderItem>,
+        params: PagingSource.LoadParams<Int> = PagingSource.LoadParams.Refresh(null, 20, true),
+    ): PagingSource.LoadResult.Page<Int, OrderItem> =
         withTimeout(5_000) {
             assertIs<PagingSource.LoadResult.Page<Int, OrderItem>>(
-                source.load(PagingSource.LoadParams.Refresh(null, 20, true)),
+                source.load(params),
             )
         }
 
