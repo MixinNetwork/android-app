@@ -7,8 +7,13 @@ import android.os.CancellationSignal
 import android.os.OperationCanceledException
 import androidx.room3.Room
 import androidx.room3.RoomRawQuery
+import androidx.room3.withReadTransaction
+import androidx.room3.withWriteTransaction
+import androidx.sqlite.SQLiteStatement
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ReportingAndroidSQLiteDriver
 import org.junit.runner.RunWith
@@ -82,6 +87,120 @@ class RoomDatabaseCompatTest {
             RoomDatabaseCompat.query(database, RoomRawQuery("SELECT 1") { canceledDuringBinding.cancel() }, canceledDuringBinding)
         }
         assertEquals(0, rowCount())
+    }
+
+    @Test
+    fun pooledQueryHonorsBindingsCancellationAndReleasesFailedStatements() = runBlocking {
+        database.withWriteTransaction {
+            execSQL("INSERT INTO compat_values (id, text_value) VALUES (?, ?)", arrayOf(7, "pooled"))
+        }
+        database.withReadTransaction {
+            val signal = CancellationSignal().apply { cancel() }
+            assertFailsWith<OperationCanceledException> { query(RoomRawQuery("SELECT 1"), signal) }
+            val duringBinding = CancellationSignal()
+            assertFailsWith<OperationCanceledException> {
+                query(RoomRawQuery("SELECT 1") { duringBinding.cancel() }, duringBinding)
+            }
+            assertFailsWith<IllegalStateException> {
+                query(RoomRawQuery("SELECT ?") { error("binding failed") })
+            }
+            assertFailsWith<android.database.SQLException> { query(RoomRawQuery("SELECT missing_column FROM compat_values")) }
+            val statement = RoomQuery.acquire("SELECT text_value FROM compat_values WHERE id = ?", 1).apply { bindLong(1, 7) }
+            query(statement).use {
+                assertTrue(it.moveToFirst())
+                assertEquals("pooled", it.getString(0))
+            }
+        }
+    }
+
+    @Test
+    fun blockingQueryReleasesConnectionAfterBindingAndSqlFailures() {
+        assertFailsWith<IllegalStateException> {
+            database.query(RoomRawQuery("SELECT ?") { error("binding failed") })
+        }
+        assertFailsWith<android.database.SQLException> { database.query("SELECT missing_column FROM compat_values") }
+        RoomDatabaseCompat.execute(database, "INSERT INTO compat_values (id) VALUES (1)")
+        assertEquals(1, rowCount())
+    }
+
+    @Test
+    fun copiedQueriesKeepIndependentBindingsAndBindAllSqliteTypes() {
+        val source = RoomQuery.acquire("SELECT ?, ?, ?, ?, ?", 5).apply {
+            bindLong(1, 9)
+            bindDouble(2, 1.25)
+            bindString(3, "中文 ? '")
+            bindBlob(4, byteArrayOf(1, -1))
+            bindNull(5)
+        }
+        val copy = RoomQuery.copyFrom(source)
+        val destination = RoomQuery.acquire("SELECT ?, ?, ?, ?, ?", 5).apply { copyArgumentsFrom(source) }
+        source.bindLong(1, 99)
+        for (query in listOf(copy, destination)) {
+            database.query(query).use {
+                assertTrue(it.moveToFirst())
+                assertEquals(9, it.getInt(0))
+                assertEquals(1.25, it.getDouble(1))
+                assertEquals("中文 ? '", it.getString(2))
+                assertContentEquals(byteArrayOf(1, -1), it.getBlob(3))
+                assertTrue(it.isNull(4))
+            }
+        }
+        database.query(source).use {
+            assertTrue(it.moveToFirst())
+            assertEquals(99, it.getInt(0))
+        }
+    }
+
+    @Test
+    fun bindToProducesCursorThatSurvivesConnectionClose() {
+        val connection = AndroidSQLiteDriver().open(":memory:")
+        val cursor = try {
+            val statement = connection.prepare("SELECT ?, ?, ?, ?, ?, ?")
+            val query = RoomQuery.acquire("SELECT ?, ?, ?, ?, ?, ?", 6).apply {
+                bindLong(1, 8)
+                bindDouble(2, 2.5)
+                bindString(3, "12")
+                bindBlob(4, byteArrayOf(65))
+                bindNull(5)
+            }
+            query.bindTo(statement)
+            statement.bindArg(6, true)
+            statement.toCursor()
+        } finally {
+            connection.close()
+        }
+        cursor.use {
+            assertTrue(it.moveToFirst())
+            assertEquals(8, it.getInt(0))
+            assertEquals(2.5, it.getDouble(1))
+            assertEquals(12L, it.getLong(2))
+            assertContentEquals(byteArrayOf(49, 50), it.getBlob(2))
+            assertEquals("A", it.getString(3))
+            assertEquals(0.0, it.getDouble(4))
+            assertEquals(1, it.getInt(5))
+        }
+    }
+
+    @Test
+    fun cursorMaterializationClosesStatementWhenSteppingFails() {
+        AndroidSQLiteDriver().open(":memory:").use { connection ->
+            val statement = connection.prepare("SELECT 1")
+            var closes = 0
+            val failingStatement = object : SQLiteStatement by statement {
+                override fun step(): Boolean = error("step failed")
+
+                override fun close() {
+                    closes++
+                    statement.close()
+                }
+            }
+            assertFailsWith<IllegalStateException> { failingStatement.toCursor() }
+            assertEquals(1, closes)
+            connection.prepare("SELECT 2").toCursor().use {
+                assertTrue(it.moveToFirst())
+                assertEquals(2, it.getInt(0))
+            }
+        }
     }
 
     @Test

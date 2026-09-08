@@ -2,6 +2,7 @@ package one.mixin.android.fts
 
 import android.content.Context
 import android.os.CancellationSignal
+import android.os.OperationCanceledException
 import androidx.paging.PagingConfig
 import androidx.paging.PagingSource.LoadParams
 import androidx.paging.PagingSource.LoadResult
@@ -175,6 +176,20 @@ class FtsDataSourceTest {
             },
         )
         assertIs<CancellationException>(completion.await().exceptionOrNull())
+    }
+
+    @Test
+    fun cancelledSignalReturnsLoadErrorAndNextSearchCanRead() = runBlocking {
+        seed(1)
+        val source = FtsDataSource(ftsDatabase, database, "needle", "conversation", CancellationSignal().apply { cancel() })
+        val result = assertIs<LoadResult.Error<Int, SearchMessageDetailItem>>(source.load(LoadParams.Refresh(null, 5, false)))
+        assertIs<OperationCanceledException>(result.throwable)
+        assertIds(0..0, source().page(LoadParams.Refresh(null, 5, false)))
+    }
+
+    @Test
+    fun refreshWithoutAnchorReturnsNull() {
+        assertNull(source().getRefreshKey(PagingState(emptyList(), null, PagingConfig(5), 0)))
     }
 
     private fun source() = FtsDataSource(ftsDatabase, database, "needle", "conversation", CancellationSignal())
