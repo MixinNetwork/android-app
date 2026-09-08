@@ -68,6 +68,7 @@ internal fun findChainByHexReference(hex: String?): Chain? =
         Chain.BinanceSmartChain,
         Chain.HyperEVM,
         Chain.XLayer,
+        Chain.Robinhood,
         Chain.Solana,
     ).firstOrNull { it.hexReference == hex }
 
@@ -315,6 +316,11 @@ object Web3Signer {
                 currentChain = Chain.XLayer
                 persist()
                 Result.success(Chain.XLayer.name)
+            }
+            Chain.Robinhood.hexReference -> {
+                currentChain = Chain.Robinhood
+                persist()
+                Result.success(Chain.Robinhood.name)
             }
             Chain.Solana.hexReference -> {
                 currentChain = Chain.Solana

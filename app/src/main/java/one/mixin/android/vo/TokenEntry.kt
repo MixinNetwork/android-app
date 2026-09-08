@@ -1,6 +1,6 @@
 package one.mixin.android.vo
 
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 import com.google.gson.annotations.SerializedName
 
 data class TokenEntry(

@@ -5,14 +5,18 @@ import android.content.Context
 import android.database.Cursor
 import android.database.sqlite.SQLiteDatabase
 import android.util.ArrayMap
-import androidx.room.Database
-import androidx.room.InvalidationTracker
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.sqlite.db.SupportSQLiteDatabase
+import androidx.room3.Database
+import androidx.room3.DaoReturnTypeConverters
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import androidx.room3.livedata.LiveDataDaoReturnTypeConverter
+import androidx.sqlite.SQLiteConnection
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import one.mixin.android.Constants.DataBase.PENDING_DB_NAME
 import one.mixin.android.db.FloodMessageDao
 import one.mixin.android.db.JobDao
+import one.mixin.android.db.datasource.RoomDatabaseCompat
+import one.mixin.android.db.datasource.insert
 import one.mixin.android.db.insertNoReplace
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.database.dbDir
@@ -21,6 +25,8 @@ import one.mixin.android.vo.FloodMessage
 import one.mixin.android.vo.Job
 import one.mixin.android.vo.MessageMedia
 import java.io.File
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job as CoroutineJob
 
 @Database(
     entities = [
@@ -30,6 +36,7 @@ import java.io.File
     ],
     version = 1,
 )
+@DaoReturnTypeConverters(LiveDataDaoReturnTypeConverter::class)
 abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
     abstract override fun floodMessageDao(): FloodMessageDao
 
@@ -55,7 +62,6 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                 if (INSTANCE != null && currentIdentityNumber != scopedIdentity) {
                     INSTANCE?.close()
                     INSTANCE = null
-                    supportSQLiteDatabase = null
                 }
                 if (INSTANCE == null) {
                     val dbPath = File(dbDir(context, scopedIdentity), PENDING_DB_NAME).absolutePath
@@ -64,14 +70,14 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                             context,
                             PendingDatabaseImp::class.java,
                             dbPath,
-                        ).enableMultiInstanceInvalidation().addCallback(
+                        ).setDriver(AndroidSQLiteDriver())
+                            .enableMultiInstanceInvalidation().addCallback(
                             object : Callback() {
-                                override fun onOpen(db: SupportSQLiteDatabase) {
+                                override suspend fun onOpen(db: SQLiteConnection) {
                                     super.onOpen(db)
-                                    supportSQLiteDatabase = db
                                 }
 
-                                override fun onCreate(db: SupportSQLiteDatabase) {
+                                override suspend fun onCreate(db: SQLiteConnection) {
                                     while (true) {
                                         val list = floodMessageDao.limit100()
                                         list.forEach { msg ->
@@ -110,21 +116,21 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                                 }
                             },
                         )
-                    INSTANCE = builder.build()
+                    val database = builder.build()
+                    INSTANCE = database
                     currentIdentityNumber = scopedIdentity
                 }
             }
             return INSTANCE as PendingDatabaseImp
         }
 
-        private var supportSQLiteDatabase: SupportSQLiteDatabase? = null
-
         fun query(query: String): String? {
             val start = System.currentTimeMillis()
             var cursor: Cursor? = null
             try {
+                val database = INSTANCE ?: return null
                 cursor =
-                    supportSQLiteDatabase?.query(query) ?: return null
+                    RoomDatabaseCompat.query(database, query)
                 cursor.moveToFirst()
                 val result = ArrayList<ArrayMap<String, String>>()
                 do {
@@ -167,13 +173,11 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
 
     override fun deleteFloodMessage(floodMessage: FloodMessage) = floodMessageDao().delete(floodMessage)
 
-    override fun addObserver(observer: InvalidationTracker.Observer) {
-        invalidationTracker.addObserver(observer)
-    }
-
-    override fun removeObserver(observer: InvalidationTracker.Observer) {
-        invalidationTracker.removeObserver(observer)
-    }
+    override fun observeInvalidation(
+        scope: CoroutineScope,
+        tableName: String,
+        onInvalidated: () -> Unit,
+    ): CoroutineJob = RoomDatabaseCompat.observeInvalidation(scope, this, tableName) { onInvalidated() }
 
     override fun insertJobs(jobs: List<Job>) {
         jobDao().insertList(jobs)
@@ -192,7 +196,6 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
         synchronized(lock) {
             INSTANCE = null
             currentIdentityNumber = null
-            supportSQLiteDatabase = null
         }
     }
 }

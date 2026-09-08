@@ -37,6 +37,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.crypto.CryptoWalletHelper
@@ -403,7 +404,9 @@ open class MixinApplication :
         identityNumber?.let { scopedIdentity ->
             MixinDatabase.getDatabase(this, scopedIdentity).participantSessionDao().clearKey(sessionId)
         }
-        SignalDatabase.getDatabase(this).clearAllTables()
+        runBlocking {
+            SignalDatabase.getDatabase(this@MixinApplication).clearAllTables()
+        }
         removeValueFromEncryptedPreferences(this, Constants.Tip.MNEMONIC)
         clearPendingImportMnemonic(this)
     }

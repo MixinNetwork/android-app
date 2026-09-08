@@ -26,6 +26,7 @@ import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.HyperEVM
 import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
+import one.mixin.android.Constants.ChainId.Robinhood
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TRON_CHAIN_ID
@@ -201,6 +202,10 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                     R.id.radio_xlayer -> {
                         XLayer
+                    }
+
+                    R.id.radio_robinhood -> {
+                        Robinhood
                     }
 
                     else -> {
