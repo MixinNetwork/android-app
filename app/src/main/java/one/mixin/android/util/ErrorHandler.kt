@@ -75,8 +75,10 @@ open class ErrorHandler {
 
         fun getErrorMessage(throwable: Throwable): String {
             val ctx = MixinApplication.appContext
+            if (generateSequence(throwable) { it.cause }.any { it is androidx.sqlite.SQLiteException }) {
+                return ctx.getString(R.string.Data_error)
+            }
             return when (throwable) {
-                is android.database.sqlite.SQLiteException, is androidx.sqlite.SQLiteException -> ctx.getString(R.string.Data_error)
                 is IOException ->
                     when (throwable) {
                         is SocketTimeoutException -> ctx.getString(R.string.error_connection_timeout)

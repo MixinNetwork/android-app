@@ -6,7 +6,6 @@ import androidx.paging.PagingSource
 import androidx.room3.PooledConnection
 import androidx.room3.RoomDatabase
 import androidx.room3.RoomRawQuery
-import androidx.room3.useReaderConnection
 import androidx.room3.util.performBlocking
 import androidx.room3.util.performInTransactionBlocking
 import kotlinx.coroutines.CancellationException
@@ -14,7 +13,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.CoroutineContext
@@ -35,10 +33,12 @@ object RoomDatabaseCompat {
         query: RoomRawQuery,
         cancellationSignal: CancellationSignal?,
     ): Cursor =
-        runBlocking(queryContext(db)) {
+        performBlocking(db, isReadOnly = true, inTransaction = false) { connection ->
             cancellationSignal?.throwIfCanceled()
-            db.useReaderConnection { connection ->
-                connection.query(query, cancellationSignal)
+            connection.prepare(query.sql).use { statement ->
+                RoomRawQueryCompat.bind(query, statement)
+                cancellationSignal?.throwIfCanceled()
+                statement.toCursor()
             }
         }
 

@@ -65,7 +65,10 @@ internal class SQLiteStatementCursor private constructor(
         }
     }
 
-    private fun value(column: Int): Any? = rows[position][column]
+    private fun value(column: Int): Any? {
+        checkPosition()
+        return rows[position][column]
+    }
 
     companion object {
         fun from(statement: SQLiteStatement): Cursor {
