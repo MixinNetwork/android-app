@@ -77,7 +77,8 @@ internal fun MarketSearchPage(
 ) {
     val marketRecentSearches = recentSearches
     val showRecentSearches = state.query.isBlank() && marketRecentSearches.isNotEmpty()
-    val showResultSections = state.hasQuery && state.selectedTab == MarketSearchTab.ALL
+    val showResultSections = state.hasQuery && !state.isSearching && state.selectedTab == MarketSearchTab.ALL &&
+        (state.spotResults.isNotEmpty() || state.perpetualResults.isNotEmpty())
     val tabs = marketSearchTabs(state.query)
     val quoteColorReversed =
         androidx.compose.ui.platform.LocalContext.current.defaultSharedPreferences
@@ -103,7 +104,13 @@ internal fun MarketSearchPage(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(if (showResultSections) MixinAppTheme.colors.backgroundWindow else MixinAppTheme.colors.background),
+                .background(
+                    if (showResultSections) {
+                        MixinAppTheme.colors.backgroundWindow
+                    } else {
+                        MixinAppTheme.colors.background
+                    },
+                ),
             state = listState,
         ) {
             if (showRecentSearches) {
@@ -183,7 +190,7 @@ internal fun MarketSearchPage(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 20.dp),
+                            .padding(top = 36.dp, bottom = 20.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         CircularProgressIndicator(
@@ -441,7 +448,7 @@ private fun MarketRecentSearchChip(
                     overflow = TextOverflow.Ellipsis,
                     lineHeight = 18.sp,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
-                    modifier = Modifier.widthIn(min = 34.dp),
+                    modifier = if (recentSearch.type == RecentSearchType.PERPETUAL) Modifier else Modifier.widthIn(min = 34.dp),
                 )
                 if (recentSearch.type == RecentSearchType.PERPETUAL) {
                     Spacer(modifier = Modifier.width(3.dp))
