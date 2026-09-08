@@ -243,7 +243,6 @@ internal class MarketSearchViewModel
     private suspend fun searchPerpetualMarkets(query: String) =
         try {
             perpsMarketRepository.searchMarketsOnlineFirst(query).sortedForMarketSearch(
-                query = query,
                 symbol = PerpsMarket::tokenSymbol,
                 name = PerpsMarket::displaySymbol,
                 volume = PerpsMarket::volume,
@@ -281,7 +280,6 @@ internal suspend fun searchSpotMarketsOnlineFirst(
     return markets
         .map { market -> resolveMarketItem(market) }
         .sortedForMarketSearch(
-            query = normalizedQuery,
             symbol = MarketItem::symbol,
             name = MarketItem::name,
             volume = MarketItem::totalVolume,

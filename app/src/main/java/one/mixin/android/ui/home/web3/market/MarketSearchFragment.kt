@@ -110,7 +110,7 @@ class MarketSearchFragment : BaseFragment() {
             RecentSearch(
                 type = RecentSearchType.PERPETUAL,
                 iconUrl = market.iconUrl,
-                title = market.displaySymbol.ifBlank { market.tokenSymbol },
+                title = market.tokenSymbol,
                 subTitle = market.tokenSymbol,
                 primaryKey = market.marketId,
             ),

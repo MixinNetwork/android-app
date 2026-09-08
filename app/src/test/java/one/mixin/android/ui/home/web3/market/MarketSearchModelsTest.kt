@@ -48,7 +48,7 @@ class MarketSearchModelsTest {
     }
 
     @Test
-    fun marketSearchRanksExactFieldsThenVolumeAndAlphabetically() {
+    fun marketSearchRanksByVolumeThenAlphabetically() {
         val markets =
             listOf(
                 market("volume", volume = "100", tokenSymbol = "BTC-X"),
@@ -59,10 +59,9 @@ class MarketSearchModelsTest {
             )
 
         assertEquals(
-            listOf("symbol", "name", "volume", "alpha-a", "alpha-b"),
+            listOf("volume", "alpha-a", "alpha-b", "name", "symbol"),
             markets
                 .sortedForMarketSearch(
-                    query = "btc",
                     symbol = PerpsMarket::tokenSymbol,
                     name = PerpsMarket::displaySymbol,
                     volume = PerpsMarket::volume,

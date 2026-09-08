@@ -47,7 +47,7 @@ class MarketSearchViewModelSearchTest {
         }
 
     @Test
-    fun spotSearch_sortsByExactSymbolThenNameThenVolume() =
+    fun spotSearch_sortsByVolumeWithoutMatchPriority() =
         runBlocking {
             val initialLocal =
                 listOf(
@@ -75,7 +75,7 @@ class MarketSearchViewModelSearchTest {
                 )
 
             assertEquals(
-                listOf("symbol-exact", "name-exact", "volume-high", "volume-low"),
+                listOf("volume-high", "name-exact", "volume-low", "symbol-exact"),
                 result.map(MarketItem::coinId),
             )
         }
