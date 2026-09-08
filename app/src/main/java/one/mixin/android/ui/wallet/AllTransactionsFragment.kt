@@ -90,7 +90,8 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
         FilterParams(
             type = type,
             recipients = userItem?.let { listOf(it) },
-            tokenItems = tokenItem?.let { listOf(it) }
+            tokenItems = tokenItem?.let { listOf(it) },
+            assetIds = requireArguments().getStringArrayList(TransactionsFragment.ARGS_ASSET_IDS),
         )
     }
 
@@ -312,6 +313,7 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
             .setOnMultiSelectTokenListener(object : MultiSelectTokenListBottomSheetDialogFragment.OnMultiSelectTokenListener {
                 override fun onTokenSelect(tokenItems: List<TokenItem>?) {
                     binding.filterAsset.close()
+                    filterParams.assetIds = null
                     filterParams.tokenItems = tokenItems
                     loadFilter()
                 }

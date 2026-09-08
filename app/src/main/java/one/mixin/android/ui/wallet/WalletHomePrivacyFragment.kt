@@ -318,7 +318,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             )
         }
 
-        walletViewModel.walletHomeAssetItemsNotHiddenLimit(WalletHomeSection.PREVIEW_LIMIT).observe(viewLifecycleOwner) {
+        walletViewModel.assetItemsNotHidden().observe(viewLifecycleOwner) {
             Timber.e("observe walletHomeAssetItemsNotHiddenLimit data size: ${it.size}")
             if (it.isEmpty()) {
                 setEmpty()
@@ -467,7 +467,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             tokenFiatTotal = tokenFiat.numberFormat2(),
             btcTotal = formatWalletHomeBtcTotal(totalBtc),
             fiatSymbol = Fiats.getSymbol(),
-            privacyTokens = assets.take(WalletHomeSection.PREVIEW_LIMIT),
+            privacyTokens = assets,
             privacyTransactions = recentSnapshots.take(WalletHomeSection.PREVIEW_LIMIT),
             positions = positions.take(WalletHomeSection.PREVIEW_LIMIT),
             positionSummary = positions.toWalletHomePositionSummary(),

@@ -152,7 +152,8 @@ internal fun WalletHomeCard(
                     if (!state.allTokensHidden) {
                         if (state.walletType == WalletHomeType.PRIVACY) {
                             PrivacyTokenRecycler(
-                                tokens = privacyTokens.take(PREVIEW_LIMIT),
+                                tokens = privacyTokens,
+                                limit = PREVIEW_LIMIT,
                                 earnAssetIds = state.earnAssetIds,
                                 onClick = callbacks::onTokenClicked,
                                 modifier = Modifier.fillMaxWidth(),

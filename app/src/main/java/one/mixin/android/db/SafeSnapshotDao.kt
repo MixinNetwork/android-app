@@ -14,6 +14,7 @@ import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.User
+import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.Token
 
@@ -46,6 +47,9 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
 
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id = :assetId ORDER BY s.created_at DESC, s.snapshot_id DESC LIMIT 21")
     fun snapshotsLimit(assetId: String): LiveData<List<SnapshotItem>>
+
+    @Query("$SNAPSHOT_ITEM_PREFIX WHERE s.asset_id IN (:assetIds) ORDER BY s.created_at DESC, s.snapshot_id DESC LIMIT 21")
+    fun snapshotsLimit(assetIds: List<String>): LiveData<List<SnapshotItem>>
 
     @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY s.created_at DESC, s.snapshot_id DESC LIMIT 4")
     fun recentSnapshotsLimit(): LiveData<List<SnapshotItem>>
@@ -102,7 +106,7 @@ interface SafeSnapshotDao : BaseDao<SafeSnapshot> {
     @Query("$SNAPSHOT_ITEM_PREFIX WHERE trace_id = :traceId")
     suspend fun findSnapshotByTraceId(traceId: String): SnapshotItem?
 
-    @RawQuery(observedEntities = [SafeSnapshot::class, User::class, Token::class, InscriptionItem::class, InscriptionCollection::class])
+    @RawQuery(observedEntities = [SafeSnapshot::class, User::class, Token::class, InscriptionItem::class, InscriptionCollection::class, MarketCoin::class])
     fun getSnapshots(query: RoomRawQuery): PagingSource<Int, SnapshotItem>
 
     @Query("$SNAPSHOT_ITEM_PREFIX ORDER BY abs(s.amount * t.price_usd) DESC")

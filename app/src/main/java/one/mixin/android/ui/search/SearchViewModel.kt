@@ -427,7 +427,8 @@ internal constructor(
                 it.changeUsd = tokenRepository.findChangeUsdByAssetId(it.assetId)
             }
         }
-        _recentSwapTokens.value = list
+        val coins = tokenRepository.findCoinIds(list.map { it.assetId }).associate { it.assetId to it.coinId }
+        _recentSwapTokens.value = list.map { it.copy(coinId = coins[it.assetId] ?: it.coinId) }
     }
 
     fun removeRecentSwapTokens(sp: SharedPreferences, key: String) {

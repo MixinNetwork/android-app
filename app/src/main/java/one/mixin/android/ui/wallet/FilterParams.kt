@@ -16,6 +16,7 @@ class FilterParams(
     var order: SortOrder = SortOrder.Recent,
     var type: SnapshotType = SnapshotType.all,
     var tokenItems: List<TokenItem>? = null,
+    var assetIds: List<String>? = null,
     var recipients: List<Recipient>? = null,
     var startTime: Long? = null,
     var endTime: Long? = null,
@@ -74,10 +75,16 @@ class FilterParams(
             }
         }
 
-        tokenItems?.let {
-            if (it.isNotEmpty()) {
-                val tokenIds = it.joinToString(", ") { token -> "'${token.assetId}'" }
+        val selectedIds = assetIds ?: tokenItems?.map { it.assetId }
+        if (!selectedIds.isNullOrEmpty()) {
+            val tokenIds = selectedIds.joinToString(", ") { "'${it.replace("'", "''")}'" }
+            val coins = if (assetIds == null) tokenItems.orEmpty().filter { it.collectionHash.isNullOrEmpty() }
+                .mapNotNull { it.coinId?.takeIf(String::isNotBlank) }.distinct() else emptyList()
+            if (coins.isEmpty()) {
                 filters.add("s.asset_id IN ($tokenIds)")
+            } else {
+                val coinIds = coins.joinToString(", ") { "'${it.replace("'", "''")}'" }
+                filters.add("(s.asset_id IN ($tokenIds) OR s.asset_id IN (SELECT mc.asset_id FROM market_coins mc JOIN tokens t ON t.asset_id = mc.asset_id WHERE mc.coin_id IN ($coinIds) AND (t.collection_hash IS NULL OR t.collection_hash = '')))")
             }
         }
 

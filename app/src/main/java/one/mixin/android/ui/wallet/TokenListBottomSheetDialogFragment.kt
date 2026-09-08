@@ -43,12 +43,15 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.scrollToCenterCheckedRadio
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.market.DepositTokensBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
 import one.mixin.android.ui.wallet.components.RecentTokens
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.groupTokens
+import one.mixin.android.vo.safe.groupId
 import one.mixin.android.widget.BottomSheet
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
@@ -96,7 +99,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
     }
 
-    private val adapter by lazy { SearchAdapter(requireArguments().getString(ARGS_ASSET_ID)) }
+    private val adapter by lazy { SearchAdapter(requireArguments().getString(ARGS_ASSET_ID), grouped = fromType != TYPE_FROM_PERP) }
 
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
@@ -250,13 +253,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                         binding.searchEt.hideKeyboard()
                         tokenItem?.let {
                             trackTokenSelect()
-                            if (asyncOnAsset != null) {
-                                asyncClick(it)
-                            } else {
-                                defaultSharedPreferences.addToList(key, it.assetId)
-                                onAsset?.invoke(it)
-                                dismiss()
-                            }
+                            selectAsset(it)
                         }
                     }
                 }
@@ -284,9 +281,8 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         }
 
         if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
-            lifecycleScope.launch {
-                val snapshot = bottomViewModel.findAssetItemsWithBalance()
-                updateDefaultAssets(snapshot)
+            bottomViewModel.assetItemsNotHidden().observe(this) { items ->
+                updateDefaultAssets(items.filter { (it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO).signum() > 0 })
             }
         } else if (fromType == TYPE_FROM_PERP) {
             bottomViewModel.usdAssetItemsWithBalance()
@@ -318,13 +314,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                                 } else if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
                                     AnalyticsTracker.trackAssetSendTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
                                 }
-                                defaultSharedPreferences.addToList(key, it.assetId)
-                                if (asyncOnAsset != null) {
-                                    asyncClick(it)
-                                } else {
-                                    this@TokenListBottomSheetDialogFragment.onAsset?.invoke(it)
-                                    dismiss()
-                                }
+                                selectAsset(it)
                             }
                         }
                     }
@@ -432,6 +422,30 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     fun setOnDepositClick(callback: () -> Unit): TokenListBottomSheetDialogFragment {
         this.onDeposit = callback
         return this
+    }
+
+    private fun selectAsset(token: TokenItem) {
+        val finish: (TokenItem) -> Unit = { selected ->
+            defaultSharedPreferences.addToList(key, selected.assetId)
+            if (asyncOnAsset != null) {
+                asyncClick(selected)
+            } else {
+                onAsset?.invoke(selected)
+                dismiss()
+            }
+        }
+        if (fromType == TYPE_FROM_SEND || fromType == TYPE_FROM_TRANSFER) {
+            val assets = defaultAssets.filter { currentChain.isNullOrBlank() || it.chainId == currentChain }
+                .groupTokens().firstOrNull { it.representative.groupId == token.groupId }?.tokens
+                ?: adapter.groupAssets(token.assetId).ifEmpty { listOf(token) }
+            if (assets.size > 1) {
+                DepositTokensBottomSheetDialogFragment.newInstance(ArrayList(assets)).apply {
+                    callback = finish
+                }.show(parentFragmentManager, DepositTokensBottomSheetDialogFragment.TAG)
+                return
+            }
+        }
+        finish(token)
     }
 
     private fun asyncClick(token: TokenItem) {

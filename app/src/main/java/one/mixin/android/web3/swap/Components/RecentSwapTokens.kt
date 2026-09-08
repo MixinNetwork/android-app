@@ -46,6 +46,7 @@ import coil3.transform.CircleCropTransformation
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.groupSwapTokens
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -55,10 +56,11 @@ import java.math.BigDecimal
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-fun RecentSwapTokens(key: String, callback: (SwapToken) -> Unit) {
+fun RecentSwapTokens(key: String, grouped: Boolean = false, callback: (SwapToken) -> Unit) {
     val context = LocalContext.current
     val viewModel = hiltViewModel<SearchViewModel>()
-    val recentToken by viewModel.recentSwapTokens.collectAsState()
+    val source by viewModel.recentSwapTokens.collectAsState()
+    val recentToken = if (grouped) source.groupSwapTokens().map { it.first() } else source
     LaunchedEffect(Unit) {
         viewModel.getRecentSwapTokens(context.defaultSharedPreferences, key)
     }
@@ -99,7 +101,7 @@ fun RecentSwapTokens(key: String, callback: (SwapToken) -> Unit) {
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 recentToken.forEach {
-                    RecentToken(it) {
+                    RecentToken(it, showNetwork = !grouped) {
                         callback.invoke(it)
                     }
                 }
@@ -110,7 +112,7 @@ fun RecentSwapTokens(key: String, callback: (SwapToken) -> Unit) {
 }
 
 @Composable
-fun RecentToken(search: SwapToken, swapTokenClick: (SwapToken) -> Unit) {
+fun RecentToken(search: SwapToken, showNetwork: Boolean = true, swapTokenClick: (SwapToken) -> Unit) {
     val context = LocalContext.current
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
@@ -141,6 +143,7 @@ fun RecentToken(search: SwapToken, swapTokenClick: (SwapToken) -> Unit) {
                 placeholder = R.drawable.ic_avatar_place_holder,
                 contentScale = ContentScale.Crop,
             )
+            if (showNetwork) {
             CoilImage(
                 model = ImageRequest.Builder(context)
                     .data(search.chain.icon)
@@ -155,6 +158,7 @@ fun RecentToken(search: SwapToken, swapTokenClick: (SwapToken) -> Unit) {
                 placeholder = R.drawable.ic_avatar_place_holder,
                 contentScale = ContentScale.Crop,
             )
+            }
         }
         Spacer(modifier = Modifier.width(4.dp))
         Column {

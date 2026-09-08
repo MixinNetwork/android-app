@@ -39,8 +39,13 @@ data class WalletEarnDetails(
 internal fun List<EarnProduct>.toWalletEarnDetails(
     assetId: String,
     priceUsd: String,
-): WalletEarnDetails? {
-    val products = filter { it.assetId == assetId }
+): WalletEarnDetails? = toWalletEarnDetails(mapOf(assetId to priceUsd))
+
+internal fun List<EarnProduct>.toWalletEarnDetails(tokens: List<TokenItem>): WalletEarnDetails? =
+    toWalletEarnDetails(tokens.associate { it.assetId to it.priceUsd })
+
+private fun List<EarnProduct>.toWalletEarnDetails(prices: Map<String, String>): WalletEarnDetails? {
+    val products = filter { it.assetId in prices }
     if (products.isEmpty()) return null
     val productionIds = products.map { it.productionId }.toSet()
     val selectedProductionId = products
@@ -60,20 +65,18 @@ internal fun List<EarnProduct>.toWalletEarnDetails(
     val totalPrincipal = products.fold(BigDecimal.ZERO) { total, product ->
         total + decimal(product.account.totalPrincipal)
     }
-    val totalEarnings = products.fold(BigDecimal.ZERO) { total, product ->
-        total + decimal(product.account.totalEarnings)
+    val totalEarningsUsd = products.fold(BigDecimal.ZERO) { total, product ->
+        val price = prices[product.assetId]?.toBigDecimalOrNull()?.coerceAtLeast(BigDecimal.ZERO) ?: BigDecimal.ZERO
+        total + decimal(product.account.totalEarnings).multiply(price)
     }
     val yesterdayEarnings = products.fold(BigDecimal.ZERO) { total, product ->
         total + decimal(product.account.yesterdayEarnings)
     }
-    val assetPriceUsd = priceUsd.toBigDecimalOrNull()
-        ?.takeIf { it > BigDecimal.ZERO }
-        ?: BigDecimal.ZERO
     return WalletEarnDetails(
         productionId = selectedProductionId,
         totalPrincipal = totalPrincipal,
         yesterdayEarnings = yesterdayEarnings,
-        totalEarningsUsd = totalEarnings.multiply(assetPriceUsd),
+        totalEarningsUsd = totalEarningsUsd,
         rewardRate = annualRateRange(
             filter { it.productionId in productionIds }
                 .flatMap { it.annualRates },

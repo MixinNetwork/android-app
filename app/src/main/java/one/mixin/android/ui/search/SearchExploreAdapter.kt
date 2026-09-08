@@ -21,7 +21,9 @@ import one.mixin.android.ui.search.holder.UrlHolder
 import one.mixin.android.vo.Dapp
 import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.market.Market
+import one.mixin.android.vo.safe.TokenGroup
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.groupTokens
 
 class SearchExploreAdapter(
     private val marketLimit: Boolean = true,
@@ -34,6 +36,7 @@ class SearchExploreAdapter(
         }
 
     private var data = SearchExploreDataPackage(marketLimit = marketLimit)
+    private var assetGroups: Map<String, TokenGroup> = emptyMap()
 
     override fun getHeaderId(position: Int): Long =
         if (position == 0 && data.showTip) {
@@ -71,7 +74,8 @@ class SearchExploreAdapter(
 
     @SuppressLint("NotifyDataSetChanged")
     fun setAssets(assets: List<TokenItem>?) {
-        data.assetList = assets
+        assetGroups = assets.orEmpty().groupTokens().associateBy { it.representative.assetId }
+        data.assetList = assetGroups.values.map { it.representative }
         data.showTip = shouldTips()
         notifyDataSetChanged()
     }
@@ -110,7 +114,10 @@ class SearchExploreAdapter(
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (getItemViewType(position)) {
             0 -> (holder as UrlHolder).bind(query, onItemClickListener)
-            TypeAsset.index -> (holder as AssetHolder).bind(data.getItem(position) as TokenItem, query, onItemClickListener)
+            TypeAsset.index -> {
+                val asset = data.getItem(position) as TokenItem
+                (holder as AssetHolder).bind(asset, query, onItemClickListener, assetGroups[asset.assetId])
+            }
             TypeMarket.index -> (holder as MarketHolder).bind(data.getItem(position) as Market, query, onItemClickListener)
             TypeDapp.index -> (holder as DappHolder).bind(data.getItem(position) as Dapp, query, onItemClickListener)
             TypeBot.index -> (holder as BotHolder).bind(data.getItem(position) as SearchBot, query, onItemClickListener)
@@ -121,7 +128,7 @@ class SearchExploreAdapter(
 
     fun getTypeData(position: Int) =
         when (getItemViewType(position)) {
-            TypeAsset.index -> if (data.assetShowMore()) data.assetList else null
+            TypeAsset.index -> if (data.assetShowMore()) assetGroups.values.flatMap { it.tokens } else null
             TypeMarket.index -> if (data.marketShowMore()) data.marketList else null
             TypeDapp.index -> if (data.dappShowMore()) data.dappList else null
             TypeBot.index -> if (data.botShowMore()) data.botList else null

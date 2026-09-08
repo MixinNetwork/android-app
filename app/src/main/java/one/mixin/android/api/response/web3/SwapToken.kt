@@ -31,7 +31,8 @@ data class SwapToken(
     var changeUsd: String? = null,
     @SerializedName("isWeb3")
     var isWeb3: Boolean = false,
-    @SerializedName("level") val level: Int? = null
+    @SerializedName("level") val level: Int? = null,
+    @SerializedName("coin_id") val coinId: String? = null,
 ) : Parcelable {
     fun toLongAmount(amount: String): Long {
         val a =
@@ -171,3 +172,14 @@ private fun String.symbolPriority(keyword: String): Int = when {
     contains(keyword, ignoreCase = true) -> 1
     else -> 0
 }
+
+fun List<SwapToken>.groupSwapTokens(): List<List<SwapToken>> =
+    distinctBy { token -> token.walletId to token.groupAssetId() }.groupBy { it.groupId }.values.toList()
+
+val SwapToken.groupId: Pair<String?, String>
+    get() {
+        val coin = coinId?.takeIf { it.isNotBlank() && collectionHash.isNullOrEmpty() }
+        return walletId to (coin?.let { "coin:$it" } ?: "asset:${groupAssetId()}")
+    }
+
+private fun SwapToken.groupAssetId(): String = assetId.ifBlank { "${chain.chainId}:${address.ifBlank { name }}" }

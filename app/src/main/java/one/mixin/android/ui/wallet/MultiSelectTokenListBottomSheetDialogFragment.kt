@@ -27,6 +27,8 @@ import one.mixin.android.ui.wallet.adapter.SelectedTokenAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchTokenItemCallback
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.groupTokens
+import one.mixin.android.vo.safe.groupId
 import one.mixin.android.widget.BottomSheet
 import java.util.concurrent.TimeUnit
 
@@ -56,7 +58,7 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
     private val groupAdapter: SelectedTokenAdapter by lazy {
         SelectedTokenAdapter { tokenItem ->
             selectedTokenItems.remove(tokenItem)
-            adapter.notifyItemChanged(adapter.currentList.indexOf(tokenItem))
+            adapter.currentList.indexOfFirst { it.groupId == tokenItem.groupId }.takeIf { it >= 0 }?.let(adapter::notifyItemChanged)
             groupAdapter.notifyDataSetChanged()
         }
     }
@@ -69,7 +71,7 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
         super.setupDialog(dialog, style)
         dataProvider?.let { provider ->
             selectedTokenItems.clear()
-            selectedTokenItems.addAll(provider.getCurrentTokens())
+            selectedTokenItems.addAll(provider.getCurrentTokens().groupTokens().map { it.representative })
         }
         contentView = binding.root
         binding.ph.doOnPreDraw {
@@ -93,12 +95,12 @@ class MultiSelectTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFrag
                 object : WalletSearchTokenItemCallback {
                     override fun onTokenItemClick(tokenItem: TokenItem) {
                         binding.searchEt.hideKeyboard()
-                        if (selectedTokenItems.contains(tokenItem)) {
-                            selectedTokenItems.remove(tokenItem)
+                        if (selectedTokenItems.any { it.groupId == tokenItem.groupId }) {
+                            selectedTokenItems.removeAll { it.groupId == tokenItem.groupId }
                         } else {
                             selectedTokenItems.add(tokenItem)
                         }
-                        adapter.notifyItemChanged(adapter.currentList.indexOf(tokenItem))
+                        adapter.currentList.indexOfFirst { it.groupId == tokenItem.groupId }.takeIf { it >= 0 }?.let(adapter::notifyItemChanged)
                         groupAdapter.checkedTokenItems = selectedTokenItems
                         groupAdapter.notifyDataSetChanged()
                         selectRv.scrollToPosition(selectedTokenItems.size - 1)

@@ -769,6 +769,7 @@ fun callableTokenItem(
             val cursorIndexOfWithdrawalMemoPossibility = 17
             val cursorIndexOfCollectionHash = 18
             val cursorIndexOfPrecision = 19
+            val cursorIndexOfCoinId = 20
 
             val result: MutableList<TokenItem> = java.util.ArrayList(cursor.count)
             while (cursor.moveToNext()) {
@@ -885,6 +886,12 @@ fun callableTokenItem(
                         cursor.getString(cursorIndexOfCollectionHash)
                     }
                 val tmpPrecision: Int = cursor.getInt(cursorIndexOfPrecision)
+                val tmpCoinId: String? =
+                    if (cursor.isNull(cursorIndexOfCoinId)) {
+                        null
+                    } else {
+                        cursor.getString(cursorIndexOfCoinId)
+                    }
 
                 item =
                     TokenItem(
@@ -909,6 +916,7 @@ fun callableTokenItem(
                         tmpCollectionHash,
                         null,
                         tmpPrecision,
+                        tmpCoinId,
                     )
                 result.add(item)
             }

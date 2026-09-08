@@ -10,6 +10,20 @@ import java.math.BigDecimal
 
 class WalletHomeEarnAccountTest {
     @Test
+    fun combinesNetworkAccountsUsingEachAssetsPrice() {
+        val details = requireNotNull(
+            listOf(
+                earnProduct(assetId = "ethereum", totalPrincipal = "0.1", totalEarnings = "2", yesterdayEarnings = "0.01"),
+                earnProduct(assetId = "base", totalPrincipal = "0.2", totalEarnings = "3", yesterdayEarnings = "0.02"),
+                earnProduct(assetId = "other", totalPrincipal = "100", totalEarnings = "100"),
+            ).toWalletEarnDetails(listOf(tokenItem("ethereum", "1"), tokenItem("base", "2"))),
+        )
+        assertEquals(0, BigDecimal("0.3").compareTo(details.totalPrincipal))
+        assertEquals(0, BigDecimal("0.03").compareTo(details.yesterdayEarnings))
+        assertEquals(0, BigDecimal("8").compareTo(details.totalEarningsUsd))
+    }
+
+    @Test
     fun showsAnnualRateRangeRegardlessOfOrder() {
         assertEquals(
             "3.65%-10.95%",

@@ -29,6 +29,8 @@ import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.TokenGroup
+import one.mixin.android.vo.safe.groupTokens
 import java.math.BigDecimal
 
 class WalletAssetAdapter(
@@ -44,7 +46,15 @@ class WalletAssetAdapter(
         notifyDataSetChanged()
     }
 
-    fun setAssetList(newAssets: List<TokenItem>) {
+    private var groups: Map<String, TokenGroup> = emptyMap()
+
+    fun groupAssets(assetId: String): List<TokenItem> = groups[assetId]?.tokens.orEmpty()
+
+    fun setAssetList(assets: List<TokenItem>) {
+        val previousGroups = groups
+        val groupedAssets = assets.groupTokens().sortedByDescending { it.fiat }
+        groups = groupedAssets.associateBy { it.representative.assetId }
+        val newAssets = groupedAssets.map { it.representative }
         if (data == null) {
             data = newAssets
             notifyItemRangeInserted(0, newAssets.size)
@@ -71,7 +81,7 @@ class WalletAssetAdapter(
                         ): Boolean {
                             val old = data!![oldItemPosition]
                             val new = newAssets[newItemPosition]
-                            return old == new
+                            return old == new && previousGroups[old.assetId] == groups[new.assetId]
                         }
                     },
                 )
@@ -153,19 +163,21 @@ class WalletAssetAdapter(
                 binding.balance.setTextSize(TypedValue.COMPLEX_UNIT_SP, 22f)
                 binding.changeTv.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14f)
             }
+            val group = groups[asset.assetId] ?: TokenGroup(listOf(asset))
+            val balance = group.balance.toPlainString()
             binding.balance.text =
                 try {
-                    if (asset.balance.numberFormat().toFloat() == 0f) {
+                    if (balance.numberFormat().toFloat() == 0f) {
                         "0.00"
                     } else {
-                        asset.balance.numberFormat()
+                        balance.numberFormat()
                     }
                 } catch (ignored: NumberFormatException) {
-                    asset.balance.numberFormat()
+                    balance.numberFormat()
                 }
             binding.symbolTv.text = asset.symbol
-            val fiatValue = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
-            binding.balanceAs.text = if (asset.assetId in earnAssetIds) {
+            val fiatValue = "≈ ${Fiats.getSymbol()}${group.fiat.numberFormat2()}"
+            binding.balanceAs.text = if (group.tokens.any { it.assetId in earnAssetIds }) {
                 buildSpannedString {
                     append(fiatValue)
                     append(" · ")
@@ -194,6 +206,7 @@ class WalletAssetAdapter(
             binding.backLeftTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)
             binding.backRightTv.setText(if (slideShow) R.string.Shown else R.string.Hidden)
             binding.avatar.loadToken(asset)
+            binding.avatar.badge.visibility = GONE
             holder.itemView.setOnClickListener { onItemListener?.onNormalItemClick(asset) }
             debugLongClick(
                 holder.itemView,

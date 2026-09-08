@@ -67,19 +67,19 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
                         override fun onSwiped(viewHolder: RecyclerView.ViewHolder) {
                             val hiddenPos = viewHolder.absoluteAdapterPosition
                             val asset = assetsAdapter.data!![assetsAdapter.getPosition(hiddenPos)]
-                            val deleteItem = assetsAdapter.removeItem(hiddenPos)!!
+                            val groupAssets = assetsAdapter.groupAssets(asset.assetId)
+                            assetsAdapter.removeItem(hiddenPos)
                             lifecycleScope.launch {
                                 AnalyticsTracker.trackAssetVisibility(false, TradeWallet.MAIN, AnalyticsTracker.AssetSource.WALLET_HOME)
-                                walletViewModel.updateAssetHidden(asset.assetId, false)
+                                walletViewModel.updateAssetsHidden(groupAssets.map { it.assetId }, false)
                                 val anchorView = assetsRv
 
                                 snackbar =
                                     Snackbar.make(anchorView, getString(R.string.wallet_already_shown, asset.symbol), 3500)
                                         .setAction(R.string.UNDO) {
-                                            assetsAdapter.restoreItem(deleteItem, hiddenPos)
                                             lifecycleScope.launch(Dispatchers.IO) {
                                                 AnalyticsTracker.trackAssetVisibility(true, TradeWallet.MAIN, AnalyticsTracker.AssetSource.WALLET_HOME)
-                                                walletViewModel.updateAssetHidden(asset.assetId, true)
+                                                walletViewModel.updateAssetsHidden(groupAssets.map { it.assetId }, true)
                                             }
                                         }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
                                             (this.view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text))

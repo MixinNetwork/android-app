@@ -41,6 +41,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import one.mixin.android.databinding.FragmentAssetListBottomSheetBinding
+import one.mixin.android.databinding.FragmentChooseTokensBottomSheetBinding
 import one.mixin.android.db.web3.vo.isWeb3TransferSupported
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
@@ -274,6 +275,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.apply {
             val visibleTokens = defaultTokens(tokens)
             val visibleStocks = supportedTokens(stocks)
+            adapter.grouped = inMixin()
             assetRv.adapter = adapter
             adapter.tokens = visibleTokens.sortByKeywordAndBalance()
             adapter.stocks = visibleStocks.sortByKeywordAndBalance()
@@ -319,13 +321,14 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     override fun onStart() {
         super.onStart()
+        filter(binding.searchEt.et.text?.toString().orEmpty())
         binding.apply {
             root.findViewById<ComposeView>(composeId).let {
                 if (it == null) {
                     val composeView = ComposeView(requireContext()).apply {
                         id = View.generateViewId()
                         setContent {
-                            RecentSwapTokens(key) {
+                            RecentSwapTokens(key, grouped = inMixin()) {
                                 if (inMixin() || isWeb3TransferSupported(it.chain.chainId)) {
                                     AnalyticsTracker.trackTradeTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
                                     AnalyticsTracker.trackSpotTokenSelect(
@@ -370,9 +373,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private fun filter(s: String) =
         lifecycleScope.launch {
+            if (inMixin() && isStockMode) adapter.stocks = swapViewModel.withCoinIds(supportedTokens(stocks))
             if (s.isBlank() && currentChain == null && !isStockMode) {
                 val visibleTokens = defaultTokens(tokens)
-                adapter.tokens = visibleTokens.sortByKeywordAndBalance()
+                adapter.tokens = swapViewModel.withCoinIds(visibleTokens.sortByKeywordAndBalance())
                 adapter.isSearch = false
                 if (isLoading) {
                     binding.rvVa.displayedChild = 3
@@ -392,7 +396,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
             adapter.isSearch = true
             val total = search(s, assetList, inMixin())
-            adapter.tokens = ArrayList(total.sortByKeywordAndBalance(s))
+            adapter.tokens = swapViewModel.withCoinIds(total.sortByKeywordAndBalance(s))
             if (!isAdded) {
                 return@launch
             }
@@ -501,7 +505,26 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     }
 
     fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {
-        this.adapter.setOnClickListener(onClickListener)
+        this.adapter.setOnClickListener { token, alert ->
+            val assets = if (inMixin() && !alert) adapter.groupAssets(token) else emptyList()
+            if (assets.size > 1) {
+                val content = FragmentChooseTokensBottomSheetBinding.inflate(layoutInflater)
+                val sheet = BottomSheet.Builder(requireActivity()).setCustomView(content.root).create()
+                content.chooseNetwork.text = getString(R.string.Choose_Token, token.symbol)
+                content.chooseNetworkSub.text = getString(R.string.choose_token_desc, token.symbol)
+                content.close.setOnClickListener { sheet.dismiss() }
+                val networks = SwapTokenAdapter(selectUnique, networkSelection = true)
+                networks.tokens = assets.sortedByDescending { it.balanceValue }
+                networks.setOnClickListener { selected, selectedAlert ->
+                    sheet.dismiss()
+                    onClickListener(selected, selectedAlert)
+                }
+                content.assetRv.adapter = networks
+                sheet.show()
+            } else {
+                onClickListener(assets.firstOrNull() ?: token, alert)
+            }
+        }
     }
 
     fun setOnDeposit(onDepositListener: () -> Unit) {

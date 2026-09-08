@@ -2606,4 +2606,6 @@
     <string name="earn_total_earnings">总收益</string>
     <string name="earn_yesterday_earnings">昨日收益</string>
     <string name="earn_reward_rate">收益率</string>
+    <string name="asset_allocation">分布</string>
+    <string name="asset_on_network">在 %1$s 上</string>
 </resources>

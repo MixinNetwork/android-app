@@ -117,28 +117,21 @@ interface TransactionInterface {
         if (inscriptionHash != null) {
             InscriptionActivity.show(curActivity, inscriptionHash)
         } else if (curActivity is WalletActivity) {
-            if ((fragment.findNavController().previousBackStackEntry?.destination as FragmentNavigator.Destination?)?.label == AllTransactionsFragment.TAG) {
+            if ((fragment.findNavController().previousBackStackEntry?.destination as FragmentNavigator.Destination?)?.label != TransactionsFragment.TAG) {
                 fragment.view?.navigate(
                     R.id.action_transaction_fragment_to_transactions,
-                    Bundle().apply { putParcelable(TransactionsFragment.ARGS_ASSET, asset) },
+                    Bundle().apply {
+                        putParcelable(TransactionsFragment.ARGS_ASSET, asset)
+                        putString(TransactionsFragment.ARGS_NETWORK, asset.chainId)
+                    },
                 )
             } else {
+                fragment.findNavController().previousBackStackEntry?.savedStateHandle
+                    ?.set(TransactionsFragment.ARGS_NETWORK, asset.chainId)
                 fragment.view?.navigateUp()
             }
         } else {
-            val back = kotlin.runCatching {
-                return@runCatching fragment.parentFragmentManager.let { fm ->
-                    val backStackEntryCount = fm.backStackEntryCount
-                    fm.getBackStackEntryAt(backStackEntryCount - 2).name == AllTransactionsFragment.TAG
-                }
-            }.getOrElse {
-                false
-            }
-            if (back) {
-                fragment.parentFragmentManager.popBackStack()
-            } else {
-                WalletActivity.showWithToken(curActivity, asset, WalletActivity.Destination.Transactions)
-            }
+            WalletActivity.showWithToken(curActivity, asset, WalletActivity.Destination.Transactions, network = asset.chainId)
         }
     }
 
