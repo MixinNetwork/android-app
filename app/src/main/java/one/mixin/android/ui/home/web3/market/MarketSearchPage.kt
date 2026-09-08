@@ -610,7 +610,7 @@ private fun MarketSearchRow(
                 text = subtitle,
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 14.sp,
-                lineHeight = 16.sp,
+                lineHeight = 15.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
@@ -625,7 +625,7 @@ private fun MarketSearchRow(
             Text(
                 text = price,
                 color = MixinAppTheme.colors.textPrimary,
-                fontSize = 16.sp,
+                fontSize = 14.sp,
                 lineHeight = 18.sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 maxLines = 1,
