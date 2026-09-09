@@ -473,6 +473,12 @@ class TokenRepository
 
         fun snapshotsLimit(id: String) = safeSnapshotDao.snapshotsLimit(id)
 
+        fun snapshotsLimit(ids: List<String>) = safeSnapshotDao.snapshotsLimit(ids)
+
+        fun groupedAssetItems(assetId: String) = tokenDao.groupedAssetItems(listOf(assetId))
+
+        suspend fun findGroupedAssets(assetIds: List<String>) = tokenDao.findGroupedAssetItems(assetIds)
+
         fun recentSnapshotsLimit() = safeSnapshotDao.recentSnapshotsLimit()
 
         suspend fun snapshotLocal(
@@ -495,16 +501,17 @@ class TokenRepository
 
         suspend fun paySuspend(request: TransferRequest) = tokenService.paySuspend(request)
 
-        suspend fun updateHidden(
-            id: String,
-            hidden: Boolean,
-        ) {
+        suspend fun updateHidden(id: String, hidden: Boolean) = updateHidden(listOf(id), hidden)
+
+        suspend fun updateHidden(ids: List<String>, hidden: Boolean) {
             appDatabase.withRoomTransaction {
-                val tokensExtra = tokensExtraDao.findByAssetId(id)
-                if (tokensExtra != null) {
-                    tokensExtraDao.updateHiddenByAssetId(id, hidden)
-                } else {
-                    tokensExtraDao.insertSuspend(TokensExtra(id, assetIdToAsset(id), hidden, "0", nowInUtc()))
+                ids.distinct().forEach { id ->
+                    val tokensExtra = tokensExtraDao.findByAssetId(id)
+                    if (tokensExtra != null) {
+                        tokensExtraDao.updateHiddenByAssetId(id, hidden)
+                    } else {
+                        tokensExtraDao.insertSuspend(TokensExtra(id, assetIdToAsset(id), hidden, "0", nowInUtc()))
+                    }
                 }
             }
         }
@@ -691,7 +698,8 @@ class TokenRepository
                     (result + localLike
                         .filter { t -> result.any { r -> r.assetId == t.assetId }.not() })
                 } else {
-                    result
+                    val coins = marketCoinDao.findByAssetIds(result.map { it.assetId }).associate { it.assetId to it.coinId }
+                    result.map { it.copy(coinId = coins[it.assetId] ?: it.coinId) }
                 }
             }
             return localLike
@@ -1489,6 +1497,8 @@ class TokenRepository
     }
 
     suspend fun findTokensByCoinId(coinId: String) = marketCoinDao.findTokensByCoinId(coinId)
+
+    suspend fun findCoinIds(assetIds: List<String>) = assetIds.distinct().chunked(MARKET_COINS_DELETE_BATCH_SIZE).flatMap { marketCoinDao.findByAssetIds(it) }
 
     suspend fun findTokenIdsByCoinId(coinId: String) = marketCoinDao.findTokenIdsByCoinId(coinId)
 

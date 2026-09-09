@@ -41,6 +41,7 @@ data class TopAssetItem(
     @SerializedName("collection_hash")
     @ColumnInfo(name = "collection_hash")
     val collectionHash: String?,
+    val coinId: String? = null,
 ) : Parcelable {
     companion object {
         val DIFF_CALLBACK =

@@ -10,6 +10,14 @@ import one.mixin.android.vo.safe.TokenItem
 @Dao
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface MarketCoinDao : BaseDao<MarketCoin> {
+    @Query("SELECT * FROM market_coins WHERE asset_id IN (:assetIds)")
+    suspend fun findByAssetIds(assetIds: List<String>): List<MarketCoin>
+
+    @Query("""SELECT t.asset_id FROM tokens t
+        WHERE (t.collection_hash IS NULL OR t.collection_hash = '')
+        AND NOT EXISTS (SELECT 1 FROM market_coins mc WHERE mc.asset_id = t.asset_id AND mc.coin_id != '')""")
+    suspend fun findAssetsWithoutCoin(): List<String>
+
     @Query("$PREFIX_ASSET_ITEM LEFT JOIN market_coins mc on mc.asset_id = a1.asset_id WHERE mc.coin_id = :coinId")
     suspend fun findTokensByCoinId(coinId: String): List<TokenItem>
 

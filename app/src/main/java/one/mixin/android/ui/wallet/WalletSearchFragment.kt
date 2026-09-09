@@ -36,6 +36,7 @@ import one.mixin.android.ui.wallet.adapter.SearchDefaultAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.groupId
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -55,7 +56,7 @@ class WalletSearchFragment : BaseFragment() {
         SearchDefaultAdapter()
     }
     private val searchAdapter by lazy {
-        SearchAdapter()
+        SearchAdapter(grouped = true)
     }
 
     private var disposable: Disposable? = null
@@ -174,11 +175,10 @@ class WalletSearchFragment : BaseFragment() {
                 defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
                     ?: return@withContext null
             if (assetList.isEmpty()) return@withContext null
-            val result = viewModel.findAssetsByIds(assetList.take(2))
+            val result = viewModel.findGroupedAssets(assetList.take(2))
             if (result.isEmpty()) return@withContext null
-            result.sortedBy {
-                assetList.indexOf(it.assetId)
-            }
+            val order = result.filter { it.assetId in assetList }.associate { it.groupId to assetList.indexOf(it.assetId) }
+            result.sortedBy { order[it.groupId] ?: Int.MAX_VALUE }
         }
     }
 
@@ -189,20 +189,9 @@ class WalletSearchFragment : BaseFragment() {
             val recentAssets = searchDefaultAdapter.recentAssets
             if (recentAssets.isNullOrEmpty()) return@launch
 
-            val newRecentList = viewModel.findAssetsByIds(recentAssets.take(2).map { it.assetId })
-            var needRefreshRecent = false
-            newRecentList.forEach { n ->
-                val needUpdate =
-                    recentAssets.find { r ->
-                        r.assetId == n.assetId && r.priceUsd != n.priceUsd
-                    }
-                if (needUpdate != null) {
-                    needRefreshRecent = true
-                    return@forEach
-                }
-            }
-            if (needRefreshRecent) {
-                searchDefaultAdapter.recentAssets = newRecentList
+            val newRecentList = viewModel.findGroupedAssets(recentAssets.take(2).map { it.assetId })
+            searchDefaultAdapter.recentAssets = newRecentList.sortedBy { token ->
+                recentAssets.indexOfFirst { it.groupId == token.groupId }
             }
         }
 

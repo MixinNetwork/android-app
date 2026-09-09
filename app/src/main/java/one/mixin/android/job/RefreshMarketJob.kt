@@ -8,7 +8,7 @@ import timber.log.Timber
 
 class RefreshMarketJob(private val assetId: String) : BaseJob(
     Params(PRIORITY_UI_HIGH)
-        .addTags(GROUP).requireNetwork(),
+        .addTags(GROUP).singleInstanceBy("$GROUP:$assetId").requireNetwork(),
 ) {
     companion object {
         private const val serialVersionUID = 1L

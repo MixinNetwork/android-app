@@ -49,6 +49,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.priceFormat2
 import one.mixin.android.ui.search.SearchViewModel
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.groupTokens
 import java.math.BigDecimal
 
 internal fun isWeb3RecentTokenChain(chainId: String): Boolean = isWeb3TransferSupported(chainId)
@@ -62,7 +63,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
     val recentToken = if (web3) {
         source.filter { isWeb3RecentTokenChain(it.chainId) }
     } else {
-        source
+        source.groupTokens().map { it.representative }
     }
     LaunchedEffect(Unit) {
         viewModel.getRecentTokenItems(context.defaultSharedPreferences, key)
@@ -103,7 +104,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 recentToken.forEach {
-                    RecentToken(it) {
+                    RecentToken(it, showNetwork = web3) {
                         callback.invoke(it)
                     }
                 }
@@ -114,7 +115,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
 }
 
 @Composable
-fun RecentToken(recent: TokenItem, tokenItemClick: (TokenItem) -> Unit) {
+fun RecentToken(recent: TokenItem, showNetwork: Boolean = true, tokenItemClick: (TokenItem) -> Unit) {
     val context = LocalContext.current
     val quoteColorPref = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
@@ -145,20 +146,22 @@ fun RecentToken(recent: TokenItem, tokenItemClick: (TokenItem) -> Unit) {
                 placeholder = R.drawable.ic_avatar_place_holder,
                 contentScale = ContentScale.Crop,
             )
-            CoilImage(
-                model = ImageRequest.Builder(context)
-                    .data(recent.chainIconUrl)
-                    .transformations(CircleCropTransformation())
-                    .build(),
-                modifier = Modifier
-                    .size(13.dp)
-                    .align(Alignment.BottomStart)
-                    .clip(CircleShape)
-                    .background(MixinAppTheme.colors.background)
-                    .border(1.dp, MixinAppTheme.colors.background, CircleShape),
-                placeholder = R.drawable.ic_avatar_place_holder,
-                contentScale = ContentScale.Crop,
-            )
+            if (showNetwork) {
+                CoilImage(
+                    model = ImageRequest.Builder(context)
+                        .data(recent.chainIconUrl)
+                        .transformations(CircleCropTransformation())
+                        .build(),
+                    modifier = Modifier
+                        .size(13.dp)
+                        .align(Alignment.BottomStart)
+                        .clip(CircleShape)
+                        .background(MixinAppTheme.colors.background)
+                        .border(1.dp, MixinAppTheme.colors.background, CircleShape),
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    contentScale = ContentScale.Crop,
+                )
+            }
         }
         Spacer(modifier = Modifier.width(4.dp))
         Column {

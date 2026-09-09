@@ -27,6 +27,8 @@ import one.mixin.android.vo.MaoUser
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.TokenGroup
+import one.mixin.android.vo.safe.groupTokens
 import java.util.Locale
 
 class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRecyclerHeadersAdapter<HeaderHolder> {
@@ -74,7 +76,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
 
     fun getTypeData(position: Int) =
         when (getItemViewType(position)) {
-            TypeAsset.index -> if (data.assetShowMore()) data.assetList else null
+            TypeAsset.index -> if (data.assetShowMore()) assetGroups.values.flatMap { it.tokens } else null
             TypeUser.index -> if (data.userShowMore()) data.userList else null
             TypeChat.index -> if (data.chatShowMore()) data.chatList else null
             TypeMessage.index -> if (data.messageShowMore()) data.messageList else null
@@ -91,13 +93,16 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
         notifyDataSetChanged()
     }
 
+    private var assetGroups: Map<String, TokenGroup> = emptyMap()
+
     @SuppressLint("NotifyDataSetChanged")
     fun setData(
         tokenItems: List<TokenItem>?,
         users: List<User>?,
         chatMinimals: List<ChatMinimal>?,
     ) {
-        data.assetList = tokenItems
+        assetGroups = tokenItems.orEmpty().groupTokens().associateBy { it.representative.assetId }
+        data.assetList = assetGroups.values.map { it.representative }
         data.userList = users
         data.showTip = shouldTips(query)
         data.chatList = chatMinimals
@@ -106,13 +111,9 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
 
     @SuppressLint("NotifyDataSetChanged")
     fun setAssetData(tokenItems: List<TokenItem>?) {
-        data.assetList = tokenItems
-        val end = tokenItems?.size ?: 0
-        if (end > 0) {
-            notifyItemRangeChanged(0, end)
-        } else {
-            notifyDataSetChanged()
-        }
+        assetGroups = tokenItems.orEmpty().groupTokens().associateBy { it.representative.assetId }
+        data.assetList = assetGroups.values.map { it.representative }
+        notifyDataSetChanged()
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -184,7 +185,7 @@ class SearchAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>(), StickyRec
 
             TypeAsset.index -> {
                 data.getItem(position).let {
-                    (holder as AssetHolder).bind(it as TokenItem, query, onItemClickListener)
+                    (holder as AssetHolder).bind(it as TokenItem, query, onItemClickListener, assetGroups[it.assetId])
                 }
             }
 

@@ -8,6 +8,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.groupTokens
 
 private const val PREF_WALLET_HOME_CACHE_PREFIX = "pref_wallet_home_cache"
 
@@ -127,7 +128,7 @@ fun SharedPreferences.putWalletHomeCache(
         fiatTotal = state.fiatTotal,
         btcTotal = state.btcTotal,
         fiatSymbol = state.fiatSymbol,
-        privacyTokens = state.privacyTokens.take(WalletHomeSection.PREVIEW_LIMIT),
+        privacyTokens = state.privacyTokens.groupTokens().sortedByDescending { it.fiat }.take(WalletHomeSection.PREVIEW_LIMIT).flatMap { it.tokens },
         web3Tokens = state.web3Tokens.take(WalletHomeSection.PREVIEW_LIMIT),
         privacyTransactions = state.privacyTransactions.take(WalletHomeSection.PREVIEW_LIMIT),
         web3Transactions = state.web3Transactions.take(WalletHomeSection.PREVIEW_LIMIT),

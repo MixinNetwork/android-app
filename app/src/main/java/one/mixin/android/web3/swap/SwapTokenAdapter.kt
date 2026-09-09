@@ -8,6 +8,8 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import one.mixin.android.R
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.groupId
+import one.mixin.android.api.response.web3.groupSwapTokens
 import one.mixin.android.databinding.ItemWeb3SwapTokenBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.equalsIgnoreCase
@@ -15,14 +17,14 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getChainNetwork
 
-class SwapTokenAdapter(private val selectUnique: String? = null) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+class SwapTokenAdapter(private val selectUnique: String? = null, var grouped: Boolean = false, private val networkSelection: Boolean = false) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
     fun isEmpty() = getFilteredTokens().isEmpty()
     var tokenType: String = AnalyticsTracker.SpotTokenType.SEND
 
     var tokens: List<SwapToken> = ArrayList(0)
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
-            if (field != value) {
+            if (field !== value) {
                 field = value
                 notifyDataSetChanged()
             }
@@ -31,13 +33,13 @@ class SwapTokenAdapter(private val selectUnique: String? = null) : RecyclerView.
     var stocks: List<SwapToken> = ArrayList(0)
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
-            if (field != value) {
+            if (field !== value) {
                 field = value
                 notifyDataSetChanged()
             }
         }
 
-    private fun getFilteredTokens() = if (chain == null) {
+    private fun rawFilteredTokens() = if (chain == null) {
         tokens
     } else if (keyword.isNullOrBlank() && chain == "") {
         stocks
@@ -45,6 +47,15 @@ class SwapTokenAdapter(private val selectUnique: String? = null) : RecyclerView.
         tokens.filter { it.category.equalsIgnoreCase("stock") }
     } else {
         tokens.filter { it.chain.chainId == chain }
+    }
+
+    private fun getFilteredTokens(): List<SwapToken> =
+        if (grouped) rawFilteredTokens().groupSwapTokens().map { it.first() } else rawFilteredTokens()
+
+    fun groupAssets(token: SwapToken): List<SwapToken> {
+        val groups = rawFilteredTokens().groupSwapTokens()
+        return groups.firstOrNull { group -> group.any { it == token } }
+            ?: groups.firstOrNull { grouped && it.first().groupId == token.groupId }.orEmpty()
     }
 
     var keyword:String? = null
@@ -99,7 +110,11 @@ class SwapTokenAdapter(private val selectUnique: String? = null) : RecyclerView.
         holder: RecyclerView.ViewHolder,
         position: Int,
     ) {
-        (holder as Web3Holder).bind(getFilteredTokens()[position], selectUnique) { token, isAlert ->
+        val item = getFilteredTokens()[position]
+        val group = if (grouped) groupAssets(item) else emptyList()
+        val amount = if (grouped) group.sumOf { it.balanceValue }.toPlainString() else item.balance ?: "0"
+        val selected = if (group.any { it.assetId == selectUnique }) item.assetId else selectUnique
+        (holder as Web3Holder).bind(item, selected, amount, grouped, networkSelection) { token, isAlert ->
             val method = if (isSearch) {
                 AnalyticsTracker.TradeTokenSelectMethod.SEARCH_ITEM_CLICK
             } else if (all) {
@@ -120,6 +135,9 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
     fun bind(
         token: SwapToken,
         selectUnique: String? = null,
+        amount: String = token.balance ?: "0",
+        grouped: Boolean = false,
+        networkSelection: Boolean = false,
         onClickListener: ((SwapToken, Boolean) -> Unit)?,
     ) {
         binding.apply {
@@ -128,12 +146,13 @@ class Web3Holder(val binding: ItemWeb3SwapTokenBinding) : RecyclerView.ViewHolde
             }
             avatar.bg.loadImage(token.icon, R.drawable.ic_avatar_place_holder)
             avatar.badge.loadImage(token.chain.icon, R.drawable.ic_avatar_place_holder)
+            avatar.badge.isVisible = !grouped
             icSpam.isVisible = token.isSpam()
             updateNameLayout(token.isSpam())
-            nameTv.text = token.name
-            balanceTv.text = "${token.balance ?: "0"} ${token.symbol}"
+            nameTv.text = if (networkSelection) token.chain.name else token.name
+            balanceTv.text = "${amount} ${token.symbol}"
             val chainNetwork = getChainNetwork(token.assetId, token.chain.chainId, token.address)
-            networkTv.isVisible = chainNetwork != null
+            networkTv.isVisible = !grouped && !networkSelection && chainNetwork != null
             if (chainNetwork != null) {
                 binding.networkTv.text = chainNetwork
             }

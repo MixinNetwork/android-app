@@ -29,11 +29,21 @@ interface TokenDao : BaseDao<Token> {
             a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
             a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName,
             a1.asset_key AS assetKey, a1.dust AS dust, c.withdrawal_memo_possibility AS withdrawalMemoPossibility, a1.collection_hash as collectionHash,
-            a1.precision 
+            a1.precision, (SELECT coin_id FROM market_coins WHERE asset_id = a1.asset_id) AS coinId
             FROM tokens a1 
             LEFT JOIN chains c ON a1.chain_id = c.chain_id
             LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
            """
+        const val GROUPED_ASSET_CONDITION = """
+            WHERE a1.asset_id IN (:assetIds) OR (
+                (a1.collection_hash IS NULL OR a1.collection_hash = '') AND a1.asset_id IN (
+                    SELECT asset_id FROM market_coins WHERE coin_id != '' AND coin_id IN (
+                        SELECT mc.coin_id FROM market_coins mc JOIN tokens t ON t.asset_id = mc.asset_id
+                        WHERE mc.asset_id IN (:assetIds) AND (t.collection_hash IS NULL OR t.collection_hash = '')
+                    )
+                )
+            )
+        """
         const val POSTFIX =
             " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
         const val POSTFIX_ASSET_ITEM =
@@ -44,6 +54,12 @@ interface TokenDao : BaseDao<Token> {
 
     @Query("$PREFIX_ASSET_ITEM")
     fun assetFlow(): Flow<List<TokenItem>>
+
+    @Query("$PREFIX_ASSET_ITEM $GROUPED_ASSET_CONDITION $POSTFIX")
+    fun groupedAssetItems(assetIds: List<String>): LiveData<List<TokenItem>>
+
+    @Query("$PREFIX_ASSET_ITEM $GROUPED_ASSET_CONDITION $POSTFIX")
+    suspend fun findGroupedAssetItems(assetIds: List<String>): List<TokenItem>
 
     @Query("SELECT * FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id $POSTFIX")
     fun assets(): LiveData<List<Token>>
@@ -102,13 +118,14 @@ interface TokenDao : BaseDao<Token> {
     @Query(
         """
         SELECT
-            CAST(COALESCE(SUM(CASE WHEN ae.hidden IS NULL OR ae.hidden = 0 THEN 1 ELSE 0 END), 0) AS INTEGER) AS token_count,
+            COUNT(DISTINCT CASE WHEN ae.hidden IS NULL OR ae.hidden = 0 THEN CASE WHEN a1.collection_hash IS NULL OR a1.collection_hash = '' THEN COALESCE('coin:' || NULLIF(mc.coin_id, ''), 'asset:' || a1.asset_id) ELSE 'asset:' || a1.asset_id END END) AS token_count,
             COALESCE(SUM(CASE WHEN ae.hidden IS NULL OR ae.hidden = 0 THEN CAST(COALESCE(ae.balance, '0') AS REAL) * CAST(COALESCE(a1.price_usd, '0') AS REAL) ELSE 0 END), 0) AS total_usd,
             COALESCE(SUM(CASE WHEN ae.hidden IS NULL OR ae.hidden = 0 THEN CAST(COALESCE(ae.balance, '0') AS REAL) * CAST(COALESCE(a1.price_btc, '0') AS REAL) ELSE 0 END), 0) AS total_btc,
             MAX(CASE WHEN a1.asset_id = :bitcoinAssetId THEN a1.price_usd ELSE NULL END) AS bitcoin_price_usd,
-            CAST(COALESCE(SUM(CASE WHEN ae.hidden = 1 THEN 1 ELSE 0 END), 0) AS INTEGER) AS hidden_token_count
+            COUNT(DISTINCT CASE WHEN ae.hidden = 1 THEN CASE WHEN a1.collection_hash IS NULL OR a1.collection_hash = '' THEN COALESCE('coin:' || NULLIF(mc.coin_id, ''), 'asset:' || a1.asset_id) ELSE 'asset:' || a1.asset_id END END) AS hidden_token_count
         FROM tokens a1
         LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id
+        LEFT JOIN market_coins mc ON mc.asset_id = a1.asset_id
         """
     )
     fun walletHomeTokenSummary(

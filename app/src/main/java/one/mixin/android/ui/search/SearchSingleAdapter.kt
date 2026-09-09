@@ -26,11 +26,25 @@ import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.SearchMessageItem
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.Market
+import one.mixin.android.vo.safe.TokenGroup
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.groupTokens
 
 class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelable>() {
     var onItemClickListener: SearchFragment.OnSearchClickListener? = null
     var query: String = ""
+    private var assetGroups: Map<String, TokenGroup> = emptyMap()
+
+    override var data: List<Parcelable>?
+        get() = super.data
+        set(value) {
+            if (type == TypeAsset) {
+                assetGroups = value.orEmpty().filterIsInstance<TokenItem>().groupTokens().associateBy { it.representative.assetId }
+                super.data = assetGroups.values.map { it.representative }
+            } else {
+                super.data = value
+            }
+        }
 
     override fun getNormalViewHolder(
         context: Context,
@@ -55,7 +69,7 @@ class SearchSingleAdapter(private val type: SearchType) : HeaderAdapter<Parcelab
         if (holder is NormalHolder) {
             data?.get(getPos(position)).let {
                 when (type) {
-                    TypeAsset -> (holder as AssetHolder).bind(it as TokenItem, query, onItemClickListener)
+                    TypeAsset -> (holder as AssetHolder).bind(it as TokenItem, query, onItemClickListener, assetGroups[it.assetId])
                     TypeChat -> (holder as ChatHolder).bind(it as ChatMinimal, query, onItemClickListener)
                     TypeUser -> (holder as ContactHolder).bind(it as User, query, onItemClickListener)
                     TypeMessage -> (holder as MessageHolder).bind(it as SearchMessageItem, onItemClickListener)

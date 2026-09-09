@@ -69,6 +69,8 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.TokenGroup
+import one.mixin.android.vo.safe.groupTokens
 import one.mixin.android.web3.details.Web3TransactionHolder
 import java.math.BigDecimal
 
@@ -79,16 +81,19 @@ fun PrivacyTokenRecycler(
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     itemSpacing: Dp = 20.dp,
+    limit: Int = Int.MAX_VALUE,
 ) {
+    val groups = tokens.groupTokens().sortedByDescending { it.fiat }.take(limit)
     WalletHomeItemColumn(
-        count = tokens.size,
+        count = groups.size,
         modifier = modifier,
         itemSpacing = itemSpacing,
     ) { index ->
         PrivacyWalletTokenItem(
-            token = tokens[index],
-            isEarn = tokens[index].assetId in earnAssetIds,
-            onClick = { onClick(index) },
+            token = groups[index].representative,
+            group = groups[index],
+            isEarn = groups[index].tokens.any { it.assetId in earnAssetIds },
+            onClick = { onClick(tokens.indexOf(groups[index].representative)) },
         )
     }
 }
@@ -295,17 +300,18 @@ private fun WalletHomeItemColumn(
 fun PrivacyWalletTokenItem(
     token: TokenItem,
     isEarn: Boolean = false,
+    group: TokenGroup = TokenGroup(listOf(token)),
     onClick: () -> Unit,
 ) {
     WalletTokenItemLayout(
         iconUrl = token.iconUrl,
-        chainIconUrl = token.chainIconUrl,
+        chainIconUrl = null,
         collectionHash = token.collectionHash,
         showSpam = false,
-        amount = formatPrivacyTokenBalance(token.balance),
+        amount = formatPrivacyTokenBalance(group.balance.toPlainString()),
         amountFontSize = 22.sp,
         symbol = token.symbol,
-        fiatValue = "≈ ${Fiats.getSymbol()}${token.fiat().numberFormat2()}",
+        fiatValue = "≈ ${Fiats.getSymbol()}${group.fiat.numberFormat2()}",
         showEarn = isEarn,
         price = tokenPriceText(token.priceUsd, token.priceFiat()),
         change = token.changeUsd.toBigDecimalOrNull()

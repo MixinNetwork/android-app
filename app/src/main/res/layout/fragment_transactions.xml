@@ -16,6 +16,22 @@
         app:rightIcon="@drawable/ic_more"
         app:titleText="@string/Transactions" />
 
+    <HorizontalScrollView
+        android:id="@+id/network_tabs_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:visibility="gone">
+
+        <RadioGroup
+            android:id="@+id/network_tabs"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:orientation="horizontal" />
+    </HorizontalScrollView>
+
     <ScrollView
         android:id="@+id/scroll_view"
         android:layout_width="match_parent"
@@ -111,6 +127,33 @@
 
                 </LinearLayout>
             </FrameLayout>
+
+            <LinearLayout
+                android:id="@+id/allocation_card"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:layout_marginBottom="10dp"
+                android:background="?attr/bg_market_card"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:text="@string/asset_allocation"
+                    android:textColor="?attr/text_minor"
+                    android:textSize="14sp" />
+
+                <LinearLayout
+                    android:id="@+id/allocation_rows"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+            </LinearLayout>
 
             <FrameLayout
                 android:id="@+id/market_rl"

@@ -14,9 +14,23 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.wallet.MultiSelectRecipientsListBottomSheetDialogFragment
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.TokenGroup
+import one.mixin.android.vo.safe.groupTokens
+import one.mixin.android.vo.safe.groupId
 
 class SelectableTokenAdapter(private val selectedTokenItems: MutableList<TokenItem>) : ListAdapter<TokenItem, SelectableTokenAdapter.SearchTokenItemViewHolder>(TokenItem.DIFF_CALLBACK) {
     var callback: WalletSearchTokenItemCallback? = null
+    private var groups: Map<String, TokenGroup> = emptyMap()
+
+    override fun submitList(list: List<TokenItem>?) = submitList(list, null)
+
+    override fun submitList(list: List<TokenItem>?, commitCallback: Runnable?) {
+        groups = list.orEmpty().groupTokens().associateBy { it.representative.assetId }
+        super.submitList(groups.values.map { it.representative }) {
+            notifyItemRangeChanged(0, itemCount)
+            commitCallback?.run()
+        }
+    }
 
     override fun onCreateViewHolder(
         parent: ViewGroup,
@@ -40,12 +54,13 @@ class SelectableTokenAdapter(private val selectedTokenItems: MutableList<TokenIt
             tokenItemClickListener: WalletSearchTokenItemCallback? = null,
         ) {
             binding.name.text = tokenItem.name
-            binding.balance.text = "${tokenItem.balance} ${tokenItem.symbol}"
+            binding.balance.text = "${groups[tokenItem.assetId]?.balance?.toPlainString() ?: tokenItem.balance} ${tokenItem.symbol}"
             binding.avatar.loadToken(tokenItem)
-            binding.cb.isChecked = selectedTokenItems.contains(tokenItem)
+            binding.avatar.badge.isVisible = false
+            binding.cb.isChecked = selectedTokenItems.any { it.groupId == tokenItem.groupId }
             binding.cb.isClickable = false
             val chainNetwork = getChainNetwork(tokenItem.assetId, tokenItem.chainId, tokenItem.assetKey)
-            binding.networkTv.isVisible = chainNetwork != null && tokenItem.collectionHash.isNullOrEmpty()
+            binding.networkTv.isVisible = false
             if (chainNetwork != null) {
                 binding.networkTv.text = chainNetwork
             }

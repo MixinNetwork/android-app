@@ -14,7 +14,7 @@ interface TopAssetDao : BaseDao<TopAsset> {
     @Query(
         """
         SELECT ta.asset_id as asset_id, ta.symbol as symbol, ta.name as name, ta.icon_url as icon_url, ta.chain_id as chain_id, a.icon_url as chain_icon_url,
-        ta.price_usd as priceUsd, ta.change_usd as changeUsd
+        ta.price_usd as priceUsd, ta.change_usd as changeUsd, (SELECT coin_id FROM market_coins WHERE asset_id = ta.asset_id) AS coinId
         FROM top_assets ta
         INNER JOIN assets a ON a.asset_id = ta.chain_id AND (SELECT ta.asset_id FROM assets a WHERE a.asset_id = ta.asset_id) IS NULL
         ORDER BY ta.rowid

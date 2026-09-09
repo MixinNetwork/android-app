@@ -45,6 +45,9 @@ class RefreshTokensJob(
                     refreshChains(list.map { it.chainId }.distinct())
                 }
                 refreshFiats()
+                marketCoinDao.findAssetsWithoutCoin().forEach {
+                    jobManager.addJobInBackground(RefreshMarketJob(it))
+                }
             }
         }
 

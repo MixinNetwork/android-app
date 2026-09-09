@@ -24,6 +24,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import one.mixin.android.vo.safe.groupTokens
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
@@ -40,6 +41,7 @@ fun WalletHomeAllTokensPage(
     callbacks: WalletHomeCallbacks,
 ) {
     MixinAppTheme {
+        val privacyGroups = state.privacyTokens.groupTokens().sortedByDescending { it.fiat }
         val isPrivacy = state.walletType == WalletHomeType.PRIVACY
         val tokensEmpty = if (isPrivacy) {
             state.privacyTokens.isEmpty()
@@ -70,7 +72,7 @@ fun WalletHomeAllTokensPage(
                 Spacer(modifier = Modifier.height(20.dp))
             }
         } else {
-            val count = if (isPrivacy) state.privacyTokens.size else state.web3Tokens.size
+            val count = if (isPrivacy) privacyGroups.size else state.web3Tokens.size
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -87,7 +89,7 @@ fun WalletHomeAllTokensPage(
                     count = count,
                     key = { index ->
                         if (isPrivacy) {
-                            state.privacyTokens[index].assetId
+                            privacyGroups[index].representative.assetId
                         } else {
                             val token = state.web3Tokens[index]
                             "${token.assetId}-${token.chainId}"
@@ -101,9 +103,10 @@ fun WalletHomeAllTokensPage(
                     ) {
                         if (isPrivacy) {
                             PrivacyWalletTokenItem(
-                                token = state.privacyTokens[index],
-                                isEarn = state.privacyTokens[index].assetId in state.earnAssetIds,
-                                onClick = { callbacks.onTokenClicked(index) },
+                                token = privacyGroups[index].representative,
+                                group = privacyGroups[index],
+                                isEarn = privacyGroups[index].tokens.any { it.assetId in state.earnAssetIds },
+                                onClick = { callbacks.onTokenClicked(state.privacyTokens.indexOf(privacyGroups[index].representative)) },
                             )
                         } else {
                             Web3WalletTokenItem(

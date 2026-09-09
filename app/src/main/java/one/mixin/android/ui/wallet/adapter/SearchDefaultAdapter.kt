@@ -19,6 +19,8 @@ import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.TopAssetItem
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.TokenGroup
+import one.mixin.android.vo.safe.groupTokens
 import java.math.BigDecimal
 
 class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyclerHeadersAdapter<SearchDefaultAdapter.HeaderViewHolder> {
@@ -27,12 +29,15 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
         const val TYPE_TOP = 1
     }
 
+    private var recentGroups: Map<String, TokenGroup> = emptyMap()
+
     var recentAssets: List<TokenItem>? = null
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
             if (value == field) return
 
-            field = value
+            recentGroups = value.orEmpty().groupTokens().associateBy { it.representative.assetId }
+            field = recentGroups.values.map { it.representative }
             notifyDataSetChanged()
         }
 
@@ -41,7 +46,7 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
         set(value) {
             if (value == field) return
 
-            field = value
+            field = value?.distinctBy { it.coinId?.takeIf(String::isNotBlank) ?: it.assetId }
             notifyDataSetChanged()
         }
 
@@ -76,7 +81,7 @@ class SearchDefaultAdapter : RecyclerView.Adapter<ItemViewHolder>(), StickyRecyc
         position: Int,
     ) {
         if (holder is AssetHolder) {
-            recentAssets?.get(position)?.let { holder.bind(it, callback) }
+            recentAssets?.get(position)?.let { holder.bind(it, callback, group = recentGroups[it.assetId]) }
         } else {
             holder as TopAssetHolder
             topAssets?.get(position - (recentAssets?.size ?: 0))?.let { holder.bind(it, callback) }
@@ -178,6 +183,7 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
         asset: TokenItem,
         callback: WalletSearchCallback? = null,
         currentAssetId: String? = null,
+        group: TokenGroup? = null,
     ) {
         bindView(
             asset.assetId,
@@ -186,18 +192,22 @@ class AssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding) {
             asset.chainId,
             asset.name,
             asset.symbol,
-            asset.balance.numberFormat8(),
+            (group?.balance?.toPlainString() ?: asset.balance).numberFormat8(),
             asset.assetKey,
             asset.priceUsd,
             asset.changeUsd,
             asset.priceFiat(),
             asset.collectionHash,
         )
+        if (group != null) {
+            binding.badgeCircleIv.badge.isVisible = false
+            binding.networkTv.isVisible = false
+        }
         binding.priceTv.isVisible = currentAssetId == null
         if (currentAssetId != null) {
             binding.changeTv.isVisible = false
         }
-        binding.checkIv.isVisible = asset.assetId == currentAssetId
+        binding.checkIv.isVisible = asset.assetId == currentAssetId || group?.tokens?.any { it.assetId == currentAssetId } == true
         itemView.setOnClickListener {
             callback?.onAssetClick(asset.assetId, asset)
         }
@@ -223,6 +233,7 @@ class TopAssetHolder(binding: ItemWalletSearchBinding) : ItemViewHolder(binding)
             asset.priceFiat(),
             null,
         )
+        binding.badgeCircleIv.badge.isVisible = false
         itemView.setOnClickListener {
             callback?.onAssetClick(asset.assetId)
         }

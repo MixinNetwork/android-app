@@ -66,6 +66,7 @@ class WalletActivity : BlazeBaseActivity() {
                 navController.setGraph(navGraph, Bundle().apply {
                     putParcelable(ARGS_ASSET, token)
                     putBoolean(ARGS_FROM_MARKET, fromMarket)
+                    putString(TransactionsFragment.ARGS_NETWORK, intent.getStringExtra(TransactionsFragment.ARGS_NETWORK))
                 })
             }
             is Destination.Search -> {
@@ -272,6 +273,7 @@ class WalletActivity : BlazeBaseActivity() {
             destination: Destination,
             fromMarket: Boolean = false,
             source: String = AnalyticsTracker.AssetSource.WALLET_HOME,
+            network: String? = null,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
@@ -279,6 +281,7 @@ class WalletActivity : BlazeBaseActivity() {
                     putExtra(ASSET, tokenItem)
                     putExtra(ARGS_FROM_MARKET, fromMarket)
                     putExtra(TransactionsFragment.ARGS_SOURCE, source)
+                    putExtra(TransactionsFragment.ARGS_NETWORK, network)
                 },
             )
         }

@@ -13,6 +13,7 @@ import one.mixin.android.ui.search.SearchFragment
 import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.safe.TokenGroup
 import java.math.BigDecimal
 
 class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolder(binding.root) {
@@ -21,12 +22,14 @@ class AssetHolder constructor(val binding: ItemSearchAssetBinding) : NormalHolde
         asset: TokenItem,
         target: String,
         onItemClickListener: SearchFragment.OnSearchClickListener?,
+        group: TokenGroup? = null,
     ) {
         binding.avatar.loadToken(asset)
+        binding.avatar.badge.isVisible = false
         binding.root.setOnClickListener { onItemClickListener?.onAssetClick(asset) }
-        binding.balance.text = asset.balance + " " + asset.symbol
+        binding.balance.text = (group?.balance?.toPlainString() ?: asset.balance) + " " + asset.symbol
         binding.balance.highLight(target)
-        binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${asset.fiat().numberFormat2()}"
+        binding.balanceAs.text = "≈ ${Fiats.getSymbol()}${(group?.fiat ?: asset.fiat()).numberFormat2()}"
         val chainNetwork = getChainNetwork(asset.assetId, asset.chainId, asset.assetKey)
         binding.networkTv.isVisible = chainNetwork != null
         if (chainNetwork != null) {

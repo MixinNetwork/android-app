@@ -146,6 +146,10 @@ internal constructor(
 
     fun snapshotsLimit(id: String) = tokenRepository.snapshotsLimit(id)
 
+    fun snapshotsLimit(ids: List<String>) = tokenRepository.snapshotsLimit(ids)
+
+    fun groupedAssetItems(assetId: String) = tokenRepository.groupedAssetItems(assetId)
+
     fun recentSnapshotsLimit() = tokenRepository.recentSnapshotsLimit()
 
     suspend fun findAddressByReceiver(receiver: String, tag: String, chainId: String?) = tokenRepository.findAddressByDestination(receiver, tag, chainId)
@@ -181,6 +185,8 @@ internal constructor(
         id: String,
         hidden: Boolean,
     ) = tokenRepository.updateHidden(id, hidden)
+
+    suspend fun updateAssetsHidden(ids: List<String>, hidden: Boolean) = tokenRepository.updateHidden(ids, hidden)
 
     fun hiddenAssets(): LiveData<List<TokenItem>> = tokenRepository.hiddenAssetItems()
 
@@ -292,6 +298,8 @@ internal constructor(
     suspend fun errorCount() = accountRepository.errorCount()
 
     suspend fun findAssetsByIds(ids: List<String>) = tokenRepository.findAssetsByIds(ids)
+
+    suspend fun findGroupedAssets(ids: List<String>) = tokenRepository.findGroupedAssets(ids)
 
     suspend fun allAssetItems() = tokenRepository.allAssetItems()
 
