@@ -48,6 +48,18 @@
         <item quantity="many">недель</item>
         <item quantity="other">недели</item>
     </plurals>
+    <plurals name="time_interval_unit_month">
+        <item quantity="one">месяц</item>
+        <item quantity="few">месяца</item>
+        <item quantity="many">месяцев</item>
+        <item quantity="other">месяца</item>
+    </plurals>
+    <plurals name="time_interval_unit_year">
+        <item quantity="one">год</item>
+        <item quantity="few">года</item>
+        <item quantity="many">лет</item>
+        <item quantity="other">года</item>
+    </plurals>
 
     <array name="database">
         <item>База данных Mixin</item>

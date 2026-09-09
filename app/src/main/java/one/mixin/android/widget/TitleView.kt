@@ -24,6 +24,7 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
         ViewTitleBinding.inflate(LayoutInflater.from(context), this, true)
 
     val titleTv = binding.titleTv
+    val expireIv = binding.expireIv
     val leftIb = binding.leftIb
     val rightIb = binding.rightIb
     val rightTv = binding.rightTv
@@ -202,6 +203,10 @@ class TitleView(context: Context, attrs: AttributeSet) : RelativeLayout(context,
             binding.subTitleTv.isVisible = true
             binding.subTitleTv.setTextOnly(content)
         }
+    }
+
+    fun setExpireIconVisible(visible: Boolean) {
+        binding.expireIv.isVisible = visible
     }
 
     fun setUser(user: User, onClickListener: OnClickListener) {

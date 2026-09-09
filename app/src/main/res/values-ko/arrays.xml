@@ -33,6 +33,12 @@
     <plurals name="time_interval_unit_week">
         <item quantity="other">주</item>
     </plurals>
+    <plurals name="time_interval_unit_month">
+        <item quantity="other">개월</item>
+    </plurals>
+    <plurals name="time_interval_unit_year">
+        <item quantity="other">년</item>
+    </plurals>
 
     <array name="database">
         <item>Mixin 데이터베이스</item>

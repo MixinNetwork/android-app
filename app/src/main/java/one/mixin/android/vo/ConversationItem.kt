@@ -35,6 +35,7 @@ data class ConversationItem(
     val mentions: String?,
     val mentionCount: Int?,
     val membership: Membership?,
+    val expireIn: Long? = null,
 ) : ICategory, IConversationCategory {
     companion object {
         val DIFF_CALLBACK =
@@ -86,6 +87,8 @@ data class ConversationItem(
     }
 
     fun isExpire() = actionName == SystemConversationAction.EXPIRE.name
+
+    fun isDisappearingEnabled() = (expireIn ?: 0L) > 0L
 
     fun isBot(): Boolean {
         return isContactConversation() && ownerIdentityNumber.isBotIdentityNumber()
