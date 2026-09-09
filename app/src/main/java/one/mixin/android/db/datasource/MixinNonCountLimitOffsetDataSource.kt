@@ -61,10 +61,7 @@ abstract class MixinNonCountLimitOffsetDataSource<Value : Any>(
         val key = params.key ?: 0
         val limit: Int = getLimit(params, key)
         val offset: Int = getOffset(params, key, itemCount)
-        val offsetQuery = RoomQuery.copyFrom(offsetStatement)
-        val argCount = offsetStatement.argCount
-        offsetQuery.bindLong(argCount - 1, limit.toLong())
-        offsetQuery.bindLong(argCount, offset.toLong())
+        val offsetQuery = offsetStatement.withLimitOffset(limit, offset)
         val data =
             try {
                 connection.query(offsetQuery, cancellationSignal).use(::convertRows)

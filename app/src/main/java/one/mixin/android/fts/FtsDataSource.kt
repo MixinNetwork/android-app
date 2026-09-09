@@ -10,6 +10,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.datasource.RoomDatabaseCompat
 import one.mixin.android.db.datasource.query
 import one.mixin.android.vo.SearchMessageDetailItem
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import timber.log.Timber
 
@@ -23,16 +24,23 @@ class FtsDataSource(
     override suspend fun load(params: LoadParams<Int>): LoadResult<Int, SearchMessageDetailItem> {
         return try {
             withContext(RoomDatabaseCompat.queryContext(mixinDatabase)) {
-                val offset = params.key ?: 0
-                val loadSize = params.loadSize
-                val ids = messageIds(loadSize, offset)
+                val key = params.key ?: 0
+                val limit = if (params is LoadParams.Prepend) minOf(key, params.loadSize) else params.loadSize
+                val offset = if (params is LoadParams.Prepend) key - limit else key
+                val ids = messageIds(limit, offset)
                 val data = getData(ids)
                 LoadResult.Page(
                     data = data,
-                    prevKey = if (offset == 0) null else maxOf(0, offset - loadSize),
-                    nextKey = if (data.size < loadSize) null else offset + data.size,
+                    prevKey = if (offset == 0) null else offset,
+                    nextKey = when {
+                        params is LoadParams.Prepend -> key
+                        ids.size < limit -> null
+                        else -> offset + ids.size
+                    },
                 )
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Timber.e(e)
             LoadResult.Error(e)
@@ -42,7 +50,7 @@ class FtsDataSource(
     override fun getRefreshKey(state: PagingState<Int, SearchMessageDetailItem>): Int? {
         val anchorPosition = state.anchorPosition ?: return null
         return state.closestPageToPosition(anchorPosition)?.prevKey
-            ?: state.closestPageToPosition(anchorPosition)?.nextKey?.minus(state.config.pageSize)
+            ?: 0
     }
 
     private fun messageIds(
@@ -64,6 +72,7 @@ class FtsDataSource(
     private fun getData(
         ids: List<String>,
     ): List<SearchMessageDetailItem> {
-        return mixinDatabase.messageDao().getSearchMessageDetailItemsByIds(ids)
+        val items = mixinDatabase.messageDao().getSearchMessageDetailItemsByIds(ids).associateBy { it.messageId }
+        return ids.mapNotNull(items::get)
     }
 }

@@ -76,6 +76,7 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
+import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.withRoomTransaction
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.provider.DataProvider
@@ -173,6 +174,7 @@ class TokenRepository
     @Inject
     constructor(
         private val appDatabase: MixinDatabase,
+        private val walletDatabase: WalletDatabase,
         private val tokenService: TokenService,
         private val assetService: AssetService,
         private val utxoService: UtxoService,
@@ -1820,7 +1822,7 @@ class TokenRepository
         val normalizedAmount = amount.removePrefix("-")
         val normalizedFee = fee.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: fee
         val normalizedSponsorFeeAmount = sponsorFeeAmount?.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: sponsorFeeAmount
-        appDatabase.withRoomTransaction {
+        walletDatabase.withRoomTransaction {
             web3RawTransactionDao.insertSuspend(
                 Web3RawTransaction(
                     hash = hash,
@@ -1880,7 +1882,7 @@ class TokenRepository
         chainId: String,
         updatedAt: String,
     ) {
-        appDatabase.withRoomTransaction {
+        walletDatabase.withRoomTransaction {
             val pendingRaw = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, sponsorTxId, chainId)
                 ?: return@withRoomTransaction
             val pendingTransaction = web3TransactionDao.getLatestTransaction(sponsorTxId, chainId)
@@ -1913,7 +1915,7 @@ class TokenRepository
         status: String,
         updatedAt: String,
     ) {
-        appDatabase.withRoomTransaction {
+        walletDatabase.withRoomTransaction {
             val pendingRaw = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, hash, chainId)
                 ?: return@withRoomTransaction
             web3RawTransactionDao.insertSuspend(
@@ -1933,7 +1935,7 @@ class TokenRepository
         chainId: String,
         utxoRawTransactionHexToDeleteOutputs: String?,
     ) {
-        appDatabase.withRoomTransaction {
+        walletDatabase.withRoomTransaction {
             web3RawTransactionDao.insertSuspend(raw)
             web3TransactionDao.updateTransaction(hash, status, chainId)
             if (chainId !in Constants.Web3UtxoChainIds || utxoRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withRoomTransaction
