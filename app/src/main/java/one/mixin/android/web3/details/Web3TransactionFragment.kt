@@ -38,6 +38,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.forEachWithIndex
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat2
@@ -49,6 +50,7 @@ import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.common.biometric.EmptyUtxoException
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
@@ -650,6 +652,24 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     }
 
     private fun tokenClick(transaction: Web3TransactionItem) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val assetId = transaction.getMainAssetId()
+            val asset = web3ViewModel.web3TokenItemById(wallet.id, assetId)
+                ?: token.takeIf { it.walletId == wallet.id && it.assetId == assetId }
+                ?: return@launch
+            if (!isAdded || parentFragmentManager.isStateSaved) return@launch
+            if (activity is WalletActivity) {
+                view?.navigate(
+                    R.id.web3_transactions_fragment,
+                    Web3TransactionsFragment.newInstance(transaction.address, asset, transaction.chainId).arguments,
+                )
+            } else {
+                WalletActivity.showWithWeb3Token(
+                    requireActivity(), asset, transaction.address, WalletActivity.Destination.Web3Transactions,
+                    network = transaction.chainId,
+                )
+            }
+        }
     }
 
     @SuppressLint("InflateParams")

@@ -106,10 +106,12 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
         fun newInstance(
             address: String,
             web3Token: Web3TokenItem,
+            network: String? = null,
         ) =
             Web3TransactionsFragment().withArgs {
                 putString(ARGS_ADDRESS, address)
                 putParcelable(ARGS_TOKEN, web3Token)
+                putString(ARGS_NETWORK, network)
             }
     }
 

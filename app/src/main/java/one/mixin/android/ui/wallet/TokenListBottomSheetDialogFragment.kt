@@ -43,7 +43,6 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.scrollToCenterCheckedRadio
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.market.DepositTokensBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.adapter.SearchAdapter
 import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
 import one.mixin.android.ui.wallet.components.RecentTokens
@@ -52,6 +51,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.groupTokens
 import one.mixin.android.vo.safe.groupId
+import one.mixin.android.web3.swap.showTokenNetworks
 import one.mixin.android.widget.BottomSheet
 import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
@@ -439,9 +439,9 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 .groupTokens().firstOrNull { it.representative.groupId == token.groupId }?.tokens
                 ?: adapter.groupAssets(token.assetId).ifEmpty { listOf(token) }
             if (assets.size > 1) {
-                DepositTokensBottomSheetDialogFragment.newInstance(ArrayList(assets)).apply {
-                    callback = finish
-                }.show(parentFragmentManager, DepositTokensBottomSheetDialogFragment.TAG)
+                showTokenNetworks(assets.map { it.toSwapToken() }) { selected ->
+                    assets.firstOrNull { it.assetId == selected.assetId }?.let(finish)
+                }
                 return
             }
         }

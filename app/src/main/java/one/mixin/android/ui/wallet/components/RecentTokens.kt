@@ -101,7 +101,7 @@ fun RecentTokens(web3: Boolean = false, key: String, grouped: Boolean = !web3, c
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 recentToken.forEach {
-                    RecentToken(it, showNetwork = !grouped) {
+                    RecentToken(it, showNetwork = false) {
                         callback.invoke(it)
                     }
                 }

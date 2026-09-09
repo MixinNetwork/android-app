@@ -274,7 +274,6 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         binding.apply {
             val visibleTokens = defaultTokens(tokens)
             val visibleStocks = supportedTokens(stocks)
-            adapter.grouped = true
             assetRv.adapter = adapter
             adapter.tokens = visibleTokens.sortByKeywordAndBalance()
             adapter.stocks = visibleStocks.sortByKeywordAndBalance()
@@ -327,7 +326,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     val composeView = ComposeView(requireContext()).apply {
                         id = View.generateViewId()
                         setContent {
-                            RecentSwapTokens(key, grouped = true, walletId = if (inMixin()) null else Web3Signer.currentWalletId) {
+                            RecentSwapTokens(key, walletId = if (inMixin()) null else Web3Signer.currentWalletId) {
                                 if (inMixin() || isWeb3TransferSupported(it.chain.chainId)) {
                                     AnalyticsTracker.trackTradeTokenSelect(AnalyticsTracker.TradeTokenSelectMethod.RECENT_CLICK)
                                     AnalyticsTracker.trackSpotTokenSelect(
@@ -504,12 +503,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     }
 
     fun setOnClickListener(onClickListener: (SwapToken, Boolean) -> Unit) {
-        this.adapter.setOnClickListener { token, alert ->
-            val assets = adapter.groupAssets(token)
-            showTokenNetworks(assets.ifEmpty { listOf(token) }, selectUnique) { selected ->
-                onClickListener(selected, alert)
-            }
-        }
+        this.adapter.setOnClickListener(onClickListener)
     }
 
     fun setOnDeposit(onDepositListener: () -> Unit) {

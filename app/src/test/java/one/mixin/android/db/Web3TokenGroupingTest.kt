@@ -29,6 +29,7 @@ import one.mixin.android.db.web3.vo.Web3TokensExtra
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.groupWeb3Tokens
 import one.mixin.android.ui.wallet.Web3FilterParams
+import one.mixin.android.web3.details.Web3TransactionsFragment
 import one.mixin.android.web3.receive.Web3TokenAdapter
 import one.mixin.android.web3.swap.SwapTokenAdapter
 import one.mixin.android.vo.Fiats
@@ -176,6 +177,10 @@ class Web3TokenGroupingTest {
         assertEquals(setOf("ethereum", "base"), awaitValue(dao.web3Transactions("wallet", listOf("ethereum", "base"))).map { it.chainId }.toSet())
         assertEquals(listOf("base"), awaitValue(dao.web3Transactions("wallet", listOf("base"))).map { it.chainId })
         val selected = wallet.web3TokenDao().findWeb3TokenItems("wallet").filter { it.assetId == "base" }
+        val detail = Web3TransactionsFragment.newInstance("owner", selected.single(), "base").requireArguments()
+        assertEquals("base", detail.getString(Web3TransactionsFragment.ARGS_NETWORK))
+        assertEquals("owner", detail.getString(Web3TransactionsFragment.ARGS_ADDRESS))
+        assertEquals(null, Web3TransactionsFragment.newInstance("owner", selected.single()).requireArguments().getString(Web3TransactionsFragment.ARGS_NETWORK))
         val page = dao.allTransactions(Web3FilterParams(walletId = "wallet", tokenItems = selected).buildQuery()).load(
             PagingSource.LoadParams.Refresh(key = null, loadSize = 20, placeholdersEnabled = false),
         )

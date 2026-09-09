@@ -5,6 +5,7 @@ import android.app.Dialog
 import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.core.text.buildSpannedString
 import androidx.core.text.color
 import androidx.core.text.scale
@@ -19,6 +20,7 @@ import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.FragmentDepositChooseNetworkBottomSheetBinding
 import one.mixin.android.databinding.ItemChooseNetworkBinding
 import one.mixin.android.extension.colorAttr
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.loadImage
@@ -88,10 +90,16 @@ class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFrag
 
         binding.apply {
             val tokens = requireArguments().getParcelableArrayListCompat(TOKENS, SwapToken::class.java)
+            close.isVisible = tokens != null
+            close.setOnClickListener { dismiss() }
             if (tokens != null) {
                 val walletId = tokens.firstOrNull()?.walletId
                 if (walletId == null) {
                     walletName.setText(R.string.Privacy_Wallet)
+                    val icon = ContextCompat.getDrawable(requireContext(), R.drawable.ic_wallet_privacy)?.apply {
+                        setBounds(0, 0, 14.dp, 14.dp)
+                    }
+                    walletName.setCompoundDrawablesRelative(null, null, icon, null)
                     walletName.isVisible = true
                 } else {
                     lifecycleScope.launch {

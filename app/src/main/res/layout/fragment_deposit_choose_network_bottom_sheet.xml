@@ -8,28 +8,53 @@
     android:orientation="vertical"
     android:paddingBottom="40dp">
 
-    <TextView
-        android:id="@+id/choose_network"
-        android:text="@string/Choose_Network"
-        android:layout_width="wrap_content"
-        android:textStyle="bold"
-        android:layout_marginTop="@dimen/margin20"
-        android:layout_marginStart="@dimen/margin16"
-        android:layout_marginEnd="@dimen/margin16"
-        android:layout_marginBottom="@dimen/padding8"
-        android:textColor="?attr/text_primary"
-        android:textSize="18sp"
-        android:layout_height="wrap_content" />
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
-    <TextView
-        android:id="@+id/wallet_name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="@dimen/margin16"
-        android:layout_marginEnd="@dimen/margin16"
-        android:textColor="?attr/text_assist"
-        android:textSize="12sp"
-        android:visibility="gone" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/margin16"
+            android:layout_marginEnd="64dp"
+            android:layout_marginTop="@dimen/margin20"
+            android:layout_marginBottom="@dimen/padding8"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/choose_network"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/padding8"
+                android:text="@string/Choose_Network"
+                android:textColor="?attr/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/wallet_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:drawablePadding="4dp"
+                android:gravity="center_vertical"
+                android:textColor="?attr/text_assist"
+                android:textSize="12sp"
+                android:visibility="gone" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/close"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="top|end"
+            android:layout_marginTop="@dimen/padding8"
+            android:layout_marginEnd="@dimen/padding8"
+            android:background="@drawable/mixin_ripple"
+            android:contentDescription="@string/Close"
+            android:padding="12dp"
+            android:src="@drawable/ic_circle_close"
+            android:visibility="gone" />
+    </FrameLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/asset_rv"

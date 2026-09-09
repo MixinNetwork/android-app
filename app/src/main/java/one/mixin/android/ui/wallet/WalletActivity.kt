@@ -27,6 +27,7 @@ import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.details.Web3TransactionsFragment
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -176,6 +177,7 @@ class WalletActivity : BlazeBaseActivity() {
                 val address = intent.getStringExtra(ADDRESS)
                 navController.setGraph(navGraph, Bundle().apply {
                     putParcelable("args_token", web3Token)
+                    putString(Web3TransactionsFragment.ARGS_NETWORK, intent.getStringExtra(Web3TransactionsFragment.ARGS_NETWORK))
                     address?.let {
                         putString("args_address", it)
                     }
@@ -365,12 +367,14 @@ class WalletActivity : BlazeBaseActivity() {
             web3Token: Web3TokenItem,
             address: String?,
             destination: Destination,
+            network: String? = null,
         ) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, destination)
                     putExtra(WEB3_TOKEN, web3Token)
                     putExtra(ADDRESS, address)
+                    putExtra(Web3TransactionsFragment.ARGS_NETWORK, network)
                 },
             )
         }

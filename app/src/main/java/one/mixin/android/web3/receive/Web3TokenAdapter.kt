@@ -114,7 +114,7 @@ class Web3Holder(val binding: ItemWeb3TokenBinding) : RecyclerView.ViewHolder(bi
             }
             avatar.bg.loadImage(token.iconUrl, holder = R.drawable.ic_avatar_place_holder)
             avatar.badge.loadImage(token.chainIcon ?: "", holder = R.drawable.ic_avatar_place_holder)
-            avatar.badge.isVisible = group == null
+            avatar.badge.isVisible = false
 
             balance.text =
                 try {

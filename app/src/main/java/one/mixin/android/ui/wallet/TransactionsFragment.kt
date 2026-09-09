@@ -57,7 +57,6 @@ import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.Market
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
-import one.mixin.android.ui.home.web3.market.DepositTokensBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.wallet.AllTransactionsFragment.Companion.ARGS_TOKEN
 import one.mixin.android.ui.wallet.MarketDetailsFragment.Companion.ARGS_ASSET_ID
@@ -81,6 +80,7 @@ import one.mixin.android.vo.notMessengerUser
 import one.mixin.android.vo.safe.TokenGroup
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
+import one.mixin.android.web3.swap.showTokenNetworks
 import one.mixin.android.widget.BottomSheet
 import one.mixin.android.widget.DebugClickListener
 import java.math.BigDecimal
@@ -555,12 +555,8 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
 
     private fun chooseAsset(callback: (TokenItem) -> Unit) {
         val tokens = selectedAssets
-        if (tokens.size == 1) {
-            callback(tokens.first())
-        } else {
-            DepositTokensBottomSheetDialogFragment.newInstance(ArrayList(tokens)).apply {
-                this.callback = callback
-            }.show(parentFragmentManager, DepositTokensBottomSheetDialogFragment.TAG)
+        showTokenNetworks(tokens.map { it.toSwapToken() }) { selected ->
+            tokens.firstOrNull { it.assetId == selected.assetId }?.let(callback)
         }
     }
 
