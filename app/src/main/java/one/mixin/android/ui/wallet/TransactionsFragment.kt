@@ -583,8 +583,9 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
                     setBackgroundResource(R.drawable.selector_radio)
                     setTextColor(ContextCompat.getColorStateList(requireContext(), R.drawable.radio_button_text_selector))
                     textSize = 14f
-                    minHeight = 48.dp
-                    setPadding(16.dp, 0, 16.dp, 0)
+                    minHeight = 0
+                    minimumHeight = 0
+                    setPadding(16.dp, 9.dp, 16.dp, 9.dp)
                     layoutParams = RadioGroup.LayoutParams(RadioGroup.LayoutParams.WRAP_CONTENT, RadioGroup.LayoutParams.WRAP_CONTENT).apply { marginEnd = 12.dp }
                 })
             }

@@ -88,7 +88,7 @@
 
                         <TextView
                             android:id="@+id/balance"
-                            android:layout_width="wrap_content"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
                             android:layout_below="@+id/title"
@@ -98,7 +98,11 @@
                             android:layout_marginEnd="12dp"
                             android:textIsSelectable="true"
                             android:textSize="14sp"
-                            android:lineHeight="30sp"
+                            android:maxLines="1"
+                            app:autoSizeTextType="uniform"
+                            app:autoSizeMinTextSize="6sp"
+                            app:autoSizeMaxTextSize="14sp"
+                            app:autoSizeStepGranularity="1sp"
                             android:includeFontPadding="false"
                             tools:ignore="RelativeOverlap" />
 
