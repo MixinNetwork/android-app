@@ -79,7 +79,7 @@ interface TokenDao : BaseDao<Token> {
     fun getXIN(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): TokenItem?
 
     @Query("SELECT * FROM tokens WHERE asset_id = :id")
-    fun asset(id: String): LiveData<Token>
+    fun asset(id: String): LiveData<Token?>
 
     @Query("SELECT * FROM tokens WHERE asset_id = :id")
     suspend fun simpleAsset(id: String): Token?
@@ -154,7 +154,7 @@ interface TokenDao : BaseDao<Token> {
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :id")
-    fun assetItem(id: String): LiveData<TokenItem>
+    fun assetItem(id: String): LiveData<TokenItem?>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")

@@ -40,7 +40,7 @@ class WalletViewModel
             snapshotId: String,
         ) = assetRepository.snapshotLocal(assetId, snapshotId)
 
-        fun assetItem(id: String): LiveData<AssetItem> = assetRepository.assetItem(id)
+        fun assetItem(id: String): LiveData<AssetItem?> = assetRepository.assetItem(id)
 
         suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
 

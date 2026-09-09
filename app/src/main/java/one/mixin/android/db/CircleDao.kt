@@ -46,7 +46,7 @@ interface CircleDao : BaseDao<Circle> {
         WHERE conversation_id = :conversationId
         """,
     )
-    fun observeCirclesByConversationId(conversationId: String): LiveData<Circle>
+    fun observeCirclesByConversationId(conversationId: String): LiveData<Circle?>
 
     @Query(
         """

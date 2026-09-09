@@ -579,7 +579,7 @@ class TokenRepository
         suspend fun fuzzySearchAssetIgnoreAmount(query: String) =
             tokenDao.fuzzySearchAssetIgnoreAmount(query, query)
 
-        fun assetItem(id: String) = tokenDao.assetItem(id)
+        fun assetItem(id: String): LiveData<TokenItem?> = tokenDao.assetItem(id)
 
         fun assetItemFlow(id: String): Flow<TokenItem?> = tokenDao.assetItemFlow(id)
 

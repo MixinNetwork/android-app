@@ -152,7 +152,7 @@ class ConversationRepository
         ): LiveData<GroupInfo?> =
             conversationDao.getConversationInfoById(conversationId, userId)
 
-        fun getConversationById(conversationId: String): LiveData<Conversation> =
+        fun getConversationById(conversationId: String): LiveData<Conversation?> =
             conversationDao.getConversationById(conversationId)
 
         fun findConversationById(conversationId: String): Observable<Conversation> =
