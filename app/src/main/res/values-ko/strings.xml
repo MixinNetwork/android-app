@@ -2181,16 +2181,6 @@
     <string name="delete_common_wallet_description">지갑을 제거하기 전에 복구 문구나 개인 키를 적어 두었는지 확인하세요. 그렇지 않으면 지갑을 복구할 수 없습니다.</string>
     <string name="delete_watch_wallet_description">이 지갑은 보기 전용 지갑이므로 삭제해도 자산에 영향을 미치지 않습니다.</string>
     <string name="words">%1$d 단어</string>
-    <string name="other_words">12단어 또는 24단어</string>
-    <string name="mnemonic_12_24_instruction_title">12단어 또는 24단어 니모닉 지갑을 사용하려면 다음 단계를 따르세요.</string>
-    <string name="mnemonic_12_24_step_1">Mixin 계정을 등록하세요.</string>
-    <string name="mnemonic_12_24_step_2">지갑 목록으로 이동 → 지갑 추가 → 니모닉 가져오기를 선택하세요.</string>
-    <string name="mnemonic_12_24_step_3">가져오기를 완료하려면 12~24단어 니모닉 문구 또는 개인 키를 입력하세요.</string>
-    <string name="mnemonic_12_24_step_4">사용을 시작하세요.</string>
-    <string name="mnemonic_12_24_privacy_info">Mixin 계정을 생성하면 기본적으로 개인정보 지갑이 생성됩니다. 귀하의 잔액, 이체, 거래 및 기타 기능은 기본적으로 개인 정보 보호로 보호됩니다.</string>
-    <string name="mnemonic_12_24_privacy_info_with_link">Mixin 계정을 생성하면 기본적으로 개인정보 지갑이 생성됩니다. 귀하의 잔액, 이체, 거래 및 기타 기능은 기본적으로 %1$s의 개인 정보 보호로 보호됩니다.</string>
-    <string name="create_mixin_account">Mixin 계정 만들기</string>
-    <string name="register_in_15_seconds">15초 안에 등록하세요</string>
     <string name="import_private_key">개인 키 가져오기</string>
     <string name="add_watch_address">감시 주소 추가</string>
     <string name="private_key_hint">개인 키를 입력하세요</string>
