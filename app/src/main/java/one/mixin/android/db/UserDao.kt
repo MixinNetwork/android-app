@@ -223,7 +223,7 @@ interface UserDao : BaseDao<User> {
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
-        """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
+        """SELECT u.*, p.role FROM users u INNER JOIN participants p ON p.user_id = u.user_id
         WHERE p.conversation_id = :conversationId AND u.user_id IN (:userIds)
         """,
     )
@@ -234,7 +234,7 @@ interface UserDao : BaseDao<User> {
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
-        """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
+        """SELECT u.*, p.role FROM users u INNER JOIN participants p ON p.user_id = u.user_id
         WHERE p.conversation_id = :conversationId AND u.user_id = :userId
         """,
     )
