@@ -77,7 +77,7 @@ class WalletViewModel
 
         fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)
 
-        fun findUserById(conversationId: String): LiveData<User> = userRepository.findUserById(conversationId)
+        fun findUserById(conversationId: String): LiveData<User?> = userRepository.findUserById(conversationId)
 
         fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
 
