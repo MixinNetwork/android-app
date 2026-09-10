@@ -561,7 +561,7 @@ object WalletConnectV2 : WalletConnect() {
         sessions.forEach { session ->
             val newNamespaces = buildUpdatedNamespaces(session.namespaces, addresses)
             if (newNamespaces == null) {
-                Timber.w("$TAG switchAccount: current wallet does not have every connected chain address, disconnecting ${session.topic}")
+                Timber.w("$TAG switchAccount: empty namespaces or missing connected chain address, disconnecting ${session.topic}")
                 disconnect(session.topic)
                 return@forEach
             }
