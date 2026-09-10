@@ -69,7 +69,6 @@ import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.ui.common.balanceChangePresentation
 import one.mixin.android.ui.common.toColor
 import one.mixin.android.ui.home.web3.Web3ViewModel
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.priceUSD
 import one.mixin.android.vo.safe.Token
@@ -224,128 +223,126 @@ fun ParsedTxPreview(
             .padding(horizontal = 20.dp),
         horizontalAlignment = Alignment.Start,
     ) {
-        if (parsedTx == null) {
-            BalanceChangeHead()
-            CircularProgressIndicator(
-                modifier = Modifier.size(32.dp),
-                color = MixinAppTheme.colors.accent,
-            )
-        } else if (parsedTx.instructions?.isEmpty() == true) {
-            BalanceChangeHead()
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Bottom,
-            ) {
-                Text(
-                    modifier = Modifier.alignByBaseline(),
-                    text = stringResource(id = R.string.preview_unavailable),
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontFamily = FontFamily(Font(R.font.mixin_font)),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.W600
-                )
-                Box(modifier = Modifier.weight(1f))
-                CoilImage(
-                    model = asset?.iconUrl,
-                    modifier = Modifier
-                        .size(32.dp)
-                        .clip(CircleShape),
-                    placeholder = R.drawable.ic_avatar_place_holder,
+        when {
+            parsedTx == null -> {
+                BalanceChangeHead()
+                CircularProgressIndicator(
+                    modifier = Modifier.size(32.dp),
+                    color = MixinAppTheme.colors.accent,
                 )
             }
-        } else if (parsedTx.code == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
-            BalanceChangeHead()
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Bottom,
-            ) {
-                Text(
-                    modifier = Modifier.alignByBaseline(),
-                    text = stringResource(id = R.string.decode_transaction_failed_content),
-                    color = MixinAppTheme.colors.red,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.W600
-                )
-                Box(modifier = Modifier.weight(1f))
-            }
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = stringResource(id = R.string.Unable_to_estimate_balance_changes),
-                color = MixinAppTheme.colors.red,
-                fontSize = 14.sp,
-            )
-        } else if (parsedTx.balanceChanges.isNullOrEmpty() && parsedTx.approves.isNullOrEmpty()) {
-            BalanceChangeHead()
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.Bottom,
-            ) {
-                Text(
-                    modifier = Modifier.alignByBaseline(),
-                    text = stringResource(id = R.string.No_balance_change_detected),
-                    color = MixinAppTheme.colors.red,
-                    fontFamily = FontFamily(Font(R.font.mixin_font)),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.W600
-                )
-                Box(modifier = Modifier.weight(1f))
-            }
-        } else if (parsedTx.approves.isNullOrEmpty().not() && parsedTx.balanceChanges.isNullOrEmpty().not()){
-            BalanceChangeHead(R.string.preauthorize_amount)
-            parsedTx.approves.forEach { approve ->
-                ApproveChangeItem(approve)
-                Box(modifier = Modifier.height(10.dp))
-            }
-            BalanceChangeHead()
-            parsedTx.balanceChanges.forEach { bc ->
-                BalanceChangeItem(balanceChange = bc)
-                Box(modifier = Modifier.height(10.dp))
-            }
-        } else if (parsedTx.approves.isNullOrEmpty().not() && parsedTx.balanceChanges.isNullOrEmpty()){
-            BalanceChangeHead(R.string.preauthorize_amount)
-            parsedTx.approves.firstOrNull()?.let { approve ->
-                ApproveChangeItem(approve)
-            }
-            Box(modifier = Modifier.height(10.dp))
-        } else {
-            BalanceChangeHead()
-            val viewDetails = remember { mutableStateOf(false) }
-            val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
-            if (parsedTx.balanceChanges?.size == 1) {
-                SingleBalanceChangeItem(bc = parsedTx.balanceChanges.first())
-                Box(modifier = Modifier.height(10.dp))
-            } else {
-                parsedTx.balanceChanges?.forEach { bc ->
-                    BalanceChangeItem(balanceChange = bc)
-                    Spacer(modifier = Modifier.height(10.dp))
-                }
-            }
-            if (solanaTxSource != null && !solanaTxSource.isInnerTx()) {
+            parsedTx.code != null -> {
+                BalanceChangeHead()
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { viewDetails.value = !viewDetails.value },
-                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Bottom,
                 ) {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_play_arrow),
-                        modifier = Modifier
-                            .size(24.dp, 24.dp)
-                            .rotate(rotation),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.accent,
-                    )
                     Text(
-                        modifier = Modifier.padding(start = 4.dp),
-                        text = stringResource(id = R.string.View_details),
-                        color = MixinAppTheme.colors.accent,
+                        modifier = Modifier.alignByBaseline(),
+                        text = stringResource(id = R.string.decode_transaction_failed_content),
+                        color = MixinAppTheme.colors.red,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600
+                    )
+                    Box(modifier = Modifier.weight(1f))
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = stringResource(id = R.string.Unable_to_estimate_balance_changes),
+                    color = MixinAppTheme.colors.red,
+                    fontSize = 14.sp,
+                )
+            }
+            parsedTx.instructions?.isEmpty() == true && !parsedTx.hasChanges() -> {
+                BalanceChangeHead()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    Text(
+                        modifier = Modifier.alignByBaseline(),
+                        text = stringResource(id = R.string.preview_unavailable),
+                        color = MixinAppTheme.colors.textPrimary,
                         fontFamily = FontFamily(Font(R.font.mixin_font)),
-                        fontSize = 14.sp,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600
+                    )
+                    Box(modifier = Modifier.weight(1f))
+                    CoilImage(
+                        model = asset?.iconUrl,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .clip(CircleShape),
+                        placeholder = R.drawable.ic_avatar_place_holder,
                     )
                 }
-                if (viewDetails.value) {
-                    Box(modifier = Modifier.height(10.dp))
-                    Instructions(parsedTx.instructions ?: emptyList())
+            }
+            !parsedTx.hasChanges() -> {
+                BalanceChangeHead()
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.Bottom,
+                ) {
+                    Text(
+                        modifier = Modifier.alignByBaseline(),
+                        text = stringResource(id = R.string.No_balance_change_detected),
+                        color = MixinAppTheme.colors.red,
+                        fontFamily = FontFamily(Font(R.font.mixin_font)),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.W600
+                    )
+                    Box(modifier = Modifier.weight(1f))
+                }
+            }
+            else -> {
+                if (!parsedTx.approves.isNullOrEmpty()) {
+                    BalanceChangeHead(R.string.preauthorize_amount)
+                    parsedTx.approves.forEach { approve ->
+                        ApproveChangeItem(approve)
+                        Box(modifier = Modifier.height(10.dp))
+                    }
+                }
+                if (!parsedTx.balanceChanges.isNullOrEmpty()) {
+                    BalanceChangeHead()
+                    if (parsedTx.balanceChanges.size == 1) {
+                        SingleBalanceChangeItem(bc = parsedTx.balanceChanges.first())
+                        Box(modifier = Modifier.height(10.dp))
+                    } else {
+                        parsedTx.balanceChanges.forEach { bc ->
+                            BalanceChangeItem(balanceChange = bc)
+                            Spacer(modifier = Modifier.height(10.dp))
+                        }
+                    }
+                }
+                val viewDetails = remember { mutableStateOf(false) }
+                val rotation by animateFloatAsState(if (viewDetails.value) 90f else 0f, label = "rotation")
+                if (solanaTxSource != null && !solanaTxSource.isInnerTx()) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { viewDetails.value = !viewDetails.value },
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_play_arrow),
+                            modifier = Modifier
+                                .size(24.dp, 24.dp)
+                                .rotate(rotation),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.accent,
+                        )
+                        Text(
+                            modifier = Modifier.padding(start = 4.dp),
+                            text = stringResource(id = R.string.View_details),
+                            color = MixinAppTheme.colors.accent,
+                            fontFamily = FontFamily(Font(R.font.mixin_font)),
+                            fontSize = 14.sp,
+                        )
+                    }
+                    if (viewDetails.value) {
+                        Box(modifier = Modifier.height(10.dp))
+                        Instructions(parsedTx.instructions ?: emptyList())
+                    }
                 }
             }
         }

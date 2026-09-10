@@ -30,4 +30,10 @@ class BalanceChangePresentationTest {
             balanceChangePresentation("+0"),
         )
     }
+
+    @Test
+    fun forcedSignDoesNotDuplicateExistingSign() {
+        assertEquals("+1.25", balanceChangePresentation("-1.25", isReceive = true).amount)
+        assertEquals("-1.25", balanceChangePresentation("+1.25", isReceive = false).amount)
+    }
 }
