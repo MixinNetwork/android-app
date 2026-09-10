@@ -658,7 +658,7 @@ fun showWalletConnectBottomSheetDialogFragment(
                 return@setOnPinComplete if (e is TipNetworkException) {
                     "code: ${e.error.code}, message: ${e.error.description}"
                 } else {
-                    errorInfo
+                    e?.let { ErrorHandler.getErrorMessage(it) }
                 }
             }
         }
