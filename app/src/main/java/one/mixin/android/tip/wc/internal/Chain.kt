@@ -18,7 +18,7 @@ sealed class Chain(
     private val rpcServers: List<String>,
     private val walletConnectChainIdAliases: List<String> = emptyList(),
 ) {
-    object Ethereum : Chain(ETHEREUM_CHAIN_ID, "eip155", "1", "0x1", "Ethereum", "ETH", listOf("https://0xrpc.io/eth"))
+    object Ethereum : Chain(ETHEREUM_CHAIN_ID, "eip155", "1", "0x1", "Ethereum", "ETH", listOf("https://ethereum-rpc.publicnode.com"))
 
     object Arbitrum : Chain(Constants.ChainId.Arbitrum, "eip155", "42161", "0xa4b1", "Arbitrum One", "ETH", listOf("https://arb1.arbitrum.io/rpc"))
 
@@ -26,9 +26,9 @@ sealed class Chain(
 
     object Base : Chain(Constants.ChainId.Base, "eip155", "8453", "0x2105", "Base", "ETH", listOf("https://mainnet.base.org"))
 
-    object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", "56", "0x38", "BNB Smart Chain", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
+    object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", "56", "0x38", "BNB Smart Chain", "BNB", listOf("https://bsc-dataseed.bnbchain.org"))
 
-    object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "137", "0x89", "Polygon", "MATIC", listOf("https://polygon-rpc.com"))
+    object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "137", "0x89", "Polygon", "MATIC", listOf("https://polygon.drpc.org"))
 
     object Avalanche : Chain(Constants.ChainId.Avalanche, "eip155", "43114", "0xa86a", "Avalanche C-Chain", "AVAX", listOf("https://api.avax.network/ext/bc/C/rpc"))
 
@@ -61,7 +61,7 @@ sealed class Chain(
 
     val rpcUrl: String
         get() {
-            return MixinApplication.appContext.defaultSharedPreferences.getString(chainId, null) ?: rpcServers.first()
+            return rpcServers.first()
         }
 
     fun supportsWalletConnectChainId(chainId: String): Boolean = chainId in walletConnectChainIds
