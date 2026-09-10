@@ -3,7 +3,7 @@ package one.mixin.android.job
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.Constants.RouteConfig.WEB3_BOT_USER_ID
+import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.RxBus
 import one.mixin.android.extension.defaultSharedPreferences
@@ -23,7 +23,7 @@ class RefreshDappJob : BaseJob(
 
     override fun onRun(): Unit =
         runBlocking {
-            userRepo.getBotPublicKey(WEB3_BOT_USER_ID, false)
+            userRepo.getBotPublicKey(ROUTE_BOT_USER_ID, false)
             val response = routeService.dapps()
             if (response.isSuccess && response.data != null) {
                 val gson = GsonHelper.customGson
@@ -49,7 +49,7 @@ class RefreshDappJob : BaseJob(
                 }
                 RxBus.publish(WCChangeEvent())
             } else if (response.errorCode == 401) {
-                userRepo.getBotPublicKey(WEB3_BOT_USER_ID, true)
+                userRepo.getBotPublicKey(ROUTE_BOT_USER_ID, true)
             } else {
                 delay(3000)
                 jobManager.addJobInBackground(RefreshDappJob())
