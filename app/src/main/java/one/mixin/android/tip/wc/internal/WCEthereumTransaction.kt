@@ -4,6 +4,7 @@ import android.os.Parcelable
 import com.github.salomonbrys.kotson.jsonDeserializer
 import kotlinx.parcelize.Parcelize
 import org.web3j.utils.Convert
+import org.web3j.utils.Numeric
 import java.math.BigDecimal
 import java.math.BigInteger
 
@@ -37,7 +38,13 @@ val ethTransactionSerializer =
         val array = mutableListOf<WCEthereumTransaction>()
         it.json.asJsonArray.forEach { tx ->
             if (tx.isJsonObject) {
-                array.add(it.context.deserialize(tx))
+                val transaction = it.context.deserialize<WCEthereumTransaction>(tx)
+                val value =
+                    transaction.value?.let { value ->
+                        require(value.matches(Regex("0x[0-9a-fA-F]+"))) { "Invalid transaction value" }
+                        Numeric.encodeQuantity(Numeric.toBigInt(value))
+                    }
+                array.add(transaction.copy(value = value))
             }
         }
         array
