@@ -61,7 +61,7 @@ sealed class Chain(
 
     val rpcUrl: String
         get() {
-            return rpcServers.first()
+            return MixinApplication.appContext.defaultSharedPreferences.getString(chainId, null) ?: rpcServers.first()
         }
 
     fun supportsWalletConnectChainId(chainId: String): Boolean = chainId in walletConnectChainIds

@@ -79,6 +79,14 @@ open class ErrorHandler {
                 return ctx.getString(R.string.Data_error)
             }
             return when (throwable) {
+                is HttpException -> {
+                    if (throwable.code() in 500..599) {
+                        ctx.getString(R.string.error_server_5xx_code, throwable.code())
+                    } else {
+                        ctx.getMixinErrorStringByCode(throwable.code(), "")
+                    }
+                }
+
                 is IOException ->
                     when (throwable) {
                         is SocketTimeoutException -> ctx.getString(R.string.error_connection_timeout)
