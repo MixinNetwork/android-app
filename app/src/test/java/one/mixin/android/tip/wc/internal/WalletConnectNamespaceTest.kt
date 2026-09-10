@@ -11,6 +11,20 @@ class WalletConnectNamespaceTest {
     private val legacySolanaChainId = "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"
 
     @Test
+    fun sessionNamespaceUpdateRejectsEmptyNamespaces() {
+        assertNull(
+            buildUpdatedNamespaces(
+                emptyMap(),
+                WalletConnectAddresses(
+                    evm = "0x2222222222222222222222222222222222222222",
+                    solana = "",
+                    bitcoin = "",
+                ),
+            ),
+        )
+    }
+
+    @Test
     fun xLayerUsesExpectedWalletConnectMetadata() {
         assertEquals("37f5a4d1-905f-3b34-8291-c37438c7dcfc", Chain.XLayer.assetId)
         assertEquals("eip155:196", Chain.XLayer.chainId)

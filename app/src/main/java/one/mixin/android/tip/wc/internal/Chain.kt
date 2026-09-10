@@ -109,7 +109,7 @@ internal fun buildUpdatedNamespaces(
     namespaces: Map<String, Wallet.Model.Namespace.Session>,
     addresses: WalletConnectAddresses,
 ): Map<String, Wallet.Model.Namespace.Session>? =
-    namespaces.mapValues { (_, namespace) ->
+    namespaces.takeIf { it.isNotEmpty() }?.mapValues { (_, namespace) ->
         val chains = namespace.chains
         if (chains.isNullOrEmpty()) return@mapValues namespace
 
