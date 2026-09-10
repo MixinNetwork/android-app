@@ -594,7 +594,7 @@ fun OpenPositionPage(
                         text = "${leverage.toInt()}x",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Black,
-                        textAlign = TextAlign.Center,
+                        textAlign = TextAlign.Start,
                         color = MixinAppTheme.colors.textPrimary
                     )
 
