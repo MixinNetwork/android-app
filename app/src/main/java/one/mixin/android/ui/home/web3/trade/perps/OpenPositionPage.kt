@@ -161,6 +161,7 @@ fun OpenPositionPage(
     var takeProfitPrice by remember { mutableStateOf("") }
     var stopLossPrice by remember { mutableStateOf("") }
     var remoteLiquidationPrice by remember { mutableStateOf<String?>(null) }
+    var liquidationPriceLimit by remember { mutableStateOf<LiquidationPriceLimit?>(null) }
     var isLiquidationLoading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
     var isProcessing by remember { mutableStateOf(false) }
@@ -243,6 +244,7 @@ fun OpenPositionPage(
     }
 
     LaunchedEffect(usdtAmount, leverage, currentMarket.minAmount) {
+        liquidationPriceLimit = null
         val amount = usdtAmount.toBigDecimalOrNull()
         val minimumAmount = currentMarket.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         if (!shouldRequestLiquidationPrice(amount, minimumAmount)) {
@@ -260,7 +262,9 @@ fun OpenPositionPage(
                 .stripTrailingZeros()
                 .toPlainString()
                 .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
-            remoteLiquidationPrice = requestLiquidationPrice {
+            remoteLiquidationPrice = requestLiquidationPrice(
+                onLimitExceeded = { liquidationPriceLimit = it },
+            ) {
                 viewModel.estimateLiquidationPrice(
                     marketId = currentMarket.marketId,
                     amount = normalizedAmount,
@@ -298,13 +302,29 @@ fun OpenPositionPage(
         maximumMargin.stripTrailingZeros().toPlainString(),
         currentToken?.symbol.orEmpty(),
     )
+    val liquidationLimitMaxAmount = liquidationPriceLimit?.maxAmount
+        ?.toBigDecimalOrNull()
+        ?.takeIf { it > BigDecimal.ZERO }
+        ?.stripTrailingZeros()
+        ?.toPlainString()
+    val liquidationLimitAmountError = liquidationLimitMaxAmount?.let {
+        stringResource(R.string.perps_maximum_margin, it, currentToken?.symbol.orEmpty())
+    }
+    val liquidationLimitLeverageError = liquidationPriceLimit?.maxLeverage?.let {
+        stringResource(R.string.perps_maximum_leverage, it)
+    }
+    val liquidationLimitError = liquidationPriceLimit?.let {
+        listOfNotNull(liquidationLimitAmountError, liquidationLimitLeverageError)
+            .joinToString(". ")
+            .ifBlank { stringResource(R.string.error_perps_position_size_exceeds_leverage_limit) }
+    }
     val displayLiquidationPrice = remoteLiquidationPrice
     val marginLimitError = when {
         belowMinimumMargin -> minimumMarginError
         aboveMaximumMargin -> maximumMarginError
         else -> null
     }
-    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError
+    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError ?: liquidationLimitError
     val tokenNetworkName = currentToken?.chainName
         ?.takeIf { it.isNotBlank() }
         ?: currentToken?.chainSymbol
