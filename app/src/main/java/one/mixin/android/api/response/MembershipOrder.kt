@@ -1,18 +1,18 @@
 package one.mixin.android.api.response
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Index
-import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.Index
+import androidx.room3.PrimaryKey
+import androidx.room3.ColumnTypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.db.converter.FiatOrderConverter
 
 @Parcelize
 @Entity(tableName = "membership_orders", indices = [Index(value = ["created_at"])])
-@TypeConverters(FiatOrderConverter::class)
+@ColumnTypeConverters(FiatOrderConverter::class)
 data class MembershipOrder(
     @SerializedName("order_id")
     @PrimaryKey

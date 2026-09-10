@@ -1,6 +1,7 @@
 package one.mixin.android.util
 
 import android.content.Context
+import androidx.annotation.StringRes
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import one.mixin.android.MixinApplication
@@ -68,14 +69,25 @@ open class ErrorHandler {
                             toast(R.string.error_connection_error)
                         }
                     }
-                    else -> toast(getString(R.string.error_unknown_with_message, throwable.msg()))
+                    else -> toast(getErrorMessage(throwable))
                 }
             }
         }
 
         fun getErrorMessage(throwable: Throwable): String {
             val ctx = MixinApplication.appContext
+            if (generateSequence(throwable) { it.cause }.any { it is androidx.sqlite.SQLiteException }) {
+                return ctx.getString(R.string.Data_error)
+            }
             return when (throwable) {
+                is HttpException -> {
+                    if (throwable.code() in 500..599) {
+                        ctx.getString(R.string.error_server_5xx_code, throwable.code())
+                    } else {
+                        ctx.getMixinErrorStringByCode(throwable.code(), "")
+                    }
+                }
+
                 is IOException ->
                     when (throwable) {
                         is SocketTimeoutException -> ctx.getString(R.string.error_connection_timeout)
@@ -226,6 +238,8 @@ open class ErrorHandler {
         const val MAX_WALLET_REACHED = 10632
         const val PERPS_ORDER_VALUE_TOO_SMALL = 10650
         const val PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION = 10651
+        const val PERPS_ORDER_VALUE_BELOW_MINIMUM = 10654
+        const val PERPS_POSITION_SIZE_EXCEEDS_LEVERAGE_LIMIT = 10655
 
         const val UNSUPPORTED_WATCH_ADDRESS = 10633
         const val INVALID_REFERRAL_CODE = 10730
@@ -270,6 +284,10 @@ fun Context.getMixinErrorStringByCode(
     code: Int,
     message: String,
 ): String {
+    perpsOrderValueErrorResource(code)?.let { resource ->
+        return getString(resource, code)
+    }
+
     return when (code) {
         ErrorHandler.TRANSACTION -> "${ErrorHandler.TRANSACTION} TRANSACTION"
         ErrorHandler.BAD_DATA -> {
@@ -330,11 +348,11 @@ fun Context.getMixinErrorStringByCode(
         ErrorHandler.MAX_WALLET_REACHED -> {
             getString(R.string.error_too_many_wallets)
         }
-        ErrorHandler.PERPS_ORDER_VALUE_TOO_SMALL -> {
-            getString(R.string.error_perps_order_value_too_small)
-        }
         ErrorHandler.PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION -> {
             getString(R.string.error_already_had_open_position)
+        }
+        ErrorHandler.PERPS_POSITION_SIZE_EXCEEDS_LEVERAGE_LIMIT -> {
+            getString(R.string.error_perps_position_size_exceeds_leverage_limit)
         }
         ErrorHandler.UNSUPPORTED_WATCH_ADDRESS -> {
             getString(R.string.error_watch_address_not_supported)
@@ -442,3 +460,12 @@ fun Context.getMixinErrorStringByCode(
         }
     }
 }
+
+@StringRes
+internal fun perpsOrderValueErrorResource(code: Int): Int? =
+    when (code) {
+        ErrorHandler.PERPS_ORDER_VALUE_TOO_SMALL,
+        ErrorHandler.PERPS_ORDER_VALUE_BELOW_MINIMUM,
+        -> R.string.error_perps_order_value_too_small
+        else -> null
+    }

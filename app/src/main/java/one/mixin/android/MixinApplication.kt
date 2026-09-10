@@ -37,6 +37,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_APP_AUTH
 import one.mixin.android.crypto.CryptoWalletHelper
@@ -87,6 +88,7 @@ import one.mixin.android.vo.CallStateLiveData
 import one.mixin.android.webrtc.GroupCallService
 import one.mixin.android.webrtc.VoiceCallService
 import one.mixin.android.webrtc.disconnect
+import org.bitcoinj.crypto.MnemonicCode
 import org.whispersystems.libsignal.logging.SignalProtocolLoggerProvider
 import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
@@ -160,6 +162,7 @@ open class MixinApplication :
 
     override fun onCreate() {
         super.onCreate()
+        initMnemonicCode()
         applicationScope = getAppScope()
         init()
         registerActivityLifecycleCallbacks(this)
@@ -187,6 +190,17 @@ open class MixinApplication :
         initBugsnag()
         initAppsFlyer()
         Session.getAccount()?.let(ThirdPartyUserIdentity::setUser)
+    }
+
+    private fun initMnemonicCode() {
+        if (MnemonicCode.INSTANCE != null) return
+        val wordList = Thread.currentThread().contextClassLoader
+            ?.getResourceAsStream("en-mnemonic-word-list.txt")
+            ?: error("Missing BIP39 English word list")
+        MnemonicCode.INSTANCE = MnemonicCode(
+            wordList,
+            "ad90bf3beb7b0eb7e5acd74727dc0da96e0a280a258354e7293fb7e211ac03db",
+        )
     }
 
     private fun initBugsnag() {
@@ -403,7 +417,9 @@ open class MixinApplication :
         identityNumber?.let { scopedIdentity ->
             MixinDatabase.getDatabase(this, scopedIdentity).participantSessionDao().clearKey(sessionId)
         }
-        SignalDatabase.getDatabase(this).clearAllTables()
+        runBlocking {
+            SignalDatabase.getDatabase(this@MixinApplication).clearAllTables()
+        }
         removeValueFromEncryptedPreferences(this, Constants.Tip.MNEMONIC)
         clearPendingImportMnemonic(this)
     }

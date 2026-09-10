@@ -10,12 +10,12 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.ui.common.recyclerview.NormalHolder
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
+import one.mixin.android.ui.common.recyclerview.SafePagingDataAdapter
 import one.mixin.android.vo.MessageItem
 import kotlin.math.abs
 
 abstract class SharedMediaHeaderAdapter<VH : NormalHolder>(diffCallback: DiffUtil.ItemCallback<MessageItem> = MessageItem.DIFF_CALLBACK) :
-    SafePagedListAdapter<MessageItem, VH>(diffCallback),
+    SafePagingDataAdapter<MessageItem, VH>(diffCallback),
     StickyRecyclerHeadersAdapter<MediaHeaderViewHolder> {
     override fun getHeaderId(pos: Int): Long {
         val messageItem = getItem(pos)

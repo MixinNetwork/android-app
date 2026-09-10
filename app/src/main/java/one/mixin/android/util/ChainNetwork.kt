@@ -18,6 +18,7 @@ private val chainNetworks by lazy {
         Constants.ChainId.Arbitrum to "Arbitrum",
         Constants.ChainId.HyperEVM to "HyperEVM",
         Constants.ChainId.XLayer to "X Layer",
+        Constants.ChainId.Robinhood to "Robinhood",
     )
 }
 
@@ -45,6 +46,8 @@ fun getChainNetwork(
         return "Optimism"
     } else if (chainId == Constants.ChainId.XLayer) {
         return "X Layer"
+    } else if (chainId == Constants.ChainId.Robinhood) {
+        return "Robinhood"
     }
 
     if (assetId == chainId && !bepChains.contains(chainId) && assetId != Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID) return null
@@ -68,6 +71,7 @@ private val chainNames by lazy {
         Constants.ChainId.BinanceSmartChain to "BNB Smart Chain (BEP-20)",
         Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID to "Lightning",
         Constants.ChainId.XLayer to "X Layer",
+        Constants.ChainId.Robinhood to "Robinhood",
     )
 }
 

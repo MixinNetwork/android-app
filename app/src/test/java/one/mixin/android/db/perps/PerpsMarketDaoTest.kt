@@ -1,7 +1,7 @@
 package one.mixin.android.db.perps
 
 import android.content.Context
-import androidx.room.Room
+import androidx.room3.Room
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
@@ -96,6 +96,39 @@ class PerpsMarketDaoTest {
             val result = database.perpsMarketDao().searchMarkets("btc")
 
             assertEquals(listOf("btc-usdt", "eth-btc"), result.map(PerpsMarket::marketId))
+        }
+
+    @Test
+    fun upsertedRefreshedMarketsBecomeSearchableWithoutClearingDatabase() =
+        runBlocking {
+            database.perpsMarketDao().upsertList(
+                listOf(
+                    market("eth-usdt", volume = "50", score = 0).copy(
+                        displaySymbol = "ETHUSDT",
+                        tokenSymbol = "ETH",
+                        quoteSymbol = "USDT",
+                    ),
+                ),
+            )
+
+            database.perpsMarketDao().upsertList(
+                listOf(
+                    market("btc-usdt", volume = "100", score = 0).copy(
+                        displaySymbol = "BTCUSDT",
+                        tokenSymbol = "BTC",
+                        quoteSymbol = "USDT",
+                    ),
+                    market("eth-usdt", volume = "60", score = 0).copy(
+                        displaySymbol = "ETHUSDT",
+                        tokenSymbol = "ETH",
+                        quoteSymbol = "USDT",
+                    ),
+                ),
+            )
+
+            val result = database.perpsMarketDao().searchMarkets("btc")
+
+            assertEquals(listOf("btc-usdt"), result.map(PerpsMarket::marketId))
         }
 
     @Test

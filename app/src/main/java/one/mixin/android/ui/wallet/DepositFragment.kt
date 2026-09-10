@@ -349,6 +349,7 @@ class DepositFragment : BaseFragment() {
                 Constants.ChainId.Avalanche,
                 Constants.ChainId.HyperEVM,
                 Constants.ChainId.XLayer,
+                Constants.ChainId.Robinhood,
                 Constants.ChainId.TON_CHAIN_ID -> true
 
                 else -> false

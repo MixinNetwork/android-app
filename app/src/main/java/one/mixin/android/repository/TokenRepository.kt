@@ -10,8 +10,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.liveData
-import androidx.room.RoomRawQuery
-import androidx.room.withTransaction
+import androidx.room3.RoomRawQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -77,6 +76,8 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
+import one.mixin.android.db.WalletDatabase
+import one.mixin.android.db.withRoomTransaction
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.web3.WalletOutputDao
@@ -173,6 +174,7 @@ class TokenRepository
     @Inject
     constructor(
         private val appDatabase: MixinDatabase,
+        private val walletDatabase: WalletDatabase,
         private val tokenService: TokenService,
         private val assetService: AssetService,
         private val utxoService: UtxoService,
@@ -497,7 +499,7 @@ class TokenRepository
             id: String,
             hidden: Boolean,
         ) {
-            appDatabase.withTransaction {
+            appDatabase.withRoomTransaction {
                 val tokensExtra = tokensExtraDao.findByAssetId(id)
                 if (tokensExtra != null) {
                     tokensExtraDao.updateHiddenByAssetId(id, hidden)
@@ -577,7 +579,7 @@ class TokenRepository
         suspend fun fuzzySearchAssetIgnoreAmount(query: String) =
             tokenDao.fuzzySearchAssetIgnoreAmount(query, query)
 
-        fun assetItem(id: String) = tokenDao.assetItem(id)
+        fun assetItem(id: String): LiveData<TokenItem?> = tokenDao.assetItem(id)
 
         fun assetItemFlow(id: String): Flow<TokenItem?> = tokenDao.assetItemFlow(id)
 
@@ -1373,7 +1375,7 @@ class TokenRepository
                     val markets = response.data.orEmpty()
                     if (persist) {
                         val now = nowInUtc()
-                        appDatabase.withTransaction {
+                        appDatabase.withRoomTransaction {
                             marketDao.upsertList(markets)
                             when (category) {
                                 CATEGORY_ALL ->
@@ -1793,7 +1795,7 @@ class TokenRepository
         val normalizedAmount = amount.removePrefix("-")
         val normalizedFee = fee.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: fee
         val normalizedSponsorFeeAmount = sponsorFeeAmount?.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: sponsorFeeAmount
-        appDatabase.withTransaction {
+        walletDatabase.withRoomTransaction {
             web3RawTransactionDao.insertSuspend(
                 Web3RawTransaction(
                     hash = hash,
@@ -1853,9 +1855,9 @@ class TokenRepository
         chainId: String,
         updatedAt: String,
     ) {
-        appDatabase.withTransaction {
+        walletDatabase.withRoomTransaction {
             val pendingRaw = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, sponsorTxId, chainId)
-                ?: return@withTransaction
+                ?: return@withRoomTransaction
             val pendingTransaction = web3TransactionDao.getLatestTransaction(sponsorTxId, chainId)
 
             web3RawTransactionDao.insertSuspend(
@@ -1886,9 +1888,9 @@ class TokenRepository
         status: String,
         updatedAt: String,
     ) {
-        appDatabase.withTransaction {
+        walletDatabase.withRoomTransaction {
             val pendingRaw = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, hash, chainId)
-                ?: return@withTransaction
+                ?: return@withRoomTransaction
             web3RawTransactionDao.insertSuspend(
                 pendingRaw.copy(
                     state = status,
@@ -1906,15 +1908,15 @@ class TokenRepository
         chainId: String,
         utxoRawTransactionHexToDeleteOutputs: String?,
     ) {
-        appDatabase.withTransaction {
+        walletDatabase.withRoomTransaction {
             web3RawTransactionDao.insertSuspend(raw)
             web3TransactionDao.updateTransaction(hash, status, chainId)
-            if (chainId !in Constants.Web3UtxoChainIds || utxoRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withTransaction
+            if (chainId !in Constants.Web3UtxoChainIds || utxoRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withRoomTransaction
             val cleanedHex: String = utxoRawTransactionHexToDeleteOutputs.removePrefix("0x").trim()
-            if (cleanedHex.isBlank()) return@withTransaction
+            if (cleanedHex.isBlank()) return@withRoomTransaction
             val tx: Transaction = runCatching {
                 Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
-            }.getOrNull() ?: return@withTransaction
+            }.getOrNull() ?: return@withRoomTransaction
             val txHash: String = tx.txId.toString()
             walletOutputDao.deleteByTransactionHash(txHash, chainId)
 

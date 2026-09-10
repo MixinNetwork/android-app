@@ -1,10 +1,10 @@
 package one.mixin.android.db.web3
 
 import android.content.Context
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
-import androidx.room.Transaction
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
+import androidx.room3.Transaction
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.db.BaseDao

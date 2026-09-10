@@ -1,10 +1,10 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
-import androidx.room.Transaction
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
+import androidx.room3.Transaction
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.App
@@ -85,7 +85,7 @@ interface UserDao : BaseDao<User> {
     suspend fun findFriendsAndMyBot(selfId: String): List<User>
 
     @Query("SELECT * FROM users WHERE user_id = :id")
-    fun findUserById(id: String): LiveData<User>
+    fun findUserById(id: String): LiveData<User?>
 
     @Query("SELECT * FROM users WHERE user_id IN (SELECT DISTINCT opponent_id FROM safe_snapshots)")
     fun allRecipients(): LiveData<List<UserItem>>
@@ -112,7 +112,7 @@ interface UserDao : BaseDao<User> {
     fun findUsersByType(relationship: String): LiveData<List<User>>
 
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId")
-    fun findUserByConversationId(conversationId: String): LiveData<User>
+    fun findUserByConversationId(conversationId: String): LiveData<User?>
 
     @Query("SELECT u.* FROM users u, conversations c WHERE c.owner_id = u.user_id AND c.conversation_id = :conversationId")
     fun findOwnerByConversationId(conversationId: String): User?
@@ -223,7 +223,7 @@ interface UserDao : BaseDao<User> {
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
-        """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
+        """SELECT u.*, p.role FROM users u INNER JOIN participants p ON p.user_id = u.user_id
         WHERE p.conversation_id = :conversationId AND u.user_id IN (:userIds)
         """,
     )
@@ -234,7 +234,7 @@ interface UserDao : BaseDao<User> {
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
-        """SELECT * FROM users u INNER JOIN participants p ON p.user_id = u.user_id
+        """SELECT u.*, p.role FROM users u INNER JOIN participants p ON p.user_id = u.user_id
         WHERE p.conversation_id = :conversationId AND u.user_id = :userId
         """,
     )

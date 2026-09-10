@@ -1,12 +1,12 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RawQuery
-import androidx.room.RoomRawQuery
-import androidx.room.RoomWarnings
-import androidx.room.Update
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RawQuery
+import androidx.room3.RoomRawQuery
+import androidx.room3.RoomWarnings
+import androidx.room3.Update
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.Constants
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
@@ -45,7 +45,7 @@ interface TokenDao : BaseDao<Token> {
     @Query("$PREFIX_ASSET_ITEM")
     fun assetFlow(): Flow<List<TokenItem>>
 
-    @Query("SELECT * FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id $POSTFIX")
+    @Query("SELECT a1.* FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id $POSTFIX")
     fun assets(): LiveData<List<Token>>
 
     @Query("SELECT a1.* FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
@@ -54,10 +54,10 @@ interface TokenDao : BaseDao<Token> {
     @Query("SELECT a1.* FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
     suspend fun simpleAssetsWithBalance(): List<Token>
 
-    @Query("SELECT a1.asset_id, a1.chain_id, ae.balance, a1.symbol, a1.name, a1.icon_url, ae.balance FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
+    @Query("SELECT a1.asset_id, a1.chain_id, ae.balance, a1.symbol, a1.name, a1.icon_url FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE balance > 0 $POSTFIX")
     suspend fun tokenEntry(): List<TokenEntry>
 
-    @Query("SELECT a1.asset_id, a1.chain_id, ae.balance, a1.symbol, a1.name, a1.icon_url, ae.balance FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE a1.asset_id IN (:ids)")
+    @Query("SELECT a1.asset_id, a1.chain_id, ae.balance, a1.symbol, a1.name, a1.icon_url FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE a1.asset_id IN (:ids)")
     suspend fun tokenEntry(ids: Array<String>): List<TokenEntry>
 
     @Query("SELECT asset_id FROM tokens WHERE kernel_asset_id = :asset")
@@ -79,7 +79,7 @@ interface TokenDao : BaseDao<Token> {
     fun getXIN(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): TokenItem?
 
     @Query("SELECT * FROM tokens WHERE asset_id = :id")
-    fun asset(id: String): LiveData<Token>
+    fun asset(id: String): LiveData<Token?>
 
     @Query("SELECT * FROM tokens WHERE asset_id = :id")
     suspend fun simpleAsset(id: String): Token?
@@ -154,7 +154,7 @@ interface TokenDao : BaseDao<Token> {
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :id")
-    fun assetItem(id: String): LiveData<TokenItem>
+    fun assetItem(id: String): LiveData<TokenItem?>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")

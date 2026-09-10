@@ -130,17 +130,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     private var refreshJob: Job? = null
     lateinit var rpc: Rpc
 
-    private fun formatAmountWithSign(amount: String, positive: Boolean): String {
-        val magnitude = amount.trimStart('+', '-')
-        return if (positive) "+$magnitude" else "-$magnitude"
-    }
-
     private fun bindMainValue(state: Web3TransactionDetailState) {
-        val amountColor = when (state.amountTone) {
-            Web3TransactionAmountTone.ASSIST -> requireContext().colorFromAttribute(R.attr.text_assist)
-            Web3TransactionAmountTone.OUTGOING -> requireContext().getColor(R.color.wallet_pink)
-            Web3TransactionAmountTone.INCOMING -> requireContext().getColor(R.color.wallet_green)
-            Web3TransactionAmountTone.PRIMARY -> requireContext().colorFromAttribute(R.attr.text_primary)
+        val amountColor = requireContext().web3AmountColor(state.status, transaction.getMainAmount(), transaction.transactionType == TransactionType.TRANSFER_IN.value)
+        binding.valueTv.isVisible = when (transaction.transactionType) {
+            TransactionType.TRANSFER_IN.value, TransactionType.TRANSFER_OUT.value -> transaction.hasDisplayAssetChanges()
+            TransactionType.UNKNOWN.value -> false
+            else -> true
         }
         val symbolColor = requireContext().colorFromAttribute(R.attr.text_primary)
         val mainAmount = transaction.getFormattedAmount()
@@ -177,7 +172,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 } else {
                     buildAmountSymbol(
                         requireContext(),
-                        formatAmountWithSign(mainAmount, transaction.transactionType == TransactionType.TRANSFER_IN.value),
+                        formatWeb3AmountWithSign(mainAmount, transaction.transactionType == TransactionType.TRANSFER_IN.value),
                         when (transaction.transactionType) {
                             TransactionType.TRANSFER_OUT.value -> transaction.sendAssetSymbol ?: ""
                             TransactionType.APPROVAL.value -> transaction.sendAssetSymbol ?: ""
@@ -452,7 +447,6 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     toLl.isVisible = false
                 }
                 currentStatus == TransactionStatus.FAILED.value -> {
-                    valueTv.isVisible = false
                     fromLl.isVisible = false
                     toLl.isVisible = false
                 }
@@ -516,6 +510,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
                 assetChangesContainer.setContent {
                     AssetChangesList(
+                        status = transactionDetailState.value.status,
                         senders = transaction.senders,
                         receivers = transaction.receivers,
                         fetchToken = { assetId ->
@@ -524,10 +519,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         approvals = transaction.approvals,
                     )
                 }
-            } else if (transaction.transactionType == TransactionType.SWAP.value || (transaction.transactionType == TransactionType.TRANSFER_OUT.value && transaction.senders.size > 1) || (transaction.transactionType == TransactionType.TRANSFER_IN.value && transaction.receivers.size > 1)) {
+            } else if ((transaction.transactionType == TransactionType.UNKNOWN.value && transaction.hasDisplayAssetChanges()) || transaction.transactionType == TransactionType.SWAP.value || (transaction.transactionType == TransactionType.TRANSFER_OUT.value && transaction.senders.size > 1) || (transaction.transactionType == TransactionType.TRANSFER_IN.value && transaction.receivers.size > 1)) {
                 assetChangesLl.visibility = View.VISIBLE
                 assetChangesContainer.setContent {
                     AssetChangesList(
+                        status = transactionDetailState.value.status,
                         senders = if (transaction.transactionType == TransactionType.TRANSFER_IN.value) emptyList() else transaction.senders,
                         receivers = if (transaction.transactionType == TransactionType.TRANSFER_OUT.value) emptyList() else transaction.receivers,
                         fetchToken = { assetId ->

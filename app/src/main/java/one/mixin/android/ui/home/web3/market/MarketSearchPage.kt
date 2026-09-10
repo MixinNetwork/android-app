@@ -14,9 +14,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -74,6 +76,9 @@ internal fun MarketSearchPage(
     onPerpetualMarketClick: (PerpsMarket) -> Unit,
 ) {
     val marketRecentSearches = recentSearches
+    val showRecentSearches = state.query.isBlank() && marketRecentSearches.isNotEmpty()
+    val showResultSections = state.hasQuery && !state.isSearching && state.selectedTab == MarketSearchTab.ALL &&
+        (state.spotResults.isNotEmpty() || state.perpetualResults.isNotEmpty())
     val tabs = marketSearchTabs(state.query)
     val quoteColorReversed =
         androidx.compose.ui.platform.LocalContext.current.defaultSharedPreferences
@@ -97,10 +102,18 @@ internal fun MarketSearchPage(
             onCancel = onCancel,
         )
         LazyColumn(
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    if (showResultSections) {
+                        MixinAppTheme.colors.backgroundWindow
+                    } else {
+                        MixinAppTheme.colors.background
+                    },
+                ),
             state = listState,
         ) {
-            if (state.query.isBlank() && marketRecentSearches.isNotEmpty()) {
+            if (showRecentSearches) {
                 item(key = "recent_header") {
                     Row(
                         modifier = Modifier
@@ -113,6 +126,7 @@ internal fun MarketSearchPage(
                             text = stringResource(R.string.Recent),
                             color = MixinAppTheme.colors.textAssist,
                             fontSize = 14.sp,
+                            modifier = Modifier.padding(vertical = 16.dp),
                         )
                         IconButton(
                             onClick = onClearRecentSearches,
@@ -130,9 +144,9 @@ internal fun MarketSearchPage(
                     FlowRow(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 20.dp, vertical = 8.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
+                            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
+                        horizontalArrangement = Arrangement.spacedBy(11.dp),
+                        verticalArrangement = Arrangement.spacedBy(11.dp),
                     ) {
                         marketRecentSearches.forEach { search ->
                             MarketRecentSearchChip(
@@ -157,7 +171,8 @@ internal fun MarketSearchPage(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                        .background(MixinAppTheme.colors.background)
+                        .padding(start = 20.dp, top = if (showRecentSearches) 20.dp else 12.dp, end = 20.dp, bottom = if (showResultSections) 0.dp else 6.dp),
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
                     tabs.forEach { tab ->
@@ -175,7 +190,7 @@ internal fun MarketSearchPage(
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 20.dp),
+                            .padding(top = 36.dp, bottom = 20.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         CircularProgressIndicator(
@@ -229,6 +244,7 @@ internal fun MarketSearchPage(
                                             .forEach { market ->
                                                 SpotMarketSearchRow(
                                                     market = market,
+                                                    subtitle = market.name,
                                                     quoteColorReversed = quoteColorReversed,
                                                     onClick = { onSpotMarketClick(market) },
                                                 )
@@ -276,6 +292,7 @@ internal fun MarketSearchPage(
                             ) { market ->
                                 SpotMarketSearchRow(
                                     market = market,
+                                    subtitle = market.name,
                                     quoteColorReversed = quoteColorReversed,
                                     onClick = { onSpotMarketClick(market) },
                                 )
@@ -417,18 +434,21 @@ private fun MarketRecentSearchChip(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         MarketIcon(url = recentSearch.iconUrl.orEmpty(), size = 32.dp)
-        Spacer(modifier = Modifier.width(6.dp))
+        Spacer(modifier = Modifier.width(4.dp))
         Column(
             modifier = Modifier.wrapContentWidth(),
-            verticalArrangement = Arrangement.spacedBy(3.dp),
+            verticalArrangement = Arrangement.spacedBy((-2).dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = recentSearch.title.orEmpty(),
+                    text = if (recentSearch.type == RecentSearchType.PERPETUAL) recentSearch.subTitle.orEmpty() else recentSearch.title.orEmpty(),
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 14.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                    lineHeight = 18.sp,
+                    style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+                    modifier = if (recentSearch.type == RecentSearchType.PERPETUAL) Modifier else Modifier.widthIn(min = 34.dp),
                 )
                 if (recentSearch.type == RecentSearchType.PERPETUAL) {
                     Spacer(modifier = Modifier.width(3.dp))
@@ -449,11 +469,12 @@ private fun MarketRecentSearchChip(
             Text(
                 text = formatSearchPercent(search.change),
                 color = searchChangeColor(search.change, quoteColorReversed),
-                fontSize = 12.sp,
-                lineHeight = 12.sp,
+                fontSize = 13.sp,
+                lineHeight = 16.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
+                modifier = Modifier.widthIn(min = 34.dp),
             )
         }
     }
@@ -466,17 +487,23 @@ private fun SearchResultSection(
     onMore: () -> Unit,
     content: @Composable () -> Unit,
 ) {
-    Column {
+    Column(
+        modifier = Modifier
+            .background(MixinAppTheme.colors.background)
+            .padding(bottom = 12.dp),
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 8.dp),
+                .padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 5.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
                 text = title,
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,
+                lineHeight = 14.sp,
+                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             )
             if (hasMore) {
                 Spacer(modifier = Modifier.weight(1f))
@@ -484,10 +511,12 @@ private fun SearchResultSection(
                     text = stringResource(R.string.More),
                     color = MixinAppTheme.colors.accent,
                     fontSize = 14.sp,
+                    lineHeight = 14.sp,
+                    style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                     modifier = Modifier
                         .clip(CircleShape)
                         .clickable(onClick = onMore)
-                        .padding(horizontal = 4.dp, vertical = 4.dp),
+                        .padding(horizontal = 4.dp),
                 )
             }
         }
@@ -500,11 +529,12 @@ private fun SpotMarketSearchRow(
     market: MarketItem,
     quoteColorReversed: Boolean,
     onClick: () -> Unit,
+    subtitle: String? = null,
 ) {
     MarketSearchRow(
         iconUrl = market.iconUrl,
         title = market.symbol,
-        volume = formatSearchSpotVolume(market.totalVolume),
+        subtitle = subtitle ?: stringResource(R.string.volume_label, formatSearchSpotVolume(market.totalVolume)),
         price = formatSearchSpotPrice(market.currentPrice),
         change = market.priceChangePercentage24H.toBigDecimalOrNull(),
         quoteColorReversed = quoteColorReversed,
@@ -520,10 +550,10 @@ private fun PerpetualMarketSearchRow(
 ) {
     MarketSearchRow(
         iconUrl = market.iconUrl,
-        title = market.displaySymbol.ifBlank { market.tokenSymbol },
+        title = market.tokenSymbol,
         badge = stringResource(R.string.Perp),
-        volume = formatSearchPerpetualVolume(market.volume),
-        price = "$${market.last}",
+        subtitle = stringResource(R.string.volume_label, formatSearchPerpetualVolume(market.volume)),
+        price = formatPerpsMarketListPrice(market.last),
         change = market.changePercentValue(),
         quoteColorReversed = quoteColorReversed,
         onClick = onClick,
@@ -534,7 +564,7 @@ private fun PerpetualMarketSearchRow(
 private fun MarketSearchRow(
     iconUrl: String,
     title: String,
-    volume: String,
+    subtitle: String,
     price: String,
     change: BigDecimal?,
     quoteColorReversed: Boolean,
@@ -545,12 +575,13 @@ private fun MarketSearchRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .heightIn(min = 64.dp)
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 10.dp),
+            .padding(horizontal = 20.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        MarketIcon(url = iconUrl, size = 38.dp)
-        Spacer(modifier = Modifier.width(10.dp))
+        MarketIcon(url = iconUrl, size = 42.dp)
+        Spacer(modifier = Modifier.width(16.dp))
         Column(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -559,8 +590,8 @@ private fun MarketSearchRow(
                 Text(
                     text = title,
                     color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 14.sp,
-                    lineHeight = 14.sp,
+                    fontSize = 16.sp,
+                    lineHeight = 18.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
@@ -583,17 +614,18 @@ private fun MarketSearchRow(
                 }
             }
             Text(
-                text = stringResource(R.string.volume_label, volume),
+                text = subtitle,
                 color = MixinAppTheme.colors.textAssist,
-                fontSize = 12.sp,
-                lineHeight = 12.sp,
+                fontSize = 14.sp,
+                lineHeight = 15.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
             )
         }
+        Spacer(modifier = Modifier.width(8.dp))
         Column(
-            modifier = Modifier.width(96.dp),
+            modifier = Modifier.widthIn(min = 96.dp),
             horizontalAlignment = Alignment.End,
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
@@ -601,6 +633,8 @@ private fun MarketSearchRow(
                 text = price,
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 14.sp,
+                lineHeight = 18.sp,
+                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 textAlign = TextAlign.End,
@@ -609,6 +643,8 @@ private fun MarketSearchRow(
                 text = formatSearchPercent(change),
                 color = changeColor,
                 fontSize = 14.sp,
+                lineHeight = 16.sp,
+                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 maxLines = 1,
                 textAlign = TextAlign.End,
             )
