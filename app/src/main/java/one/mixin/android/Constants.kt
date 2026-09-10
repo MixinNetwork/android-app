@@ -587,7 +587,5 @@ object Constants {
         val RISK_ENVIRONMENT = RiskEnvironment.PRODUCTION
 
         val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
-
-        const val WEB3_URL = "https://web3-api.mixin.one"
     }
 }
