@@ -5,7 +5,9 @@
 # runtime identifier (SPI, JNI, or persisted Java serialization).
 
 # Gson/Room models that still use source field names as JSON/column keys.
--keepclassmembers,allowoptimization class one.mixin.android.api.**,
+-keepclassmembers,allowoptimization class !one.mixin.android.api.request.**,
+                         !one.mixin.android.api.response.**,
+                         one.mixin.android.api.**,
                          one.mixin.android.vo.**,
                          one.mixin.android.websocket.**,
                          one.mixin.android.db.**,
@@ -14,6 +16,10 @@
                          one.mixin.android.tip.**,
                          one.mixin.android.media.**,
                          one.mixin.android.webrtc.** {
+    !transient !static !synthetic <fields>;
+}
+-keepclassmembers,allowoptimization class one.mixin.android.api.response.perps.PerpsFavorite,
+                         one.mixin.android.api.response.perps.PerpsMarketCategoryRelation {
     !transient !static <fields>;
 }
 -keepclassmembers,allowoptimization,allowobfuscation class one.mixin.android.api.**,
@@ -50,10 +56,21 @@
 -keep class com.google.android.gms.internal.mlkit_entity_extraction.** extends java.util.Random { *; }
 
 # Java serialization stores class names and field names across app updates.
--keep,allowoptimization class one.mixin.android.** implements java.io.Serializable
--keepclassmembers,allowoptimization class one.mixin.android.** implements java.io.Serializable {
+# Non-public compiler-generated continuations and callable references are not persisted models.
+-keep,allowoptimization public class one.mixin.android.** implements java.io.Serializable
+-keep,allowoptimization class one.mixin.android.** extends java.lang.Enum
+-keep,allowoptimization class one.mixin.android.** extends java.lang.Throwable
+-keepclassmembers,allowoptimization public class one.mixin.android.** implements java.io.Serializable {
     static final long serialVersionUID;
     !transient <fields>;
+}
+-keepclassmembers,allowoptimization class one.mixin.android.** extends java.lang.Throwable {
+    !transient <fields>;
+}
+
+# Kotlin reads label reflectively to recover coroutine stack trace line numbers.
+-keepclassmembers,allowoptimization class one.mixin.android.** extends kotlin.coroutines.jvm.internal.BaseContinuationImpl {
+    int label;
 }
 
 # JobQueue persists jobs by class name and serializes non-transient fields.

@@ -28,7 +28,7 @@ interface AddressDao : BaseDao<Address> {
     fun deleteAll()
 
     @Query("SELECT * FROM addresses WHERE address_id = :addressId")
-    fun observeById(addressId: String): LiveData<Address>
+    fun observeById(addressId: String): LiveData<Address?>
 
     @Query("SELECT * FROM addresses WHERE address_id = :addressId AND chain_id = :chainId")
     suspend fun findAddressById(

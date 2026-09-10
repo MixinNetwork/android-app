@@ -1216,7 +1216,7 @@ class BottomSheetViewModel
 
         suspend fun simpleAssetItem(id: String) = tokenRepository.simpleAssetItem(id)
 
-        fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
+        fun findUserById(id: String): LiveData<User?> = userRepository.findUserById(id)
 
         suspend fun suspendFindUserById(id: String) = userRepository.suspendFindUserById(id)
 
