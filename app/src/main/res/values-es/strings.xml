@@ -394,6 +394,7 @@
     <string name="error_old_version">ERROR 10006: Actualiza Mixin(%1$s) para seguir usando el servicio.</string>
     <string name="error_open_location">No puedo encontrar una aplicación de mapas</string>
     <string name="error_permission">Por favor abre los permisos necesarios</string>
+    <string name="error_perps_order_value_too_small">ERROR %1$d: El tamaño de la posición es demasiado pequeño.</string>
     <string name="error_phone_invalid_format">ERROR 20110: Número de teléfono no válido</string>
     <string name="error_phone_sms_delivery">ERROR 10003: Error al entregar SMS</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Código de verificación del teléfono caducado</string>
@@ -419,6 +420,7 @@
     <string name="error_unknown_with_code">ERROR: %1$d</string>
     <string name="error_unknown_with_message">ERROR: %1$s</string>
     <string name="error_used_phone">ERROR 20122: Este número de teléfono ya está asociado a otra cuenta.</string>
+    <string name="error_watch_address_not_supported">ERROR 10633: Actualmente no se admite añadir esta dirección</string>
     <string name="error_user_invalid_format">ID de usuario invalido</string>
     <string name="error_withdrawal_memo_format_incorrect">ERROR 20131: Formato de nota de retiro incorrecto.</string>
     <string name="Everybody">Todos</string>
@@ -1113,7 +1115,7 @@
     <string name="withdrawal_to">Retirar a %1$s</string>
     <string name="you">tú</string>
     <string name="You">Tú</string>
-    <string name="You_deleted_this_message">Has borrado este mensaje</string>
+    <string name="You_deleted_this_message">Has borrado este mensaje.</string>
     <string name="You_have_left_the_group">Te has ido del grupo</string>
     <string name="Your_emergency_contact_has_been_changed">Tu contacto de emergencia se ha cambiado</string>
     <string name="Receivers">receivers</string>
@@ -1167,4 +1169,14 @@
     <string name="Bitcoin_Dominance">Dominancia de Bitcoin</string>
     <string name="Perp">Perp</string>
     <string name="classic_wallet_pearl_intro_title">Common Wallet ahora es compatible con Pearl</string>
+    <string name="Debug_Wallet_Account_Visibility">Visibilidad de cuentas de la cartera</string>
+    <string name="Debug_Earn_Account">Cuenta Earn</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">Ganancias totales</string>
+    <string name="Total_Amount">Importe total</string>
+    <string name="Cash_Account">Cuenta de efectivo</string>
+    <string name="earn_reward_rate">Tasa de recompensa</string>
+    <string name="wallet_home_earn_account">Cuenta Earn</string>
+    <string name="earn_balance">Saldo de Earn</string>
+    <string name="earn_yesterday_earnings">Ganancias de ayer</string>
 </resources>

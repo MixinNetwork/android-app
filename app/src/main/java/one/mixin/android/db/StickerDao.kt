@@ -1,9 +1,9 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.Transaction
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.Transaction
 import one.mixin.android.vo.Sticker
 
 @Dao
@@ -45,7 +45,7 @@ interface StickerDao : BaseDao<Sticker> {
     suspend fun findStickerById(stickerId: String): Sticker?
 
     @Query("SELECT * FROM stickers WHERE sticker_id = :stickerId")
-    fun observeStickerById(stickerId: String): LiveData<Sticker>
+    fun observeStickerById(stickerId: String): LiveData<Sticker?>
 
     @Query("UPDATE stickers SET album_id = :albumId WHERE sticker_id = :stickerId")
     suspend fun updateAlbumId(

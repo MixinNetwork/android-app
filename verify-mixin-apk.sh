@@ -133,7 +133,13 @@ while IFS= read -r device_apk; do
     exit 1
   fi
 
-  actual_cert=$("$apksigner_bin" verify --print-certs "$installed_apk" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1)
+  actual_cert=$(
+    "$apksigner_bin" verify --print-certs "$installed_apk" |
+      sed -n \
+        -e 's/^Signer #1 certificate SHA-256 digest: //p' \
+        -e 's/^V2 Signer: certificate SHA-256 digest: //p' |
+      head -1
+  )
   normalized_actual_cert=$(printf '%s' "$actual_cert" | tr '[:lower:]' '[:upper:]' | tr -d ':')
   if [ "$normalized_actual_cert" != "$normalized_expected_cert" ]; then
     echo "Verification failed: unexpected signing certificate for $installed_name"

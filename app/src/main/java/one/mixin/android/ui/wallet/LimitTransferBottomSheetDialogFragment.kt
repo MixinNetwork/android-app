@@ -1037,7 +1037,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         } else if (t.isUtxoException()) {
             t.getUtxoExceptionMsg(requireContext())
         } else {
-            t.message ?: t.toString()
+            ErrorHandler.getErrorMessage(t)
         }
         reportException("$TAG handleException", t)
         step = Step.Error

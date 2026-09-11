@@ -1,6 +1,6 @@
 package one.mixin.android.repository
 
-import androidx.room.withTransaction
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.Constants
 import one.mixin.android.api.response.perps.PerpsFavorite
@@ -9,9 +9,11 @@ import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.PerpsDatabase
+import one.mixin.android.db.withRoomTransaction
 import one.mixin.android.db.perps.PerpsFavoriteDao
 import one.mixin.android.db.perps.PerpsMarketCategoryDao
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.extension.mergeLocalAndRefreshed
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.vo.market.MarketCategory
@@ -38,6 +40,15 @@ class PerpsMarketRepository
 
         suspend fun getAllMarkets(): List<PerpsMarket> = marketDao.getAllMarkets()
 
+        suspend fun searchMarkets(query: String): List<PerpsMarket> = marketDao.searchMarkets(query.trim())
+
+        suspend fun searchMarketsOnlineFirst(query: String): List<PerpsMarket> =
+            searchPerpsMarketsOnlineFirst(
+                query = query,
+                searchLocalMarkets = marketDao::searchMarkets,
+                syncOnlineMarkets = { syncAllMarkets() },
+            )
+
         suspend fun getMarket(marketId: String): PerpsMarket? = marketDao.getMarket(marketId)
 
         suspend fun syncAllMarkets(): List<PerpsMarket>? {
@@ -48,7 +59,7 @@ class PerpsMarketRepository
 
         suspend fun syncFavoriteMarkets(): List<PerpsMarket>? {
             val markets = fetchMarkets(CATEGORY_FAVORITE) ?: return null
-            return database.withTransaction {
+            return database.withRoomTransaction {
                 val mergedMarkets = marketDao.upsertPreservingTradeVolumeScores(markets)
                 favoriteDao.replaceAll(
                     marketIds = mergedMarkets.map(PerpsMarket::marketId),
@@ -60,7 +71,7 @@ class PerpsMarketRepository
 
         suspend fun syncCategory(category: MarketCategory): List<PerpsMarket>? {
             val markets = fetchMarkets(category.apiValue) ?: return null
-            return database.withTransaction {
+            return database.withRoomTransaction {
                 val mergedMarkets =
                     if (category == MarketCategory.TRENDING) {
                         marketDao.upsertList(markets)
@@ -165,7 +176,10 @@ class PerpsMarketRepository
                     response.data.orEmpty().map(PerpsMarket::withDefaults)
                 },
                 failureBlock = { true },
-                exceptionBlock = { true },
+                exceptionBlock = { throwable ->
+                    if (throwable is CancellationException) throw throwable
+                    true
+                },
                 defaultErrorHandle = {},
                 defaultExceptionHandle = {},
                 requestSession = {
@@ -177,3 +191,24 @@ class PerpsMarketRepository
             const val CATEGORY_FAVORITE = "favorite"
         }
     }
+
+internal suspend fun searchPerpsMarketsOnlineFirst(
+    query: String,
+    searchLocalMarkets: suspend (query: String) -> List<PerpsMarket>,
+    syncOnlineMarkets: suspend () -> Unit,
+): List<PerpsMarket> {
+    val normalizedQuery = query.trim()
+    if (normalizedQuery.isBlank()) return emptyList()
+
+    val localMatches = searchLocalMarkets(normalizedQuery)
+
+    return try {
+        syncOnlineMarkets()
+        val refreshedMatches = searchLocalMarkets(normalizedQuery)
+        mergeLocalAndRefreshed(localMatches, refreshedMatches, PerpsMarket::marketId)
+    } catch (e: CancellationException) {
+        throw e
+    } catch (_: Exception) {
+        localMatches
+    }
+}

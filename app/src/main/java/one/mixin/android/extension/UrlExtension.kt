@@ -274,31 +274,45 @@ fun String.checkUserOrApp(
     val userDao = db.userDao()
     val appDao = db.appDao()
     scope.launch {
+        val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
+        if (isOpenApp) {
+            val localApp = appDao.findAppById(userId)
+            if (localApp != null) {
+                openSchemeApp(context, uri, localApp)
+                return@launch
+            }
+        }
         val user = userDao.suspendFindUserById(userId)
         if (user == null) {
             val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else {
-            val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
             if (isOpenApp && user.appId != null) {
                 val app = appDao.findAppById(user.appId!!)
                 if (app != null) {
-                    val url =
-                        try {
-                            app.homeUri.appendQueryParamsFromOtherUri(uri)
-                        } catch (e: Exception) {
-                            app.homeUri
-                        }
-                    AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
-                    WebActivity.show(context, url, null, app)
-                    if (context is UrlInterpreterActivity) {
-                        context.finish()
-                    }
+                    openSchemeApp(context, uri, app)
                     return@launch
                 }
             }
             showUserBottom(supportFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
         }
+    }
+}
+
+internal fun App.homeUriWithSchemeParameters(uri: Uri): String =
+    runCatching {
+        homeUri.appendQueryParamsFromOtherUri(uri)
+    }.getOrDefault(homeUri)
+
+private fun openSchemeApp(
+    context: Context,
+    uri: Uri,
+    app: App,
+) {
+    AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
+    WebActivity.show(context, app.homeUriWithSchemeParameters(uri), null, app)
+    if (context is UrlInterpreterActivity) {
+        context.finish()
     }
 }
 

@@ -265,6 +265,7 @@
     <string name="error_old_version">RALAT 10006: Sila kemas kini Mixin(%1$s) untuk terus menggunakan perkhidmatan ini.</string>
     <string name="error_open_location">Tidak dapat mencari aplikasi peta</string>
     <string name="error_permission">Sila buka kebenaran yang diperlukan</string>
+    <string name="error_perps_order_value_too_small">RALAT %1$d: Saiz posisi terlalu kecil.</string>
     <string name="error_phone_invalid_format">RALAT 20110: Nombor telefon tidak sah</string>
     <string name="error_phone_sms_delivery">RALAT 10003: Gagal menghantar SMS</string>
     <string name="error_phone_verification_code_expired">RALAT 20114: Kod pengesahan telefon yang telah tamat tempoh</string>
@@ -284,6 +285,7 @@
     <string name="error_unknown_with_code">RALAT %1$d</string>
     <string name="error_unknown_with_message">RALAT: %1$s</string>
     <string name="error_used_phone">RALAT 20122: Telefon digunakan oleh orang lain.</string>
+    <string name="error_watch_address_not_supported">RALAT 10633: Penambahan alamat ini tidak disokong buat masa ini</string>
     <string name="error_user_invalid_format">Id pengguna tidak sah</string>
     <string name="error_withdrawal_memo_format_incorrect">RALAT 20131: Penarikan format memo tidak betul.</string>
     <string name="Everybody">Semua orang</string>
@@ -790,4 +792,14 @@
     <string name="Bitcoin_Dominance">Dominasi Bitcoin</string>
     <string name="Perp">Perp</string>
     <string name="classic_wallet_pearl_intro_title">Common Wallet kini menyokong Pearl</string>
+    <string name="Debug_Wallet_Account_Visibility">Keterlihatan akaun dompet</string>
+    <string name="Debug_Earn_Account">Akaun Earn</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">Jumlah Pendapatan</string>
+    <string name="Total_Amount">Jumlah Amaun</string>
+    <string name="Cash_Account">Akaun Tunai</string>
+    <string name="earn_reward_rate">Kadar Ganjaran</string>
+    <string name="wallet_home_earn_account">Akaun Earn</string>
+    <string name="earn_balance">Baki Earn</string>
+    <string name="earn_yesterday_earnings">Pendapatan semalam</string>
 </resources>

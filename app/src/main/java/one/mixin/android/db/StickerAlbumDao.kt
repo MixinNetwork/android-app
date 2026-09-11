@@ -1,10 +1,10 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.Transaction
-import androidx.room.Update
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.Transaction
+import androidx.room3.Update
 import one.mixin.android.ui.sticker.StoreAlbum
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerAlbumAdded
@@ -56,10 +56,10 @@ interface StickerAlbumDao : BaseDao<StickerAlbum> {
     suspend fun updateAdded(added: StickerAlbumAdded)
 
     @Query("SELECT * FROM sticker_albums WHERE album_id = :albumId")
-    fun observeAlbumById(albumId: String): LiveData<StickerAlbum>
+    fun observeAlbumById(albumId: String): LiveData<StickerAlbum?>
 
     @Query("SELECT * FROM sticker_albums WHERE album_id = :albumId AND category = 'SYSTEM'")
-    fun observeSystemAlbumById(albumId: String): LiveData<StickerAlbum>
+    fun observeSystemAlbumById(albumId: String): LiveData<StickerAlbum?>
 
     @Query("SELECT created_at FROM sticker_albums ORDER BY created_at DESC LIMIT 1")
     suspend fun findLatestCreatedAt(): String?

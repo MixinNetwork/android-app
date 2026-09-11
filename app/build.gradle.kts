@@ -4,20 +4,21 @@ plugins {
     id("org.jetbrains.kotlin.plugin.parcelize")
     id("de.undercouch.download")
     id("com.google.devtools.ksp")
+    id("androidx.room3")
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlin.plugin.compose")
     id("com.google.firebase.firebase-perf")
-    id("com.bugsnag.android.gradle")
+    id("com.bugsnag.gradle")
 }
 
 apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
 val versionMajor = 6
-val versionMinor = 1
-val versionPatch = 1
-val versionBuild = 0
+val versionMinor = 2
+val versionPatch = 2
+val versionBuild = 1
 
 val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
 val jetifierVersion = rootProject.extra["jetifierVersion"] as String
@@ -38,6 +39,7 @@ val pagingVersion = rootProject.extra["pagingVersion"] as String
 val coilVersion = rootProject.extra["coilVersion"] as String
 val collectionVersion = rootProject.extra["collectionVersion"] as String
 val roomVersion = rootProject.extra["roomVersion"] as String
+val sqliteVersion = rootProject.extra["sqliteVersion"] as String
 val navigationVersion = rootProject.extra["navigationVersion"] as String
 val workManagerVersion = rootProject.extra["workManagerVersion"] as String
 val constraintLayoutVersion = rootProject.extra["constraintLayoutVersion"] as String
@@ -103,7 +105,6 @@ val autodisposeVersion = rootProject.extra["autodisposeVersion"] as String
 val bitcoinPaymentUriVersion = rootProject.extra["bitcoinPaymentUriVersion"] as String
 val startupVersion = rootProject.extra["startupVersion"] as String
 val dnsVersion = rootProject.extra["dnsVersion"] as String
-val audioSwitchVersion = rootProject.extra["audioSwitchVersion"] as String
 val balloonVersion = rootProject.extra["balloonVersion"] as String
 val markdownVersion = rootProject.extra["markdownVersion"] as String
 val bcVersion = rootProject.extra["bcVersion"] as String
@@ -199,7 +200,7 @@ android {
         }
         getByName("androidTest") {
             java.directories.add(sharedTestDir)
-            assets.directories.add("$projectDir/schemas")
+            assets.directories.add("$projectDir/schemas/googlePlay")
         }
     }
 
@@ -323,13 +324,18 @@ android {
     }
 }
 
-bugsnag {
-    uploadNdkMappings = false
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        val variantName = variant.name.replaceFirstChar { it.uppercaseChar() }
+        tasks.matching { it.name == "assemble$variantName" || it.name == "bundle$variantName" }.configureEach {
+            finalizedBy("bugsnagUpload${variantName}ProguardMapping", "bugsnagCreate${variantName}Build")
+        }
+    }
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-    arg("room.incremental", "true")
+room3 {
+    schemaDirectory("googlePlay", "$projectDir/schemas/googlePlay")
+    schemaDirectory("otherChannel", "$projectDir/schemas/otherChannel")
 }
 
 dependencies {
@@ -387,12 +393,14 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-service:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-process:$lifecycleVersion")
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-paging:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
-    implementation("androidx.room:room-rxjava2:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    androidTestImplementation("androidx.room:room-testing:$roomVersion")
+    implementation("androidx.room3:room3-runtime:$roomVersion")
+    implementation("androidx.room3:room3-paging:$roomVersion")
+    implementation("androidx.room3:room3-livedata:$roomVersion")
+    implementation("androidx.sqlite:sqlite-framework:$sqliteVersion")
+    compileOnly(project(":query-codegen"))
+    ksp(project(":query-codegen"))
+    ksp("androidx.room3:room3-compiler:$roomVersion")
+    androidTestImplementation("androidx.room3:room3-testing:$roomVersion")
 
     // media3
     implementation("androidx.media3:media3-exoplayer:$media3Version")
@@ -501,7 +509,6 @@ dependencies {
     implementation("com.caverock:androidsvg-aar:$svgVersion")
     implementation("androidx.startup:startup-runtime:$startupVersion")
     implementation("dnsjava:dnsjava:$dnsVersion")
-    implementation("com.github.SeniorZhai:audioswitch:$audioSwitchVersion")
     implementation("com.github.skydoves:balloon:$balloonVersion")
     implementation("org.osmdroid:osmdroid-android:$streetMapVersion")
     implementation("com.mattprecious.swirl:swirl:$swirlVersion")
@@ -587,9 +594,7 @@ dependencies {
     }
 
     // SumSub
-    implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion") {
-        exclude(group = "com.twilio.audioswitch", module = "AudioDevice")
-    }
+    implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion")
     // checkout
     implementation("com.github.checkout:frames-android:$checkoutFramesVersion")
     implementation("com.checkout:checkout-sdk-3ds-android:$checkoutSecureVersion")

@@ -91,6 +91,9 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                     BotSignAppBottomSheetDialogFragment.newInstance()
                         .show(parentFragmentManager, BotSignAppBottomSheetDialogFragment.TAG)
                 }
+                walletAccountVisibility.setOnClickListener {
+                    showWalletAccountVisibilityDialog()
+                }
 
                 diagnosis.setOnClickListener {
                     navTo(DiagnosisFragment.newInstance(), DiagnosisFragment.TAG)
@@ -226,6 +229,31 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
             .setTitle(R.string.Update_FCM_Token)
             .setMessage(message)
             .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun showWalletAccountVisibilityDialog() {
+        val items = arrayOf(
+            getString(R.string.Cash_Account),
+            getString(R.string.Debug_Earn_Account),
+        )
+        val checkedItems = booleanArrayOf(
+            defaultSharedPreferences.getBoolean(Constants.Debug.SHOW_CASH_ACCOUNT, true),
+            defaultSharedPreferences.getBoolean(Constants.Debug.SHOW_EARN_ACCOUNT, true),
+        )
+        alertDialogBuilder()
+            .setTitle(R.string.Debug_Wallet_Account_Visibility)
+            .setMultiChoiceItems(items, checkedItems) { _, which, isChecked ->
+                val key = when (which) {
+                    0 -> Constants.Debug.SHOW_CASH_ACCOUNT
+                    1 -> Constants.Debug.SHOW_EARN_ACCOUNT
+                    else -> return@setMultiChoiceItems
+                }
+                defaultSharedPreferences.putBoolean(key, isChecked)
+            }
+            .setPositiveButton(R.string.Done) { dialog, _ ->
                 dialog.dismiss()
             }
             .show()

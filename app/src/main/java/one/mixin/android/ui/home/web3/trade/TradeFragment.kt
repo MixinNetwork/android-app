@@ -1352,12 +1352,8 @@ class TradeFragment : BaseFragment() {
                 toast(R.string.Data_error)
                 return
             }
-            swappable = swapViewModel.findWeb3AssetItemsWithBalance(walletId!!)
+            swappable = swapViewModel.findWeb3AssetItems(walletId!!)
                 .filter { it.isTransferSupported() }
-            if (swappable.isEmpty()) {
-                swappable = swapViewModel.findWeb3AssetItems(walletId!!)
-                    .filter { it.isTransferSupported() }
-            }
             web3tokens = swappable
         } else if (swappable.isNullOrEmpty()) {
             swappable = swapViewModel.findAssetItemsWithBalance()

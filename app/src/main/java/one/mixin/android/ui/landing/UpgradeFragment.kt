@@ -14,6 +14,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.FragmentUpgradeBinding
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.property.PropertyHelper
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity

@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet.home
 
 import android.content.SharedPreferences
+import com.google.gson.JsonParser
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -10,6 +11,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.TokenItem
 
 private const val PREF_WALLET_HOME_CACHE_PREFIX = "pref_wallet_home_cache"
+private val EARN_ACCOUNT_CACHE_FIELDS = arrayOf("assetId", "assetSymbol", "iconUrl", "balanceUsd", "earningsUsd")
 
 data class WalletHomeCache(
     @SerializedName("walletType")
@@ -34,6 +36,8 @@ data class WalletHomeCache(
     val totalTransactionCount: Int,
     @SerializedName("cashAccount")
     val cashAccount: WalletHomeCashAccount? = null,
+    @SerializedName("earnAccounts")
+    val earnAccounts: List<WalletHomeEarnAccount> = emptyList(),
     @SerializedName("isWatchWallet")
     val isWatchWallet: Boolean = false,
     @SerializedName("watchAddresses")
@@ -48,6 +52,7 @@ data class WalletHomeCache(
 
     fun toState(): WalletHomeState {
         val cachedImportKeyAction = importKeyAction
+        val cachedEarnAccounts = earnAccounts.orEmpty()
         val cards = WalletHomeBuilder.build(
             walletType = walletType,
             hasAssetValue = true,
@@ -55,6 +60,7 @@ data class WalletHomeCache(
             showReferral = false,
             hasPositions = false,
             hasCashAccount = false,
+            hasEarnAccount = cachedEarnAccounts.isNotEmpty(),
             hasTopMovers = false,
             hasTransactions = totalTransactionCount > 0,
             hasImportKeyAction = cachedImportKeyAction != null,
@@ -75,12 +81,13 @@ data class WalletHomeCache(
             web3Transactions = web3Transactions.orEmpty(),
             totalTokenCount = totalTokenCount,
             totalTransactionCount = totalTransactionCount,
+            earnAccounts = cachedEarnAccounts,
             isWatchWallet = isWatchWallet,
             pendingIndicator = pendingIndicator,
             watchIndicator = if (isWatchWallet) walletHomeWatchIndicator(watchAddresses.orEmpty()) else null,
             importKeyAction = cachedImportKeyAction,
             showImportSafetyFooter = false,
-        )
+        ).withEarnAccounts(cachedEarnAccounts)
     }
 }
 
@@ -97,9 +104,24 @@ fun SharedPreferences.getWalletHomeCacheState(
 fun SharedPreferences.getWalletHomeCache(
     key: String,
 ): WalletHomeCache? =
+    getString(key, null).parseWalletHomeCache()
+
+internal fun String?.parseWalletHomeCache(): WalletHomeCache? =
     runCatching {
-        getString(key, null)
-            ?.let { GsonHelper.customGson.fromJson(it, WalletHomeCache::class.java) }
+        val root = JsonParser.parseString(this).asJsonObject
+        root.getAsJsonArray("earnAccounts")?.let { accounts ->
+            for (index in accounts.size() - 1 downTo 0) {
+                val account = accounts[index]
+                if (!account.isJsonObject || EARN_ACCOUNT_CACHE_FIELDS.any { field ->
+                        val value = account.asJsonObject.get(field)
+                        value == null || value.isJsonNull
+                    }
+                ) {
+                    accounts.remove(index)
+                }
+            }
+        }
+        GsonHelper.customGson.fromJson(root, WalletHomeCache::class.java)
     }.getOrNull()
 
 fun SharedPreferences.putWalletHomeCache(
@@ -114,6 +136,7 @@ fun SharedPreferences.putWalletHomeCache(
         state.pendingIndicator == null &&
         state.importKeyAction == null &&
         state.watchIndicator == null &&
+        state.earnAccounts.isEmpty() &&
         !state.isWatchWallet
     ) return
     val cache = WalletHomeCache(
@@ -127,6 +150,7 @@ fun SharedPreferences.putWalletHomeCache(
         web3Transactions = state.web3Transactions.take(WalletHomeSection.PREVIEW_LIMIT),
         totalTokenCount = state.totalTokenCount,
         totalTransactionCount = state.totalTransactionCount,
+        earnAccounts = state.earnAccounts,
         isWatchWallet = state.isWatchWallet,
         watchAddresses = watchAddresses,
         pendingIndicator = state.pendingIndicator,

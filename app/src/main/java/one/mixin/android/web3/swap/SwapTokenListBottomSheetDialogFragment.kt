@@ -31,6 +31,7 @@ import one.mixin.android.Constants.ChainId.BinanceSmartChain
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
+import one.mixin.android.Constants.ChainId.Robinhood
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.ChainId.TON_CHAIN_ID
 import one.mixin.android.Constants.ChainId.XLayer
@@ -136,19 +137,18 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     @SuppressLint("NotifyDataSetChanged")
     fun setLoading(loading: Boolean, list: List<SwapToken>? = null, remote: List<SwapToken>? = null) {
-        if (isLoading == loading) return
+        val loadingChanged = isLoading != loading
         isLoading = loading
-        if (list != null && isFrom) {
-            tokens = list
-            binding.radio.isVisible = !isLoading
-            initRadio()
-            filter(binding.searchEt.et.text?.toString() ?: "")
-        } else if (remote != null && !isFrom) {
-            tokens = remote
-            binding.radio.isVisible = !isLoading
-            initRadio()
-            filter(binding.searchEt.et.text?.toString() ?: "")
+        val data = if (isFrom) list else remote
+        if (data == null) {
+            return
         }
+        tokens = data
+        binding.radio.isVisible = !isLoading
+        if (loadingChanged) {
+            initRadio()
+        }
+        filter(binding.searchEt.et.text?.toString() ?: "")
     }
 
     private fun initRadio() {
@@ -228,6 +228,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                                 XLayer
                             }
 
+                            R.id.radio_robinhood -> {
+                                Robinhood
+                            }
+
                             R.id.radio_toncoin -> {
                                 TON_CHAIN_ID
                             }
@@ -268,7 +272,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
 
         binding.apply {
-            val visibleTokens = supportedTokens(tokens)
+            val visibleTokens = defaultTokens(tokens)
             val visibleStocks = supportedTokens(stocks)
             assetRv.adapter = adapter
             adapter.tokens = visibleTokens.sortByKeywordAndBalance()
@@ -367,7 +371,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private fun filter(s: String) =
         lifecycleScope.launch {
             if (s.isBlank() && currentChain == null && !isStockMode) {
-                val visibleTokens = supportedTokens(tokens)
+                val visibleTokens = defaultTokens(tokens)
                 adapter.tokens = visibleTokens.sortByKeywordAndBalance()
                 adapter.isSearch = false
                 if (isLoading) {
@@ -380,10 +384,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                 scrollListToTop()
                 return@launch
             }
-            val assetList = if (isStockMode && s.isBlank()) {
-                supportedTokens(stocks).toMutableList()
-            } else {
-                supportedTokens(tokens).toMutableList()
+            val assetList = when {
+                isStockMode && s.isBlank() -> supportedTokens(stocks).toMutableList()
+                s.isBlank() -> defaultTokens(tokens).toMutableList()
+                else -> supportedTokens(tokens).toMutableList()
             }
 
             adapter.isSearch = true
@@ -508,6 +512,15 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
     private fun supportedTokens(tokens: List<SwapToken>): List<SwapToken> =
         if (inMixin()) tokens else tokens.filter { isWeb3TransferSupported(it.chain.chainId) }
+
+    private fun defaultTokens(tokens: List<SwapToken>): List<SwapToken> {
+        val visibleTokens = supportedTokens(tokens)
+        return if (isFrom) {
+            visibleTokens.filter { it.balanceValue.signum() > 0 }
+        } else {
+            visibleTokens
+        }
+    }
 
     private fun inMixin(): Boolean = 
         key == Constants.Account.PREF_TO_SWAP || 

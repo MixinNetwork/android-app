@@ -8,6 +8,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
 
@@ -154,6 +155,29 @@ class WalletHomeCashAccountTest {
 
         assertNull(state.cashAccount)
         assertFalse(state.cards.contains(WalletHomeCardType.CASH))
+    }
+
+    @Test
+    fun walletHomeCacheDropsIncompleteEarnAccounts() {
+        val json = """
+            {
+              "walletType":"PRIVACY",
+              "fiatTotal":"0.00",
+              "btcTotal":"0.00",
+              "fiatSymbol":"USD",
+              "totalTokenCount":0,
+              "totalTransactionCount":0,
+              "earnAccounts":[
+                {"assetId":"asset-1","assetSymbol":"USD","iconUrl":"","earningsUsd":"0"},
+                {"assetId":"asset-2","assetSymbol":"USD","iconUrl":"","balanceUsd":"1.25","earningsUsd":"0"}
+              ]
+            }
+        """.trimIndent()
+
+        val cache = json.parseWalletHomeCache()
+
+        assertTrue(cache != null)
+        assertEquals(listOf("asset-2"), cache?.toState()?.earnAccounts?.map { it.assetId })
     }
 
     @Test

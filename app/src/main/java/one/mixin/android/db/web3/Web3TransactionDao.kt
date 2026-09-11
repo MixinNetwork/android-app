@@ -2,10 +2,10 @@ package one.mixin.android.db.web3
 
 import androidx.lifecycle.LiveData
 import androidx.paging.PagingSource
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RawQuery
-import androidx.sqlite.db.SupportSQLiteQuery
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RawQuery
+import androidx.room3.RoomRawQuery
 import one.mixin.android.db.BaseDao
 import one.mixin.android.db.web3.vo.Web3Transaction
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -23,11 +23,12 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
             r.symbol as receive_asset_symbol,
             sf.symbol as sponsor_fee_asset_symbol
         FROM transactions w 
-        LEFT JOIN tokens c ON c.asset_id = w.chain_id AND c.wallet_id = :walletId
+        LEFT JOIN tokens ct ON ct.asset_id = w.chain_id AND ct.wallet_id = :walletId
+        LEFT JOIN chains c ON c.chain_id = w.chain_id
         LEFT JOIN tokens s ON s.asset_id = w.send_asset_id AND s.wallet_id = :walletId
         LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id AND r.wallet_id = :walletId
         LEFT JOIN tokens sf ON sf.asset_id = w.sponsor_fee_asset_id AND sf.wallet_id = :walletId
-        WHERE (w.send_asset_id = :assetId OR w.receive_asset_id = :assetId) AND (s.wallet_id = :walletId OR c.wallet_id = :walletId) AND w.level >= (SELECT level FROM tokens WHERE asset_id = :assetId)
+        WHERE (w.send_asset_id = :assetId OR w.receive_asset_id = :assetId) AND (s.wallet_id = :walletId OR ct.wallet_id = :walletId) AND w.level >= (SELECT level FROM tokens WHERE asset_id = :assetId)
         AND w.address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)
         ORDER BY w.transaction_at DESC 
         LIMIT 21
@@ -44,7 +45,7 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
             r.symbol as receive_asset_symbol,
             sf.symbol as sponsor_fee_asset_symbol
         FROM transactions w
-        LEFT JOIN tokens c ON c.asset_id = w.chain_id AND c.wallet_id = :walletId
+        LEFT JOIN chains c ON c.chain_id = w.chain_id
         LEFT JOIN tokens s ON s.asset_id = w.send_asset_id AND s.wallet_id = :walletId
         LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id AND r.wallet_id = :walletId
         LEFT JOIN tokens sf ON sf.asset_id = w.sponsor_fee_asset_id AND sf.wallet_id = :walletId
@@ -55,9 +56,9 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
     fun recentWeb3Transactions(walletId: String): LiveData<List<Web3TransactionItem>>
 
     @RawQuery(observedEntities = [Web3Transaction::class])
-    fun allTransactions(query: SupportSQLiteQuery): PagingSource<Int, Web3TransactionItem>
+    fun allTransactions(query: RoomRawQuery): PagingSource<Int, Web3TransactionItem>
 
-    @Query("SELECT DISTINCT transaction_hash, * FROM transactions WHERE transaction_hash = :hash AND chain_id = :chainId LIMIT 1")
+    @Query("SELECT DISTINCT * FROM transactions WHERE transaction_hash = :hash AND chain_id = :chainId LIMIT 1")
     suspend fun getLatestTransaction(hash: String, chainId: String): Web3Transaction?
 
     @Query("DELETE FROM transactions WHERE status = 'pending' AND transaction_hash = :hash AND chain_id = :chainId")
@@ -72,13 +73,13 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
     @Query("SELECT COUNT(*) FROM transactions WHERE status = 'pending' AND address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)")
     fun getPendingTransactionCount(walletId: String): LiveData<Int>
 
-    @Query("SELECT DISTINCT transaction_hash, * FROM transactions WHERE status = 'pending' AND address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)")
+    @Query("SELECT DISTINCT * FROM transactions WHERE status = 'pending' AND address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)")
     suspend fun getPendingTransactions(walletId: String): List<Web3Transaction>
 
     @Query(""" SELECT DISTINCT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, w.address, w.fee, w.sponsor_fee_asset_id, w.sponsor_fee_amount, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, w.transaction_at, w.updated_at, w.level,
         c.symbol chain_symbol, c.icon_url chain_icon_url, s.icon_url send_asset_icon_url, s.symbol send_asset_symbol, r.icon_url receive_asset_icon_url, r.symbol receive_asset_symbol, sf.symbol sponsor_fee_asset_symbol
         FROM transactions w
-        LEFT JOIN tokens c ON c.asset_id = w.chain_id AND c.wallet_id = :walletId
+        LEFT JOIN chains c ON c.chain_id = w.chain_id
         LEFT JOIN tokens s ON s.asset_id = w.send_asset_id AND s.wallet_id = :walletId
         LEFT JOIN tokens r ON r.asset_id = w.receive_asset_id AND r.wallet_id = :walletId
         LEFT JOIN tokens sf ON sf.asset_id = w.sponsor_fee_asset_id AND sf.wallet_id = :walletId

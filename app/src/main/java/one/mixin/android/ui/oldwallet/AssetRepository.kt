@@ -1,5 +1,6 @@
 package one.mixin.android.ui.oldwallet
 
+import androidx.lifecycle.LiveData
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
@@ -153,7 +154,7 @@ class AssetRepository
 
     suspend fun fuzzySearchAssetIgnoreAmount(query: String) = assetDao.fuzzySearchAssetIgnoreAmount(query, query)
 
-    fun assetItem(id: String) = assetDao.assetItem(id)
+    fun assetItem(id: String): LiveData<AssetItem?> = assetDao.assetItem(id)
 
     suspend fun simpleAssetItem(id: String) = assetDao.simpleAssetItem(id)
 

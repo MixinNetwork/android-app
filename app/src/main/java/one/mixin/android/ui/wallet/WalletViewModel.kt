@@ -30,6 +30,7 @@ import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.response.CashAccount
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.RouteTickerResponse
+import one.mixin.android.api.response.EarnProduct
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.web3.vo.WalletItem
@@ -121,6 +122,11 @@ internal constructor(
             cashRepository.cachedAccount()
         }
 
+    suspend fun earnAccounts(): MixinResponse<List<EarnProduct>> =
+        withContext(Dispatchers.IO) {
+            cashRepository.earnAccounts()
+        }
+
     suspend fun assetItemsNotHiddenRaw(): List<TokenItem> = withContext(Dispatchers.IO){
         return@withContext tokenRepository.assetItemsNotHiddenRaw()
     }
@@ -149,7 +155,7 @@ internal constructor(
         snapshotId: String,
     ) = tokenRepository.snapshotLocal(assetId, snapshotId)
 
-    fun assetItem(id: String): LiveData<TokenItem> = tokenRepository.assetItem(id)
+    fun assetItem(id: String): LiveData<TokenItem?> = tokenRepository.assetItem(id)
 
     suspend fun simpleAssetItem(id: String) = tokenRepository.simpleAssetItem(id)
 

@@ -114,6 +114,16 @@ internal fun generateDepositUri(
             }
         }
 
+        ChainId.Robinhood -> {
+            if (assetId == ChainId.Robinhood) {
+                val weiAmount = nativeEvmWeiAmount(cleanAmount)
+                "ethereum:$address@4663?value=$weiAmount"
+            } else {
+                val uint256Amount = erc20Amount(cleanAmount, precision)
+                "ethereum:${assetKey}@4663/transfer?address=$address&amount=$cleanAmount&uint256=$uint256Amount"
+            }
+        }
+
         ChainId.Litecoin -> {
             "litecoin:$address?amount=$cleanAmount"
         }
