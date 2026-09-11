@@ -2,6 +2,7 @@ package one.mixin.android.util
 
 import android.content.Context
 import androidx.annotation.StringRes
+import com.google.gson.JsonParser
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import one.mixin.android.MixinApplication
@@ -285,6 +286,20 @@ fun Context.getMixinErrorStringByCode(
     message: String,
 ): String {
     perpsOrderValueErrorResource(code)?.let { resource ->
+        // MixinResponse.errorDescription appends extra as the last JSON line.
+        val minimum =
+            runCatching {
+                JsonParser.parseString(message.substringAfterLast('\n')).asJsonObject
+                    .get("min_order_value")?.asString
+                    ?.takeIf { it.length <= 64 && it.matches(Regex("[0-9]+(?:\\.[0-9]+)?")) }
+                    ?.toBigDecimalOrNull()
+                    ?.takeIf { it.signum() > 0 }
+                    ?.stripTrailingZeros()
+                    ?.toPlainString()
+            }.getOrNull()
+        if (minimum != null) {
+            return getString(R.string.error_perps_order_value_minimum, code, minimum)
+        }
         return getString(resource, code)
     }
 
