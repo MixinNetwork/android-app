@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboard
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.nativeClipboardManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
@@ -292,7 +293,7 @@ fun TransferDestinationInputPage(
                     Row(modifier = Modifier.align(Alignment.BottomEnd)) {
                         IconButton(
                             onClick = {
-                                clipboardManager.nativeClipboard.primaryClip?.getItemAt(0)?.text?.let {
+                                clipboardManager.nativeClipboardManager.primaryClip?.getItemAt(0)?.text?.let {
                                     text = it.toString()
                                 }
                             },

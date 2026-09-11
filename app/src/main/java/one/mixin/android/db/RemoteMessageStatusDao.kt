@@ -75,7 +75,6 @@ interface RemoteMessageStatusDao : BaseDao<RemoteMessageStatus> {
 
     fun markRead(conversationId: String) {
         while (markReadBatch(conversationId) > 0) {
-            Unit
         }
     }
 }

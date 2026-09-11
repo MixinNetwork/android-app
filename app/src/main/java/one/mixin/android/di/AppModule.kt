@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
+import com.birbit.android.jobqueue.scheduling.Scheduler
 import com.google.android.gms.net.CronetProviderInstaller
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
@@ -443,10 +444,9 @@ object AppModule {
                 }
                 .customLogger(JobLogger())
                 .networkUtil(jobNetworkUtil)
-        builder.scheduler(
-            FrameworkJobSchedulerService
-                .createSchedulerFor(app.applicationContext, MyJobService::class.java),
-        )
+        @Suppress("INFERRED_INVISIBLE_RETURN_TYPE_WARNING")
+        val scheduler: Scheduler = FrameworkJobSchedulerService.createSchedulerFor(app.applicationContext, MyJobService::class.java)
+        builder.scheduler(scheduler)
         return MixinJobManager(builder.build())
     }
 

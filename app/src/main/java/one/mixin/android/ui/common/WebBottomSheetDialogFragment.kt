@@ -382,6 +382,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return requireNotNull(imageUri)
     }
 
+    @Suppress("DEPRECATION")
     @Deprecated("Deprecated in Java")
     override fun onActivityResult(
         requestCode: Int,

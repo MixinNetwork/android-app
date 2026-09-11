@@ -57,9 +57,9 @@ abstract class FtsDatabase : RoomDatabase() {
                         ).setDriver(AndroidSQLiteDriver())
                             .addCallback(
                             object : Callback() {
-                                override suspend fun onOpen(db: SQLiteConnection) {
-                                    super.onOpen(db)
-                                    db.execSQL("PRAGMA synchronous = NORMAL")
+                                override suspend fun onOpen(connection: SQLiteConnection) {
+                                    super.onOpen(connection)
+                                    connection.execSQL("PRAGMA synchronous = NORMAL")
                                 }
                             },
                         )
