@@ -22,6 +22,8 @@ class FcmService : FirebaseMessagingService() {
         Timber.d("FcmService From: " + remoteMessage.from)
     }
 
+    // Legacy token registration delivers this callback instead of onRegistered.
+    @Suppress("OVERRIDE_DEPRECATION")
     override fun onNewToken(token: String) {
         if (Session.checkToken() && MixinApplication.get().isOnline.get()) {
             jobManager.addJobInBackground(RefreshFcmJob(notificationToken = token))

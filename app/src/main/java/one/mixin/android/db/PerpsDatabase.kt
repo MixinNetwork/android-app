@@ -45,25 +45,25 @@ abstract class PerpsDatabase : RoomDatabase() {
         private var currentIdentityNumber: String? = null
         val MIGRATION_1_2 =
             object : Migration(1, 2) {
-                override suspend fun migrate(db: SQLiteConnection) {
-                    db.execSQL("ALTER TABLE markets ADD COLUMN category TEXT NOT NULL DEFAULT ''")
-                    db.execSQL("ALTER TABLE markets ADD COLUMN tags TEXT NOT NULL DEFAULT '[]'")
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE markets ADD COLUMN category TEXT NOT NULL DEFAULT ''")
+                    connection.execSQL("ALTER TABLE markets ADD COLUMN tags TEXT NOT NULL DEFAULT '[]'")
                 }
             }
         val MIGRATION_2_3 =
             object : Migration(2, 3) {
-                override suspend fun migrate(db: SQLiteConnection) {
-                    db.execSQL("ALTER TABLE positions ADD COLUMN take_profit_price TEXT")
-                    db.execSQL("ALTER TABLE positions ADD COLUMN stop_loss_price TEXT")
-                    db.execSQL("ALTER TABLE positions ADD COLUMN liquidation_price TEXT")
-                    db.execSQL("ALTER TABLE markets ADD COLUMN price_scale INTEGER NOT NULL DEFAULT 2")
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE positions ADD COLUMN take_profit_price TEXT")
+                    connection.execSQL("ALTER TABLE positions ADD COLUMN stop_loss_price TEXT")
+                    connection.execSQL("ALTER TABLE positions ADD COLUMN liquidation_price TEXT")
+                    connection.execSQL("ALTER TABLE markets ADD COLUMN price_scale INTEGER NOT NULL DEFAULT 2")
                 }
             }
         val MIGRATION_3_4 =
             object : Migration(3, 4) {
-                override suspend fun migrate(db: SQLiteConnection) {
-                    db.execSQL("DROP TABLE IF EXISTS position_histories")
-                    db.execSQL(
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("DROP TABLE IF EXISTS position_histories")
+                    connection.execSQL(
                         """
                         CREATE TABLE IF NOT EXISTS perps_orders (
                             order_id TEXT NOT NULL PRIMARY KEY,
@@ -89,39 +89,39 @@ abstract class PerpsDatabase : RoomDatabase() {
             }
         val MIGRATION_4_5 =
             object : Migration(4, 5) {
-                override suspend fun migrate(db: SQLiteConnection) {
-                    db.execSQL("ALTER TABLE perps_orders ADD COLUMN pay_amount TEXT NOT NULL DEFAULT '0'")
-                    db.execSQL("DELETE FROM perps_orders")
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE perps_orders ADD COLUMN pay_amount TEXT NOT NULL DEFAULT '0'")
+                    connection.execSQL("DELETE FROM perps_orders")
                 }
             }
         val MIGRATION_5_6 =
             object : Migration(5, 6) {
-                override suspend fun migrate(db: SQLiteConnection) {
-                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `descriptions` TEXT")
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `descriptions` TEXT")
                 }
             }
         val MIGRATION_6_7 =
             object : Migration(6, 7) {
-                override suspend fun migrate(db: SQLiteConnection) {
-                    db.execSQL("CREATE TABLE IF NOT EXISTS `favorites` (`market_id` TEXT NOT NULL, `is_favored` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))")
-                    db.execSQL("CREATE TABLE IF NOT EXISTS `market_categories` (`market_id` TEXT NOT NULL, `category` INTEGER NOT NULL, PRIMARY KEY(`market_id`, `category`))")
-                    db.execSQL("CREATE INDEX IF NOT EXISTS `index_market_categories_category` ON `market_categories` (`category`)")
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("CREATE TABLE IF NOT EXISTS `favorites` (`market_id` TEXT NOT NULL, `is_favored` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))")
+                    connection.execSQL("CREATE TABLE IF NOT EXISTS `market_categories` (`market_id` TEXT NOT NULL, `category` INTEGER NOT NULL, PRIMARY KEY(`market_id`, `category`))")
+                    connection.execSQL("CREATE INDEX IF NOT EXISTS `index_market_categories_category` ON `market_categories` (`category`)")
                 }
             }
         val MIGRATION_7_8 =
             object : Migration(7, 8) {
-                override suspend fun migrate(db: SQLiteConnection) {
-                    db.execSQL("DELETE FROM perps_orders")
-                    db.execSQL("ALTER TABLE `perps_orders` ADD COLUMN `fee_amount` TEXT NOT NULL DEFAULT '0'")
-                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `funding_interval_hours` INTEGER NOT NULL DEFAULT 0")
-                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `next_funding_at` TEXT NOT NULL DEFAULT ''")
-                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `open_interest` TEXT NOT NULL DEFAULT '0'")
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("DELETE FROM perps_orders")
+                    connection.execSQL("ALTER TABLE `perps_orders` ADD COLUMN `fee_amount` TEXT NOT NULL DEFAULT '0'")
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `funding_interval_hours` INTEGER NOT NULL DEFAULT 0")
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `next_funding_at` TEXT NOT NULL DEFAULT ''")
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `open_interest` TEXT NOT NULL DEFAULT '0'")
                 }
             }
         val MIGRATION_8_9 =
             object : Migration(8, 9) {
-                override suspend fun migrate(db: SQLiteConnection) {
-                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `trade_volume_score_1d` INTEGER NOT NULL DEFAULT 0")
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `trade_volume_score_1d` INTEGER NOT NULL DEFAULT 0")
                 }
             }
 
@@ -146,9 +146,9 @@ abstract class PerpsDatabase : RoomDatabase() {
                     ).setDriver(ReportingAndroidSQLiteDriver("Perps", 9))
                         .addCallback(
                         object : Callback() {
-                            override suspend fun onOpen(db: SQLiteConnection) {
-                                super.onOpen(db)
-                                db.execSQL("PRAGMA synchronous = NORMAL")
+                            override suspend fun onOpen(connection: SQLiteConnection) {
+                                super.onOpen(connection)
+                                connection.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
                     ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)

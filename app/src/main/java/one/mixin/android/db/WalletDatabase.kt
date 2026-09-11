@@ -71,59 +71,59 @@ abstract class WalletDatabase : RoomDatabase() {
         private var currentIdentityNumber: String? = null
 
         val MIGRATION_1_2 = object : Migration(1, 2) {
-            override suspend fun migrate(db: SQLiteConnection) {
-                db.execSQL("DROP TABLE IF EXISTS transactions")
-                db.execSQL("DELETE FROM properties") // delete old offset
-                db.execSQL(
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("DROP TABLE IF EXISTS transactions")
+                connection.execSQL("DELETE FROM properties") // delete old offset
+                connection.execSQL(
                     """
                     CREATE TABLE IF NOT EXISTS `transactions` (`transaction_hash` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `transaction_type` TEXT NOT NULL, `status` TEXT NOT NULL, `block_number` INTEGER NOT NULL, `fee` TEXT NOT NULL, `senders` TEXT, `receivers` TEXT, `approvals` TEXT, `send_asset_id` TEXT, `receive_asset_id` TEXT, `transaction_at` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`transaction_hash`, `chain_id`, `address`))
                     """
                 )
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_address_transaction_at` ON `transactions` (`address`, `transaction_at`)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at` ON `transactions` (`transaction_type`, `send_asset_id`, `receive_asset_id`, `transaction_at`)")
+                connection.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_address_transaction_at` ON `transactions` (`address`, `transaction_at`)")
+                connection.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at` ON `transactions` (`transaction_type`, `send_asset_id`, `receive_asset_id`, `transaction_at`)")
             }
         }
 
         val MIGRATION_2_3 = object : Migration(2, 3) {
-            override suspend fun migrate(db: SQLiteConnection) {
-                db.execSQL("ALTER TABLE tokens ADD COLUMN level INTEGER NOT NULL DEFAULT ${Constants.AssetLevel.VERIFIED}")
-                db.execSQL("ALTER TABLE transactions ADD COLUMN level INTEGER NOT NULL DEFAULT ${Constants.AssetLevel.UNKNOWN}")
-                db.execSQL("DELETE FROM properties WHERE `key` IN (SELECT DISTINCT destination FROM addresses)") // delete old offset
-                db.execSQL("DROP INDEX IF EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at`")
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at_level` ON `transactions` (`transaction_type`, `send_asset_id`, `receive_asset_id`, `transaction_at`, `level`)")
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE tokens ADD COLUMN level INTEGER NOT NULL DEFAULT ${Constants.AssetLevel.VERIFIED}")
+                connection.execSQL("ALTER TABLE transactions ADD COLUMN level INTEGER NOT NULL DEFAULT ${Constants.AssetLevel.UNKNOWN}")
+                connection.execSQL("DELETE FROM properties WHERE `key` IN (SELECT DISTINCT destination FROM addresses)") // delete old offset
+                connection.execSQL("DROP INDEX IF EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at`")
+                connection.execSQL("CREATE INDEX IF NOT EXISTS `index_transactions_transaction_type_send_asset_id_receive_asset_id_transaction_at_level` ON `transactions` (`transaction_type`, `send_asset_id`, `receive_asset_id`, `transaction_at`, `level`)")
             }
         }
 
         val MIGRATION_3_4 = object : Migration(3, 4) {
-            override suspend fun migrate(db: SQLiteConnection) {
-                db.execSQL("ALTER TABLE addresses ADD COLUMN path TEXT")
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE addresses ADD COLUMN path TEXT")
             }
         }
 
         val MIGRATION_4_5 = object : Migration(4, 5) {
-            override suspend fun migrate(db: SQLiteConnection) {
-                db.execSQL("CREATE TABLE IF NOT EXISTS `orders` (`order_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `pay_asset_id` TEXT NOT NULL, `receive_asset_id` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `receive_amount` TEXT, `pay_trace_id` TEXT, `receive_trace_id` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_type` TEXT NOT NULL, `fund_status` TEXT, `price` TEXT, `pending_amount` TEXT, `filled_receive_amount` TEXT, `expected_receive_amount` TEXT, `expired_at` TEXT, PRIMARY KEY(`order_id`))")
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_state_created_at` ON `orders` (`state`, `created_at`)")
-                db.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_order_type_created_at` ON `orders` (`order_type`, `created_at`)")
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("CREATE TABLE IF NOT EXISTS `orders` (`order_id` TEXT NOT NULL, `wallet_id` TEXT NOT NULL, `user_id` TEXT NOT NULL, `pay_asset_id` TEXT NOT NULL, `receive_asset_id` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `receive_amount` TEXT, `pay_trace_id` TEXT, `receive_trace_id` TEXT, `state` TEXT NOT NULL, `created_at` TEXT NOT NULL, `order_type` TEXT NOT NULL, `fund_status` TEXT, `price` TEXT, `pending_amount` TEXT, `filled_receive_amount` TEXT, `expected_receive_amount` TEXT, `expired_at` TEXT, PRIMARY KEY(`order_id`))")
+                connection.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_state_created_at` ON `orders` (`state`, `created_at`)")
+                connection.execSQL("CREATE INDEX IF NOT EXISTS `index_orders_order_type_created_at` ON `orders` (`order_type`, `created_at`)")
             }
         }
 
         val MIGRATION_5_6 = object : Migration(5, 6) {
-            override suspend fun migrate(db: SQLiteConnection) {
-                db.execSQL("CREATE TABLE IF NOT EXISTS `safe_wallets` (`wallet_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `role` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `url` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))")
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("CREATE TABLE IF NOT EXISTS `safe_wallets` (`wallet_id` TEXT NOT NULL, `name` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `role` TEXT NOT NULL, `chain_id` TEXT NOT NULL, `address` TEXT NOT NULL, `url` TEXT NOT NULL, PRIMARY KEY(`wallet_id`))")
             }
         }
 
         val MIGRATION_6_7 = object : Migration(6, 7) {
-            override suspend fun migrate(db: SQLiteConnection) {
-                db.execSQL("CREATE TABLE IF NOT EXISTS `outputs` (`output_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `address` TEXT NOT NULL, `pubkey_hex` TEXT NOT NULL, `pubkey_type` TEXT NOT NULL, `status` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))")
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("CREATE TABLE IF NOT EXISTS `outputs` (`output_id` TEXT NOT NULL, `asset_id` TEXT NOT NULL, `transaction_hash` TEXT NOT NULL, `output_index` INTEGER NOT NULL, `amount` TEXT NOT NULL, `address` TEXT NOT NULL, `pubkey_hex` TEXT NOT NULL, `pubkey_type` TEXT NOT NULL, `status` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`output_id`))")
             }
         }
 
         val MIGRATION_7_8 = object : Migration(7, 8) {
-            override suspend fun migrate(db: SQLiteConnection) {
-                db.execSQL("ALTER TABLE transactions ADD COLUMN sponsor_fee_asset_id TEXT")
-                db.execSQL("ALTER TABLE transactions ADD COLUMN sponsor_fee_amount TEXT")
+            override suspend fun migrate(connection: SQLiteConnection) {
+                connection.execSQL("ALTER TABLE transactions ADD COLUMN sponsor_fee_asset_id TEXT")
+                connection.execSQL("ALTER TABLE transactions ADD COLUMN sponsor_fee_amount TEXT")
             }
         }
 
@@ -148,9 +148,9 @@ abstract class WalletDatabase : RoomDatabase() {
                         ).setDriver(ReportingAndroidSQLiteDriver("Wallet", 8))
                             .addCallback(
                             object : Callback() {
-                                override suspend fun onOpen(db: SQLiteConnection) {
-                                    super.onOpen(db)
-                                    db.execSQL("PRAGMA synchronous = NORMAL")
+                                override suspend fun onOpen(connection: SQLiteConnection) {
+                                    super.onOpen(connection)
+                                    connection.execSQL("PRAGMA synchronous = NORMAL")
                                 }
                             },
                         ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)

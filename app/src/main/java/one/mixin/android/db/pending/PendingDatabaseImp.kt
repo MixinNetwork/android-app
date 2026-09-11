@@ -73,11 +73,11 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                         ).setDriver(AndroidSQLiteDriver())
                             .enableMultiInstanceInvalidation().addCallback(
                             object : Callback() {
-                                override suspend fun onOpen(db: SQLiteConnection) {
-                                    super.onOpen(db)
+                                override suspend fun onOpen(connection: SQLiteConnection) {
+                                    super.onOpen(connection)
                                 }
 
-                                override suspend fun onCreate(db: SQLiteConnection) {
+                                override suspend fun onCreate(connection: SQLiteConnection) {
                                     while (true) {
                                         val list = floodMessageDao.limit100()
                                         list.forEach { msg ->
@@ -85,7 +85,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                                             values.put("message_id", msg.messageId)
                                             values.put("data", msg.data)
                                             values.put("created_at", msg.createdAt)
-                                            db.insert("flood_messages", SQLiteDatabase.CONFLICT_REPLACE, values)
+                                            connection.insert("flood_messages", SQLiteDatabase.CONFLICT_REPLACE, values)
                                         }
                                         floodMessageDao.deleteList(list)
                                         if (list.size < 100) {
@@ -106,7 +106,7 @@ abstract class PendingDatabaseImp : RoomDatabase(), PendingDatabase {
                                             values.put("conversation_id", job.conversationId)
                                             values.put("resend_message_id", job.resendMessageId)
                                             values.put("run_count", job.runCount)
-                                            db.insert("jobs", SQLiteDatabase.CONFLICT_REPLACE, values)
+                                            connection.insert("jobs", SQLiteDatabase.CONFLICT_REPLACE, values)
                                         }
                                         jobDao.deleteList(list)
                                         if (list.size < 100) {
