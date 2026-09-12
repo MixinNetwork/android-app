@@ -141,7 +141,9 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
             result.result?.barcodes?.let { results ->
                 binding.ivResult.setImageBitmap(previewView.bitmap)
                 val points = mutableListOf<Point>()
+                val values = mutableListOf<String>()
                 for (barcode in results) {
+                    val displayValue = barcode.displayValue ?: continue
                     barcode.boundingBox?.let { box ->
                         val point =
                             PointUtils.transform(
@@ -153,6 +155,7 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
                                 binding.viewfinderView.height,
                             )
                         points.add(point)
+                        values.add(displayValue)
                     }
                 }
                 Timber.e("$width - $height $points")
@@ -160,12 +163,12 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
                 binding.viewfinderView.setOnItemClickListener(
                     object : ViewfinderView.OnItemClickListener {
                         override fun onItemClick(position: Int) {
-                            handleAnalysis(results[position].displayValue!!)
+                            values.getOrNull(position)?.let(::handleAnalysis)
                         }
                     },
                 )
-                if (points.size == 1) {
-                    handleAnalysis(results[0].displayValue!!)
+                if (values.size == 1) {
+                    handleAnalysis(values[0])
                 }
             }
         }

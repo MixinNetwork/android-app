@@ -14,10 +14,8 @@ import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.toast
-import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.util.ShareHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.ForwardAction
 import one.mixin.android.vo.ForwardMessage
@@ -151,31 +149,8 @@ class ForwardActivity : BlazeBaseActivity() {
                 )
             replaceFragment(f, R.id.container, ForwardFragment.TAG)
         } else {
-            if (Session.getAccount() == null) {
-                toast(R.string.Not_logged_in)
-                finish()
-                return
-            }
-            val forwardMessageList = ShareHelper.get().generateForwardMessageList(intent)
-            val conversationId =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && intent.hasExtra(Intent.EXTRA_SHORTCUT_ID)) {
-                    intent.getStringExtra(Intent.EXTRA_SHORTCUT_ID)
-                } else {
-                    null
-                }
-            if (!forwardMessageList.isNullOrEmpty()) {
-                replaceFragment(
-                    ForwardFragment.newInstance(
-                        forwardMessageList,
-                        ForwardAction.System(conversationId, getString(R.string.Share)),
-                    ),
-                    R.id.container,
-                    ForwardFragment.TAG,
-                )
-            } else {
-                toast(R.string.Share_error)
-                finish()
-            }
+            toast(R.string.Share_error)
+            finish()
         }
     }
 }
