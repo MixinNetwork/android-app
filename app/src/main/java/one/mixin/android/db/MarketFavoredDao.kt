@@ -20,4 +20,7 @@ interface MarketFavoredDao : BaseDao<MarketFavored> {
             insertListSuspend(markets)
         }
     }
+
+    @Query("DELETE FROM market_favored WHERE coin_id = :coinId")
+    suspend fun deleteByCoinId(coinId: String)
 }
