@@ -1,0 +1,25 @@
+<resources
+    xmlns:window="http://schemas.android.com/apk/res-auto">
+    <SplitPairRule
+        window:splitRatio="0.33"
+        window:splitMinWidthDp="600">
+        <SplitPairFilter
+            window:primaryActivityName="one.mixin.android.ui.home.MainActivity"
+            window:secondaryActivityName="one.mixin.android.ui.conversation.ConversationActivity"/>
+    </SplitPairRule>
+    <SplitPlaceholderRule
+        window:placeholderActivityName="one.mixin.android.ui.conversation.ConversationPlaceholderActivity"
+        window:splitRatio="0.33"
+        window:splitMinWidthDp="600"
+        window:finishPrimaryWithPlaceholder="always"
+        window:stickyPlaceholder="false">
+        <ActivityFilter
+            window:activityName="one.mixin.android.ui.home.MainActivity"/>
+    </SplitPlaceholderRule>
+    <ActivityRule
+        window:alwaysExpand="true">
+        <ActivityFilter window:activityName="one.mixin.android.ui.contacts.ContactsActivity"/>
+        <ActivityFilter window:activityName="one.mixin.android.ui.setting.SettingActivity"/>
+        <ActivityFilter window:activityName="one.mixin.android.ui.wallet.WalletActivity"/>
+    </ActivityRule>
+</resources>
