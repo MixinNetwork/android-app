@@ -196,7 +196,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
 
                 override fun onDappClick(dapp: Dapp) {
                     searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.DAPP, iconUrl = dapp.iconUrl, title = dapp.name, subTitle = dapp.homeUrl))
-                    WebActivity.show(requireContext(), dapp.homeUrl, null)
+                    WebActivity.show(requireContext(), dapp.homeUrl, null, allowWalletBridge = true)
                 }
 
                 override fun onTipClick() {
@@ -241,7 +241,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
             binding.recent.setContent {
                 RecentSearchPage ({ dapp ->
                     searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.DAPP, iconUrl = dapp.iconUrl, title = dapp.name, subTitle = dapp.homeUrl))
-                    WebActivity.show(requireContext(), dapp.homeUrl, null)
+                    WebActivity.show(requireContext(), dapp.homeUrl, null, allowWalletBridge = true)
                 }, {search->
                     when(search.type){
                         RecentSearchType.BOT-> {
@@ -263,7 +263,12 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                             }
                         }
                         RecentSearchType.DAPP->{
-                            WebActivity.show(requireContext(), search.subTitle?:"", null)
+                            WebActivity.show(
+                                requireContext(),
+                                search.subTitle ?: "",
+                                null,
+                                allowWalletBridge = true,
+                            )
                         }
                         RecentSearchType.LINK->{
                             search.subTitle?.openAsUrlOrWeb(requireContext(), null, parentFragmentManager, lifecycleScope)
