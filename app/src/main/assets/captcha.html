@@ -18,48 +18,147 @@
     </style>
     #gt
     <script type="text/javascript">
+        var captchaLoadId = '#loadId';
 
         var postToken = function (response) {
-            window.MixinContext.postToken(response);
+            window.MixinContext.postToken(captchaLoadId, response);
         }
 
-        var postMessage = function (value) {
-            window.MixinContext.postMessage(value);
+        var errorDetail = function (error) {
+            if (error == null) return '';
+            if (typeof error === 'string') return error;
+            if (error.name || error.message) {
+                return [error.name, error.message].filter(Boolean).join(': ');
+            }
+            try {
+                return JSON.stringify(error);
+            } catch (_) {
+                return String(error);
+            }
         }
+
+        var postEvent = function (event, stage, detail) {
+            window.MixinContext.postEvent(captchaLoadId, event, stage, errorDetail(detail));
+        }
+
+        var fatalEventPosted = false;
+
+        var postError = function (stage, error) {
+            if (fatalEventPosted) return;
+            fatalEventPosted = true;
+            postEvent('error', stage, error);
+        }
+
+        var onCaptchaScriptError = function () {
+            postError('script_load', 'load_failed');
+        }
+
+        window.addEventListener('error', function (event) {
+            var target = event.target;
+            if (target && target.tagName === 'SCRIPT' && target.src && target.src.indexOf('/api.js') !== -1) {
+                onCaptchaScriptError();
+                return;
+            }
+            if (!target || target === window) {
+                var source = event.filename ? event.filename.split('?')[0].split('/').pop() : '';
+                postError('javascript_error', [event.message, source, event.lineno, event.colno].filter(Boolean).join(':'));
+            }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function (event) {
+            postError('unhandled_rejection', event.reason);
+        });
 
         var renderCallback = {
             'sitekey': '#apiKey',
             'callback': postToken,
-            'expired-callback': postMessage,
-            'error-callback': postMessage,
+            'expired-callback': function () {
+                postError('response_expired', 'expired');
+            },
+            'error-callback': function (error) {
+                postError('provider_error', error);
+            },
+            'chalexpired-callback': function () {
+                postError('challenge_expired', 'expired');
+            },
+            'open-callback': function () {
+                postEvent('ready', 'challenge_ready', '');
+            },
+            'close-callback': function () {
+                postEvent('cancel', 'challenge_closed', '');
+            },
             'size': 'invisible'
         }
 
         var onGCaptchaLoad = function () {
-            grecaptcha.render('html_element', window.renderCallback);
-            grecaptcha.execute();
+            postEvent('progress', 'sdk_loaded', '');
+            var widgetID;
+            try {
+                widgetID = grecaptcha.render('html_element', window.renderCallback);
+                postEvent('progress', 'widget_rendered', widgetID);
+            } catch (error) {
+                postError('render', error);
+                return;
+            }
+            try {
+                grecaptcha.execute(widgetID);
+            } catch (error) {
+                postError('execute', error);
+            }
         }
 
         var onHCaptchaLoad = function () {
-            var widgetID = hcaptcha.render('html_element', window.renderCallback);
-            hcaptcha.execute(widgetID);
+            postEvent('progress', 'sdk_loaded', '');
+            var widgetID;
+            try {
+                widgetID = hcaptcha.render('html_element', window.renderCallback);
+                postEvent('progress', 'widget_rendered', widgetID);
+            } catch (error) {
+                postError('render', error);
+                return;
+            }
+            try {
+                hcaptcha.execute(widgetID);
+            } catch (error) {
+                postError('execute', error);
+            }
         }
 
+        var gtInitialized = false;
+
         var initGTCaptcha = function() {
-            initGeetest4({
-                captchaId: '#apiKey',
-                product: 'bind',
-                hideBar: ['close']
-            }, function(captcha) {
-                captcha.onReady(function(){
-                    captcha.showCaptcha();
-                }).onSuccess(function(){
-                    var result = captcha.getValidate();
-                    postToken(JSON.stringify(result));
-                }).onClose(function () {
-                    postMessage("gt_close");
+            if (gtInitialized) return;
+            gtInitialized = true;
+            postEvent('progress', 'sdk_loaded', '');
+            try {
+                initGeetest4({
+                    captchaId: '#apiKey',
+                    product: 'bind',
+                    hideBar: ['close'],
+                    onError: function (error) {
+                        postError('provider_error', error);
+                    }
+                }, function(captcha) {
+                    postEvent('progress', 'widget_rendered', '');
+                    captcha.onReady(function(){
+                        try {
+                            captcha.showCaptcha();
+                            postEvent('ready', 'challenge_ready', '');
+                        } catch (error) {
+                            postError('execute', error);
+                        }
+                    }).onSuccess(function(){
+                        var result = captcha.getValidate();
+                        postToken(JSON.stringify(result));
+                    }).onError(function (error) {
+                        postError('provider_error', error);
+                    }).onClose(function () {
+                        postError('challenge_closed', 'gt_close');
+                    });
                 });
-            });
+            } catch (error) {
+                postError('render', error);
+            }
         };
     </script>
 </head>
