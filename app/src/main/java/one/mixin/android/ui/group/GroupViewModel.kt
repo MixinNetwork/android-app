@@ -28,7 +28,6 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.User
-import one.mixin.android.widget.picker.INTERVAL_WEEK
 import java.util.UUID
 import javax.inject.Inject
 
@@ -49,6 +48,7 @@ class GroupViewModel
         icon: String?,
         users: List<User>,
         sender: User,
+        duration: Long,
     ): Conversation =
         withContext(Dispatchers.IO) {
             val participants = users.map { it.userId }
@@ -68,6 +68,7 @@ class GroupViewModel
                     .setAnnouncement(announcement)
                     .setOwnerId(sender.userId)
                     .setUnseenMessageCount(0)
+                    .setExpireIn(duration)
                     .build()
             val mutableList = mutableListOf<Participant>()
             users.mapTo(mutableList) { Participant(conversationId, it.userId, "", createdAt) }
@@ -83,7 +84,7 @@ class GroupViewModel
                     icon,
                     announcement,
                     participantRequestList,
-                    duration = INTERVAL_WEEK,
+                    duration = duration,
                     randomId = randomId,
                 )
             jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))

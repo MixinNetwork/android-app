@@ -92,6 +92,7 @@ class ConversationListViewModel
                         0,
                         ConversationStatus.START.ordinal,
                         null,
+                        expireIn = c.expireIn ?: INTERVAL_WEEK,
                     )
                 messageRepository.insertConversation(conversation, mutableList)
 
@@ -114,7 +115,7 @@ class ConversationListViewModel
                         it.iconUrl,
                         it.announcement,
                         participantRequestList,
-                        duration = INTERVAL_WEEK,
+                        duration = conversation.expireIn,
                         randomId =randomId,
                     )
                 jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE, oldConversationId = conversationId))

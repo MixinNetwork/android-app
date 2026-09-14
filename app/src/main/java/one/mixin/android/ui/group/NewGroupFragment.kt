@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentNewGroupBinding
 import one.mixin.android.databinding.ItemContactNormalBinding
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
@@ -29,17 +30,21 @@ import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.common.DisappearingFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
+import one.mixin.android.widget.picker.INTERVAL_WEEK
+import one.mixin.android.widget.picker.getTimeInterval
 
 @AndroidEntryPoint
 class NewGroupFragment : BaseFragment() {
     companion object {
         const val TAG = "NewGroupFragment"
         private const val ARGS_USERS = "args_users"
+        private const val STATE_DURATION = "duration"
 
         fun newInstance(users: ArrayList<User>): NewGroupFragment {
             val fragment = NewGroupFragment()
@@ -58,9 +63,20 @@ class NewGroupFragment : BaseFragment() {
     private var resultUri: Uri? = null
     private val adapter = NewGroupAdapter()
     private var dialog: Dialog? = null
+    private var duration = INTERVAL_WEEK
 
     private var _binding: FragmentNewGroupBinding? = null
     private val binding get() = requireNotNull(_binding)
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        duration = savedInstanceState?.getLong(STATE_DURATION, INTERVAL_WEEK) ?: INTERVAL_WEEK
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putLong(STATE_DURATION, duration)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -84,11 +100,22 @@ class NewGroupFragment : BaseFragment() {
         binding.titleView.rightAnimator.setOnClickListener {
             createGroup()
         }
+        binding.disappearingValue.text = duration.getTimeInterval()
+        parentFragmentManager.setFragmentResultListener(DisappearingFragment.DURATION_RESULT, viewLifecycleOwner) { _, result ->
+            duration = result.getLong(DisappearingFragment.DURATION)
+            binding.disappearingValue.text = duration.getTimeInterval()
+        }
+        binding.disappearingRow.setOnClickListener {
+            binding.nameDescEt.hideKeyboard()
+            activity?.addFragment(this, DisappearingFragment.newInstance(duration), DisappearingFragment.TAG)
+        }
         enableCreate(false)
         adapter.users = users
         binding.userRv.adapter = adapter
         binding.nameDescEt.addTextChangedListener(mWatcher)
-        binding.nameDescEt.showKeyboard()
+        if (savedInstanceState == null) {
+            binding.nameDescEt.showKeyboard()
+        }
     }
 
     override fun onDestroyView() {
@@ -125,6 +152,7 @@ class NewGroupFragment : BaseFragment() {
                     groupIcon,
                     adapter.users!!,
                     sender,
+                    duration = duration,
                 )
             val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
             liveData.observe(

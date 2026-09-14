@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import android.os.Bundle
 import android.view.View
+import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -26,6 +27,8 @@ import timber.log.Timber
 class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
     companion object {
         const val TAG = "DisappearingFragment"
+        const val DURATION_RESULT = "disappearing_duration_result"
+        const val DURATION = "duration"
         private const val CONVERSATION_ID = "conversation_id"
         private const val USER_ID = "user_id"
 
@@ -37,10 +40,15 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                 putString(CONVERSATION_ID, conversationId)
                 putString(USER_ID, userId)
             }
+
+        fun newInstance(duration: Long) =
+            DisappearingFragment().withArgs {
+                putLong(DURATION, duration)
+            }
     }
 
     private val conversationId by lazy {
-        requireNotNull(requireArguments().getString(CONVERSATION_ID))
+        requireArguments().getString(CONVERSATION_ID)
     }
 
     private val userId by lazy {
@@ -90,14 +98,24 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
         view: View,
         savedInstanceState: Bundle?,
     ) {
+        super.onViewCreated(view, savedInstanceState)
+        binding.titleView.leftIb.setOnClickListener {
+            activity?.onBackPressedDispatcher?.onBackPressed()
+        }
         val info = getString(R.string.disappearing_message_hint)
         val learnUrl = getString(R.string.disappearing_message_url)
         binding.tipTv.highlightStarTag(info, arrayOf(learnUrl))
+        (parentFragmentManager.findFragmentByTag(DisappearingIntervalBottomFragment.TAG) as? DisappearingIntervalBottomFragment)
+            ?.onSetCallback(::onIntervalSelected)
 
-        lifecycleScope.launch {
-            val conversation = viewModel.getConversation(conversationId)
-            conversation?.expireIn.initOption()
-            timeInterval = conversation?.expireIn
+        viewLifecycleOwner.lifecycleScope.launch {
+            val conversationId = conversationId
+            timeInterval = if (conversationId == null) {
+                requireArguments().getLong(DURATION)
+            } else {
+                viewModel.getConversation(conversationId)?.expireIn
+            }
+            timeInterval.initOption()
             binding.apply {
                 disappearingOff.setOnClickListener {
                     updateUI(0, 0L)
@@ -115,32 +133,7 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                 disappearingOption6.setOnClickListener {
                     DisappearingIntervalBottomFragment.newInstance(timeInterval)
                         .apply {
-                            onSetCallback {
-                                this@DisappearingFragment.lifecycleScope.launch {
-                                    val index = when (it) {
-                                        INTERVAL_DAY -> 1
-                                        INTERVAL_WEEK -> 2
-                                        INTERVAL_MONTH -> 3
-                                        else -> 4
-                                    }
-                                    if (it == timeInterval) {
-                                        updateOptionCheck(index)
-                                        return@launch
-                                    }
-                                    disappearingOption6Iv.isVisible = false
-                                    disappearingOption6Interval.isVisible = false
-                                    disappearingOption6Arrow.isVisible = false
-                                    updateUI(index, it)
-                                    disappearingOption6Interval.text = toTimeInterval(it)
-                                    Timber.e(
-                                        "Set interval ${toTimeInterval(it)} ${
-                                            toTimeIntervalIndex(
-                                                it,
-                                            )
-                                        }",
-                                    )
-                                }
-                            }
+                            onSetCallback(::onIntervalSelected)
                         }
                         .showNow(parentFragmentManager, DisappearingIntervalBottomFragment.TAG)
                 }
@@ -151,14 +144,39 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
     private var timeInterval: Long? = null
     private var updating = false
 
+    private fun onIntervalSelected(interval: Long) {
+        val index = when (interval) {
+            INTERVAL_DAY -> 1
+            INTERVAL_WEEK -> 2
+            INTERVAL_MONTH -> 3
+            else -> 4
+        }
+        if (interval == timeInterval && conversationId != null) {
+            updateOptionCheck(index)
+            return
+        }
+        binding.disappearingOption6Iv.isVisible = false
+        binding.disappearingOption6Interval.isVisible = false
+        binding.disappearingOption6Arrow.isVisible = false
+        updateUI(index, interval)
+        binding.disappearingOption6Interval.text = toTimeInterval(interval)
+        Timber.e("Set interval ${toTimeInterval(interval)} ${toTimeIntervalIndex(interval)}")
+    }
+
     private fun updateUI(
         index: Int,
         interval: Long,
     ) {
+        val conversationId = conversationId
+        if (conversationId == null) {
+            parentFragmentManager.setFragmentResult(DURATION_RESULT, bundleOf(DURATION to interval))
+            parentFragmentManager.popBackStack()
+            return
+        }
         if (timeInterval == interval || updating) {
             return
         }
-        lifecycleScope.launch(ErrorHandler.errorHandler) {
+        viewLifecycleOwner.lifecycleScope.launch(ErrorHandler.errorHandler) {
             pbGroup[index].isVisible = true
             updating = true
             val conversation = viewModel.getConversation(conversationId)
