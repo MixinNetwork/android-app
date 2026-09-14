@@ -42,6 +42,7 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.User
 import one.mixin.android.vo.generateConversationId
+import one.mixin.android.widget.picker.INTERVAL_WEEK
 import java.util.UUID
 import javax.inject.Inject
 
@@ -113,6 +114,7 @@ class ConversationListViewModel
                         it.iconUrl,
                         it.announcement,
                         participantRequestList,
+                        duration = INTERVAL_WEEK,
                         randomId =randomId,
                     )
                 jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE, oldConversationId = conversationId))

@@ -28,6 +28,7 @@ import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.Participant
 import one.mixin.android.vo.ParticipantItem
 import one.mixin.android.vo.User
+import one.mixin.android.widget.picker.INTERVAL_WEEK
 import java.util.UUID
 import javax.inject.Inject
 
@@ -82,6 +83,7 @@ class GroupViewModel
                     icon,
                     announcement,
                     participantRequestList,
+                    duration = INTERVAL_WEEK,
                     randomId = randomId,
                 )
             jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))
