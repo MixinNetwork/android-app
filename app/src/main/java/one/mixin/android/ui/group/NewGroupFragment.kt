@@ -1,41 +1,43 @@
 package one.mixin.android.ui.group
 
 import android.app.Dialog
-import android.net.Uri
+import android.graphics.Typeface
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
-import android.util.Base64
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import androidx.appcompat.widget.PopupMenu
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentNewGroupBinding
-import one.mixin.android.databinding.ItemContactNormalBinding
-import one.mixin.android.extension.addFragment
-import one.mixin.android.extension.createImageTemp
-import one.mixin.android.extension.getCapturedImage
-import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.CodeType
+import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.showKeyboard
-import one.mixin.android.extension.textColor
-import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.DisappearingFragment
+import one.mixin.android.ui.common.DisappearingIntervalBottomFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
+import one.mixin.android.widget.AvatarView
+import one.mixin.android.widget.picker.INTERVAL_DAY
+import one.mixin.android.widget.picker.INTERVAL_MONTH
 import one.mixin.android.widget.picker.INTERVAL_WEEK
 import one.mixin.android.widget.picker.getTimeInterval
 
@@ -57,13 +59,12 @@ class NewGroupFragment : BaseFragment() {
 
     private val groupViewModel by viewModels<GroupViewModel>()
     private val sender: User by lazy { Session.getAccount()!!.toUser() }
-    private val imageUri: Uri by lazy {
-        Uri.fromFile(context?.getOtherPath()?.createImageTemp())
+    private val users: List<User> by lazy {
+        requireNotNull(requireArguments().getParcelableArrayListCompat(ARGS_USERS, User::class.java))
     }
-    private var resultUri: Uri? = null
-    private val adapter = NewGroupAdapter()
     private var dialog: Dialog? = null
     private var duration = INTERVAL_WEEK
+    private var durationMenu: PopupMenu? = null
 
     private var _binding: FragmentNewGroupBinding? = null
     private val binding get() = requireNotNull(_binding)
@@ -92,27 +93,34 @@ class NewGroupFragment : BaseFragment() {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        val users: List<User> = requireArguments().getParcelableArrayListCompat(ARGS_USERS, User::class.java)!!
+        ViewCompat.setOnApplyWindowInsetsListener(view) { root, insets ->
+            val keyboard = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
+            val navigation = insets.getInsets(WindowInsetsCompat.Type.navigationBars()).bottom
+            root.updatePadding(bottom = (keyboard - navigation).coerceAtLeast(0))
+            insets
+        }
+        ViewCompat.requestApplyInsets(view)
+        binding.titleView.getChildAt(0).setBackgroundColor(requireContext().colorFromAttribute(R.attr.bg_window))
+        binding.titleView.titleTv.textView.setTypeface(binding.titleView.titleTv.textView.typeface, Typeface.BOLD)
+        val participants = (users + sender).distinctBy { it.userId }
+        binding.participantsCount.text = resources.getQuantityString(R.plurals.title_participants, participants.size, participants.size)
+        showGroupAvatar(participants)
         binding.titleView.leftIb.setOnClickListener {
             binding.nameDescEt.hideKeyboard()
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
-        binding.titleView.rightAnimator.setOnClickListener {
+        binding.createBtn.setOnClickListener {
             createGroup()
         }
         binding.disappearingValue.text = duration.getTimeInterval()
-        parentFragmentManager.setFragmentResultListener(DisappearingFragment.DURATION_RESULT, viewLifecycleOwner) { _, result ->
-            duration = result.getLong(DisappearingFragment.DURATION)
-            binding.disappearingValue.text = duration.getTimeInterval()
-        }
+        (childFragmentManager.findFragmentByTag(DisappearingIntervalBottomFragment.TAG) as? DisappearingIntervalBottomFragment)
+            ?.onSetCallback(::setDuration)
         binding.disappearingRow.setOnClickListener {
-            binding.nameDescEt.hideKeyboard()
-            activity?.addFragment(this, DisappearingFragment.newInstance(duration), DisappearingFragment.TAG)
+            showDurationMenu()
         }
-        enableCreate(false)
-        adapter.users = users
-        binding.userRv.adapter = adapter
-        binding.nameDescEt.addTextChangedListener(mWatcher)
+        binding.nameDescEt.doAfterTextChanged {
+            binding.createBtn.isEnabled = !it.isNullOrEmpty()
+        }
         if (savedInstanceState == null) {
             binding.nameDescEt.showKeyboard()
         }
@@ -121,7 +129,46 @@ class NewGroupFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         dialog?.dismiss()
+        durationMenu?.dismiss()
         _binding = null
+    }
+
+    private fun setDuration(value: Long) {
+        duration = value
+        binding.disappearingValue.text = value.getTimeInterval()
+    }
+
+    private fun showDurationMenu() {
+        val options = listOf(
+            0L to R.string.Off,
+            INTERVAL_DAY to R.string.disappearing_option_4,
+            INTERVAL_WEEK to R.string.disappearing_option_5,
+            INTERVAL_MONTH to R.string.disappearing_option_month,
+            null to R.string.Custom,
+        )
+        val selected = options.indexOfFirst { it.first == duration }.takeIf { it >= 0 } ?: options.lastIndex
+        durationMenu?.dismiss()
+        durationMenu = PopupMenu(requireContext(), binding.disappearingRow, Gravity.END).apply {
+            options.forEachIndexed { index, (_, title) ->
+                menu.add(0, index, index, title)
+            }
+            menu.setGroupCheckable(0, true, true)
+            menu.findItem(selected).isChecked = true
+            setOnMenuItemClickListener { item ->
+                val interval = options[item.itemId].first
+                if (interval == null) {
+                    binding.nameDescEt.hideKeyboard()
+                    DisappearingIntervalBottomFragment.newInstance(duration)
+                        .apply { onSetCallback(::setDuration) }
+                        .showNow(childFragmentManager, DisappearingIntervalBottomFragment.TAG)
+                } else {
+                    setDuration(interval)
+                }
+                true
+            }
+            setOnDismissListener { durationMenu = null }
+            show()
+        }
     }
 
     private fun createGroup() =
@@ -137,20 +184,12 @@ class NewGroupFragment : BaseFragment() {
             }
             dialog?.show()
 
-            val uri = resultUri
-            val groupIcon =
-                if (uri == null) {
-                    null
-                } else {
-                    val bitmap = uri.getCapturedImage(requireContext().contentResolver)
-                    Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP)
-                }
             val conversation =
                 groupViewModel.createGroupConversation(
                     binding.nameDescEt.text.toString(),
-                    binding.noticeDescEt.text.toString(),
-                    groupIcon,
-                    adapter.users!!,
+                    "",
+                    null,
+                    users,
                     sender,
                     duration = duration,
                 )
@@ -181,72 +220,29 @@ class NewGroupFragment : BaseFragment() {
             }
         }
 
-    private fun enableCreate(enable: Boolean) {
-        if (enable) {
-            binding.titleView.rightTv.textColor = resources.getColor(R.color.colorBlue, null)
-            binding.titleView.rightAnimator.isEnabled = true
-        } else {
-            binding.titleView.rightTv.textColor = resources.getColor(R.color.text_gray, null)
-            binding.titleView.rightAnimator.isEnabled = false
+    private fun showGroupAvatar(participants: List<User>) {
+        val preview = participants.take(4)
+        val columns = when (preview.size) {
+            3 -> listOf(preview.take(1), preview.drop(1))
+            4 -> listOf(listOf(preview[0], preview[2]), listOf(preview[1], preview[3]))
+            else -> preview.map { listOf(it) }
         }
-    }
-
-    class NewGroupAdapter : RecyclerView.Adapter<ItemHolder>() {
-        var users: List<User>? = null
-
-        override fun onCreateViewHolder(
-            parent: ViewGroup,
-            viewType: Int,
-        ): ItemHolder =
-            ItemHolder(LayoutInflater.from(parent.context).inflate(R.layout.item_contact_normal, parent, false))
-
-        override fun onBindViewHolder(
-            holder: ItemHolder,
-            position: Int,
-        ) {
-            if (users == null || users!!.isEmpty()) {
-                return
+        val colors = resources.getIntArray(R.array.avatar_colors)
+        binding.groupAvatar.removeAllViews()
+        columns.forEach { users ->
+            val column = LinearLayout(requireContext()).apply {
+                orientation = LinearLayout.VERTICAL
             }
-            holder.bind(users!![position])
-        }
-
-        override fun getItemCount(): Int = users?.size ?: 0
-    }
-
-    class ItemHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        private val binding = ItemContactNormalBinding.bind(itemView)
-
-        fun bind(user: User) {
-            binding.avatar.setInfo(user.fullName, user.avatarUrl, user.userId)
-            binding.normal.setName(user)
-            binding.mixinIdTv.text = user.identityNumber
-        }
-    }
-
-    private val mWatcher: TextWatcher =
-        object : TextWatcher {
-            override fun beforeTextChanged(
-                s: CharSequence?,
-                start: Int,
-                count: Int,
-                after: Int,
-            ) {
-            }
-
-            override fun onTextChanged(
-                s: CharSequence?,
-                start: Int,
-                before: Int,
-                count: Int,
-            ) {
-            }
-
-            override fun afterTextChanged(s: Editable?) {
-                if (!s.isNullOrEmpty()) {
-                    enableCreate(true)
-                } else {
-                    enableCreate(false)
+            binding.groupAvatar.addView(column, LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, 1f))
+            users.forEach { user ->
+                val avatar = AvatarView(requireContext()).apply {
+                    avatarSimple.setDisableCircularTransformation(true)
+                    setBackgroundColor(colors.getOrElse(user.userId.getColorCode(CodeType.Avatar(colors.size))) { colors[0] })
+                    setTextSize(if (preview.size > 2) 16f else 20f)
+                    setInfo(user.fullName, user.avatarUrl, user.userId)
                 }
+                column.addView(avatar, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0, 1f))
             }
         }
+    }
 }

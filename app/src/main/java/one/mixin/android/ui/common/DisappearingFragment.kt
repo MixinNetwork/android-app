@@ -2,7 +2,6 @@ package one.mixin.android.ui.common
 
 import android.os.Bundle
 import android.view.View
-import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
@@ -27,8 +26,6 @@ import timber.log.Timber
 class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
     companion object {
         const val TAG = "DisappearingFragment"
-        const val DURATION_RESULT = "disappearing_duration_result"
-        const val DURATION = "duration"
         private const val CONVERSATION_ID = "conversation_id"
         private const val USER_ID = "user_id"
 
@@ -40,15 +37,10 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                 putString(CONVERSATION_ID, conversationId)
                 putString(USER_ID, userId)
             }
-
-        fun newInstance(duration: Long) =
-            DisappearingFragment().withArgs {
-                putLong(DURATION, duration)
-            }
     }
 
     private val conversationId by lazy {
-        requireArguments().getString(CONVERSATION_ID)
+        requireNotNull(requireArguments().getString(CONVERSATION_ID))
     }
 
     private val userId by lazy {
@@ -109,12 +101,7 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
             ?.onSetCallback(::onIntervalSelected)
 
         viewLifecycleOwner.lifecycleScope.launch {
-            val conversationId = conversationId
-            timeInterval = if (conversationId == null) {
-                requireArguments().getLong(DURATION)
-            } else {
-                viewModel.getConversation(conversationId)?.expireIn
-            }
+            timeInterval = viewModel.getConversation(conversationId)?.expireIn
             timeInterval.initOption()
             binding.apply {
                 disappearingOff.setOnClickListener {
@@ -151,7 +138,7 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
             INTERVAL_MONTH -> 3
             else -> 4
         }
-        if (interval == timeInterval && conversationId != null) {
+        if (interval == timeInterval) {
             updateOptionCheck(index)
             return
         }
@@ -167,12 +154,6 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
         index: Int,
         interval: Long,
     ) {
-        val conversationId = conversationId
-        if (conversationId == null) {
-            parentFragmentManager.setFragmentResult(DURATION_RESULT, bundleOf(DURATION to interval))
-            parentFragmentManager.popBackStack()
-            return
-        }
         if (timeInterval == interval || updating) {
             return
         }
