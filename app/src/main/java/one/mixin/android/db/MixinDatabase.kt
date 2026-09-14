@@ -476,13 +476,13 @@ abstract class MixinDatabase : RoomDatabase() {
 
         private val CALLBACK =
             object : RoomDatabase.Callback() {
-                override suspend fun onOpen(db: SQLiteConnection) {
-                    super.onOpen(db)
-                    db.execSQL("PRAGMA synchronous = NORMAL")
-                    db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
-                    db.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
-                    db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_update")
-                    db.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_delete")
+                override suspend fun onOpen(connection: SQLiteConnection) {
+                    super.onOpen(connection)
+                    connection.execSQL("PRAGMA synchronous = NORMAL")
+                    connection.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_count_insert")
+                    connection.execSQL("DROP TRIGGER IF EXISTS conversation_unseen_message_count_insert")
+                    connection.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_update")
+                    connection.execSQL("DROP TRIGGER IF EXISTS conversation_last_message_delete")
                 }
             }
     }

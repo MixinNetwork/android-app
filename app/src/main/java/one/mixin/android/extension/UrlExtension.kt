@@ -399,7 +399,7 @@ internal data class PerpsTradeAction(
 )
 
 internal data class PerpsOpenPositionAction(
-    val isLong: Boolean,
+    val isLong: Boolean?,
     val leverage: Int?,
     val margin: String?,
 )
@@ -430,16 +430,15 @@ internal fun String.toPerpsTradeAction(): PerpsTradeAction? {
         ?: return if (!hasLeaderPositionId) PerpsTradeAction(null, null) else null
     if (!marketId.isUUID()) return null
 
-    val isLong = if (query.queryParameter("action").equals("open", true)) {
-        when {
+    val isOpenAction = query.queryParameter("action").equals("open", true)
+    val openPosition = if (isOpenAction) {
+        val hasSide = query.hasQueryParameter("side")
+        val isLong = when {
+            !hasSide -> null
             query.queryParameter("side").equals("long", true) -> true
             query.queryParameter("side").equals("short", true) -> false
-            else -> null
+            else -> return null
         }
-    } else {
-        null
-    }
-    val openPosition = isLong?.let {
         val hasLeverage = query.hasQueryParameter("leverage")
         val leverage = query.queryParameter("leverage")?.toIntOrNull()?.takeIf { value -> value > 0 }
         if (hasLeverage && leverage == null) return null
@@ -449,10 +448,12 @@ internal fun String.toPerpsTradeAction(): PerpsTradeAction? {
         if (hasMargin && margin == null) return null
 
         PerpsOpenPositionAction(
-            isLong = it,
+            isLong = isLong,
             leverage = leverage,
             margin = margin,
         )
+    } else {
+        null
     }
     return PerpsTradeAction(marketId, leaderPositionId, openPosition)
 }

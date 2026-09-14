@@ -150,7 +150,7 @@ class ConversationViewModel
         fun observeConversation(id: String) =
             conversationRepository.getConversationById(id)
 
-        fun findUserById(conversationId: String): LiveData<User> =
+        fun findUserById(conversationId: String): LiveData<User?> =
             userRepository.findUserById(conversationId)
 
         fun sendTextMessage(

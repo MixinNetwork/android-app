@@ -54,6 +54,7 @@ import org.intellij.markdown.flavours.gfm.GFMFlavourDescriptor
 import org.intellij.markdown.html.AttributesCustomizer
 import org.intellij.markdown.html.DUMMY_ATTRIBUTES_CUSTOMIZER
 import org.intellij.markdown.html.HtmlGenerator
+import org.intellij.markdown.parser.CancellationToken
 import org.intellij.markdown.parser.MarkdownParser
 import java.nio.charset.Charset
 
@@ -236,7 +237,7 @@ class MarkdownActivity : BaseActivity() {
                 this@MarkdownActivity.getOtherPath()
                     .createPdfTemp()
             val flavour = GFMFlavourDescriptor()
-            val parsedTree = MarkdownParser(flavour).buildMarkdownTreeFromString(src)
+            val parsedTree = MarkdownParser(flavour, cancellationToken = CancellationToken.NonCancellable).buildMarkdownTreeFromString(src as CharSequence)
             val body =
                 HtmlGenerator(src, parsedTree, flavour, true)
                     .generateHtml(HtmlTagRenderer(DUMMY_ATTRIBUTES_CUSTOMIZER, true))

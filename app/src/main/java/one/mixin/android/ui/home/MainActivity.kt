@@ -911,6 +911,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private suspend fun initWalletConnect() {
         if (!WalletConnect.isEnabled()) return
         try {
+            // Access initializes the WalletConnect singleton.
+            @Suppress("UNUSED_EXPRESSION")
             WalletConnectV2
             val classicWalletId = web3Repository.getClassicWalletId()
             Web3Signer.init(

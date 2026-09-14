@@ -3,6 +3,7 @@ package one.mixin.android.extension
 import android.annotation.SuppressLint
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothHeadset
+import android.bluetooth.BluetoothManager
 import android.bluetooth.BluetoothProfile
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -214,7 +215,7 @@ class AudioSwitch(
         unregisterReceiver()
         if (bluetoothProxy != null) {
             runCatching {
-                BluetoothAdapter.getDefaultAdapter()?.closeProfileProxy(
+                context.getSystemService(BluetoothManager::class.java)?.adapter?.closeProfileProxy(
                     BluetoothProfile.HEADSET,
                     bluetoothProxy,
                 )
@@ -417,6 +418,7 @@ class AudioSwitch(
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    @Suppress("DEPRECATION")
     private fun registerReceiver() {
         synchronized(lock) {
             if (receiverRegistered) return
@@ -448,10 +450,9 @@ class AudioSwitch(
         }
     }
 
-    @Suppress("DEPRECATION")
     private fun startBluetoothProfile() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) return
-        val adapter = runCatching { BluetoothAdapter.getDefaultAdapter() }.getOrNull() ?: return
+        val adapter = runCatching { context.getSystemService(BluetoothManager::class.java)?.adapter }.getOrNull() ?: return
         runCatching {
             if (adapter.isEnabled) {
                 adapter.getProfileProxy(context, bluetoothProfileListener, BluetoothProfile.HEADSET)
@@ -520,6 +521,7 @@ class AudioSwitch(
     }
 
     @SuppressLint("NewApi")
+    @Suppress("DEPRECATION")
     private fun routeWithCommunicationDeviceLocked(device: AudioDevice): Boolean {
         val communicationDevice = communicationDevices().firstOrNull { it.matches(device) }
         if (communicationDevice != null && audioManager.setCommunicationDevice(communicationDevice)) {
@@ -635,6 +637,7 @@ class AudioSwitch(
     }
 
     @SuppressLint("NewApi")
+    @Suppress("DEPRECATION")
     private fun cacheAudioStateLocked() {
         savedAudioMode = audioManager.mode
         savedIsMicrophoneMuted = audioManager.isMicrophoneMute

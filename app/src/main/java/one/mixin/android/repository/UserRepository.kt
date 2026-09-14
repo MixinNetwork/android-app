@@ -103,7 +103,7 @@ class UserRepository
         suspend fun suspendGetGroupParticipants(conversationId: String): List<User> =
             userDao.suspendGetGroupParticipants(conversationId, Session.getAccountId() ?: "")
 
-        fun findUserById(query: String): LiveData<User> = userDao.findUserById(query)
+        fun findUserById(query: String): LiveData<User?> = userDao.findUserById(query)
 
         suspend fun suspendFindUserById(query: String) = userDao.suspendFindUserById(query)
 
@@ -180,7 +180,7 @@ class UserRepository
             )
         }
 
-        fun findUserByConversationId(conversationId: String): LiveData<User> =
+        fun findUserByConversationId(conversationId: String): LiveData<User?> =
             userDao.findUserByConversationId(conversationId)
 
         fun findContactByConversationId(conversationId: String): ForwardUser? =

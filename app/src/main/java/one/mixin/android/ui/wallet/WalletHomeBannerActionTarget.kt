@@ -13,7 +13,7 @@ internal sealed interface WalletHomeBannerActionTarget {
     ) : WalletHomeBannerActionTarget
     data class PerpsOpen(
         val marketId: String,
-        val isLong: Boolean,
+        val isLong: Boolean?,
         val leverage: Int?,
         val margin: String?,
         val leaderPositionId: String?,

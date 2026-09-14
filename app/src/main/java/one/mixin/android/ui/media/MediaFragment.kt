@@ -5,7 +5,6 @@ import android.view.View
 import android.widget.ViewAnimator
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import androidx.paging.LoadState
 import androidx.recyclerview.widget.GridLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
@@ -92,10 +91,8 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
         binding.emptyIv.setImageResource(R.drawable.ic_empty_media)
         binding.emptyTv.setText(R.string.NO_MEDIA)
         viewLifecycleOwner.lifecycleScope.launch {
-            adapter.loadStateFlow.collectLatest { loadStates ->
-                if (loadStates.refresh is LoadState.NotLoading) {
-                    (view as ViewAnimator).displayedChild = if (adapter.itemCount <= 0) 1 else 0
-                }
+            adapter.onPagesUpdatedFlow.collectLatest {
+                (view as ViewAnimator).displayedChild = if (adapter.itemCount <= 0) 1 else 0
             }
         }
         viewModel.getMediaMessagesExcludeLive(conversationId).observe(

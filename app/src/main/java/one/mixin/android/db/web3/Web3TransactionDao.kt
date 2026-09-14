@@ -58,7 +58,7 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
     @RawQuery(observedEntities = [Web3Transaction::class])
     fun allTransactions(query: RoomRawQuery): PagingSource<Int, Web3TransactionItem>
 
-    @Query("SELECT DISTINCT transaction_hash, * FROM transactions WHERE transaction_hash = :hash AND chain_id = :chainId LIMIT 1")
+    @Query("SELECT DISTINCT * FROM transactions WHERE transaction_hash = :hash AND chain_id = :chainId LIMIT 1")
     suspend fun getLatestTransaction(hash: String, chainId: String): Web3Transaction?
 
     @Query("DELETE FROM transactions WHERE status = 'pending' AND transaction_hash = :hash AND chain_id = :chainId")
@@ -73,7 +73,7 @@ interface Web3TransactionDao : BaseDao<Web3Transaction> {
     @Query("SELECT COUNT(*) FROM transactions WHERE status = 'pending' AND address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)")
     fun getPendingTransactionCount(walletId: String): LiveData<Int>
 
-    @Query("SELECT DISTINCT transaction_hash, * FROM transactions WHERE status = 'pending' AND address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)")
+    @Query("SELECT DISTINCT * FROM transactions WHERE status = 'pending' AND address in (SELECT destination FROM addresses WHERE wallet_id = :walletId)")
     suspend fun getPendingTransactions(walletId: String): List<Web3Transaction>
 
     @Query(""" SELECT DISTINCT w.transaction_hash, w.transaction_type, w.status, w.block_number, w.chain_id, w.address, w.fee, w.sponsor_fee_asset_id, w.sponsor_fee_amount, w.senders, w.receivers, w.approvals, w.send_asset_id, w.receive_asset_id, w.transaction_at, w.updated_at, w.level,

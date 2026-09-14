@@ -74,7 +74,7 @@ interface ConversationDao : BaseDao<Conversation> {
     suspend fun getConversationIdIfExistsSync(recipientId: String): String?
 
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
-    fun getConversationById(conversationId: String): LiveData<Conversation>
+    fun getConversationById(conversationId: String): LiveData<Conversation?>
 
     @Query("SELECT COUNT(p.user_id) as count, c.name, c.icon_url, EXISTS(SELECT 1 FROM participants WHERE conversation_id = :conversationId AND user_id = :userId) AS is_exist FROM participants p INNER JOIN conversations c ON p.conversation_id = c.conversation_id WHERE c.conversation_id = :conversationId")
     fun getConversationInfoById(

@@ -99,6 +99,39 @@ class PerpsMarketDaoTest {
         }
 
     @Test
+    fun upsertedRefreshedMarketsBecomeSearchableWithoutClearingDatabase() =
+        runBlocking {
+            database.perpsMarketDao().upsertList(
+                listOf(
+                    market("eth-usdt", volume = "50", score = 0).copy(
+                        displaySymbol = "ETHUSDT",
+                        tokenSymbol = "ETH",
+                        quoteSymbol = "USDT",
+                    ),
+                ),
+            )
+
+            database.perpsMarketDao().upsertList(
+                listOf(
+                    market("btc-usdt", volume = "100", score = 0).copy(
+                        displaySymbol = "BTCUSDT",
+                        tokenSymbol = "BTC",
+                        quoteSymbol = "USDT",
+                    ),
+                    market("eth-usdt", volume = "60", score = 0).copy(
+                        displaySymbol = "ETHUSDT",
+                        tokenSymbol = "ETH",
+                        quoteSymbol = "USDT",
+                    ),
+                ),
+            )
+
+            val result = database.perpsMarketDao().searchMarkets("btc")
+
+            assertEquals(listOf("btc-usdt"), result.map(PerpsMarket::marketId))
+        }
+
+    @Test
     fun favoriteMarketsOrderByNewestAddition() =
         runBlocking {
             val markets =

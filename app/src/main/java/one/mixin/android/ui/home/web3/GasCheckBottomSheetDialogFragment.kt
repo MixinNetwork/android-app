@@ -257,7 +257,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     private val viewModel by viewModels<BrowserWalletBottomSheetViewModel>()
 
-    private fun showBrowserWalletBottomSheet() {
+    private fun showBrowserWalletBottomSheet(tipGas: TipGas? = null) {
         if (!isAdded) return
         if (swapResult != null) {
             SwapTransferBottomSheetDialogFragment.newInstance(swapResult!!, fromToken, toToken)
@@ -272,13 +272,14 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 .show(requireActivity().supportFragmentManager, SwapTransferBottomSheetDialogFragment.TAG)
         } else {
             val fragment = BrowserWalletBottomSheetDialogFragment.newInstance(
-                signMessage,
-                url,
-                title,
-                amount,
-                token,
-                chainToken,
-                toAddress
+                jsSignMessage = signMessage,
+                url = url,
+                title = title,
+                amount = amount,
+                token = token,
+                chainToken = chainToken,
+                toAddress = toAddress,
+                tipGas = tipGas,
             )
             onDismiss?.let { it ->
                 fragment.setOnDismiss(it)
@@ -381,7 +382,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 }
             } else {
                 Timber.e("Sufficient gas for chain: ${chain.chainId}, gas: ${tipGas.maxFeePerGas} ${tipGas.gasLimit}")
-                showBrowserWalletBottomSheet()
+                showBrowserWalletBottomSheet(tipGas)
             }
         } catch (e: Exception) {
             showError(ErrorHandler.getErrorMessage(e))

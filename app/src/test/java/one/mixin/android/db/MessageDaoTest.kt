@@ -13,6 +13,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.flow.first
@@ -22,6 +23,7 @@ import kotlinx.coroutines.yield
 import one.mixin.android.db.datasource.RoomDatabaseCompat
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
@@ -283,6 +285,40 @@ class MessageDaoTest {
             ) as PagingSource.LoadResult.Page
         assertEquals("Second message", secondRefresh.data.single().content)
         assertEquals(2, secondRefresh.data.single().unseenMessageCount)
+    }
+
+    @Test
+    fun conversationPagingKeepsKeysAndCountsAcrossLoadSizes() = runBlocking {
+        database.userDao().insert(user("owner"))
+        for (index in 0..6) {
+            database.conversationDao().insert(conversation("conversation-$index", "owner"))
+            database.conversationDao().updateLastMessageId("message-$index", "2026-06-29T00:00:0${index}Z", "conversation-$index")
+        }
+        val source = DataProvider.observeConversations(database)
+        withTimeout(5_000) {
+            val first = assertIs<PagingSource.LoadResult.Page<Int, ConversationItem>>(
+                source.load(PagingSource.LoadParams.Refresh(null, 3, true)),
+            )
+            assertEquals(listOf("conversation-6", "conversation-5", "conversation-4"), first.data.map { it.conversationId })
+            assertNull(first.prevKey)
+            assertEquals(3, first.nextKey)
+            assertEquals(4, first.itemsAfter)
+            val next = assertIs<PagingSource.LoadResult.Page<Int, ConversationItem>>(
+                source.load(PagingSource.LoadParams.Append(checkNotNull(first.nextKey), 4, true)),
+            )
+            assertEquals(listOf("conversation-3", "conversation-2", "conversation-1", "conversation-0"), next.data.map { it.conversationId })
+            assertEquals(3, next.prevKey)
+            assertNull(next.nextKey)
+            assertEquals(3, next.itemsBefore)
+            assertEquals(0, next.itemsAfter)
+            val previous = assertIs<PagingSource.LoadResult.Page<Int, ConversationItem>>(
+                source.load(PagingSource.LoadParams.Prepend(checkNotNull(next.prevKey), 5, true)),
+            )
+            assertEquals(first.data.map { it.conversationId }, previous.data.map { it.conversationId })
+            assertNull(previous.prevKey)
+            assertEquals(3, previous.nextKey)
+        }
+        source.invalidate()
     }
 
     private fun conversation(

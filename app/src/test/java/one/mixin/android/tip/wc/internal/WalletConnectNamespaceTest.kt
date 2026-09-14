@@ -11,6 +11,20 @@ class WalletConnectNamespaceTest {
     private val legacySolanaChainId = "solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ"
 
     @Test
+    fun sessionNamespaceUpdateRejectsEmptyNamespaces() {
+        assertNull(
+            buildUpdatedNamespaces(
+                emptyMap(),
+                WalletConnectAddresses(
+                    evm = "0x2222222222222222222222222222222222222222",
+                    solana = "",
+                    bitcoin = "",
+                ),
+            ),
+        )
+    }
+
+    @Test
     fun xLayerUsesExpectedWalletConnectMetadata() {
         assertEquals("37f5a4d1-905f-3b34-8291-c37438c7dcfc", Chain.XLayer.assetId)
         assertEquals("eip155:196", Chain.XLayer.chainId)
@@ -31,11 +45,12 @@ class WalletConnectNamespaceTest {
 
     @Test
     fun legacySolanaChainIdResolvesToSolana() {
-        val addresses = WalletConnectAddresses(
-            evm = "0x1111111111111111111111111111111111111111",
-            solana = "So11111111111111111111111111111111111111112",
-            bitcoin = "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu",
-        )
+        val addresses =
+            WalletConnectAddresses(
+                evm = "0x1111111111111111111111111111111111111111",
+                solana = "So11111111111111111111111111111111111111112",
+                bitcoin = "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu",
+            )
 
         assertEquals(Chain.Solana, getChainByChainId(legacySolanaChainId))
         assertEquals(Chain.Solana, legacySolanaChainId.getChain())
@@ -49,13 +64,14 @@ class WalletConnectNamespaceTest {
         val solanaAddress = "So11111111111111111111111111111111111111112"
         val bitcoinAddress = "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu"
 
-        val namespaces = getSupportedNamespaces(
-            WalletConnectAddresses(
-                evm = evmAddress,
-                solana = solanaAddress,
-                bitcoin = bitcoinAddress,
-            ),
-        )
+        val namespaces =
+            getSupportedNamespaces(
+                WalletConnectAddresses(
+                    evm = evmAddress,
+                    solana = solanaAddress,
+                    bitcoin = bitcoinAddress,
+                ),
+            )
 
         assertEquals(setOf("eip155", "solana", "bip122"), namespaces.keys)
         assertEquals(evmChainList.map { it.chainId }, namespaces.getValue("eip155").chains)
@@ -71,24 +87,26 @@ class WalletConnectNamespaceTest {
 
     @Test
     fun supportedNamespacesSkipBlankAddresses() {
-        val namespaces = getSupportedNamespaces(
-            WalletConnectAddresses(
-                evm = "0x1111111111111111111111111111111111111111",
-                solana = "",
-                bitcoin = "",
-            ),
-        )
+        val namespaces =
+            getSupportedNamespaces(
+                WalletConnectAddresses(
+                    evm = "0x1111111111111111111111111111111111111111",
+                    solana = "",
+                    bitcoin = "",
+                ),
+            )
 
         assertEquals(setOf("eip155"), namespaces.keys)
     }
 
     @Test
     fun walletConnectAddressesSelectAccountByChainId() {
-        val addresses = WalletConnectAddresses(
-            evm = "0x1111111111111111111111111111111111111111",
-            solana = "So11111111111111111111111111111111111111112",
-            bitcoin = "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu",
-        )
+        val addresses =
+            WalletConnectAddresses(
+                evm = "0x1111111111111111111111111111111111111111",
+                solana = "So11111111111111111111111111111111111111112",
+                bitcoin = "bc1qcr8te4kr609gcawutmrza0j4xv80jy8z306fyu",
+            )
 
         assertEquals(addresses.evm, addresses.accountForChainId(Chain.Base.chainId))
         assertEquals(addresses.solana, addresses.accountForChainId(Chain.Solana.chainId))
@@ -120,22 +138,24 @@ class WalletConnectNamespaceTest {
 
     @Test
     fun proposalAccountTextDoesNotFallBackToEvmWhenProposalHasNoSupportedAccount() {
-        val addresses = WalletConnectAddresses(
-            evm = "0x1111111111111111111111111111111111111111",
-            solana = "",
-            bitcoin = "",
-        )
+        val addresses =
+            WalletConnectAddresses(
+                evm = "0x1111111111111111111111111111111111111111",
+                solana = "",
+                bitcoin = "",
+            )
 
         assertEquals("", formatProposalAccountText(setOf(Chain.Solana.chainId), addresses))
     }
 
     @Test
     fun proposalAccountTextAcceptsLegacySolanaChainId() {
-        val addresses = WalletConnectAddresses(
-            evm = "0x1111111111111111111111111111111111111111",
-            solana = "So11111111111111111111111111111111111111112",
-            bitcoin = "",
-        )
+        val addresses =
+            WalletConnectAddresses(
+                evm = "0x1111111111111111111111111111111111111111",
+                solana = "So11111111111111111111111111111111111111112",
+                bitcoin = "",
+            )
 
         assertEquals("${Chain.Solana.name}: ${addresses.solana}", formatProposalAccountText(setOf(legacySolanaChainId), addresses))
     }
@@ -183,10 +203,11 @@ class WalletConnectNamespaceTest {
                 "eip155" to
                     Wallet.Model.Namespace.Session(
                         chains = listOf(Chain.Ethereum.chainId, Chain.Base.chainId),
-                        accounts = listOf(
-                            "${Chain.Ethereum.chainId}:0x1111111111111111111111111111111111111111",
-                            "${Chain.Base.chainId}:0x1111111111111111111111111111111111111111",
-                        ),
+                        accounts =
+                            listOf(
+                                "${Chain.Ethereum.chainId}:0x1111111111111111111111111111111111111111",
+                                "${Chain.Base.chainId}:0x1111111111111111111111111111111111111111",
+                            ),
                         methods = evmSupportedMethods,
                         events = emptyList(),
                     ),

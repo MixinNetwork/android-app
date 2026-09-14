@@ -229,9 +229,9 @@ class MusicBottomSheetDialogFragment : BottomSheetDialogFragment() {
     ) {
         binding.apply {
             val mediaItem = list.firstOrNull { it.id == mediaId } ?: return
-            musicLayout.title.text = mediaItem?.displayTitle
-            musicLayout.subtitle.text = mediaItem?.displaySubtitle
-            musicLayout.albumArt.loadImage(mediaItem?.albumArtUri?.path, R.drawable.ic_music_place_holder)
+            musicLayout.title.text = mediaItem.displayTitle
+            musicLayout.subtitle.text = mediaItem.displaySubtitle
+            musicLayout.albumArt.loadImage(mediaItem.albumArtUri.path, R.drawable.ic_music_place_holder)
 
             if (list.isNotEmpty() && firstOpen) {
                 firstOpen = false

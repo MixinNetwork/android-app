@@ -98,6 +98,9 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         const val ARGS_IS_FEE_FREE = "args_is_fee_free"
         const val ARGS_FEE_AMOUNT = "args_fee_amount"
         const val ARGS_FEE_TOKEN = "args_fee_token"
+        const val ARGS_TIP_GAS_LIMIT = "args_tip_gas_limit"
+        const val ARGS_TIP_GAS_MAX_FEE_PER_GAS = "args_tip_gas_max_fee_per_gas"
+        const val ARGS_TIP_GAS_MAX_PRIORITY_FEE_PER_GAS = "args_tip_gas_max_priority_fee_per_gas"
 
         fun newInstance(
             jsSignMessage: JsSignMessage,
@@ -111,6 +114,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             toAddress: String? = null,
             toUser: User? = null,
             isFeeWaived: Boolean = false,
+            tipGas: TipGas? = null,
         ) = BrowserWalletBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_MESSAGE, jsSignMessage)
             putString(
@@ -128,6 +132,11 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             toAddress?.let { putString(ARGS_TO_ADDRESS, it) }
             toUser?.let { putParcelable(ARGS_TO_USER, it) }
             putBoolean(ARGS_IS_FEE_FREE, isFeeWaived)
+            tipGas?.let {
+                putString(ARGS_TIP_GAS_LIMIT, it.gasLimit.toString())
+                putString(ARGS_TIP_GAS_MAX_FEE_PER_GAS, it.maxFeePerGas.toString())
+                putString(ARGS_TIP_GAS_MAX_PRIORITY_FEE_PER_GAS, it.maxPriorityFeePerGas.toString())
+            }
         }
     }
 
@@ -153,6 +162,13 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         requireArguments().getParcelableCompat(ARGS_FEE_TOKEN, Web3TokenItem::class.java)
     }
     private val isFeeWaived by lazy { requireArguments().getBoolean(ARGS_IS_FEE_FREE, false) }
+    private val initialTipGas by lazy {
+        val args = requireArguments()
+        val gasLimit = args.getString(ARGS_TIP_GAS_LIMIT)?.toBigIntegerOrNull() ?: return@lazy null
+        val maxFeePerGas = args.getString(ARGS_TIP_GAS_MAX_FEE_PER_GAS)?.toBigIntegerOrNull() ?: return@lazy null
+        val maxPriorityFeePerGas = args.getString(ARGS_TIP_GAS_MAX_PRIORITY_FEE_PER_GAS)?.toBigIntegerOrNull() ?: return@lazy null
+        TipGas(currentChain.chainId, gasLimit, maxFeePerGas, maxPriorityFeePerGas)
+    }
     private val currentChain by lazy {
         token?.getChainFromName() ?: Web3Signer.currentChain
     }
@@ -182,6 +198,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         super.onViewCreated(view, savedInstanceState)
         token = requireArguments().getParcelableCompat(ARGS_TOKEN, Web3TokenItem::class.java)
         amount = requireArguments().getString(ARGS_AMOUNT)
+        tipGas = initialTipGas
         if (isAccountUnavailable()) {
             val message = getString(R.string.not_support_network, currentChain.symbol)
             settleError(WalletErrorCode.UNSUPPORTED_METHOD, message)
@@ -315,38 +332,46 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         }
         val assetId = chain.getWeb3ChainId()
         val transaction = signMessage.wcEthereumTransaction ?: return
+        val cachedTipGas = tipGas
+        var useCachedTipGas = cachedTipGas != null
         tickerFlow(15.seconds)
             .onEach {
                 asset = viewModel.refreshAsset(assetId)
                 try {
-                    tipGas = withContext(Dispatchers.IO) {
-                        val r = runCatching {
-                            viewModel.estimateFee(
-                                EstimateFeeRequest(
-                                    assetId,
-                                    null,
-                                    transaction.data,
-                                    transaction.from,
-                                    transaction.to,
-                                    transaction.value,
+                    val currentTipGas = if (useCachedTipGas) {
+                        useCachedTipGas = false
+                        cachedTipGas
+                    } else {
+                        withContext(Dispatchers.IO) {
+                            val r = runCatching {
+                                viewModel.estimateFee(
+                                    EstimateFeeRequest(
+                                        assetId,
+                                        null,
+                                        transaction.data,
+                                        transaction.from,
+                                        transaction.to,
+                                        transaction.value,
+                                    )
                                 )
-                            )
-                        }.getOrNull()
-                        if (r?.isSuccess != true) {
-                            step = Step.Error
-                            ErrorHandler.handleMixinError(r?.errorCode ?: 0, r?.errorDescription ?: "")
-                            return@withContext null
+                            }.getOrNull()
+                            if (r?.isSuccess != true) {
+                                step = Step.Error
+                                ErrorHandler.handleMixinError(r?.errorCode ?: 0, r?.errorDescription ?: "")
+                                return@withContext null
+                            }
+                            buildTipGas(chain.chainId, r.data!!)
                         }
-                        buildTipGas(chain.chainId, r.data!!)
                     } ?: return@onEach
-                    insufficientGas = checkGas(token, chainToken, tipGas, transaction.value, transaction.maxFeePerGas)
+                    tipGas = currentTipGas
+                    insufficientGas = checkGas(token, chainToken, currentTipGas, transaction.value, transaction.maxFeePerGas)
                     if (insufficientGas) {
                         handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: currentChain.symbol)))
                     }
                     val hex = Web3Signer.ethPreviewTransaction(
                         Web3Signer.evmAddress,
                         transaction,
-                        tipGas!!,
+                        currentTipGas,
                         chain = token?.getChainFromName()
                     ) { _ ->
                         val nonce = rpc.nonceAt(currentChain.assetId, Web3Signer.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")

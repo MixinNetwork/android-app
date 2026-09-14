@@ -27,7 +27,7 @@ plugins {
     id("com.google.android.libraries.mapsplatform.secrets-gradle-plugin") apply false
     id("org.jetbrains.kotlin.plugin.serialization") apply false
     id("com.google.devtools.ksp") apply false
-    id("androidx.room3") version "3.0.2" apply false
+    id("androidx.room3") version "3.0.3" apply false
     id("org.jetbrains.kotlin.plugin.compose") apply false
     id("org.jetbrains.kotlin.jvm") apply false
     id("com.google.firebase.firebase-perf") apply false
@@ -36,7 +36,7 @@ plugins {
 
 extra.set("androidNdkVersion", "28.2.13676358")
 extra.set("jetifierVersion", "1.0.0-beta10")
-extra.set("kotlinVersion", "2.4.10")
+extra.set("kotlinVersion", "2.4.20")
 extra.set("tinkVersion", "0.0.13")
 extra.set("securityCryptoVersion", "1.1.0")
 extra.set("webkitVersion", "1.17.0")
@@ -120,7 +120,7 @@ extra.set("bitcoinPaymentUriVersion", "1.0.3")
 extra.set("startupVersion", "1.2.0")
 extra.set("dnsVersion", "2.1.9")
 extra.set("balloonVersion", "1.7.6")
-extra.set("markdownVersion", "0.7.10")
+extra.set("markdownVersion", "0.7.12")
 extra.set("bcVersion", "1.70")
 extra.set("jsonVersion", "20251224")
 extra.set("composeVersion", "1.12.0")
@@ -138,7 +138,7 @@ extra.set("webpDecoderVersion", "2.7.4.16.0")
 extra.set("tweetnaclVersion", "0.1.6")
 extra.set("sol4kUtilitiesVersion", "0.1.0")
 extra.set("desugarJdkLibsVersion", "2.1.5")
-extra.set("bugsnagVersion", "6.27.0")
+extra.set("bugsnagVersion", "6.26.1")
 extra.set("sumsubVersion", "1.44.1")
 extra.set("checkoutFramesVersion", "4.2.3")
 extra.set("checkoutSecureVersion", "3.2.6")

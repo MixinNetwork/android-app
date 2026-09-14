@@ -199,7 +199,7 @@ private const val PIN_MESSAGES_SQL =
     su.avatar_url AS sharedUserAvatarUrl, su.is_verified AS sharedUserIsVerified, su.app_id AS sharedUserAppId, mm.mentions AS mentions,
     su.membership AS sharedMembership, u.membership AS membership
     FROM pin_messages pm
-    LEFT JOIN messages m ON m.id = pm.message_id
+    CROSS JOIN messages m ON m.id = pm.message_id AND m.conversation_id = pm.conversation_id
     LEFT JOIN users u ON m.user_id = u.user_id
     LEFT JOIN users u1 ON m.participant_id = u1.user_id
     LEFT JOIN snapshots s ON m.snapshot_id = s.snapshot_id
@@ -209,7 +209,7 @@ private const val PIN_MESSAGES_SQL =
     LEFT JOIN users su ON m.shared_user_id = su.user_id
     LEFT JOIN conversations c ON m.conversation_id = c.conversation_id
     LEFT JOIN message_mentions mm ON m.id = mm.message_id
-    WHERE m.conversation_id = ?
+    WHERE pm.conversation_id = ?
     ORDER BY m.created_at ASC
     """
 

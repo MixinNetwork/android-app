@@ -42,7 +42,7 @@ class Web3PendingFeeTest {
     }
 
     @Test
-    fun chainFeeIsUsedWhenSponsorFeeIsZero() {
+    fun zeroSponsorFeeIsPreferredForDisplay() {
         val transaction = transactionItem(
             fee = "0.0001",
             sponsorFeeAmount = "0",
@@ -50,9 +50,16 @@ class Web3PendingFeeTest {
             sponsorFeeAssetSymbol = "USDT",
         )
 
-        assertEquals("0.0001", transaction.displayFeeAmount())
-        assertEquals("ETH", transaction.displayFeeSymbol())
-        assertFalse(transaction.hasSponsorFee())
+        assertEquals("0", transaction.displayFeeAmount())
+        assertEquals("USDT", transaction.displayFeeSymbol())
+        assertTrue(transaction.hasSponsorFee())
+
+        for (assetId in listOf(null, "", " ")) {
+            val withoutSponsorAsset = transaction.copy(sponsorFeeAssetId = assetId)
+            assertFalse(withoutSponsorAsset.hasSponsorFee())
+            assertEquals("0.0001", withoutSponsorAsset.displayFeeAmount())
+            assertEquals("ETH", withoutSponsorAsset.displayFeeSymbol())
+        }
     }
 
     private fun transactionItem(

@@ -492,11 +492,10 @@ class QueryFileRendererTest {
                     object : PagingSource<Int, OrderItem>() {
                         private val itemCount = AtomicInteger(INITIAL_ITEM_COUNT)
 
-                        init {
-                            RoomDatabaseCompat.observeInvalidation(database, this, "orders")
-                        }
+                        private val invalidation = RoomDatabaseCompat.observeInvalidation(database, this, "orders")
 
                         override suspend fun load(params: LoadParams<Int>): LoadResult<Int, OrderItem> {
+                            invalidation.awaitStart()
                             return withContext(RoomDatabaseCompat.queryContext(database)) {
                                 val tempCount = itemCount.get()
                                 if (tempCount == INITIAL_ITEM_COUNT) {
@@ -506,11 +505,12 @@ class QueryFileRendererTest {
                                         queryData(this, params, count)
                                     }
                                 } else {
-                                    database.useReaderConnection { connection ->
-                                        val loadResult = queryData(connection, params, tempCount)
-                                        @Suppress("UNCHECKED_CAST")
-                                        if (invalid) LoadResult.Invalid() else loadResult
+                                    val loadResult = database.useReaderConnection { connection ->
+                                        queryData(connection, params, tempCount)
                                     }
+                                    invalidation.refresh()
+                                    @Suppress("UNCHECKED_CAST")
+                                    if (invalid) LoadResult.Invalid() else loadResult
                                 }
                             }
                         }

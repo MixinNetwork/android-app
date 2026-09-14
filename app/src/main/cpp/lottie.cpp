@@ -15,7 +15,7 @@
 extern "C" {
 using namespace rlottie;
 
-typedef struct LottieInfo {
+struct LottieInfo {
 
     ~LottieInfo() {
         if (decompressBuffer != nullptr) {

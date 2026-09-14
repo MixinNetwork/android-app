@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet.home
 
 import android.content.SharedPreferences
+import com.google.gson.JsonParser
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
@@ -10,6 +11,7 @@ import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.safe.TokenItem
 
 private const val PREF_WALLET_HOME_CACHE_PREFIX = "pref_wallet_home_cache"
+private val EARN_ACCOUNT_CACHE_FIELDS = arrayOf("assetId", "assetSymbol", "iconUrl", "balanceUsd", "earningsUsd")
 
 data class WalletHomeCache(
     @SerializedName("walletType")
@@ -102,9 +104,24 @@ fun SharedPreferences.getWalletHomeCacheState(
 fun SharedPreferences.getWalletHomeCache(
     key: String,
 ): WalletHomeCache? =
+    getString(key, null).parseWalletHomeCache()
+
+internal fun String?.parseWalletHomeCache(): WalletHomeCache? =
     runCatching {
-        getString(key, null)
-            ?.let { GsonHelper.customGson.fromJson(it, WalletHomeCache::class.java) }
+        val root = JsonParser.parseString(this).asJsonObject
+        root.getAsJsonArray("earnAccounts")?.let { accounts ->
+            for (index in accounts.size() - 1 downTo 0) {
+                val account = accounts[index]
+                if (!account.isJsonObject || EARN_ACCOUNT_CACHE_FIELDS.any { field ->
+                        val value = account.asJsonObject.get(field)
+                        value == null || value.isJsonNull
+                    }
+                ) {
+                    accounts.remove(index)
+                }
+            }
+        }
+        GsonHelper.customGson.fromJson(root, WalletHomeCache::class.java)
     }.getOrNull()
 
 fun SharedPreferences.putWalletHomeCache(

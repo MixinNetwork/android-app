@@ -111,10 +111,7 @@ data class Web3TransactionItem(
 
     fun displayFeeSymbol(): String? = if (hasSponsorFee()) sponsorFeeAssetSymbol ?: chainSymbol else chainSymbol
 
-    fun hasSponsorFee(): Boolean {
-        val amount = sponsorFeeAmount?.takeIf { it.isNotBlank() } ?: return false
-        return amount.toBigDecimalOrNull()?.signum()?.let { it != 0 } ?: true
-    }
+    fun hasSponsorFee(): Boolean = !sponsorFeeAssetId.isNullOrBlank()
 
     fun getMainAmount(): String {
         return when (transactionType) {

@@ -110,7 +110,7 @@ class PerpsActivity : BaseActivity() {
             marketSymbol: String,
             marketDisplaySymbol: String,
             marketTokenSymbol: String = "",
-            isLong: Boolean,
+            isLong: Boolean?,
             source: String,
             returnToDetail: Boolean = false,
             leaderPositionId: String? = null,
@@ -126,7 +126,7 @@ class PerpsActivity : BaseActivity() {
                 putExtra(EXTRA_MARKET_DISPLAY_SYMBOL, marketDisplaySymbol)
                 putExtra(EXTRA_MARKET_TOKEN_SYMBOL, marketTokenSymbol)
                 putExtra(EXTRA_MODE, MODE_OPEN_POSITION)
-                putExtra(EXTRA_IS_LONG, isLong)
+                isLong?.let { putExtra(EXTRA_IS_LONG, it) }
                 putExtra(EXTRA_SOURCE, source)
                 putExtra(EXTRA_RETURN_TO_DETAIL, returnToDetail)
                 leaderPositionId?.let { putExtra(EXTRA_LEADER_POSITION_ID, it) }
@@ -162,7 +162,9 @@ class PerpsActivity : BaseActivity() {
         val displaySymbolExtra = currentIntent.getStringExtra(EXTRA_MARKET_DISPLAY_SYMBOL).orEmpty()
         val tokenSymbolExtra = currentIntent.getStringExtra(EXTRA_MARKET_TOKEN_SYMBOL).orEmpty()
         val mode = currentIntent.getStringExtra(EXTRA_MODE) ?: MODE_DETAIL
-        val isLong = currentIntent.getBooleanExtra(EXTRA_IS_LONG, true)
+        val isLong = currentIntent
+            .takeIf { it.hasExtra(EXTRA_IS_LONG) }
+            ?.getBooleanExtra(EXTRA_IS_LONG, true)
         val source = currentIntent.getStringExtra(EXTRA_SOURCE) ?: AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL
         val returnToDetail = currentIntent.getBooleanExtra(EXTRA_RETURN_TO_DETAIL, false)
         leaderPositionId = currentIntent.getStringExtra(EXTRA_LEADER_POSITION_ID)
@@ -196,13 +198,15 @@ class PerpsActivity : BaseActivity() {
                             marketDisplaySymbol = market.displaySymbol,
                             marketTokenSymbol = market.tokenSymbol,
                             source = source,
+                            reuseCurrentActivity = false,
                             leaderPositionId = leaderPositionId,
                         )
+                        finish()
                     }
                     return@launch
                 }
                 AnalyticsTracker.trackPerpsOpenStart(
-                    direction = if (isLong) AnalyticsTracker.PerpsDirection.LONG else AnalyticsTracker.PerpsDirection.SHORT,
+                    direction = if (isLong == false) AnalyticsTracker.PerpsDirection.SHORT else AnalyticsTracker.PerpsDirection.LONG,
                     source = source,
                 )
 

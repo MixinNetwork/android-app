@@ -2,6 +2,7 @@ package one.mixin.android.db
 
 import androidx.room3.Dao
 import androidx.room3.Query
+import androidx.room3.RewriteQueriesToDropUnusedColumns
 import androidx.room3.Transaction
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.vo.market.MarketCategoryRelation
@@ -36,6 +37,7 @@ interface MarketCategoryDao : BaseDao<MarketCategoryRelation> {
         }
     }
 
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """
         SELECT m.*, mf.is_favored
@@ -48,6 +50,7 @@ interface MarketCategoryDao : BaseDao<MarketCategoryRelation> {
     )
     fun observeMarketsByCategory(category: Int): Flow<List<MarketItem>>
 
+    @RewriteQueriesToDropUnusedColumns
     @Query(
         """
         SELECT m.*, mf.is_favored

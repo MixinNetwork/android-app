@@ -463,7 +463,7 @@ fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
         } else {
             thumbImage
         }
-    val content = if (isAppCard()) {
+    val content = if (isAppCard() && appCardData?.canShare != true) {
         appCardData?.copy(actions = null)?.let {
             GsonHelper.customGson.toJson(it)
         }
