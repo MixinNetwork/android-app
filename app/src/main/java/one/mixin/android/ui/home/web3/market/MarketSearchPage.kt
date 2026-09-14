@@ -104,13 +104,7 @@ internal fun MarketSearchPage(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .background(
-                    if (showResultSections) {
-                        MixinAppTheme.colors.backgroundWindow
-                    } else {
-                        MixinAppTheme.colors.background
-                    },
-                ),
+                .background(MixinAppTheme.colors.background),
             state = listState,
         ) {
             if (showRecentSearches) {
@@ -144,7 +138,7 @@ internal fun MarketSearchPage(
                     FlowRow(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
+                            .padding(horizontal = 20.dp),
                         horizontalArrangement = Arrangement.spacedBy(11.dp),
                         verticalArrangement = Arrangement.spacedBy(11.dp),
                     ) {
@@ -156,14 +150,6 @@ internal fun MarketSearchPage(
                             )
                         }
                     }
-                }
-                item(key = "recent_divider") {
-                    Spacer(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(6.dp)
-                            .background(MixinAppTheme.colors.borderPrimary),
-                    )
                 }
             }
 
@@ -232,7 +218,7 @@ internal fun MarketSearchPage(
                 when (state.selectedTab) {
                     MarketSearchTab.ALL -> {
                         item(key = "all_results") {
-                            Column {
+                            Column(modifier = Modifier.padding(bottom = 12.dp)) {
                                 if (state.spotResults.isNotEmpty()) {
                                     SearchResultSection(
                                         title = stringResource(R.string.Crypto),
@@ -250,14 +236,6 @@ internal fun MarketSearchPage(
                                                 )
                                         }
                                     }
-                                }
-                                if (state.spotResults.isNotEmpty() && state.perpetualResults.isNotEmpty()) {
-                                    Spacer(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(6.dp)
-                                            .background(MixinAppTheme.colors.backgroundWindow),
-                                    )
                                 }
                                 if (state.perpetualResults.isNotEmpty()) {
                                     SearchResultSection(
@@ -488,9 +466,7 @@ private fun SearchResultSection(
     content: @Composable () -> Unit,
 ) {
     Column(
-        modifier = Modifier
-            .background(MixinAppTheme.colors.background)
-            .padding(bottom = 12.dp),
+        modifier = Modifier.background(MixinAppTheme.colors.background),
     ) {
         Row(
             modifier = Modifier
