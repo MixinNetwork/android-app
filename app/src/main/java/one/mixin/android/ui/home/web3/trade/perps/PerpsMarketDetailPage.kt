@@ -579,62 +579,75 @@ fun PerpsMarketDetailPage(
                                     enabled = !isAddingProcessing,
                                     onClick = {
                                         if (isAddingProcessing) return@MixinButton
-                                        isAddingProcessing = true
-                                        val activity = context as? FragmentActivity ?: run { isAddingProcessing = false; return@MixinButton }
+                                        val activity = context as? FragmentActivity ?: return@MixinButton
+                                        if (activity.supportFragmentManager.findFragmentByTag(PerpsAdjustBottomSheetDialogFragment.TAG) != null) return@MixinButton
                                         val positionForAdd = currentPosition
-                                        AnalyticsTracker.trackPerpsAddStart(AnalyticsTracker.PerpsAddType.ADD_POSITION)
-                                        PerpsAddBottomSheetDialogFragment.newInstance(positionForAdd)
-                                            .setOnDestroy {
-                                                isAddingProcessing = false
+                                        PerpsAdjustBottomSheetDialogFragment().apply {
+                                            onAddMargin = {
+                                                PerpsMarginBottomSheetDialogFragment.newInstance(positionForAdd, increase = true)
+                                                    .show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
                                             }
-                                            .setOnAdd { token, amount, liquidationPrice ->
-                                                isAddingProcessing = false
-                                                val referencePrice = market?.last
-                                                    ?: positionForAdd.markPrice
-                                                    ?: positionForAdd.entryPrice
-                                                viewModel.increasePerpsPosition(
-                                                    positionId = positionForAdd.positionId,
-                                                    assetId = token.assetId,
-                                                    amount = amount,
-                                                    position = positionForAdd,
-                                                    price = referencePrice.takeIf { it.isNotBlank() },
-                                                    onSuccess = { response ->
-                                                        val isLong = positionForAdd.side.equals("long", ignoreCase = true)
-                                                        val symbol = positionForAdd.displaySymbol
-                                                            ?: market?.displaySymbol
-                                                            ?: positionForAdd.tokenSymbol.orEmpty()
-                                                        val iconUrl = positionForAdd.iconUrl
-                                                            ?: market?.iconUrl.orEmpty()
-                                                        val confirmEntryPrice = referencePrice.ifBlank { positionForAdd.entryPrice }
-                                                        PerpsConfirmBottomSheetDialogFragment.newInstance(
-                                                            marketSymbol = symbol,
-                                                            marketIcon = iconUrl,
-                                                            isLong = isLong,
-                                                            amount = response.payAmount,
-                                                            leverage = positionForAdd.leverage,
-                                                            entryPrice = confirmEntryPrice,
-                                                            marginAssetPrice = token.priceUsd,
-                                                            tokenSymbol = token.symbol,
-                                                            takeProfitPrice = null,
-                                                            stopLossPrice = null,
-                                                            liquidationPrice = liquidationPrice,
-                                                            priceScale = market?.priceScale ?: positionForAdd.priceScale,
-                                                            payUrl = response.paymentUrl,
-                                                            isAddPosition = true,
-                                                        ).show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
-                                                    },
-                                                    onError = { errorCode, errorMessage ->
+                                            onReduceMargin = {
+                                                PerpsMarginBottomSheetDialogFragment.newInstance(positionForAdd, increase = false)
+                                                    .show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
+                                            }
+                                            onAddPosition = {
+                                                isAddingProcessing = true
+                                                AnalyticsTracker.trackPerpsAddStart(AnalyticsTracker.PerpsAddType.ADD_POSITION)
+                                                PerpsAddBottomSheetDialogFragment.newInstance(positionForAdd)
+                                                    .setOnDestroy {
                                                         isAddingProcessing = false
-                                                        val message = if (errorCode > 0) {
-                                                            context.getMixinErrorStringByCode(errorCode, errorMessage)
-                                                        } else {
-                                                            errorMessage
-                                                        }
-                                                        toast(message)
-                                                    },
-                                                )
+                                                    }
+                                                    .setOnAdd { token, amount, liquidationPrice ->
+                                                        isAddingProcessing = false
+                                                        val referencePrice = market?.last
+                                                            ?: positionForAdd.markPrice
+                                                            ?: positionForAdd.entryPrice
+                                                        viewModel.increasePerpsPosition(
+                                                            positionId = positionForAdd.positionId,
+                                                            assetId = token.assetId,
+                                                            amount = amount,
+                                                            position = positionForAdd,
+                                                            price = referencePrice.takeIf { it.isNotBlank() },
+                                                            onSuccess = { response ->
+                                                                val isLong = positionForAdd.side.equals("long", ignoreCase = true)
+                                                                val symbol = positionForAdd.displaySymbol
+                                                                    ?: market?.displaySymbol
+                                                                    ?: positionForAdd.tokenSymbol.orEmpty()
+                                                                val iconUrl = positionForAdd.iconUrl
+                                                                    ?: market?.iconUrl.orEmpty()
+                                                                val confirmEntryPrice = referencePrice.ifBlank { positionForAdd.entryPrice }
+                                                                PerpsConfirmBottomSheetDialogFragment.newInstance(
+                                                                    marketSymbol = symbol,
+                                                                    marketIcon = iconUrl,
+                                                                    isLong = isLong,
+                                                                    amount = response.payAmount,
+                                                                    leverage = positionForAdd.leverage,
+                                                                    entryPrice = confirmEntryPrice,
+                                                                    marginAssetPrice = token.priceUsd,
+                                                                    tokenSymbol = token.symbol,
+                                                                    takeProfitPrice = null,
+                                                                    stopLossPrice = null,
+                                                                    liquidationPrice = liquidationPrice,
+                                                                    priceScale = market?.priceScale ?: positionForAdd.priceScale,
+                                                                    payUrl = response.paymentUrl,
+                                                                    isAddPosition = true,
+                                                                ).show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
+                                                            },
+                                                            onError = { errorCode, errorMessage ->
+                                                                isAddingProcessing = false
+                                                                val message = if (errorCode > 0) {
+                                                                    context.getMixinErrorStringByCode(errorCode, errorMessage)
+                                                                } else {
+                                                                    errorMessage
+                                                                }
+                                                                toast(message)
+                                                            },
+                                                        )
+                                                    }
+                                                    .show(activity.supportFragmentManager, PerpsAddBottomSheetDialogFragment.TAG)
                                             }
-                                            .show(activity.supportFragmentManager, PerpsAddBottomSheetDialogFragment.TAG)
+                                        }.show(activity.supportFragmentManager, PerpsAdjustBottomSheetDialogFragment.TAG)
                                     },
                                     backgroundColor = MixinAppTheme.colors.walletGreen,
                                     contentColor = Color.White,
@@ -642,7 +655,7 @@ fun PerpsMarketDetailPage(
                                 ) {
                                     Text(
                                         fontSize = 16.sp,
-                                        text = stringResource(R.string.add_position),
+                                        text = stringResource(R.string.perps_adjust),
                                     )
                                 }
 

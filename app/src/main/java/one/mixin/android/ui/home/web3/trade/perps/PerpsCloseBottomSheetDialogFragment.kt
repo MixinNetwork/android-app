@@ -83,6 +83,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     companion object {
         const val TAG = "PerpsCloseBottomSheetDialogFragment"
         private const val ARGS_POSITION_ID = "args_position_id"
+        private const val ARGS_REDUCE_MARGIN_AMOUNT = "args_reduce_margin_amount"
         private const val ARGS_SIDE = "args_side"
         private const val ARGS_MARGIN = "args_margin"
         private const val ARGS_LEVERAGE = "args_leverage"
@@ -94,9 +95,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
         fun newInstance(
             position: PerpsPosition,
+            reduceMarginAmount: String? = null,
         ): PerpsCloseBottomSheetDialogFragment {
             return PerpsCloseBottomSheetDialogFragment().withArgs {
                 putString(ARGS_POSITION_ID, position.positionId)
+                putString(ARGS_REDUCE_MARGIN_AMOUNT, reduceMarginAmount)
                 putString(ARGS_SIDE, position.side)
                 putString(ARGS_MARGIN, position.margin)
                 putInt(ARGS_LEVERAGE, position.leverage)
@@ -146,6 +149,9 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private val positionId by lazy {
         requireNotNull(requireArguments().getString(ARGS_POSITION_ID)) { "positionId is null" }
     }
+    private val reduceMarginAmount by lazy { arguments?.getString(ARGS_REDUCE_MARGIN_AMOUNT) }
+    private val isReduceMargin get() = reduceMarginAmount != null
+
     private val isLong by lazy {
         requireNotNull(requireArguments().getString(ARGS_SIDE)) { "side is null" }
             .equals("long", ignoreCase = true)
@@ -309,9 +315,9 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     Text(
                         text = stringResource(
                             id = when (step) {
-                                Step.Pending -> R.string.confirm_closing_position
-                                Step.Done -> R.string.Position_Closed
-                                Step.Error -> if (isLong) R.string.Closed_Long_Failed else R.string.Closed_Short_Failed
+                                Step.Pending -> if (isReduceMargin) R.string.perps_confirm_reduce_margin_title else R.string.confirm_closing_position
+                                Step.Done -> if (isReduceMargin) R.string.perps_margin_submitted else R.string.Position_Closed
+                                Step.Error -> if (isReduceMargin) R.string.Failed else if (isLong) R.string.Closed_Long_Failed else R.string.Closed_Short_Failed
                                 Step.Sending -> R.string.Sending
                             }
                         ),
@@ -363,7 +369,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         fallingColor
                     }
 
-                    val estimatedReceive = try {
+                    val estimatedReceive = if (isReduceMargin) reduceMarginAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO else try {
                         val margin = BigDecimal(margin)
                         val unrealizedPnl = BigDecimal(latestUnrealizedPnl)
                         margin + unrealizedPnl
@@ -413,6 +419,20 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             )
                         }
                         Box(modifier = Modifier.height(20.dp))
+                        if (isReduceMargin) {
+                            Text(
+                                text = stringResource(R.string.Amount).uppercase(),
+                                color = MixinAppTheme.colors.textRemarks,
+                                fontSize = 14.sp,
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = formatPerpsExactUsdDecimal(estimatedReceive),
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontSize = 16.sp,
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
+                        }
                         settleAssetItem?.let { asset ->
                             Text(
                                 text = stringResource(R.string.Estimated_Receive).uppercase(),
@@ -431,7 +451,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = "${String.format("%.8f", estimatedReceive)} ${asset.symbol}",
+                                    text = if (isReduceMargin) {
+                                        val price = asset.priceUsd.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
+                                        price?.let { "${estimatedReceive.divide(it, 8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()} ${asset.symbol}" }
+                                            ?: formatPerpsExactUsdDecimal(estimatedReceive)
+                                    } else "${String.format("%.8f", estimatedReceive)} ${asset.symbol}",
                                     color = MixinAppTheme.colors.textPrimary,
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.W400
@@ -445,18 +469,20 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             }
                         }
 
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row {
-                            Text(
-                                text = "${stringResource(R.string.PnL)}: ",
-                                color = MixinAppTheme.colors.textAssist,
-                                fontSize = 14.sp
-                            )
-                            Text(
-                                text = "${formatPerpsSignedRawUsdDecimal(pnl)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
-                                color = pnlColor,
-                                fontSize = 14.sp
-                            )
+                        if (!isReduceMargin) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Row {
+                                Text(
+                                    text = "${stringResource(R.string.PnL)}: ",
+                                    color = MixinAppTheme.colors.textAssist,
+                                    fontSize = 14.sp
+                                )
+                                Text(
+                                    text = "${formatPerpsSignedRawUsdDecimal(pnl)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
+                                    color = pnlColor,
+                                    fontSize = 14.sp
+                                )
+                            }
                         }
                     }
                     Box(modifier = Modifier.height(20.dp))
@@ -498,11 +524,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
                                 cancelAction = {
-                                    AnalyticsTracker.trackPerpsClosePreviewCancel()
+                                    if (!isReduceMargin) AnalyticsTracker.trackPerpsClosePreviewCancel()
                                     dismiss()
                                 },
                                 confirmAction = {
-                                    AnalyticsTracker.trackPerpsClosePreviewConfirm()
+                                    if (!isReduceMargin) AnalyticsTracker.trackPerpsClosePreviewConfirm()
                                     showVerifyPinThenClose()
                                 },
                             )
@@ -514,11 +540,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Confirm),
                                 cancelAction = {
-                                    AnalyticsTracker.trackPerpsClosePreviewCancel()
+                                    if (!isReduceMargin) AnalyticsTracker.trackPerpsClosePreviewCancel()
                                     dismiss()
                                 },
                                 confirmAction = {
-                                    AnalyticsTracker.trackPerpsClosePreviewConfirm()
+                                    if (!isReduceMargin) AnalyticsTracker.trackPerpsClosePreviewConfirm()
                                     showVerifyPinThenClose()
                                 },
                             )
@@ -547,13 +573,31 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         super.onDismiss(dialog)
     }
 
+    private var onMarginConfirmed: (() -> Unit)? = null
+
+    fun setOnMarginConfirmed(callback: () -> Unit): PerpsCloseBottomSheetDialogFragment {
+        onMarginConfirmed = callback
+        return this
+    }
+
     private fun showVerifyPinThenClose() {
+        if (parentFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) != null) return
+        if (isReduceMargin && (marginAdjustmentAmount(reduceMarginAmount.orEmpty()) == null || onMarginConfirmed == null)) {
+            errorInfo = getString(R.string.Data_error)
+            step = Step.Error
+            return
+        }
         VerifyBottomSheetDialogFragment.newInstance(
             title = getString(R.string.Verify_PIN),
         ).apply {
             disableToast = true
         }.setOnPinSuccess {
-            closePosition()
+            if (isReduceMargin) {
+                onMarginConfirmed?.invoke()
+                dismiss()
+            } else {
+                closePosition()
+            }
         }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
     }
 

@@ -531,6 +531,13 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    suspend fun adjustPerpsMargin(
+        positionId: String,
+        request: one.mixin.android.api.request.perps.AdjustMarginRequest,
+    ) = withContext(Dispatchers.IO) {
+        routeService.adjustPerpsMargin(positionId, request)
+    }
+
     fun increasePerpsPosition(
         positionId: String,
         assetId: String,

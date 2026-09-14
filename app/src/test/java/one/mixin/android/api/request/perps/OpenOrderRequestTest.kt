@@ -24,6 +24,25 @@ class OpenOrderRequestTest {
         assertFalse(json.has("leader_position_id"))
     }
 
+    @Test
+    fun increaseUsesRequestTypeAndPreservesWeb3Destination() {
+        val json = Gson().toJsonTree(AdjustMarginRequest("increase", "1.00000001", "asset-id", "wallet-address")).asJsonObject
+        assertEquals("increase", json["type"].asString)
+        assertEquals("1.00000001", json["amount"].asString)
+        assertEquals("asset-id", json["asset_id"].asString)
+        assertEquals("wallet-address", json["destination"].asString)
+        assertFalse(json.has("quantity"))
+        assertFalse(json.has("leverage"))
+    }
+
+    @Test
+    fun decreaseOmitsPaymentAssetAndDestination() {
+        val json = Gson().toJsonTree(AdjustMarginRequest("decrease", "2.5")).asJsonObject
+        assertEquals(setOf("type", "amount"), json.keySet())
+        assertEquals("decrease", json["type"].asString)
+        assertEquals("2.5", json["amount"].asString)
+    }
+
     private fun openOrderRequest(leaderPositionId: String? = null) =
         OpenOrderRequest(
             assetId = "c6d0c728-2624-429b-8e0d-d9d19b6592fa",
