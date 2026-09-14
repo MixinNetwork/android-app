@@ -99,6 +99,7 @@ import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
@@ -1016,7 +1017,25 @@ internal fun FragmentActivity.showPerpsAddPosition(
                     }
                 },
                 onError = { errorCode, errorMessage ->
-                    toast(if (errorCode > 0) getMixinErrorStringByCode(errorCode, errorMessage) else errorMessage)
+                    val message = if (errorCode > 0) getMixinErrorStringByCode(errorCode, errorMessage) else errorMessage
+                    if (errorCode == ErrorHandler.PERPS_INVALID_LEADER_POSITION && currentMarket != null) {
+                        lifecycleScope.launch {
+                            lifecycle.withResumed {
+                                PerpsConfirmBottomSheetDialogFragment.newFailureInstance(
+                                    market = currentMarket,
+                                    isLong = position.side.equals("long", ignoreCase = true),
+                                    leverage = position.leverage,
+                                    margin = amount,
+                                    error = message,
+                                    liquidationPrice = liquidationPrice,
+                                    tokenSymbol = token.symbol,
+                                    isAddPosition = true,
+                                ).showNow(supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
+                            }
+                        }
+                    } else {
+                        toast(message)
+                    }
                 },
             )
         }

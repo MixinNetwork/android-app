@@ -64,6 +64,7 @@ import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.ConversationActivity
+import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
@@ -943,19 +944,10 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                 )
             }
             is WalletHomeBannerActionTarget.PerpsOpen -> {
-                PerpsActivity.showOpenPosition(
-                    context = requireActivity(),
-                    marketId = target.marketId,
-                    marketSymbol = "",
-                    marketDisplaySymbol = "",
-                    marketTokenSymbol = "",
-                    isLong = target.isLong,
-                    source = AnalyticsTracker.PerpsSource.WALLET_HOME,
-                    leaderPositionId = target.leaderPositionId,
-                    initialLeverage = target.leverage,
-                    initialMargin = target.margin,
-                    fromTradeLink = true,
-                )
+                LinkBottomSheetDialogFragment.newInstance(
+                    url,
+                    tradeSource = AnalyticsTracker.PerpsSource.WALLET_HOME,
+                ).showNow(parentFragmentManager, LinkBottomSheetDialogFragment.TAG)
             }
             WalletHomeBannerActionTarget.PerpsTab -> {
                 AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)

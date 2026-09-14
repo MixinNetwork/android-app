@@ -496,6 +496,7 @@
     <string name="error_already_had_open_position">ERROR 10651: You already had a open position</string>
     <string name="error_waiting_other_orders">ERROR 10652: The current market is still processing other orders, please try again later.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit">ERROR 10655: Position size exceeds the limit for the selected leverage. Reduce the amount or leverage.</string>
+    <string name="error_perps_invalid_leader_position">ERROR 10656: The leader position is invalid. Please select another position to copy.</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>

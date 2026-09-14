@@ -485,7 +485,7 @@ internal fun String.toSpotTradeAction(): SpotTradeAction? {
     )
 }
 
-private suspend fun String.openLocalMixinTradeAction(context: Context): Boolean {
+internal suspend fun String.openLocalMixinTradeAction(context: Context): Boolean {
     val perpsTradeAction = toPerpsTradeAction()
     if (perpsTradeAction != null) {
         return openLocalPerpsTradeAction(context, perpsTradeAction)
@@ -521,6 +521,8 @@ private suspend fun openLocalPerpsTradeAction(
     context: Context,
     action: PerpsTradeAction,
 ): Boolean {
+    if (action.openPosition != null) return false
+
     val marketId = action.marketId
     if (marketId == null) {
         context.defaultSharedPreferences.putInt(
@@ -541,32 +543,15 @@ private suspend fun openLocalPerpsTradeAction(
         PerpsDatabase.getDatabase(context, identityNumber).perpsMarketDao().getMarket(marketId)
     } ?: return false
 
-    val openPosition = action.openPosition
-    if (openPosition == null) {
-        PerpsActivity.showDetail(
-            context,
-            market.marketId,
-            market.displaySymbol,
-            market.displaySymbol,
-            market.tokenSymbol,
-            tradeSource(context),
-            leaderPositionId = action.leaderPositionId,
-        )
-    } else {
-        PerpsActivity.showOpenPosition(
-            context = context,
-            marketId = market.marketId,
-            marketSymbol = market.displaySymbol,
-            marketDisplaySymbol = market.displaySymbol,
-            marketTokenSymbol = market.tokenSymbol,
-            isLong = openPosition.isLong,
-            source = tradeSource(context),
-            leaderPositionId = action.leaderPositionId,
-            initialLeverage = openPosition.leverage,
-            initialMargin = openPosition.margin,
-            fromTradeLink = true,
-        )
-    }
+    PerpsActivity.showDetail(
+        context,
+        market.marketId,
+        market.displaySymbol,
+        market.displaySymbol,
+        market.tokenSymbol,
+        tradeSource(context),
+        leaderPositionId = action.leaderPositionId,
+    )
     closeSourceWebActivityIfNeeded(context)
     return true
 }
