@@ -535,8 +535,8 @@ class PerpetualViewModel @Inject constructor(
         return data
     }
 
-    internal suspend fun hasOpenPerpsPosition(walletId: String, marketId: String): Boolean = withContext(Dispatchers.IO) {
-        perpsPositionDao.getOpenPositions(walletId).any { it.marketId == marketId }
+    internal suspend fun getOpenPerpsPosition(walletId: String, marketId: String): PerpsPositionItem? = withContext(Dispatchers.IO) {
+        perpsPositionDao.getOpenPositions(walletId).firstOrNull { it.marketId == marketId }
     }
 
     internal suspend fun loadPerpsMarginToken(): TokenItem = withContext(Dispatchers.IO) {
@@ -558,6 +558,7 @@ class PerpetualViewModel @Inject constructor(
         price: String? = null,
         takeProfitPrice: String? = null,
         stopLossPrice: String? = null,
+        leaderPositionId: String? = null,
         onSuccess: (OpenOrderResponse) -> Unit,
         onError: (Int, String) -> Unit,
     ) {
@@ -570,6 +571,7 @@ class PerpetualViewModel @Inject constructor(
                     price = price,
                     takeProfitPrice = takeProfitPrice,
                     stopLossPrice = stopLossPrice,
+                    leaderPositionId = leaderPositionId,
                 )
 
                 val response = withContext(Dispatchers.IO) {
@@ -597,6 +599,8 @@ class PerpetualViewModel @Inject constructor(
                 } else {
                     onError(response.errorCode, response.errorDescription)
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 val error = "Error increasing perps position: ${e.message}"
                 Timber.e(e, error)

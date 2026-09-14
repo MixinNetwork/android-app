@@ -24,6 +24,25 @@ class OpenOrderRequestTest {
         assertFalse(json.has("leader_position_id"))
     }
 
+    @Test
+    fun serializesLeaderPositionIdForIncreaseOrder() {
+        val request = IncreaseOrderRequest(
+            assetId = "asset",
+            amount = "12.5",
+            leaderPositionId = "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
+        )
+        val json = Gson().toJsonTree(request).asJsonObject
+        assertEquals(request.leaderPositionId, json.get("leader_position_id").asString)
+        assertEquals("12.5", json.get("amount").asString)
+        assertFalse(json.has("leader_position"))
+    }
+
+    @Test
+    fun ordinaryIncreaseOrderOmitsLeaderPositionId() {
+        val json = Gson().toJsonTree(IncreaseOrderRequest(assetId = "asset", amount = "10")).asJsonObject
+        assertFalse(json.has("leader_position_id"))
+    }
+
     private fun openOrderRequest(leaderPositionId: String? = null) =
         OpenOrderRequest(
             assetId = "c6d0c728-2624-429b-8e0d-d9d19b6592fa",

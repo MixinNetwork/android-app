@@ -2485,6 +2485,7 @@
     <string name="Volume_24H">24H VOLUME</string>
     <string name="Open_Interest">Open Interest</string>
     <string name="Funding_Rate">Funding Rate</string>
+    <string name="position_opening_failed">Position Opening Failed</string>
     <string name="confirm_opening_position">Confirm Opening</string>
     <string name="confirm_adding_position">Confirm Adding</string>
     <string name="Position_Submitted">Position Submitted</string>

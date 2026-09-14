@@ -2430,6 +2430,7 @@
     <string name="Volume_24H">24시간 볼륨</string>
     <string name="Open_Interest">미결제약정</string>
     <string name="Funding_Rate">펀딩 비율</string>
+    <string name="position_opening_failed">포지션 오픈 실패</string>
     <string name="confirm_opening_position">포지션 오픈 확인</string>
     <string name="confirm_adding_position">포지션 추가 확인</string>
     <string name="Position_Submitted">포지션 제출 완료</string>

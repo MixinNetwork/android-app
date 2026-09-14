@@ -2498,6 +2498,7 @@
     <string name="Volume_24H">24 小時交易量</string>
     <string name="Open_Interest">未平倉合約</string>
     <string name="Funding_Rate">資金費率</string>
+    <string name="position_opening_failed">開倉失敗</string>
     <string name="confirm_opening_position">確認開倉</string>
     <string name="confirm_adding_position">確認加倉</string>
     <string name="Position_Submitted">倉位已提交</string>

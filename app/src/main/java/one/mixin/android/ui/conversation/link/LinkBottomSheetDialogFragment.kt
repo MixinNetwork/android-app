@@ -1162,6 +1162,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     leaderPositionId = action.leaderPositionId,
                     initialLeverage = openPosition.leverage,
                     initialMargin = openPosition.margin,
+                    fromTradeLink = true,
                 )
             }
             closeSourceWebActivityIfNeeded()

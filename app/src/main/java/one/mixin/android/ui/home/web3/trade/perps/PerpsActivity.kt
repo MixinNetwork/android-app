@@ -7,6 +7,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.appcompat.app.AlertDialog
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -28,9 +29,11 @@ import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.perps.OpenOrderRequest
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -65,6 +68,7 @@ class PerpsActivity : BaseActivity() {
     private var leaderPositionId by mutableStateOf<String?>(null)
     private var renderJob: Job? = null
     private var directOrderHandled = false
+    private var positionFailureDialog: AlertDialog? = null
     private val openPositionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             intent.removeExtra(EXTRA_LEADER_POSITION_ID)
@@ -84,6 +88,7 @@ class PerpsActivity : BaseActivity() {
         private const val EXTRA_LEADER_POSITION_ID = "extra_leader_position_id"
         private const val EXTRA_INITIAL_LEVERAGE = "extra_initial_leverage"
         private const val EXTRA_INITIAL_MARGIN = "extra_initial_margin"
+        private const val EXTRA_FROM_TRADE_LINK = "extra_from_trade_link"
         private const val STATE_DIRECT_ORDER_HANDLED = "state_direct_order_handled"
         private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 
@@ -130,6 +135,7 @@ class PerpsActivity : BaseActivity() {
             leaderPositionId: String? = null,
             initialLeverage: Int? = null,
             initialMargin: String? = null,
+            fromTradeLink: Boolean = false,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
                 if (context !is Activity) {
@@ -146,6 +152,7 @@ class PerpsActivity : BaseActivity() {
                 leaderPositionId?.let { putExtra(EXTRA_LEADER_POSITION_ID, it) }
                 initialLeverage?.let { putExtra(EXTRA_INITIAL_LEVERAGE, it) }
                 initialMargin?.let { putExtra(EXTRA_INITIAL_MARGIN, it) }
+                putExtra(EXTRA_FROM_TRADE_LINK, fromTradeLink)
             }
             val hostActivity = context.findFragmentActivityOrNull() as? PerpsActivity
             if (hostActivity != null && returnToDetail && leaderPositionId != null) {
@@ -171,9 +178,15 @@ class PerpsActivity : BaseActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        positionFailureDialog?.dismiss()
         setIntent(intent)
         directOrderHandled = false
         renderPage()
+    }
+
+    override fun onDestroy() {
+        positionFailureDialog?.dismiss()
+        super.onDestroy()
     }
 
     private fun renderPage() {
@@ -194,6 +207,7 @@ class PerpsActivity : BaseActivity() {
             .takeIf { it.hasExtra(EXTRA_INITIAL_LEVERAGE) }
             ?.getIntExtra(EXTRA_INITIAL_LEVERAGE, 0)
         val initialMargin = currentIntent.getStringExtra(EXTRA_INITIAL_MARGIN)
+        val fromTradeLink = currentIntent.getBooleanExtra(EXTRA_FROM_TRADE_LINK, false)
 
         if (mode == MODE_OPEN_POSITION && canPreviewPerpsLinkOrder(isLong, initialLeverage, initialMargin) && !directOrderHandled) {
             directOrderHandled = true
@@ -213,13 +227,18 @@ class PerpsActivity : BaseActivity() {
                     return@launch
                 }
                 val walletId = Session.getAccountId()
-                val hasOpenPosition = if (walletId.isNullOrEmpty()) {
-                    false
+                val openedPosition = if (walletId.isNullOrEmpty()) {
+                    null
                 } else {
-                    viewModel.getOpenPositionsFromDb(walletId).any { it.marketId == marketId }
+                    viewModel.getOpenPositionsFromDb(walletId).firstOrNull { it.marketId == marketId }
                 }
-                if (!canOpenNewPerpsPosition(hasOpenPosition)) {
-                    if (returnToDetail) {
+                if (!canOpenNewPerpsPosition(openedPosition != null)) {
+                    if (fromTradeLink && isLong != null && openedPosition != null) {
+                        directOrderHandled = true
+                        currentIntent.putExtra(EXTRA_MODE, MODE_DETAIL)
+                        showMarketDetail(marketId, market.displaySymbol, market.displaySymbol, market.tokenSymbol, market, source)
+                        showLeaderPositionFailure(market, openedPosition, isLong, initialLeverage, initialMargin)
+                    } else if (returnToDetail) {
                         finish()
                     } else {
                         showDetail(
@@ -329,7 +348,10 @@ class PerpsActivity : BaseActivity() {
             val market = viewModel.getMarketById(marketId, refresh = true) ?: throw DataErrorException()
             showMarketDetail(marketId, market.displaySymbol, market.displaySymbol, market.tokenSymbol, market, source)
             marketLoaded = true
-            if (viewModel.hasOpenPerpsPosition(account.userId, marketId)) return
+            viewModel.getOpenPerpsPosition(account.userId, marketId)?.let { position ->
+                showLeaderPositionFailure(market, position, isLong, leverage, margin)
+                return
+            }
 
             val amount = margin.toBigDecimal()
             val minimum = market.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -368,7 +390,10 @@ class PerpsActivity : BaseActivity() {
                 }
                 else -> throw DataErrorException()
             }
-            if (viewModel.hasOpenPerpsPosition(account.userId, marketId)) return
+            viewModel.getOpenPerpsPosition(account.userId, marketId)?.let { position ->
+                showLeaderPositionFailure(market, position, isLong, leverage, margin)
+                return
+            }
             AnalyticsTracker.trackPerpsOpenStart(
                 direction = if (isLong) AnalyticsTracker.PerpsDirection.LONG else AnalyticsTracker.PerpsDirection.SHORT,
                 source = source,
@@ -424,6 +449,70 @@ class PerpsActivity : BaseActivity() {
         }
     }
 
+    private suspend fun showLeaderPositionFailure(
+        market: PerpsMarket,
+        position: PerpsPositionItem,
+        isLong: Boolean,
+        leverage: Int?,
+        margin: String?,
+    ) {
+        val leaderId = leaderPositionId
+        val direction = getString(if (isLong) R.string.Long else R.string.Short)
+        val message = listOfNotNull(
+            getString(R.string.error_already_had_open_position),
+            market.displaySymbol,
+            "${getString(R.string.Direction)}: $direction" + (leverage?.let { " ${it}x" } ?: ""),
+            margin?.let { "${getString(R.string.Amount)}: $it ${market.quoteSymbol}" },
+            "${getString(R.string.Entry_Price)}: ${formatPerpsPrice(market.last, market.priceScale)}",
+            "${getString(R.string.Sender)}: ${getString(R.string.Privacy_Wallet)}",
+        ).joinToString("\n\n")
+        lifecycle.withResumed {
+            positionFailureDialog?.dismiss()
+            positionFailureDialog = alertDialogBuilder()
+                .setTitle(R.string.position_opening_failed)
+                .setMessage(message)
+                .setNegativeButton(R.string.Cancel, null)
+                .apply {
+                    if (canAddPerpsLeaderPosition(position, isLong, leverage)) {
+                        setPositiveButton(R.string.add_position) { _, _ ->
+                            lifecycleScope.launch {
+                                try {
+                                    val walletId = Session.getAccountId() ?: return@launch
+                                    val currentPosition = viewModel.getOpenPerpsPosition(walletId, market.marketId)
+                                    if (currentPosition?.positionId != position.positionId ||
+                                        !canAddPerpsLeaderPosition(currentPosition, isLong, leverage)
+                                    ) {
+                                        toast(R.string.error_waiting_other_orders)
+                                        return@launch
+                                    }
+                                    lifecycle.withResumed {
+                                        showPerpsAddPosition(
+                                            viewModel = viewModel,
+                                            position = currentPosition,
+                                            market = market,
+                                            initialMargin = margin,
+                                            leaderPositionId = leaderId,
+                                            onOrderCreated = {
+                                                if (leaderPositionId == leaderId) {
+                                                    intent.removeExtra(EXTRA_LEADER_POSITION_ID)
+                                                    leaderPositionId = null
+                                                }
+                                            },
+                                        )
+                                    }
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    toast(ErrorHandler.getErrorMessage(e))
+                                }
+                            }
+                        }
+                    }
+                }
+                .show()
+        }
+    }
+
     private fun showTokenSelection() {
         TokenListBottomSheetDialogFragment.newInstance(
             fromType = TokenListBottomSheetDialogFragment.TYPE_FROM_PERP,
@@ -473,3 +562,8 @@ internal fun canOpenNewPerpsPosition(hasOpenPosition: Boolean): Boolean = !hasOp
 internal fun canPreviewPerpsLinkOrder(isLong: Boolean?, leverage: Int?, margin: String?): Boolean =
     isLong != null && leverage != null && leverage > 0 &&
         margin?.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
+
+internal fun canAddPerpsLeaderPosition(position: PerpsPositionItem?, isLong: Boolean, leverage: Int?): Boolean =
+    position?.state == PerpsPosition.STATE_OPEN &&
+        position.side.equals(if (isLong) "long" else "short", ignoreCase = true) &&
+        (leverage == null || leverage == position.leverage)

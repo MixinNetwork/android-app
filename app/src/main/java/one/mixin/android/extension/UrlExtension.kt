@@ -564,6 +564,7 @@ private suspend fun openLocalPerpsTradeAction(
             leaderPositionId = action.leaderPositionId,
             initialLeverage = openPosition.leverage,
             initialMargin = openPosition.margin,
+            fromTradeLink = true,
         )
     }
     closeSourceWebActivityIfNeeded(context)

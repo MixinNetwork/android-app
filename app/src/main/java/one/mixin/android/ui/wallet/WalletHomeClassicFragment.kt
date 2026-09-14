@@ -954,6 +954,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                     leaderPositionId = target.leaderPositionId,
                     initialLeverage = target.leverage,
                     initialMargin = target.margin,
+                    fromTradeLink = true,
                 )
             }
             WalletHomeBannerActionTarget.PerpsTab -> {
