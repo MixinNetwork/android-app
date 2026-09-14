@@ -21,6 +21,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
+import one.mixin.android.api.DataErrorException
+import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.perps.CloseOrderRequest
 import one.mixin.android.api.request.perps.IncreaseOrderRequest
 import one.mixin.android.api.request.perps.OpenOrderRequest
@@ -43,6 +45,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
 import one.mixin.android.job.RefreshTokensJob
 import one.mixin.android.repository.PerpsMarketRepository
+import one.mixin.android.repository.TokenRepository
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.market.MarketCategory
@@ -59,6 +62,7 @@ import javax.inject.Inject
 class PerpetualViewModel @Inject constructor(
     private val routeService: RouteService,
     private val tokenDao: TokenDao,
+    private val tokenRepository: TokenRepository,
     private val perpsDatabase: PerpsDatabase,
     private val perpsPositionDao: PerpsPositionDao,
     private val perpsOrderDao: PerpsOrderDao,
@@ -240,8 +244,8 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
-    suspend fun getMarketById(marketId: String): PerpsMarket? {
-        return perpsMarketRepository.getOrRefreshMarket(marketId)
+    suspend fun getMarketById(marketId: String, refresh: Boolean = false): PerpsMarket? {
+        return if (refresh) perpsMarketRepository.refreshMarket(marketId) else perpsMarketRepository.getOrRefreshMarket(marketId)
     }
 
     fun observeMarkets(): Flow<List<PerpsMarket>> {
@@ -465,70 +469,84 @@ class PerpetualViewModel @Inject constructor(
                     leaderPositionId = leaderPositionId,
                 )
                 
-                val response = withContext(Dispatchers.IO) {
-                    routeService.openPerpsOrder(request)
-                }
-                
-                val data = response.data
-                if (response.isSuccess && data != null) {
-                    Timber.d("Perps order opened: ${data.orderId}, payUrl: ${data.paymentUrl}")
-                    
-                    val entryPriceDecimal = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                    val amountDecimal = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                    val quantityValue = if (entryPriceDecimal > BigDecimal.ZERO) {
-                        amountDecimal
-                            .multiply(BigDecimal(leverage))
-                            .divide(entryPriceDecimal, 8, java.math.RoundingMode.HALF_UP)
-                            .stripTrailingZeros()
-                            .toPlainString()
-                    } else {
-                        "0"
-                    }
-                    
-                    val position = PerpsPosition(
-                        positionId = data.orderId,
-                        marketId = marketId,
-                        side = side,
-                        quantity = quantityValue,
-                        settleAssetId = assetId,
-                        botId = "",
-                        entryPrice = entryPrice,
-                        margin = data.payAmount,
-                        openPayAmount = data.payAmount,
-                        openPayAssetId = assetId,
-                        takeProfitPrice = takeProfitPrice,
-                        stopLossPrice = stopLossPrice,
-                        liquidationPrice = null,
-                        leverage = leverage,
-                        state = PerpsPosition.STATE_OPENING,
-                        markPrice = entryPrice,
-                        unrealizedPnl = "0",
-                        roe = "0",
-                        walletId = walletId,
-                        createdAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(
-                            Date()
-                        ),
-                        updatedAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(
-                            Date()
-                        )
-                    )
-                    
-                    withContext(Dispatchers.IO) {
-                        perpsPositionDao.upsertSuspend(position)
-                    }
-                    
-                    onSuccess(data)
-                } else {
-                    val error = response.errorDescription
-                    Timber.e("Failed to open perps order: code=${response.errorCode}, description=$error")
-                    onError(response.errorCode, error)
-                }
+                onSuccess(openPerpsOrder(request, entryPrice))
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: MixinResponseException) {
+                onError(e.errorCode, e.errorDescription)
             } catch (e: Exception) {
                 val error = "Error opening perps order: ${e.message}"
                 Timber.e(e, error)
                 onError(-1, error)
             }
         }
+    }
+
+    internal suspend fun openPerpsOrder(request: OpenOrderRequest, entryPrice: String): OpenOrderResponse {
+        val response = withContext(Dispatchers.IO) {
+            routeService.openPerpsOrder(request)
+        }
+        if (!response.isSuccess) throw MixinResponseException(response.errorCode, response.errorDescription)
+        val data = response.data ?: throw DataErrorException()
+        val entryPriceDecimal = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val amountDecimal = request.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val quantityValue = if (entryPriceDecimal > BigDecimal.ZERO) {
+            amountDecimal
+                .multiply(BigDecimal(request.leverage))
+                .divide(entryPriceDecimal, 8, java.math.RoundingMode.HALF_UP)
+                .stripTrailingZeros()
+                .toPlainString()
+        } else {
+            "0"
+        }
+
+        val position = PerpsPosition(
+            positionId = data.orderId,
+            marketId = request.marketId,
+            side = request.side,
+            quantity = quantityValue,
+            settleAssetId = request.assetId,
+            botId = "",
+            entryPrice = entryPrice,
+            margin = data.payAmount,
+            openPayAmount = data.payAmount,
+            openPayAssetId = request.assetId,
+            takeProfitPrice = request.takeProfitPrice,
+            stopLossPrice = request.stopLossPrice,
+            liquidationPrice = null,
+            leverage = request.leverage,
+            state = PerpsPosition.STATE_OPENING,
+            markPrice = entryPrice,
+            unrealizedPnl = "0",
+            roe = "0",
+            walletId = request.walletId,
+            createdAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(
+                Date()
+            ),
+            updatedAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(
+                Date()
+            )
+        )
+
+        withContext(Dispatchers.IO) {
+            perpsPositionDao.upsertSuspend(position)
+        }
+
+        return data
+    }
+
+    internal suspend fun hasOpenPerpsPosition(walletId: String, marketId: String): Boolean = withContext(Dispatchers.IO) {
+        perpsPositionDao.getOpenPositions(walletId).any { it.marketId == marketId }
+    }
+
+    internal suspend fun loadPerpsMarginToken(): TokenItem = withContext(Dispatchers.IO) {
+        val response = routeService.getAcceptedAssets()
+        if (!response.isSuccess) throw MixinResponseException(response.errorCode, response.errorDescription)
+        val assetIds = response.data?.filter { it.isNotBlank() }?.distinct().orEmpty()
+        if (assetIds.isEmpty()) throw DataErrorException()
+        selectPerpsMarginToken(tokenDao.findTokenItems(assetIds))
+            ?: tokenRepository.findOrSyncAsset(assetIds.first())
+            ?: throw DataErrorException()
     }
 
     fun increasePerpsPosition(
@@ -1057,3 +1075,6 @@ class PerpetualViewModel @Inject constructor(
             }
     }
 }
+
+internal fun selectPerpsMarginToken(tokens: List<TokenItem>): TokenItem? =
+    tokens.maxByOrNull { it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO }

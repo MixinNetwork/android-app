@@ -13,7 +13,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.withResumed
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -22,21 +24,31 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.DataErrorException
+import one.mixin.android.api.MixinResponseException
+import one.mixin.android.api.request.perps.OpenOrderRequest
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findFragmentActivityOrNull
-import one.mixin.android.extension.putString
+import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.transfer.TransferBalanceErrorBottomSheetDialogFragment
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.vo.toUser
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -52,6 +64,7 @@ class PerpsActivity : BaseActivity() {
     private var selectedToken by mutableStateOf<TokenItem?>(null)
     private var leaderPositionId by mutableStateOf<String?>(null)
     private var renderJob: Job? = null
+    private var directOrderHandled = false
     private val openPositionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             intent.removeExtra(EXTRA_LEADER_POSITION_ID)
@@ -71,6 +84,7 @@ class PerpsActivity : BaseActivity() {
         private const val EXTRA_LEADER_POSITION_ID = "extra_leader_position_id"
         private const val EXTRA_INITIAL_LEVERAGE = "extra_initial_leverage"
         private const val EXTRA_INITIAL_MARGIN = "extra_initial_margin"
+        private const val STATE_DIRECT_ORDER_HANDLED = "state_direct_order_handled"
         private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 
         const val MODE_DETAIL = "detail"
@@ -144,13 +158,21 @@ class PerpsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        directOrderHandled = savedInstanceState?.getBoolean(STATE_DIRECT_ORDER_HANDLED) == true
+        if (directOrderHandled) intent.putExtra(EXTRA_MODE, MODE_DETAIL)
         observePositionRefresh()
         renderPage()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(STATE_DIRECT_ORDER_HANDLED, directOrderHandled)
+        super.onSaveInstanceState(outState)
     }
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
+        directOrderHandled = false
         renderPage()
     }
 
@@ -172,6 +194,15 @@ class PerpsActivity : BaseActivity() {
             .takeIf { it.hasExtra(EXTRA_INITIAL_LEVERAGE) }
             ?.getIntExtra(EXTRA_INITIAL_LEVERAGE, 0)
         val initialMargin = currentIntent.getStringExtra(EXTRA_INITIAL_MARGIN)
+
+        if (mode == MODE_OPEN_POSITION && canPreviewPerpsLinkOrder(isLong, initialLeverage, initialMargin) && !directOrderHandled) {
+            directOrderHandled = true
+            currentIntent.putExtra(EXTRA_MODE, MODE_DETAIL)
+            renderJob = lifecycleScope.launch {
+                previewLinkOrder(marketId, requireNotNull(isLong), requireNotNull(initialLeverage), requireNotNull(initialMargin), source)
+            }
+            return
+        }
 
         if (mode == MODE_OPEN_POSITION) {
             renderJob = lifecycleScope.launch {
@@ -261,21 +292,135 @@ class PerpsActivity : BaseActivity() {
             val marketSymbol = marketSymbolExtra.ifBlank { displaySymbol }
             val tokenSymbol = tokenSymbolExtra.ifBlank { market?.tokenSymbol.orEmpty() }
 
-            setContent {
-                MixinAppTheme {
-                    PerpsMarketDetailPage(
-                        marketId = marketId,
-                        marketSymbol = marketSymbol,
-                        displaySymbol = displaySymbol,
-                        tokenSymbol = tokenSymbol,
-                        initialMarket = market,
-                        onBack = { finish() },
-                        onSharePosition = ::showSharePosition,
-                        source = source,
-                        leaderPositionId = leaderPositionId,
-                    )
+            showMarketDetail(marketId, marketSymbol, displaySymbol, tokenSymbol, market, source)
+        }
+    }
+
+    private fun showMarketDetail(
+        marketId: String,
+        marketSymbol: String,
+        displaySymbol: String,
+        tokenSymbol: String,
+        market: PerpsMarket?,
+        source: String,
+    ) {
+        setContent {
+            MixinAppTheme {
+                PerpsMarketDetailPage(
+                    marketId = marketId,
+                    marketSymbol = marketSymbol,
+                    displaySymbol = displaySymbol,
+                    tokenSymbol = tokenSymbol,
+                    initialMarket = market,
+                    onBack = { finish() },
+                    onSharePosition = ::showSharePosition,
+                    source = source,
+                    leaderPositionId = leaderPositionId,
+                )
+            }
+        }
+    }
+
+    private suspend fun previewLinkOrder(marketId: String, isLong: Boolean, leverage: Int, margin: String, source: String) {
+        val progress = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply { setCancelable(false) }
+        var marketLoaded = false
+        try {
+            val account = Session.getAccount() ?: throw DataErrorException()
+            val market = viewModel.getMarketById(marketId, refresh = true) ?: throw DataErrorException()
+            showMarketDetail(marketId, market.displaySymbol, market.displaySymbol, market.tokenSymbol, market, source)
+            marketLoaded = true
+            if (viewModel.hasOpenPerpsPosition(account.userId, marketId)) return
+
+            val amount = margin.toBigDecimal()
+            val minimum = market.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+            val maximum = market.maxAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+            if (leverage > market.leverage) {
+                toast(getString(R.string.perps_maximum_leverage, market.leverage))
+                return
+            }
+            if (minimum > BigDecimal.ZERO && amount < minimum) {
+                toast(getString(R.string.perps_minimum_margin, market.minAmount, market.quoteSymbol))
+                return
+            }
+            if (maximum > BigDecimal.ZERO && amount > maximum) {
+                toast(getString(R.string.perps_maximum_margin, market.maxAmount, market.quoteSymbol))
+                return
+            }
+            if ((market.last.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) throw DataErrorException()
+            val token = viewModel.loadPerpsMarginToken()
+            suspend fun showInsufficientBalance(requiredAmount: String) {
+                lifecycle.withResumed {
+                    TransferBalanceErrorBottomSheetDialogFragment.newInstance(
+                        buildTransferBiometricItem(account.toUser(), token, requiredAmount, null, null, null),
+                    ).showNow(supportFragmentManager, TransferBalanceErrorBottomSheetDialogFragment.TAG)
                 }
             }
+            if ((token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) < amount) {
+                showInsufficientBalance(margin)
+                return
+            }
+            val side = if (isLong) "long" else "short"
+            val liquidationPrice = when (val result = viewModel.estimateLiquidationPrice(margin, marketId, side, leverage)) {
+                is LiquidationPriceResult.Success -> result.price
+                is LiquidationPriceResult.LimitExceeded -> {
+                    toast(R.string.error_perps_position_size_exceeds_leverage_limit)
+                    return
+                }
+                else -> throw DataErrorException()
+            }
+            if (viewModel.hasOpenPerpsPosition(account.userId, marketId)) return
+            AnalyticsTracker.trackPerpsOpenStart(
+                direction = if (isLong) AnalyticsTracker.PerpsDirection.LONG else AnalyticsTracker.PerpsDirection.SHORT,
+                source = source,
+            )
+            AnalyticsTracker.trackPerpsOpenPreview()
+            val response = viewModel.openPerpsOrder(
+                OpenOrderRequest(
+                    assetId = token.assetId,
+                    marketId = marketId,
+                    side = side,
+                    amount = amount.stripTrailingZeros().toPlainString(),
+                    leverage = leverage,
+                    walletId = account.userId,
+                    leaderPositionId = leaderPositionId,
+                ),
+                entryPrice = market.last,
+            )
+            intent.removeExtra(EXTRA_LEADER_POSITION_ID)
+            leaderPositionId = null
+            val payUrl = response.paymentUrl?.takeIf { it.isNotBlank() } ?: throw DataErrorException()
+            val payAmount = response.payAmount.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: throw DataErrorException()
+            if ((token.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) < payAmount) {
+                showInsufficientBalance(response.payAmount)
+                return
+            }
+            lifecycle.withResumed {
+                PerpsConfirmBottomSheetDialogFragment.newInstance(
+                    marketSymbol = market.displaySymbol,
+                    marketIcon = market.iconUrl,
+                    isLong = isLong,
+                    amount = response.payAmount,
+                    leverage = leverage,
+                    entryPrice = market.last,
+                    marginAssetPrice = token.priceUsd,
+                    tokenSymbol = token.symbol,
+                    liquidationPrice = liquidationPrice,
+                    priceScale = market.priceScale,
+                    payUrl = payUrl,
+                ).setOnDone {
+                    refreshPositions()
+                }.showNow(supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: MixinResponseException) {
+            toast(getMixinErrorStringByCode(e.errorCode, e.errorDescription))
+            if (!marketLoaded) finish()
+        } catch (e: Exception) {
+            toast(ErrorHandler.getErrorMessage(e))
+            if (!marketLoaded) finish()
+        } finally {
+            progress.dismiss()
         }
     }
 
@@ -324,3 +469,7 @@ class PerpsActivity : BaseActivity() {
 }
 
 internal fun canOpenNewPerpsPosition(hasOpenPosition: Boolean): Boolean = !hasOpenPosition
+
+internal fun canPreviewPerpsLinkOrder(isLong: Boolean?, leverage: Int?, margin: String?): Boolean =
+    isLong != null && leverage != null && leverage > 0 &&
+        margin?.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
