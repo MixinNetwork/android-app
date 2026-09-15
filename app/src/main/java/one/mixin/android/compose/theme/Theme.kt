@@ -18,6 +18,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalInspectionMode
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isScreenWideColorGamut
 import one.mixin.android.util.isCurrChinese
 
@@ -176,7 +178,11 @@ private val LocalColors = compositionLocalOf { lightColorPalette(false) }
 
 @Composable
 fun MixinAppTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = if (LocalInspectionMode.current) {
+        isSystemInDarkTheme()
+    } else {
+        LocalContext.current.isNightMode()
+    },
     content: @Composable () -> Unit,
 ) {
     val isP3Supported = LocalContext.current.isScreenWideColorGamut()
