@@ -1125,4 +1125,5 @@
     <string name="wallet_home_earn_account">Earnアカウント</string>
     <string name="earn_balance">Earn残高</string>
     <string name="earn_yesterday_earnings">昨日の収益</string>
+    <string name="Debug_Mark_Price">マーク価格（デバッグ）</string>
 </resources>
