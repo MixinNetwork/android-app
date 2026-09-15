@@ -2484,6 +2484,7 @@
     <string name="learn_how_to_trade_perps">Learn how to trade perpetual futures</string>
     <string name="Volume_24H">24H VOLUME</string>
     <string name="Open_Interest">Open Interest</string>
+    <string name="Debug_Mark_Price" translatable="false">Mark Price (Debug)</string>
     <string name="Funding_Rate">Funding Rate</string>
     <string name="confirm_opening_position">Confirm Opening</string>
     <string name="confirm_adding_position">Confirm Adding</string>
