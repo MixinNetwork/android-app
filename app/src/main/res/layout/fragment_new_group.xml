@@ -11,84 +11,121 @@
         android:id="@+id/title_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:rightText="@string/Create"
+        android:background="?attr/bg_window"
+        app:need_divider="false"
         app:titleText="@string/New_Group" />
 
-    <RelativeLayout
-        android:id="@+id/name_rl"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="?attr/bg_white">
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
 
-        <TextView
-            android:id="@+id/name_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/Group_Name"
-            tools:ignore="RelativeOverlap" />
-
-        <EditText
-            android:id="@+id/name_desc_et"
-            style="@style/NormalTextStyle"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_toEndOf="@id/name_tv"
-            android:background="@null"
-            android:lines="1"
-            android:maxLength="25"
-            android:gravity="center_vertical|end"
-            android:hint="@string/new_group_name"
-            android:textColor="?attr/text_primary"
-            android:textColorHint="?attr/text_assist"
-            android:ellipsize="end"
-            android:singleLine="true"
-            tools:ignore="Autofill,TextFields" />
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@+id/notice_rl"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/item_contact_height"
-        android:background="?attr/bg_white"
-        android:visibility="gone">
-
-        <TextView
-            android:id="@+id/notice_tv"
-            style="@style/NormalTextStyle"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerVertical="true"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:text="@string/Group_Notice"
-            tools:ignore="RelativeOverlap" />
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp">
 
-        <EditText
-            android:id="@+id/notice_desc_et"
-            style="@style/NormalTextStyle"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_alignParentEnd="true"
-            android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:layout_marginStart="@dimen/activity_horizontal_margin"
-            android:layout_toEndOf="@id/notice_tv"
-            android:background="@null"
-            android:gravity="center_vertical|end"
-            android:hint="@string/About"
-            android:textColor="?attr/text_assist"
-            android:textColorHint="?attr/text_remarks"
-            tools:ignore="Autofill,TextFields" />
-    </RelativeLayout>
+            <LinearLayout
+                android:id="@+id/group_avatar"
+                android:layout_width="72dp"
+                android:layout_height="72dp"
+                android:layout_marginTop="28dp"
+                android:background="@drawable/bg_circle_white"
+                android:clipToOutline="true"
+                android:importantForAccessibility="noHideDescendants"
+                android:orientation="horizontal" />
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/user_rv"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/activity_vertical_margin"
-        app:layoutManager="LinearLayoutManager" />
+            <TextView
+                android:id="@+id/participants_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center"
+                android:textColor="?attr/text_remarks"
+                android:textSize="14sp"
+                tools:text="5 Participants" />
+
+            <EditText
+                android:id="@+id/name_desc_et"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_round_white_8dp"
+                android:ellipsize="end"
+                android:gravity="center_vertical|start"
+                android:hint="@string/Group_Name"
+                android:imeOptions="actionDone"
+                android:inputType="textCapSentences"
+                android:maxLength="25"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:singleLine="true"
+                android:textColor="?attr/text_primary"
+                android:textColorHint="?attr/text_remarks"
+                android:textSize="16sp"
+                tools:ignore="Autofill" />
+
+            <LinearLayout
+                android:id="@+id/disappearing_row"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:minHeight="54dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="16dp"
+                android:paddingTop="12dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="12dp">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/disappearing_message"
+                    android:textColor="?attr/text_assist"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/disappearing_value"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="@string/disappearing_option_5"
+                    android:textColor="?attr/text_remarks"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_arrow_gray_right" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <Button
+        android:id="@+id/create_btn"
+        style="@style/AppTheme.MaterialButton"
+        android:layout_width="wrap_content"
+        android:layout_height="48dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="32dp"
+        android:layout_marginBottom="20dp"
+        android:minWidth="120dp"
+        android:enabled="false"
+        android:paddingStart="28dp"
+        android:paddingEnd="28dp"
+        android:text="@string/Create"
+        android:textAllCaps="false"
+        android:textFontWeight="400"
+        android:textSize="16sp" />
 </LinearLayout>

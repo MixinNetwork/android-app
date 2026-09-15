@@ -1589,6 +1589,9 @@ class ConversationFragment() :
         } else {
             renderUser(recipient!!)
         }
+        chatViewModel.observeConversation(conversationId).observe(viewLifecycleOwner) { conversation ->
+            binding.actionBar.setExpireIconVisible((conversation?.expireIn ?: 0L) > 0L)
+        }
         binding.mentionRv.adapter = mentionAdapter
         binding.mentionRv.layoutManager = LinearLayoutManager(context)
 
