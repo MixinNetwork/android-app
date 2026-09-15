@@ -1144,4 +1144,5 @@
     <string name="perps_reduce_action">Уменьшить</string>
     <string name="perps_percentage">Процент</string>
     <string name="perps_confirm_reduce_margin_title">Подтвердить уменьшение маржи</string>
+    <string name="Debug_Mark_Price">Цена маркировки (отладка)</string>
 </resources>

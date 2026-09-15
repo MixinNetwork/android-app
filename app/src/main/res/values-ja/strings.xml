@@ -1149,4 +1149,5 @@
     <string name="perps_reduce_action">減らす</string>
     <string name="perps_percentage">割合</string>
     <string name="perps_confirm_reduce_margin_title">証拠金の減額を確認</string>
+    <string name="Debug_Mark_Price">マーク価格（デバッグ）</string>
 </resources>

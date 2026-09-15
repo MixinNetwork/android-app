@@ -1203,4 +1203,5 @@
     <string name="perps_reduce_action">Reducir</string>
     <string name="perps_percentage">Porcentaje</string>
     <string name="perps_confirm_reduce_margin_title">Confirmar reducción de margen</string>
+    <string name="Debug_Mark_Price">Precio de marca (depuración)</string>
 </resources>
