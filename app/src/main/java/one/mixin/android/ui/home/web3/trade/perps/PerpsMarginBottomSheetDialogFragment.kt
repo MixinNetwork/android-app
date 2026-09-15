@@ -87,6 +87,7 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putBoolean
+import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -108,11 +109,13 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         const val TAG = "PerpsMarginBottomSheetDialogFragment"
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_INCREASE = "args_increase"
+        private const val ARGS_INITIAL_MARGIN = "args_initial_margin"
         private const val PREF_REDUCE_BY_PERCENT = "perps_reduce_margin_by_percent"
 
-        fun newInstance(position: PerpsPositionItem, increase: Boolean) = PerpsMarginBottomSheetDialogFragment().withArgs {
+        fun newInstance(position: PerpsPositionItem, increase: Boolean, initialMargin: String? = null) = PerpsMarginBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_POSITION, position)
             putBoolean(ARGS_INCREASE, increase)
+            putString(ARGS_INITIAL_MARGIN, initialMargin)
         }
     }
 
@@ -140,7 +143,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             viewModel.observePosition(initialPosition.positionId)
         }.collectAsStateWithLifecycle(initialValue = initialPosition)
         val currentPosition = position ?: initialPosition
-        var amount by rememberSaveable { mutableStateOf("") }
+        var amount by rememberSaveable { mutableStateOf(arguments?.getString(ARGS_INITIAL_MARGIN).orEmpty()) }
         val preferences = remember { requireContext().defaultSharedPreferences }
         var reduceByPercent by rememberSaveable { mutableStateOf(preferences.getBoolean(PREF_REDUCE_BY_PERCENT, true)) }
         var inputIsPercentage by rememberSaveable { mutableStateOf(reduceByPercent) }

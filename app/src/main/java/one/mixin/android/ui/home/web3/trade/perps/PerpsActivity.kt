@@ -81,6 +81,7 @@ class PerpsActivity : BaseActivity() {
 
         const val MODE_DETAIL = "detail"
         const val MODE_OPEN_POSITION = "open_position"
+        const val MODE_ADD_MARGIN = "add_margin"
 
         fun showDetail(
             context: Context,
@@ -91,6 +92,8 @@ class PerpsActivity : BaseActivity() {
             source: String? = null,
             reuseCurrentActivity: Boolean = true,
             leaderPositionId: String? = null,
+            addMargin: Boolean = false,
+            initialMargin: String? = null,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
                 if (context !is Activity) {
@@ -103,9 +106,10 @@ class PerpsActivity : BaseActivity() {
                 putExtra(EXTRA_MARKET_SYMBOL, marketSymbol)
                 putExtra(EXTRA_MARKET_DISPLAY_SYMBOL, marketDisplaySymbol)
                 putExtra(EXTRA_MARKET_TOKEN_SYMBOL, marketTokenSymbol)
-                putExtra(EXTRA_MODE, MODE_DETAIL)
+                putExtra(EXTRA_MODE, if (addMargin) MODE_ADD_MARGIN else MODE_DETAIL)
                 source?.let { putExtra(EXTRA_SOURCE, it) }
                 leaderPositionId?.let { putExtra(EXTRA_LEADER_POSITION_ID, it) }
+                initialMargin?.let { putExtra(EXTRA_INITIAL_MARGIN, it) }
             }
             context.startActivity(intent)
         }
@@ -172,6 +176,7 @@ class PerpsActivity : BaseActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         (supportFragmentManager.findFragmentByTag(PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG) as? PerpsConfirmBottomSheetDialogFragment)?.dismiss()
+        (supportFragmentManager.findFragmentByTag(PerpsMarginBottomSheetDialogFragment.TAG) as? PerpsMarginBottomSheetDialogFragment)?.dismiss()
         setIntent(intent)
         directOrderHandled = false
         renderPage()
@@ -291,6 +296,23 @@ class PerpsActivity : BaseActivity() {
             val tokenSymbol = tokenSymbolExtra.ifBlank { market?.tokenSymbol.orEmpty() }
 
             showMarketDetail(marketId, marketSymbol, displaySymbol, tokenSymbol, market, source)
+            if (mode == MODE_ADD_MARGIN) {
+                val accountId = Session.getAccountId()
+                val position = accountId?.let { viewModel.getOpenPerpsPosition(it, marketId) }
+                lifecycle.withResumed {
+                    directOrderHandled = true
+                    currentIntent.putExtra(EXTRA_MODE, MODE_DETAIL)
+                    when {
+                        accountId == null -> toast(R.string.error_authentication)
+                        position == null -> toast(R.string.error_not_found)
+                        position.state != PerpsPosition.STATE_OPEN -> toast(R.string.error_waiting_other_orders)
+                        supportFragmentManager.findFragmentByTag(PerpsMarginBottomSheetDialogFragment.TAG) == null -> {
+                            PerpsMarginBottomSheetDialogFragment.newInstance(position, increase = true, initialMargin = initialMargin)
+                                .showNow(supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
+                        }
+                    }
+                }
+            }
         }
     }
 

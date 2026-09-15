@@ -1161,6 +1161,8 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     market.tokenSymbol,
                     source,
                     leaderPositionId = action.leaderPositionId,
+                    addMargin = action.addMargin != null,
+                    initialMargin = action.addMargin?.margin,
                 )
             } else {
                 val (previewMarket, preview) = perpsViewModel.prepareLinkPreview(market, openPosition, action.leaderPositionId, source)
