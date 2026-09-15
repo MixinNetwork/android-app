@@ -5,8 +5,8 @@ import android.view.WindowManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -41,10 +41,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
@@ -54,7 +57,10 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -88,7 +94,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.InputContent
 import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
-import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.ErrorHandler
@@ -166,8 +171,8 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         val percentage = marginReductionPercentage(currentPosition.margin, amountValue)
         val reduceInput = when {
             reduceByPercent == inputIsPercentage -> amount
-            reduceByPercent -> percentage?.stripTrailingZeros()?.toPlainString().orEmpty()
-            else -> normalizedAmount
+            reduceByPercent -> percentage?.setScale(0, RoundingMode.HALF_UP)?.toPlainString().orEmpty()
+            else -> amountValue?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
         }
         val balanceUsd = selectedToken?.let { token ->
             val balance = token.balance.toBigDecimalOrNull() ?: return@let null
@@ -277,8 +282,8 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         MixinAppTheme {
             val reductionLimitError = if (exceedsReductionLimit && maximumReduction != null) {
                 val limit = if (reduceByPercent) {
-                    "${marginReductionPercentage(currentPosition.margin, maximumReduction)?.stripTrailingZeros()?.toPlainString().orEmpty()}%"
-                } else formatPerpsExactUsdDecimal(maximumReduction)
+                    "${marginReductionPercentage(currentPosition.margin, maximumReduction)?.setScale(0, RoundingMode.DOWN)?.toPlainString().orEmpty()}%"
+                } else formatPerpsPrice(maximumReduction, 2)
                 stringResource(R.string.perps_available_margin, limit)
             } else null
             val errorText = if (insufficientBalance) stringResource(R.string.insufficient_balance) else error
@@ -294,188 +299,215 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         .show(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                 }
             }
-            val actionTitle = stringResource(if (increase) R.string.Add else R.string.perps_reduce_action)
-            KeyboardAwareBox(
-                modifier = Modifier.fillMaxSize().background(MixinAppTheme.colors.background),
-                content = { availableHeight ->
-                    Column(modifier = Modifier.fillMaxSize()) {
-                        Column(
-                            modifier = Modifier
-                                .weight(1f)
-                                .fillMaxWidth()
-                                .verticalScroll(rememberScrollState())
-                                .padding(start = 16.dp, end = 16.dp, top = 16.dp),
-                        ) {
-                            val priceScale = market?.priceScale ?: currentPosition.priceScale
-                            val entryPrice = formatPerpsPrice(currentPosition.entryPrice, priceScale)
-                            val currentPrice = formatPerpsPrice(
-                                market?.last?.takeIf { it.isNotBlank() } ?: currentPosition.markPrice ?: currentPosition.entryPrice,
-                                priceScale,
+            PerpsMarginContent(
+                position = currentPosition,
+                marketPrice = market?.last,
+                priceScale = market?.priceScale ?: currentPosition.priceScale,
+                increase = increase,
+                totalMargin = totalMargin?.takeIf { !insufficientBalance && !exceedsReductionLimit },
+                errorText = errorText,
+                canSubmit = canSubmit,
+                loading = loading,
+                onCancel = { dismiss() },
+                onSubmit = onSubmit,
+                onGuide = { tab ->
+                    PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
+                        .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                },
+            ) {
+                if (increase) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(8.dp))
+                            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+                            .padding(16.dp),
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = stringResource(R.string.Amount),
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontSize = 14.sp,
+                                modifier = Modifier.weight(1f),
                             )
-                            val subtitle = stringResource(R.string.auto_close_subtitle_after_open, entryPrice, currentPrice)
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                CoilImage(
-                                    model = currentPosition.iconUrl,
-                                    placeholder = R.drawable.ic_avatar_place_holder,
-                                    modifier = Modifier.size(30.dp).clip(CircleShape),
-                                )
-                                Spacer(Modifier.width(10.dp))
-                                Column(modifier = Modifier.weight(1f)) {
-                                    Text(
-                                        text = stringResource(
-                                            if (increase) R.string.perps_add_margin_title else R.string.perps_reduce_margin_title,
-                                            stringResource(if (currentPosition.side.equals("long", true)) R.string.Long else R.string.Short),
-                                            currentPosition.tokenSymbol ?: currentPosition.displaySymbol.orEmpty(),
-                                        ),
-                                        color = MixinAppTheme.colors.textPrimary,
-                                        fontSize = 16.sp,
-                                        lineHeight = 20.sp,
-                                        fontWeight = FontWeight.W600,
-                                    )
-                                    Spacer(Modifier.height(2.dp))
-                                    Text(
-                                        text = buildAnnotatedString {
-                                            append(subtitle)
-                                            addStyle(SpanStyle(color = MixinAppTheme.colors.textRemarks), 0, subtitle.length)
-                                            listOf(entryPrice, currentPrice).forEach { value ->
-                                                val start = subtitle.indexOf(value)
-                                                if (start >= 0) addStyle(SpanStyle(color = MixinAppTheme.colors.textAssist), start, start + value.length)
-                                            }
-                                        },
-                                        fontSize = 12.sp,
-                                        lineHeight = 16.sp,
-                                    )
-                                }
-                                IconButton(onClick = { dismiss() }, enabled = !loading) {
-                                    Icon(
-                                        painterResource(R.drawable.ic_circle_close),
-                                        stringResource(R.string.close),
-                                        tint = Color.Unspecified,
-                                        modifier = Modifier.size(26.dp),
-                                    )
-                                }
-                            }
-                            Spacer(Modifier.height(16.dp))
-                            if (increase) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                                        .padding(16.dp),
-                                ) {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Text(
-                                            text = stringResource(R.string.Amount),
-                                            color = MixinAppTheme.colors.textPrimary,
-                                            fontSize = 14.sp,
-                                            modifier = Modifier.weight(1f),
-                                        )
-                                        Text(
-                                            text = selectedToken?.chainName.orEmpty(),
-                                            color = MixinAppTheme.colors.textAssist,
-                                            fontSize = 12.sp,
-                                        )
-                                    }
-                                    Spacer(Modifier.height(8.dp))
-                                    InputContent(
-                                        token = selectedToken?.toSwapToken(),
-                                        text = amount,
-                                        selectClick = if (!loading) ({
-                                            TokenListBottomSheetDialogFragment.newInstance(
-                                                fromType = TokenListBottomSheetDialogFragment.TYPE_FROM_PERP,
-                                                currentAssetId = selectedToken?.assetId,
-                                            ).setOnAssetClick { token ->
-                                                if (token.assetId in acceptedAssets) selectedToken = token
-                                            }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
-                                        }) else null,
-                                        onInputChanged = ::changeAmount,
-                                        readOnly = loading,
-                                        tokenIconSize = 25.dp,
-                                        inputFontSize = 24.sp,
-                                        inputFontWeight = FontWeight.W500,
-                                        autoFocus = true,
-                                        maxDecimalPlaces = TRADE_INPUT_MAX_DECIMAL_PLACES,
-                                    )
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Icon(
-                                            painterResource(R.drawable.ic_web3_wallet),
-                                            null,
-                                            tint = MixinAppTheme.colors.textAssist,
-                                            modifier = Modifier.size(16.dp),
-                                        )
-                                        Spacer(Modifier.width(4.dp))
-                                        Text(
-                                            text = selectedToken?.balance?.numberFormat8() ?: "0",
-                                            color = MixinAppTheme.colors.textAssist,
-                                            fontSize = 12.sp,
-                                        )
-                                        Spacer(Modifier.width(8.dp))
-                                        Text(
-                                            text = selectedToken?.name.orEmpty(),
-                                            color = MixinAppTheme.colors.textAssist,
-                                            fontSize = 12.sp,
-                                            textAlign = TextAlign.End,
-                                            modifier = Modifier.weight(1f),
-                                        )
-                                    }
-                                }
-                            } else {
-                                PerpsReduceMarginInput(
-                                    input = reduceInput,
-                                    isPercentage = reduceByPercent,
-                                    amount = amountValue,
-                                    percentage = percentage,
-                                    margin = marginValue,
-                                    errorText = reductionLimitError,
-                                    enabled = !loading,
-                                    onInputChanged = ::changeAmount,
-                                    onToggleMode = {
-                                        amount = normalizedAmount
-                                        inputIsPercentage = false
-                                        reduceByPercent = !reduceByPercent
-                                        preferences.putBoolean(PREF_REDUCE_BY_PERCENT, reduceByPercent)
-                                        error = null
-                                    },
-                                )
-                            }
-                            Spacer(Modifier.height(18.dp))
-                            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                                val currentMarginText = currentPosition.margin?.toBigDecimalOrNull()?.let(::formatPerpsExactUsdDecimal) ?: "-"
-                                val validTotalMargin = totalMargin?.takeIf { !insufficientBalance && !exceedsReductionLimit }
-                                PerpsAddInfoRow(
-                                    title = stringResource(R.string.Margin),
-                                    value = if (validTotalMargin != null) "$currentMarginText → ${formatPerpsExactUsdDecimal(validTotalMargin)}" else currentMarginText,
-                                    onTipClick = {
-                                        PerpetualGuideBottomSheetDialogFragment.newInstance(PerpetualGuideBottomSheetDialogFragment.TAB_LEVERAGE)
-                                            .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                                    },
-                                )
-                                Spacer(Modifier.height(16.dp))
-                                PerpsAddInfoRow(
-                                    title = stringResource(R.string.Liquidation_Price),
-                                    value = currentPosition.liquidationPrice?.takeIf { it.isNotBlank() }?.let { formatPerpsPrice(it, priceScale) } ?: "-",
-                                    onTipClick = {
-                                        PerpetualGuideBottomSheetDialogFragment.newInstance(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION)
-                                            .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                                    },
-                                )
-                            }
-                            Spacer(Modifier.height(24.dp))
+                            Text(
+                                text = selectedToken?.chainName.orEmpty(),
+                                color = MixinAppTheme.colors.textAssist,
+                                fontSize = 12.sp,
+                            )
                         }
-                        if (availableHeight == null) {
-                            PerpsMarginActions(increase, actionTitle, errorText, canSubmit, loading, onCancel = { dismiss() }, onSubmit = onSubmit)
+                        Spacer(Modifier.height(8.dp))
+                        InputContent(
+                            token = selectedToken?.toSwapToken(),
+                            text = amount,
+                            selectClick = if (!loading) ({
+                                TokenListBottomSheetDialogFragment.newInstance(
+                                    fromType = TokenListBottomSheetDialogFragment.TYPE_FROM_PERP,
+                                    currentAssetId = selectedToken?.assetId,
+                                ).setOnAssetClick { token ->
+                                    if (token.assetId in acceptedAssets) selectedToken = token
+                                }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+                            }) else null,
+                            onInputChanged = ::changeAmount,
+                            readOnly = loading,
+                            tokenIconSize = 25.dp,
+                            inputFontSize = 24.sp,
+                            inputFontWeight = FontWeight.W500,
+                            autoFocus = true,
+                            maxDecimalPlaces = 2,
+                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                painterResource(R.drawable.ic_web3_wallet),
+                                null,
+                                tint = MixinAppTheme.colors.textAssist,
+                                modifier = Modifier.size(16.dp),
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text(
+                                text = selectedToken?.balance?.numberFormat8() ?: "0",
+                                color = MixinAppTheme.colors.textAssist,
+                                fontSize = 12.sp,
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = selectedToken?.name.orEmpty(),
+                                color = MixinAppTheme.colors.textAssist,
+                                fontSize = 12.sp,
+                                textAlign = TextAlign.End,
+                                modifier = Modifier.weight(1f),
+                            )
                         }
                     }
-                },
-                floating = {
-                    PerpsMarginActions(increase, actionTitle, errorText, canSubmit, loading, onCancel = { dismiss() }, onSubmit = onSubmit)
-                },
-            )
+                } else {
+                    PerpsReduceMarginInput(
+                        input = reduceInput,
+                        isPercentage = reduceByPercent,
+                        amount = amountValue,
+                        percentage = percentage,
+                        margin = marginValue,
+                        errorText = reductionLimitError,
+                        enabled = !loading,
+                        onInputChanged = ::changeAmount,
+                        onToggleMode = {
+                            amount = amountValue?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
+                            inputIsPercentage = false
+                            reduceByPercent = !reduceByPercent
+                            preferences.putBoolean(PREF_REDUCE_BY_PERCENT, reduceByPercent)
+                            error = null
+                        },
+                    )
+                }
+            }
         }
     }
 
     override fun showError(error: String) = Unit
+}
+
+@Composable
+private fun PerpsMarginContent(
+    position: PerpsPositionItem,
+    marketPrice: String?,
+    priceScale: Int,
+    increase: Boolean,
+    totalMargin: BigDecimal?,
+    errorText: String?,
+    canSubmit: Boolean,
+    loading: Boolean,
+    onCancel: () -> Unit,
+    onSubmit: () -> Unit,
+    onGuide: (Int) -> Unit,
+    inputContent: @Composable () -> Unit,
+) {
+    val actionTitle = stringResource(if (increase) R.string.Add else R.string.perps_reduce_action)
+    KeyboardAwareBox(
+        modifier = Modifier.fillMaxSize().background(MixinAppTheme.colors.background),
+        content = { availableHeight ->
+            Column(modifier = Modifier.fillMaxSize()) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
+                        .padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                ) {
+                    val entryPrice = formatPerpsPrice(position.entryPrice, priceScale)
+                    val currentPrice = formatPerpsPrice(
+                        marketPrice?.takeIf { it.isNotBlank() } ?: position.markPrice ?: position.entryPrice,
+                        priceScale,
+                    )
+                    val subtitle = stringResource(R.string.auto_close_subtitle_after_open, entryPrice, currentPrice)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CoilImage(
+                            model = position.iconUrl,
+                            placeholder = R.drawable.ic_avatar_place_holder,
+                            modifier = Modifier.size(30.dp).clip(CircleShape),
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(
+                                    if (increase) R.string.perps_add_margin_title else R.string.perps_reduce_margin_title,
+                                    stringResource(if (position.side.equals("long", true)) R.string.Long else R.string.Short),
+                                    position.tokenSymbol ?: position.displaySymbol.orEmpty(),
+                                ),
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontSize = 16.sp,
+                                lineHeight = 20.sp,
+                                fontWeight = FontWeight.W600,
+                            )
+                            Spacer(Modifier.height(2.dp))
+                            Text(
+                                text = buildAnnotatedString {
+                                    append(subtitle)
+                                    addStyle(SpanStyle(color = MixinAppTheme.colors.textRemarks), 0, subtitle.length)
+                                    listOf(entryPrice, currentPrice).forEach { value ->
+                                        val start = subtitle.indexOf(value)
+                                        if (start >= 0) addStyle(SpanStyle(color = MixinAppTheme.colors.textAssist), start, start + value.length)
+                                    }
+                                },
+                                fontSize = 12.sp,
+                                lineHeight = 16.sp,
+                            )
+                        }
+                        IconButton(onClick = onCancel, enabled = !loading) {
+                            Icon(
+                                painterResource(R.drawable.ic_circle_close),
+                                stringResource(R.string.close),
+                                tint = Color.Unspecified,
+                                modifier = Modifier.size(26.dp),
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(16.dp))
+                    inputContent()
+                    Spacer(Modifier.height(18.dp))
+                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                        val currentMarginText = position.margin?.toBigDecimalOrNull()?.let { formatPerpsPrice(it, 2) } ?: "-"
+                        PerpsAddInfoRow(
+                            title = stringResource(R.string.Margin),
+                            value = if (totalMargin != null) "$currentMarginText → ${formatPerpsPrice(totalMargin, 2)}" else currentMarginText,
+                            onTipClick = { onGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LEVERAGE) },
+                        )
+                        Spacer(Modifier.height(16.dp))
+                        PerpsAddInfoRow(
+                            title = stringResource(R.string.Liquidation_Price),
+                            value = position.liquidationPrice?.takeIf { it.isNotBlank() }?.let { formatPerpsPrice(it, priceScale) } ?: "-",
+                            onTipClick = { onGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION) },
+                        )
+                    }
+                    Spacer(Modifier.height(24.dp))
+                }
+                if (availableHeight == null) {
+                    PerpsMarginActions(increase, actionTitle, errorText, canSubmit, loading, onCancel = onCancel, onSubmit = onSubmit)
+                }
+            }
+        },
+        floating = {
+            PerpsMarginActions(increase, actionTitle, errorText, canSubmit, loading, onCancel = onCancel, onSubmit = onSubmit)
+        },
+    )
 }
 
 @Composable
@@ -546,11 +578,20 @@ private fun PerpsReduceMarginInput(
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val inputValue = input.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val sliderPercentage = (if (isPercentage) inputValue.toFloat() else percentage?.toFloat() ?: 0f).coerceIn(0f, 100f)
+    val activeMarkerColor = MixinAppTheme.colors.accent
+    val inactiveMarkerColor = MixinAppTheme.colors.textRemarks
     val maximum = if (isPercentage) BigDecimal(100) else margin ?: BigDecimal.ZERO
     val inputColor = when {
         errorText != null -> MixinAppTheme.colors.walletRed
         inputValue <= BigDecimal.ZERO -> MixinAppTheme.colors.textRemarks
         else -> MixinAppTheme.colors.textPrimary
+    }
+    val inputTextStyle = TextStyle(fontSize = 48.sp, fontWeight = FontWeight.W500, color = inputColor, textAlign = TextAlign.Center)
+    val textMeasurer = rememberTextMeasurer()
+    val placeholder = if (isPercentage) "0" else "0.00"
+    val inputWidth = with(LocalDensity.current) {
+        textMeasurer.measure(input.ifEmpty { placeholder }, style = inputTextStyle, softWrap = false).size.width.toDp() + 2.dp
     }
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
@@ -558,7 +599,7 @@ private fun PerpsReduceMarginInput(
     }
     fun selectPercentage(value: BigDecimal) {
         val selected = if (isPercentage) value else reduceMarginAmount(margin?.toPlainString(), value.toPlainString(), true) ?: BigDecimal.ZERO
-        onInputChanged(selected.stripTrailingZeros().toPlainString())
+        onInputChanged(formatMarginAdjustmentInput(selected, isPercentage))
     }
     Column(
         modifier = Modifier
@@ -570,7 +611,7 @@ private fun PerpsReduceMarginInput(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(
-                onClick = { onInputChanged((inputValue - BigDecimal.ONE).max(BigDecimal.ZERO).stripTrailingZeros().toPlainString()) },
+                onClick = { onInputChanged(formatMarginAdjustmentInput((inputValue - BigDecimal.ONE).max(BigDecimal.ZERO), isPercentage)) },
                 enabled = enabled && inputValue > BigDecimal.ZERO,
             ) {
                 Icon(painterResource(R.drawable.ic_perps_minus), stringResource(R.string.perps_reduce_action), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
@@ -580,24 +621,26 @@ private fun PerpsReduceMarginInput(
                 BasicTextField(
                     value = input,
                     onValueChange = { value ->
-                        if (value.length <= 40 && value.all { it in '0'..'9' || it == '.' } && value.count { it == '.' } <= 1 &&
-                            value.substringAfter('.', "").length <= TRADE_INPUT_MAX_DECIMAL_PLACES) onInputChanged(value)
+                        if (value.length <= 40 && value.all { it in '0'..'9' || (!isPercentage && it == '.') } && value.count { it == '.' } <= 1 &&
+                            value.substringAfter('.', "").length <= 2) onInputChanged(value)
                     },
                     enabled = enabled,
                     singleLine = true,
-                    modifier = Modifier.width(IntrinsicSize.Min).widthIn(min = 20.dp, max = 160.dp).focusRequester(focusRequester),
-                    textStyle = TextStyle(fontSize = 48.sp, fontWeight = FontWeight.W500, color = inputColor, textAlign = TextAlign.Center),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                    modifier = Modifier.widthIn(min = 20.dp, max = 160.dp).width(inputWidth).focusRequester(focusRequester),
+                    textStyle = inputTextStyle,
+                    keyboardOptions = KeyboardOptions(keyboardType = if (isPercentage) KeyboardType.Number else KeyboardType.Decimal),
                     cursorBrush = SolidColor(MixinAppTheme.colors.accent),
                     decorationBox = { field ->
-                        if (input.isEmpty()) Text("0", fontSize = 48.sp, fontWeight = FontWeight.W500, color = inputColor)
-                        field()
+                        Box(contentAlignment = Alignment.Center) {
+                            if (input.isEmpty()) Text(placeholder, style = inputTextStyle)
+                            field()
+                        }
                     },
                 )
                 if (isPercentage) Text("%", fontSize = 48.sp, fontWeight = FontWeight.W500, color = inputColor)
             }
             IconButton(
-                onClick = { onInputChanged((inputValue + BigDecimal.ONE).min(maximum).stripTrailingZeros().toPlainString()) },
+                onClick = { onInputChanged(formatMarginAdjustmentInput((inputValue + BigDecimal.ONE).min(maximum), isPercentage)) },
                 enabled = enabled && inputValue < maximum,
             ) {
                 Icon(painterResource(R.drawable.ic_perps_add), stringResource(R.string.Add), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
@@ -608,7 +651,7 @@ private fun PerpsReduceMarginInput(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = if (isPercentage) formatPerpsExactUsdDecimal(amount) else "${percentage?.stripTrailingZeros()?.toPlainString() ?: "0"}%",
+                text = if (isPercentage) formatPerpsPrice(amount, 2) else "${percentage?.setScale(0, RoundingMode.HALF_UP)?.toPlainString() ?: "0"}%",
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 12.sp,
             )
@@ -625,29 +668,123 @@ private fun PerpsReduceMarginInput(
         }
         Spacer(Modifier.height(12.dp))
         Slider(
-            value = (percentage?.toFloat() ?: 0f).coerceIn(0f, 100f),
-            onValueChange = { selectPercentage(BigDecimal(it.toString()).setScale(2, RoundingMode.HALF_UP)) },
+            value = sliderPercentage,
+            onValueChange = { selectPercentage(BigDecimal(snapMarginReductionPercentage(it))) },
             enabled = enabled && margin != null && margin > BigDecimal.ZERO,
             valueRange = 0f..100f,
-            modifier = Modifier.fillMaxWidth().height(32.dp),
+            steps = 99,
+            modifier = Modifier.fillMaxWidth().height(32.dp).drawWithContent {
+                drawContent()
+                val trackInset = 10.dp.toPx()
+                for (value in 0..100 step 25) {
+                    val fraction = if (layoutDirection == LayoutDirection.Rtl) 1f - value / 100f else value / 100f
+                    drawCircle(
+                        color = if (value <= sliderPercentage) activeMarkerColor else inactiveMarkerColor,
+                        radius = 3.dp.toPx(),
+                        center = Offset(trackInset + (size.width - 2 * trackInset) * fraction, size.height / 2),
+                    )
+                }
+            },
             colors = SliderDefaults.colors(
                 thumbColor = MixinAppTheme.colors.accent,
                 activeTrackColor = MixinAppTheme.colors.accent,
                 inactiveTrackColor = MixinAppTheme.colors.backgroundGrayLight,
+                activeTickColor = Color.Transparent,
+                inactiveTickColor = Color.Transparent,
             ),
         )
-        Row(modifier = Modifier.fillMaxWidth()) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             listOf(0, 25, 50, 75, 100).forEach { value ->
                 Text(
-                    text = if (isPercentage) "$value%" else formatPerpsUsdDecimal(reduceMarginAmount(margin?.toPlainString(), value.toString(), true)),
+                    text = if (isPercentage) "$value%" else formatPerpsPrice(reduceMarginAmount(margin?.toPlainString(), value.toString(), true), 2),
                     color = MixinAppTheme.colors.textAssist,
                     fontSize = 10.sp,
                     textAlign = when (value) { 0 -> TextAlign.Start; 100 -> TextAlign.End; else -> TextAlign.Center },
-                    modifier = Modifier.weight(1f).clickable(enabled = enabled && margin != null && margin > BigDecimal.ZERO) {
+                    modifier = Modifier.clickable(enabled = enabled && margin != null && margin > BigDecimal.ZERO) {
                         selectPercentage(BigDecimal(value))
                     }.padding(vertical = 12.dp),
                 )
             }
+        }
+    }
+}
+
+@Preview(name = "100%", widthDp = 360, heightDp = 560, locale = "zh")
+@Composable
+private fun PerpsMarginPercentagePreview() {
+    PerpsMarginPreviewContent("100", true)
+}
+
+@Preview(name = "0%", widthDp = 360, heightDp = 560, locale = "zh")
+@Composable
+private fun PerpsMarginZeroPreview() {
+    PerpsMarginPreviewContent("", true)
+}
+
+@Preview(name = "USD", widthDp = 360, heightDp = 560, locale = "zh")
+@Composable
+private fun PerpsMarginDollarPreview() {
+    PerpsMarginPreviewContent("25.00", false)
+}
+
+@Composable
+private fun PerpsMarginPreviewContent(initialInput: String, initialIsPercentage: Boolean) {
+    val position = remember {
+        PerpsPositionItem(
+            positionId = "preview-position",
+            marketId = "preview-btc",
+            side = "long",
+            quantity = "0.02",
+            entryPrice = "60000",
+            leverage = 10,
+            margin = "123.45678901",
+            liquidationPrice = "55000",
+            tokenSymbol = "BTC",
+        )
+    }
+    var input by remember { mutableStateOf(initialInput) }
+    var isPercentage by remember { mutableStateOf(initialIsPercentage) }
+    var inputIsPercentage by remember { mutableStateOf(initialIsPercentage) }
+    val amount = reduceMarginAmount(position.margin, input, inputIsPercentage)
+    val percentage = marginReductionPercentage(position.margin, amount)
+    val displayInput = when {
+        isPercentage == inputIsPercentage -> input
+        isPercentage -> percentage?.setScale(0, RoundingMode.HALF_UP)?.toPlainString().orEmpty()
+        else -> amount?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
+    }
+    val totalMargin = marginAfterAdjustment(position.margin, amount?.toPlainString().orEmpty(), false)
+    MixinAppTheme {
+        PerpsMarginContent(
+            position = position,
+            marketPrice = "65000",
+            priceScale = position.priceScale,
+            increase = false,
+            totalMargin = totalMargin,
+            errorText = null,
+            canSubmit = totalMargin != null,
+            loading = false,
+            onCancel = {},
+            onSubmit = {},
+            onGuide = {},
+        ) {
+            PerpsReduceMarginInput(
+                input = displayInput,
+                isPercentage = isPercentage,
+                amount = amount,
+                percentage = percentage,
+                margin = position.margin?.toBigDecimalOrNull(),
+                errorText = null,
+                enabled = true,
+                onInputChanged = {
+                    input = it
+                    inputIsPercentage = isPercentage
+                },
+                onToggleMode = {
+                    input = amount?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
+                    inputIsPercentage = false
+                    isPercentage = !isPercentage
+                },
+            )
         }
     }
 }

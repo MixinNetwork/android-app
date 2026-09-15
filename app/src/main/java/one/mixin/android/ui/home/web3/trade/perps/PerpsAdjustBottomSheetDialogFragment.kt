@@ -6,12 +6,12 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
@@ -28,6 +28,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,7 +37,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
-import one.mixin.android.ui.wallet.alert.components.cardBackground
 
 @AndroidEntryPoint
 class PerpsAdjustBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -56,65 +56,21 @@ class PerpsAdjustBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
     @Composable
     override fun ComposeContent() {
         MixinAppTheme {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MixinAppTheme.colors.background)
-                    .verticalScroll(rememberScrollState())
-                    .padding(horizontal = 16.dp)
-                    .padding(top = 16.dp, bottom = 40.dp),
-            ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.perps_adjust_title),
-                        fontSize = 18.sp,
-                        lineHeight = 24.sp,
-                        fontWeight = FontWeight.W600,
-                        color = MixinAppTheme.colors.textPrimary,
-                        modifier = Modifier.weight(1f),
-                    )
-                    IconButton(onClick = { dismiss() }) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_circle_close),
-                            contentDescription = stringResource(R.string.close),
-                            tint = Color.Unspecified,
-                            modifier = Modifier.size(26.dp),
-                        )
-                    }
-                }
-                Spacer(Modifier.height(20.dp))
-                SectionTitle(R.string.Margin)
-                AdjustAction(R.string.perps_add_margin, R.string.perps_add_margin_description, R.drawable.ic_perps_margin, true) {
+            PerpsAdjustContent(
+                onDismiss = { dismiss() },
+                onAddMargin = {
                     dismiss()
                     onAddMargin?.invoke()
-                }
-                Spacer(Modifier.height(8.dp))
-                AdjustAction(R.string.perps_reduce_margin, R.string.perps_reduce_margin_description, R.drawable.ic_perps_margin, false) {
+                },
+                onReduceMargin = {
                     dismiss()
                     onReduceMargin?.invoke()
-                }
-                Spacer(Modifier.height(20.dp))
-                SectionTitle(R.string.perps_position)
-                AdjustAction(R.string.perps_add_to_position, R.string.perps_add_position_description, R.drawable.ic_perps_position, true) {
+                },
+                onAddPosition = {
                     dismiss()
                     onAddPosition?.invoke()
-                }
-                Spacer(Modifier.height(32.dp))
-                Text(
-                    text = stringResource(R.string.perps_margin_or_position),
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 14.sp,
-                    lineHeight = 20.sp,
-                    modifier = Modifier.padding(horizontal = 12.dp),
-                )
-                Spacer(Modifier.height(12.dp))
-                listOf(R.string.perps_margin_tip, R.string.perps_position_tip, R.string.perps_low_margin_tip).forEach { tip ->
-                    Row(modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("•", color = MixinAppTheme.colors.textAssist, fontSize = 14.sp)
-                        Text(stringResource(tip), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 20.sp)
-                    }
-                }
-            }
+                },
+            )
         }
     }
 
@@ -122,13 +78,82 @@ class PerpsAdjustBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
 }
 
 @Composable
+private fun PerpsAdjustContent(
+    onDismiss: () -> Unit,
+    onAddMargin: () -> Unit,
+    onReduceMargin: () -> Unit,
+    onAddPosition: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .verticalScroll(rememberScrollState())
+            .padding(bottom = 40.dp),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().heightIn(min = 70.dp).padding(start = 20.dp, end = 9.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.perps_adjust_title),
+                fontSize = 18.sp,
+                lineHeight = 21.sp,
+                letterSpacing = (-0.4).sp,
+                fontWeight = FontWeight.W600,
+                color = MixinAppTheme.colors.textPrimary,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(onClick = onDismiss) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_circle_close),
+                    contentDescription = stringResource(R.string.close),
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(26.dp),
+                )
+            }
+        }
+        Column(modifier = Modifier.padding(horizontal = 16.dp)) {
+            Spacer(Modifier.height(10.dp))
+            SectionTitle(R.string.Margin)
+            Spacer(Modifier.height(11.dp))
+            AdjustAction(R.string.perps_add_margin, R.string.perps_add_margin_description, R.drawable.ic_perps_add_margin, onAddMargin)
+            Spacer(Modifier.height(8.dp))
+            AdjustAction(R.string.perps_reduce_margin, R.string.perps_reduce_margin_description, R.drawable.ic_perps_reduce_margin, onReduceMargin)
+            Spacer(Modifier.height(17.dp))
+            SectionTitle(R.string.perps_position)
+            Spacer(Modifier.height(10.dp))
+            AdjustAction(R.string.perps_add_to_position, R.string.perps_add_position_description, R.drawable.ic_perps_add_position, onAddPosition)
+            Spacer(Modifier.height(30.dp))
+            Column(
+                modifier = Modifier.padding(horizontal = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Text(
+                    text = stringResource(R.string.perps_margin_or_position),
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 14.sp,
+                    lineHeight = 21.sp,
+                )
+                listOf(R.string.perps_margin_tip, R.string.perps_position_tip, R.string.perps_low_margin_tip).forEach { tip ->
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("•", color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 18.2.sp)
+                        Text(stringResource(tip), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 18.2.sp)
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
 private fun SectionTitle(@StringRes title: Int) {
     Text(
         text = stringResource(title),
         fontSize = 14.sp,
-        lineHeight = 20.sp,
-        color = MixinAppTheme.colors.textPrimary,
-        modifier = Modifier.padding(start = 4.dp, bottom = 10.dp),
+        lineHeight = 17.sp,
+        color = MixinAppTheme.colors.textMinor,
+        modifier = Modifier.padding(start = 4.dp),
     )
 }
 
@@ -137,31 +162,31 @@ private fun AdjustAction(
     @StringRes title: Int,
     @StringRes description: Int,
     @DrawableRes icon: Int,
-    increase: Boolean,
     onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .background(MixinAppTheme.colors.background)
             .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 14.dp),
+            .padding(start = 20.dp, end = 16.dp, top = 13.dp, bottom = 13.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        Box(modifier = Modifier.size(24.dp)) {
-            Icon(painterResource(icon), null, tint = MixinAppTheme.colors.textRemarks, modifier = Modifier.size(24.dp))
-            Icon(
-                painterResource(if (increase) R.drawable.ic_perps_add else R.drawable.ic_perps_minus),
-                null,
-                tint = Color.Unspecified,
-                modifier = Modifier.size(13.dp).align(Alignment.BottomEnd),
-            )
-        }
+        Icon(painterResource(icon), null, tint = Color.Unspecified, modifier = Modifier.padding(top = 5.dp).size(24.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(stringResource(title), color = MixinAppTheme.colors.textPrimary, fontSize = 16.sp, lineHeight = 20.sp)
+            Text(stringResource(title), color = MixinAppTheme.colors.textMinor, fontSize = 16.sp, lineHeight = 20.sp)
             Spacer(Modifier.height(4.dp))
-            Text(stringResource(description), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 18.sp)
+            Text(stringResource(description), color = MixinAppTheme.colors.textAssist, fontSize = 13.sp, lineHeight = 16.sp)
         }
+    }
+}
+
+@Preview(name = "Adjust menu", widthDp = 375, locale = "en")
+@Preview(name = "调整菜单", widthDp = 375, locale = "zh")
+@Composable
+private fun PerpsAdjustPreview() {
+    MixinAppTheme {
+        PerpsAdjustContent(onDismiss = {}, onAddMargin = {}, onReduceMargin = {}, onAddPosition = {})
     }
 }

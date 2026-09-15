@@ -4,6 +4,17 @@ import com.google.gson.JsonElement
 import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import java.math.BigDecimal
 import java.math.RoundingMode
+import kotlin.math.abs
+import kotlin.math.roundToInt
+
+internal fun snapMarginReductionPercentage(value: Float): Int {
+    val percentage = value.coerceIn(0f, 100f).roundToInt()
+    val marker = (percentage / 25f).roundToInt() * 25
+    return if (abs(percentage - marker) <= 3) marker else percentage
+}
+
+internal fun formatMarginAdjustmentInput(value: BigDecimal, isPercentage: Boolean): String =
+    value.setScale(if (isPercentage) 0 else 2, RoundingMode.DOWN).toPlainString()
 
 internal fun marginAdjustmentAmount(amount: String): BigDecimal? {
     if (amount.length > 40 || amount.any { it !in '0'..'9' && it != '.' } || amount.count { it == '.' } > 1 ||
@@ -26,6 +37,7 @@ internal fun availableMarginFromError(extra: JsonElement?): BigDecimal? {
 }
 
 internal fun reduceMarginAmount(currentMargin: String?, input: String, isPercentage: Boolean): BigDecimal? {
+    if (isPercentage && '.' in input) return null
     val value = marginAdjustmentAmount(input) ?: return null
     if (!isPercentage) return value
     val margin = currentMargin?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null

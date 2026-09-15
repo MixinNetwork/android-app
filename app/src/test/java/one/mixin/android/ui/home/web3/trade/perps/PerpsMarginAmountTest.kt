@@ -8,6 +8,29 @@ import kotlin.test.assertNull
 
 class PerpsMarginAmountTest {
     @Test
+    fun inputKeepsWholePercentagesAndTwoDollarDecimalsWithoutExceedingTheAmount() {
+        assertEquals("0", formatMarginAdjustmentInput(BigDecimal.ZERO, true))
+        assertEquals("100", formatMarginAdjustmentInput(BigDecimal("100"), true))
+        assertEquals("0.00", formatMarginAdjustmentInput(BigDecimal.ZERO, false))
+        assertEquals("1.50", formatMarginAdjustmentInput(BigDecimal("1.5"), false))
+        assertEquals("5.01", formatMarginAdjustmentInput(BigDecimal("5.01253097"), false))
+        assertEquals("0.99", formatMarginAdjustmentInput(BigDecimal("0.999"), false))
+    }
+
+    @Test
+    fun sliderSnapsNearQuarterMarksAndKeepsOtherWholePercentages() {
+        for (marker in 0..100 step 25) {
+            for (offset in -3..3) {
+                assertEquals(marker, snapMarginReductionPercentage((marker + offset).toFloat()))
+            }
+        }
+        listOf(4, 21, 29, 46, 54, 71, 79, 96).forEach {
+            assertEquals(it, snapMarginReductionPercentage(it.toFloat()))
+        }
+        assertEquals(42, snapMarginReductionPercentage(41.6f))
+    }
+
+    @Test
     fun acceptsOnlyPositiveDecimalInputWithinPrecisionLimit() {
         assertEquals(BigDecimal("0.00000001"), marginAdjustmentAmount("0.00000001"))
         assertEquals(BigDecimal("0.5"), marginAdjustmentAmount(".5"))
@@ -32,10 +55,19 @@ class PerpsMarginAmountTest {
 
     @Test
     fun percentageConversionRoundsDownToEightDecimals() {
-        val reduction = reduceMarginAmount("1", "33.33333333", true)
-        assertEquals(BigDecimal("0.33333333"), reduction)
-        assertEquals(BigDecimal("0.66666667"), marginAfterAdjustment("1", reduction!!.toPlainString(), false))
+        val reduction = reduceMarginAmount("1.00000001", "33", true)
+        assertEquals(BigDecimal("0.33000000"), reduction)
+        assertEquals(BigDecimal("0.67000001"), marginAfterAdjustment("1.00000001", reduction!!.toPlainString(), false))
         assertNull(reduceMarginAmount("0.00000001", "25", true))
+    }
+
+    @Test
+    fun percentageRequiresWholeNumbersWhileAmountKeepsDecimals() {
+        listOf("81.88", "100.0", ".5").forEach {
+            assertNull(reduceMarginAmount("100", it, true))
+            assertEquals(BigDecimal(it), reduceMarginAmount("100", it, false))
+        }
+        assertEquals(BigDecimal("5.01253097"), reduceMarginAmount("5.01253097", "100", true))
     }
 
     @Test

@@ -9,6 +9,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -28,6 +29,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -54,6 +57,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -607,11 +611,12 @@ private fun PerpsAddContent(
                         .padding(horizontal = 16.dp),
                 ) {
                     PerpsAddInfoRow(
-                        title = stringResource(R.string.add_position_total_size),
+                        title = stringResource(R.string.position_size),
                         value = listOfNotNull(
                             formatTotalSizeValue(position.quantity, "0", position.leverage, currentPrice, position.tokenSymbol.orEmpty()),
                             if (hasInputAmount) formatTotalSizeValue(position.quantity, amount, position.leverage, currentPrice, position.tokenSymbol.orEmpty()) else null,
                         ).joinToString(" → "),
+                        singleLine = false,
                         onTipClick = {
                             showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_POSITION)
                         },
@@ -807,16 +812,17 @@ internal fun PerpsAddInfoRow(
     value: String,
     valueColor: Color = MixinAppTheme.colors.textAssist,
     isLoading: Boolean = false,
+    singleLine: Boolean = true,
     onTipClick: (() -> Unit)? = null,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().animateContentSize(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.weight(1f).clickable(
+            modifier = Modifier.clickable(
                 enabled = onTipClick != null,
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
@@ -846,12 +852,36 @@ internal fun PerpsAddInfoRow(
                 color = MixinAppTheme.colors.textAssist,
             )
         } else {
-            Text(
+            BasicText(
                 text = value,
-                fontSize = 14.sp,
-                color = valueColor,
-                textAlign = TextAlign.End,
-                modifier = Modifier.weight(1.5f).padding(start = 12.dp),
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    color = valueColor,
+                    textAlign = TextAlign.End,
+                ),
+                maxLines = if (singleLine) 1 else Int.MAX_VALUE,
+                softWrap = !singleLine,
+                autoSize = if (singleLine) TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = 14.sp,
+                    stepSize = 0.5.sp,
+                ) else null,
+                modifier = Modifier.weight(1f).padding(start = 12.dp),
+            )
+        }
+    }
+}
+
+@Preview(name = "Long size value", widthDp = 393, locale = "zh")
+@Composable
+private fun PerpsAddInfoRowPreview() {
+    MixinAppTheme {
+        Column(Modifier.background(MixinAppTheme.colors.background).padding(32.dp)) {
+            PerpsAddInfoRow(
+                title = stringResource(R.string.position_size),
+                value = "0.000078 BTC ($5.07) → 0.00123857 BTC ($80.51)",
+                singleLine = false,
+                onTipClick = {},
             )
         }
     }
