@@ -749,42 +749,70 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackPerpsAddStart(type: String) {
-        logEvent("trade_perps_add_start") {
-            putString("type", type)
+    fun trackPerpsAddPositionStart() {
+        logEvent("trade_perps_add_position_start") {
+            putString("type", "add_position")
         }
     }
 
-    fun trackPerpsAddMarginSelect(chain: String?, assetSymbol: String?) {
-        logEvent("trade_perps_add_margin_select") {
+    fun trackPerpsAddPositionMarginSelect(chain: String?, assetSymbol: String?) {
+        logEvent("trade_perps_add_position_margin_select") {
             putString("chain", chain)
             putString("asset_symbol", assetSymbol)
         }
     }
 
-    fun trackPerpsAddPreview() {
-        logEvent("trade_perps_add_preview")
+    fun trackPerpsAddPositionPreview() {
+        logEvent("trade_perps_add_position_preview")
     }
 
-    fun trackPerpsAddPreviewConfirm() {
-        logEvent("trade_perps_add_preview_confirm")
+    fun trackPerpsAddPositionPreviewConfirm() {
+        logEvent("trade_perps_add_position_preview_confirm")
     }
 
-    fun trackPerpsAddPreviewCancel() {
-        logEvent("trade_perps_add_preview_cancel")
+    fun trackPerpsAddPositionPreviewCancel() {
+        logEvent("trade_perps_add_position_preview_cancel")
     }
 
-    fun trackPerpsAddEnd() {
-        logEvent("trade_perps_add_end")
+    fun trackPerpsAddPositionEnd() {
+        logEvent("trade_perps_add_position_end")
     }
 
-    fun trackPerpsAddCancel() {
-        logEvent("trade_perps_add_cancel")
+    fun trackPerpsAddPositionCancel() {
+        logEvent("trade_perps_add_position_cancel")
     }
 
-    object PerpsAddType {
-        const val ADD_POSITION = "add_position"
-        const val ADD_MARGIN = "add_margin"
+    fun trackPerpsAddMarginStart() {
+        logEvent("trade_perps_add_margin_start") {
+            putString("type", "add_margin")
+        }
+    }
+
+    fun trackPerpsAddMarginMarginSelect(chain: String?, assetSymbol: String?) {
+        logEvent("trade_perps_add_margin_margin_select") {
+            putString("chain", chain)
+            putString("asset_symbol", assetSymbol)
+        }
+    }
+
+    fun trackPerpsAddMarginPreview() {
+        logEvent("trade_perps_add_margin_preview")
+    }
+
+    fun trackPerpsAddMarginPreviewConfirm() {
+        logEvent("trade_perps_add_margin_preview_confirm")
+    }
+
+    fun trackPerpsAddMarginPreviewCancel() {
+        logEvent("trade_perps_add_margin_preview_cancel")
+    }
+
+    fun trackPerpsAddMarginEnd() {
+        logEvent("trade_perps_add_margin_end")
+    }
+
+    fun trackPerpsAddMarginCancel() {
+        logEvent("trade_perps_add_margin_cancel")
     }
 
     fun trackPerpsCloseStart(type: String) {

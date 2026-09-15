@@ -169,7 +169,7 @@ class WalletHomeCashAccountTest {
               "totalTransactionCount":0,
               "earnAccounts":[
                 {"assetId":"asset-1","assetSymbol":"USD","iconUrl":"","earningsUsd":"0"},
-                {"assetId":"asset-2","assetSymbol":"USD","iconUrl":"","balanceUsd":"1.25","earningsUsd":"0"}
+                {"assetId":"asset-2","assetSymbol":"USD","iconUrl":"","balanceUsd":"1.25","earningsUsd":"0","apyText":"3.00%-5.00%"}
               ]
             }
         """.trimIndent()
@@ -178,6 +178,8 @@ class WalletHomeCashAccountTest {
 
         assertTrue(cache != null)
         assertEquals(listOf("asset-2"), cache?.toState()?.earnAccounts?.map { it.assetId })
+        assertEquals(BigDecimal("1.25"), cache?.toState()?.earnAccounts?.single()?.balanceUsd)
+        assertNull(cache?.toState()?.earnAccounts?.single()?.maxApyText)
     }
 
     @Test

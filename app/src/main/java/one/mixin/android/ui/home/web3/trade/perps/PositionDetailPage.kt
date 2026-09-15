@@ -686,8 +686,11 @@ fun OpenedOrderDetailPage(
         stringResource(R.string.Short)
     }
     val isIncrease = openedOrder.orderType == PerpsOrder.TYPE_INCREASE
+    val isMargin = openedOrder.orderType == PerpsOrder.TYPE_INCREASE_MARGIN || openedOrder.orderType == PerpsOrder.TYPE_DECREASE_MARGIN
     val isFailed = openedOrder.status == PerpsOrder.STATUS_REJECTED
     val title = when {
+        isMargin -> stringResource(if (openedOrder.orderType == PerpsOrder.TYPE_INCREASE_MARGIN) R.string.perps_add_margin else R.string.perps_reduce_margin) +
+            if (isFailed) " · ${stringResource(R.string.Failed)}" else ""
         isIncrease && isFailed ->
             stringResource(if (isLong) R.string.Added_Long_Failed else R.string.Added_Short_Failed)
         isIncrease ->
@@ -756,13 +759,13 @@ fun OpenedOrderDetailPage(
                     verticalAlignment = Alignment.Bottom,
                 ) {
                     Text(
-                        text = absQuantity.stripTrailingZeros().toPlainString(),
+                        text = if (isMargin) openedOrder.displaySymbol ?: openedOrder.tokenSymbol.orEmpty() else absQuantity.stripTrailingZeros().toPlainString(),
                         fontSize = 34.sp,
                         fontWeight = FontWeight.W500,
                         fontFamily = FontFamily(Font(R.font.mixin_font)),
                         color = MixinAppTheme.colors.textPrimary,
                     )
-                    val symbol = openedOrder.tokenSymbol?.takeIf { it.isNotBlank() }
+                    val symbol = openedOrder.tokenSymbol?.takeIf { !isMargin && it.isNotBlank() }
                     if (symbol != null) {
                         Spacer(modifier = Modifier.width(4.dp))
                         Text(
@@ -860,13 +863,13 @@ fun OpenedOrderDetailPage(
 
                     Spacer(modifier = Modifier.height(20.dp))
 
-                    val amountValue = openedOrder.payAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-                    PositionDetailItem(
-                        label = stringResource(R.string.Amount).uppercase(),
-                        value = formatPerpsUsdDecimal(amountValue)
-                    )
-
-                    Spacer(modifier = Modifier.height(20.dp))
+                    openedOrder.payAmount.toBigDecimalOrNull()?.let { amountValue ->
+                        PositionDetailItem(
+                            label = stringResource(R.string.Amount).uppercase(),
+                            value = formatPerpsUsdDecimal(amountValue)
+                        )
+                        Spacer(modifier = Modifier.height(20.dp))
+                    }
                 }
 
                 ItemWalletContent(
@@ -878,7 +881,7 @@ fun OpenedOrderDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
 
                 PositionDetailItem(
-                    label = stringResource(R.string.Open_Time).uppercase(),
+                    label = stringResource(if (isMargin) R.string.Time else R.string.Open_Time).uppercase(),
                     value = formatDate(openedOrder.createdAt)
                 )
             }

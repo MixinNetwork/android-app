@@ -10,6 +10,7 @@ import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.request.perps.AdjustMarginRequest
 import one.mixin.android.api.request.perps.CloseOrderRequest
 import one.mixin.android.api.request.perps.CloseOrderResponse
 import one.mixin.android.api.request.perps.IncreaseOrderRequest
@@ -460,6 +461,12 @@ interface RouteService {
     suspend fun increasePerpsPosition(
         @Path("id") positionId: String,
         @Body request: IncreaseOrderRequest,
+    ): MixinResponse<OpenOrderResponse>
+
+    @POST("perps/positions/{id}/margin")
+    suspend fun adjustPerpsMargin(
+        @Path("id") positionId: String,
+        @Body request: AdjustMarginRequest,
     ): MixinResponse<OpenOrderResponse>
 
     @GET("perps/orders")

@@ -487,6 +487,13 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    suspend fun adjustPerpsMargin(
+        positionId: String,
+        request: one.mixin.android.api.request.perps.AdjustMarginRequest,
+    ) = withContext(Dispatchers.IO) {
+        routeService.adjustPerpsMargin(positionId, request)
+    }
+
     private var linkPreview: Deferred<Pair<PerpsMarket, PerpsLinkPreview>>? = null
 
     internal suspend fun prepareLinkPreview(

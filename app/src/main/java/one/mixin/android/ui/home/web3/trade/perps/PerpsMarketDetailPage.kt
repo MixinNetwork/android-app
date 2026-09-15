@@ -580,14 +580,28 @@ fun PerpsMarketDetailPage(
                                     enabled = !isAddingProcessing,
                                     onClick = {
                                         if (isAddingProcessing) return@MixinButton
-                                        isAddingProcessing = true
-                                        val activity = context as? FragmentActivity ?: run { isAddingProcessing = false; return@MixinButton }
-                                        activity.showPerpsAddPosition(
-                                            viewModel = viewModel,
-                                            position = currentPosition,
-                                            market = market,
-                                            onDismiss = { isAddingProcessing = false },
-                                        )
+                                        val activity = context as? FragmentActivity ?: return@MixinButton
+                                        if (activity.supportFragmentManager.findFragmentByTag(PerpsAdjustBottomSheetDialogFragment.TAG) != null) return@MixinButton
+                                        val positionForAdd = currentPosition
+                                        PerpsAdjustBottomSheetDialogFragment().apply {
+                                            onAddMargin = {
+                                                PerpsMarginBottomSheetDialogFragment.newInstance(positionForAdd, increase = true)
+                                                    .show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
+                                            }
+                                            onReduceMargin = {
+                                                PerpsMarginBottomSheetDialogFragment.newInstance(positionForAdd, increase = false)
+                                                    .show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
+                                            }
+                                            onAddPosition = {
+                                                isAddingProcessing = true
+                                                activity.showPerpsAddPosition(
+                                                    viewModel = viewModel,
+                                                    position = positionForAdd,
+                                                    market = market,
+                                                    onDismiss = { isAddingProcessing = false },
+                                                )
+                                            }
+                                        }.show(activity.supportFragmentManager, PerpsAdjustBottomSheetDialogFragment.TAG)
                                     },
                                     backgroundColor = MixinAppTheme.colors.walletGreen,
                                     contentColor = Color.White,
@@ -595,7 +609,7 @@ fun PerpsMarketDetailPage(
                                 ) {
                                     Text(
                                         fontSize = 16.sp,
-                                        text = stringResource(R.string.add_position),
+                                        text = stringResource(R.string.perps_adjust),
                                     )
                                 }
 

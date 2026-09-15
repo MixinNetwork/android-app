@@ -9,6 +9,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -28,6 +29,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicText
+import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -54,10 +57,15 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withResumed
 import dagger.hilt.android.AndroidEntryPoint
@@ -186,23 +194,30 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
     @Composable
     override fun ComposeContent() {
         val context = LocalContext.current
+        val lifecycleOwner = LocalLifecycleOwner.current
         val viewModel = hiltViewModel<PerpetualViewModel>()
+        val livePosition by remember(position.positionId) {
+            viewModel.observePosition(position.positionId)
+        }.collectAsStateWithLifecycle(initialValue = position)
         val acceptedPerpAssetIdsOrdered = remember { readAcceptedPerpAssetIds(context) }
         val acceptedPerpAssetIds = remember(acceptedPerpAssetIdsOrdered) { acceptedPerpAssetIdsOrdered.toSet() }
         var selectedToken by remember { mutableStateOf<TokenItem?>(null) }
         var market by remember { mutableStateOf<PerpsMarket?>(null) }
 
-        LaunchedEffect(position.marketId) {
+        LaunchedEffect(position.marketId, lifecycleOwner) {
             market = viewModel.getMarketFromDb(position.marketId)
-            while (true) {
-                viewModel.loadMarketDetail(
-                    marketId = position.marketId,
-                    onSuccess = { data ->
-                        market = data
-                    },
-                    onError = {},
-                )
-                delay(PERPS_ADD_REFRESH_INTERVAL_MS)
+            lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                while (true) {
+                    viewModel.refreshSinglePosition(position.positionId, position.walletId)
+                    viewModel.loadMarketDetail(
+                        marketId = position.marketId,
+                        onSuccess = { data ->
+                            market = data
+                        },
+                        onError = {},
+                    )
+                    delay(PERPS_ADD_REFRESH_INTERVAL_MS)
+                }
             }
         }
 
@@ -230,7 +245,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
 
         MixinAppTheme {
             PerpsAddContent(
-                position = position,
+                position = livePosition ?: position,
                 market = market,
                 selectedToken = selectedToken,
                 showLiquidationPrice = showLiquidationPrice,
@@ -241,16 +256,16 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         currentAssetId = selectedToken?.assetId,
                     ).setOnAssetClick { token ->
                         selectedToken = token
-                        AnalyticsTracker.trackPerpsAddMarginSelect(token.chainName, token.symbol)
+                        AnalyticsTracker.trackPerpsAddPositionMarginSelect(token.chainName, token.symbol)
                     }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                 },
                 onCancel = {
                     dismiss()
-                    AnalyticsTracker.trackPerpsAddCancel()
+                    AnalyticsTracker.trackPerpsAddPositionCancel()
                 },
                 onAdd = { token, amount, liquidationPrice ->
                     onAddAction?.let { action ->
-                        AnalyticsTracker.trackPerpsAddPreview()
+                        AnalyticsTracker.trackPerpsAddPositionPreview()
                         action(token, amount, liquidationPrice, market)
                         dismiss()
                     }
@@ -318,7 +333,7 @@ private fun PerpsAddContent(
         .ifBlank { position.entryPrice }
     val priceScale = market?.priceScale ?: position.priceScale
 
-    LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin) {
+    LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin, position.updatedAt, market?.last) {
         liquidationPriceLimit = null
         val addMargin = amount.toBigDecimalOrNull()
         if (!shouldRequestLiquidationPrice(addMargin, minimumMargin) || aboveMaximumMargin) {
@@ -609,27 +624,12 @@ private fun PerpsAddContent(
                         .padding(horizontal = 16.dp),
                 ) {
                     PerpsAddInfoRow(
-                        title = stringResource(R.string.add_position_add_size),
-                        value = formatAddSizeValue(
-                            amount = amount,
-                            leverage = position.leverage,
-                            price = currentPrice,
-                            tokenSymbol = position.tokenSymbol.orEmpty(),
-                        ),
-                        onTipClick = {
-                            showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_POSITION)
-                        },
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
-                    PerpsAddInfoRow(
-                        title = stringResource(R.string.add_position_total_size),
-                        value = formatTotalSizeValue(
-                            currentQuantity = position.quantity,
-                            amount = amount,
-                            leverage = position.leverage,
-                            price = currentPrice,
-                            tokenSymbol = position.tokenSymbol.orEmpty(),
-                        ),
+                        title = stringResource(R.string.position_size),
+                        value = listOfNotNull(
+                            formatTotalSizeValue(position.quantity, "0", position.leverage, currentPrice, position.tokenSymbol.orEmpty()),
+                            if (hasInputAmount) formatTotalSizeValue(position.quantity, amount, position.leverage, currentPrice, position.tokenSymbol.orEmpty()) else null,
+                        ).joinToString(" → "),
+                        singleLine = false,
                         onTipClick = {
                             showPerpsGuide(PerpetualGuideBottomSheetDialogFragment.TAB_POSITION)
                         },
@@ -640,7 +640,10 @@ private fun PerpsAddContent(
                         value = when (displayLiquidationPrice) {
                             "-" -> "-"
                             null -> "-"
-                            else -> formatPerpsPrice(displayLiquidationPrice, priceScale)
+                            else -> listOfNotNull(
+                                position.liquidationPrice?.takeIf { hasInputAmount && it.isNotBlank() }?.let { formatPerpsPrice(it, priceScale) },
+                                formatPerpsPrice(displayLiquidationPrice, priceScale),
+                            ).joinToString(" → ")
                         },
                         isLoading = isLiquidationLoading && displayLiquidationPrice != "-",
                         onTipClick = {
@@ -817,17 +820,18 @@ private fun BottomActions(
 }
 
 @Composable
-private fun PerpsAddInfoRow(
+internal fun PerpsAddInfoRow(
     title: String,
     value: String,
     valueColor: Color = MixinAppTheme.colors.textAssist,
     isLoading: Boolean = false,
+    singleLine: Boolean = true,
     onTipClick: (() -> Unit)? = null,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().animateContentSize(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
+        verticalAlignment = Alignment.Top,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -861,11 +865,36 @@ private fun PerpsAddInfoRow(
                 color = MixinAppTheme.colors.textAssist,
             )
         } else {
-            Text(
+            BasicText(
                 text = value,
-                fontSize = 14.sp,
-                color = valueColor,
-                textAlign = TextAlign.End,
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    color = valueColor,
+                    textAlign = TextAlign.End,
+                ),
+                maxLines = if (singleLine) 1 else Int.MAX_VALUE,
+                softWrap = !singleLine,
+                autoSize = if (singleLine) TextAutoSize.StepBased(
+                    minFontSize = 8.sp,
+                    maxFontSize = 14.sp,
+                    stepSize = 0.5.sp,
+                ) else null,
+                modifier = Modifier.weight(1f).padding(start = 12.dp),
+            )
+        }
+    }
+}
+
+@Preview(name = "Long size value", widthDp = 393, locale = "zh")
+@Composable
+private fun PerpsAddInfoRowPreview() {
+    MixinAppTheme {
+        Column(Modifier.background(MixinAppTheme.colors.background).padding(32.dp)) {
+            PerpsAddInfoRow(
+                title = stringResource(R.string.position_size),
+                value = "0.000078 BTC ($5.07) → 0.00123857 BTC ($80.51)",
+                singleLine = false,
+                onTipClick = {},
             )
         }
     }
@@ -906,21 +935,6 @@ private fun calculateAddQuantity(
     return amountValue
         .multiply(BigDecimal(leverage))
         .divide(priceValue, 8, RoundingMode.HALF_UP)
-}
-
-private fun formatAddSizeValue(
-    amount: String,
-    leverage: Int,
-    price: String,
-    tokenSymbol: String,
-): String {
-    val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val quantityText = formatPerpsQuantity(calculateAddQuantity(amount, leverage, price))
-    val usdValue = formatPerpsUsdDecimal(amountValue.multiply(BigDecimal(leverage.coerceAtLeast(0))))
-    return listOf(quantityText, tokenSymbol)
-        .filter { it.isNotBlank() }
-        .joinToString(" ")
-        .let { "$it ($usdValue)" }
 }
 
 private fun formatTotalSizeValue(
@@ -982,7 +996,7 @@ internal fun FragmentActivity.showPerpsAddPosition(
     onOrderCreated: () -> Unit = {},
     onDismiss: () -> Unit = {},
 ) {
-    AnalyticsTracker.trackPerpsAddStart(AnalyticsTracker.PerpsAddType.ADD_POSITION)
+    AnalyticsTracker.trackPerpsAddPositionStart()
     PerpsAddBottomSheetDialogFragment.newInstance(position, initialMargin = initialMargin)
         .setOnDestroy(onDismiss)
         .setOnAdd { token, amount, liquidationPrice, latestMarket ->
