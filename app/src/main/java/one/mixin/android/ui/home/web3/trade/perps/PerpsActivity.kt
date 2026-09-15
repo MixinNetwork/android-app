@@ -263,7 +263,7 @@ class PerpsActivity : BaseActivity() {
                                 }
                             },
                             selectedToken = selectedToken,
-                            onTokenSelect = { showTokenSelection() },
+                            onTokenSelect = { tokens -> showTokenSelection(tokens) },
                             onCurrentTokenChange = { token ->
                                 selectedToken = token
                             },
@@ -334,10 +334,11 @@ class PerpsActivity : BaseActivity() {
         }
     }
 
-    private fun showTokenSelection() {
+    private fun showTokenSelection(tokens: List<TokenItem>) {
         TokenListBottomSheetDialogFragment.newInstance(
             fromType = TokenListBottomSheetDialogFragment.TYPE_FROM_PERP,
-            currentAssetId = selectedToken?.assetId
+            currentAssetId = selectedToken?.assetId,
+            perpsTokens = tokens,
         ).setOnAssetClick { token ->
             selectedToken = token
         }.setOnDepositClick {

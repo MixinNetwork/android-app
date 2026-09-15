@@ -185,11 +185,9 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
 
     @Composable
     override fun ComposeContent() {
-        val context = LocalContext.current
         val viewModel = hiltViewModel<PerpetualViewModel>()
-        val acceptedPerpAssetIdsOrdered = remember { readAcceptedPerpAssetIds(context) }
-        val acceptedPerpAssetIds = remember(acceptedPerpAssetIdsOrdered) { acceptedPerpAssetIdsOrdered.toSet() }
         var selectedToken by remember { mutableStateOf<TokenItem?>(null) }
+        var availableTokens by remember { mutableStateOf<List<TokenItem>?>(null) }
         var market by remember { mutableStateOf<PerpsMarket?>(null) }
 
         LaunchedEffect(position.marketId) {
@@ -206,26 +204,14 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
             }
         }
 
-        LaunchedEffect(acceptedPerpAssetIds) {
-            viewModel.loadUsdTokens { tokens ->
-                val supportedTokens = if (acceptedPerpAssetIds.isEmpty()) {
-                    tokens
-                } else {
-                    tokens.filter { it.assetId in acceptedPerpAssetIds }
-                }
-                val orderedSupportedTokens = if (acceptedPerpAssetIdsOrdered.isEmpty()) {
-                    supportedTokens
-                } else {
-                    acceptedPerpAssetIdsOrdered.mapNotNull { assetId ->
-                        supportedTokens.firstOrNull { it.assetId == assetId }
-                    }
-                }
-
-                selectedToken = resolveCurrentToken(
-                    selectedToken = selectedToken,
-                    availableTokens = orderedSupportedTokens,
-                )
-            }
+        LaunchedEffect(Unit) {
+            viewModel.loadPerpsTokens(
+                onSuccess = { tokens ->
+                    availableTokens = tokens
+                    selectedToken = resolveCurrentToken(selectedToken, tokens)
+                },
+                onError = { toast(it) },
+            )
         }
 
         MixinAppTheme {
@@ -236,13 +222,16 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                 showLiquidationPrice = showLiquidationPrice,
                 initialMargin = arguments?.getString(ARGS_INITIAL_MARGIN),
                 onTokenSelect = {
-                    TokenListBottomSheetDialogFragment.newInstance(
-                        fromType = TokenListBottomSheetDialogFragment.TYPE_FROM_PERP,
-                        currentAssetId = selectedToken?.assetId,
-                    ).setOnAssetClick { token ->
-                        selectedToken = token
-                        AnalyticsTracker.trackPerpsAddMarginSelect(token.chainName, token.symbol)
-                    }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+                    availableTokens?.let { tokens ->
+                        TokenListBottomSheetDialogFragment.newInstance(
+                            fromType = TokenListBottomSheetDialogFragment.TYPE_FROM_PERP,
+                            currentAssetId = selectedToken?.assetId,
+                            perpsTokens = tokens,
+                        ).setOnAssetClick { token ->
+                            selectedToken = token
+                            AnalyticsTracker.trackPerpsAddMarginSelect(token.chainName, token.symbol)
+                        }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
+                    }
                 },
                 onCancel = {
                     dismiss()
@@ -871,26 +860,11 @@ private fun PerpsAddInfoRow(
     }
 }
 
-private fun readAcceptedPerpAssetIds(context: android.content.Context): List<String> {
-    return context.defaultSharedPreferences
-        .getString(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS_V2, null)
-        .orEmpty()
-        .split(",")
-        .map { it.trim() }
-        .filter { it.isNotBlank() }
-}
-
 private fun resolveCurrentToken(
     selectedToken: TokenItem?,
     availableTokens: List<TokenItem>,
 ): TokenItem? {
-    if (selectedToken == null) {
-        return availableTokens
-            .sortedByDescending { it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO }
-            .firstOrNull()
-    }
-
-    return availableTokens.firstOrNull { it.assetId == selectedToken.assetId } ?: selectedToken
+    return availableTokens.firstOrNull { it.assetId == selectedToken?.assetId } ?: availableTokens.firstOrNull()
 }
 
 private fun calculateAddQuantity(

@@ -37,6 +37,7 @@ import one.mixin.android.extension.addToList
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -59,6 +60,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         const val TAG = "TokenListBottomSheetDialogFragment"
         const val ARGS_FOR_TYPE = "args_for_type"
         const val ARGS_ASSET_ID = "args_asset_id"
+        private const val ARGS_PERPS_TOKENS = "args_perps_tokens"
 
         const val POS_RV = 0
         const val POS_EMPTY_RECEIVE = 1
@@ -74,10 +76,12 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         fun newInstance(
             fromType: Int,
             currentAssetId: String? = null,
+            perpsTokens: List<TokenItem>? = null,
         ) =
             TokenListBottomSheetDialogFragment().withArgs {
                 putInt(ARGS_FOR_TYPE, fromType)
                 putString(ARGS_ASSET_ID, currentAssetId)
+                perpsTokens?.let { putParcelableArrayList(ARGS_PERPS_TOKENS, ArrayList(it)) }
             }
     }
 
@@ -103,6 +107,9 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var currentQuery: String = ""
     private var defaultAssets = emptyList<TokenItem>()
     private var currentChain: String? = null
+    private val perpsTokens by lazy {
+        requireArguments().getParcelableArrayListCompat(ARGS_PERPS_TOKENS, TokenItem::class.java)
+    }
     private val acceptedPerpAssetIds: Set<String> by lazy {
         requireContext().defaultSharedPreferences
             .getString(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS_V2, null)
@@ -114,7 +121,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     }
 
     private fun filterAssets(items: List<TokenItem>): List<TokenItem> =
-        if (fromType == TYPE_FROM_PERP) {
+        if (fromType == TYPE_FROM_PERP && perpsTokens == null) {
             if (acceptedPerpAssetIds.isEmpty()) {
                 items
             } else {
@@ -289,11 +296,18 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 updateDefaultAssets(snapshot)
             }
         } else if (fromType == TYPE_FROM_PERP) {
-            bottomViewModel.usdAssetItemsWithBalance()
+            val tokens = perpsTokens
+            if (tokens != null) {
+                updateDefaultAssets(tokens)
+            } else {
+                bottomViewModel.usdAssetItemsWithBalance().observe(this) { items ->
+                    updateDefaultAssets(items)
+                }
+            }
         } else {
-            bottomViewModel.assetItemsNotHidden()
-        }.observe(this) { items ->
-            updateDefaultAssets(items)
+            bottomViewModel.assetItemsNotHidden().observe(this) { items ->
+                updateDefaultAssets(items)
+            }
         }
     }
 
