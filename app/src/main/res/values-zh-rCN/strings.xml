@@ -2442,6 +2442,7 @@
     <string name="learn_how_to_trade_perps">了解如何交易永续合约</string>
     <string name="Volume_24H">24小时成交量</string>
     <string name="Open_Interest">未平仓量</string>
+    <string name="Debug_Mark_Price">标记价格（调试）</string>
     <string name="Funding_Rate">资金费率</string>
     <string name="Select_Market">选择市场</string>
     <string name="search">搜索&#8230;</string>

@@ -61,6 +61,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -878,6 +879,21 @@ private fun MarketInfoCard(
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = formatOpenInterest(market.openInterest, market.markPrice),
+                fontSize = 16.sp,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+
+        if (BuildConfig.DEBUG) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.Debug_Mark_Price).uppercase(),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = formatPerpsPrice(market.markPrice, market.priceScale),
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textPrimary
             )

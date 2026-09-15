@@ -737,4 +737,5 @@
     <string name="wallet_home_earn_account">Akun Earn</string>
     <string name="earn_balance">Saldo Earn</string>
     <string name="earn_yesterday_earnings">Pendapatan kemarin</string>
+    <string name="Debug_Mark_Price">Harga Mark (Debug)</string>
 </resources>
