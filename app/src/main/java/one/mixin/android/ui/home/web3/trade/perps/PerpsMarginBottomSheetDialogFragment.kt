@@ -204,7 +204,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }
         LaunchedEffect(increase) {
             if (increase) {
-                AnalyticsTracker.trackPerpsAddStart(AnalyticsTracker.PerpsAddType.ADD_MARGIN)
+                AnalyticsTracker.trackPerpsAddMarginStart()
                 viewModel.loadAcceptedAssets(
                     onSuccess = { ids ->
                         acceptedAssets = ids
@@ -224,6 +224,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             if (marginAfterAdjustment(currentPosition.margin, submittedAmount, increase, availableMargin) == null) return
             val token = selectedToken
             if (increase && (token == null || token.assetId !in acceptedAssets || balanceUsd == null || value > balanceUsd)) return
+            if (increase) AnalyticsTracker.trackPerpsAddMarginPreview()
             loading = true
             isCancelable = false
             error = null
@@ -311,7 +312,10 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 errorText = errorText,
                 canSubmit = canSubmit,
                 loading = loading,
-                onCancel = { dismiss() },
+                onCancel = {
+                    if (increase) AnalyticsTracker.trackPerpsAddMarginCancel()
+                    dismiss()
+                },
                 onSubmit = onSubmit,
                 onGuide = { tab ->
                     PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
@@ -348,7 +352,10 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                                     fromType = TokenListBottomSheetDialogFragment.TYPE_FROM_PERP,
                                     currentAssetId = selectedToken?.assetId,
                                 ).setOnAssetClick { token ->
-                                    if (token.assetId in acceptedAssets) selectedToken = token
+                                    if (token.assetId in acceptedAssets) {
+                                        selectedToken = token
+                                        AnalyticsTracker.trackPerpsAddMarginMarginSelect(token.chainName, token.symbol)
+                                    }
                                 }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                             }) else null,
                             onInputChanged = ::changeAmount,

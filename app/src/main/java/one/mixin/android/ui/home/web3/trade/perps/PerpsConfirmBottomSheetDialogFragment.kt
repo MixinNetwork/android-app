@@ -904,24 +904,30 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     }
 
     private fun trackPreviewConfirm() {
-        if (isAddPosition || isAddMargin) {
-            AnalyticsTracker.trackPerpsAddPreviewConfirm()
+        if (isAddMargin) {
+            AnalyticsTracker.trackPerpsAddMarginPreviewConfirm()
+        } else if (isAddPosition) {
+            AnalyticsTracker.trackPerpsAddPositionPreviewConfirm()
         } else {
             AnalyticsTracker.trackPerpsOpenPreviewConfirm()
         }
     }
 
     private fun trackPreviewCancel() {
-        if (isAddPosition || isAddMargin) {
-            AnalyticsTracker.trackPerpsAddPreviewCancel()
+        if (isAddMargin) {
+            AnalyticsTracker.trackPerpsAddMarginPreviewCancel()
+        } else if (isAddPosition) {
+            AnalyticsTracker.trackPerpsAddPositionPreviewCancel()
         } else {
             AnalyticsTracker.trackPerpsOpenPreviewCancel()
         }
     }
 
     private fun trackPositionSuccess() {
-        if (isAddPosition || isAddMargin) {
-            AnalyticsTracker.trackPerpsAddEnd()
+        if (isAddMargin) {
+            AnalyticsTracker.trackPerpsAddMarginEnd()
+        } else if (isAddPosition) {
+            AnalyticsTracker.trackPerpsAddPositionEnd()
         } else {
             AnalyticsTracker.trackPerpsOpenEnd(
                 leverage = leverage,

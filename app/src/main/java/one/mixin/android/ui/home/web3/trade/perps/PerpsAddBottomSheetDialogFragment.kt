@@ -256,16 +256,16 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         currentAssetId = selectedToken?.assetId,
                     ).setOnAssetClick { token ->
                         selectedToken = token
-                        AnalyticsTracker.trackPerpsAddMarginSelect(token.chainName, token.symbol)
+                        AnalyticsTracker.trackPerpsAddPositionMarginSelect(token.chainName, token.symbol)
                     }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                 },
                 onCancel = {
                     dismiss()
-                    AnalyticsTracker.trackPerpsAddCancel()
+                    AnalyticsTracker.trackPerpsAddPositionCancel()
                 },
                 onAdd = { token, amount, liquidationPrice ->
                     onAddAction?.let { action ->
-                        AnalyticsTracker.trackPerpsAddPreview()
+                        AnalyticsTracker.trackPerpsAddPositionPreview()
                         action(token, amount, liquidationPrice, market)
                         dismiss()
                     }
@@ -996,7 +996,7 @@ internal fun FragmentActivity.showPerpsAddPosition(
     onOrderCreated: () -> Unit = {},
     onDismiss: () -> Unit = {},
 ) {
-    AnalyticsTracker.trackPerpsAddStart(AnalyticsTracker.PerpsAddType.ADD_POSITION)
+    AnalyticsTracker.trackPerpsAddPositionStart()
     PerpsAddBottomSheetDialogFragment.newInstance(position, initialMargin = initialMargin)
         .setOnDestroy(onDismiss)
         .setOnAdd { token, amount, liquidationPrice, latestMarket ->
