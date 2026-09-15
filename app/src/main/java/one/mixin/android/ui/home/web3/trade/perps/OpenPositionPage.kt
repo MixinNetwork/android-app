@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.withResumed
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -78,6 +79,7 @@ import one.mixin.android.ui.home.web3.trade.limitTradeInputDecimalPlaces
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
@@ -859,10 +861,27 @@ fun OpenPositionPage(
                                     },
                                 onError = { errorCode, errorMessage ->
                                     isProcessing = false
-                                    errorInfo = if (errorCode > 0) {
+                                    val message = if (errorCode > 0) {
                                         context.getMixinErrorStringByCode(errorCode, errorMessage)
                                     } else {
                                         errorMessage.ifBlank { dataError }
+                                    }
+                                    if (errorCode == ErrorHandler.PERPS_INVALID_LEADER_POSITION) {
+                                        scope.launch {
+                                            activity.lifecycle.withResumed {
+                                                PerpsConfirmBottomSheetDialogFragment.newFailureInstance(
+                                                    market = m,
+                                                    isLong = selectedIsLong,
+                                                    leverage = leverage.toInt(),
+                                                    margin = normalizedAmount,
+                                                    error = message,
+                                                    tokenSymbol = token.symbol,
+                                                    liquidationPrice = displayLiquidationPrice,
+                                                ).showNow(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
+                                            }
+                                        }
+                                    } else {
+                                        errorInfo = message
                                     }
                                 }
                             )

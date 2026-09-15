@@ -70,6 +70,8 @@ data class IncreaseOrderRequest(
     val takeProfitPrice: String? = null,
     @SerializedName("stop_loss_price")
     val stopLossPrice: String? = null,
+    @SerializedName("leader_position_id")
+    val leaderPositionId: String? = null,
 )
 
 data class AdjustMarginRequest(

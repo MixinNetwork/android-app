@@ -60,11 +60,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withResumed
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -85,6 +88,7 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
@@ -103,6 +107,8 @@ import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.MixinButton
@@ -116,14 +122,17 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
     companion object {
         const val TAG = "PerpsAddBottomSheetDialogFragment"
         private const val ARGS_POSITION = "args_position"
+        private const val ARGS_INITIAL_MARGIN = "args_initial_margin"
         private const val ARGS_SHOW_LIQUIDATION_PRICE = "args_show_liquidation_price"
 
         fun newInstance(
             position: PerpsPositionItem,
             showLiquidationPrice: Boolean = true,
+            initialMargin: String? = null,
         ): PerpsAddBottomSheetDialogFragment {
             return PerpsAddBottomSheetDialogFragment().withArgs {
                 putParcelable(ARGS_POSITION, position)
+                putString(ARGS_INITIAL_MARGIN, initialMargin)
                 putBoolean(ARGS_SHOW_LIQUIDATION_PRICE, showLiquidationPrice)
             }
         }
@@ -136,10 +145,10 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         requireArguments().getBoolean(ARGS_SHOW_LIQUIDATION_PRICE, true)
     }
 
-    private var onAddAction: ((TokenItem, String, String?) -> Unit)? = null
+    private var onAddAction: ((TokenItem, String, String?, PerpsMarket?) -> Unit)? = null
     private var onDestroyAction: (() -> Unit)? = null
 
-    fun setOnAdd(callback: (TokenItem, String, String?) -> Unit): PerpsAddBottomSheetDialogFragment {
+    fun setOnAdd(callback: (TokenItem, String, String?, PerpsMarket?) -> Unit): PerpsAddBottomSheetDialogFragment {
         onAddAction = callback
         return this
     }
@@ -240,6 +249,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                 market = market,
                 selectedToken = selectedToken,
                 showLiquidationPrice = showLiquidationPrice,
+                initialMargin = arguments?.getString(ARGS_INITIAL_MARGIN),
                 onTokenSelect = {
                     TokenListBottomSheetDialogFragment.newInstance(
                         fromType = TokenListBottomSheetDialogFragment.TYPE_FROM_PERP,
@@ -256,7 +266,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                 onAdd = { token, amount, liquidationPrice ->
                     onAddAction?.let { action ->
                         AnalyticsTracker.trackPerpsAddPreview()
-                        action(token, amount, liquidationPrice)
+                        action(token, amount, liquidationPrice, market)
                         dismiss()
                     }
                 },
@@ -282,6 +292,7 @@ private fun PerpsAddContent(
     market: PerpsMarket?,
     selectedToken: TokenItem?,
     showLiquidationPrice: Boolean = true,
+    initialMargin: String? = null,
     onTokenSelect: () -> Unit,
     onCancel: () -> Unit,
     onAdd: (TokenItem, String, String?) -> Unit,
@@ -291,7 +302,9 @@ private fun PerpsAddContent(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
-    var amount by remember(position.positionId) { mutableStateOf("") }
+    var amount by remember(position.positionId, initialMargin) {
+        mutableStateOf(limitTradeInputDecimalPlaces(initialMargin.orEmpty(), TRADE_INPUT_MAX_DECIMAL_PLACES))
+    }
     var remoteLiquidationPrice by remember(position.positionId) { mutableStateOf<String?>(null) }
     var liquidationPriceLimit by remember(position.positionId) { mutableStateOf<LiquidationPriceLimit?>(null) }
     var isLiquidationLoading by remember(position.positionId) { mutableStateOf(false) }
@@ -972,4 +985,73 @@ private fun calculateEstimatedLiquidationPrice(
         averageEntry.multiply(BigDecimal.ONE.subtract(liquidationRatio))
     }
     return estimatedPrice.stripTrailingZeros().toPlainString()
+}
+
+internal fun FragmentActivity.showPerpsAddPosition(
+    viewModel: PerpetualViewModel,
+    position: PerpsPositionItem,
+    market: PerpsMarket?,
+    initialMargin: String? = null,
+    leaderPositionId: String? = null,
+    onOrderCreated: () -> Unit = {},
+    onDismiss: () -> Unit = {},
+) {
+    AnalyticsTracker.trackPerpsAddStart(AnalyticsTracker.PerpsAddType.ADD_POSITION)
+    PerpsAddBottomSheetDialogFragment.newInstance(position, initialMargin = initialMargin)
+        .setOnDestroy(onDismiss)
+        .setOnAdd { token, amount, liquidationPrice, latestMarket ->
+            val currentMarket = latestMarket ?: market
+            val referencePrice = currentMarket?.last ?: position.markPrice ?: position.entryPrice
+            viewModel.increasePerpsPosition(
+                positionId = position.positionId,
+                assetId = token.assetId,
+                amount = amount,
+                position = position,
+                price = referencePrice.takeIf { it.isNotBlank() },
+                leaderPositionId = leaderPositionId,
+                onSuccess = { response ->
+                    onOrderCreated()
+                    lifecycleScope.launch {
+                        lifecycle.withResumed {
+                            PerpsConfirmBottomSheetDialogFragment.newInstance(
+                                marketSymbol = position.displaySymbol ?: currentMarket?.displaySymbol ?: position.tokenSymbol.orEmpty(),
+                                marketIcon = position.iconUrl ?: currentMarket?.iconUrl.orEmpty(),
+                                isLong = position.side.equals("long", ignoreCase = true),
+                                amount = response.payAmount,
+                                leverage = position.leverage,
+                                entryPrice = referencePrice.ifBlank { position.entryPrice },
+                                marginAssetPrice = token.priceUsd,
+                                tokenSymbol = token.symbol,
+                                liquidationPrice = liquidationPrice,
+                                priceScale = currentMarket?.priceScale ?: position.priceScale,
+                                payUrl = response.paymentUrl,
+                                isAddPosition = true,
+                            ).showNow(supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
+                        }
+                    }
+                },
+                onError = { errorCode, errorMessage ->
+                    val message = if (errorCode > 0) getMixinErrorStringByCode(errorCode, errorMessage) else errorMessage
+                    if (errorCode == ErrorHandler.PERPS_INVALID_LEADER_POSITION && currentMarket != null) {
+                        lifecycleScope.launch {
+                            lifecycle.withResumed {
+                                PerpsConfirmBottomSheetDialogFragment.newFailureInstance(
+                                    market = currentMarket,
+                                    isLong = position.side.equals("long", ignoreCase = true),
+                                    leverage = position.leverage,
+                                    margin = amount,
+                                    error = message,
+                                    liquidationPrice = liquidationPrice,
+                                    tokenSymbol = token.symbol,
+                                    isAddPosition = true,
+                                ).showNow(supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
+                            }
+                        }
+                    } else {
+                        toast(message)
+                    }
+                },
+            )
+        }
+        .show(supportFragmentManager, PerpsAddBottomSheetDialogFragment.TAG)
 }

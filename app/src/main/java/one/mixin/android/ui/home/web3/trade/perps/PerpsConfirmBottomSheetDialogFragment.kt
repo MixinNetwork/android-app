@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import android.net.Uri
+import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -49,14 +50,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withResumed
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.DataErrorException
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
@@ -96,6 +103,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
     companion object {
         const val TAG = "PerpsConfirmBottomSheetDialogFragment"
+        const val FAILURE_TAG = "PerpsOrderFailureBottomSheet"
         private const val ARGS_MARKET_SYMBOL = "args_market_symbol"
         private const val ARGS_MARKET_ICON = "args_market_icon"
         private const val ARGS_IS_LONG = "args_is_long"
@@ -111,6 +119,41 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_PAY_URL = "args_pay_url"
         private const val ARGS_IS_ADD_POSITION = "args_is_add_position"
         private const val ARGS_IS_ADD_MARGIN = "args_is_add_margin"
+        private const val ARGS_ORDER_ERROR = "args_order_error"
+        private const val ARGS_MARKET_ID = "args_market_id"
+        private const val ARGS_ADD_POSITION_ID = "args_add_position_id"
+        const val RESULT_ORDER_CREATED = "perps_failure_order_created"
+        const val RESULT_LEADER_POSITION_ID = "leader_position_id"
+
+        fun newFailureInstance(
+            market: PerpsMarket,
+            isLong: Boolean,
+            leverage: Int?,
+            margin: String?,
+            error: String,
+            tokenSymbol: String = market.quoteSymbol,
+            isAddPosition: Boolean = false,
+            position: PerpsPositionItem? = null,
+            leaderPositionId: String? = null,
+            liquidationPrice: String? = null,
+        ) = PerpsConfirmBottomSheetDialogFragment().withArgs {
+            putString(ARGS_MARKET_SYMBOL, market.displaySymbol)
+            putString(ARGS_MARKET_ICON, market.iconUrl)
+            putBoolean(ARGS_IS_LONG, isLong)
+            putInt(ARGS_LEVERAGE, leverage ?: 0)
+            putString(ARGS_AMOUNT, margin.orEmpty())
+            putString(ARGS_ENTRY_PRICE, market.last)
+            putInt(ARGS_PRICE_SCALE, market.priceScale)
+            putString(ARGS_TOKEN_SYMBOL, tokenSymbol)
+            putBoolean(ARGS_IS_ADD_POSITION, isAddPosition)
+            putString(ARGS_ORDER_ERROR, error)
+            putString(ARGS_MARKET_ID, market.marketId)
+            putString(ARGS_LIQUIDATION_PRICE, liquidationPrice)
+            putString(RESULT_LEADER_POSITION_ID, leaderPositionId)
+            if (canAddPerpsLeaderPosition(position, isLong, leverage)) {
+                putString(ARGS_ADD_POSITION_ID, position?.positionId)
+            }
+        }
 
         fun newInstance(
             marketSymbol: String,
@@ -213,6 +256,18 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private var step by mutableStateOf(Step.Pending)
     private var errorInfo: String? by mutableStateOf(null)
     private var receiver: User? by mutableStateOf(null)
+    private val orderError by lazy { requireArguments().getString(ARGS_ORDER_ERROR) }
+    private val perpsViewModel by activityViewModels<PerpetualViewModel>()
+    private val addPositionId by lazy { requireArguments().getString(ARGS_ADD_POSITION_ID) }
+    private var addingPosition = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        orderError?.let {
+            step = Step.Error
+            errorInfo = it
+        }
+    }
 
     @Composable
     override fun ComposeContent() {
@@ -300,6 +355,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                     isAddMargin -> R.string.Failed
                                     isAddPosition && isLong -> R.string.Added_Long_Failed
                                     isAddPosition -> R.string.Added_Short_Failed
+                                    orderError != null -> R.string.position_opening_failed
                                     isLong -> R.string.Opened_Long_Failed
                                     else -> R.string.Opened_Short_Failed
                                 }
@@ -374,10 +430,11 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
                     PerpsInfoItem(
                         title = stringResource(R.string.Direction).uppercase(),
-                        value = "${if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)} ${leverage}x"
+                        value = (if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)) +
+                            if (leverage > 0) " ${leverage}x" else ""
                     )
-                    Box(modifier = Modifier.height(6.dp))
-                    if (!isAddMargin) {
+                    if (!isAddMargin && leverage > 0 && amount.isNotBlank()) {
+                        Box(modifier = Modifier.height(6.dp))
                         ProfitLossInfo(
                             amount = amount,
                             leverage = leverage,
@@ -386,11 +443,13 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     }
                     Box(modifier = Modifier.height(20.dp))
 
-                    PerpsInfoItem(
-                        title = stringResource(R.string.Amount).uppercase(),
-                        value = "$amount $tokenSymbol"
-                    )
-                    Box(modifier = Modifier.height(20.dp))
+                    if (amount.isNotBlank()) {
+                        PerpsInfoItem(
+                            title = stringResource(R.string.Amount).uppercase(),
+                            value = "$amount $tokenSymbol"
+                        )
+                        Box(modifier = Modifier.height(20.dp))
+                    }
 
                     if (!isAddMargin) {
                         PerpsInfoItem(
@@ -436,7 +495,9 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             )
                             Box(modifier = Modifier.height(20.dp))
                         }
+                    }
 
+                    if (!isAddMargin && (orderError == null || rawLiquidationPrice != null)) {
                         val lossPercent = remember(leverage) {
                             val percent = String.format("%.2f", 100.0 / leverage)
                             Timber.d("LossPercent - leverage: $leverage, lossPercent: $percent")
@@ -472,11 +533,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         )
 
                         Box(modifier = Modifier.height(20.dp))
-
                     }
 
-                    ItemUserContent(title = stringResource(id = R.string.Receiver).uppercase(), receiver, null)
-                    Box(modifier = Modifier.height(20.dp))
+                    if (orderError == null) {
+                        ItemUserContent(title = stringResource(id = R.string.Receiver).uppercase(), receiver, null)
+                        Box(modifier = Modifier.height(20.dp))
+                    }
 
                     ItemWalletContent(title = stringResource(id = R.string.Sender).uppercase(), fontSize = 16.sp)
                     Box(modifier = Modifier.height(16.dp))
@@ -507,19 +569,44 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         }
 
                         Step.Error -> {
-                            ActionBottom(
-                                modifier = Modifier.align(Alignment.BottomCenter),
-                                cancelTitle = stringResource(R.string.Cancel),
-                                confirmTitle = stringResource(id = R.string.Retry),
-                                cancelAction = {
-                                    trackPreviewCancel()
-                                    dismiss()
-                                },
-                                confirmAction = {
-                                    trackPreviewConfirm()
-                                    showPin()
-                                },
-                            )
+                            if (orderError != null) {
+                                if (addPositionId == null) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(20.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                    ) {
+                                        MixinButton(
+                                            onClick = { dismiss() },
+                                            shape = RoundedCornerShape(30.dp),
+                                            contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
+                                        ) {
+                                            Text(stringResource(R.string.Cancel), fontSize = 16.sp)
+                                        }
+                                    }
+                                } else {
+                                    ActionBottom(
+                                        modifier = Modifier.align(Alignment.BottomCenter),
+                                        cancelTitle = stringResource(R.string.Cancel),
+                                        confirmTitle = stringResource(R.string.add_position),
+                                        cancelAction = { dismiss() },
+                                        confirmAction = ::addPosition,
+                                    )
+                                }
+                            } else {
+                                ActionBottom(
+                                    modifier = Modifier.align(Alignment.BottomCenter),
+                                    cancelTitle = stringResource(R.string.Cancel),
+                                    confirmTitle = stringResource(id = R.string.Retry),
+                                    cancelAction = {
+                                        trackPreviewCancel()
+                                        dismiss()
+                                    },
+                                    confirmAction = {
+                                        trackPreviewConfirm()
+                                        showPin()
+                                    },
+                                )
+                            }
                         }
 
                         Step.Pending -> {
@@ -542,6 +629,44 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     }
                 }
                 Box(modifier = Modifier.height(32.dp))
+            }
+        }
+    }
+
+    private fun addPosition() {
+        if (addingPosition) return
+        addingPosition = true
+        lifecycleScope.launch {
+            try {
+                val accountId = Session.getAccountId() ?: throw DataErrorException()
+                val marketId = requireNotNull(requireArguments().getString(ARGS_MARKET_ID))
+                val currentPosition = perpsViewModel.getOpenPerpsPosition(accountId, marketId)
+                if (currentPosition?.positionId != addPositionId || !canAddPerpsLeaderPosition(currentPosition, isLong, leverage.takeIf { it > 0 })) {
+                    showError(getString(R.string.error_waiting_other_orders))
+                    return@launch
+                }
+                val market = perpsViewModel.getMarketById(marketId) ?: throw DataErrorException()
+                val manager = parentFragmentManager
+                val leaderId = requireArguments().getString(RESULT_LEADER_POSITION_ID)
+                lifecycle.withResumed {
+                    requireActivity().showPerpsAddPosition(
+                        viewModel = perpsViewModel,
+                        position = requireNotNull(currentPosition),
+                        market = market,
+                        initialMargin = amount.takeIf { it.isNotBlank() },
+                        leaderPositionId = leaderId,
+                        onOrderCreated = {
+                            manager.setFragmentResult(RESULT_ORDER_CREATED, Bundle().apply { putString(RESULT_LEADER_POSITION_ID, leaderId) })
+                        },
+                    )
+                    dismiss()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                showError(ErrorHandler.getErrorMessage(e))
+            } finally {
+                addingPosition = false
             }
         }
     }
@@ -664,6 +789,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     }
 
     private fun showPin() {
+        if (orderError != null) return
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1)
             .setOnPinComplete { pin ->
                 lifecycleScope.launch(

@@ -16,6 +16,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withResumed
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,9 +36,11 @@ import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.getScopes
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentBottomSheetBinding
+import one.mixin.android.extension.PerpsOpenPositionAction
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.booleanFromAttribute
@@ -54,11 +57,12 @@ import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isValidStartParam
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.stripAmountZero
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.toPerpsTradeAction
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshPerpsPositionsJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.getIconUrlName
 import one.mixin.android.repository.QrCodeType
@@ -75,6 +79,7 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.SchemeBottomSheet
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
+import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -88,7 +93,10 @@ import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.TAB_PERPETUAL
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
+import one.mixin.android.ui.home.web3.trade.perps.PerpsConfirmBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpsLinkPreview
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -141,6 +149,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         const val TAG = "LinkBottomSheetDialogFragment"
         const val CODE = "code"
         const val FROM = "from"
+        private const val TRADE_SOURCE = "trade_source"
 
         const val FROM_EXTERNAL = 0
         const val FROM_INTERNAL = 1
@@ -149,10 +158,12 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         fun newInstance(
             code: String,
             from: Int = FROM_INTERNAL,
+            tradeSource: String? = null,
         ) =
             LinkBottomSheetDialogFragment().withArgs {
                 putString(CODE, code)
                 putInt(FROM, from)
+                putString(TRADE_SOURCE, tradeSource)
             }
     }
 
@@ -169,6 +180,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     private val oldLinkViewModel by viewModels<BottomSheetViewModel>()
 
     val linkViewModel by viewModels<CommonBottomSheetViewModel>()
+    private val perpsViewModel by viewModels<PerpetualViewModel>()
 
     private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
 
@@ -1134,7 +1146,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 return
             }
 
-            val source = if (activity is ConversationActivity) {
+            val source = requireArguments().getString(TRADE_SOURCE) ?: if (activity is ConversationActivity) {
                 AnalyticsTracker.MarketDetailSource.APP_CARD
             } else {
                 AnalyticsTracker.MarketDetailSource.SCHEMA
@@ -1151,6 +1163,11 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     leaderPositionId = action.leaderPositionId,
                 )
             } else {
+                val (previewMarket, preview) = perpsViewModel.prepareLinkPreview(market, openPosition, action.leaderPositionId, source)
+                if (preview != PerpsLinkPreview.Input) {
+                    showPerpsLinkPreview(previewMarket, openPosition, action.leaderPositionId, preview)
+                    return
+                }
                 PerpsActivity.showOpenPosition(
                     context = requireContext(),
                     marketId = market.marketId,
@@ -1162,6 +1179,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     leaderPositionId = action.leaderPositionId,
                     initialLeverage = openPosition.leverage,
                     initialMargin = openPosition.margin,
+                    fromTradeLink = true,
                 )
             }
             closeSourceWebActivityIfNeeded()
@@ -1198,6 +1216,71 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         )
         closeSourceWebActivityIfNeeded()
         dismiss()
+    }
+
+    private suspend fun showPerpsLinkPreview(
+        market: PerpsMarket,
+        action: PerpsOpenPositionAction,
+        leaderPositionId: String?,
+        preview: PerpsLinkPreview,
+    ) {
+        lifecycle.withResumed {
+            val manager = parentFragmentManager
+            when (preview) {
+                PerpsLinkPreview.Input -> return@withResumed
+                is PerpsLinkPreview.Ready -> {
+                    val accountId = Session.getAccountId()
+                    PerpsConfirmBottomSheetDialogFragment.newInstance(
+                        marketSymbol = market.displaySymbol,
+                        marketIcon = market.iconUrl,
+                        isLong = requireNotNull(action.isLong),
+                        amount = preview.order.payAmount,
+                        leverage = requireNotNull(action.leverage),
+                        entryPrice = market.last,
+                        marginAssetPrice = preview.token.priceUsd,
+                        tokenSymbol = preview.token.symbol,
+                        liquidationPrice = preview.liquidationPrice,
+                        priceScale = market.priceScale,
+                        payUrl = preview.order.paymentUrl,
+                    ).setOnDone {
+                        accountId?.let { jobManager.addJobInBackground(RefreshPerpsPositionsJob(it)) }
+                    }.showNow(manager, PerpsConfirmBottomSheetDialogFragment.TAG)
+                }
+                is PerpsLinkPreview.InsufficientBalance -> {
+                    val sender = Session.getAccount()?.toUser() ?: return@withResumed
+                    TransferBalanceErrorBottomSheetDialogFragment.newInstance(
+                        buildTransferBiometricItem(sender, preview.token, preview.amount, null, null, null),
+                    ).showNow(manager, TransferBalanceErrorBottomSheetDialogFragment.TAG)
+                }
+                is PerpsLinkPreview.ExistingPosition -> {
+                    PerpsConfirmBottomSheetDialogFragment.newFailureInstance(
+                        market = market,
+                        isLong = requireNotNull(action.isLong),
+                        leverage = action.leverage,
+                        margin = action.margin,
+                        error = getString(R.string.error_already_had_open_position),
+                        position = preview.position,
+                        leaderPositionId = leaderPositionId,
+                        liquidationPrice = preview.liquidationPrice,
+                    ).showNow(manager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
+                }
+                is PerpsLinkPreview.Failure -> {
+                    val isLong = action.isLong ?: run {
+                        showError(preview.message)
+                        return@withResumed
+                    }
+                    PerpsConfirmBottomSheetDialogFragment.newFailureInstance(
+                        market = market,
+                        isLong = isLong,
+                        leverage = action.leverage,
+                        margin = action.margin,
+                        error = preview.message,
+                        liquidationPrice = preview.liquidationPrice,
+                    ).showNow(manager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
+                }
+            }
+            dismiss()
+        }
     }
 
     private fun closeSourceWebActivityIfNeeded() {
