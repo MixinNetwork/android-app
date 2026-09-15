@@ -1204,4 +1204,5 @@
     <string name="perps_percentage">Porcentaje</string>
     <string name="perps_confirm_reduce_margin_title">Confirmar reducción de margen</string>
     <string name="Debug_Mark_Price">Precio de marca (depuración)</string>
+    <string name="up_to_apy">Hasta %1$s APY</string>
 </resources>

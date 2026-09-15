@@ -1145,4 +1145,5 @@
     <string name="perps_percentage">Процент</string>
     <string name="perps_confirm_reduce_margin_title">Подтвердить уменьшение маржи</string>
     <string name="Debug_Mark_Price">Цена маркировки (отладка)</string>
+    <string name="up_to_apy">До %1$s APY</string>
 </resources>

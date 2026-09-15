@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.text.TextAutoSize
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -42,7 +44,7 @@ import one.mixin.android.ui.wallet.home.WalletHomeCashAccount
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeEarnAccount
 import one.mixin.android.ui.wallet.home.WalletAssetIcon
-import java.math.BigDecimal
+import one.mixin.android.ui.wallet.home.summary
 
 private val AccountCardShape = RoundedCornerShape(8.dp)
 private val AccountTextStyle = TextStyle(
@@ -59,6 +61,7 @@ internal fun WalletHomeAccountCards(
     if (state.cashAccount == null) {
         EarnAccountCard(
             accounts = state.earnAccounts,
+            quoteColorReversed = state.quoteColorReversed,
             callbacks = callbacks,
             modifier = Modifier.padding(horizontal = 20.dp),
         )
@@ -80,6 +83,7 @@ internal fun WalletHomeAccountCards(
             )
             CompactEarnAccountCard(
                 accounts = state.earnAccounts,
+                quoteColorReversed = state.quoteColorReversed,
                 callbacks = callbacks,
                 modifier = Modifier
                     .weight(1f)
@@ -96,22 +100,26 @@ private fun CompactCashAccountCard(
     callbacks: WalletHomeCallbacks,
     modifier: Modifier,
 ) {
-    val apyColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     AccountCardSurface(
         modifier = modifier
             .clickable { callbacks.onCashClicked() },
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
     ) {
-        Text(
-            text = stringResource(R.string.cash_balance),
-            color = MixinAppTheme.colors.textAssist,
-            fontSize = 12.sp,
-            lineHeight = 14.sp,
-            fontWeight = FontWeight.W400,
-            style = AccountTextStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Row(
+            modifier = Modifier.heightIn(min = 18.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = stringResource(R.string.cash_balance),
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 12.sp,
+                lineHeight = 14.sp,
+                fontWeight = FontWeight.W400,
+                style = AccountTextStyle,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
         Spacer(modifier = Modifier.height(8.dp))
         WalletHomeAccountBalance(
             balanceAmountText = account.balanceAmountText,
@@ -119,22 +127,15 @@ private fun CompactCashAccountCard(
         )
         Spacer(modifier = Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            account.apyText?.let { apyText ->
-                Text(
-                    text = stringResource(R.string.cash_account_apy, apyText),
-                    color = apyColor,
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
-                    fontWeight = FontWeight.W500,
-                    style = AccountTextStyle,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier
-                        .background(apyColor.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
-                        .padding(horizontal = 3.dp),
-                )
+            Box(modifier = Modifier.weight(1f)) {
+                account.apyText?.let { apyText ->
+                    AccountApy(
+                        text = stringResource(R.string.cash_account_apy, apyText),
+                        quoteColorReversed = quoteColorReversed,
+                    )
+                }
             }
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.width(4.dp))
             AccountArrow()
         }
     }
@@ -143,6 +144,7 @@ private fun CompactCashAccountCard(
 @Composable
 private fun CompactEarnAccountCard(
     accounts: List<WalletHomeEarnAccount>,
+    quoteColorReversed: Boolean,
     callbacks: WalletHomeCallbacks,
     modifier: Modifier,
 ) {
@@ -152,16 +154,21 @@ private fun CompactEarnAccountCard(
             .clickable { callbacks.onEarnAccountClicked() },
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
     ) {
-        Text(
-            text = stringResource(R.string.earn_balance),
-            color = MixinAppTheme.colors.textAssist,
-            fontSize = 12.sp,
-            lineHeight = 14.sp,
-            fontWeight = FontWeight.W400,
-            style = AccountTextStyle,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = stringResource(R.string.earn_balance),
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 12.sp,
+                lineHeight = 14.sp,
+                fontWeight = FontWeight.W400,
+                style = AccountTextStyle,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            Spacer(modifier = Modifier.width(4.dp))
+            EarnTokenIcons(accounts)
+        }
         Spacer(modifier = Modifier.height(8.dp))
         WalletHomeAccountBalance(
             balanceAmountText = account.balanceAmountText,
@@ -169,8 +176,15 @@ private fun CompactEarnAccountCard(
         )
         Spacer(modifier = Modifier.height(10.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            EarnTokenIcons(accounts)
-            Spacer(modifier = Modifier.weight(1f))
+            Box(modifier = Modifier.weight(1f)) {
+                account.maxApyText?.let { apyText ->
+                    AccountApy(
+                        text = stringResource(R.string.up_to_apy, apyText),
+                        quoteColorReversed = quoteColorReversed,
+                    )
+                }
+            }
+            Spacer(modifier = Modifier.width(4.dp))
             AccountArrow()
         }
     }
@@ -179,6 +193,7 @@ private fun CompactEarnAccountCard(
 @Composable
 private fun EarnAccountCard(
     accounts: List<WalletHomeEarnAccount>,
+    quoteColorReversed: Boolean,
     callbacks: WalletHomeCallbacks,
     modifier: Modifier,
 ) {
@@ -202,30 +217,43 @@ private fun EarnAccountCard(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Text(
-                        text = stringResource(R.string.earn_balance),
-                        color = MixinAppTheme.colors.textMinor,
-                        fontSize = 14.sp,
-                        lineHeight = 17.sp,
-                        fontWeight = FontWeight.W400,
-                        style = AccountTextStyle,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                    Row(
                         modifier = Modifier.weight(1f),
-                    )
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(R.string.earn_balance),
+                            color = MixinAppTheme.colors.textMinor,
+                            fontSize = 14.sp,
+                            lineHeight = 17.sp,
+                            fontWeight = FontWeight.W400,
+                            style = AccountTextStyle,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            modifier = Modifier.weight(1f, fill = false),
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        EarnTokenIcons(accounts)
+                    }
+                    Spacer(modifier = Modifier.width(4.dp))
                     AccountArrow()
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.Bottom,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
                     WalletHomeAccountBalance(
                         balanceAmountText = account.balanceAmountText,
                         modifier = Modifier.weight(1f),
                     )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    EarnTokenIcons(accounts)
+                    account.maxApyText?.let { apyText ->
+                        Spacer(modifier = Modifier.width(8.dp))
+                        AccountApy(
+                            text = stringResource(R.string.up_to_apy, apyText),
+                            quoteColorReversed = quoteColorReversed,
+                        )
+                    }
                 }
             }
         }
@@ -316,14 +344,23 @@ private fun EarnTokenIcons(accounts: List<WalletHomeEarnAccount>) {
     }
 }
 
-private fun List<WalletHomeEarnAccount>.summary(): WalletHomeEarnAccount {
-    val first = first()
-    return WalletHomeEarnAccount(
-        assetId = first.assetId,
-        assetSymbol = first.assetSymbol,
-        iconUrl = first.iconUrl,
-        balanceUsd = fold(BigDecimal.ZERO) { total, account -> total + account.balanceUsd },
-        earningsUsd = fold(BigDecimal.ZERO) { total, account -> total + account.earningsUsd },
-        apyText = mapNotNull { it.apyText }.distinct().joinToString(" / ").takeIf { it.isNotBlank() },
+@Composable
+private fun AccountApy(
+    text: String,
+    quoteColorReversed: Boolean,
+) {
+    val color = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    Text(
+        text = text,
+        color = color,
+        fontSize = 12.sp,
+        lineHeight = 14.sp,
+        fontWeight = FontWeight.W500,
+        style = AccountTextStyle,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
+        modifier = Modifier
+            .background(color.copy(alpha = 0.1f), RoundedCornerShape(4.dp))
+            .padding(horizontal = 3.dp, vertical = 1.dp),
     )
 }

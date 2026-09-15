@@ -2713,4 +2713,5 @@
     <string name="perps_reduce_action">Reduce</string>
     <string name="perps_percentage">Percentage</string>
     <string name="perps_confirm_reduce_margin_title">Confirm Reducing Margin</string>
+    <string name="up_to_apy">Up to %1$s APY</string>
 </resources>

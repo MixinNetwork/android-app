@@ -2685,4 +2685,5 @@
     <string name="perps_reduce_action">감소</string>
     <string name="perps_percentage">백분율</string>
     <string name="perps_confirm_reduce_margin_title">증거금 감소 확인</string>
+    <string name="up_to_apy">최대 %1$s APY</string>
 </resources>

@@ -1150,4 +1150,5 @@
     <string name="perps_percentage">割合</string>
     <string name="perps_confirm_reduce_margin_title">証拠金の減額を確認</string>
     <string name="Debug_Mark_Price">マーク価格（デバッグ）</string>
+    <string name="up_to_apy">最大 %1$s APY</string>
 </resources>

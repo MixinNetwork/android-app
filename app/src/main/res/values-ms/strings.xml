@@ -827,4 +827,5 @@
     <string name="perps_percentage">Peratusan</string>
     <string name="perps_confirm_reduce_margin_title">Sahkan Pengurangan Margin</string>
     <string name="Debug_Mark_Price">Harga Mark (Nyahpepijat)</string>
+    <string name="up_to_apy">Sehingga %1$s APY</string>
 </resources>
