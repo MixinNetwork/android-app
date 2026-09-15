@@ -2496,6 +2496,7 @@
     <string name="learn_how_to_trade_perps">瞭解如何交易永續合約</string>
     <string name="Volume_24H">24 小時交易量</string>
     <string name="Open_Interest">未平倉合約</string>
+    <string name="Debug_Mark_Price">標記價格（除錯）</string>
     <string name="Funding_Rate">資金費率</string>
     <string name="position_opening_failed">開倉失敗</string>
     <string name="confirm_opening_position">確認開倉</string>

@@ -459,7 +459,6 @@ class ConversationFragment() :
 
     private val onItemListener: MessageAdapter.OnItemListener by lazy {
         @UnstableApi object : MessageAdapter.OnItemListener() {
-            @SuppressLint("NotifyDataSetChanged")
             override fun onSelect(
                 isSelect: Boolean,
                 messageItem: MessageItem,
@@ -514,10 +513,9 @@ class ConversationFragment() :
                 } else {
                     binding.toolView.forwardIv.visibility = VISIBLE
                 }
-                messageAdapter.notifyDataSetChanged()
+                messageAdapter.notifyItemRangeChanged(0, messageAdapter.itemCount)
             }
 
-            @SuppressLint("NotifyDataSetChanged")
             override fun onLongClick(
                 messageItem: MessageItem,
                 position: Int,
@@ -553,7 +551,7 @@ class ConversationFragment() :
                         binding.toolView.replyIv.visibility = VISIBLE
                     }
                     checkPinMessage()
-                    messageAdapter.notifyDataSetChanged()
+                    messageAdapter.notifyItemRangeChanged(0, messageAdapter.itemCount)
                     binding.toolView.fadeIn()
                 }
                 return b
@@ -1426,11 +1424,10 @@ class ConversationFragment() :
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     private fun closeTool() {
         messageAdapter.selectSet.clear()
         if (!binding.messageRv.isComputingLayout) {
-            messageAdapter.notifyDataSetChanged()
+            messageAdapter.notifyItemRangeChanged(0, messageAdapter.itemCount)
         }
         binding.toolView.fadeOut()
     }
