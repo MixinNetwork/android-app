@@ -726,7 +726,7 @@
     <string name="perps_trading_fee_pnl_3">Biaya sudah termasuk dalam PnL terealisasi Anda</string>
     <string name="Bitcoin_Dominance">Dominasi Bitcoin</string>
     <string name="Perp">Perp</string>
-    <string name="classic_wallet_pearl_intro_title">Common Wallet kini mendukung Pearl</string>
+    <string name="common_wallet_now_supports_chain">Dompet Umum sekarang mendukung %1$s</string>
     <string name="Debug_Wallet_Account_Visibility">Visibilitas akun dompet</string>
     <string name="Debug_Earn_Account">Akun Earn</string>
     <string name="Earn">Earn</string>

@@ -1168,7 +1168,7 @@
     <string name="perps_trading_fee_pnl_3">Las comisiones están incluidas en su PnL realizado</string>
     <string name="Bitcoin_Dominance">Dominancia de Bitcoin</string>
     <string name="Perp">Perp</string>
-    <string name="classic_wallet_pearl_intro_title">Common Wallet ahora es compatible con Pearl</string>
+    <string name="common_wallet_now_supports_chain">Common Wallet ahora admite %1$s</string>
     <string name="Debug_Wallet_Account_Visibility">Visibilidad de cuentas de la cartera</string>
     <string name="Debug_Earn_Account">Cuenta Earn</string>
     <string name="Earn">Earn</string>

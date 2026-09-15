@@ -31,8 +31,9 @@ class WalletMissingBtcAddressFragment : Fragment(R.layout.fragment_wallet_missin
         binding.introImage.setImageResource(
             if (showPearlTitle) R.drawable.bg_missing_pearl else R.drawable.bg_missing_btc,
         )
-        binding.introTitle.setText(
-            if (showPearlTitle) R.string.classic_wallet_pearl_intro_title else R.string.classic_wallet_btc_intro_title,
+        binding.introTitle.text = getString(
+            R.string.common_wallet_now_supports_chain,
+            getString(if (showPearlTitle) R.string.Pearl else R.string.Bitcoin),
         )
         binding.unlockByPin.setOnClickListener {
             showLoginVerify()
