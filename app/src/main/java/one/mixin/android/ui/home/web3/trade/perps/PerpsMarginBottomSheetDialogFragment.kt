@@ -414,6 +414,9 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                                 text = selectedToken?.balance?.numberFormat8() ?: "0",
                                 color = MixinAppTheme.colors.textAssist,
                                 fontSize = 12.sp,
+                                modifier = Modifier.clickable(enabled = !loading && balanceUsd != null) {
+                                    balanceUsd?.let { changeAmount(formatMarginAdjustmentInput(it, false)) }
+                                },
                             )
                             Spacer(Modifier.width(8.dp))
                             Text(
