@@ -122,6 +122,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_ORDER_ERROR = "args_order_error"
         private const val ARGS_MARKET_ID = "args_market_id"
         private const val ARGS_ADD_POSITION_ID = "args_add_position_id"
+        private const val ARGS_SOURCE = "args_source"
         const val RESULT_ORDER_CREATED = "perps_failure_order_created"
         const val RESULT_LEADER_POSITION_ID = "leader_position_id"
 
@@ -131,6 +132,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             leverage: Int?,
             margin: String?,
             error: String,
+            source: String,
             tokenSymbol: String = market.quoteSymbol,
             isAddPosition: Boolean = false,
             position: PerpsPositionItem? = null,
@@ -147,6 +149,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             putString(ARGS_TOKEN_SYMBOL, tokenSymbol)
             putBoolean(ARGS_IS_ADD_POSITION, isAddPosition)
             putString(ARGS_ORDER_ERROR, error)
+            putString(ARGS_SOURCE, source)
             putString(ARGS_MARKET_ID, market.marketId)
             putString(ARGS_LIQUIDATION_PRICE, liquidationPrice)
             putString(RESULT_LEADER_POSITION_ID, leaderPositionId)
@@ -654,6 +657,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         position = requireNotNull(currentPosition),
                         market = market,
                         initialMargin = amount.takeIf { it.isNotBlank() },
+                        source = requireArguments().getString(ARGS_SOURCE).orEmpty(),
                         leaderPositionId = leaderId,
                         onOrderCreated = {
                             manager.setFragmentResult(RESULT_ORDER_CREATED, Bundle().apply { putString(RESULT_LEADER_POSITION_ID, leaderId) })

@@ -110,12 +110,14 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_INCREASE = "args_increase"
         private const val ARGS_INITIAL_MARGIN = "args_initial_margin"
+        private const val ARGS_SOURCE = "args_source"
         private const val PREF_REDUCE_BY_PERCENT = "perps_reduce_margin_by_percent"
 
-        fun newInstance(position: PerpsPositionItem, increase: Boolean, initialMargin: String? = null) = PerpsMarginBottomSheetDialogFragment().withArgs {
+        fun newInstance(position: PerpsPositionItem, increase: Boolean, source: String, initialMargin: String? = null) = PerpsMarginBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_POSITION, position)
             putBoolean(ARGS_INCREASE, increase)
             putString(ARGS_INITIAL_MARGIN, initialMargin)
+            putString(ARGS_SOURCE, source)
         }
     }
 
@@ -230,8 +232,9 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             }
         }
         LaunchedEffect(increase) {
+            val source = requireArguments().getString(ARGS_SOURCE).orEmpty()
             if (increase) {
-                AnalyticsTracker.trackPerpsAddMarginStart()
+                AnalyticsTracker.trackPerpsAddMarginStart(source)
                 viewModel.loadAcceptedAssets(
                     onSuccess = { ids ->
                         acceptedAssets = ids
@@ -242,6 +245,8 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     },
                     onError = { error = it },
                 )
+            } else {
+                AnalyticsTracker.trackPerpsReduceMarginStart(source)
             }
         }
 
@@ -286,6 +291,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                                 isAddMargin = true,
                             ).show(parentFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
                         } else {
+                            AnalyticsTracker.trackPerpsReduceMarginEnd()
                             toast(R.string.perps_margin_submitted)
                             viewModel.refreshSinglePosition(currentPosition.positionId, currentPosition.walletId)
                             viewModel.refreshOrders(currentPosition.walletId)
@@ -325,6 +331,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     keyboardController?.hide()
                     focusManager.clearFocus()
                     val approvedAmount = normalizedAmount
+                    AnalyticsTracker.trackPerpsReduceMarginPreview()
                     PerpsCloseBottomSheetDialogFragment.newInstance(currentPosition.toPosition(), reduceMarginAmount = approvedAmount)
                         .setOnMarginConfirmed { submitCurrent(approvedAmount) }
                         .show(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
@@ -342,7 +349,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 canSubmit = canSubmit,
                 loading = loading,
                 onCancel = {
-                    if (increase) AnalyticsTracker.trackPerpsAddMarginCancel()
+                    if (increase) AnalyticsTracker.trackPerpsAddMarginCancel() else AnalyticsTracker.trackPerpsReduceMarginCancel()
                     dismiss()
                 },
                 onSubmit = onSubmit,
@@ -383,7 +390,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                                 ).setOnAssetClick { token ->
                                     if (token.assetId in acceptedAssets) {
                                         selectedToken = token
-                                        AnalyticsTracker.trackPerpsAddMarginMarginSelect(token.chainName, token.symbol)
+                                        AnalyticsTracker.trackPerpsAddMarginTokenSelect(token.chainName, token.symbol)
                                     }
                                 }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                             }) else null,

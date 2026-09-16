@@ -524,11 +524,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Retry),
                                 cancelAction = {
-                                    if (!isReduceMargin) AnalyticsTracker.trackPerpsClosePreviewCancel()
+                                    if (isReduceMargin) AnalyticsTracker.trackPerpsReduceMarginPreviewCancel() else AnalyticsTracker.trackPerpsClosePreviewCancel()
                                     dismiss()
                                 },
                                 confirmAction = {
-                                    if (!isReduceMargin) AnalyticsTracker.trackPerpsClosePreviewConfirm()
+                                    if (isReduceMargin) AnalyticsTracker.trackPerpsReduceMarginPreviewConfirm() else AnalyticsTracker.trackPerpsClosePreviewConfirm()
                                     showVerifyPinThenClose()
                                 },
                             )
@@ -540,11 +540,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 cancelTitle = stringResource(R.string.Cancel),
                                 confirmTitle = stringResource(id = R.string.Confirm),
                                 cancelAction = {
-                                    if (!isReduceMargin) AnalyticsTracker.trackPerpsClosePreviewCancel()
+                                    if (isReduceMargin) AnalyticsTracker.trackPerpsReduceMarginPreviewCancel() else AnalyticsTracker.trackPerpsClosePreviewCancel()
                                     dismiss()
                                 },
                                 confirmAction = {
-                                    if (!isReduceMargin) AnalyticsTracker.trackPerpsClosePreviewConfirm()
+                                    if (isReduceMargin) AnalyticsTracker.trackPerpsReduceMarginPreviewConfirm() else AnalyticsTracker.trackPerpsClosePreviewConfirm()
                                     showVerifyPinThenClose()
                                 },
                             )

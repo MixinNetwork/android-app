@@ -123,15 +123,18 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         const val TAG = "PerpsAddBottomSheetDialogFragment"
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_INITIAL_MARGIN = "args_initial_margin"
+        private const val ARGS_SOURCE = "args_source"
         private const val ARGS_SHOW_LIQUIDATION_PRICE = "args_show_liquidation_price"
 
         fun newInstance(
             position: PerpsPositionItem,
+            source: String,
             showLiquidationPrice: Boolean = true,
             initialMargin: String? = null,
         ): PerpsAddBottomSheetDialogFragment {
             return PerpsAddBottomSheetDialogFragment().withArgs {
                 putParcelable(ARGS_POSITION, position)
+                putString(ARGS_SOURCE, source)
                 putString(ARGS_INITIAL_MARGIN, initialMargin)
                 putBoolean(ARGS_SHOW_LIQUIDATION_PRICE, showLiquidationPrice)
             }
@@ -220,6 +223,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
         }
 
         LaunchedEffect(Unit) {
+            AnalyticsTracker.trackPerpsAddPositionStart(requireArguments().getString(ARGS_SOURCE).orEmpty())
             viewModel.loadPerpsTokens(
                 onSuccess = { tokens ->
                     availableTokens = tokens
@@ -244,7 +248,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                             perpsTokens = tokens,
                         ).setOnAssetClick { token ->
                             selectedToken = token
-                            AnalyticsTracker.trackPerpsAddPositionMarginSelect(token.chainName, token.symbol)
+                            AnalyticsTracker.trackPerpsAddPositionTokenSelect(token.chainName, token.symbol)
                         }.show(parentFragmentManager, TokenListBottomSheetDialogFragment.TAG)
                     }
                 },
@@ -965,13 +969,13 @@ internal fun FragmentActivity.showPerpsAddPosition(
     viewModel: PerpetualViewModel,
     position: PerpsPositionItem,
     market: PerpsMarket?,
+    source: String,
     initialMargin: String? = null,
     leaderPositionId: String? = null,
     onOrderCreated: () -> Unit = {},
     onDismiss: () -> Unit = {},
 ) {
-    AnalyticsTracker.trackPerpsAddPositionStart()
-    PerpsAddBottomSheetDialogFragment.newInstance(position, initialMargin = initialMargin)
+    PerpsAddBottomSheetDialogFragment.newInstance(position, source, initialMargin = initialMargin)
         .setOnDestroy(onDismiss)
         .setOnAdd { token, amount, liquidationPrice, latestMarket ->
             val currentMarket = latestMarket ?: market
@@ -1015,6 +1019,7 @@ internal fun FragmentActivity.showPerpsAddPosition(
                                     leverage = position.leverage,
                                     margin = amount,
                                     error = message,
+                                    source = source,
                                     liquidationPrice = liquidationPrice,
                                     tokenSymbol = token.symbol,
                                     isAddPosition = true,

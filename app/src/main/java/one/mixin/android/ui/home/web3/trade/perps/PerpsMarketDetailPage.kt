@@ -585,11 +585,11 @@ fun PerpsMarketDetailPage(
                                         val positionForAdd = currentPosition
                                         PerpsAdjustBottomSheetDialogFragment().apply {
                                             onAddMargin = {
-                                                PerpsMarginBottomSheetDialogFragment.newInstance(positionForAdd, increase = true)
+                                                PerpsMarginBottomSheetDialogFragment.newInstance(positionForAdd, increase = true, source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_BOTTOM_MENU)
                                                     .show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
                                             }
                                             onReduceMargin = {
-                                                PerpsMarginBottomSheetDialogFragment.newInstance(positionForAdd, increase = false)
+                                                PerpsMarginBottomSheetDialogFragment.newInstance(positionForAdd, increase = false, source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_BOTTOM_MENU)
                                                     .show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
                                             }
                                             onAddPosition = {
@@ -598,6 +598,7 @@ fun PerpsMarketDetailPage(
                                                     viewModel = viewModel,
                                                     position = positionForAdd,
                                                     market = market,
+                                                    source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADD,
                                                     onDismiss = { isAddingProcessing = false },
                                                 )
                                             }

@@ -221,7 +221,7 @@ class PerpsActivity : BaseActivity() {
                         directOrderHandled = true
                         currentIntent.putExtra(EXTRA_MODE, MODE_DETAIL)
                         showMarketDetail(marketId, market.displaySymbol, market.displaySymbol, market.tokenSymbol, market, source)
-                        showLeaderPositionFailure(market, openedPosition, isLong, initialLeverage, initialMargin)
+                        showLeaderPositionFailure(market, openedPosition, isLong, initialLeverage, initialMargin, source)
                     } else if (returnToDetail) {
                         finish()
                     } else {
@@ -307,7 +307,7 @@ class PerpsActivity : BaseActivity() {
                         position == null -> toast(R.string.error_not_found)
                         position.state != PerpsPosition.STATE_OPEN -> toast(R.string.error_waiting_other_orders)
                         supportFragmentManager.findFragmentByTag(PerpsMarginBottomSheetDialogFragment.TAG) == null -> {
-                            PerpsMarginBottomSheetDialogFragment.newInstance(position, increase = true, initialMargin = initialMargin)
+                            PerpsMarginBottomSheetDialogFragment.newInstance(position, increase = true, source = source, initialMargin = initialMargin)
                                 .showNow(supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
                         }
                     }
@@ -347,10 +347,12 @@ class PerpsActivity : BaseActivity() {
         isLong: Boolean,
         leverage: Int?,
         margin: String?,
+        source: String,
     ) {
         lifecycle.withResumed {
             PerpsConfirmBottomSheetDialogFragment.newFailureInstance(
                 market, isLong, leverage, margin, getString(R.string.error_already_had_open_position),
+                source = source,
                 position = position, leaderPositionId = leaderPositionId,
             ).showNow(supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
         }
@@ -363,6 +365,7 @@ class PerpsActivity : BaseActivity() {
             perpsTokens = tokens,
         ).setOnAssetClick { token ->
             selectedToken = token
+            AnalyticsTracker.trackPerpsOpenTokenSelect(token.chainName, token.symbol)
         }.setOnDepositClick {
             showDepositAssetSelection()
         }.show(supportFragmentManager, TokenListBottomSheetDialogFragment.TAG)
