@@ -1143,12 +1143,15 @@
     <string name="perps_available_margin">引き出し可能な証拠金：%1$s</string>
     <string name="perps_margin_submitted">証拠金の調整を送信しました</string>
     <string name="perps_confirm_add_margin">証拠金の追加を確認</string>
-    <string name="perps_confirm_reduce_margin">証拠金を %1$s 減らしますか？強制決済リスクが高まります。</string>
-    <string name="perps_add_margin_title">%1$s %2$sの証拠金を追加</string>
-    <string name="perps_reduce_margin_title">%1$s %2$sの証拠金を減らす</string>
+    <string name="perps_confirm_reduce_margin">証拠金の減少を確認</string>
+    <string name="perps_add_margin_title">%1$s %2$s に証拠金を追加</string>
+    <string name="perps_reduce_margin_title">%1$s %2$s の証拠金を減らす</string>
     <string name="perps_reduce_action">減らす</string>
     <string name="perps_percentage">割合</string>
     <string name="perps_confirm_reduce_margin_title">証拠金の減額を確認</string>
     <string name="Debug_Mark_Price">マーク価格（デバッグ）</string>
     <string name="up_to_apy">最大 %1$s APY</string>
+    <string name="perps_add_position_title">%1$s %2$s にポジションを追加</string>
+    <string name="perps_reduce_position_title">%1$s %2$s のポジションを減らす</string>
+    <string name="max_removable">最大減少量 %1$s</string>
 </resources>

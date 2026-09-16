@@ -1197,12 +1197,15 @@
     <string name="perps_available_margin">Margen disponible para retirar: %1$s</string>
     <string name="perps_margin_submitted">Ajuste de margen enviado</string>
     <string name="perps_confirm_add_margin">Confirmar adición de margen</string>
-    <string name="perps_confirm_reduce_margin">¿Reducir el margen en %1$s? Esto aumenta el riesgo de liquidación.</string>
+    <string name="perps_confirm_reduce_margin">Confirmar reducción del margen</string>
     <string name="perps_add_margin_title">Añadir margen a %1$s %2$s</string>
-    <string name="perps_reduce_margin_title">Reducir margen de %1$s %2$s</string>
+    <string name="perps_reduce_margin_title">Reducir margen para %1$s %2$s</string>
     <string name="perps_reduce_action">Reducir</string>
     <string name="perps_percentage">Porcentaje</string>
     <string name="perps_confirm_reduce_margin_title">Confirmar reducción de margen</string>
     <string name="Debug_Mark_Price">Precio de marca (depuración)</string>
     <string name="up_to_apy">Hasta %1$s APY</string>
+    <string name="perps_add_position_title">Añadir posición a %1$s %2$s</string>
+    <string name="perps_reduce_position_title">Reducir posición para %1$s %2$s</string>
+    <string name="max_removable">Máximo reducible %1$s</string>
 </resources>

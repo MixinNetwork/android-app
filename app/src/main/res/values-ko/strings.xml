@@ -2679,11 +2679,14 @@
     <string name="perps_available_margin">인출 가능한 증거금: %1$s</string>
     <string name="perps_margin_submitted">증거금 조정이 제출되었습니다</string>
     <string name="perps_confirm_add_margin">증거금 추가 확인</string>
-    <string name="perps_confirm_reduce_margin">증거금을 %1$s 줄일까요? 강제 청산 위험이 증가합니다.</string>
-    <string name="perps_add_margin_title">%1$s %2$s 증거금 추가</string>
-    <string name="perps_reduce_margin_title">%1$s %2$s 증거금 감소</string>
+    <string name="perps_confirm_reduce_margin">증거금 감소 확인</string>
+    <string name="perps_add_margin_title">%1$s %2$s에 증거금 추가</string>
+    <string name="perps_reduce_margin_title">%1$s %2$s의 증거금 감소</string>
     <string name="perps_reduce_action">감소</string>
     <string name="perps_percentage">백분율</string>
     <string name="perps_confirm_reduce_margin_title">증거금 감소 확인</string>
     <string name="up_to_apy">최대 %1$s APY</string>
+    <string name="perps_add_position_title">%1$s %2$s에 포지션 추가</string>
+    <string name="perps_reduce_position_title">%1$s %2$s의 포지션 축소</string>
+    <string name="max_removable">최대 축소 가능 %1$s</string>
 </resources>

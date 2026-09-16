@@ -820,12 +820,15 @@
     <string name="perps_available_margin">Margin yang boleh dikeluarkan: %1$s</string>
     <string name="perps_margin_submitted">Pelarasan margin dihantar</string>
     <string name="perps_confirm_add_margin">Sahkan Penambahan Margin</string>
-    <string name="perps_confirm_reduce_margin">Kurangkan margin sebanyak %1$s? Ini meningkatkan risiko likuidasi.</string>
-    <string name="perps_add_margin_title">Tambah Margin untuk %1$s %2$s</string>
+    <string name="perps_confirm_reduce_margin">Sahkan Pengurangan Margin</string>
+    <string name="perps_add_margin_title">Tambah Margin pada %1$s %2$s</string>
     <string name="perps_reduce_margin_title">Kurangkan Margin untuk %1$s %2$s</string>
     <string name="perps_reduce_action">Kurangkan</string>
     <string name="perps_percentage">Peratusan</string>
     <string name="perps_confirm_reduce_margin_title">Sahkan Pengurangan Margin</string>
     <string name="Debug_Mark_Price">Harga Mark (Nyahpepijat)</string>
     <string name="up_to_apy">Sehingga %1$s APY</string>
+    <string name="perps_add_position_title">Tambah Posisi pada %1$s %2$s</string>
+    <string name="perps_reduce_position_title">Kurangkan Posisi untuk %1$s %2$s</string>
+    <string name="max_removable">Maksimum boleh dikurangkan %1$s</string>
 </resources>

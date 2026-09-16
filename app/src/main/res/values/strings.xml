@@ -2709,11 +2709,14 @@
     <string name="perps_available_margin">Available margin: %1$s</string>
     <string name="perps_margin_submitted">Margin adjustment submitted</string>
     <string name="perps_confirm_add_margin">Confirm Adding Margin</string>
-    <string name="perps_confirm_reduce_margin">Reduce margin by %1$s? This increases liquidation risk.</string>
+    <string name="perps_confirm_reduce_margin">Confirm Reducing Margin</string>
     <string name="perps_add_margin_title">Add Margin to %1$s %2$s</string>
     <string name="perps_reduce_margin_title">Reduce Margin for %1$s %2$s</string>
     <string name="perps_reduce_action">Reduce</string>
     <string name="perps_percentage">Percentage</string>
     <string name="perps_confirm_reduce_margin_title">Confirm Reducing Margin</string>
     <string name="up_to_apy">Up to %1$s APY</string>
+    <string name="perps_add_position_title">Add Position to %1$s %2$s</string>
+    <string name="perps_reduce_position_title">Reduce Position for %1$s %2$s</string>
+    <string name="max_removable">Max removable %1$s</string>
 </resources>

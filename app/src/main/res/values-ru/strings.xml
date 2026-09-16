@@ -1138,12 +1138,15 @@
     <string name="perps_available_margin">Маржа, доступная для вывода: %1$s</string>
     <string name="perps_margin_submitted">Запрос на изменение маржи отправлен</string>
     <string name="perps_confirm_add_margin">Подтвердить добавление маржи</string>
-    <string name="perps_confirm_reduce_margin">Уменьшить маржу на %1$s? Это повысит риск ликвидации.</string>
-    <string name="perps_add_margin_title">Добавить маржу к %1$s %2$s</string>
-    <string name="perps_reduce_margin_title">Уменьшить маржу %1$s %2$s</string>
+    <string name="perps_confirm_reduce_margin">Подтвердить уменьшение маржи</string>
+    <string name="perps_add_margin_title">Добавить маржу в %1$s %2$s</string>
+    <string name="perps_reduce_margin_title">Уменьшить маржу для %1$s %2$s</string>
     <string name="perps_reduce_action">Уменьшить</string>
     <string name="perps_percentage">Процент</string>
     <string name="perps_confirm_reduce_margin_title">Подтвердить уменьшение маржи</string>
     <string name="Debug_Mark_Price">Цена маркировки (отладка)</string>
     <string name="up_to_apy">До %1$s APY</string>
+    <string name="perps_add_position_title">Увеличить позицию в %1$s %2$s</string>
+    <string name="perps_reduce_position_title">Уменьшить позицию для %1$s %2$s</string>
+    <string name="max_removable">Максимально можно уменьшить на %1$s</string>
 </resources>

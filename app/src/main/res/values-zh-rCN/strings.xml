@@ -2628,11 +2628,14 @@
     <string name="perps_available_margin">可减少保证金：%1$s</string>
     <string name="perps_margin_submitted">保证金调整已提交</string>
     <string name="perps_confirm_add_margin">确认添加保证金</string>
-    <string name="perps_confirm_reduce_margin">减少 %1$s 保证金？这会增加强平风险。</string>
-    <string name="perps_add_margin_title">为%1$s %2$s添加保证金</string>
-    <string name="perps_reduce_margin_title">减少%1$s %2$s的保证金</string>
+    <string name="perps_confirm_reduce_margin">确认减少保证金</string>
+    <string name="perps_add_margin_title">%1$s %2$s 添加保证金</string>
+    <string name="perps_reduce_margin_title">%1$s %2$s 减少保证金</string>
     <string name="perps_reduce_action">减少</string>
     <string name="perps_percentage">百分比</string>
     <string name="perps_confirm_reduce_margin_title">确认减少保证金</string>
     <string name="up_to_apy">最高年化 %1$s</string>
+    <string name="perps_add_position_title">%1$s %2$s 增加仓位</string>
+    <string name="perps_reduce_position_title">%1$s %2$s 减少仓位</string>
+    <string name="max_removable">最多减少 %1$s</string>
 </resources>
