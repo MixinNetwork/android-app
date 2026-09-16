@@ -7,6 +7,25 @@ import kotlin.test.assertNull
 
 class PerpsMarginTokenTest {
     @Test
+    fun usesAcceptedAssetIdsAndBreaksBalanceTiesInApiOrder() {
+        val tokens = listOf(
+            token("unsupported", "1000"),
+            token("api-second", "10.00000001"),
+            token("api-first", "10.00000001"),
+            token("funded", "10.00000002"),
+            token("invalid", "invalid"),
+            token("zero", "0"),
+        )
+        val assetIds = listOf("api-first", "api-second", "missing", "zero", "invalid", "funded")
+
+        assertEquals(
+            listOf("funded", "api-first", "api-second", "zero", "invalid"),
+            sortPerpsMarginTokens(tokens, assetIds).map { it.assetId },
+        )
+        assertEquals(emptyList(), sortPerpsMarginTokens(tokens, emptyList()))
+    }
+
+    @Test
     fun selectsGreatestNumericBalanceInsteadOfLexicographicOrder() {
         val tokens = listOf(token("first", "9"), token("second", "100"), token("third", "20"))
         assertEquals("second", selectPerpsMarginToken(tokens)?.assetId)

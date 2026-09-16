@@ -447,6 +447,29 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    fun loadPerpsTokens(
+        onSuccess: (List<TokenItem>) -> Unit,
+        onError: (String) -> Unit = {},
+    ) {
+        viewModelScope.launch {
+            try {
+                val tokens = withContext(Dispatchers.IO) {
+                    val response = routeService.getAcceptedAssets()
+                    if (!response.isSuccess) throw MixinResponseException(response.errorCode, response.errorDescription)
+                    val assetIds = response.data?.filter { it.isNotBlank() }?.distinct() ?: throw DataErrorException()
+                    tokenRepository.checkAndSyncTokens(assetIds)
+                    sortPerpsMarginTokens(tokenDao.findTokenItems(assetIds), assetIds)
+                }
+                onSuccess(tokens)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e, "Error loading perps tokens")
+                onError(ErrorHandler.getErrorMessage(e))
+            }
+        }
+    }
+
     fun openPerpsOrder(
         assetId: String,
         marketId: String,
@@ -1197,6 +1220,12 @@ class PerpetualViewModel @Inject constructor(
 
 internal fun selectPerpsMarginToken(tokens: List<TokenItem>): TokenItem? =
     tokens.maxByOrNull { it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+
+internal fun sortPerpsMarginTokens(tokens: List<TokenItem>, assetIds: List<String>): List<TokenItem> {
+    val tokensById = tokens.associateBy { it.assetId }
+    return assetIds.mapNotNull { tokensById[it] }
+        .sortedByDescending { it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO }
+}
 
 internal sealed interface PerpsLinkPreview {
     data object Input : PerpsLinkPreview

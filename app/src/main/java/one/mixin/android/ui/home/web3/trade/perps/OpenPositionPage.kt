@@ -93,34 +93,14 @@ private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketI
 private const val MARKET_REFRESH_INTERVAL_MS = 5_000L
 private const val DEFAULT_LEVERAGE = 10
 
-private fun readAcceptedPerpAssetIds(context: android.content.Context): List<String> {
-    return context.defaultSharedPreferences
-        .getString(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS_V2, null)
-        .orEmpty()
-        .split(",")
-        .map { it.trim() }
-        .filter { it.isNotBlank() }
-}
-
 private fun TokenItem.hasPositiveBalance(): Boolean =
     (balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO
 
 private fun resolveCurrentToken(
     selectedToken: TokenItem?,
     availableTokens: List<TokenItem>,
-    preferredAssetIds: List<String>,
 ): TokenItem? {
-    if (selectedToken == null) {
-        return availableTokens
-            .sortedByDescending { it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO }
-            .firstOrNull()
-    }
-
-    val matchedToken = availableTokens.firstOrNull { it.assetId == selectedToken.assetId }
-    return when {
-        matchedToken != null -> matchedToken
-        else -> selectedToken
-    }
+    return availableTokens.firstOrNull { it.assetId == selectedToken?.assetId } ?: availableTokens.firstOrNull()
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -133,7 +113,7 @@ fun OpenPositionPage(
     onOrderCreated: () -> Unit = {},
     onOpenSuccess: (String) -> Unit = { onBack() },
     selectedToken: TokenItem?,
-    onTokenSelect: () -> Unit = {},
+    onTokenSelect: (List<TokenItem>) -> Unit = {},
     onCurrentTokenChange: (TokenItem?) -> Unit = {},
     leaderPositionId: String? = null,
     initialLeverage: Int? = null,
@@ -146,13 +126,11 @@ fun OpenPositionPage(
     val focusManager = LocalFocusManager.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val marketId = market.marketId
-    val acceptedPerpAssetIdsOrdered = remember { readAcceptedPerpAssetIds(context) }
-    val acceptedPerpAssetIds = remember(acceptedPerpAssetIdsOrdered) { acceptedPerpAssetIdsOrdered.toSet() }
 
     var currentMarket by remember(marketId) { mutableStateOf(market) }
     var selectedIsLong by rememberSaveable(marketId, isLong) { mutableStateOf(isLong ?: true) }
-    var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
-    var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
+    var availableTokens by remember { mutableStateOf<List<TokenItem>?>(null) }
+    val currentToken = availableTokens?.let { resolveCurrentToken(selectedToken, it) }
     var usdtAmount by rememberSaveable(marketId, initialMargin) {
         mutableStateOf(
             limitTradeInputDecimalPlaces(
@@ -199,38 +177,17 @@ fun OpenPositionPage(
         }
     }
 
-    LaunchedEffect(acceptedPerpAssetIds) {
-        viewModel.loadUsdTokens { tokens ->
-            val supportedTokens = if (acceptedPerpAssetIds.isEmpty()) {
-                tokens
-            } else {
-                tokens.filter { it.assetId in acceptedPerpAssetIds }
-            }
-            val orderedSupportedTokens = if (acceptedPerpAssetIdsOrdered.isEmpty()) {
-                supportedTokens
-            } else {
-                acceptedPerpAssetIdsOrdered.mapNotNull { assetId ->
-                    supportedTokens.firstOrNull { it.assetId == assetId }
-                }
-            }
-            availableTokens = orderedSupportedTokens
-            currentToken = resolveCurrentToken(
-                selectedToken = selectedToken,
-                availableTokens = orderedSupportedTokens,
-                preferredAssetIds = acceptedPerpAssetIdsOrdered,
-            )
-        }
-    }
-
-    LaunchedEffect(selectedToken?.assetId, availableTokens) {
-        currentToken = resolveCurrentToken(
-            selectedToken = selectedToken,
-            availableTokens = availableTokens,
-            preferredAssetIds = acceptedPerpAssetIdsOrdered,
+    LaunchedEffect(Unit) {
+        viewModel.loadPerpsTokens(
+            onSuccess = { tokens ->
+                availableTokens = tokens
+            },
+            onError = { errorInfo = it },
         )
     }
-    LaunchedEffect(currentToken) {
-        onCurrentTokenChange(currentToken)
+
+    LaunchedEffect(currentToken, availableTokens) {
+        if (availableTokens != null) onCurrentTokenChange(currentToken)
     }
     val maxLeverage = currentMarket.leverage.coerceAtLeast(1)
     LaunchedEffect(selectedIsLong, usdtAmount, leverage, currentToken?.assetId, takeProfitPrice, stopLossPrice) {
@@ -470,7 +427,7 @@ fun OpenPositionPage(
                         text = usdtAmount,
                         selectClick = {
                             AnalyticsTracker.trackPerpsOpenMarginSelect(currentToken?.chainName, currentToken?.symbol)
-                            onTokenSelect()
+                            availableTokens?.let(onTokenSelect)
                         },
                         onInputChanged = { usdtAmount = it },
                         tokenIconSize = 25.dp,
@@ -513,7 +470,7 @@ fun OpenPositionPage(
                                     val activity = context as? FragmentActivity ?: return@clickable
                                     val token = currentToken
                                     if (token == null) {
-                                        onTokenSelect()
+                                        availableTokens?.let(onTokenSelect)
                                         return@clickable
                                     }
                                     AddFeeBottomSheetDialogFragment.newInstance(token)
