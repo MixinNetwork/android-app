@@ -129,6 +129,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
     override fun getBottomSheetHeight(view: View): Int =
         requireContext().screenHeight() - view.getSafeAreaInsetsTop()
 
+    @Suppress("DEPRECATION")
     override fun onStart() {
         super.onStart()
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
@@ -287,7 +288,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         } else {
                             toast(R.string.perps_margin_submitted)
                             viewModel.refreshSinglePosition(currentPosition.positionId, currentPosition.walletId)
-                            currentPosition.walletId?.let { viewModel.refreshOrders(it) }
+                            viewModel.refreshOrders(currentPosition.walletId)
                         }
                         dismiss()
                     } else if (response.errorCode == 10653) {

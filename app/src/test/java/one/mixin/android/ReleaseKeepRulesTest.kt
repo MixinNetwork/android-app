@@ -63,7 +63,7 @@ class ReleaseKeepRulesTest {
     companion object {
         private val appClasses by lazy {
             val names = setOf(TransferRequest::class.java, Base64::class.java)
-                .map { File(it.protectionDomain.codeSource.location.toURI()) }
+                .map { File(requireNotNull(it.protectionDomain?.codeSource?.location).toURI()) }
                 .distinct()
                 .flatMap { source ->
                     if (source.isDirectory) {
