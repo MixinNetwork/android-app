@@ -22,6 +22,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.Arc
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.HyperEVM
@@ -156,6 +157,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioTron.isVisible = inMixin()
             radioToncoin.isVisible = inMixin()
             radioBtc.isVisible = !inMixin()
+            radioArc.isVisible = !inMixin()
             radioStock.isVisible = stocks.isNotEmpty()
             radioGroup.setOnCheckedChangeListener(null)
             if (initialStockMode && stocks.isNotEmpty()) {
@@ -230,6 +232,10 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                             R.id.radio_robinhood -> {
                                 Robinhood
+                            }
+
+                            R.id.radio_arc -> {
+                                Arc
                             }
 
                             R.id.radio_toncoin -> {
