@@ -164,6 +164,8 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }
         val amountValue = if (increase) marginAdjustmentAmount(amount) else reduceMarginAmount(currentPosition.margin, amount, inputIsPercentage)
         val normalizedAmount = amountValue?.stripTrailingZeros()?.toPlainString().orEmpty()
+        var remoteLiquidationPrice by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf<String?>(null) }
+        var isLiquidationLoading by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf(false) }
         val totalMargin = marginAfterAdjustment(currentPosition.margin, normalizedAmount, increase, availableMargin)
         val marginValue = currentPosition.margin?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO }
         val maximumReduction = marginValue?.let { margin -> availableMargin?.min(margin) ?: margin }
@@ -185,6 +187,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         val insufficientBalance = increase && amountValue != null && balanceUsd != null && amountValue > balanceUsd
         val isCurrentWallet = !currentPosition.walletId.isNullOrBlank() && currentPosition.walletId == Session.getAccountId()
         val canSubmit = !loading && !exceedsReductionLimit && position?.state == PerpsPosition.STATE_OPEN && totalMargin != null &&
+            !isLiquidationLoading && remoteLiquidationPrice != null &&
             isCurrentWallet &&
             if (increase) {
                 selectedToken?.assetId in acceptedAssets && balanceUsd != null && !insufficientBalance
@@ -192,6 +195,29 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 availableMargin?.let { amountValue != null && amountValue <= it } ?: true
             }
 
+        LaunchedEffect(normalizedAmount, increase, currentPosition.updatedAt, exceedsReductionLimit) {
+            remoteLiquidationPrice = null
+            isLiquidationLoading = false
+            if (totalMargin == null || exceedsReductionLimit) return@LaunchedEffect
+            isLiquidationLoading = true
+            try {
+                delay(200L)
+                remoteLiquidationPrice = requestLiquidationPrice(
+                    onMarginExceeded = {
+                        availableMargin = it
+                        error = if (it == null) getString(R.string.Data_error) else null
+                    },
+                ) {
+                    viewModel.estimateLiquidationPrice(
+                        amount = normalizedAmount,
+                        positionId = currentPosition.positionId,
+                        action = if (increase) "increase_margin" else "decrease_margin",
+                    )
+                }
+            } finally {
+                isLiquidationLoading = false
+            }
+        }
         LaunchedEffect(initialPosition.positionId, lifecycleOwner) {
             market = viewModel.getMarketFromDb(initialPosition.marketId)
             lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -309,6 +335,8 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 priceScale = market?.priceScale ?: currentPosition.priceScale,
                 increase = increase,
                 totalMargin = totalMargin?.takeIf { !insufficientBalance && !exceedsReductionLimit },
+                estimatedLiquidationPrice = remoteLiquidationPrice?.takeIf { !insufficientBalance && !exceedsReductionLimit },
+                isLiquidationLoading = isLiquidationLoading,
                 errorText = errorText,
                 canSubmit = canSubmit,
                 loading = loading,
@@ -422,6 +450,8 @@ private fun PerpsMarginContent(
     priceScale: Int,
     increase: Boolean,
     totalMargin: BigDecimal?,
+    estimatedLiquidationPrice: String?,
+    isLiquidationLoading: Boolean,
     errorText: String?,
     canSubmit: Boolean,
     loading: Boolean,
@@ -503,7 +533,11 @@ private fun PerpsMarginContent(
                         Spacer(Modifier.height(16.dp))
                         PerpsAddInfoRow(
                             title = stringResource(R.string.Liquidation_Price),
-                            value = position.liquidationPrice?.takeIf { it.isNotBlank() }?.let { formatPerpsPrice(it, priceScale) } ?: "-",
+                            value = listOfNotNull(
+                                position.liquidationPrice?.takeIf { it.isNotBlank() }?.let { formatPerpsPrice(it, priceScale) } ?: "-",
+                                estimatedLiquidationPrice?.let { formatPerpsPrice(it, priceScale) },
+                            ).joinToString(" → "),
+                            isLoading = isLiquidationLoading,
                             onTipClick = { onGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION) },
                         )
                     }
@@ -770,6 +804,8 @@ private fun PerpsMarginPreviewContent(initialInput: String, initialIsPercentage:
             priceScale = position.priceScale,
             increase = false,
             totalMargin = totalMargin,
+            estimatedLiquidationPrice = null,
+            isLiquidationLoading = false,
             errorText = null,
             canSubmit = totalMargin != null,
             loading = false,

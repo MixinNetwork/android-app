@@ -391,6 +391,7 @@ class PerpetualViewModel @Inject constructor(
         side: String? = null,
         leverage: Int? = null,
         positionId: String? = null,
+        action: String = if (positionId == null) "open" else "increase_position",
     ): LiquidationPriceResult {
         return try {
             val response = withContext(Dispatchers.IO) {
@@ -400,6 +401,7 @@ class PerpetualViewModel @Inject constructor(
                     side = side,
                     leverage = leverage,
                     positionId = positionId,
+                    action = action,
                 )
             }
             if (response.isSuccess) {
@@ -413,6 +415,7 @@ class PerpetualViewModel @Inject constructor(
                     price = null,
                     errorCode = response.errorCode,
                     limit = parseLiquidationPriceLimit(response.error?.extra),
+                    availableMargin = availableMarginFromError(response.error?.extra),
                 )
             }
         } catch (e: CancellationException) {

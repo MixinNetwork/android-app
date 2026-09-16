@@ -427,6 +427,7 @@ interface RouteService {
         @Query("side") side: String? = null,
         @Query("leverage") leverage: Int? = null,
         @Query("position_id") positionId: String? = null,
+        @Query("action") action: String? = null,
     ): MixinResponse<MarketLiquidationPriceView>
 
     @GET("perps/orders/accepted-assets")
