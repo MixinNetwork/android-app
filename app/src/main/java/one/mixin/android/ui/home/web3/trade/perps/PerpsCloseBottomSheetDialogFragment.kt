@@ -3,6 +3,7 @@ package one.mixin.android.ui.home.web3.trade.perps
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -82,6 +83,9 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     companion object {
         const val TAG = "PerpsCloseBottomSheetDialogFragment"
+        const val RESULT_MARGIN_CONFIRMED = "perps_margin_confirmed"
+        const val RESULT_POSITION_ID = "position_id"
+        const val RESULT_AMOUNT = "amount"
         private const val ARGS_POSITION_ID = "args_position_id"
         private const val ARGS_REDUCE_MARGIN_AMOUNT = "args_reduce_margin_amount"
         private const val ARGS_SIDE = "args_side"
@@ -128,6 +132,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     override fun onStart() {
         super.onStart()
+        (childFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) as? VerifyBottomSheetDialogFragment)
+            ?.let(::bindPinVerification)
         dialog?.window?.let { window ->
             SystemUIManager.lightUI(
                 window,
@@ -573,32 +579,38 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         super.onDismiss(dialog)
     }
 
-    private var onMarginConfirmed: (() -> Unit)? = null
-
-    fun setOnMarginConfirmed(callback: () -> Unit): PerpsCloseBottomSheetDialogFragment {
-        onMarginConfirmed = callback
-        return this
-    }
-
     private fun showVerifyPinThenClose() {
-        if (parentFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) != null) return
-        if (isReduceMargin && (marginAdjustmentAmount(reduceMarginAmount.orEmpty()) == null || onMarginConfirmed == null)) {
+        if (childFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) != null) return
+        if (isReduceMargin && marginAdjustmentAmount(reduceMarginAmount.orEmpty()) == null) {
             errorInfo = getString(R.string.Data_error)
             step = Step.Error
             return
         }
         VerifyBottomSheetDialogFragment.newInstance(
             title = getString(R.string.Verify_PIN),
-        ).apply {
-            disableToast = true
-        }.setOnPinSuccess {
+        ).also(::bindPinVerification).showNow(childFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+    }
+
+    private fun bindPinVerification(verification: VerifyBottomSheetDialogFragment) {
+        verification.disableToast = true
+        verification.setOnPinSuccess {
             if (isReduceMargin) {
-                onMarginConfirmed?.invoke()
-                dismiss()
+                confirmMargin()
             } else {
                 closePosition()
             }
-        }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
+        }
+    }
+
+    private fun confirmMargin() {
+        parentFragmentManager.setFragmentResult(
+            RESULT_MARGIN_CONFIRMED,
+            Bundle().apply {
+                putString(RESULT_POSITION_ID, positionId)
+                putString(RESULT_AMOUNT, requireNotNull(reduceMarginAmount))
+            },
+        )
+        dismiss()
     }
 
     private fun closePosition() {

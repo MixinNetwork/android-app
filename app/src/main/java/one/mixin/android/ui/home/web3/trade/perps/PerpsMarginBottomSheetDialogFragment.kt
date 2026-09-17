@@ -30,6 +30,7 @@ import androidx.compose.material.Slider
 import androidx.compose.material.SliderDefaults
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,10 +54,12 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -316,6 +319,17 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }
 
         val submitCurrent by rememberUpdatedState(::submit)
+        if (!increase) {
+            DisposableEffect(lifecycleOwner) {
+                val manager = childFragmentManager
+                manager.setFragmentResultListener(PerpsCloseBottomSheetDialogFragment.RESULT_MARGIN_CONFIRMED, lifecycleOwner) { _, result ->
+                    if (result.getString(PerpsCloseBottomSheetDialogFragment.RESULT_POSITION_ID) == initialPosition.positionId) {
+                        result.getString(PerpsCloseBottomSheetDialogFragment.RESULT_AMOUNT)?.let { submitCurrent(it) }
+                    }
+                }
+                onDispose { manager.clearFragmentResultListener(PerpsCloseBottomSheetDialogFragment.RESULT_MARGIN_CONFIRMED) }
+            }
+        }
         MixinAppTheme {
             val reductionLimitError = if (exceedsReductionLimit && maximumReduction != null) {
                 val limit = if (reduceByPercent) {
@@ -327,14 +341,13 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             val onSubmit = {
                 if (increase) {
                     submit(normalizedAmount)
-                } else if (canSubmit && parentFragmentManager.findFragmentByTag(PerpsCloseBottomSheetDialogFragment.TAG) == null) {
+                } else if (canSubmit && childFragmentManager.findFragmentByTag(PerpsCloseBottomSheetDialogFragment.TAG) == null) {
                     keyboardController?.hide()
                     focusManager.clearFocus()
                     val approvedAmount = normalizedAmount
                     AnalyticsTracker.trackPerpsReduceMarginPreview()
                     PerpsCloseBottomSheetDialogFragment.newInstance(currentPosition.toPosition(), reduceMarginAmount = approvedAmount)
-                        .setOnMarginConfirmed { submitCurrent(approvedAmount) }
-                        .show(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
+                        .show(childFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                 }
             }
             PerpsMarginContent(
@@ -630,6 +643,14 @@ private fun PerpsReduceMarginInput(
     onInputChanged: (String) -> Unit,
     onToggleMode: () -> Unit,
 ) {
+    var textFieldValue by remember(isPercentage) { mutableStateOf(TextFieldValue(input, TextRange(input.length))) }
+    LaunchedEffect(input) {
+        textFieldValue = syncPerpsMarginInput(textFieldValue, input)
+    }
+    fun updateInput(value: String) {
+        textFieldValue = TextFieldValue(value, TextRange(value.length))
+        onInputChanged(value)
+    }
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val inputValue = input.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -654,7 +675,7 @@ private fun PerpsReduceMarginInput(
     }
     fun selectPercentage(value: BigDecimal) {
         val selected = if (isPercentage) value else reduceMarginAmount(margin?.toPlainString(), value.toPlainString(), true) ?: BigDecimal.ZERO
-        onInputChanged(formatMarginAdjustmentInput(selected, isPercentage))
+        updateInput(formatMarginAdjustmentInput(selected, isPercentage))
     }
     Column(
         modifier = Modifier
@@ -666,7 +687,7 @@ private fun PerpsReduceMarginInput(
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconButton(
-                onClick = { onInputChanged(formatMarginAdjustmentInput((inputValue - BigDecimal.ONE).max(BigDecimal.ZERO), isPercentage)) },
+                onClick = { updateInput(formatMarginAdjustmentInput((inputValue - BigDecimal.ONE).max(BigDecimal.ZERO), isPercentage)) },
                 enabled = enabled && inputValue > BigDecimal.ZERO,
             ) {
                 Icon(painterResource(R.drawable.ic_perps_minus), stringResource(R.string.perps_reduce_action), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
@@ -674,10 +695,14 @@ private fun PerpsReduceMarginInput(
             Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                 if (!isPercentage) Text(PERPS_USD_SYMBOL, fontSize = 48.sp, fontWeight = FontWeight.W500, color = inputColor)
                 BasicTextField(
-                    value = input,
+                    value = textFieldValue,
                     onValueChange = { value ->
-                        if (value.length <= 40 && value.all { it in '0'..'9' || (!isPercentage && it == '.') } && value.count { it == '.' } <= 1 &&
-                            value.substringAfter('.', "").length <= 2) onInputChanged(value)
+                        val text = value.text
+                        if (text.length <= 40 && text.all { it in '0'..'9' || (!isPercentage && it == '.') } && text.count { it == '.' } <= 1 &&
+                            text.substringAfter('.', "").length <= 2) {
+                            textFieldValue = value
+                            if (text != input) onInputChanged(text)
+                        }
                     },
                     enabled = enabled,
                     singleLine = true,
@@ -695,7 +720,7 @@ private fun PerpsReduceMarginInput(
                 if (isPercentage) Text("%", fontSize = 48.sp, fontWeight = FontWeight.W500, color = inputColor)
             }
             IconButton(
-                onClick = { onInputChanged(formatMarginAdjustmentInput((inputValue + BigDecimal.ONE).min(maximum), isPercentage)) },
+                onClick = { updateInput(formatMarginAdjustmentInput((inputValue + BigDecimal.ONE).min(maximum), isPercentage)) },
                 enabled = enabled && inputValue < maximum,
             ) {
                 Icon(painterResource(R.drawable.ic_perps_add), stringResource(R.string.Add), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
@@ -763,6 +788,9 @@ private fun PerpsReduceMarginInput(
         }
     }
 }
+
+internal fun syncPerpsMarginInput(value: TextFieldValue, input: String): TextFieldValue =
+    if (value.text == input) value else TextFieldValue(input, TextRange(input.length))
 
 @Preview(name = "100%", widthDp = 360, heightDp = 560, locale = "zh")
 @Composable

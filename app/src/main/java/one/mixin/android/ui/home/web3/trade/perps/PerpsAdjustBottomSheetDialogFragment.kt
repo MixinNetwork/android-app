@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.os.Bundle
 import android.view.View
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
@@ -36,17 +37,26 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.alert.components.cardBackground
 
 @AndroidEntryPoint
 class PerpsAdjustBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "PerpsAdjustBottomSheetDialogFragment"
-    }
+        const val RESULT_ACTION = "action"
+        const val ACTION_ADD_MARGIN = "add_margin"
+        const val ACTION_REDUCE_MARGIN = "reduce_margin"
+        const val ACTION_ADD_POSITION = "add_position"
+        private const val ARGS_POSITION_ID = "args_position_id"
 
-    var onAddMargin: (() -> Unit)? = null
-    var onReduceMargin: (() -> Unit)? = null
-    var onAddPosition: (() -> Unit)? = null
+        fun newInstance(positionId: String) = PerpsAdjustBottomSheetDialogFragment().withArgs {
+            putString(ARGS_POSITION_ID, positionId)
+        }
+
+        fun resultKey(positionId: String) = "$TAG:$positionId"
+    }
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
@@ -58,20 +68,17 @@ class PerpsAdjustBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         MixinAppTheme {
             PerpsAdjustContent(
                 onDismiss = { dismiss() },
-                onAddMargin = {
-                    dismiss()
-                    onAddMargin?.invoke()
-                },
-                onReduceMargin = {
-                    dismiss()
-                    onReduceMargin?.invoke()
-                },
-                onAddPosition = {
-                    dismiss()
-                    onAddPosition?.invoke()
-                },
+                onAddMargin = { selectAction(ACTION_ADD_MARGIN) },
+                onReduceMargin = { selectAction(ACTION_REDUCE_MARGIN) },
+                onAddPosition = { selectAction(ACTION_ADD_POSITION) },
             )
         }
+    }
+
+    private fun selectAction(action: String) {
+        val key = resultKey(requireNotNull(requireArguments().getString(ARGS_POSITION_ID)))
+        parentFragmentManager.setFragmentResult(key, Bundle().apply { putString(RESULT_ACTION, action) })
+        dismiss()
     }
 
     override fun showError(error: String) = Unit
@@ -168,7 +175,7 @@ private fun AdjustAction(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
-            .background(MixinAppTheme.colors.background)
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
             .clickable(onClick = onClick)
             .padding(start = 20.dp, end = 16.dp, top = 13.dp, bottom = 13.dp),
         horizontalArrangement = Arrangement.spacedBy(12.dp),
