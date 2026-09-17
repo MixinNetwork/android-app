@@ -141,7 +141,6 @@ fun OpenPositionPage(
     }
     var takeProfitPrice by remember { mutableStateOf("") }
     var stopLossPrice by remember { mutableStateOf("") }
-    var remoteLiquidationPrice by remember { mutableStateOf<String?>(null) }
     var liquidationPriceLimit by remember { mutableStateOf<LiquidationPriceLimit?>(null) }
     var isLiquidationLoading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
@@ -162,6 +161,9 @@ fun OpenPositionPage(
                 maxLeverage = market.leverage,
             ).toFloat(),
         )
+    }
+    var remoteLiquidationPrice by remember(selectedIsLong, usdtAmount, leverage, currentMarket.minAmount) {
+        mutableStateOf<String?>(null)
     }
 
     LaunchedEffect(marketId) {
@@ -246,10 +248,30 @@ fun OpenPositionPage(
     val aboveMaximumMargin = hasInputAmount && maximumMargin > BigDecimal.ZERO && inputAmount > maximumMargin
     val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
     val showAddAction = insufficientBalance || tokenBalance <= BigDecimal.ZERO
+    val validationCurrentPrice = currentMarket.last.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val validationLiquidationPrice = remoteLiquidationPrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
+    val tpSlError = validateTpSlPrice(
+        rawValue = takeProfitPrice,
+        currentPrice = validationCurrentPrice,
+        liquidationBasePrice = validationCurrentPrice,
+        leverage = leverage.toInt(),
+        isLong = selectedIsLong,
+        isTakeProfit = true,
+        liquidationPrice = validationLiquidationPrice,
+    ) ?: validateTpSlPrice(
+        rawValue = stopLossPrice,
+        currentPrice = validationCurrentPrice,
+        liquidationBasePrice = validationCurrentPrice,
+        leverage = leverage.toInt(),
+        isLong = selectedIsLong,
+        isTakeProfit = false,
+        liquidationPrice = validationLiquidationPrice,
+    )
     val canReview = hasInputAmount &&
         !belowMinimumMargin &&
         !aboveMaximumMargin &&
         !insufficientBalance &&
+        tpSlError == null &&
         !isLiquidationLoading &&
         !remoteLiquidationPrice.isNullOrBlank()
     val minimumMarginError = stringResource(
@@ -284,7 +306,7 @@ fun OpenPositionPage(
         aboveMaximumMargin -> maximumMarginError
         else -> null
     }
-    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError ?: liquidationLimitError
+    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError ?: liquidationLimitError ?: tpSlError
     val tokenNetworkName = currentToken?.chainName
         ?.takeIf { it.isNotBlank() }
         ?: currentToken?.chainSymbol
@@ -315,6 +337,7 @@ fun OpenPositionPage(
             entryPrice = null,
             marketId = currentMarket.marketId,
             priceScale = currentMarket.priceScale,
+            liquidationPrice = remoteLiquidationPrice,
         ).setOnApply { value ->
             if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
                 takeProfitPrice = value.orEmpty()
@@ -741,7 +764,7 @@ fun OpenPositionPage(
                         .fillMaxWidth()
                         .height(48.dp),
                     onClick = {
-                        if (isProcessing) return@MixinButton
+                        if (isProcessing || tpSlError != null) return@MixinButton
                         isProcessing = true
                         AnalyticsTracker.trackPerpsOpenPreview()
                         errorInfo = null

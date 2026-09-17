@@ -84,6 +84,9 @@ import one.mixin.android.ui.home.web3.market.MarketFavoriteAnimationIntent
 import one.mixin.android.ui.home.web3.market.MarketFavoriteIcon
 import one.mixin.android.ui.home.web3.market.shouldClearFavoriteAnimationIntent
 import one.mixin.android.ui.home.web3.trade.CandleChart
+import one.mixin.android.ui.home.web3.trade.ChartSelection
+import one.mixin.android.ui.home.web3.trade.ChartStyleToggle
+import one.mixin.android.ui.home.web3.trade.rememberPerpsChartStyle
 import one.mixin.android.ui.wallet.MarketDescriptionTextView
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.selectLocalizedMarketDescription
@@ -398,6 +401,7 @@ fun PerpsMarketDetailPage(
                             entryPrice = currentPosition.entryPrice,
                             marketId = currentPosition.marketId,
                             priceScale = currentPosition.priceScale,
+                            liquidationPrice = currentPosition.liquidationPrice,
                         ).setOnApply { value ->
                             val normalizedValue = value?.trim().orEmpty()
                             if (normalizedValue == existingPrice) return@setOnApply
@@ -967,7 +971,16 @@ private fun MarketDetailCard(
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
-    val changePercent = market.changePercent()
+    val chartStyle = rememberPerpsChartStyle()
+    // While the chart is being scrubbed it reports the candle under the finger and the header
+    // follows it; at rest it falls back to the live market.
+    var selection by remember { mutableStateOf<ChartSelection?>(null) }
+
+    // The line chart paints its whole range in one colour, so it takes it from the market's 24h
+    // change - the same figure shown here - rather than from the live price. Read the market value
+    // directly so scrubbing the chart does not repaint the line under the finger.
+    val marketChangePercent = market.changePercent()
+    val changePercent = selection?.changePercent ?: marketChangePercent
     val isPositive = changePercent >= BigDecimal.ZERO
     val changeColor = if (isPositive) risingColor else fallingColor
     val changeText = formatPerpsSignedPercent(changePercent)
@@ -976,7 +989,7 @@ private fun MarketDetailCard(
         ?: market.tokenSymbol.takeIf { it.isNotBlank() }
         ?: displaySymbol
 
-    val displayPrice = market.last
+    val displayPrice = selection?.price ?: market.last
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -998,12 +1011,24 @@ private fun MarketDetailCard(
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = changeText,
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = changeColor
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = changeText,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = changeColor
+                    )
+                    if (chartStyle.useTradingView) {
+                        ChartStyleToggle(
+                            lineMode = chartStyle.lineMode,
+                            onToggle = { chartStyle.setLineMode(!chartStyle.lineMode) },
+                        )
+                    }
+                }
             }
 
             CoilImage(
@@ -1027,7 +1052,12 @@ private fun MarketDetailCard(
             CandleChart(
                 marketId = marketId,
                 timeFrame = timeFrameValues[selectedTimeFrame],
-                marketPrice = market.last
+                priceScale = market.priceScale,
+                marketPrice = market.last,
+                useTradingView = chartStyle.useTradingView,
+                lineMode = chartStyle.lineMode,
+                trendUp = marketChangePercent >= BigDecimal.ZERO,
+                onSelectionChange = { selection = it },
             )
         }
 

@@ -1,8 +1,10 @@
 package one.mixin.android.ui.home.web3.trade
 
+import android.content.SharedPreferences
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
@@ -19,10 +21,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -31,6 +36,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -44,6 +50,7 @@ import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
@@ -78,6 +85,10 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 private const val CANDLE_REFRESH_INTERVAL_MS = 10_000L
+// The chart-type button is a bare icon inset by its own padding, the way the reference has it.
+private const val CHART_STYLE_TOGGLE_ICON_DP = 20f
+private const val CHART_STYLE_TOGGLE_H_PADDING_DP = 8f
+private const val CHART_STYLE_TOGGLE_V_PADDING_DP = 4f
 private const val DEFAULT_CANDLE_SCALE = 1f
 private const val MIN_CANDLE_SCALE = 0.5f
 private const val MAX_CANDLE_SCALE = 3f
@@ -126,11 +137,74 @@ private fun PointerEvent.compatCalculateZoom(): Float {
     return if (previousAverageDistance > 0f) currentAverageDistance / previousAverageDistance else 1f
 }
 
+// What the chart is showing under the finger while it is being scrubbed, so the header can follow
+// it. The change is measured against the first candle of the series, the way the reference does it.
+data class ChartSelection(
+    val price: String,
+    val changePercent: BigDecimal,
+)
+
+// The chart style is a preference, so it outlives the page. The header owns the toggle and the
+// chart reads the result, so both take it from here.
+internal class PerpsChartStyle(
+    val useTradingView: Boolean,
+    val lineMode: Boolean,
+    val setLineMode: (Boolean) -> Unit,
+)
+
+@Composable
+internal fun rememberPerpsChartStyle(): PerpsChartStyle {
+    val preferences = LocalContext.current.defaultSharedPreferences
+    var useTradingView by remember {
+        mutableStateOf(preferences.getBoolean(Constants.Account.PREF_USE_TRADING_VIEW_CANDLES, false))
+    }
+    var lineMode by remember {
+        mutableStateOf(preferences.getBoolean(Constants.Account.PREF_PERPS_LINE_CHART, false))
+    }
+
+    DisposableEffect(preferences) {
+        val listener =
+            SharedPreferences.OnSharedPreferenceChangeListener { sharedPreferences, key ->
+                if (key == Constants.Account.PREF_USE_TRADING_VIEW_CANDLES) {
+                    useTradingView = sharedPreferences.getBoolean(key, false)
+                }
+                if (key == Constants.Account.PREF_PERPS_LINE_CHART) {
+                    lineMode = sharedPreferences.getBoolean(key, false)
+                }
+            }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        onDispose {
+            preferences.unregisterOnSharedPreferenceChangeListener(listener)
+        }
+    }
+
+    // Move the state as well as the preference so the tap lands on this frame; the listener above
+    // is for changes made anywhere else, such as the debug screen.
+    val setLineMode: (Boolean) -> Unit = { next ->
+        lineMode = next
+        preferences.edit()
+            .putBoolean(Constants.Account.PREF_PERPS_LINE_CHART, next)
+            .apply()
+    }
+    return remember(preferences, useTradingView, lineMode) {
+        PerpsChartStyle(
+            useTradingView = useTradingView,
+            lineMode = lineMode,
+            setLineMode = setLineMode,
+        )
+    }
+}
+
 @Composable
 fun CandleChart(
     marketId: String,
     timeFrame: String,
+    priceScale: Int,
     marketPrice: String? = null,
+    useTradingView: Boolean = false,
+    lineMode: Boolean = false,
+    trendUp: Boolean = true,
+    onSelectionChange: (ChartSelection?) -> Unit = {},
 ) {
     val context = LocalContext.current
     val dataError = stringResource(R.string.Data_error)
@@ -194,14 +268,66 @@ fun CandleChart(
                 )
             }
             else -> {
-                ScrollableCandleChart(
-                    candles = candles,
-                    context = context,
-                    marketPrice = marketPrice?.toBigDecimalOrNull(),
-                    marketPriceText = marketPrice,
-                )
+                if (useTradingView) {
+                    TradingViewCandleChart(
+                        candles = candles,
+                        marketPrice = marketPrice,
+                        priceScale = priceScale,
+                        timeFrame = timeFrame,
+                        lineMode = lineMode,
+                        trendUp = trendUp,
+                        onSelectionChange = onSelectionChange,
+                    )
+                } else {
+                    ScrollableCandleChart(
+                        candles = candles,
+                        context = context,
+                        marketPrice = marketPrice?.toBigDecimalOrNull(),
+                        marketPriceText = marketPrice,
+                    )
+                }
             }
         }
+    }
+}
+
+// Switches the perps chart between candles and the line chart, mirroring the reference app. It sits
+// in the header beside the change figure, so the icon shows the style a tap would switch to. The
+// reference's chart-type button is a bare icon inset by its own padding, not a fixed plate, so this
+// one is sized by its icon and padding and carries no chip.
+@Composable
+internal fun ChartStyleToggle(
+    lineMode: Boolean,
+    onToggle: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier =
+            modifier
+                .clip(CircleShape)
+                .clickable(onClick = onToggle)
+                .padding(
+                    horizontal = CHART_STYLE_TOGGLE_H_PADDING_DP.dp,
+                    vertical = CHART_STYLE_TOGGLE_V_PADDING_DP.dp,
+                ),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter =
+                painterResource(
+                    if (lineMode) R.drawable.ic_chart_candle else R.drawable.ic_chart_line,
+                ),
+            contentDescription =
+                stringResource(
+                    if (lineMode) {
+                        R.string.perps_chart_style_candle
+                    } else {
+                        R.string.perps_chart_style_line
+                    },
+                ),
+            tint = MixinAppTheme.colors.textAssist,
+            modifier = Modifier.size(CHART_STYLE_TOGGLE_ICON_DP.dp),
+        )
     }
 }
 
