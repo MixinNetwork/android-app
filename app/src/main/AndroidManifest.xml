@@ -101,6 +101,7 @@
                 <data android:host="device-transfer" />
                 <data android:host="tip"/>
                 <data android:host="buy"/>
+                <data android:host=""/>
                 <data android:host="wc" />
                 <data android:host="referrals" />
             </intent-filter>
