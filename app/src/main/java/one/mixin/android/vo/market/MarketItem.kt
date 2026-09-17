@@ -1,14 +1,14 @@
 package one.mixin.android.vo.market
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
-import androidx.room.TypeConverters
+import androidx.room3.ColumnInfo
+import androidx.room3.ColumnTypeConverters
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.db.converter.DescriptionsConverter
 import one.mixin.android.db.converter.OptionalListConverter
 
 @Parcelize
-@TypeConverters(OptionalListConverter::class, DescriptionsConverter::class)
+@ColumnTypeConverters(OptionalListConverter::class, DescriptionsConverter::class)
 data class MarketItem(
     @ColumnInfo(name = "coin_id")
     val coinId: String,

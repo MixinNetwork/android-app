@@ -1,7 +1,7 @@
 package one.mixin.android.vo.safe
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 import kotlinx.parcelize.Parcelize
 
 @Parcelize

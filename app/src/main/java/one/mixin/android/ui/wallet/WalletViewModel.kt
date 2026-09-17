@@ -155,7 +155,7 @@ internal constructor(
         snapshotId: String,
     ) = tokenRepository.snapshotLocal(assetId, snapshotId)
 
-    fun assetItem(id: String): LiveData<TokenItem> = tokenRepository.assetItem(id)
+    fun assetItem(id: String): LiveData<TokenItem?> = tokenRepository.assetItem(id)
 
     suspend fun simpleAssetItem(id: String) = tokenRepository.simpleAssetItem(id)
 

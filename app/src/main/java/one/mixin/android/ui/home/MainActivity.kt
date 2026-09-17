@@ -22,7 +22,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ProcessLifecycleOwner
 import androidx.lifecycle.lifecycleScope
-import androidx.room.util.readVersion
+import one.mixin.android.db.readVersion
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
@@ -911,6 +911,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     private suspend fun initWalletConnect() {
         if (!WalletConnect.isEnabled()) return
         try {
+            // Access initializes the WalletConnect singleton.
+            @Suppress("UNUSED_EXPRESSION")
             WalletConnectV2
             val classicWalletId = web3Repository.getClassicWalletId()
             Web3Signer.init(

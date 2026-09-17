@@ -1,9 +1,9 @@
 package one.mixin.android.db.pending
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
 import one.mixin.android.db.BaseDao
 import one.mixin.android.vo.ConversationWithStatus
 import one.mixin.android.vo.Message
@@ -49,6 +49,9 @@ interface PendingMessageDao : BaseDao<PendingMessage> {
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("SELECT category, id, conversation_id, media_url FROM pending_messages WHERE id = :messageId")
     fun findMessageMediaById(messageId: String): MessageMedia?
+
+    @Query("SELECT category, id, conversation_id, media_url FROM pending_messages WHERE id IN (:messageIds)")
+    fun findMessageMediaByIds(messageIds: List<String>): List<MessageMedia>
 
     @Query("UPDATE pending_messages SET quote_content = :content WHERE conversation_id = :conversationId AND quote_message_id = :messageId")
     fun updateQuoteContentByQuoteId(

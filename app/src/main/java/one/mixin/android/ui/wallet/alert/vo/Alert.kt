@@ -3,10 +3,10 @@ package one.mixin.android.ui.wallet.alert.vo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.PrimaryKey
+import androidx.room3.ColumnTypeConverters
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -19,7 +19,7 @@ import one.mixin.android.ui.wallet.alert.vo.AlertType.PRICE_REACHED
 import java.math.BigDecimal
 
 @Entity("market_alerts")
-@TypeConverters(AlertFrequencyConverter::class, AlertTypeConverter::class, AlertStatusConverter::class)
+@ColumnTypeConverters(AlertFrequencyConverter::class, AlertTypeConverter::class, AlertStatusConverter::class)
 class Alert(
     @PrimaryKey
     @ColumnInfo(name = "alert_id")

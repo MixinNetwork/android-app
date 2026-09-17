@@ -1,10 +1,10 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
-import androidx.room.Update
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
+import androidx.room3.Update
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.AssetItem
@@ -38,7 +38,7 @@ interface AssetDao : BaseDao<Asset> {
     fun getXIN(): AssetItem?
 
     @Query("SELECT * FROM assets WHERE asset_id = :id")
-    fun asset(id: String): LiveData<Asset>
+    fun asset(id: String): LiveData<Asset?>
 
     @Query("SELECT * FROM assets WHERE asset_id = :id")
     suspend fun simpleAsset(id: String): Asset?
@@ -90,7 +90,7 @@ interface AssetDao : BaseDao<Asset> {
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :id")
-    fun assetItem(id: String): LiveData<AssetItem>
+    fun assetItem(id: String): LiveData<AssetItem?>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id = :assetId")

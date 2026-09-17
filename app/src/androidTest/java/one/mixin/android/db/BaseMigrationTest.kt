@@ -1,7 +1,7 @@
 package one.mixin.android.db
 
-import androidx.room.testing.MigrationTestHelper
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import androidx.room3.testing.MigrationTestHelper
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.platform.app.InstrumentationRegistry
 import one.mixin.android.Constants
 import org.junit.After
@@ -14,8 +14,9 @@ open class BaseMigrationTest {
     val migrationTestHelper =
         MigrationTestHelper(
             InstrumentationRegistry.getInstrumentation(),
-            MixinDatabase::class.java.canonicalName,
-            FrameworkSQLiteOpenHelperFactory(),
+            InstrumentationRegistry.getInstrumentation().targetContext.getDatabasePath(Constants.DataBase.DB_NAME),
+            AndroidSQLiteDriver(),
+            MixinDatabase::class,
         )
 
     @Before

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.home
 
+import com.google.gson.annotations.SerializedName
 import one.mixin.android.api.response.EarnAccountSummary
 import one.mixin.android.api.response.EarnProduct
 import one.mixin.android.extension.numberFormat2
@@ -7,11 +8,17 @@ import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 
 data class WalletHomeEarnAccount(
+    @SerializedName("assetId")
     val assetId: String,
+    @SerializedName("assetSymbol")
     val assetSymbol: String,
+    @SerializedName("iconUrl")
     val iconUrl: String,
+    @SerializedName("balanceUsd")
     val balanceUsd: BigDecimal,
+    @SerializedName("earningsUsd")
     val earningsUsd: BigDecimal,
+    @SerializedName("apyText")
     val apyText: String?,
 ) {
     val balanceAmountText: String

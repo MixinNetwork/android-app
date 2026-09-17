@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
 import one.mixin.android.extension.md5
 import one.mixin.android.extension.nowInUtc
 

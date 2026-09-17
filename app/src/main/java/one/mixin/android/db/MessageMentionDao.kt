@@ -1,9 +1,9 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
 import one.mixin.android.ui.transfer.vo.compatible.TransferMessageMention
 import one.mixin.android.vo.MessageMention
 

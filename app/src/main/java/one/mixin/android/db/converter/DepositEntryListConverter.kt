@@ -1,12 +1,12 @@
 package one.mixin.android.db.converter
 
-import androidx.room.TypeConverter
+import androidx.room3.ColumnTypeConverter
 import com.google.gson.reflect.TypeToken
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.OldDepositEntry
 
 class DepositEntryListConverter {
-    @TypeConverter
+    @ColumnTypeConverter
     fun revertDate(value: String?): List<OldDepositEntry> {
         val listType = object : TypeToken<ArrayList<OldDepositEntry>>() {}.type
         return if (value.isNullOrBlank()) {
@@ -16,7 +16,7 @@ class DepositEntryListConverter {
         }
     }
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun converterDate(list: List<OldDepositEntry>?): String =
         if (list.isNullOrEmpty()) {
             ""

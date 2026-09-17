@@ -18,6 +18,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -25,6 +27,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.AssetChange
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.numberFormat2
@@ -44,6 +47,7 @@ fun AssetChangeItem(
     isReceive: Boolean = false,
     isUnlimited: Boolean = false,
     isApproval: Boolean = false,
+    status: String? = null,
 ) {
     val amountValue = if (isUnlimited) {
         stringResource(R.string.unlimited).replaceFirstChar { it.uppercase() }
@@ -60,8 +64,12 @@ fun AssetChangeItem(
     } else {
         balanceChangePresentation(amountValue, isReceive)
     }
-    val textColor = if (isApproval) {
+    val textColor = if (isApproval && status != null && status != TransactionStatus.SUCCESS.value) {
+        MixinAppTheme.colors.textPrimary
+    } else if (isApproval) {
         MixinAppTheme.colors.walletRed
+    } else if (status != null) {
+        Color(LocalContext.current.web3AmountColor(status, amountValue, isReceive))
     } else {
         presentation.tone.toColor()
     }
@@ -83,7 +91,7 @@ fun AssetChangeItem(
             Spacer(modifier = Modifier.width(4.dp))
 
             Text(
-                text = if (isUnlimited) amountValue else "${presentation.amount} ",
+                text = if (isUnlimited) amountValue else "${if (status == null) presentation.amount else formatWeb3AmountWithSign(amountValue, isReceive)} ",
                 fontSize = 14.sp,
                 color = textColor
             )
@@ -110,7 +118,8 @@ fun AssetChangesList(
     senders: List<AssetChange>,
     receivers: List<AssetChange>,
     fetchToken: suspend (String) -> Web3TokenItem?,
-    approvals: List<AssetChange>? = null
+    approvals: List<AssetChange>? = null,
+    status: String,
 ) {
     val scope = rememberCoroutineScope()
     val assetIds = remember(senders, receivers, approvals) {
@@ -138,6 +147,7 @@ fun AssetChangesList(
             approvals?.forEachIndexed { index, approval ->
                 val token = tokens[approval.assetId]
                 AssetChangeItem(
+                    status = status,
                     amount = approval.amount,
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
@@ -158,6 +168,7 @@ fun AssetChangesList(
             receivers.forEachIndexed { index, receiver ->
                 val token = tokens[receiver.assetId]
                 AssetChangeItem(
+                    status = status,
                     amount = receiver.amount,
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
@@ -176,6 +187,7 @@ fun AssetChangesList(
             senders.forEachIndexed { index, sender ->
                 val token = tokens[sender.assetId]
                 AssetChangeItem(
+                    status = status,
                     amount = sender.amount,
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,

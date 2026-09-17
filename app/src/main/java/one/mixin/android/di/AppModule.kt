@@ -7,14 +7,13 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.birbit.android.jobqueue.config.Configuration
 import com.birbit.android.jobqueue.scheduling.FrameworkJobSchedulerService
+import com.birbit.android.jobqueue.scheduling.Scheduler
 import com.google.android.gms.net.CronetProviderInstaller
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.google.net.cronet.okhttptransport.MixinCronetInterceptor
 import com.jakewharton.retrofit2.adapter.kotlin.coroutines.CoroutineCallAdapterFactory
 import com.lambdapioneer.argon2kt.Argon2Kt
-import com.twilio.audioswitch.AudioDevice
-import com.twilio.audioswitch.AudioSwitch
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -83,6 +82,8 @@ import one.mixin.android.db.MessageHistoryDao
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.web3.Web3RawTransactionDao
+import one.mixin.android.extension.AudioDevice
+import one.mixin.android.extension.AudioSwitch
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.filterNonAscii
 import one.mixin.android.extension.getStringDeviceId
@@ -443,10 +444,9 @@ object AppModule {
                 }
                 .customLogger(JobLogger())
                 .networkUtil(jobNetworkUtil)
-        builder.scheduler(
-            FrameworkJobSchedulerService
-                .createSchedulerFor(app.applicationContext, MyJobService::class.java),
-        )
+        @Suppress("INFERRED_INVISIBLE_RETURN_TYPE_WARNING")
+        val scheduler: Scheduler = FrameworkJobSchedulerService.createSchedulerFor(app.applicationContext, MyJobService::class.java)
+        builder.scheduler(scheduler)
         return MixinJobManager(builder.build())
     }
 

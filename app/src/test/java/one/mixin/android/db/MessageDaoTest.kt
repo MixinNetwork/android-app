@@ -1,22 +1,36 @@
 package one.mixin.android.db
 
 import android.content.Context
-import androidx.room.Room
+import androidx.paging.PagingSource
+import androidx.paging.PagingState
+import androidx.room3.Room
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNotNull
 import kotlin.test.assertNull
+import kotlin.test.assertIs
+import kotlin.test.assertTrue
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import kotlinx.coroutines.yield
+import one.mixin.android.db.datasource.RoomDatabaseCompat
+import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.vo.Conversation
+import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.MessageBuilder
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.RemoteMessageStatus
 import one.mixin.android.vo.User
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -30,6 +44,7 @@ class MessageDaoTest {
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         database = Room.inMemoryDatabaseBuilder(context, MixinDatabase::class.java)
+            .setDriver(AndroidSQLiteDriver())
             .allowMainThreadQueries()
             .build()
         messageDao = database.messageDao()
@@ -85,10 +100,235 @@ class MessageDaoTest {
         assertEquals(3, messageDao.countIndexMediaMessages(conversationId))
     }
 
-    private fun conversation(id: String) =
+    @Test
+    fun rawWritesNotifyInvalidationTracker() = runBlocking {
+        val conversationId = "invalidation-conversation"
+        database.conversationDao().insert(conversation(conversationId))
+        val invalidation = CompletableDeferred<Unit>()
+        val observer =
+            RoomDatabaseCompat.observeInvalidation(this, database, "conversations") {
+                invalidation.complete(Unit)
+            }
+        database.invalidationTracker.createFlow("conversations").first()
+        yield()
+        assertFalse(invalidation.isCompleted)
+
+        RoomDatabaseCompat.execute(
+            database,
+            "UPDATE conversations SET name = ? WHERE conversation_id = ?",
+            arrayOf("Updated", conversationId),
+        )
+
+        withTimeout(5_000) { invalidation.await() }
+        observer.cancel()
+    }
+
+    @Test
+    fun rawWritesInvalidatePagingSource() = runBlocking {
+        val conversationId = "paging-invalidation-conversation"
+        database.conversationDao().insert(conversation(conversationId))
+        val pagingSource =
+            object : PagingSource<Int, Int>() {
+                override suspend fun load(params: LoadParams<Int>): LoadResult<Int, Int> =
+                    LoadResult.Page(emptyList(), null, null)
+
+                override fun getRefreshKey(state: PagingState<Int, Int>): Int? = null
+            }
+
+        val invalidation = RoomDatabaseCompat.observeInvalidation(database, pagingSource, "conversations")
+        invalidation.awaitStart()
+        assertFalse(pagingSource.invalid)
+
+        RoomDatabaseCompat.execute(
+            database,
+            "UPDATE conversations SET name = ? WHERE conversation_id = ?",
+            arrayOf("Updated", conversationId),
+        )
+
+        withTimeout(5_000) {
+            while (!pagingSource.invalid) yield()
+        }
+        assertTrue(pagingSource.invalid)
+    }
+
+    @Test
+    fun markReadInvalidatesConversationPagingSource() = runBlocking {
+        val conversationId = "mark-read-conversation"
+        val userId = "mark-read-user"
+        database.userDao().insert(user(userId))
+        database.conversationDao().insert(conversation(conversationId, userId, 1))
+        val pagingSource = DataProvider.observeConversations(database)
+        val result =
+            pagingSource.load(
+                PagingSource.LoadParams.Refresh(
+                    key = null,
+                    loadSize = 20,
+                    placeholdersEnabled = true,
+                ),
+            )
+        assertTrue(result is PagingSource.LoadResult.Page)
+        assertFalse(pagingSource.invalid)
+
+        database.remoteMessageStatusDao().markRead(conversationId)
+
+        withTimeout(5_000) {
+            while (!pagingSource.invalid) yield()
+        }
+        assertTrue(pagingSource.invalid)
+
+        val refreshedPagingSource = DataProvider.observeConversations(database)
+        val refreshed =
+            refreshedPagingSource.load(
+                PagingSource.LoadParams.Refresh(
+                    key = null,
+                    loadSize = 20,
+                    placeholdersEnabled = true,
+                ),
+            ) as PagingSource.LoadResult.Page
+        assertEquals(0, refreshed.data.single().unseenMessageCount)
+    }
+
+    @Test
+    fun incomingMessageTransactionInvalidatesConversationPagingSource() = runBlocking {
+        val conversationId = "incoming-message-conversation"
+        val userId = "incoming-message-user"
+        val messageId = "incoming-message"
+        database.userDao().insert(user(userId))
+        database.conversationDao().insert(conversation(conversationId, userId))
+        val pagingSource = DataProvider.observeConversations(database)
+        val result =
+            pagingSource.load(
+                PagingSource.LoadParams.Refresh(
+                    key = null,
+                    loadSize = 20,
+                    placeholdersEnabled = true,
+                ),
+            )
+        assertTrue(result is PagingSource.LoadResult.Page)
+        assertFalse(pagingSource.invalid)
+
+        database.runInTransaction {
+            messageDao.insert(
+                MessageBuilder(
+                    messageId,
+                    conversationId,
+                    userId,
+                    MessageCategory.PLAIN_TEXT.name,
+                    MessageStatus.DELIVERED.name,
+                    "2026-06-29T00:01:00Z",
+                ).setContent("New message").build(),
+            )
+            database.remoteMessageStatusDao().insert(
+                RemoteMessageStatus(messageId, conversationId, MessageStatus.DELIVERED.name),
+            )
+            database.conversationDao().updateLastMessageId(
+                messageId,
+                "2026-06-29T00:01:00Z",
+                conversationId,
+            )
+            database.remoteMessageStatusDao().updateConversationUnseen(conversationId)
+        }
+
+        withTimeout(5_000) {
+            while (!pagingSource.invalid) yield()
+        }
+        assertTrue(pagingSource.invalid)
+        assertEquals(1, database.conversationDao().indexUnread(conversationId))
+
+        val refreshedPagingSource = DataProvider.observeConversations(database)
+        val refreshed =
+            refreshedPagingSource.load(
+                PagingSource.LoadParams.Refresh(
+                    key = null,
+                    loadSize = 20,
+                    placeholdersEnabled = true,
+                ),
+            ) as PagingSource.LoadResult.Page
+        assertEquals("New message", refreshed.data.single().content)
+        assertEquals(1, refreshed.data.single().unseenMessageCount)
+        assertFalse(refreshedPagingSource.invalid)
+
+        val secondMessageId = "second-incoming-message"
+        database.runInTransaction {
+            messageDao.insert(
+                MessageBuilder(
+                    secondMessageId,
+                    conversationId,
+                    userId,
+                    MessageCategory.PLAIN_TEXT.name,
+                    MessageStatus.DELIVERED.name,
+                    "2026-06-29T00:02:00Z",
+                ).setContent("Second message").build(),
+            )
+            database.remoteMessageStatusDao().insert(
+                RemoteMessageStatus(secondMessageId, conversationId, MessageStatus.DELIVERED.name),
+            )
+            database.conversationDao().updateLastMessageId(
+                secondMessageId,
+                "2026-06-29T00:02:00Z",
+                conversationId,
+            )
+            database.remoteMessageStatusDao().updateConversationUnseen(conversationId)
+        }
+
+        withTimeout(5_000) {
+            while (!refreshedPagingSource.invalid) yield()
+        }
+
+        val secondRefresh =
+            DataProvider.observeConversations(database).load(
+                PagingSource.LoadParams.Refresh(
+                    key = null,
+                    loadSize = 20,
+                    placeholdersEnabled = true,
+                ),
+            ) as PagingSource.LoadResult.Page
+        assertEquals("Second message", secondRefresh.data.single().content)
+        assertEquals(2, secondRefresh.data.single().unseenMessageCount)
+    }
+
+    @Test
+    fun conversationPagingKeepsKeysAndCountsAcrossLoadSizes() = runBlocking {
+        database.userDao().insert(user("owner"))
+        for (index in 0..6) {
+            database.conversationDao().insert(conversation("conversation-$index", "owner"))
+            database.conversationDao().updateLastMessageId("message-$index", "2026-06-29T00:00:0${index}Z", "conversation-$index")
+        }
+        val source = DataProvider.observeConversations(database)
+        withTimeout(5_000) {
+            val first = assertIs<PagingSource.LoadResult.Page<Int, ConversationItem>>(
+                source.load(PagingSource.LoadParams.Refresh(null, 3, true)),
+            )
+            assertEquals(listOf("conversation-6", "conversation-5", "conversation-4"), first.data.map { it.conversationId })
+            assertNull(first.prevKey)
+            assertEquals(3, first.nextKey)
+            assertEquals(4, first.itemsAfter)
+            val next = assertIs<PagingSource.LoadResult.Page<Int, ConversationItem>>(
+                source.load(PagingSource.LoadParams.Append(checkNotNull(first.nextKey), 4, true)),
+            )
+            assertEquals(listOf("conversation-3", "conversation-2", "conversation-1", "conversation-0"), next.data.map { it.conversationId })
+            assertEquals(3, next.prevKey)
+            assertNull(next.nextKey)
+            assertEquals(3, next.itemsBefore)
+            assertEquals(0, next.itemsAfter)
+            val previous = assertIs<PagingSource.LoadResult.Page<Int, ConversationItem>>(
+                source.load(PagingSource.LoadParams.Prepend(checkNotNull(next.prevKey), 5, true)),
+            )
+            assertEquals(first.data.map { it.conversationId }, previous.data.map { it.conversationId })
+            assertNull(previous.prevKey)
+            assertEquals(3, previous.nextKey)
+        }
+        source.invalidate()
+    }
+
+    private fun conversation(
+        id: String,
+        ownerId: String? = null,
+        unseenMessageCount: Int = 0,
+    ) =
         Conversation(
             conversationId = id,
-            ownerId = null,
+            ownerId = ownerId,
             category = ConversationCategory.CONTACT.name,
             name = null,
             iconUrl = null,
@@ -99,7 +339,7 @@ class MessageDaoTest {
             pinTime = null,
             lastMessageId = null,
             lastReadMessageId = null,
-            unseenMessageCount = 0,
+            unseenMessageCount = unseenMessageCount,
             status = ConversationStatus.SUCCESS.ordinal,
         )
 

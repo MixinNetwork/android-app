@@ -1,10 +1,10 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.paging.DataSource
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
+import androidx.paging.PagingSource
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationItem
 import one.mixin.android.vo.ConversationMinimal
@@ -47,7 +47,7 @@ interface ConversationDao : BaseDao<Conversation> {
         ORDER BY c.pin_time DESC, c.last_message_created_at DESC
         """,
     )
-    fun conversationList(): DataSource.Factory<Int, ConversationItem>
+    fun conversationList(): PagingSource<Int, ConversationItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
@@ -74,7 +74,7 @@ interface ConversationDao : BaseDao<Conversation> {
     suspend fun getConversationIdIfExistsSync(recipientId: String): String?
 
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
-    fun getConversationById(conversationId: String): LiveData<Conversation>
+    fun getConversationById(conversationId: String): LiveData<Conversation?>
 
     @Query("SELECT COUNT(p.user_id) as count, c.name, c.icon_url, EXISTS(SELECT 1 FROM participants WHERE conversation_id = :conversationId AND user_id = :userId) AS is_exist FROM participants p INNER JOIN conversations c ON p.conversation_id = c.conversation_id WHERE c.conversation_id = :conversationId")
     fun getConversationInfoById(

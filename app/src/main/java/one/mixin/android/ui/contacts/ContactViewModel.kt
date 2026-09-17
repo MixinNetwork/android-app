@@ -48,7 +48,7 @@ class ContactViewModel
             accountRepository.search(query).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
 
-        fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
+        fun findUserById(id: String): LiveData<User?> = userRepository.findUserById(id)
 
         fun mute(
             senderId: String,

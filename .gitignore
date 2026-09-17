@@ -3,6 +3,7 @@
 /local.properties
 /.idea
 /build
+build/
 /captures
 google-services.json
 .DS_Store

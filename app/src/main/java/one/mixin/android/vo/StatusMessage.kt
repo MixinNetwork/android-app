@@ -1,6 +1,6 @@
 package one.mixin.android.vo
 
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 
 class StatusMessage(
     @ColumnInfo(name = "message_id")

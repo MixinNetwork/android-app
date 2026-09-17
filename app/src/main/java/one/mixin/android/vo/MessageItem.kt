@@ -14,11 +14,10 @@ import androidx.core.net.toFile
 import androidx.core.net.toUri
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.UnstableApi
-import androidx.paging.PositionalDataSource
 import androidx.recyclerview.widget.DiffUtil
-import androidx.room.Entity
-import androidx.room.Ignore
-import androidx.room.PrimaryKey
+import androidx.room3.Entity
+import androidx.room3.Ignore
+import androidx.room3.PrimaryKey
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.parcelize.IgnoredOnParcel
@@ -450,23 +449,6 @@ private fun MessageItem.simpleChat(): String {
     }
 }
 
-class FixedMessageDataSource<T : Any>(private val items: List<T>, private val totalCount: Int) :
-    PositionalDataSource<T>() {
-    override fun loadRange(
-        params: LoadRangeParams,
-        callback: LoadRangeCallback<T>,
-    ) {
-        callback.onResult(items)
-    }
-
-    override fun loadInitial(
-        params: LoadInitialParams,
-        callback: LoadInitialCallback<T>,
-    ) {
-        callback.onResult(items, 0, totalCount)
-    }
-}
-
 fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
     val thumb =
         if ((thumbImage?.length ?: 0) > Constants.MAX_THUMB_IMAGE_LENGTH) {
@@ -481,7 +463,7 @@ fun MessageItem.toTranscript(transcriptId: String): TranscriptMessage {
         } else {
             thumbImage
         }
-    val content = if (isAppCard()) {
+    val content = if (isAppCard() && appCardData?.canShare != true) {
         appCardData?.copy(actions = null)?.let {
             GsonHelper.customGson.toJson(it)
         }

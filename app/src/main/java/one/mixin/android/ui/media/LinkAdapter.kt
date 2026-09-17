@@ -15,13 +15,13 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.hashForDate
 import one.mixin.android.extension.inflate
 import one.mixin.android.ui.common.recyclerview.NormalHolder
-import one.mixin.android.ui.common.recyclerview.SafePagedListAdapter
+import one.mixin.android.ui.common.recyclerview.SafePagingDataAdapter
 import one.mixin.android.vo.HyperlinkItem
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
 
 class LinkAdapter(private val onClickListener: (url: String) -> Unit, private val onLongClickListener: (String) -> Unit) :
-    SafePagedListAdapter<HyperlinkItem, LinkHolder>(HyperlinkItem.DIFF_CALLBACK),
+    SafePagingDataAdapter<HyperlinkItem, LinkHolder>(HyperlinkItem.DIFF_CALLBACK),
     StickyRecyclerHeadersAdapter<MediaHeaderViewHolder> {
     override fun onCreateViewHolder(
         parent: ViewGroup,

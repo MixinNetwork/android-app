@@ -23,7 +23,6 @@ class AssetIconGroup @JvmOverloads constructor(
 
     init {
         attrs?.let {
-            attrs
             val ta = context.obtainStyledAttributes(attrs, R.styleable.AssetIconGroup)
             val color = ta.getColor(R.styleable.AssetIconGroup_asset_group_border_color, context.colorFromAttribute(R.attr.bg_white))
             binding.icon1.borderColor = color

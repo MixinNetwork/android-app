@@ -89,8 +89,10 @@ class StickerPreviewBottomSheetFragment : MixinBottomSheetDialogFragment() {
 
         val stickerLiveData = viewModel.observeStickerById(stickerId)
         val observer =
-            object : Observer<Sticker> {
-                override fun onChanged(value: Sticker) {
+            object : Observer<Sticker?> {
+                override fun onChanged(value: Sticker?) {
+                    if (value == null) return
+
                     binding.previewIv.loadSticker(
                         value.assetUrl,
                         value.assetType,

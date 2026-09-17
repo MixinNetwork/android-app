@@ -2,8 +2,13 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 import one.mixin.android.Constants.DB_DELETE_LIMIT
+import one.mixin.android.MixinApplication
+import one.mixin.android.vo.absolutePath
+import one.mixin.android.vo.isTranscript
 import one.mixin.android.db.deleteMessageByIds
+import one.mixin.android.db.withRoomTransaction
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.fts.deleteByMessageIds
 
@@ -22,27 +27,37 @@ class MessageDeleteJob(
 
     override fun onRun() =
         runBlocking {
-            val deleteTimes =
-                messageDao.countDeleteMessageByConversationId(conversationId) / DB_DELETE_LIMIT + 1
-            repeat(deleteTimes) {
+            while (true) {
                 val ids =
                     messageDao.getMessageIdsByConversationId(
                         conversationId,
                         lastRowId,
                         DB_DELETE_LIMIT,
                     )
+                if (ids.isEmpty()) break
+                val cleanup = messageDao.getMessagesForDeletion(ids)
+                val paths = cleanup.mapNotNull {
+                    it.absolutePath(MixinApplication.appContext, conversationId, it.mediaUrl)
+                }
+                if (paths.isNotEmpty()) {
+                    jobManager.addJobInBackground(AttachmentDeleteJob(*paths.toTypedArray()))
+                }
+                val transcripts = cleanup.filter { it.isTranscript() }.map { it.messageId }
+                if (transcripts.isNotEmpty()) {
+                    jobManager.addJobInBackground(TranscriptDeleteJob(transcripts))
+                }
                 ftsDatabase.deleteByMessageIds(ids)
                 appDatabase.deleteMessageByIds(ids)
                 MessageFlow.delete(conversationId, ids)
+                yield()
             }
-            val currentRowId = messageDao.findLastMessageRowId(conversationId)
-            if (deleteConversation && currentRowId == null) {
-                conversationDao.deleteConversationById(conversationId)
-                conversationExtDao.deleteConversationById(conversationId)
-            } else {
-                remoteMessageStatusDao.countUnread(conversationId)
-                conversationDao.refreshLastMessageId(conversationId)
-                conversationExtDao.refreshCountByConversationId(conversationId)
+            if (deleteConversation) {
+                appDatabase.withRoomTransaction {
+                    if (messageDao.findLastMessageId(conversationId) == null) {
+                        conversationDao.deleteConversationById(conversationId)
+                        conversationExtDao.deleteConversationById(conversationId)
+                    }
+                }
             }
         }
 }

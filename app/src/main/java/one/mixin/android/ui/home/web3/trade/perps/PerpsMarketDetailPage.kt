@@ -61,6 +61,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -581,60 +582,12 @@ fun PerpsMarketDetailPage(
                                         if (isAddingProcessing) return@MixinButton
                                         isAddingProcessing = true
                                         val activity = context as? FragmentActivity ?: run { isAddingProcessing = false; return@MixinButton }
-                                        val positionForAdd = currentPosition
-                                        AnalyticsTracker.trackPerpsAddStart(AnalyticsTracker.PerpsAddType.ADD_POSITION)
-                                        PerpsAddBottomSheetDialogFragment.newInstance(positionForAdd)
-                                            .setOnDestroy {
-                                                isAddingProcessing = false
-                                            }
-                                            .setOnAdd { token, amount, liquidationPrice ->
-                                                isAddingProcessing = false
-                                                val referencePrice = market?.last
-                                                    ?: positionForAdd.markPrice
-                                                    ?: positionForAdd.entryPrice
-                                                viewModel.increasePerpsPosition(
-                                                    positionId = positionForAdd.positionId,
-                                                    assetId = token.assetId,
-                                                    amount = amount,
-                                                    position = positionForAdd,
-                                                    price = referencePrice.takeIf { it.isNotBlank() },
-                                                    onSuccess = { response ->
-                                                        val isLong = positionForAdd.side.equals("long", ignoreCase = true)
-                                                        val symbol = positionForAdd.displaySymbol
-                                                            ?: market?.displaySymbol
-                                                            ?: positionForAdd.tokenSymbol.orEmpty()
-                                                        val iconUrl = positionForAdd.iconUrl
-                                                            ?: market?.iconUrl.orEmpty()
-                                                        val confirmEntryPrice = referencePrice.ifBlank { positionForAdd.entryPrice }
-                                                        PerpsConfirmBottomSheetDialogFragment.newInstance(
-                                                            marketSymbol = symbol,
-                                                            marketIcon = iconUrl,
-                                                            isLong = isLong,
-                                                            amount = response.payAmount,
-                                                            leverage = positionForAdd.leverage,
-                                                            entryPrice = confirmEntryPrice,
-                                                            marginAssetPrice = token.priceUsd,
-                                                            tokenSymbol = token.symbol,
-                                                            takeProfitPrice = null,
-                                                            stopLossPrice = null,
-                                                            liquidationPrice = liquidationPrice,
-                                                            priceScale = market?.priceScale ?: positionForAdd.priceScale,
-                                                            payUrl = response.paymentUrl,
-                                                            isAddPosition = true,
-                                                        ).show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
-                                                    },
-                                                    onError = { errorCode, errorMessage ->
-                                                        isAddingProcessing = false
-                                                        val message = if (errorCode > 0) {
-                                                            context.getMixinErrorStringByCode(errorCode, errorMessage)
-                                                        } else {
-                                                            errorMessage
-                                                        }
-                                                        toast(message)
-                                                    },
-                                                )
-                                            }
-                                            .show(activity.supportFragmentManager, PerpsAddBottomSheetDialogFragment.TAG)
+                                        activity.showPerpsAddPosition(
+                                            viewModel = viewModel,
+                                            position = currentPosition,
+                                            market = market,
+                                            onDismiss = { isAddingProcessing = false },
+                                        )
                                     },
                                     backgroundColor = MixinAppTheme.colors.walletGreen,
                                     contentColor = Color.White,
@@ -878,6 +831,21 @@ private fun MarketInfoCard(
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = formatOpenInterest(market.openInterest, market.markPrice),
+                fontSize = 16.sp,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+
+        if (BuildConfig.DEBUG) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.Debug_Mark_Price).uppercase(),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = formatPerpsPrice(market.markPrice, market.priceScale),
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textPrimary
             )

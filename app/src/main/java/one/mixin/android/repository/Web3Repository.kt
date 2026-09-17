@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.lifecycle.liveData
 import androidx.lifecycle.switchMap
 import androidx.paging.PagingSource
-import androidx.room.RoomRawQuery
+import androidx.room3.RoomRawQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow

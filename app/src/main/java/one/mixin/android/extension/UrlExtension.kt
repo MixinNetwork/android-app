@@ -399,7 +399,7 @@ internal data class PerpsTradeAction(
 )
 
 internal data class PerpsOpenPositionAction(
-    val isLong: Boolean,
+    val isLong: Boolean?,
     val leverage: Int?,
     val margin: String?,
 )
@@ -430,16 +430,15 @@ internal fun String.toPerpsTradeAction(): PerpsTradeAction? {
         ?: return if (!hasLeaderPositionId) PerpsTradeAction(null, null) else null
     if (!marketId.isUUID()) return null
 
-    val isLong = if (query.queryParameter("action").equals("open", true)) {
-        when {
+    val isOpenAction = query.queryParameter("action").equals("open", true)
+    val openPosition = if (isOpenAction) {
+        val hasSide = query.hasQueryParameter("side")
+        val isLong = when {
+            !hasSide -> null
             query.queryParameter("side").equals("long", true) -> true
             query.queryParameter("side").equals("short", true) -> false
-            else -> null
+            else -> return null
         }
-    } else {
-        null
-    }
-    val openPosition = isLong?.let {
         val hasLeverage = query.hasQueryParameter("leverage")
         val leverage = query.queryParameter("leverage")?.toIntOrNull()?.takeIf { value -> value > 0 }
         if (hasLeverage && leverage == null) return null
@@ -449,10 +448,12 @@ internal fun String.toPerpsTradeAction(): PerpsTradeAction? {
         if (hasMargin && margin == null) return null
 
         PerpsOpenPositionAction(
-            isLong = it,
+            isLong = isLong,
             leverage = leverage,
             margin = margin,
         )
+    } else {
+        null
     }
     return PerpsTradeAction(marketId, leaderPositionId, openPosition)
 }
@@ -484,7 +485,7 @@ internal fun String.toSpotTradeAction(): SpotTradeAction? {
     )
 }
 
-private suspend fun String.openLocalMixinTradeAction(context: Context): Boolean {
+internal suspend fun String.openLocalMixinTradeAction(context: Context): Boolean {
     val perpsTradeAction = toPerpsTradeAction()
     if (perpsTradeAction != null) {
         return openLocalPerpsTradeAction(context, perpsTradeAction)
@@ -520,6 +521,8 @@ private suspend fun openLocalPerpsTradeAction(
     context: Context,
     action: PerpsTradeAction,
 ): Boolean {
+    if (action.openPosition != null) return false
+
     val marketId = action.marketId
     if (marketId == null) {
         context.defaultSharedPreferences.putInt(
@@ -540,31 +543,15 @@ private suspend fun openLocalPerpsTradeAction(
         PerpsDatabase.getDatabase(context, identityNumber).perpsMarketDao().getMarket(marketId)
     } ?: return false
 
-    val openPosition = action.openPosition
-    if (openPosition == null) {
-        PerpsActivity.showDetail(
-            context,
-            market.marketId,
-            market.displaySymbol,
-            market.displaySymbol,
-            market.tokenSymbol,
-            tradeSource(context),
-            leaderPositionId = action.leaderPositionId,
-        )
-    } else {
-        PerpsActivity.showOpenPosition(
-            context = context,
-            marketId = market.marketId,
-            marketSymbol = market.displaySymbol,
-            marketDisplaySymbol = market.displaySymbol,
-            marketTokenSymbol = market.tokenSymbol,
-            isLong = openPosition.isLong,
-            source = tradeSource(context),
-            leaderPositionId = action.leaderPositionId,
-            initialLeverage = openPosition.leverage,
-            initialMargin = openPosition.margin,
-        )
-    }
+    PerpsActivity.showDetail(
+        context,
+        market.marketId,
+        market.displaySymbol,
+        market.displaySymbol,
+        market.tokenSymbol,
+        tradeSource(context),
+        leaderPositionId = action.leaderPositionId,
+    )
     closeSourceWebActivityIfNeeded(context)
     return true
 }

@@ -2,7 +2,7 @@ package one.mixin.android.api.response.perps
 
 import android.os.Parcelable
 import androidx.compose.runtime.Immutable
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 

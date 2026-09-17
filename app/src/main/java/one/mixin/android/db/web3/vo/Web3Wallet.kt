@@ -1,11 +1,11 @@
 package one.mixin.android.db.web3.vo
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.Ignore
-import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.Ignore
+import androidx.room3.PrimaryKey
+import androidx.room3.ColumnTypeConverters
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
@@ -27,7 +27,7 @@ enum class SafeChain(val value: String, val chainId: String) {
     }
 }
 
-@TypeConverters(ListConverter::class)
+@ColumnTypeConverters(ListConverter::class)
 @Entity(tableName = "wallets")
 @Parcelize
 data class Web3Wallet(
