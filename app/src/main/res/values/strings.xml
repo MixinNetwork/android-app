@@ -2666,6 +2666,7 @@
     <string name="cash_balance">Cash Balance</string>
     <string name="earn_balance">Earn Balance</string>
     <string name="cash_account_apy">%1$s APY</string>
+    <string name="earn_account_max_apy">Up to %1$s APY</string>
     <string name="cash_account_minimum_receive">Input amount must be worth at least %1$s %2$s. Please re-enter.</string>
     <string name="cash_account_minimum_send">ERROR 10614: Minimum amount is %1$s %2$s.</string>
     <string name="cash_account_maximum_send">ERROR 10614: Maximum amount is %1$s %2$s.</string>

@@ -1171,6 +1171,7 @@
     <string name="cash_balance">現金餘額</string>
     <string name="earn_balance">理財餘額</string>
     <string name="cash_account_apy">年化 %1$s</string>
+    <string name="earn_account_max_apy">最高年化 %1$s</string>
     <string name="cash_account_minimum_receive">輸入金額至少價值 %1$s %2$s，請重新輸入。</string>
     <string name="cash_account_invalid_token">暫不支援該幣種轉入現金賬戶。</string>
     <string name="cash_account_invalid_token_with_code">錯誤 %1$d：暫不支援該幣種轉入現金賬戶。</string>

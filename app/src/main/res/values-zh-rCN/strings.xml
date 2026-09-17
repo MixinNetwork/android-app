@@ -2579,6 +2579,7 @@
     <string name="cash_balance">现金余额</string>
     <string name="earn_balance">理财余额</string>
     <string name="cash_account_apy">年化 %1$s</string>
+    <string name="earn_account_max_apy">最高年化 %1$s</string>
     <string name="cash_account_minimum_receive">输入金额至少价值 %1$s %2$s，请重新输入。</string>
     <string name="cash_account_minimum_send">错误 10614: 输入金额至少为 %1$s %2$s，请重新输入。</string>
     <string name="cash_account_maximum_send">错误 10614: 输入金额最多为 %1$s %2$s，请重新输入。</string>

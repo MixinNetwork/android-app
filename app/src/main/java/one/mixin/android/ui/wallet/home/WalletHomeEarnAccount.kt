@@ -128,6 +128,13 @@ internal fun annualRateRange(annualRates: List<String>?): String? {
     return if (minRate.compareTo(maxRate) == 0) minText else "$minText-${maxRate.toPlainString()}%"
 }
 
+internal fun List<WalletHomeEarnAccount>.maxApyText(): String? =
+    mapNotNull { it.apyText?.substringAfterLast("%-")?.removeSuffix("%")?.toBigDecimalOrNull() }
+        .maxOrNull()
+        ?.stripTrailingZeros()
+        ?.toPlainString()
+        ?.let { "$it%" }
+
 private fun maxAnnualRateValue(annualRates: List<String>?): BigDecimal =
     annualRates
         .orEmpty()

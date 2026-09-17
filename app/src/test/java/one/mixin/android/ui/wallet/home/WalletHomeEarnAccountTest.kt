@@ -10,6 +10,21 @@ import java.math.BigDecimal
 
 class WalletHomeEarnAccountTest {
     @Test
+    fun showsHighestApyAcrossAccountRanges() {
+        val accounts = listOf(
+            earnProduct(assetId = "asset-1", annualRates = listOf("0.0350", "0.1095")),
+            earnProduct(assetId = "asset-2", annualRates = listOf("9.5%")),
+            earnProduct(assetId = "asset-3", annualRates = listOf("invalid")),
+        ).toWalletHomeEarnAccounts()
+
+        assertEquals("10.95%", accounts.maxApyText())
+        assertEquals("3.5%", listOf(accounts.first().copy(apyText = "3.50%")).maxApyText())
+        assertEquals("-1%", listOf(accounts.first().copy(apyText = "-2.00%--1.00%")).maxApyText())
+        assertEquals(null, listOf(accounts.last()).maxApyText())
+        assertEquals(null, emptyList<WalletHomeEarnAccount>().maxApyText())
+    }
+
+    @Test
     fun showsAnnualRateRangeRegardlessOfOrder() {
         assertEquals(
             "3.65%-10.95%",
