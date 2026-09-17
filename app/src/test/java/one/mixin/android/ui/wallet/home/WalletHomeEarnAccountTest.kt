@@ -10,21 +10,6 @@ import java.math.BigDecimal
 
 class WalletHomeEarnAccountTest {
     @Test
-    fun showsHighestApyAcrossAccountRanges() {
-        val accounts = listOf(
-            earnProduct(assetId = "asset-1", annualRates = listOf("0.0350", "0.1095")),
-            earnProduct(assetId = "asset-2", annualRates = listOf("9.5%")),
-            earnProduct(assetId = "asset-3", annualRates = listOf("invalid")),
-        ).toWalletHomeEarnAccounts()
-
-        assertEquals("10.95%", accounts.maxApyText())
-        assertEquals("3.5%", listOf(accounts.first().copy(apyText = "3.50%")).maxApyText())
-        assertEquals("-1%", listOf(accounts.first().copy(apyText = "-2.00%--1.00%")).maxApyText())
-        assertEquals(null, listOf(accounts.last()).maxApyText())
-        assertEquals(null, emptyList<WalletHomeEarnAccount>().maxApyText())
-    }
-
-    @Test
     fun showsAnnualRateRangeRegardlessOfOrder() {
         assertEquals(
             "3.65%-10.95%",
@@ -236,7 +221,7 @@ class WalletHomeEarnAccountTest {
 
         assertEquals(0, account.balanceUsd.compareTo(BigDecimal("3000")))
         assertEquals(0, account.earningsUsd.compareTo(BigDecimal("50")))
-        assertEquals("5.00%", account.apyText)
+        assertEquals("5%", account.maxApyText)
     }
 
     @Test
@@ -295,7 +280,28 @@ class WalletHomeEarnAccountTest {
         val firstAccount = accounts.first { it.assetId == "asset-1" }
         assertEquals(0, firstAccount.balanceUsd.compareTo(BigDecimal("300")))
         assertEquals(0, firstAccount.earningsUsd.compareTo(BigDecimal("6")))
-        assertEquals("3.00%-5.00%", firstAccount.apyText)
+        assertEquals("5%", firstAccount.maxApyText)
+    }
+
+    @Test
+    fun showsHighestPositiveApyAcrossProductsAndAssets() {
+        val cases = listOf(
+            listOf(listOf("0.0365", "0.10959"), listOf("0.0730"), listOf("0.2")) to "20%",
+            listOf(listOf("0.0365", "0.10959"), listOf("0.0730"), listOf("invalid", "0", "-0.2")) to "10.95%",
+            listOf(listOf("3.65%", "10.95%"), listOf("7.30%"), emptyList()) to "10.95%",
+            listOf(listOf("invalid", ""), listOf("0", "-0.2"), emptyList()) to null,
+        )
+        for ((rates, expected) in cases) {
+            val accounts = rates.mapIndexed { index, annualRates ->
+                earnProduct(
+                    productionId = "production-$index",
+                    assetId = if (index < 2) "asset-1" else "asset-2",
+                    annualRates = annualRates,
+                )
+            }.toWalletHomeEarnAccounts()
+
+            assertEquals(expected, accounts.summary().maxApyText)
+        }
     }
 
     private fun earnProduct(

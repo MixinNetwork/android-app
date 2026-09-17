@@ -99,7 +99,7 @@ internal fun WalletHomeCard(
             WalletHomeCardType.BANNER -> Unit
             WalletHomeCardType.CASH -> CashAccountCard(
                 cashAccount = state.cashAccount,
-                callbacks = callbacks,
+                quoteColorReversed = state.quoteColorReversed,
             )
             WalletHomeCardType.ACCOUNTS -> Unit
             WalletHomeCardType.POSITIONS -> SectionCard(
@@ -201,7 +201,7 @@ internal fun WalletHomeCard(
 @Composable
 private fun CashAccountCard(
     cashAccount: WalletHomeCashAccount?,
-    callbacks: WalletHomeCallbacks,
+    quoteColorReversed: Boolean,
 ) {
     if (cashAccount == null) return
 
@@ -240,8 +240,9 @@ private fun CashAccountCard(
                 )
                 cashAccount.apyText?.let { apyText ->
                     Spacer(modifier = Modifier.width(10.dp))
-                    AccountApyBadge(
+                    AccountApy(
                         text = stringResource(R.string.cash_account_apy, apyText),
+                        quoteColorReversed = quoteColorReversed,
                     )
                 }
             }

@@ -69,6 +69,8 @@ data class PerpsOrder(
     companion object {
         const val TYPE_OPEN = "open"
         const val TYPE_INCREASE = "increase_position"
+        const val TYPE_INCREASE_MARGIN = "increase_margin"
+        const val TYPE_DECREASE_MARGIN = "decrease_margin"
         const val TYPE_CLOSE = "close"
 
         const val STATUS_PROCESSING = "processing"

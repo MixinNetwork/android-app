@@ -6,6 +6,7 @@ import one.mixin.android.api.response.EarnProduct
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 data class WalletHomeEarnAccount(
     @SerializedName("assetId")
@@ -18,11 +19,19 @@ data class WalletHomeEarnAccount(
     val balanceUsd: BigDecimal,
     @SerializedName("earningsUsd")
     val earningsUsd: BigDecimal,
-    @SerializedName("apyText")
-    val apyText: String?,
+    @SerializedName("maxApy")
+    val maxApy: BigDecimal?,
 ) {
     val balanceAmountText: String
         get() = usdBalanceAmountText(balanceUsd)
+
+    val maxApyText: String?
+        get() = maxApy
+            ?.takeIf { it > BigDecimal.ZERO }
+            ?.setScale(2, RoundingMode.DOWN)
+            ?.stripTrailingZeros()
+            ?.toPlainString()
+            ?.let { "$it%" }
 
     val earningsAmountText: String
         get() {
@@ -111,9 +120,19 @@ internal fun List<EarnProduct>.toWalletHomeEarnAccounts(
             earningsUsd = accountValues.fold(BigDecimal.ZERO) { total, (account, priceUsd) ->
                 total + decimal(account.totalEarnings).multiply(priceUsd)
             },
-            apyText = annualRateRange(products.flatMap { it.annualRates }),
+            maxApy = maxAnnualRateValue(products.flatMap { it.annualRates })
+                .takeIf { it > BigDecimal.ZERO },
         )
     }
+
+internal fun List<WalletHomeEarnAccount>.summary(): WalletHomeEarnAccount {
+    val first = first()
+    return first.copy(
+        balanceUsd = fold(BigDecimal.ZERO) { total, account -> total + account.balanceUsd },
+        earningsUsd = fold(BigDecimal.ZERO) { total, account -> total + account.earningsUsd },
+        maxApy = mapNotNull { it.maxApy }.maxOrNull(),
+    )
+}
 
 internal fun earnAccountUsdBalance(
     account: EarnAccountSummary,
@@ -127,13 +146,6 @@ internal fun annualRateRange(annualRates: List<String>?): String? {
     val minText = "${minRate.toPlainString()}%"
     return if (minRate.compareTo(maxRate) == 0) minText else "$minText-${maxRate.toPlainString()}%"
 }
-
-internal fun List<WalletHomeEarnAccount>.maxApyText(): String? =
-    mapNotNull { it.apyText?.substringAfterLast("%-")?.removeSuffix("%")?.toBigDecimalOrNull() }
-        .maxOrNull()
-        ?.stripTrailingZeros()
-        ?.toPlainString()
-        ?.let { "$it%" }
 
 private fun maxAnnualRateValue(annualRates: List<String>?): BigDecimal =
     annualRates

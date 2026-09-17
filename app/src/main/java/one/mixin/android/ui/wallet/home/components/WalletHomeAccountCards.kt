@@ -43,8 +43,7 @@ import one.mixin.android.ui.wallet.home.WalletHomeCardType
 import one.mixin.android.ui.wallet.home.WalletHomeState
 import one.mixin.android.ui.wallet.home.WalletHomeEarnAccount
 import one.mixin.android.ui.wallet.home.WalletAssetIcon
-import one.mixin.android.ui.wallet.home.maxApyText
-import java.math.BigDecimal
+import one.mixin.android.ui.wallet.home.summary
 
 private val AccountCardShape = RoundedCornerShape(8.dp)
 private val AccountTextStyle = TextStyle(
@@ -64,6 +63,7 @@ internal fun WalletHomeAccountCards(
         }
         EarnAccountCard(
             accounts = state.earnAccounts,
+            quoteColorReversed = state.quoteColorReversed,
             callbacks = callbacks,
             modifier = Modifier.padding(horizontal = 20.dp),
         )
@@ -73,6 +73,7 @@ internal fun WalletHomeAccountCards(
 @Composable
 private fun EarnAccountCard(
     accounts: List<WalletHomeEarnAccount>,
+    quoteColorReversed: Boolean,
     callbacks: WalletHomeCallbacks,
     modifier: Modifier,
 ) {
@@ -121,9 +122,12 @@ private fun EarnAccountCard(
                         balanceAmountText = account.balanceAmountText,
                         modifier = Modifier.weight(1f),
                     )
-                    account.apyText?.let { apyText ->
+                    account.maxApyText?.let { apyText ->
                         Spacer(modifier = Modifier.width(8.dp))
-                        AccountApyBadge(text = stringResource(R.string.earn_account_max_apy, apyText))
+                        AccountApy(
+                            text = stringResource(R.string.up_to_apy, apyText),
+                            quoteColorReversed = quoteColorReversed,
+                        )
                     }
                 }
             }
@@ -175,8 +179,11 @@ internal fun WalletHomeAccountBalance(
 }
 
 @Composable
-internal fun AccountApyBadge(text: String) {
-    val color = MixinAppTheme.colors.walletGreen
+internal fun AccountApy(
+    text: String,
+    quoteColorReversed: Boolean,
+) {
+    val color = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     Text(
         text = text,
         color = color,
@@ -240,16 +247,4 @@ private fun EarnTokenIcons(accounts: List<WalletHomeEarnAccount>) {
             }
         }
     }
-}
-
-private fun List<WalletHomeEarnAccount>.summary(): WalletHomeEarnAccount {
-    val first = first()
-    return WalletHomeEarnAccount(
-        assetId = first.assetId,
-        assetSymbol = first.assetSymbol,
-        iconUrl = first.iconUrl,
-        balanceUsd = fold(BigDecimal.ZERO) { total, account -> total + account.balanceUsd },
-        earningsUsd = fold(BigDecimal.ZERO) { total, account -> total + account.earningsUsd },
-        apyText = maxApyText(),
-    )
 }

@@ -426,7 +426,6 @@ fun OpenPositionPage(
                         token = currentToken?.toSwapToken(),
                         text = usdtAmount,
                         selectClick = {
-                            AnalyticsTracker.trackPerpsOpenMarginSelect(currentToken?.chainName, currentToken?.symbol)
                             availableTokens?.let(onTokenSelect)
                         },
                         onInputChanged = { usdtAmount = it },
@@ -832,6 +831,7 @@ fun OpenPositionPage(
                                                     leverage = leverage.toInt(),
                                                     margin = normalizedAmount,
                                                     error = message,
+                                                    source = source,
                                                     tokenSymbol = token.symbol,
                                                     liquidationPrice = displayLiquidationPrice,
                                                 ).showNow(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)

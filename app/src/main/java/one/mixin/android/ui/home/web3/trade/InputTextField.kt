@@ -184,12 +184,12 @@ fun InputContent(
                             if (!isTradeInputDecimalAllowed(it.text, maxDecimalPlaces)) {
                                 return@BasicTextField
                             }
-                            textFieldValue = it
                             try {
                                 if (it.text.isBlank()) BigDecimal.ZERO else BigDecimal(it.text)
                             } catch (e: Exception) {
                                 return@BasicTextField
                             }
+                            textFieldValue = it
                             onInputChanged?.invoke(it.text)
                         },
                         maxLines = 1,
