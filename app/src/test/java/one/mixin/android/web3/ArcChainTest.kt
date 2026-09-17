@@ -53,7 +53,7 @@ class ArcChainTest {
         assertEquals(Chain.Arc, findChainByHexReference("0x13b2"))
         assertEquals(chainId, Chain.Arc.getWeb3ChainId())
         assertEquals("USDC", Chain.Arc.symbol)
-        assertEquals("https://rpc.blockdaemon.mainnet.arc.io", Chain.Arc.rpcUrl)
+        assertEquals("https://rpc.mainnet.arc.io", Chain.Arc.rpcUrl)
         assertTrue(chainId in Constants.Web3ChainIds)
         assertTrue(isSwapSearchChainAvailable(chainId, setOf(Constants.ChainId.ETHEREUM_CHAIN_ID)))
         assertFalse(isSwapSearchChainAvailable(chainId, setOf(Constants.ChainId.SOLANA_CHAIN_ID)))

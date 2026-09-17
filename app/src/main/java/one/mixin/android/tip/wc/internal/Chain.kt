@@ -38,7 +38,7 @@ sealed class Chain(
 
     object Robinhood : Chain(Constants.ChainId.Robinhood, "eip155", "4663", "0x1237", "Robinhood", "ETH", listOf("https://rpc.mainnet.chain.robinhood.com"))
 
-    object Arc : Chain(Constants.ChainId.Arc, "eip155", "5042", "0x13b2", "ARC Mainnet", "USDC", listOf("https://rpc.blockdaemon.mainnet.arc.io"))
+    object Arc : Chain(Constants.ChainId.Arc, "eip155", "5042", "0x13b2", "ARC Mainnet", "USDC", listOf("https://rpc.mainnet.arc.io"))
 
     object Solana : Chain(
         SOLANA_CHAIN_ID,
