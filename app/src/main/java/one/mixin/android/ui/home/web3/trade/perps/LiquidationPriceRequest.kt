@@ -19,7 +19,7 @@ internal sealed interface LiquidationPriceResult {
 
     data object Retry : LiquidationPriceResult
 
-    data object Failure : LiquidationPriceResult
+    data class Failure(val message: String?) : LiquidationPriceResult
 }
 
 internal fun liquidationPriceResult(
@@ -27,6 +27,7 @@ internal fun liquidationPriceResult(
     errorCode: Int?,
     limit: LiquidationPriceLimit = LiquidationPriceLimit(null, null),
     availableMargin: BigDecimal? = null,
+    errorMessage: String? = null,
 ): LiquidationPriceResult {
     val validPrice = price?.takeIf { it.isNotBlank() }
     return when {
@@ -36,7 +37,7 @@ internal fun liquidationPriceResult(
             LiquidationPriceResult.LimitExceeded(limit)
         }
         errorCode == 500 -> LiquidationPriceResult.Retry
-        else -> LiquidationPriceResult.Failure
+        else -> LiquidationPriceResult.Failure(errorMessage)
     }
 }
 
@@ -70,11 +71,15 @@ internal suspend fun requestLiquidationPrice(
     retryDelayMillis: Long = 1000L,
     onLimitExceeded: (LiquidationPriceLimit) -> Unit = {},
     onMarginExceeded: (BigDecimal?) -> Unit = {},
+    onFailure: (String?) -> Unit = {},
     request: suspend () -> LiquidationPriceResult,
 ): String? {
     while (true) {
         when (val result = request()) {
-            LiquidationPriceResult.Failure -> return null
+            is LiquidationPriceResult.Failure -> {
+                onFailure(result.message)
+                return null
+            }
             is LiquidationPriceResult.LimitExceeded -> {
                 onLimitExceeded(result.limit)
                 return null

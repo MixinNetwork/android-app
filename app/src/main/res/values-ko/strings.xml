@@ -484,7 +484,7 @@
     <string name="error_invalid_quote_amount">오류 10614: 입력 금액이 너무 작거나 너무 큽니다. 금액을 조정하세요.</string>
     <string name="error_invalid_quote_amount_detailed">오류 10614: 금액이 %1$s의 최대 허용 값을 초과했습니다. 금액을 조정해주세요. 지정가 주문을 해보시겠어요? 금액이나 토큰에 제한이 없습니다.</string>
     <string name="error_no_available_quote">오류 10615: 이 거래 쌍은 현재 지원되지 않습니다. 다른 토큰으로 전환해 보십시오.</string>
-    <string name="error_perps_order_value_too_small">오류 %1$d: 포지션 크기가 너무 작습니다.</string>
+    <string name="error_perps_order_value_too_small">오류 %1$s: 포지션 크기가 너무 작습니다.</string>
     <string name="error_already_had_open_position">오류 10651: 이미 오픈 포지션이 있습니다.</string>
     <string name="error_waiting_other_orders">오류 10652: 현재 시장에서 아직 다른 주문을 처리 중입니다. 나중에 다시 시도하십시오.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit">오류 10655: 포지션 크기가 선택한 레버리지 한도를 초과했습니다. 금액 또는 레버리지를 낮추세요.</string>
@@ -2676,10 +2676,13 @@
     <string name="perps_position_tip">포지션을 늘리면 수익과 위험이 커집니다</string>
     <string name="perps_low_margin_tip">증거금이 부족하면 먼저 증거금을 추가하세요</string>
     <string name="perps_total_margin">총 증거금</string>
-    <string name="perps_available_margin">인출 가능한 증거금: %1$s</string>
     <string name="perps_margin_submitted">증거금 조정이 제출되었습니다</string>
     <string name="perps_confirm_add_margin">증거금 추가 확인</string>
+    <string name="perps_adding_margin">증거금 추가 중</string>
+    <string name="perps_adding_margin_failed">증거금 추가 실패</string>
     <string name="perps_confirm_reduce_margin">증거금 감소 확인</string>
+    <string name="perps_reducing_margin">증거금 감소 중</string>
+    <string name="perps_reducing_margin_failed">증거금 감소 실패</string>
     <string name="perps_add_margin_title">%1$s %2$s에 증거금 추가</string>
     <string name="perps_reduce_margin_title">%1$s %2$s의 증거금 감소</string>
     <string name="perps_reduce_action">감소</string>

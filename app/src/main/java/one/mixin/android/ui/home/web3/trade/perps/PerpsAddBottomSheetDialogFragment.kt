@@ -300,6 +300,7 @@ private fun PerpsAddContent(
     }
     var remoteLiquidationPrice by remember(position.positionId) { mutableStateOf<String?>(null) }
     var liquidationPriceLimit by remember(position.positionId) { mutableStateOf<LiquidationPriceLimit?>(null) }
+    var liquidationError by remember(position.positionId) { mutableStateOf<String?>(null) }
     var isLiquidationLoading by remember(position.positionId) { mutableStateOf(false) }
     var liquidationJob by remember(position.positionId) { mutableStateOf<Job?>(null) }
     val tokenBalance = selectedToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -328,6 +329,7 @@ private fun PerpsAddContent(
 
     LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin, position.updatedAt, market?.last) {
         liquidationPriceLimit = null
+        liquidationError = null
         val addMargin = amount.toBigDecimalOrNull()
         if (!shouldRequestLiquidationPrice(addMargin, minimumMargin) || aboveMaximumMargin) {
             liquidationJob?.cancel()
@@ -347,6 +349,7 @@ private fun PerpsAddContent(
                 .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
             remoteLiquidationPrice = requestLiquidationPrice(
                 onLimitExceeded = { liquidationPriceLimit = it },
+                onFailure = { liquidationError = it ?: context.getString(R.string.Data_error) },
             ) {
                 viewModel.estimateLiquidationPrice(
                     amount = normalizedAmount,
@@ -386,7 +389,7 @@ private fun PerpsAddContent(
     val marginLimitError = when {
         belowMinimumMargin -> minimumMarginError
         aboveMaximumMargin -> maximumMarginError
-        else -> liquidationLimitError
+        else -> liquidationLimitError ?: liquidationError
     }
 
     val currentPriceText = formatPerpsPrice(currentPrice, priceScale)

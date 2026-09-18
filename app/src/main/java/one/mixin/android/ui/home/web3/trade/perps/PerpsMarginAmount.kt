@@ -1,11 +1,33 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import com.google.gson.JsonElement
+import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
+import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 import java.math.RoundingMode
 import kotlin.math.abs
 import kotlin.math.roundToInt
+
+internal fun perpsMarginTokenBalance(token: TokenItem?): BigDecimal? = token?.balance?.toBigDecimalOrNull()
+
+internal fun formatPerpsMarginAmount(value: BigDecimal?): String =
+    if (value == null || value.setScale(2, RoundingMode.HALF_UP).signum() == 0) "0" else formatPerpsPrice(value, 2)
+
+internal fun formatPerpsMarginLimit(currentMargin: String?, availableMargin: BigDecimal, isPercentage: Boolean): String {
+    if (isPercentage) {
+        val percentage = marginReductionPercentage(currentMargin, availableMargin) ?: BigDecimal.ZERO
+        return "${percentage.setScale(2, RoundingMode.DOWN).numberFormat8()}%"
+    }
+    val amount = availableMargin.setScale(TRADE_INPUT_MAX_DECIMAL_PLACES, RoundingMode.DOWN)
+    return if (amount.signum() == 0) "0" else "$PERPS_USD_SYMBOL${amount.numberFormat8()}"
+}
+
+internal fun marginLiquidationLossPercent(entryPrice: String, liquidationPrice: String?): BigDecimal? {
+    val entry = entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null
+    val liquidation = liquidationPrice?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO } ?: return null
+    return (entry - liquidation).abs().multiply(BigDecimal(100)).divide(entry, 2, RoundingMode.HALF_UP)
+}
 
 internal fun snapMarginReductionPercentage(value: Float): Int {
     val percentage = value.coerceIn(0f, 100f).roundToInt()

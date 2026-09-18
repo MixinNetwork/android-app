@@ -119,6 +119,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_PAY_URL = "args_pay_url"
         private const val ARGS_IS_ADD_POSITION = "args_is_add_position"
         private const val ARGS_IS_ADD_MARGIN = "args_is_add_margin"
+        private const val ARGS_MARGIN_BEFORE = "args_margin_before"
         private const val ARGS_ORDER_ERROR = "args_order_error"
         private const val ARGS_MARKET_ID = "args_market_id"
         private const val ARGS_ADD_POSITION_ID = "args_add_position_id"
@@ -174,6 +175,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             payUrl: String?,
             isAddPosition: Boolean = false,
             isAddMargin: Boolean = false,
+            marginBefore: String? = null,
         ): PerpsConfirmBottomSheetDialogFragment {
             return PerpsConfirmBottomSheetDialogFragment().withArgs {
                 putString(ARGS_MARKET_SYMBOL, marketSymbol)
@@ -191,6 +193,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 putString(ARGS_PAY_URL, payUrl)
                 putBoolean(ARGS_IS_ADD_POSITION, isAddPosition)
                 putBoolean(ARGS_IS_ADD_MARGIN, isAddMargin)
+                putString(ARGS_MARGIN_BEFORE, marginBefore)
             }
         }
     }
@@ -243,6 +246,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val priceScale by lazy { requireArguments().getInt(ARGS_PRICE_SCALE, 2) }
     private val isAddPosition by lazy { requireArguments().getBoolean(ARGS_IS_ADD_POSITION) }
     private val isAddMargin by lazy { requireArguments().getBoolean(ARGS_IS_ADD_MARGIN) }
+    private val marginBefore by lazy { requireArguments().getString(ARGS_MARGIN_BEFORE) }
+    private val marginAfter by lazy { marginAfterAdjustment(marginBefore, amount, increase = true) }
 
     private val payUrl by lazy { requireArguments().getString(ARGS_PAY_URL) }
     private val entryFiatPrice by lazy {
@@ -355,14 +360,14 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                     else -> R.string.Position_Submitted
                                 }
                                 Step.Error -> when {
-                                    isAddMargin -> R.string.Failed
+                                    isAddMargin -> R.string.perps_adding_margin_failed
                                     isAddPosition && isLong -> R.string.Added_Long_Failed
                                     isAddPosition -> R.string.Added_Short_Failed
                                     orderError != null -> R.string.position_opening_failed
                                     isLong -> R.string.Opened_Long_Failed
                                     else -> R.string.Opened_Short_Failed
                                 }
-                                Step.Sending -> R.string.Sending
+                                Step.Sending -> if (isAddMargin) R.string.perps_adding_margin else R.string.Sending
                             }
                         ),
                         style = TextStyle(
@@ -449,7 +454,10 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     if (amount.isNotBlank()) {
                         PerpsInfoItem(
                             title = stringResource(R.string.Amount).uppercase(),
-                            value = "$amount $tokenSymbol"
+                            value = "$amount $tokenSymbol",
+                            subValue = if (isAddMargin && marginAfter != null) {
+                                "${stringResource(R.string.perps_total_margin)} ${formatPerpsMarginAmount(marginBefore?.toBigDecimalOrNull())} → ${formatPerpsMarginAmount(marginAfter)}"
+                            } else null,
                         )
                         Box(modifier = Modifier.height(20.dp))
                     }
@@ -500,31 +508,19 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         }
                     }
 
-                    if (!isAddMargin && (orderError == null || rawLiquidationPrice != null)) {
-                        val lossPercent = remember(leverage) {
-                            val percent = String.format("%.2f", 100.0 / leverage)
-                            Timber.d("LossPercent - leverage: $leverage, lossPercent: $percent")
-                            percent
-                        }
-
-                        val lossSubValue = if (isLong) {
-                            val text = stringResource(
-                                R.string.Price_Down_Loss,
-                                lossPercent,
-                                amount,
-                                tokenSymbol
-                            )
-                            Timber.d("LossSubValue (Long) - lossPercent: $lossPercent, amount: $amount, tokenSymbol: $tokenSymbol, text: $text")
-                            text
+                    if (orderError == null || rawLiquidationPrice != null) {
+                        val lossPercent = if (isAddMargin) {
+                            marginLiquidationLossPercent(entryPrice, rawLiquidationPrice)?.let { formatPerpsQuantity(it) }
                         } else {
-                            val text = stringResource(
-                                R.string.Price_Up_Loss,
-                                lossPercent,
-                                amount,
-                                tokenSymbol
-                            )
-                            Timber.d("LossSubValue (Short) - lossPercent: $lossPercent, amount: $amount, tokenSymbol: $tokenSymbol, text: $text")
-                            text
+                            String.format("%.2f", 100.0 / leverage)
+                        }
+                        val lossSubValue = lossPercent?.let {
+                            stringResource(
+                                if (isLong) R.string.Price_Down_Loss else R.string.Price_Up_Loss,
+                                it,
+                                if (isAddMargin) formatPerpsMarginAmount(marginAfter) else amount,
+                                if (isAddMargin) "" else tokenSymbol,
+                            ).trimEnd()
                         }
 
                         PerpsInfoItem(

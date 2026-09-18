@@ -377,7 +377,7 @@
     <string name="error_old_version">ОШИБКА 10006: Обновите Mixin(%1$s), чтобы продолжить использование сервиса.</string>
     <string name="error_open_location">Не могу найти приложение карты</string>
     <string name="error_permission">Пожалуйста, Откройте необходимые разрешения</string>
-    <string name="error_perps_order_value_too_small">ОШИБКА %1$d: Размер позиции слишком мал.</string>
+    <string name="error_perps_order_value_too_small">ОШИБКА %1$s: Размер позиции слишком мал.</string>
     <string name="error_phone_invalid_format">ОШИБКА 20110: Неверный номер телефона</string>
     <string name="error_phone_sms_delivery">ОШИБКА 10003: Не удалось доставить SMS</string>
     <string name="error_phone_verification_code_expired">ОШИБКА 20114: Срок действия кода подтверждения телефона истек</string>
@@ -1135,10 +1135,13 @@
     <string name="perps_position_tip">Увеличение позиции повышает прибыль и риски</string>
     <string name="perps_low_margin_tip">Если маржи мало, сначала добавьте маржу</string>
     <string name="perps_total_margin">Общая маржа</string>
-    <string name="perps_available_margin">Маржа, доступная для вывода: %1$s</string>
     <string name="perps_margin_submitted">Запрос на изменение маржи отправлен</string>
     <string name="perps_confirm_add_margin">Подтвердить добавление маржи</string>
+    <string name="perps_adding_margin">Добавление маржи</string>
+    <string name="perps_adding_margin_failed">Не удалось добавить маржу</string>
     <string name="perps_confirm_reduce_margin">Подтвердить уменьшение маржи</string>
+    <string name="perps_reducing_margin">Уменьшение маржи</string>
+    <string name="perps_reducing_margin_failed">Не удалось уменьшить маржу</string>
     <string name="perps_add_margin_title">Добавить маржу в %1$s %2$s</string>
     <string name="perps_reduce_margin_title">Уменьшить маржу для %1$s %2$s</string>
     <string name="perps_reduce_action">Уменьшить</string>

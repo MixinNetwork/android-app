@@ -94,7 +94,7 @@ private fun PerpsAdjustContent(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(MixinAppTheme.colors.backgroundWindow)
+            .background(MixinAppTheme.colors.background)
             .verticalScroll(rememberScrollState())
             .padding(bottom = 40.dp),
     ) {

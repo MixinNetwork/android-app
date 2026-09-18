@@ -95,16 +95,18 @@ class LiquidationPriceRequestTest {
     }
 
     @Test
-    fun nonServerErrorStopsAfterOneRequest() = runBlocking {
+    fun nonServerErrorStopsAfterOneRequestAndReportsTheReason() = runBlocking {
         var requestCount = 0
+        var errorMessage: String? = null
 
-        val price = requestLiquidationPrice(retryDelayMillis = 0L) {
+        val price = requestLiquidationPrice(retryDelayMillis = 0L, onFailure = { errorMessage = it }) {
             requestCount += 1
-            LiquidationPriceResult.Failure
+            liquidationPriceResult(price = null, errorCode = 400, errorMessage = "Position is closed")
         }
 
         assertNull(price)
         assertEquals(1, requestCount)
+        assertEquals("Position is closed", errorMessage)
     }
 
     @Test
@@ -130,12 +132,12 @@ class LiquidationPriceRequestTest {
             LiquidationPriceResult.Retry,
             liquidationPriceResult(price = null, errorCode = 500),
         )
-        assertSame(
-            LiquidationPriceResult.Failure,
+        assertEquals(
+            LiquidationPriceResult.Failure(null),
             liquidationPriceResult(price = null, errorCode = 400),
         )
-        assertSame(
-            LiquidationPriceResult.Failure,
+        assertEquals(
+            LiquidationPriceResult.Failure(null),
             liquidationPriceResult(price = null, errorCode = null),
         )
         assertEquals(

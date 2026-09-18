@@ -394,7 +394,7 @@
     <string name="error_old_version">ERROR 10006: Actualiza Mixin(%1$s) para seguir usando el servicio.</string>
     <string name="error_open_location">No puedo encontrar una aplicación de mapas</string>
     <string name="error_permission">Por favor abre los permisos necesarios</string>
-    <string name="error_perps_order_value_too_small">ERROR %1$d: El tamaño de la posición es demasiado pequeño.</string>
+    <string name="error_perps_order_value_too_small">ERROR %1$s: El tamaño de la posición es demasiado pequeño.</string>
     <string name="error_phone_invalid_format">ERROR 20110: Número de teléfono no válido</string>
     <string name="error_phone_sms_delivery">ERROR 10003: Error al entregar SMS</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Código de verificación del teléfono caducado</string>
@@ -1194,10 +1194,13 @@
     <string name="perps_position_tip">Aumentar la posición amplifica las ganancias y los riesgos</string>
     <string name="perps_low_margin_tip">Si el margen es bajo, añade margen primero</string>
     <string name="perps_total_margin">Margen total</string>
-    <string name="perps_available_margin">Margen disponible para retirar: %1$s</string>
     <string name="perps_margin_submitted">Ajuste de margen enviado</string>
     <string name="perps_confirm_add_margin">Confirmar adición de margen</string>
+    <string name="perps_adding_margin">Añadiendo margen</string>
+    <string name="perps_adding_margin_failed">No se pudo añadir margen</string>
     <string name="perps_confirm_reduce_margin">Confirmar reducción del margen</string>
+    <string name="perps_reducing_margin">Reduciendo margen</string>
+    <string name="perps_reducing_margin_failed">No se pudo reducir el margen</string>
     <string name="perps_add_margin_title">Añadir margen a %1$s %2$s</string>
     <string name="perps_reduce_margin_title">Reducir margen para %1$s %2$s</string>
     <string name="perps_reduce_action">Reducir</string>

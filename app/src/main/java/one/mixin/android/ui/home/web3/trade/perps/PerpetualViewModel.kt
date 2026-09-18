@@ -416,16 +416,17 @@ class PerpetualViewModel @Inject constructor(
                     errorCode = response.errorCode,
                     limit = parseLiquidationPriceLimit(response.error?.extra),
                     availableMargin = availableMarginFromError(response.error?.extra),
+                    errorMessage = MixinApplication.appContext.getMixinErrorStringByCode(response.errorCode, response.errorDescription),
                 )
             }
         } catch (e: CancellationException) {
             throw e
         } catch (e: HttpException) {
             Timber.e(e, "HTTP error estimating liquidation price")
-            liquidationPriceResult(price = null, errorCode = e.code())
+            liquidationPriceResult(price = null, errorCode = e.code(), errorMessage = ErrorHandler.getErrorMessage(e))
         } catch (e: Exception) {
             Timber.e(e, "Error estimating liquidation price")
-            LiquidationPriceResult.Failure
+            LiquidationPriceResult.Failure(ErrorHandler.getErrorMessage(e))
         }
     }
 

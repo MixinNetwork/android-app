@@ -1307,7 +1307,7 @@
     <string name="error_invalid_quote_amount">錯誤 10614: 輸入金額太小或太大，請重新輸入。</string>
     <string name="error_invalid_quote_amount_detailed">錯誤 10614: 金額超出最大下單金額 %1$s，請重新輸入。試試專業模式？不受金額和幣種限制。</string>
     <string name="error_no_available_quote">錯誤10615：目前不支援此交易對，請嘗試切換到其他代幣。</string>
-    <string name="error_perps_order_value_too_small">錯誤 %1$d：部位規模太小。</string>
+    <string name="error_perps_order_value_too_small">錯誤 %1$s: 倉位規模太小，請調整後重試。</string>
     <string name="error_already_had_open_position">錯誤 10651：當前已有持倉</string>
     <string name="error_waiting_other_orders">錯誤10652：目前市場仍在處理其他訂單，請稍後重試。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit">錯誤 10655：部位規模超過目前槓桿檔位限制，請降低金額或槓桿。</string>
@@ -2677,10 +2677,13 @@
     <string name="perps_position_tip">加倉會放大收益和風險</string>
     <string name="perps_low_margin_tip">保證金不足時，優先新增保證金</string>
     <string name="perps_total_margin">總保證金</string>
-    <string name="perps_available_margin">可減少保證金：%1$s</string>
     <string name="perps_margin_submitted">保證金調整已提交</string>
     <string name="perps_confirm_add_margin">確認新增保證金</string>
+    <string name="perps_adding_margin">正在新增保證金</string>
+    <string name="perps_adding_margin_failed">新增保證金失敗</string>
     <string name="perps_confirm_reduce_margin">確認減少保證金</string>
+    <string name="perps_reducing_margin">正在減少保證金</string>
+    <string name="perps_reducing_margin_failed">減少保證金失敗</string>
     <string name="perps_add_margin_title">%1$s %2$s 新增保證金</string>
     <string name="perps_reduce_margin_title">%1$s %2$s 減少保證金</string>
     <string name="perps_reduce_action">減少</string>

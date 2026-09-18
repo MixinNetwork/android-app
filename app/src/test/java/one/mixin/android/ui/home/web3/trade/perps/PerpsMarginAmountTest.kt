@@ -8,6 +8,31 @@ import kotlin.test.assertNull
 
 class PerpsMarginAmountTest {
     @Test
+    fun removableMarginErrorConvertsUnitsWithoutRoundingAboveTheLimit() {
+        assertEquals("29.65%", formatPerpsMarginLimit("6.98", BigDecimal("2.07"), true))
+        assertEquals("$2.07", formatPerpsMarginLimit("6.98", BigDecimal("2.07"), false))
+        assertEquals("99.99%", formatPerpsMarginLimit("100", BigDecimal("99.99999999"), true))
+        assertEquals("$2.07999999", formatPerpsMarginLimit("6.98", BigDecimal("2.079999999"), false))
+        assertEquals("$0.00000001", formatPerpsMarginLimit("1", BigDecimal("0.00000001"), false))
+        assertEquals("0%", formatPerpsMarginLimit("6.98", BigDecimal.ZERO, true))
+        assertEquals("0", formatPerpsMarginLimit("6.98", BigDecimal.ZERO, false))
+        assertEquals("0%", formatPerpsMarginLimit("0", BigDecimal.ZERO, true))
+    }
+
+    @Test
+    fun marginPreviewUsesZeroWithoutCurrencyAndTheActualLiquidationPrice() {
+        listOf(null, BigDecimal.ZERO, BigDecimal("0.00"), BigDecimal("0.004")).forEach {
+            assertEquals("0", formatPerpsMarginAmount(it))
+        }
+        assertEquals("$1.50", formatPerpsMarginAmount(BigDecimal("1.5")))
+        assertEquals(BigDecimal("130"), marginAfterAdjustment("100", "30", true))
+        assertEquals(BigDecimal("12.50"), marginLiquidationLossPercent("80000", "70000"))
+        assertEquals(BigDecimal("12.50"), marginLiquidationLossPercent("80000", "90000"))
+        assertNull(marginLiquidationLossPercent("0", "70000"))
+        assertNull(marginLiquidationLossPercent("80000", null))
+    }
+
+    @Test
     fun inputKeepsWholePercentagesAndTwoDollarDecimalsWithoutExceedingTheAmount() {
         assertEquals("0", formatMarginAdjustmentInput(BigDecimal.ZERO, true))
         assertEquals("100", formatMarginAdjustmentInput(BigDecimal("100"), true))

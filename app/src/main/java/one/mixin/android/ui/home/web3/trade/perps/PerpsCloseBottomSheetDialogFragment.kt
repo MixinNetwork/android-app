@@ -323,8 +323,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             id = when (step) {
                                 Step.Pending -> if (isReduceMargin) R.string.perps_confirm_reduce_margin_title else R.string.confirm_closing_position
                                 Step.Done -> if (isReduceMargin) R.string.perps_margin_submitted else R.string.Position_Closed
-                                Step.Error -> if (isReduceMargin) R.string.Failed else if (isLong) R.string.Closed_Long_Failed else R.string.Closed_Short_Failed
-                                Step.Sending -> R.string.Sending
+                                Step.Error -> if (isReduceMargin) R.string.perps_reducing_margin_failed else if (isLong) R.string.Closed_Long_Failed else R.string.Closed_Short_Failed
+                                Step.Sending -> if (isReduceMargin) R.string.perps_reducing_margin else R.string.Sending
                             }
                         ),
                         style = TextStyle(
@@ -425,20 +425,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             )
                         }
                         Box(modifier = Modifier.height(20.dp))
-                        if (isReduceMargin) {
-                            Text(
-                                text = stringResource(R.string.Amount).uppercase(),
-                                color = MixinAppTheme.colors.textRemarks,
-                                fontSize = 14.sp,
-                            )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text(
-                                text = formatPerpsExactUsdDecimal(estimatedReceive),
-                                color = MixinAppTheme.colors.textPrimary,
-                                fontSize = 16.sp,
-                            )
-                            Spacer(modifier = Modifier.height(20.dp))
-                        }
                         settleAssetItem?.let { asset ->
                             Text(
                                 text = stringResource(R.string.Estimated_Receive).uppercase(),
@@ -458,9 +444,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
                                     text = if (isReduceMargin) {
-                                        val price = asset.priceUsd.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
-                                        price?.let { "${estimatedReceive.divide(it, 8, RoundingMode.DOWN).stripTrailingZeros().toPlainString()} ${asset.symbol}" }
-                                            ?: formatPerpsExactUsdDecimal(estimatedReceive)
+                                        "+${formatPerpsQuantity(estimatedReceive)} ${asset.symbol}"
                                     } else "${String.format("%.8f", estimatedReceive)} ${asset.symbol}",
                                     color = MixinAppTheme.colors.textPrimary,
                                     fontSize = 16.sp,
@@ -631,8 +615,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     private fun refreshAssetAndSender(settleAssetId: String?, botId: String?) {
         lifecycleScope.launch {
-            settleAssetId?.let { assetId ->
-                val asset = bottomViewModel.findAssetItemById(assetId)
+            settleAssetId?.takeIf { it.isNotBlank() }?.let { assetId ->
+                val asset = if (isReduceMargin) bottomViewModel.findOrSyncAsset(assetId) else bottomViewModel.findAssetItemById(assetId)
                 asset?.let {
                     settleAssetSymbol = it.symbol
                     settleAssetItem = it
