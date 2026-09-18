@@ -2692,4 +2692,8 @@
     <string name="perps_add_position_title">%1$s %2$s에 포지션 추가</string>
     <string name="perps_reduce_position_title">%1$s %2$s의 포지션 축소</string>
     <string name="max_removable">최대 축소 가능 %1$s</string>
+    <string name="perps_added_position">포지션 추가</string>
+    <string name="perps_added_margin">증거금 추가</string>
+    <string name="perps_reduced_margin">증거금 감소</string>
+    <string name="perps_realized_pnl">실현 손익</string>
 </resources>

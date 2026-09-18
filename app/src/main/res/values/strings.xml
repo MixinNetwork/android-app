@@ -2724,4 +2724,8 @@
     <string name="perps_add_position_title">Add Position to %1$s %2$s</string>
     <string name="perps_reduce_position_title">Reduce Position for %1$s %2$s</string>
     <string name="max_removable">Max removable %1$s</string>
+    <string name="perps_added_position">Added Position</string>
+    <string name="perps_added_margin">Added Margin</string>
+    <string name="perps_reduced_margin">Reduced Margin</string>
+    <string name="perps_realized_pnl">Realized PnL</string>
 </resources>

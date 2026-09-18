@@ -1152,4 +1152,8 @@
     <string name="perps_add_position_title">Увеличить позицию в %1$s %2$s</string>
     <string name="perps_reduce_position_title">Уменьшить позицию для %1$s %2$s</string>
     <string name="max_removable">Максимально можно уменьшить на %1$s</string>
+    <string name="perps_added_position">Позиция увеличена</string>
+    <string name="perps_added_margin">Маржа добавлена</string>
+    <string name="perps_reduced_margin">Маржа уменьшена</string>
+    <string name="perps_realized_pnl">Реализованная прибыль/убыток</string>
 </resources>

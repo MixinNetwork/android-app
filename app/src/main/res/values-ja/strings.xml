@@ -1157,4 +1157,8 @@
     <string name="perps_add_position_title">%1$s %2$s にポジションを追加</string>
     <string name="perps_reduce_position_title">%1$s %2$s のポジションを減らす</string>
     <string name="max_removable">最大減少量 %1$s</string>
+    <string name="perps_added_position">ポジション追加</string>
+    <string name="perps_added_margin">証拠金追加</string>
+    <string name="perps_reduced_margin">証拠金減額</string>
+    <string name="perps_realized_pnl">実現損益</string>
 </resources>

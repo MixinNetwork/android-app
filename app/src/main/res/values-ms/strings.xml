@@ -834,4 +834,8 @@
     <string name="perps_add_position_title">Tambah Posisi pada %1$s %2$s</string>
     <string name="perps_reduce_position_title">Kurangkan Posisi untuk %1$s %2$s</string>
     <string name="max_removable">Maksimum boleh dikurangkan %1$s</string>
+    <string name="perps_added_position">Posisi Ditambah</string>
+    <string name="perps_added_margin">Margin Ditambah</string>
+    <string name="perps_reduced_margin">Margin Dikurangkan</string>
+    <string name="perps_realized_pnl">PnL Direalisasikan</string>
 </resources>

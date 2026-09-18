@@ -2642,4 +2642,8 @@
     <string name="perps_add_position_title">%1$s %2$s 增加仓位</string>
     <string name="perps_reduce_position_title">%1$s %2$s 减少仓位</string>
     <string name="max_removable">最多减少 %1$s</string>
+    <string name="perps_added_position">已加仓</string>
+    <string name="perps_added_margin">已增加保证金</string>
+    <string name="perps_reduced_margin">已减少保证金</string>
+    <string name="perps_realized_pnl">已实现盈亏</string>
 </resources>
