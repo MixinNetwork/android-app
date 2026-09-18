@@ -53,6 +53,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -216,13 +217,9 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 remoteLiquidationPrice = requestLiquidationPrice(
                     onFailure = { liquidationError = it ?: getString(R.string.Data_error) },
                     onLimitExceeded = { liquidationError = getString(R.string.error_perps_position_size_exceeds_leverage_limit) },
-                    onMarginExceeded = {
-                        availableMargin = it
-                        liquidationError = when {
-                            increase -> requireContext().getMixinErrorStringByCode(10653, "")
-                            it == null -> getString(R.string.Data_error)
-                            else -> null
-                        }
+                    onMarginExceeded = if (increase) null else { available ->
+                        availableMargin = available
+                        liquidationError = if (available == null) getString(R.string.Data_error) else null
                     },
                 ) {
                     viewModel.estimateLiquidationPrice(
@@ -311,7 +308,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             viewModel.refreshOrders(currentPosition.walletId)
                         }
                         dismiss()
-                    } else if (response.errorCode == 10653) {
+                    } else if (!increase && response.errorCode == 10653) {
                         availableMargin = availableMarginFromError(response.error?.extra)
                         error = if (availableMargin == null) requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription) else null
                     } else {
@@ -364,8 +361,8 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 marketPrice = market?.last,
                 priceScale = market?.priceScale ?: currentPosition.priceScale,
                 increase = increase,
-                totalMargin = totalMargin?.takeIf { !insufficientBalance && !exceedsReductionLimit },
-                estimatedLiquidationPrice = remoteLiquidationPrice?.takeIf { !insufficientBalance && !exceedsReductionLimit },
+                totalMargin = totalMargin?.takeIf { errorText == null && !exceedsReductionLimit },
+                estimatedLiquidationPrice = remoteLiquidationPrice?.takeIf { errorText == null && !exceedsReductionLimit },
                 isLiquidationLoading = isLiquidationLoading,
                 errorText = errorText,
                 canSubmit = canSubmit,
@@ -461,6 +458,9 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         errorText = reductionLimitError ?: errorText,
                         enabled = !loading,
                         onInputChanged = ::changeAmount,
+                        onApplyReductionLimit = maximumReduction?.takeIf { reductionLimitError != null }?.let { maximum ->
+                            { changeAmount(maximumMarginReductionInput(currentPosition.margin, maximum, reduceByPercent)) }
+                        },
                         onToggleMode = {
                             amount = amountValue?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
                             inputIsPercentage = false
@@ -646,6 +646,7 @@ private fun PerpsReduceMarginInput(
     enabled: Boolean,
     onInputChanged: (String) -> Unit,
     onToggleMode: () -> Unit,
+    onApplyReductionLimit: (() -> Unit)? = null,
 ) {
     var textFieldValue by remember(isPercentage) { mutableStateOf(TextFieldValue(input, TextRange(input.length))) }
     LaunchedEffect(input) {
@@ -669,7 +670,7 @@ private fun PerpsReduceMarginInput(
     }
     val inputTextStyle = TextStyle(fontSize = 36.sp, fontWeight = FontWeight.W500, color = inputColor, textAlign = TextAlign.Center)
     val textMeasurer = rememberTextMeasurer()
-    val placeholder = if (isPercentage) "0" else "0.00"
+    val placeholder = "0"
     val inputWidth = with(LocalDensity.current) {
         textMeasurer.measure(input.ifEmpty { placeholder }, style = inputTextStyle, softWrap = false).size.width.toDp() + 2.dp
     }
@@ -749,7 +750,8 @@ private fun PerpsReduceMarginInput(
             )
         }
         Box(
-            modifier = Modifier.fillMaxWidth().height(with(LocalDensity.current) { 32.sp.toDp() }),
+            modifier = Modifier.fillMaxWidth().height(with(LocalDensity.current) { 32.sp.toDp() })
+                .then(if (onApplyReductionLimit != null) Modifier.clickable(enabled = enabled, onClick = onApplyReductionLimit) else Modifier),
             contentAlignment = Alignment.Center,
         ) {
             Text(
@@ -794,7 +796,7 @@ private fun PerpsReduceMarginInput(
                 inactiveTickColor = Color.Transparent,
             ),
         )
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+        Layout(modifier = Modifier.fillMaxWidth(), content = {
             listOf(0, 25, 50, 75, 100).forEach { value ->
                 Text(
                     text = if (isPercentage) "$value%" else formatPerpsMarginAmount(reduceMarginAmount(margin?.toPlainString(), value.toString(), true)),
@@ -806,6 +808,21 @@ private fun PerpsReduceMarginInput(
                         selectPercentage(BigDecimal(value))
                     }.padding(vertical = 12.dp),
                 )
+            }
+        }) { measurables, constraints ->
+            val labels = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
+            val width = constraints.maxWidth
+            val trackInset = 10.dp.roundToPx()
+            layout(width, labels.maxOf { it.height }) {
+                labels.forEachIndexed { index, label ->
+                    val center = trackInset + (width - 2 * trackInset) * index / (labels.size - 1)
+                    val x = when (index) {
+                        0 -> 0
+                        labels.lastIndex -> width - label.width
+                        else -> center - label.width / 2
+                    }
+                    label.placeRelative(x.coerceIn(0, width - label.width), 0)
+                }
             }
         }
     }

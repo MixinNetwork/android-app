@@ -391,6 +391,7 @@ private fun PerpsAddContent(
         aboveMaximumMargin -> maximumMarginError
         else -> liquidationLimitError ?: liquidationError
     }
+    val showSizeChange = hasInputAmount && !insufficientBalance && marginLimitError == null
 
     val currentPriceText = formatPerpsPrice(currentPrice, priceScale)
     val defaultLiquidationPrice = position.liquidationPrice
@@ -476,7 +477,7 @@ private fun PerpsAddContent(
                             if (position.side.equals("short", ignoreCase = true)) R.string.Short else R.string.Long
                         )
                         Text(
-                            text = stringResource(R.string.add_position_title, sideText, marketSymbol),
+                            text = stringResource(R.string.perps_add_position_title, sideText, marketSymbol),
                             fontSize = 16.sp,
                             lineHeight = 20.sp,
                             fontWeight = FontWeight.W600,
@@ -623,7 +624,7 @@ private fun PerpsAddContent(
                         title = stringResource(R.string.position_size),
                         value = listOfNotNull(
                             formatTotalSizeValue(position.quantity, "0", position.leverage, currentPrice, position.tokenSymbol.orEmpty()),
-                            if (hasInputAmount) formatTotalSizeValue(position.quantity, amount, position.leverage, currentPrice, position.tokenSymbol.orEmpty()) else null,
+                            if (showSizeChange) formatTotalSizeValue(position.quantity, amount, position.leverage, currentPrice, position.tokenSymbol.orEmpty()) else null,
                         ).joinToString(" → "),
                         singleLine = false,
                         onTipClick = {

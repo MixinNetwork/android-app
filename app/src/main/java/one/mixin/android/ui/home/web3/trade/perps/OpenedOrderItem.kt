@@ -70,7 +70,7 @@ fun OpenedOrderItem(
         isIncrease && isFailed ->
             stringResource(if (isLong) R.string.Added_Long_Failed else R.string.Added_Short_Failed)
         isIncrease ->
-            stringResource(if (isLong) R.string.Added_Long else R.string.Added_Short)
+            stringResource(R.string.perps_added_position)
         isFailed ->
             stringResource(if (isLong) R.string.Opened_Long_Failed else R.string.Opened_Short_Failed)
         else ->

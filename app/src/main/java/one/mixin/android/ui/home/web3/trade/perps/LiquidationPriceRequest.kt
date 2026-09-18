@@ -15,7 +15,7 @@ internal sealed interface LiquidationPriceResult {
 
     data class LimitExceeded(val limit: LiquidationPriceLimit) : LiquidationPriceResult
 
-    data class MarginExceeded(val availableMargin: BigDecimal?) : LiquidationPriceResult
+    data class MarginExceeded(val availableMargin: BigDecimal?, val message: String? = null) : LiquidationPriceResult
 
     data object Retry : LiquidationPriceResult
 
@@ -32,7 +32,7 @@ internal fun liquidationPriceResult(
     val validPrice = price?.takeIf { it.isNotBlank() }
     return when {
         validPrice != null -> LiquidationPriceResult.Success(validPrice)
-        errorCode == 10653 -> LiquidationPriceResult.MarginExceeded(availableMargin)
+        errorCode == 10653 -> LiquidationPriceResult.MarginExceeded(availableMargin, errorMessage)
         errorCode == ErrorHandler.PERPS_POSITION_SIZE_EXCEEDS_LEVERAGE_LIMIT -> {
             LiquidationPriceResult.LimitExceeded(limit)
         }
@@ -70,7 +70,7 @@ internal fun shouldRequestLiquidationPrice(
 internal suspend fun requestLiquidationPrice(
     retryDelayMillis: Long = 1000L,
     onLimitExceeded: (LiquidationPriceLimit) -> Unit = {},
-    onMarginExceeded: (BigDecimal?) -> Unit = {},
+    onMarginExceeded: ((BigDecimal?) -> Unit)? = null,
     onFailure: (String?) -> Unit = {},
     request: suspend () -> LiquidationPriceResult,
 ): String? {
@@ -85,7 +85,7 @@ internal suspend fun requestLiquidationPrice(
                 return null
             }
             is LiquidationPriceResult.MarginExceeded -> {
-                onMarginExceeded(result.availableMargin)
+                if (onMarginExceeded != null) onMarginExceeded(result.availableMargin) else onFailure(result.message)
                 return null
             }
             LiquidationPriceResult.Retry -> delay(retryDelayMillis)

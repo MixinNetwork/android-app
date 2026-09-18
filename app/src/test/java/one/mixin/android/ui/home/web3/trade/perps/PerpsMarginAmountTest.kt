@@ -5,8 +5,23 @@ import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class PerpsMarginAmountTest {
+    @Test
+    fun fillsMaximumRemovalInTheCurrentUnitWithoutExceedingTheLimit() {
+        assertEquals("50", maximumMarginReductionInput("100", BigDecimal("50"), true))
+        assertEquals("50.00", maximumMarginReductionInput("100", BigDecimal("50"), false))
+        assertEquals("29", maximumMarginReductionInput("6.98", BigDecimal("2.07"), true))
+        assertEquals("2.07", maximumMarginReductionInput("6.98", BigDecimal("2.07999999"), false))
+        for (isPercentage in listOf(true, false)) {
+            assertEquals("0", maximumMarginReductionInput("100", BigDecimal.ZERO, isPercentage))
+            val input = maximumMarginReductionInput("6.98", BigDecimal("2.07999999"), isPercentage)
+            val reduction = requireNotNull(reduceMarginAmount("6.98", input, isPercentage))
+            assertTrue(reduction <= BigDecimal("2.07999999"))
+        }
+    }
+
     @Test
     fun removableMarginErrorConvertsUnitsWithoutRoundingAboveTheLimit() {
         assertEquals("29.65%", formatPerpsMarginLimit("6.98", BigDecimal("2.07"), true))
@@ -36,7 +51,8 @@ class PerpsMarginAmountTest {
     fun inputKeepsWholePercentagesAndTwoDollarDecimalsWithoutExceedingTheAmount() {
         assertEquals("0", formatMarginAdjustmentInput(BigDecimal.ZERO, true))
         assertEquals("100", formatMarginAdjustmentInput(BigDecimal("100"), true))
-        assertEquals("0.00", formatMarginAdjustmentInput(BigDecimal.ZERO, false))
+        assertEquals("0", formatMarginAdjustmentInput(BigDecimal.ZERO, false))
+        assertEquals("0", formatMarginAdjustmentInput(BigDecimal("0.009"), false))
         assertEquals("1.50", formatMarginAdjustmentInput(BigDecimal("1.5"), false))
         assertEquals("5.01", formatMarginAdjustmentInput(BigDecimal("5.01253097"), false))
         assertEquals("0.99", formatMarginAdjustmentInput(BigDecimal("0.999"), false))

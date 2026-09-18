@@ -19,6 +19,22 @@ import java.math.BigDecimal
 
 class LiquidationPriceRequestTest {
     @Test
+    fun marginLimitReportsTheServerErrorWithoutAReductionHandler() = runBlocking {
+        var errorMessage: String? = null
+        val price = requestLiquidationPrice(onFailure = { errorMessage = it }) {
+            liquidationPriceResult(
+                price = null,
+                errorCode = 10653,
+                availableMargin = BigDecimal("50"),
+                errorMessage = "Margin exceeds the limit",
+            )
+        }
+
+        assertNull(price)
+        assertEquals("Margin exceeds the limit", errorMessage)
+    }
+
+    @Test
     fun sendsActionAndOnlyTheParametersForEachScenario() = runBlocking {
         val requests = mutableListOf<Request>()
         val client = OkHttpClient.Builder().addInterceptor { chain ->
