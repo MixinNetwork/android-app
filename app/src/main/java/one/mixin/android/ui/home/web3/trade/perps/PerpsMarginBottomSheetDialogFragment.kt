@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -46,8 +47,12 @@ import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -98,7 +103,6 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.InputContent
-import one.mixin.android.ui.home.web3.trade.KeyboardAwareBox
 import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import one.mixin.android.ui.home.web3.trade.limitTradeInputDecimalPlaces
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
@@ -454,7 +458,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         amount = amountValue,
                         percentage = percentage,
                         margin = marginValue,
-                        errorText = reductionLimitError,
+                        errorText = reductionLimitError ?: errorText,
                         enabled = !loading,
                         onInputChanged = ::changeAmount,
                         onToggleMode = {
@@ -491,96 +495,88 @@ private fun PerpsMarginContent(
     inputContent: @Composable () -> Unit,
 ) {
     val actionTitle = stringResource(if (increase) R.string.Add else R.string.perps_reduce_action)
-    KeyboardAwareBox(
-        modifier = Modifier.fillMaxSize().background(MixinAppTheme.colors.background),
-        content = { availableHeight ->
-            Column(modifier = Modifier.fillMaxSize()) {
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
-                        .padding(start = 16.dp, end = 16.dp, top = 16.dp),
-                ) {
-                    val entryPrice = formatPerpsPrice(position.entryPrice, priceScale)
-                    val currentPrice = formatPerpsPrice(
-                        marketPrice?.takeIf { it.isNotBlank() } ?: position.markPrice ?: position.entryPrice,
-                        priceScale,
+    Column(
+        modifier = Modifier.fillMaxSize().background(MixinAppTheme.colors.background).imePadding(),
+    ) {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .verticalScroll(rememberScrollState())
+                .padding(start = 16.dp, end = 16.dp, top = 16.dp),
+        ) {
+            val entryPrice = formatPerpsPrice(position.entryPrice, priceScale)
+            val currentPrice = formatPerpsPrice(
+                marketPrice?.takeIf { it.isNotBlank() } ?: position.markPrice ?: position.entryPrice,
+                priceScale,
+            )
+            val subtitle = stringResource(R.string.auto_close_subtitle_after_open, entryPrice, currentPrice)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                CoilImage(
+                    model = position.iconUrl,
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    modifier = Modifier.size(30.dp).clip(CircleShape),
+                )
+                Spacer(Modifier.width(10.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        text = stringResource(
+                            if (increase) R.string.perps_add_margin_title else R.string.perps_reduce_margin_title,
+                            stringResource(if (position.side.equals("long", true)) R.string.Long else R.string.Short),
+                            position.tokenSymbol ?: position.displaySymbol.orEmpty(),
+                        ),
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 16.sp,
+                        lineHeight = 20.sp,
+                        fontWeight = FontWeight.W600,
                     )
-                    val subtitle = stringResource(R.string.auto_close_subtitle_after_open, entryPrice, currentPrice)
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        CoilImage(
-                            model = position.iconUrl,
-                            placeholder = R.drawable.ic_avatar_place_holder,
-                            modifier = Modifier.size(30.dp).clip(CircleShape),
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = stringResource(
-                                    if (increase) R.string.perps_add_margin_title else R.string.perps_reduce_margin_title,
-                                    stringResource(if (position.side.equals("long", true)) R.string.Long else R.string.Short),
-                                    position.tokenSymbol ?: position.displaySymbol.orEmpty(),
-                                ),
-                                color = MixinAppTheme.colors.textPrimary,
-                                fontSize = 16.sp,
-                                lineHeight = 20.sp,
-                                fontWeight = FontWeight.W600,
-                            )
-                            Spacer(Modifier.height(2.dp))
-                            Text(
-                                text = buildAnnotatedString {
-                                    append(subtitle)
-                                    addStyle(SpanStyle(color = MixinAppTheme.colors.textRemarks), 0, subtitle.length)
-                                    listOf(entryPrice, currentPrice).forEach { value ->
-                                        val start = subtitle.indexOf(value)
-                                        if (start >= 0) addStyle(SpanStyle(color = MixinAppTheme.colors.textAssist), start, start + value.length)
-                                    }
-                                },
-                                fontSize = 12.sp,
-                                lineHeight = 16.sp,
-                            )
-                        }
-                        IconButton(onClick = onCancel, enabled = !loading) {
-                            Icon(
-                                painterResource(R.drawable.ic_circle_close),
-                                stringResource(R.string.close),
-                                tint = Color.Unspecified,
-                                modifier = Modifier.size(26.dp),
-                            )
-                        }
-                    }
-                    Spacer(Modifier.height(16.dp))
-                    inputContent()
-                    Spacer(Modifier.height(18.dp))
-                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                        val currentMarginText = position.margin?.toBigDecimalOrNull()?.let { formatPerpsMarginAmount(it) } ?: "-"
-                        PerpsAddInfoRow(
-                            title = stringResource(R.string.Margin),
-                            value = if (totalMargin != null) "$currentMarginText → ${formatPerpsMarginAmount(totalMargin)}" else currentMarginText,
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        PerpsAddInfoRow(
-                            title = stringResource(R.string.Liquidation_Price),
-                            value = listOfNotNull(
-                                position.liquidationPrice?.takeIf { it.isNotBlank() }?.let { formatPerpsPrice(it, priceScale) } ?: "-",
-                                estimatedLiquidationPrice?.let { formatPerpsPrice(it, priceScale) },
-                            ).joinToString(" → "),
-                            isLoading = isLiquidationLoading,
-                            onTipClick = { onGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION) },
-                        )
-                    }
-                    Spacer(Modifier.height(24.dp))
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = buildAnnotatedString {
+                            append(subtitle)
+                            addStyle(SpanStyle(color = MixinAppTheme.colors.textRemarks), 0, subtitle.length)
+                            listOf(entryPrice, currentPrice).forEach { value ->
+                                val start = subtitle.indexOf(value)
+                                if (start >= 0) addStyle(SpanStyle(color = MixinAppTheme.colors.textAssist), start, start + value.length)
+                            }
+                        },
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp,
+                    )
                 }
-                if (availableHeight == null) {
-                    PerpsMarginActions(increase, actionTitle, errorText, canSubmit, loading, onCancel = onCancel, onSubmit = onSubmit)
+                IconButton(onClick = onCancel, enabled = !loading) {
+                    Icon(
+                        painterResource(R.drawable.ic_circle_close),
+                        stringResource(R.string.close),
+                        tint = Color.Unspecified,
+                        modifier = Modifier.size(26.dp),
+                    )
                 }
             }
-        },
-        floating = {
-            PerpsMarginActions(increase, actionTitle, errorText, canSubmit, loading, onCancel = onCancel, onSubmit = onSubmit)
-        },
-    )
+            Spacer(Modifier.height(16.dp))
+            inputContent()
+            Spacer(Modifier.height(18.dp))
+            Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
+                val currentMarginText = position.margin?.toBigDecimalOrNull()?.let { formatPerpsMarginAmount(it) } ?: "-"
+                PerpsAddInfoRow(
+                    title = stringResource(R.string.Margin),
+                    value = if (totalMargin != null) "$currentMarginText → ${formatPerpsMarginAmount(totalMargin)}" else currentMarginText,
+                )
+                Spacer(Modifier.height(16.dp))
+                PerpsAddInfoRow(
+                    title = stringResource(R.string.Liquidation_Price),
+                    value = listOfNotNull(
+                        position.liquidationPrice?.takeIf { it.isNotBlank() }?.let { formatPerpsPrice(it, priceScale) } ?: "-",
+                        estimatedLiquidationPrice?.let { formatPerpsPrice(it, priceScale) },
+                    ).joinToString(" → "),
+                    isLoading = isLiquidationLoading,
+                    onTipClick = { onGuide(PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION) },
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+        }
+        PerpsMarginActions(increase, actionTitle, errorText, canSubmit, loading, onCancel = onCancel, onSubmit = onSubmit)
+    }
 }
 
 @Composable
@@ -594,16 +590,18 @@ private fun PerpsMarginActions(
     onSubmit: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth().background(MixinAppTheme.colors.background)) {
-        Text(
-            text = errorText.orEmpty(),
-            color = MixinAppTheme.colors.walletRed,
-            fontSize = 14.sp,
-            textAlign = TextAlign.Center,
-            minLines = 2,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
-        )
+        if (increase) {
+            Text(
+                text = errorText.orEmpty(),
+                color = MixinAppTheme.colors.walletRed,
+                fontSize = 14.sp,
+                textAlign = TextAlign.Center,
+                minLines = 2,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 4.dp),
+            )
+        }
         Row(
             horizontalArrangement = Arrangement.spacedBy(16.dp),
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp).padding(top = 12.dp, bottom = 20.dp),
@@ -669,7 +667,7 @@ private fun PerpsReduceMarginInput(
         inputValue <= BigDecimal.ZERO -> MixinAppTheme.colors.textRemarks
         else -> MixinAppTheme.colors.textPrimary
     }
-    val inputTextStyle = TextStyle(fontSize = 48.sp, fontWeight = FontWeight.W500, color = inputColor, textAlign = TextAlign.Center)
+    val inputTextStyle = TextStyle(fontSize = 36.sp, fontWeight = FontWeight.W500, color = inputColor, textAlign = TextAlign.Center)
     val textMeasurer = rememberTextMeasurer()
     val placeholder = if (isPercentage) "0" else "0.00"
     val inputWidth = with(LocalDensity.current) {
@@ -699,7 +697,7 @@ private fun PerpsReduceMarginInput(
                 Icon(painterResource(R.drawable.ic_perps_minus), stringResource(R.string.perps_reduce_action), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
             }
             Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-                if (!isPercentage) Text(PERPS_USD_SYMBOL, fontSize = 48.sp, fontWeight = FontWeight.W500, color = inputColor)
+                if (!isPercentage) Text(PERPS_USD_SYMBOL, style = inputTextStyle)
                 BasicTextField(
                     value = textFieldValue,
                     onValueChange = { value ->
@@ -723,7 +721,7 @@ private fun PerpsReduceMarginInput(
                         }
                     },
                 )
-                if (isPercentage) Text("%", fontSize = 48.sp, fontWeight = FontWeight.W500, color = inputColor)
+                if (isPercentage) Text("%", style = inputTextStyle)
             }
             IconButton(
                 onClick = { updateInput(formatMarginAdjustmentInput((inputValue + BigDecimal.ONE).min(maximum), isPercentage)) },
@@ -740,6 +738,7 @@ private fun PerpsReduceMarginInput(
                 text = if (isPercentage) formatPerpsMarginAmount(amount) else "${percentage?.setScale(0, RoundingMode.HALF_UP)?.toPlainString() ?: "0"}%",
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 16.sp,
+                lineHeight = 20.sp,
             )
             Spacer(Modifier.width(4.dp))
             Icon(
@@ -749,17 +748,21 @@ private fun PerpsReduceMarginInput(
                 modifier = Modifier.size(16.dp),
             )
         }
-        Text(
-            text = errorText.orEmpty(),
-            color = MixinAppTheme.colors.walletRed,
-            fontSize = 12.sp,
-            textAlign = TextAlign.Center,
-            minLines = 2,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.fillMaxWidth(),
-        )
-        Spacer(Modifier.height(12.dp))
+        Box(
+            modifier = Modifier.fillMaxWidth().height(with(LocalDensity.current) { 32.sp.toDp() }),
+            contentAlignment = Alignment.Center,
+        ) {
+            Text(
+                text = errorText.orEmpty(),
+                color = MixinAppTheme.colors.walletRed,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Spacer(Modifier.height(8.dp))
         Slider(
             value = sliderPercentage,
             onValueChange = { selectPercentage(BigDecimal(snapMarginReductionPercentage(it))) },
@@ -767,16 +770,21 @@ private fun PerpsReduceMarginInput(
             valueRange = 0f..100f,
             steps = 99,
             modifier = Modifier.fillMaxWidth().height(32.dp).drawWithContent {
-                val trackInset = 10.dp.toPx()
-                for (value in 0..100 step 25) {
-                    val fraction = if (layoutDirection == LayoutDirection.Rtl) 1f - value / 100f else value / 100f
-                    drawCircle(
-                        color = if (value <= sliderPercentage) activeMarkerColor else inactiveMarkerColor,
-                        radius = 3.dp.toPx(),
-                        center = Offset(trackInset + (size.width - 2 * trackInset) * fraction, size.height / 2),
-                    )
-                }
                 drawContent()
+                val trackInset = 10.dp.toPx()
+                val thumbFraction = if (layoutDirection == LayoutDirection.Rtl) 1f - sliderPercentage / 100f else sliderPercentage / 100f
+                val thumbCenter = Offset(trackInset + (size.width - 2 * trackInset) * thumbFraction, size.height / 2)
+                val thumbPath = Path().apply { addOval(Rect(thumbCenter, trackInset)) }
+                clipPath(thumbPath, ClipOp.Difference) {
+                    for (value in 0..100 step 25) {
+                        val fraction = if (layoutDirection == LayoutDirection.Rtl) 1f - value / 100f else value / 100f
+                        drawCircle(
+                            color = if (value <= sliderPercentage) activeMarkerColor else inactiveMarkerColor,
+                            radius = 3.dp.toPx(),
+                            center = Offset(trackInset + (size.width - 2 * trackInset) * fraction, size.height / 2),
+                        )
+                    }
+                }
             },
             colors = SliderDefaults.colors(
                 thumbColor = MixinAppTheme.colors.accent,
@@ -792,6 +800,7 @@ private fun PerpsReduceMarginInput(
                     text = if (isPercentage) "$value%" else formatPerpsMarginAmount(reduceMarginAmount(margin?.toPlainString(), value.toString(), true)),
                     color = MixinAppTheme.colors.textAssist,
                     fontSize = 10.sp,
+                    lineHeight = 14.sp,
                     textAlign = when (value) { 0 -> TextAlign.Start; 100 -> TextAlign.End; else -> TextAlign.Center },
                     modifier = Modifier.clickable(enabled = enabled && margin != null && margin > BigDecimal.ZERO) {
                         selectPercentage(BigDecimal(value))

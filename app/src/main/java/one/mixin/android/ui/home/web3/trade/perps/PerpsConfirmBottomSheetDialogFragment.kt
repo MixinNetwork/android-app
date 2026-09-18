@@ -436,20 +436,22 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     }
                     Box(modifier = Modifier.height(20.dp))
 
-                    PerpsInfoItem(
-                        title = stringResource(R.string.Direction).uppercase(),
-                        value = (if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)) +
-                            if (leverage > 0) " ${leverage}x" else ""
-                    )
-                    if (!isAddMargin && leverage > 0 && amount.isNotBlank()) {
-                        Box(modifier = Modifier.height(6.dp))
-                        ProfitLossInfo(
-                            amount = amount,
-                            leverage = leverage,
-                            isLong = isLong
+                    if (!isAddMargin) {
+                        PerpsInfoItem(
+                            title = stringResource(R.string.Direction).uppercase(),
+                            value = (if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)) +
+                                if (leverage > 0) " ${leverage}x" else ""
                         )
+                        if (leverage > 0 && amount.isNotBlank()) {
+                            Box(modifier = Modifier.height(6.dp))
+                            ProfitLossInfo(
+                                amount = amount,
+                                leverage = leverage,
+                                isLong = isLong
+                            )
+                        }
+                        Box(modifier = Modifier.height(20.dp))
                     }
-                    Box(modifier = Modifier.height(20.dp))
 
                     if (amount.isNotBlank()) {
                         PerpsInfoItem(
