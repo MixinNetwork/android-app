@@ -30,6 +30,7 @@ import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.Web3Exception
+import one.mixin.android.web3.hashEip712Message
 import org.bitcoinj.base.Coin
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.core.TransactionInput
@@ -48,7 +49,6 @@ import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.Sign
-import org.web3j.crypto.StructuredDataEncoder
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.protocol.core.Response
 import org.web3j.utils.Numeric
@@ -435,8 +435,7 @@ object Web3Signer {
                 JsSignMessage.TYPE_GASLESS_TRANSFER ->
                     Sign.signMessage(Numeric.hexStringToByteArray(message), keyPair, false)
                 JsSignMessage.TYPE_TYPED_MESSAGE -> {
-                    val encoder = StructuredDataEncoder(message)
-                    Sign.signMessage(encoder.hashStructuredData(), keyPair, false)
+                    Sign.signMessage(hashEip712Message(message), keyPair, false)
                 }
                 else -> Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message), keyPair)
             }
