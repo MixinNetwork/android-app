@@ -1011,24 +1011,12 @@ private fun MarketDetailCard(
                     color = MixinAppTheme.colors.textPrimary
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = changeText,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = changeColor
-                    )
-                    if (chartStyle.useTradingView) {
-                        ChartStyleToggle(
-                            lineMode = chartStyle.lineMode,
-                            onToggle = { chartStyle.setLineMode(!chartStyle.lineMode) },
-                        )
-                    }
-                }
+                Text(
+                    text = changeText,
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = changeColor
+                )
             }
 
             CoilImage(
@@ -1064,38 +1052,56 @@ private fun MarketDetailCard(
         Spacer(modifier = Modifier.height(16.dp))
 
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            timeFrameLabels.forEachIndexed { index, timeFrameLabel ->
-                Box(
-                    modifier = Modifier
-                        .height(36.dp)
-                        .clip(RoundedCornerShape(18.dp))
-                        .then(
-                            if (selectedTimeFrame == index) {
-                                Modifier.background(MixinAppTheme.colors.backgroundWindow)
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                timeFrameLabels.forEachIndexed { index, timeFrameLabel ->
+                    Box(
+                        modifier = Modifier
+                            .height(36.dp)
+                            .clip(RoundedCornerShape(18.dp))
+                            .then(
+                                if (selectedTimeFrame == index) {
+                                    Modifier.background(MixinAppTheme.colors.backgroundWindow)
+                                } else {
+                                    Modifier
+                                }
+                            )
+                            .clickable { onTimeFrameChange(index) }
+                            .padding(horizontal = 12.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text(
+                            text = timeFrameLabel,
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = if (selectedTimeFrame == index) {
+                                MixinAppTheme.colors.textPrimary
                             } else {
-                                Modifier
+                                MixinAppTheme.colors.textAssist
                             }
                         )
-                        .clickable { onTimeFrameChange(index) }
-                        .padding(horizontal = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = timeFrameLabel,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = if (selectedTimeFrame == index) {
-                            MixinAppTheme.colors.textPrimary
-                        } else {
-                            MixinAppTheme.colors.textAssist
-                        }
-                    )
+                    }
                 }
+            }
+            if (chartStyle.useTradingView) {
+                Spacer(
+                    modifier = Modifier
+                        .padding(start = 8.dp)
+                        .width(1.dp)
+                        .height(16.dp)
+                        .background(MixinAppTheme.colors.borderColor)
+                )
+                ChartStyleToggle(
+                    lineMode = chartStyle.lineMode,
+                    onToggle = { chartStyle.setLineMode(!chartStyle.lineMode) },
+                )
             }
         }
     }

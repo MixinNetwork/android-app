@@ -4,7 +4,6 @@ import android.content.SharedPreferences
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.awaitLongPressOrCancellation
@@ -21,10 +20,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -36,7 +35,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -85,10 +83,6 @@ import kotlin.math.min
 import kotlin.math.roundToInt
 
 private const val CANDLE_REFRESH_INTERVAL_MS = 10_000L
-// The chart-type button is a bare icon inset by its own padding, the way the reference has it.
-private const val CHART_STYLE_TOGGLE_ICON_DP = 20f
-private const val CHART_STYLE_TOGGLE_H_PADDING_DP = 8f
-private const val CHART_STYLE_TOGGLE_V_PADDING_DP = 4f
 private const val DEFAULT_CANDLE_SCALE = 1f
 private const val MIN_CANDLE_SCALE = 0.5f
 private const val MAX_CANDLE_SCALE = 3f
@@ -144,8 +138,6 @@ data class ChartSelection(
     val changePercent: BigDecimal,
 )
 
-// The chart style is a preference, so it outlives the page. The header owns the toggle and the
-// chart reads the result, so both take it from here.
 internal class PerpsChartStyle(
     val useTradingView: Boolean,
     val lineMode: Boolean,
@@ -291,26 +283,15 @@ fun CandleChart(
     }
 }
 
-// Switches the perps chart between candles and the line chart, mirroring the reference app. It sits
-// in the header beside the change figure, so the icon shows the style a tap would switch to. The
-// reference's chart-type button is a bare icon inset by its own padding, not a fixed plate, so this
-// one is sized by its icon and padding and carries no chip.
 @Composable
 internal fun ChartStyleToggle(
     lineMode: Boolean,
     onToggle: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    Box(
-        modifier =
-            modifier
-                .clip(CircleShape)
-                .clickable(onClick = onToggle)
-                .padding(
-                    horizontal = CHART_STYLE_TOGGLE_H_PADDING_DP.dp,
-                    vertical = CHART_STYLE_TOGGLE_V_PADDING_DP.dp,
-                ),
-        contentAlignment = Alignment.Center,
+    IconButton(
+        onClick = onToggle,
+        modifier = modifier.size(48.dp),
     ) {
         Icon(
             painter =
@@ -325,8 +306,8 @@ internal fun ChartStyleToggle(
                         R.string.perps_chart_style_line
                     },
                 ),
-            tint = MixinAppTheme.colors.textAssist,
-            modifier = Modifier.size(CHART_STYLE_TOGGLE_ICON_DP.dp),
+            tint = if (lineMode) Color.Unspecified else MixinAppTheme.colors.textAssist,
+            modifier = Modifier.size(24.dp),
         )
     }
 }
