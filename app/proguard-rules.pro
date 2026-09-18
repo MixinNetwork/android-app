@@ -144,6 +144,8 @@
 -keep class org.web3j.abi.TypeReference { *; }
 -keep class * extends org.web3j.abi.TypeReference
 -keep,allowoptimization,allowobfuscation,allowshrinking class org.web3j.crypto.** { *; }
+# Jackson constructs EIP-712 models reflectively and uses their property names.
+-keep,allowoptimization class org.web3j.crypto.StructuredData$* { *; }
 -keep,allowoptimization,allowobfuscation,allowshrinking class org.web3j.protocol.** { *; }
 -dontwarn org.web3j.crypto.**
 -dontwarn jnr.unixsocket.**
