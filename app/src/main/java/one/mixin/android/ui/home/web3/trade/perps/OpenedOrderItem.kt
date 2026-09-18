@@ -130,7 +130,13 @@ fun OpenedOrderItem(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = if (isMargin) order.displaySymbol ?: order.tokenSymbol.orEmpty() else "$quantity ${order.tokenSymbol ?: ""}",
+                text = if (isIncrease || isMargin) {
+                    val side = stringResource(if (isLong) R.string.Long else R.string.Short)
+                    val symbol = order.tokenSymbol?.takeIf { it.isNotBlank() } ?: order.displaySymbol.orEmpty()
+                    "$side $symbol".trimEnd()
+                } else {
+                    "$quantity ${order.tokenSymbol.orEmpty()}"
+                },
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
                 maxLines = 1,
