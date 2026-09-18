@@ -152,6 +152,7 @@ class Web3AddressFragment : BaseFragment() {
             binding.addressTitle.setText(R.string.Address)
 
             updateUI()
+            val usdcAssets = Constants.AssetId.usdcAssets + (Constants.ChainId.Arc to "Arc")
             if (!hideNetworkSwitch) {
                 if (Constants.AssetId.usdtAssets.containsKey(web3Token.assetId)) {
                     binding.networkChipGroup.isVisible = true
@@ -176,7 +177,7 @@ class Web3AddressFragment : BaseFragment() {
                             )
                         }
                     )
-                } else if (Constants.AssetId.usdcAssets.containsKey(web3Token.assetId)) {
+                } else if (usdcAssets.containsKey(web3Token.assetId)) {
                     initChips(
                         if (Web3Signer.evmAddress.isBlank()) {
                             mapOf(
@@ -187,10 +188,11 @@ class Web3AddressFragment : BaseFragment() {
                                 USDC_ASSET_ETH_ID to "Ethereum",
                                 USDC_ASSET_BASE_ID to "Base",
                                 USDC_ASSET_POL_ID to "Polygon",
-                                USDC_ASSET_BEP_ID to "BSC"
+                                USDC_ASSET_BEP_ID to "BSC",
+                                Constants.ChainId.Arc to "Arc"
                             )
                         } else {
-                            Constants.AssetId.usdcAssets
+                            usdcAssets
                         }
                     )
                 } else if (Constants.AssetId.ethAssets.containsKey(web3Token.assetId)) {
