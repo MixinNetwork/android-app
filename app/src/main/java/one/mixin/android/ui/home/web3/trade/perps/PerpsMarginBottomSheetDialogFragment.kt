@@ -746,7 +746,7 @@ private fun PerpsReduceMarginInput(
                 painterResource(R.drawable.ic_switch),
                 stringResource(if (isPercentage) R.string.Amount else R.string.perps_percentage),
                 tint = MixinAppTheme.colors.textRemarks,
-                modifier = Modifier.size(16.dp),
+                modifier = Modifier.size(30.dp),
             )
         }
         Box(
