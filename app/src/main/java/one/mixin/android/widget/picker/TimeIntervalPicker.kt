@@ -29,13 +29,9 @@ class TimeIntervalPicker : LinearLayout {
     }
 
     fun getTimeInterval(): Long {
-        return when (binding.unitPicker.currentItemPosition) {
-            1 -> 60L
-            2 -> 3600L
-            3 -> 86400L
-            4 -> 604800L
-            else -> 1L
-        } * numberList[binding.unitPicker.currentItemPosition][binding.numberPicker.currentItemPosition].toInt()
+        val unitIndex = binding.unitPicker.currentItemPosition
+        val numberIndex = binding.numberPicker.currentItemPosition
+        return pickerIntervalSeconds(unitIndex) * numberList[unitIndex][numberIndex].toInt()
     }
 
     fun initTimeInterval(timeInterval: Long?) {
