@@ -160,7 +160,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
                 override fun onDappClick(dapp: Dapp) {
                     searchViewModel.saveRecentSearch(requireContext().defaultSharedPreferences, RecentSearch(RecentSearchType.DAPP, iconUrl = dapp.iconUrl, title = dapp.name, subTitle = dapp.homeUrl))
                     RxBus.publish(SearchEvent())
-                    WebActivity.show(requireContext(), dapp.homeUrl, null)
+                    WebActivity.show(requireContext(), dapp.homeUrl, null, allowWalletBridge = true)
                 }
 
                 override fun onBotClick(bot: SearchBot) {
