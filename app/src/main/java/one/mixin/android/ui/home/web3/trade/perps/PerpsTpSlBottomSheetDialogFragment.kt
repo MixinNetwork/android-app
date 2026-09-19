@@ -292,8 +292,7 @@ private fun PerpsTpSlContent(
         entryPriceValue ?: validationCurrentPrice
     }
     val liquidationBasePrice = remember(entryPriceValue, validationCurrentPrice) {
-        liquidationPriceValue
-            ?: entryPriceValue
+        entryPriceValue
             ?: validationCurrentPrice.takeIf { it > BigDecimal.ZERO }
             ?: BigDecimal.ZERO
     }
@@ -341,6 +340,7 @@ private fun PerpsTpSlContent(
         leverage = leverageValue,
         isLong = isLong,
         isTakeProfit = isTakeProfit,
+        liquidationPrice = liquidationPriceValue,
     )
     val percentErrorText = validateTpSlPercent(
         rawValue = percentMagnitudeInput,
@@ -351,6 +351,7 @@ private fun PerpsTpSlContent(
         isLong = isLong,
         mode = mode,
         priceScale = safePriceScale,
+        liquidationPrice = liquidationPriceValue,
     )
     val errorText = if (inputType == InputType.PNL) percentErrorText else priceErrorText
     val currentPriceText = formatPerpsPrice(currentPriceValue, safePriceScale)
@@ -1235,6 +1236,7 @@ internal fun validateTpSlPrice(
     leverage: Int,
     isLong: Boolean,
     isTakeProfit: Boolean,
+    liquidationPrice: BigDecimal? = null,
 ): String? {
     val trimmed = rawValue.trim()
     if (trimmed.isEmpty()) {
@@ -1253,8 +1255,8 @@ internal fun validateTpSlPrice(
     }
 
     val liquidationOffset = BigDecimal.ONE.divide(BigDecimal(leverage), 8, RoundingMode.HALF_UP)
-    val liquidationPriceLong = liquidationBasePrice.multiply(BigDecimal.ONE.subtract(liquidationOffset))
-    val liquidationPriceShort = liquidationBasePrice.multiply(BigDecimal.ONE.add(liquidationOffset))
+    val liquidationPriceLong = liquidationPrice ?: liquidationBasePrice.multiply(BigDecimal.ONE.subtract(liquidationOffset))
+    val liquidationPriceShort = liquidationPrice ?: liquidationBasePrice.multiply(BigDecimal.ONE.add(liquidationOffset))
 
     return when {
         isLong && isTakeProfit -> {
@@ -1304,7 +1306,7 @@ internal fun validateTpSlPrice(
     }
 }
 
-private fun validateTpSlPercent(
+internal fun validateTpSlPercent(
     rawValue: String,
     currentPrice: BigDecimal,
     percentBasePrice: BigDecimal,
@@ -1313,6 +1315,7 @@ private fun validateTpSlPercent(
     isLong: Boolean,
     mode: PerpsTpSlBottomSheetDialogFragment.Mode,
     priceScale: Int,
+    liquidationPrice: BigDecimal? = null,
 ): String? {
     val trimmed = rawValue.trim()
     if (trimmed.isEmpty()) {
@@ -1342,6 +1345,7 @@ private fun validateTpSlPercent(
         leverage = leverage,
         isLong = isLong,
         isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
+        liquidationPrice = liquidationPrice,
     )
 }
 
