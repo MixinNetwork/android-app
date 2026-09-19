@@ -18,7 +18,7 @@ apply(plugin = "com.google.firebase.crashlytics")
 val versionMajor = 6
 val versionMinor = 2
 val versionPatch = 5
-val versionBuild = 1
+val versionBuild = 3
 
 val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
 val jetifierVersion = rootProject.extra["jetifierVersion"] as String
