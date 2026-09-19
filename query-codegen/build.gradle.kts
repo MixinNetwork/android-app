@@ -7,7 +7,7 @@ kotlin {
 }
 
 dependencies {
-    implementation("com.google.devtools.ksp:symbol-processing-api:2.3.11")
+    implementation("com.google.devtools.ksp:symbol-processing-api:2.3.12")
 
     testImplementation("org.jetbrains.kotlin:kotlin-test")
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
