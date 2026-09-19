@@ -15,24 +15,29 @@ internal sealed interface LiquidationPriceResult {
 
     data class LimitExceeded(val limit: LiquidationPriceLimit) : LiquidationPriceResult
 
+    data class MarginExceeded(val availableMargin: BigDecimal?, val message: String? = null) : LiquidationPriceResult
+
     data object Retry : LiquidationPriceResult
 
-    data object Failure : LiquidationPriceResult
+    data class Failure(val message: String?) : LiquidationPriceResult
 }
 
 internal fun liquidationPriceResult(
     price: String?,
     errorCode: Int?,
     limit: LiquidationPriceLimit = LiquidationPriceLimit(null, null),
+    availableMargin: BigDecimal? = null,
+    errorMessage: String? = null,
 ): LiquidationPriceResult {
     val validPrice = price?.takeIf { it.isNotBlank() }
     return when {
         validPrice != null -> LiquidationPriceResult.Success(validPrice)
+        errorCode == 10653 -> LiquidationPriceResult.MarginExceeded(availableMargin, errorMessage)
         errorCode == ErrorHandler.PERPS_POSITION_SIZE_EXCEEDS_LEVERAGE_LIMIT -> {
             LiquidationPriceResult.LimitExceeded(limit)
         }
         errorCode == 500 -> LiquidationPriceResult.Retry
-        else -> LiquidationPriceResult.Failure
+        else -> LiquidationPriceResult.Failure(errorMessage)
     }
 }
 
@@ -65,13 +70,22 @@ internal fun shouldRequestLiquidationPrice(
 internal suspend fun requestLiquidationPrice(
     retryDelayMillis: Long = 1000L,
     onLimitExceeded: (LiquidationPriceLimit) -> Unit = {},
+    onMarginExceeded: ((BigDecimal?) -> Unit)? = null,
+    onFailure: (String?) -> Unit = {},
     request: suspend () -> LiquidationPriceResult,
 ): String? {
     while (true) {
         when (val result = request()) {
-            LiquidationPriceResult.Failure -> return null
+            is LiquidationPriceResult.Failure -> {
+                onFailure(result.message)
+                return null
+            }
             is LiquidationPriceResult.LimitExceeded -> {
                 onLimitExceeded(result.limit)
+                return null
+            }
+            is LiquidationPriceResult.MarginExceeded -> {
+                if (onMarginExceeded != null) onMarginExceeded(result.availableMargin) else onFailure(result.message)
                 return null
             }
             LiquidationPriceResult.Retry -> delay(retryDelayMillis)
