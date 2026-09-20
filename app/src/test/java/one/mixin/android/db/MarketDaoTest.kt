@@ -13,6 +13,7 @@ import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCapRank
 import one.mixin.android.vo.market.MarketCategoryRelation
 import one.mixin.android.vo.market.MarketFavored
+import one.mixin.android.vo.market.MarketItem
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
@@ -47,12 +48,15 @@ class MarketDaoTest {
     @Test
     fun rankedMarketsAreIncluded() =
         runBlocking {
-            database.marketDao().upsertSuspend(market("btc"))
+            val market = market("btc").copy(updatedAt = "2026-09-20T00:00:00Z")
+            database.marketDao().upsertSuspend(market)
             database.marketCapRankDao().insertSuspend(MarketCapRank("btc", "1", ""))
 
             val result = database.marketDao().observeAllMarkets().first()
 
             assertEquals(listOf("btc"), result.map { it.coinId })
+            assertEquals(market.updatedAt, result.single().updatedAt)
+            assertEquals(market.updatedAt, MarketItem.fromMarket(market).updatedAt)
         }
 
     @Test

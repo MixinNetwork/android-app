@@ -408,6 +408,11 @@ fun MarketItem.sparkline(period: MarketPriceChangePeriod): String =
         MarketPriceChangePeriod.SEVEN_DAYS -> sparklineIn7d
     }
 
+internal fun marketSparklineCacheKey(coinId: String, period: MarketPriceChangePeriod, updatedAt: String): String {
+    val duration = if (period == MarketPriceChangePeriod.SEVEN_DAYS) "7d" else "24h"
+    return "market-sparkline:$coinId:$duration:$updatedAt"
+}
+
 fun PerpsMarket.changePercentValue(): BigDecimal? {
     return change.toBigDecimalOrNull()?.multiply(BigDecimal(100))
 }
