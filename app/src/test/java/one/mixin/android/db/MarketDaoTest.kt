@@ -7,8 +7,13 @@ import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withTimeout
+import one.mixin.android.ui.home.web3.market.MarketDiffCallback
 import one.mixin.android.vo.market.Market
 import one.mixin.android.vo.market.MarketCapRank
 import one.mixin.android.vo.market.MarketCategoryRelation
@@ -57,6 +62,27 @@ class MarketDaoTest {
             assertEquals(listOf("btc"), result.map { it.coinId })
             assertEquals(market.updatedAt, result.single().updatedAt)
             assertEquals(market.updatedAt, MarketItem.fromMarket(market).updatedAt)
+        }
+
+    @Test
+    fun refreshedMarketVersionEmitsChangedListContents() =
+        runBlocking {
+            val initial = market("btc").copy(updatedAt = "2026-09-20T00:00:00Z")
+            val dao = database.marketDao()
+            dao.upsertSuspend(initial)
+            database.marketCapRankDao().insertSuspend(MarketCapRank("btc", "1", ""))
+            val previous = dao.observeAllMarkets().first().single()
+            val refreshed = initial.copy(updatedAt = "2026-09-20T00:00:10Z")
+            val next =
+                async(start = CoroutineStart.UNDISPATCHED) {
+                    dao.observeAllMarkets().first { it.singleOrNull()?.updatedAt == refreshed.updatedAt }.single()
+                }
+
+            dao.upsertSuspend(refreshed)
+
+            val current = withTimeout(5_000) { next.await() }
+            assertEquals(refreshed.updatedAt, current.updatedAt)
+            assertFalse(MarketDiffCallback().areContentsTheSame(previous, current))
         }
 
     @Test
