@@ -1158,6 +1158,7 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
         Constants.ChainId.HyperEVM,
         Constants.ChainId.XLayer,
         Constants.ChainId.Robinhood,
+        Constants.ChainId.Arc,
             -> getString(R.string.deposit_tip_chain, asset.symbol, asset.chainName ?: getChainName(asset.chainId, asset.chainName, asset.assetKey ?: ""))
         else -> getString(R.string.deposit_tip_common, asset.symbol)
     }

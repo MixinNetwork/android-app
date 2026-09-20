@@ -72,14 +72,8 @@
         var renderCallback = {
             'sitekey': '#apiKey',
             'callback': postToken,
-            'expired-callback': function () {
-                postError('response_expired', 'expired');
-            },
             'error-callback': function (error) {
                 postError('provider_error', error);
-            },
-            'chalexpired-callback': function () {
-                postError('challenge_expired', 'expired');
             },
             'open-callback': function () {
                 postEvent('ready', 'challenge_ready', '');

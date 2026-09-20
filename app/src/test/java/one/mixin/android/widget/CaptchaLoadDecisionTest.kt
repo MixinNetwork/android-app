@@ -11,6 +11,7 @@ class CaptchaLoadDecisionTest {
             decideCaptchaLoadAction(
                 event = CaptchaLoadEvent.PageFinished,
                 captchaType = CaptchaView.CaptchaType.HCaptcha,
+                attemptedCaptchaTypes = listOf(CaptchaView.CaptchaType.HCaptcha),
                 failureCount = 0,
                 maxFailureCount = 6,
                 fallbackEnabled = true,
@@ -19,12 +20,13 @@ class CaptchaLoadDecisionTest {
     }
 
     @Test
-    fun challengeReadyKeepsWatchingForTerminalEvent() {
+    fun challengeReadyStopsLoadingTimeout() {
         assertEquals(
-            CaptchaLoadAction.RestartWatchdog,
+            CaptchaLoadAction.CancelWatchdog,
             decideCaptchaLoadAction(
                 event = CaptchaLoadEvent.ChallengeReady,
                 captchaType = CaptchaView.CaptchaType.HCaptcha,
+                attemptedCaptchaTypes = listOf(CaptchaView.CaptchaType.HCaptcha),
                 failureCount = 0,
                 maxFailureCount = 6,
                 fallbackEnabled = true,
@@ -33,13 +35,14 @@ class CaptchaLoadDecisionTest {
     }
 
     @Test
-    fun hCaptchaFatalErrorSwitchesToGeeTest() {
+    fun googleRenderingStopsTimeoutWithoutAnOpenCallback() {
         assertEquals(
-            CaptchaLoadAction.SwitchTo(CaptchaView.CaptchaType.GTCaptcha),
+            CaptchaLoadAction.CancelWatchdog,
             decideCaptchaLoadAction(
-                event = CaptchaLoadEvent.FatalError,
-                captchaType = CaptchaView.CaptchaType.HCaptcha,
-                failureCount = 2,
+                event = CaptchaLoadEvent.WidgetRendered,
+                captchaType = CaptchaView.CaptchaType.GCaptcha,
+                attemptedCaptchaTypes = listOf(CaptchaView.CaptchaType.GCaptcha),
+                failureCount = 0,
                 maxFailureCount = 6,
                 fallbackEnabled = true,
             ),
@@ -47,12 +50,37 @@ class CaptchaLoadDecisionTest {
     }
 
     @Test
-    fun firstFailedCycleContinuesWithNextCaptcha() {
+    fun failureAfterTwoServerChallengesTriesRemainingProvider() {
+        CaptchaView.CaptchaType.entries.forEach { first ->
+            CaptchaView.CaptchaType.entries.filter { it != first }.forEach { current ->
+                val remaining = CaptchaView.CaptchaType.entries.single { it != first && it != current }
+                assertEquals(
+                    CaptchaLoadAction.SwitchTo(remaining),
+                    decideCaptchaLoadAction(
+                        event = CaptchaLoadEvent.FatalError,
+                        captchaType = current,
+                        attemptedCaptchaTypes = listOf(first, current),
+                        failureCount = 1,
+                        maxFailureCount = 6,
+                        fallbackEnabled = true,
+                    ),
+                )
+            }
+        }
+    }
+
+    @Test
+    fun firstFailedCycleRetriesLeastRecentlyAttemptedProvider() {
         assertEquals(
             CaptchaLoadAction.SwitchTo(CaptchaView.CaptchaType.GCaptcha),
             decideCaptchaLoadAction(
                 event = CaptchaLoadEvent.FatalError,
                 captchaType = CaptchaView.CaptchaType.GTCaptcha,
+                attemptedCaptchaTypes = listOf(
+                    CaptchaView.CaptchaType.GCaptcha,
+                    CaptchaView.CaptchaType.HCaptcha,
+                    CaptchaView.CaptchaType.GTCaptcha,
+                ),
                 failureCount = 3,
                 maxFailureCount = 6,
                 fallbackEnabled = true,
@@ -67,6 +95,7 @@ class CaptchaLoadDecisionTest {
             decideCaptchaLoadAction(
                 event = CaptchaLoadEvent.FatalError,
                 captchaType = CaptchaView.CaptchaType.GTCaptcha,
+                attemptedCaptchaTypes = CaptchaView.CaptchaType.entries,
                 failureCount = 6,
                 maxFailureCount = 6,
                 fallbackEnabled = true,

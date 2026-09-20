@@ -92,6 +92,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     private var captchaDialog: Dialog? = null
     private var released = false
     private val captchaFailureHistory = mutableListOf<String>()
+    private val attemptedCaptchaTypes = mutableListOf<CaptchaType>()
     private var nextCaptchaLoadId = 0L
     private var activeCaptchaLoad: CaptchaLoadState? = null
 
@@ -385,6 +386,8 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         fallbackEnabled: Boolean,
     ): CaptchaLoadState {
         invalidateActiveCaptchaLoad()
+        attemptedCaptchaTypes.remove(captchaType)
+        attemptedCaptchaTypes.add(captchaType)
         if (webViewLazy.isInitialized()) {
             webView.stopLoading()
         }
@@ -410,6 +413,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         stage: String,
     ) {
         val state = activeCaptchaLoad(loadId) ?: return
+        if (state.stage == STAGE_CHALLENGE_READY) return
         if (event != CaptchaLoadEvent.PageFinished || state.stage == STAGE_PAGE_LOADING) {
             state.stage = stage
         }
@@ -417,13 +421,14 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
             decideCaptchaLoadAction(
                 event = event,
                 captchaType = state.type,
+                attemptedCaptchaTypes = attemptedCaptchaTypes,
                 failureCount = captchaFailureHistory.size,
                 maxFailureCount = MAX_CAPTCHA_FAILURES,
                 fallbackEnabled = state.fallbackEnabled,
             )
         ) {
             CaptchaLoadAction.KeepWatching -> Unit
-            CaptchaLoadAction.RestartWatchdog -> restartCaptchaTimeout(state)
+            CaptchaLoadAction.CancelWatchdog -> cancelCaptchaTimeout(state)
             is CaptchaLoadAction.SwitchTo,
             CaptchaLoadAction.Stop,
             -> Unit
@@ -479,6 +484,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
             decideCaptchaLoadAction(
                 event = CaptchaLoadEvent.FatalError,
                 captchaType = state.type,
+                attemptedCaptchaTypes = attemptedCaptchaTypes,
                 failureCount = captchaFailureHistory.size,
                 maxFailureCount = MAX_CAPTCHA_FAILURES,
                 fallbackEnabled = state.fallbackEnabled,
@@ -504,7 +510,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
             }
 
             CaptchaLoadAction.KeepWatching,
-            CaptchaLoadAction.RestartWatchdog,
+            CaptchaLoadAction.CancelWatchdog,
             -> Unit
         }
     }
@@ -628,6 +634,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                 updateDialogWindow(this)
             }
             setOnCancelListener {
+                attemptedCaptchaTypes.clear()
                 stopCaptcha()
                 captchaDialog = null
                 callback.onStop()
@@ -660,6 +667,11 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     }
 
     fun hide() {
+        attemptedCaptchaTypes.clear()
+        hideDialog()
+    }
+
+    private fun hideDialog() {
         if (released) return
         stopCaptcha()
         val dialog = captchaDialog
@@ -742,7 +754,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
             state.settled = true
             cancelCaptchaTimeout(state)
             val captchaType = state.type
-            hide()
+            hideDialog()
             callback.onPostToken(Pair(captchaType, value))
         }
     }
@@ -752,17 +764,9 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         HCaptcha,
         GTCaptcha;
 
-
         fun isG() = this == GCaptcha
         fun isH() = this == HCaptcha
         fun isGT() = this == GTCaptcha
-
-        fun fallback() =
-            when (this) {
-                GCaptcha -> HCaptcha
-                HCaptcha -> GTCaptcha
-                GTCaptcha -> GCaptcha
-            }
     }
 
     interface Callback {

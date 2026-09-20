@@ -35,6 +35,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -47,6 +48,8 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import coil3.request.CachePolicy
+import coil3.request.ImageRequest
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
@@ -583,8 +586,16 @@ internal fun MarketChangeColumn(
             modifier = modifier,
             horizontalAlignment = Alignment.End,
         ) {
+            val context = LocalContext.current
+            val sparklineRequest =
+                remember(context, sparkline) {
+                    ImageRequest.Builder(context)
+                        .data(sparkline)
+                        .memoryCachePolicy(CachePolicy.DISABLED)
+                        .build()
+                }
             AsyncImage(
-                model = sparkline,
+                model = sparklineRequest,
                 contentDescription = null,
                 colorFilter = ColorFilter.tint(sparklineColor),
                 contentScale = ContentScale.FillBounds,
