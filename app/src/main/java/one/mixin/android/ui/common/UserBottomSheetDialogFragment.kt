@@ -81,6 +81,7 @@ import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.ThirdPartyUserIdentity
 import one.mixin.android.util.addPinShortcut
 import one.mixin.android.util.debug.debugLongClick
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -287,7 +288,7 @@ class UserBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment()
                     context?.getClipboardManager()?.setPrimaryClip(
                         ClipData.newPlainText(
                             null,
-                            "mixin://users/${user.userId}",
+                            "mixin://users/${user.userId}\n${ThirdPartyUserIdentity.hashedUserId(user.userId)}",
                         ),
                     )
                 },
