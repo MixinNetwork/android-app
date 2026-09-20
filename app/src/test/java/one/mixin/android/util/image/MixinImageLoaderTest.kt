@@ -61,12 +61,47 @@ class MixinImageLoaderTest {
         )
     }
 
+    @Test
+    fun `reuses disk cache despite stale max-age for non-svg`() {
+        assertSecondLoad(
+            cacheControl = "max-age=0",
+            expectedRequestCount = 1,
+            expectedDataSource = DataSource.DISK,
+            expectDiskEntry = true,
+        )
+    }
+
+    @Test
+    fun `refetches svg with stale max-age`() {
+        assertSecondLoad(
+            cacheControl = "max-age=0",
+            expectedRequestCount = 2,
+            expectedDataSource = DataSource.NETWORK,
+            expectDiskEntry = true,
+            svg = true,
+        )
+    }
+
+    @Test
+    fun `reuses svg with fresh max-age`() {
+        assertSecondLoad(
+            cacheControl = "max-age=60",
+            expectedRequestCount = 1,
+            expectedDataSource = DataSource.DISK,
+            expectDiskEntry = true,
+            svg = true,
+        )
+    }
+
     private fun assertSecondLoad(
         cacheControl: String?,
         expectedRequestCount: Int,
         expectedDataSource: DataSource,
         expectDiskEntry: Boolean,
+        svg: Boolean = false,
     ) {
+        val contentType = if (svg) "image/svg+xml" else "image/png"
+        val body = if (svg) SVG else PNG
         val requestCount = AtomicInteger()
         val client =
             OkHttpClient.Builder()
@@ -79,10 +114,10 @@ class MixinImageLoaderTest {
                             .protocol(Protocol.HTTP_1_1)
                             .code(200)
                             .message("OK")
-                            .header("Content-Type", "image/png")
+                            .header("Content-Type", contentType)
                             .sentRequestAtMillis(now)
                             .receivedResponseAtMillis(now)
-                            .body(PNG.toResponseBody("image/png".toMediaType()))
+                            .body(body.toResponseBody(contentType.toMediaType()))
                     if (cacheControl != null) {
                         response.header("Cache-Control", cacheControl)
                     }
@@ -92,7 +127,7 @@ class MixinImageLoaderTest {
         val diskCache =
             DiskCache.Builder()
                 .directory(
-                    temporaryFolder.newFolder("image-cache-${cacheControl ?: "none"}").toOkioPath(),
+                    temporaryFolder.newFolder().toOkioPath(),
                 )
                 .maxSizeBytes(1024 * 1024)
                 .build()
@@ -103,7 +138,7 @@ class MixinImageLoaderTest {
             runBlocking {
                 val request =
                     ImageRequest.Builder(context)
-                        .data("https://images.example.test/avatar.png")
+                        .data(if (svg) "https://images.example.test/sparkline.svg?duration=24H" else "https://images.example.test/avatar.png")
                         .size(1, 1)
                         .build()
 
@@ -120,7 +155,7 @@ class MixinImageLoaderTest {
                 assertEquals(expectedDataSource, secondResult.dataSource)
 
                 if (expectDiskEntry) {
-                    val copiedFile = temporaryFolder.newFile("cached-image.png")
+                    val copiedFile = temporaryFolder.newFile()
                     imageLoader.withDiskCacheFile(secondResult) { cachedFile ->
                         cachedFile.copyTo(copiedFile, overwrite = true)
                     }
@@ -139,6 +174,9 @@ class MixinImageLoaderTest {
     }
 
     private companion object {
+        val SVG =
+            """<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><path d="M0 0h1v1H0z"/></svg>""".toByteArray()
+
         val PNG =
             Base64.getDecoder().decode(
                 "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=",
