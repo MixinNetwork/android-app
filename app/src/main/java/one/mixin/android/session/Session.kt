@@ -23,10 +23,10 @@ import one.mixin.android.crypto.privateKeyToCurve25519
 import one.mixin.android.crypto.sha3Sum256
 import one.mixin.android.crypto.signBotSignature
 import one.mixin.android.crypto.useGoEd
+import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.bodyToString
-import one.mixin.android.extension.clear
 import one.mixin.android.extension.currentTimeSeconds
 import one.mixin.android.extension.cutOut
 import one.mixin.android.extension.decodeBase64
@@ -38,6 +38,9 @@ import one.mixin.android.extension.sha256
 import one.mixin.android.extension.sharedPreferences
 import one.mixin.android.extension.startsWithIgnoreCase
 import one.mixin.android.extension.toHex
+import one.mixin.android.session.SessionSecretPreferences.Companion.PREF_ED25519_PRIVATE_KEY
+import one.mixin.android.session.SessionSecretPreferences.Companion.PREF_NAME_TOKEN
+import one.mixin.android.session.SessionSecretPreferences.Companion.PREF_PIN_TOKEN
 import one.mixin.android.tip.storeEncryptedSalt
 import one.mixin.android.util.reportException
 import one.mixin.android.util.analytics.ThirdPartyUserIdentity
@@ -60,10 +63,13 @@ object Session {
     private var edKeyPair: EdKeyPair? = null
 
     private const val PREF_PIN_ITERATOR = "pref_pin_iterator"
-    private const val PREF_PIN_TOKEN = "pref_pin_token"
     private const val PREF_NAME_ACCOUNT = "pref_name_account"
-    private const val PREF_NAME_TOKEN = "pref_name_token"
-    private const val PREF_ED25519_PRIVATE_KEY = "pref_ed25519_private_key"
+
+    private val secretPreferences by lazy {
+        SessionSecretPreferences(MixinApplication.appContext.sharedPreferences(PREF_SESSION))
+    }
+
+    fun migrateSecrets() = secretPreferences.migrate()
 
     fun storeAccount(account: Account) {
         self = account
@@ -118,31 +124,36 @@ object Session {
         return Instant.parse(exportedSaltAt).isAfter(baseInstant)
     }
 
+    @Synchronized
     fun clearAccount() {
         self = null
-        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-        preference.clear()
+        seed = null
+        edKeyPair = null
+        secretPreferences.clear()
         ThirdPartyUserIdentity.clearUser()
     }
 
-    fun storeEd25519Seed(token: String) {
-        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-        preference.putString(PREF_ED25519_PRIVATE_KEY, token)
+    @Synchronized
+    fun storeSessionKeys(keyPair: EdKeyPair, pinToken: String) {
+        val token = keyPair.privateKey.base64Encode()
+        seed = null
+        edKeyPair = null
+        secretPreferences.putStrings(mapOf(PREF_ED25519_PRIVATE_KEY to token, PREF_PIN_TOKEN to pinToken))
         seed = token
-        this.edKeyPair = null
-        initEdKeypair(token)
+        edKeyPair = keyPair
     }
 
+    @Synchronized
     fun getEd25519Seed(): String? {
         if (this.seed != null) {
             return seed
         } else {
-            val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-            seed = preference.getString(PREF_ED25519_PRIVATE_KEY, null)
+            seed = secretPreferences.getString(PREF_ED25519_PRIVATE_KEY)
             return seed
         }
     }
 
+    @Synchronized
     fun getEd25519KeyPair(): EdKeyPair? {
         if (edKeyPair != null) {
             return edKeyPair
@@ -159,14 +170,14 @@ object Session {
         return edKeyPair
     }
 
+    @Synchronized
     fun storeToken(token: String) {
-        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-        preference.putString(PREF_NAME_TOKEN, token)
+        secretPreferences.putStrings(mapOf(PREF_NAME_TOKEN to token))
     }
 
+    @Synchronized
     private fun getToken(): String? {
-        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-        return preference.getString(PREF_NAME_TOKEN, null)
+        return secretPreferences.getString(PREF_NAME_TOKEN)
     }
 
     fun storeExtensionSessionId(extensionSession: String) {
@@ -184,14 +195,9 @@ object Session {
         preference.remove(PREF_EXTENSION_SESSION_ID)
     }
 
-    fun storePinToken(pinToken: String) {
-        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-        preference.putString(PREF_PIN_TOKEN, pinToken)
-    }
-
+    @Synchronized
     fun getPinToken(): String? {
-        val preference = MixinApplication.appContext.sharedPreferences(PREF_SESSION)
-        return preference.getString(PREF_PIN_TOKEN, null)
+        return secretPreferences.getString(PREF_PIN_TOKEN)
     }
 
     fun storePinIterator(pinIterator: Long) {
