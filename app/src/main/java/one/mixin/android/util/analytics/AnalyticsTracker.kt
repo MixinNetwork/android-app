@@ -637,8 +637,7 @@ object AnalyticsTracker {
         const val PERPS_OPEN_POSITION_SIZE = "perps_open_position_size"
         const val SPOT_MARKET_DETAIL = "spot_market_detail"
         const val PERPS_MARKET_DETAIL = "perps_market_detail"
-        const val PERPS_MARKET_DETAIL_ADD = "perps_market_detail_add"
-        const val PERPS_MARKET_DETAIL_BOTTOM_MENU = "perps_market_detail_bottom_menu"
+        const val PERPS_MARKET_DETAIL_ADJUST = "perps_market_detail_adjust"
         const val URL = "url"
         const val PERPS_ALL_POSITIONS = "perps_all_positions"
         const val PERPS_ACTIVITY_DETAIL = "perps_activity_detail"
@@ -756,7 +755,7 @@ object AnalyticsTracker {
 
     fun trackPerpsAddPositionStart(source: String) {
         logEvent("trade_perps_add_position_start") {
-            putString("source", AnalyticsRules.perpsAdjustmentSource(source, PerpsSource.PERPS_MARKET_DETAIL_ADD))
+            putString("source", AnalyticsRules.perpsAdjustmentSource(source, PerpsSource.PERPS_MARKET_DETAIL_ADJUST))
         }
     }
 
@@ -789,7 +788,7 @@ object AnalyticsTracker {
 
     fun trackPerpsAddMarginStart(source: String) {
         logEvent("trade_perps_add_margin_start") {
-            putString("source", AnalyticsRules.perpsAdjustmentSource(source, PerpsSource.PERPS_MARKET_DETAIL_BOTTOM_MENU))
+            putString("source", AnalyticsRules.perpsAdjustmentSource(source, PerpsSource.PERPS_MARKET_DETAIL_ADJUST))
         }
     }
 
@@ -822,7 +821,7 @@ object AnalyticsTracker {
 
     fun trackPerpsReduceMarginStart(source: String) {
         logEvent("trade_perps_reduce_margin_start") {
-            putString("source", AnalyticsRules.perpsAdjustmentSource(source, PerpsSource.PERPS_MARKET_DETAIL_BOTTOM_MENU))
+            putString("source", AnalyticsRules.perpsAdjustmentSource(source, PerpsSource.PERPS_MARKET_DETAIL_ADJUST))
         }
     }
 

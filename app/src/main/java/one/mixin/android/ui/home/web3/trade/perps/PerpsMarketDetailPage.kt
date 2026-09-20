@@ -157,7 +157,7 @@ fun PerpsMarketDetailPage(
                     PerpsMarginBottomSheetDialogFragment.newInstance(
                         position,
                         increase = action == PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
-                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_BOTTOM_MENU,
+                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADJUST,
                     ).show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
                 }
                 PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_POSITION -> {
@@ -166,7 +166,7 @@ fun PerpsMarketDetailPage(
                         viewModel = viewModel,
                         position = position,
                         market = market,
-                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADD,
+                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADJUST,
                         onDismiss = { isAddingProcessing = false },
                     )
                 }

@@ -7,15 +7,15 @@ import org.junit.Test
 class AnalyticsRulesTest {
     @Test
     fun perpsAdjustmentsPreserveLinkSourcesAndUseTheActionEntryForOtherSources() {
-        for (entry in listOf("perps_market_detail_add", "perps_market_detail_bottom_menu")) {
-            assertEquals("app_card", AnalyticsRules.perpsAdjustmentSource("app_card", entry))
-            assertEquals("url", AnalyticsRules.perpsAdjustmentSource("schema", entry))
-            assertEquals("url", AnalyticsRules.perpsAdjustmentSource("scheme", entry))
-            assertEquals("url", AnalyticsRules.perpsAdjustmentSource("url", entry))
-            assertEquals(entry, AnalyticsRules.perpsAdjustmentSource(entry, entry))
-            assertEquals(entry, AnalyticsRules.perpsAdjustmentSource("perps_market_detail", entry))
-            assertEquals(entry, AnalyticsRules.perpsAdjustmentSource("", entry))
-        }
+        val entry = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADJUST
+        assertEquals("perps_market_detail_adjust", entry)
+        assertEquals("app_card", AnalyticsRules.perpsAdjustmentSource("app_card", entry))
+        assertEquals("url", AnalyticsRules.perpsAdjustmentSource("schema", entry))
+        assertEquals("url", AnalyticsRules.perpsAdjustmentSource("scheme", entry))
+        assertEquals("url", AnalyticsRules.perpsAdjustmentSource("url", entry))
+        assertEquals(entry, AnalyticsRules.perpsAdjustmentSource(entry, entry))
+        assertEquals(entry, AnalyticsRules.perpsAdjustmentSource("perps_market_detail", entry))
+        assertEquals(entry, AnalyticsRules.perpsAdjustmentSource("", entry))
     }
 
     @Test
