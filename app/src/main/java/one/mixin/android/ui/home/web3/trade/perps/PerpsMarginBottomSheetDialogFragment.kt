@@ -749,7 +749,6 @@ private fun PerpsReduceMarginInput(
                 fontSize = 16.sp,
                 lineHeight = 20.sp,
             )
-            Spacer(Modifier.width(4.dp))
             Icon(
                 painterResource(R.drawable.ic_switch),
                 stringResource(if (isPercentage) R.string.Amount else R.string.perps_percentage),
