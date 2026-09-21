@@ -2697,7 +2697,7 @@
     <string name="perps_reduce_position_title">%1$s %2$s 減少倉位</string>
     <string name="max_removable">最多減少 %1$s</string>
     <string name="perps_added_position">已加倉</string>
-    <string name="perps_added_margin">已增加保證金</string>
-    <string name="perps_reduced_margin">已減少保證金</string>
+    <string name="perps_added_margin">增加保證金</string>
+    <string name="perps_reduced_margin">減少保證金</string>
     <string name="perps_realized_pnl">已實現盈虧</string>
 </resources>
