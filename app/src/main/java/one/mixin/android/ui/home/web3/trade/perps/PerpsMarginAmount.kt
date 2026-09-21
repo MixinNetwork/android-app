@@ -19,7 +19,7 @@ internal fun formatPerpsMarginLimit(currentMargin: String?, availableMargin: Big
         val percentage = marginReductionPercentage(currentMargin, availableMargin) ?: BigDecimal.ZERO
         return "${percentage.setScale(2, RoundingMode.DOWN).numberFormat8()}%"
     }
-    val amount = availableMargin.setScale(TRADE_INPUT_MAX_DECIMAL_PLACES, RoundingMode.DOWN)
+    val amount = availableMargin.setScale(2, RoundingMode.DOWN)
     return if (amount.signum() == 0) "0" else "$PERPS_USD_SYMBOL${amount.numberFormat8()}"
 }
 
@@ -36,13 +36,18 @@ internal fun snapMarginReductionPercentage(value: Float): Int {
 }
 
 internal fun formatMarginAdjustmentInput(value: BigDecimal, isPercentage: Boolean): String =
-    value.setScale(if (isPercentage) 0 else 2, RoundingMode.DOWN).let { if (it.signum() == 0) "0" else it.toPlainString() }
+    value.setScale(if (isPercentage) 0 else 2, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
 
 internal fun maximumMarginReductionInput(currentMargin: String?, maximumReduction: BigDecimal, isPercentage: Boolean): String =
     formatMarginAdjustmentInput(
         if (isPercentage) marginReductionPercentage(currentMargin, maximumReduction) ?: BigDecimal.ZERO else maximumReduction,
         isPercentage,
     )
+
+internal fun canFillMarginReductionAsPercentage(currentMargin: String?, maximumReduction: BigDecimal): Boolean {
+    val percentage = marginReductionPercentage(currentMargin, maximumReduction) ?: return false
+    return percentage.stripTrailingZeros().scale() <= 0
+}
 
 internal fun marginAdjustmentAmount(amount: String): BigDecimal? {
     if (amount.length > 40 || amount.any { it !in '0'..'9' && it != '.' } || amount.count { it == '.' } > 1 ||

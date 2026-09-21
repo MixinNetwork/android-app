@@ -4,14 +4,31 @@ import com.google.gson.JsonParser
 import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class PerpsMarginAmountTest {
     @Test
+    fun fractionalPercentageLimitCanBeFilledAsDollars() {
+        val maximum = BigDecimal("0.056")
+        assertEquals("0.56%", formatPerpsMarginLimit("9.97", maximum, true))
+        val isPercentage = canFillMarginReductionAsPercentage("9.97", maximum)
+        assertFalse(isPercentage)
+        val input = maximumMarginReductionInput("9.97", maximum, isPercentage)
+        assertEquals("0.05", input)
+        val reduction = requireNotNull(reduceMarginAmount("9.97", input, isPercentage))
+        assertTrue(reduction <= maximum)
+        assertEquals(BigDecimal("9.92"), marginAfterAdjustment("9.97", input, false, maximum))
+        assertFalse(canFillMarginReductionAsPercentage("6.98", BigDecimal("2.07")))
+        assertTrue(canFillMarginReductionAsPercentage("100", BigDecimal("50.00")))
+        assertTrue(canFillMarginReductionAsPercentage("100", BigDecimal.ZERO))
+    }
+
+    @Test
     fun fillsMaximumRemovalInTheCurrentUnitWithoutExceedingTheLimit() {
         assertEquals("50", maximumMarginReductionInput("100", BigDecimal("50"), true))
-        assertEquals("50.00", maximumMarginReductionInput("100", BigDecimal("50"), false))
+        assertEquals("50", maximumMarginReductionInput("100", BigDecimal("50"), false))
         assertEquals("29", maximumMarginReductionInput("6.98", BigDecimal("2.07"), true))
         assertEquals("2.07", maximumMarginReductionInput("6.98", BigDecimal("2.07999999"), false))
         for (isPercentage in listOf(true, false)) {
@@ -27,8 +44,10 @@ class PerpsMarginAmountTest {
         assertEquals("29.65%", formatPerpsMarginLimit("6.98", BigDecimal("2.07"), true))
         assertEquals("$2.07", formatPerpsMarginLimit("6.98", BigDecimal("2.07"), false))
         assertEquals("99.99%", formatPerpsMarginLimit("100", BigDecimal("99.99999999"), true))
-        assertEquals("$2.07999999", formatPerpsMarginLimit("6.98", BigDecimal("2.079999999"), false))
-        assertEquals("$0.00000001", formatPerpsMarginLimit("1", BigDecimal("0.00000001"), false))
+        assertEquals("$2.07", formatPerpsMarginLimit("6.98", BigDecimal("2.079999999"), false))
+        assertEquals("$1.12", formatPerpsMarginLimit("10.93", BigDecimal("1.12139433"), false))
+        assertEquals("1.12", maximumMarginReductionInput("10.93", BigDecimal("1.12139433"), false))
+        assertEquals("0", formatPerpsMarginLimit("1", BigDecimal("0.00000001"), false))
         assertEquals("0%", formatPerpsMarginLimit("6.98", BigDecimal.ZERO, true))
         assertEquals("0", formatPerpsMarginLimit("6.98", BigDecimal.ZERO, false))
         assertEquals("0%", formatPerpsMarginLimit("0", BigDecimal.ZERO, true))
@@ -53,7 +72,10 @@ class PerpsMarginAmountTest {
         assertEquals("100", formatMarginAdjustmentInput(BigDecimal("100"), true))
         assertEquals("0", formatMarginAdjustmentInput(BigDecimal.ZERO, false))
         assertEquals("0", formatMarginAdjustmentInput(BigDecimal("0.009"), false))
-        assertEquals("1.50", formatMarginAdjustmentInput(BigDecimal("1.5"), false))
+        assertEquals("1.5", formatMarginAdjustmentInput(BigDecimal("1.5"), false))
+        assertEquals("2", formatMarginAdjustmentInput(BigDecimal.ONE + BigDecimal.ONE, false))
+        assertEquals("1", formatMarginAdjustmentInput(BigDecimal("2.00") - BigDecimal.ONE, false))
+        assertEquals("2.5", formatMarginAdjustmentInput(BigDecimal("1.50") + BigDecimal.ONE, false))
         assertEquals("5.01", formatMarginAdjustmentInput(BigDecimal("5.01253097"), false))
         assertEquals("0.99", formatMarginAdjustmentInput(BigDecimal("0.999"), false))
     }

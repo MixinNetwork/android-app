@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -459,7 +460,13 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         enabled = !loading,
                         onInputChanged = ::changeAmount,
                         onApplyReductionLimit = maximumReduction?.takeIf { reductionLimitError != null }?.let { maximum ->
-                            { changeAmount(maximumMarginReductionInput(currentPosition.margin, maximum, reduceByPercent)) }
+                            {
+                                if (reduceByPercent && !canFillMarginReductionAsPercentage(currentPosition.margin, maximum)) {
+                                    reduceByPercent = false
+                                    preferences.putBoolean(PREF_REDUCE_BY_PERCENT, false)
+                                }
+                                changeAmount(maximumMarginReductionInput(currentPosition.margin, maximum, reduceByPercent))
+                            }
                         },
                         onToggleMode = {
                             amount = amountValue?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
@@ -687,10 +694,10 @@ private fun PerpsReduceMarginInput(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .padding(16.dp),
+            .padding(start = 16.dp, top = 40.dp, end = 16.dp, bottom = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
+        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
             IconButton(
                 onClick = { updateInput(formatMarginAdjustmentInput((inputValue - BigDecimal.ONE).max(BigDecimal.ZERO), isPercentage)) },
                 enabled = enabled && inputValue > BigDecimal.ZERO,
@@ -731,8 +738,9 @@ private fun PerpsReduceMarginInput(
                 Icon(painterResource(R.drawable.ic_perps_add), stringResource(R.string.Add), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
             }
         }
+        Spacer(Modifier.height(6.dp))
         Row(
-            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(enabled = enabled, onClick = onToggleMode).padding(horizontal = 12.dp, vertical = 12.dp),
+            modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(enabled = enabled, onClick = onToggleMode).padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -749,8 +757,9 @@ private fun PerpsReduceMarginInput(
                 modifier = Modifier.size(30.dp),
             )
         }
+        Spacer(Modifier.height(12.dp))
         Box(
-            modifier = Modifier.fillMaxWidth().height(with(LocalDensity.current) { 32.sp.toDp() })
+            modifier = Modifier.fillMaxWidth().heightIn(min = with(LocalDensity.current) { 16.sp.toDp() })
                 .then(if (onApplyReductionLimit != null) Modifier.clickable(enabled = enabled, onClick = onApplyReductionLimit) else Modifier),
             contentAlignment = Alignment.Center,
         ) {
@@ -764,7 +773,7 @@ private fun PerpsReduceMarginInput(
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(28.dp))
         Slider(
             value = sliderPercentage,
             onValueChange = { selectPercentage(BigDecimal(snapMarginReductionPercentage(it))) },
@@ -800,28 +809,29 @@ private fun PerpsReduceMarginInput(
             listOf(0, 25, 50, 75, 100).forEach { value ->
                 Text(
                     text = if (isPercentage) "$value%" else formatPerpsMarginAmount(reduceMarginAmount(margin?.toPlainString(), value.toString(), true)),
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 10.sp,
-                    lineHeight = 14.sp,
-                    textAlign = when (value) { 0 -> TextAlign.Start; 100 -> TextAlign.End; else -> TextAlign.Center },
+                    color = MixinAppTheme.colors.textPrimary,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp,
+                    textAlign = TextAlign.Center,
                     modifier = Modifier.clickable(enabled = enabled && margin != null && margin > BigDecimal.ZERO) {
                         selectPercentage(BigDecimal(value))
-                    }.padding(vertical = 12.dp),
+                    }.padding(top = 4.dp),
                 )
             }
         }) { measurables, constraints ->
             val labels = measurables.map { it.measure(constraints.copy(minWidth = 0, minHeight = 0)) }
             val width = constraints.maxWidth
             val trackInset = 10.dp.roundToPx()
+            val trackEdge = trackInset - 3.dp.roundToPx()
             layout(width, labels.maxOf { it.height }) {
                 labels.forEachIndexed { index, label ->
                     val center = trackInset + (width - 2 * trackInset) * index / (labels.size - 1)
                     val x = when (index) {
-                        0 -> 0
-                        labels.lastIndex -> width - label.width
+                        0 -> trackEdge
+                        labels.lastIndex -> width - trackEdge - label.width
                         else -> center - label.width / 2
                     }
-                    label.placeRelative(x.coerceIn(0, width - label.width), 0)
+                    label.placeRelative(x, 0)
                 }
             }
         }
