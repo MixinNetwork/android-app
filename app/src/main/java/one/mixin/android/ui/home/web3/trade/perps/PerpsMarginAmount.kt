@@ -12,7 +12,7 @@ import kotlin.math.roundToInt
 internal fun perpsMarginTokenBalance(token: TokenItem?): BigDecimal? = token?.balance?.toBigDecimalOrNull()
 
 internal fun formatPerpsMarginAmount(value: BigDecimal?): String =
-    if (value == null || value.setScale(2, RoundingMode.HALF_UP).signum() == 0) "0" else formatPerpsPrice(value, 2)
+    if (value == null || value.setScale(2, RoundingMode.HALF_UP).signum() == 0) "${PERPS_USD_SYMBOL}0" else formatPerpsPrice(value, 2)
 
 internal fun formatPerpsMarginLimit(currentMargin: String?, availableMargin: BigDecimal, isPercentage: Boolean): String {
     if (isPercentage) {
@@ -20,7 +20,7 @@ internal fun formatPerpsMarginLimit(currentMargin: String?, availableMargin: Big
         return "${percentage.setScale(2, RoundingMode.DOWN).numberFormat8()}%"
     }
     val amount = availableMargin.setScale(2, RoundingMode.DOWN)
-    return if (amount.signum() == 0) "0" else "$PERPS_USD_SYMBOL${amount.numberFormat8()}"
+    return "$PERPS_USD_SYMBOL${amount.numberFormat8()}"
 }
 
 internal fun marginLiquidationLossPercent(entryPrice: String, liquidationPrice: String?): BigDecimal? {

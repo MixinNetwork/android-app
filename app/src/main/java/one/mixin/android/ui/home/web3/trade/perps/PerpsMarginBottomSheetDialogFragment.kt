@@ -671,11 +671,11 @@ private fun PerpsReduceMarginInput(
     val inactiveMarkerColor = MixinAppTheme.colors.textRemarks
     val maximum = if (isPercentage) BigDecimal(100) else margin ?: BigDecimal.ZERO
     val inputColor = when {
-        errorText != null -> MixinAppTheme.colors.walletRed
+        errorText != null -> MixinAppTheme.colors.marketRed
         inputValue <= BigDecimal.ZERO -> MixinAppTheme.colors.textRemarks
         else -> MixinAppTheme.colors.textPrimary
     }
-    val inputTextStyle = TextStyle(fontSize = 36.sp, fontWeight = FontWeight.W500, color = inputColor, textAlign = TextAlign.Center)
+    val inputTextStyle = TextStyle(fontSize = 36.sp, fontWeight = FontWeight.W600, color = inputColor, textAlign = TextAlign.Center)
     val textMeasurer = rememberTextMeasurer()
     val placeholder = "0"
     val inputWidth = with(LocalDensity.current) {
@@ -697,14 +697,14 @@ private fun PerpsReduceMarginInput(
             .padding(start = 16.dp, top = 40.dp, end = 16.dp, bottom = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Row(horizontalArrangement = Arrangement.spacedBy(32.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(
                 onClick = { updateInput(formatMarginAdjustmentInput((inputValue - BigDecimal.ONE).max(BigDecimal.ZERO), isPercentage)) },
                 enabled = enabled && inputValue > BigDecimal.ZERO,
             ) {
                 Icon(painterResource(R.drawable.ic_perps_minus), stringResource(R.string.perps_reduce_action), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
             }
-            Row(modifier = Modifier.weight(1f), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.weight(1f, fill = false), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
                 if (!isPercentage) Text(PERPS_USD_SYMBOL, style = inputTextStyle)
                 BasicTextField(
                     value = textFieldValue,
@@ -745,7 +745,7 @@ private fun PerpsReduceMarginInput(
         ) {
             Text(
                 text = if (isPercentage) formatPerpsMarginAmount(amount) else "${percentage?.setScale(0, RoundingMode.HALF_UP)?.toPlainString() ?: "0"}%",
-                color = MixinAppTheme.colors.textAssist,
+                color = MixinAppTheme.colors.textRemarks,
                 fontSize = 16.sp,
                 lineHeight = 20.sp,
             )
@@ -765,7 +765,7 @@ private fun PerpsReduceMarginInput(
         ) {
             Text(
                 text = errorText.orEmpty(),
-                color = MixinAppTheme.colors.walletRed,
+                color = MixinAppTheme.colors.badgeRed,
                 fontSize = 12.sp,
                 lineHeight = 16.sp,
                 textAlign = TextAlign.Center,
@@ -809,8 +809,9 @@ private fun PerpsReduceMarginInput(
             listOf(0, 25, 50, 75, 100).forEach { value ->
                 Text(
                     text = if (isPercentage) "$value%" else formatPerpsMarginAmount(reduceMarginAmount(margin?.toPlainString(), value.toString(), true)),
-                    color = MixinAppTheme.colors.textPrimary,
+                    color = MixinAppTheme.colors.textAssist,
                     fontSize = 12.sp,
+                    fontWeight = if (isPercentage) FontWeight.W500 else FontWeight.Normal,
                     lineHeight = 16.sp,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.clickable(enabled = enabled && margin != null && margin > BigDecimal.ZERO) {

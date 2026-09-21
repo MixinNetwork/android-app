@@ -47,16 +47,16 @@ class PerpsMarginAmountTest {
         assertEquals("$2.07", formatPerpsMarginLimit("6.98", BigDecimal("2.079999999"), false))
         assertEquals("$1.12", formatPerpsMarginLimit("10.93", BigDecimal("1.12139433"), false))
         assertEquals("1.12", maximumMarginReductionInput("10.93", BigDecimal("1.12139433"), false))
-        assertEquals("0", formatPerpsMarginLimit("1", BigDecimal("0.00000001"), false))
+        assertEquals("$0", formatPerpsMarginLimit("1", BigDecimal("0.00000001"), false))
         assertEquals("0%", formatPerpsMarginLimit("6.98", BigDecimal.ZERO, true))
-        assertEquals("0", formatPerpsMarginLimit("6.98", BigDecimal.ZERO, false))
+        assertEquals("$0", formatPerpsMarginLimit("6.98", BigDecimal.ZERO, false))
         assertEquals("0%", formatPerpsMarginLimit("0", BigDecimal.ZERO, true))
     }
 
     @Test
-    fun marginPreviewUsesZeroWithoutCurrencyAndTheActualLiquidationPrice() {
+    fun marginPreviewKeepsCurrencyForZeroAndTheActualLiquidationPrice() {
         listOf(null, BigDecimal.ZERO, BigDecimal("0.00"), BigDecimal("0.004")).forEach {
-            assertEquals("0", formatPerpsMarginAmount(it))
+            assertEquals("$0", formatPerpsMarginAmount(it))
         }
         assertEquals("$1.50", formatPerpsMarginAmount(BigDecimal("1.5")))
         assertEquals(BigDecimal("130"), marginAfterAdjustment("100", "30", true))
