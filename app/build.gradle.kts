@@ -168,7 +168,7 @@ android {
         }
         jniLibs {
             useLegacyPackaging = true
-            pickFirsts += setOf("lib/x86_64/libcurve25519.so")
+            pickFirsts += setOf("lib/arm64-v8a/libcurve25519.so", "lib/x86_64/libcurve25519.so")
         }
     }
 
