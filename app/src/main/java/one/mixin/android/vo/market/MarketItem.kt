@@ -74,6 +74,8 @@ data class MarketItem(
     val descriptions: Map<String, String>? = null,
     @ColumnInfo(name = "perps_market_id")
     val perpsMarketId: String? = null,
+    @ColumnInfo(name = "updated_at")
+    val updatedAt: String = "",
 ) : Parcelable {
     companion object {
         fun fromMarket(market: Market): MarketItem {
@@ -110,6 +112,7 @@ data class MarketItem(
                 isFavored = null,
                 descriptions = market.descriptions,
                 perpsMarketId = market.perpsMarketId,
+                updatedAt = market.updatedAt,
             )
         }
     }
