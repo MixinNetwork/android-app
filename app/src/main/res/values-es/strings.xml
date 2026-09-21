@@ -394,7 +394,10 @@
     <string name="error_old_version">ERROR 10006: Actualiza Mixin(%1$s) para seguir usando el servicio.</string>
     <string name="error_open_location">No puedo encontrar una aplicación de mapas</string>
     <string name="error_permission">Por favor abre los permisos necesarios</string>
-    <string name="error_perps_order_value_too_small">ERROR %1$s: El tamaño de la posición es demasiado pequeño.</string>
+    <string name="error_perps_margin_too_small">ERROR 10650: El margen es demasiado bajo</string>
+    <string name="error_perps_margin_too_small_value">ERROR 10650: El margen debe tener un valor mínimo de %1$s</string>
+    <string name="error_perps_position_size_too_small">ERROR 10654: El valor de la posición es demasiado bajo</string>
+    <string name="error_perps_position_size_too_small_value">ERROR 10654: La posición debe tener un valor mínimo de %1$s</string>
     <string name="error_phone_invalid_format">ERROR 20110: Número de teléfono no válido</string>
     <string name="error_phone_sms_delivery">ERROR 10003: Error al entregar SMS</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Código de verificación del teléfono caducado</string>

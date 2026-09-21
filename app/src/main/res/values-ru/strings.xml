@@ -377,7 +377,10 @@
     <string name="error_old_version">ОШИБКА 10006: Обновите Mixin(%1$s), чтобы продолжить использование сервиса.</string>
     <string name="error_open_location">Не могу найти приложение карты</string>
     <string name="error_permission">Пожалуйста, Откройте необходимые разрешения</string>
-    <string name="error_perps_order_value_too_small">ОШИБКА %1$s: Размер позиции слишком мал.</string>
+    <string name="error_perps_margin_too_small">ОШИБКА 10650: Сумма маржи слишком мала</string>
+    <string name="error_perps_margin_too_small_value">ОШИБКА 10650: Сумма маржи должна составлять не менее %1$s</string>
+    <string name="error_perps_position_size_too_small">ОШИБКА 10654: Стоимость позиции слишком мала</string>
+    <string name="error_perps_position_size_too_small_value">ОШИБКА 10654: Стоимость позиции должна составлять не менее %1$s</string>
     <string name="error_phone_invalid_format">ОШИБКА 20110: Неверный номер телефона</string>
     <string name="error_phone_sms_delivery">ОШИБКА 10003: Не удалось доставить SMS</string>
     <string name="error_phone_verification_code_expired">ОШИБКА 20114: Срок действия кода подтверждения телефона истек</string>

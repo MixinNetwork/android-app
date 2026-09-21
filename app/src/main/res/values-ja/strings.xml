@@ -370,7 +370,10 @@
     <string name="error_old_version">エラー 10006：このサービスを引き続き使用するには、Mixin(%1$s)をアップデートしてください。</string>
     <string name="error_open_location">地図アプリがありません</string>
     <string name="error_permission">必要な権限を開いてください</string>
-    <string name="error_perps_order_value_too_small">エラー %1$s：ポジションサイズが小さすぎます。</string>
+    <string name="error_perps_margin_too_small">エラー 10650: マージンが少なすぎます</string>
+    <string name="error_perps_margin_too_small_value">エラー 10650: マージンは最低 %1$s 必要です</string>
+    <string name="error_perps_position_size_too_small">エラー 10654: ポジション価値が小さすぎます</string>
+    <string name="error_perps_position_size_too_small_value">エラー 10654: ポジション価値は最低 %1$s 必要です</string>
     <string name="error_phone_invalid_format">エラー 20110：無効な電話番号です</string>
     <string name="error_phone_sms_delivery">エラー 10003：SMSの送信に失敗しました</string>
     <string name="error_phone_verification_code_expired">期限切れ</string>
