@@ -277,8 +277,7 @@ class LoadingFragment : BaseFragment(R.layout.fragment_loading) {
                         account?.let { acc ->
                             acc.pinToken = r.pinToken
                             val pinToken = decryptPinToken(r.pinToken.decodeBase64(), privateKey)
-                            Session.storeEd25519Seed(privateKey.base64Encode())
-                            Session.storePinToken(pinToken.base64Encode())
+                            Session.storeSessionKeys(sessionKey, pinToken.base64Encode())
                             Session.storeAccount(acc)
                         }
                         return
