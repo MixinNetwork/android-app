@@ -182,6 +182,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         val normalizedAmount = amountValue?.stripTrailingZeros()?.toPlainString().orEmpty()
         var remoteLiquidationPrice by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf<String?>(null) }
         var liquidationError by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf<String?>(null) }
+        var liquidationPriceLimit by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf<LiquidationPriceLimit?>(null) }
         var isLiquidationLoading by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf(false) }
         val totalMargin = marginAfterAdjustment(currentPosition.margin, normalizedAmount, increase, availableMargin)
         val marginValue = currentPosition.margin?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO }
@@ -217,7 +218,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 delay(200L)
                 remoteLiquidationPrice = requestLiquidationPrice(
                     onFailure = { liquidationError = it ?: getString(R.string.Data_error) },
-                    onLimitExceeded = { liquidationError = getString(R.string.error_perps_position_size_exceeds_leverage_limit) },
+                    onLimitExceeded = { liquidationPriceLimit = it },
                     onMarginExceeded = if (increase) null else { available ->
                         availableMargin = available
                         liquidationError = if (available == null) getString(R.string.Data_error) else null
@@ -344,7 +345,8 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 val limit = formatPerpsMarginLimit(currentPosition.margin, maximumReduction, reduceByPercent)
                 stringResource(R.string.max_removable, limit)
             } else null
-            val errorText = if (insufficientBalance) stringResource(R.string.insufficient_balance) else error ?: liquidationError
+            val errorText = if (insufficientBalance) stringResource(R.string.insufficient_balance) else
+                error ?: liquidationPriceLimit?.errorMessage(requireContext(), selectedToken?.symbol.orEmpty()) ?: liquidationError
             val onSubmit = {
                 if (increase) {
                     submit(normalizedAmount)

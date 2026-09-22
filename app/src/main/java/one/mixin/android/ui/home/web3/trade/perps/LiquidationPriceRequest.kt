@@ -1,14 +1,26 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.content.Context
 import com.google.gson.JsonElement
 import kotlinx.coroutines.delay
+import one.mixin.android.R
 import one.mixin.android.util.ErrorHandler
 import java.math.BigDecimal
 
 internal data class LiquidationPriceLimit(
     val maxAmount: String?,
     val maxLeverage: Int?,
-)
+) {
+    fun errorMessage(context: Context, symbol: String, isAddingPosition: Boolean = false): String =
+        maxAmount?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }?.let {
+            context.getString(
+                if (isAddingPosition) R.string.error_perps_position_size_exceeds_leverage_limit_add else R.string.error_perps_position_size_exceeds_leverage_limit_value,
+                "${it.stripTrailingZeros().toPlainString()} $symbol".trim(),
+            )
+        } ?: context.getString(
+            if (isAddingPosition) R.string.error_perps_position_size_exceeds_leverage_limit_cannot_add else R.string.error_perps_position_size_exceeds_leverage_limit,
+        )
+}
 
 internal sealed interface LiquidationPriceResult {
     data class Success(val price: String) : LiquidationPriceResult

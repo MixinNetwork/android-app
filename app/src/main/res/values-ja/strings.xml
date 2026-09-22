@@ -1164,4 +1164,9 @@
     <string name="perps_added_margin">証拠金追加</string>
     <string name="perps_reduced_margin">証拠金減額</string>
     <string name="perps_realized_pnl">実現損益</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit">エラー 10655：ポジションサイズが選択したレバレッジの上限を超えています。金額またはレバレッジを下げてください。</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_add">エラー 10655：新規建玉の金額が上限の%1$sを超えています。金額を下げてください。</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">エラー 10655：建玉を追加できません。</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_value">エラー 10655：新規建玉の金額が上限の%1$sを超えています。金額またはレバレッジを下げてください。</string>
+    <string name="single_transaction_should_be_less_than">最大金額 %1$s %2$s</string>
 </resources>

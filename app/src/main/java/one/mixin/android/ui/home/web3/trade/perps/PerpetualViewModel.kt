@@ -567,13 +567,13 @@ class PerpetualViewModel @Inject constructor(
             val minimum = market.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
             val maximum = market.maxAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
             if (leverage > market.leverage) {
-                return PerpsLinkPreview.Failure(context.getString(R.string.perps_maximum_leverage, market.leverage))
+                return PerpsLinkPreview.Failure(context.getString(R.string.error_perps_position_size_exceeds_leverage_limit))
             }
             if (minimum > BigDecimal.ZERO && amount < minimum) {
                 return PerpsLinkPreview.Failure(context.getString(R.string.perps_minimum_margin, market.minAmount, market.quoteSymbol))
             }
             if (maximum > BigDecimal.ZERO && amount > maximum) {
-                return PerpsLinkPreview.Failure(context.getString(R.string.perps_maximum_margin, market.maxAmount, market.quoteSymbol))
+                return PerpsLinkPreview.Failure(context.getString(R.string.single_transaction_should_be_less_than, market.maxAmount, market.quoteSymbol))
             }
             if ((market.last.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) throw DataErrorException()
             val token = loadPerpsMarginToken()

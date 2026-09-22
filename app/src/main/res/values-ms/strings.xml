@@ -841,4 +841,9 @@
     <string name="perps_added_margin">Margin Ditambah</string>
     <string name="perps_reduced_margin">Margin Dikurangkan</string>
     <string name="perps_realized_pnl">PnL Direalisasikan</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit">RALAT 10655: Saiz posisi melebihi had untuk leveraj yang dipilih. Kurangkan jumlah atau leveraj.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_add">RALAT 10655: Amaun pembukaan posisi melebihi had maksimum %1$s. Kurangkan amaun.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">RALAT 10655: Posisi tidak dapat ditambah.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_value">RALAT 10655: Amaun pembukaan posisi melebihi had maksimum %1$s. Kurangkan amaun atau leveraj.</string>
+    <string name="single_transaction_should_be_less_than">Jumlah maksimum %1$s %2$s</string>
 </resources>

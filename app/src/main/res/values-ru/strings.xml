@@ -1159,4 +1159,9 @@
     <string name="perps_added_margin">Маржа добавлена</string>
     <string name="perps_reduced_margin">Маржа уменьшена</string>
     <string name="perps_realized_pnl">Реализованная прибыль/убыток</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit">ОШИБКА 10655: Размер позиции превышает лимит для выбранного кредитного плеча. Уменьшите сумму или кредитное плечо.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_add">ОШИБКА 10655: Сумма открытия позиции превышает максимальный лимит %1$s. Уменьшите сумму.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">ОШИБКА 10655: Невозможно увеличить позицию.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_value">ОШИБКА 10655: Сумма открытия позиции превышает максимальный лимит %1$s. Уменьшите сумму или кредитное плечо.</string>
+    <string name="single_transaction_should_be_less_than">Максимальная сумма %1$s %2$s</string>
 </resources>

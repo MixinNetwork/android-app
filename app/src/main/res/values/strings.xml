@@ -499,6 +499,9 @@
     <string name="error_already_had_open_position">ERROR 10651: You already had a open position</string>
     <string name="error_waiting_other_orders">ERROR 10652: The current market is still processing other orders, please try again later.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit">ERROR 10655: Position size exceeds the limit for the selected leverage. Reduce the amount or leverage.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_add">ERROR 10655: Amount exceeds the %1$s limit. Reduce the amount.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">ERROR 10655: Cannot add to the position.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_value">ERROR 10655: Amount exceeds the %1$s limit. Reduce the amount or leverage.</string>
     <string name="error_perps_invalid_leader_position">ERROR 10656: The leader position is invalid. Please select another position to copy.</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
@@ -1684,8 +1687,6 @@
     <string name="single_transaction_should_be_less_than">Maximum amount %1$s %2$s</string>
     <string name="single_transaction_should_be_between">Amount must be between %1$s %2$s and %3$s %4$s</string>
     <string name="perps_minimum_margin">The minimum amount is %1$s %2$s</string>
-    <string name="perps_maximum_margin">The maximum amount is %1$s %2$s</string>
-    <string name="perps_maximum_leverage">The maximum leverage for this amount is %1$dx</string>
     <!-- Web3 -->
     <string name="web3_approve">Approve</string>
     <string name="web3_borrow">Borrow</string>

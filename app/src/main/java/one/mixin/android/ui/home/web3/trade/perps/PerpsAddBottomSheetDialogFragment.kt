@@ -366,26 +366,11 @@ private fun PerpsAddContent(
         selectedToken?.symbol.orEmpty(),
     )
     val maximumMarginError = stringResource(
-        R.string.perps_maximum_margin,
+        R.string.single_transaction_should_be_less_than,
         maximumMargin.stripTrailingZeros().toPlainString(),
         selectedToken?.symbol.orEmpty(),
     )
-    val liquidationLimitMaxAmount = liquidationPriceLimit?.maxAmount
-        ?.toBigDecimalOrNull()
-        ?.takeIf { it > BigDecimal.ZERO }
-        ?.stripTrailingZeros()
-        ?.toPlainString()
-    val liquidationLimitAmountError = liquidationLimitMaxAmount?.let {
-        stringResource(R.string.perps_maximum_margin, it, selectedToken?.symbol.orEmpty())
-    }
-    val liquidationLimitLeverageError = liquidationPriceLimit?.maxLeverage?.let {
-        stringResource(R.string.perps_maximum_leverage, it)
-    }
-    val liquidationLimitError = liquidationPriceLimit?.let {
-        listOfNotNull(liquidationLimitAmountError, liquidationLimitLeverageError)
-            .joinToString(". ")
-            .ifBlank { stringResource(R.string.error_perps_position_size_exceeds_leverage_limit) }
-    }
+    val liquidationLimitError = liquidationPriceLimit?.errorMessage(context, selectedToken?.symbol.orEmpty(), isAddingPosition = true)
     val marginLimitError = when {
         belowMinimumMargin -> minimumMarginError
         aboveMaximumMargin -> maximumMarginError

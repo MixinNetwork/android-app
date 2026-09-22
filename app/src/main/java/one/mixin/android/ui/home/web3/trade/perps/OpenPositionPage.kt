@@ -261,26 +261,11 @@ fun OpenPositionPage(
         currentToken?.symbol.orEmpty(),
     )
     val maximumMarginError = stringResource(
-        R.string.perps_maximum_margin,
+        R.string.single_transaction_should_be_less_than,
         maximumMargin.stripTrailingZeros().toPlainString(),
         currentToken?.symbol.orEmpty(),
     )
-    val liquidationLimitMaxAmount = liquidationPriceLimit?.maxAmount
-        ?.toBigDecimalOrNull()
-        ?.takeIf { it > BigDecimal.ZERO }
-        ?.stripTrailingZeros()
-        ?.toPlainString()
-    val liquidationLimitAmountError = liquidationLimitMaxAmount?.let {
-        stringResource(R.string.perps_maximum_margin, it, currentToken?.symbol.orEmpty())
-    }
-    val liquidationLimitLeverageError = liquidationPriceLimit?.maxLeverage?.let {
-        stringResource(R.string.perps_maximum_leverage, it)
-    }
-    val liquidationLimitError = liquidationPriceLimit?.let {
-        listOfNotNull(liquidationLimitAmountError, liquidationLimitLeverageError)
-            .joinToString(". ")
-            .ifBlank { stringResource(R.string.error_perps_position_size_exceeds_leverage_limit) }
-    }
+    val liquidationLimitError = liquidationPriceLimit?.errorMessage(context, currentToken?.symbol.orEmpty())
     val displayLiquidationPrice = remoteLiquidationPrice
     val marginLimitError = when {
         belowMinimumMargin -> minimumMarginError
