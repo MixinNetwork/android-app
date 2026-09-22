@@ -128,7 +128,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         }
         binding.titleView.rightIb.setImageResource(R.drawable.ic_support)
         binding.titleView.rightIb.contentDescription = getString(R.string.Contact_Support)
-        binding.titleView.rightAnimator.isVisible = true
+        binding.titleView.rightAnimator.isVisible = false
         binding.titleView.rightAnimator.displayedChild = 0
         binding.titleView.rightIb.setOnClickListener {
             openCustomerService(
@@ -138,6 +138,9 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                     AnalyticsTracker.CustomerServiceSource.LOGIN_MNEMONIC_PHRASE_SIGNING
                 },
             )
+        }
+        landingViewModel.mnemonicPhraseState.observe(viewLifecycleOwner) { state ->
+            binding.titleView.rightAnimator.isVisible = state == MnemonicPhraseState.Failure
         }
         binding.titleView.setOnLongClickListener {
             LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
