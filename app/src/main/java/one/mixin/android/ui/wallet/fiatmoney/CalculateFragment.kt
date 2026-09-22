@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
@@ -21,6 +22,7 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentCalculateBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
@@ -45,6 +47,8 @@ import one.mixin.android.ui.wallet.AssetListFixedBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletBuyOptionsBottomSheetDialogFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
@@ -438,7 +442,22 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 }
                         }
                     }
-                    proceedToBuy()
+                    if (isWeb3) {
+                        proceedToBuy()
+                    } else {
+                        viewLifecycleScope.launch {
+                            val cashRewardApy = PropertyHelper.findCashAccount()?.rewardApy
+                            if (parentFragmentManager.findFragmentByTag(WalletBuyOptionsBottomSheetDialogFragment.TAG) != null) return@launch
+                            WalletBuyOptionsBottomSheetDialogFragment.newInstance(
+                                walletName = getString(R.string.Privacy_Wallet),
+                                walletIconRes = R.drawable.ic_wallet_privacy,
+                                cashRewardApy = cashRewardApy,
+                            )
+                                .setOnGooglePayOrCard(proceedToBuy)
+                                .setOnBankTransfer { openBankTransfer() }
+                                .showNow(parentFragmentManager, WalletBuyOptionsBottomSheetDialogFragment.TAG)
+                        }
+                    }
                 }
                 switchIv.setOnClickListener {
                     fiatMoneyViewModel.isReverse = !fiatMoneyViewModel.isReverse
@@ -452,6 +471,18 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 binding.primaryTv.text = v
                 updateUI()
             }
+        }
+    }
+
+    private fun openBankTransfer() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val app = fiatMoneyViewModel.findOrSyncApp(Constants.MIXIN_CASH_USER_ID)
+            val homeUri = app?.homeUri.takeUnless { it.isNullOrBlank() } ?: Constants.API.CASH_HOME_URL
+            val url = Uri.parse(homeUri).buildUpon()
+                .appendQueryParameter("action", "add-cash-bank")
+                .build()
+                .toString()
+            WebActivity.show(requireActivity(), url = url, app = app, conversationId = null)
         }
     }
 
