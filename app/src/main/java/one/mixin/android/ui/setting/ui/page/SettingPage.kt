@@ -12,27 +12,21 @@ import androidx.compose.material.Scaffold
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.compose.MixinBackButton
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.SettingTile
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.findFragmentActivityOrNull
-import one.mixin.android.extension.toast
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.session.Session
-import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.setting.LocalSettingNav
 import one.mixin.android.ui.setting.SettingDestination
-import one.mixin.android.ui.setting.SettingViewModel
 
 @Composable
 fun SettingPage() {
@@ -105,21 +99,11 @@ fun SettingPage() {
                 }
                 Box(modifier = Modifier.height(16.dp))
 
-                val scope = rememberCoroutineScope()
-                val viewModel = hiltViewModel<SettingViewModel>()
-
                 SettingTile(
                     icon = R.drawable.ic_setting_feedback,
                     title = stringResource(id = R.string.Feedback),
                 ) {
-                    scope.launch {
-                        val userTeamMixin = viewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
-                        if (userTeamMixin == null) {
-                            toast(R.string.Data_error)
-                        } else {
-                            ConversationActivity.show(context, recipientId = Constants.TEAM_MIXIN_USER_ID)
-                        }
-                    }
+                    context.openCustomerService()
                 }
                 SettingTile(
                     icon = R.drawable.ic_setting_share,
