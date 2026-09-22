@@ -44,18 +44,22 @@ import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.UserAvatarImage
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.extension.dpToPx
 import one.mixin.android.ui.contacts.ContactPageHeader
 import one.mixin.android.ui.contacts.ContactSectionHeader
 import one.mixin.android.ui.contacts.ContactsSearchField
 import one.mixin.android.ui.contacts.contactInitial
 import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.ui.home.bot.INTERNAL_LINK_DESKTOP_ID
+import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.home.bot.InternalBots
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.BotInterface
 import one.mixin.android.vo.ExploreApp
 import one.mixin.android.vo.User
 import one.mixin.android.widget.NameTextView
+import one.mixin.android.widget.lottie.RLottieDrawable
+import one.mixin.android.widget.lottie.RLottieImageView
 
 @Composable
 internal fun MorePage(
@@ -152,7 +156,30 @@ private fun MoreActionCard(bot: Bot, loggedIn: Boolean, showDot: Boolean, modifi
     val desktop = bot.id == INTERNAL_LINK_DESKTOP_ID
     val icon = if (desktop && loggedIn) R.drawable.ic_more_desktop_logged else bot.icon
     Row(modifier.moreCard().clickable(onClick = onClick).heightIn(min = 77.dp).padding(horizontal = 10.dp, vertical = 12.dp)) {
-        Icon(painterResource(icon), null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
+        if (bot.id == INTERNAL_REFERRAL_ID) {
+            AndroidView(
+                factory = { context ->
+                    RLottieImageView(context).apply {
+                        val size = context.dpToPx(24f)
+                        setAnimation(
+                            RLottieDrawable(R.raw.referral, "referral", size, size).apply {
+                                setAutoRepeat(1)
+                                setAutoRepeatCount(Int.MAX_VALUE)
+                            },
+                        )
+                        playAnimation()
+                    }
+                },
+                modifier = Modifier.size(24.dp),
+                onRelease = { view ->
+                    val drawable = view.animatedDrawable
+                    view.clearAnimationDrawable()
+                    drawable?.recycle(true)
+                },
+            )
+        } else {
+            Icon(painterResource(icon), null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
+        }
         Spacer(Modifier.width(10.dp))
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
