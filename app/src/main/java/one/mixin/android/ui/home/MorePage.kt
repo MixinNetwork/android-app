@@ -1,0 +1,223 @@
+package one.mixin.android.ui.home
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.UserAvatarImage
+import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.ui.address.component.SearchTextField
+import one.mixin.android.ui.contacts.ContactPageHeader
+import one.mixin.android.ui.contacts.contactInitial
+import one.mixin.android.ui.home.bot.Bot
+import one.mixin.android.ui.home.bot.INTERNAL_LINK_DESKTOP_ID
+import one.mixin.android.ui.home.bot.InternalBots
+import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.vo.BotInterface
+import one.mixin.android.vo.ExploreApp
+import one.mixin.android.vo.User
+import one.mixin.android.widget.NameTextView
+
+@Composable
+internal fun MorePage(
+    user: User?,
+    contacts: List<User>,
+    favorites: List<ExploreApp>,
+    botCount: Int,
+    isDesktopLogin: Boolean,
+    clickedBotIds: Set<String>,
+    onProfile: () -> Unit,
+    onQr: () -> Unit,
+    onContacts: () -> Unit,
+    onContact: (User) -> Unit,
+    onBots: () -> Unit,
+    onBot: (BotInterface) -> Unit,
+) {
+    MixinAppTheme {
+        LazyColumn(
+            modifier = Modifier.fillMaxSize().background(MixinAppTheme.colors.background),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+        ) {
+            user?.let {
+                item {
+                    Row(
+                        Modifier.moreCard().clickable(onClick = onProfile).padding(start = 16.dp, end = 8.dp).heightIn(min = 68.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        UserAvatarImage(it, 42.dp)
+                        Spacer(Modifier.width(8.dp))
+                        Column(Modifier.weight(1f)) {
+                            AndroidView(factory = { context -> NameTextView(context) }, update = { view -> view.setName(it) })
+                            Spacer(Modifier.height(4.dp))
+                            Text(stringResource(R.string.contact_mixin_id, it.identityNumber), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
+                        }
+                        IconButton(onClick = onQr) {
+                            Icon(painterResource(R.drawable.ic_qr_code), stringResource(R.string.My_QR_Code), tint = MixinAppTheme.colors.textRemarks, modifier = Modifier.size(20.dp))
+                        }
+                        MoreArrow()
+                    }
+                    Spacer(Modifier.height(12.dp))
+                }
+            }
+            items(InternalBots.chunked(2)) { row ->
+                Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    row.forEach { bot ->
+                        MoreActionCard(bot, isDesktopLogin, bot.id !in clickedBotIds && bot.id in ExploreFragment.SHOW_DOT_BOT_IDS, Modifier.weight(1f).fillMaxHeight()) { onBot(bot) }
+                    }
+                }
+                Spacer(Modifier.height(12.dp))
+            }
+            if (contacts.isNotEmpty()) {
+                item {
+                    Spacer(Modifier.height(8.dp))
+                    Column(Modifier.moreCard()) {
+                        MoreSectionHeader(stringResource(R.string.contacts_title), contacts.size, onContacts)
+                        contacts.take(3).forEachIndexed { index, contact ->
+                            Row(Modifier.fillMaxWidth().clickable { onContact(contact) }.padding(horizontal = 16.dp).height(50.dp), verticalAlignment = Alignment.CenterVertically) {
+                                UserAvatarImage(contact, 42.dp)
+                                Spacer(Modifier.width(14.dp))
+                                Column(Modifier.weight(1f)) {
+                                    AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(contact) })
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(contact.identityNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp)
+                                }
+                            }
+                            if (index < minOf(contacts.size, 3) - 1) Spacer(Modifier.height(20.dp))
+                        }
+                        Text(stringResource(R.string.view_all), color = MixinAppTheme.colors.accent, fontSize = 14.sp,
+                            modifier = Modifier.align(Alignment.CenterHorizontally).clickable(onClick = onContacts).padding(top = 18.dp, bottom = 20.dp, start = 16.dp, end = 16.dp))
+                    }
+                }
+            }
+            if (botCount > 0) {
+                item {
+                    Spacer(Modifier.height(12.dp))
+                    Column(Modifier.moreCard()) {
+                        MoreSectionHeader(stringResource(R.string.bots_title), botCount, onBots)
+                        favorites.forEach { app -> BotRow(app, true) { onBot(app) } }
+                        Spacer(Modifier.height(12.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun Modifier.moreCard() = fillMaxWidth().clip(RoundedCornerShape(8.dp))
+    .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor, borderWidth = 1.dp)
+
+@Composable
+private fun MoreActionCard(bot: Bot, loggedIn: Boolean, showDot: Boolean, modifier: Modifier, onClick: () -> Unit) {
+    val desktop = bot.id == INTERNAL_LINK_DESKTOP_ID
+    val icon = if (desktop && loggedIn) R.drawable.ic_more_desktop_logged else bot.icon
+    Row(modifier.moreCard().clickable(onClick = onClick).heightIn(min = 77.dp).padding(12.dp)) {
+        Icon(painterResource(icon), null, tint = if (desktop && loggedIn) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.textPrimary, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(bot.name), color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp, modifier = Modifier.weight(1f))
+                if (showDot) Box(Modifier.padding(start = 4.dp).size(5.dp).background(MixinAppTheme.colors.accent, CircleShape))
+            }
+            Spacer(Modifier.height(5.dp))
+            Text(stringResource(if (desktop && loggedIn) R.string.Logined else bot.description), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp, lineHeight = 16.sp)
+        }
+    }
+}
+
+@Composable
+private fun MoreSectionHeader(title: String, count: Int, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+        Text(title, color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp, modifier = Modifier.weight(1f))
+        Text(count.toString(), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp)
+        Spacer(Modifier.width(8.dp))
+        MoreArrow()
+    }
+}
+
+@Composable
+private fun MoreArrow() {
+    Icon(painterResource(R.drawable.ic_arrow_gray_right), null, tint = MixinAppTheme.colors.textRemarks, modifier = Modifier.size(16.dp))
+}
+
+@Composable
+private fun BotRow(app: ExploreApp, external: Boolean = false, onClick: () -> Unit) {
+    Row(Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp).height(70.dp), verticalAlignment = Alignment.CenterVertically) {
+        CoilImage(app.iconUrl, R.drawable.ic_avatar_place_holder, Modifier.size(42.dp).clip(CircleShape))
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(app) })
+            Spacer(Modifier.height(4.dp))
+            Text(app.appNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        }
+        if (external) Icon(painterResource(R.drawable.ic_arrow_top_right_small), null, tint = MixinAppTheme.colors.textRemarks, modifier = Modifier.size(16.dp))
+    }
+}
+
+@Composable
+internal fun BotsPage(favorites: List<ExploreApp>, apps: List<ExploreApp>, onBack: () -> Unit, onEdit: () -> Unit, onFavoriteClick: (ExploreApp) -> Unit, onBotClick: (ExploreApp) -> Unit) {
+    var query by rememberSaveable { mutableStateOf("") }
+    val matches: (ExploreApp) -> Boolean = { it.name.contains(query.trim(), true) || it.appNumber.contains(query.trim(), true) }
+    val favoriteIds = favorites.map { it.appId }.toSet()
+    val groups = apps.filter { it.appId !in favoriteIds && matches(it) }.groupBy { contactInitial(it.name) }.toSortedMap(compareBy { if (it == "#") "[" else it })
+    MixinAppTheme {
+        Column(Modifier.fillMaxSize().background(MixinAppTheme.colors.background)) {
+            ContactPageHeader(stringResource(R.string.bots_title), onBack)
+            SearchTextField(query, { query = it }, Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp), hint = stringResource(R.string.setting_auth_search_hint))
+            LazyColumn(Modifier.weight(1f)) {
+                item { Text(stringResource(R.string.Favorite), color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp, modifier = Modifier.padding(16.dp)) }
+                items(favorites.filter(matches), key = { "favorite:${it.appId}" }) { app -> BotRow(app) { onFavoriteClick(app) } }
+                item {
+                    Row(Modifier.fillMaxWidth().clickable(onClick = onEdit).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Icon(painterResource(R.drawable.ic_favorite_edit), null, tint = Color.Unspecified, modifier = Modifier.size(42.dp))
+                        Spacer(Modifier.width(14.dp))
+                        Column {
+                            Text(stringResource(R.string.My_favorite_bots), color = MixinAppTheme.colors.textPrimary, fontSize = 16.sp)
+                            Text(stringResource(R.string.add_or_remove_favorite_bots), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp)
+                        }
+                    }
+                }
+                groups.forEach { (initial, group) ->
+                    item(key = "header:$initial") { Text(initial, color = MixinAppTheme.colors.textPrimary, modifier = Modifier.padding(16.dp)) }
+                    items(group, key = { it.appId }) { app -> BotRow(app) { onBotClick(app) } }
+                }
+            }
+        }
+    }
+}
