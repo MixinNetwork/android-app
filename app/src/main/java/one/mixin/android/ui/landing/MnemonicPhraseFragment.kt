@@ -45,6 +45,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.hexString
 import one.mixin.android.extension.nowInUtc
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.toHex
 import one.mixin.android.extension.viewDestroyed
@@ -124,6 +125,19 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         Timber.i("LoginFlow account_creation_open source=${if (words.isNullOrEmpty()) "signup" else "mnemonic_login"} pending_import=${!pendingImportWords.isNullOrEmpty()}")
         binding.titleView.leftIb.setOnClickListener {
             requireActivity().onBackPressedDispatcher.onBackPressed()
+        }
+        binding.titleView.rightIb.setImageResource(R.drawable.ic_support)
+        binding.titleView.rightIb.contentDescription = getString(R.string.Contact_Support)
+        binding.titleView.rightAnimator.isVisible = true
+        binding.titleView.rightAnimator.displayedChild = 0
+        binding.titleView.rightIb.setOnClickListener {
+            openCustomerService(
+                source = if (words.isNullOrEmpty()) {
+                    AnalyticsTracker.CustomerServiceSource.SIGN_UP_MNEMONIC_PHRASE_CREATING
+                } else {
+                    AnalyticsTracker.CustomerServiceSource.LOGIN_MNEMONIC_PHRASE_SIGNING
+                },
+            )
         }
         binding.titleView.setOnLongClickListener {
             LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
