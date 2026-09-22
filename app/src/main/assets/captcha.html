@@ -18,49 +18,98 @@
     </style>
     #gt
     <script type="text/javascript">
+        var attemptId = #attemptId;
+
+        var diagnostic = function (event, detail) {
+            window.MixinContext.postDiagnostic(attemptId, event, detail == null ? '' : String(detail));
+        };
+
+        var errorDetail = function (error) {
+            if (error == null) return '';
+            if (typeof error === 'string') return error;
+            return [error.code || error.error_code || error.name || '', error.message || error.msg || '', error.desc && error.desc.detail || ''].join(' ');
+        };
+
+        window.addEventListener('error', function (event) {
+            if (event.target && event.target !== window) {
+                diagnostic('script_error', event.target.src || event.target.href || event.target.tagName);
+            } else {
+                diagnostic('javascript_error', event.message + ' source=' + event.filename + ' line=' + event.lineno);
+            }
+        }, true);
+
+        window.addEventListener('unhandledrejection', function (event) {
+            diagnostic('unhandled_rejection', errorDetail(event.reason));
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            diagnostic('dom_ready', 'online=' + navigator.onLine);
+        });
 
         var postToken = function (response) {
-            window.MixinContext.postToken(response);
+            window.MixinContext.postToken(attemptId, response);
         }
 
         var postMessage = function (value) {
-            window.MixinContext.postMessage(value);
+            window.MixinContext.postMessage(attemptId, value == null ? '' : String(value));
         }
 
         var renderCallback = {
             'sitekey': '#apiKey',
             'callback': postToken,
-            'expired-callback': postMessage,
-            'error-callback': postMessage,
+            'expired-callback': function (value) {
+                diagnostic('provider_expired', errorDetail(value));
+                postMessage(value);
+            },
+            'error-callback': function (value) {
+                diagnostic('provider_error', errorDetail(value));
+                postMessage(value);
+            },
             'size': 'invisible'
         }
 
         var onGCaptchaLoad = function () {
+            diagnostic('g_api_ready');
             grecaptcha.render('html_element', window.renderCallback);
+            diagnostic('g_rendered');
             grecaptcha.execute();
+            diagnostic('g_execute_requested');
         }
 
         var onHCaptchaLoad = function () {
+            diagnostic('h_api_ready');
             var widgetID = hcaptcha.render('html_element', window.renderCallback);
+            diagnostic('h_rendered');
             hcaptcha.execute(widgetID);
+            diagnostic('h_execute_requested');
         }
 
         var initGTCaptcha = function() {
+            diagnostic('gt_init', 'apiAvailable=' + (typeof initGeetest4 === 'function'));
             initGeetest4({
                 captchaId: '#apiKey',
                 product: 'bind',
-                hideBar: ['close']
+                hideBar: ['close'],
+                onError: function (error) {
+                    diagnostic('gt_error', errorDetail(error));
+                }
             }, function(captcha) {
+                diagnostic('gt_created');
                 captcha.onReady(function(){
+                    diagnostic('gt_ready');
                     captcha.showCaptcha();
+                    diagnostic('gt_show_requested');
                 }).onSuccess(function(){
                     var result = captcha.getValidate();
                     postToken(JSON.stringify(result));
                 }).onClose(function () {
                     postMessage("gt_close");
+                }).onError(function (error) {
+                    diagnostic('gt_error', errorDetail(error));
                 });
             });
         };
+        diagnostic('html_started', 'online=' + navigator.onLine);
     </script>
 </head>
 

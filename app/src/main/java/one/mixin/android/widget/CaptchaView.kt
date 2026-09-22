@@ -3,10 +3,15 @@ package one.mixin.android.widget
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
+import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.GradientDrawable
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.net.http.SslError
+import android.os.Build
+import android.os.SystemClock
 import android.view.Gravity
 import android.view.ViewGroup
 import android.view.Window
@@ -15,7 +20,10 @@ import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
+import android.webkit.ConsoleMessage
+import android.webkit.CookieManager
 import android.webkit.JavascriptInterface
+import android.webkit.RenderProcessGoneDetail
 import android.webkit.SslErrorHandler
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
@@ -32,14 +40,17 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.extension.cancelRunOnUiThread
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.networkType
 import one.mixin.android.extension.runOnUiThread
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.screenWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.translationY
+import one.mixin.android.util.reportEvent
 import one.mixin.android.util.reportException
 import timber.log.Timber
 import java.nio.charset.Charset
+import java.util.UUID
 
 internal data class CaptchaDialogBarStyle(
     val heightDp: Int,
@@ -77,6 +88,12 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     private var captchaDialog: Dialog? = null
     private var released = false
     private val timedOutCaptchaTypes = mutableSetOf<CaptchaType>()
+    private val diagnosticSession = UUID.randomUUID().toString().take(8)
+    private var loadAttempt = 0
+    private var loadStartedAt = 0L
+    private var pageFinished = false
+    private var lastJavascriptEvent = "none"
+    private var progressStep = -1
 
     private val captchaContentHeight by lazy {
         val barHeight = captchaDialogBarStyle().heightDp.dp
@@ -178,7 +195,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
 
     val webView: WebView by webViewLazy
 
-    private val stopWebViewRunnable = Runnable { handleCaptchaTimeout() }
+    private val stopWebViewRunnable = Runnable { handleCaptchaFailure("load_timeout") }
 
     private var captchaType = CaptchaType.GCaptcha
     private var fallbackEnabled = true
@@ -193,12 +210,21 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         fallbackEnabled: Boolean,
     ) {
         if (released) return
+        cancelRunOnUiThread(stopWebViewRunnable)
+        loadAttempt++
+        loadStartedAt = SystemClock.elapsedRealtime()
+        pageFinished = false
+        lastJavascriptEvent = "none"
+        progressStep = -1
+        val attempt = loadAttempt
         this.captchaType = captchaType
         this.fallbackEnabled = fallbackEnabled
         if (resetTimeoutFallbacks) {
             timedOutCaptchaTypes.clear()
         }
         show()
+        logCaptcha("load_start", "fallback=$fallbackEnabled timeoutMs=$WEB_VIEW_TIME_OUT base=${captchaDiagnosticOrigin(Constants.API.DOMAIN)}")
+        logCaptchaEnvironment()
         val isG = captchaType.isG()
         val isH = captchaType.isH()
         val isGT = captchaType.isGT()
@@ -211,16 +237,36 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                         newProgress: Int,
                     ) {
                         super.onProgressChanged(view, newProgress)
+                        if (attempt != loadAttempt || released) return
                         updateProgress(newProgress)
+                        if (newProgress / 25 != progressStep) {
+                            progressStep = newProgress / 25
+                            logCaptcha("progress", "percent=$newProgress")
+                        }
+                    }
+
+                    override fun onConsoleMessage(consoleMessage: ConsoleMessage): Boolean {
+                        if (attempt == loadAttempt && !released && consoleMessage.messageLevel() in setOf(ConsoleMessage.MessageLevel.WARNING, ConsoleMessage.MessageLevel.ERROR)) {
+                            logCaptcha("console", "level=${consoleMessage.messageLevel()} source=${captchaDiagnosticOrigin(consoleMessage.sourceId())} line=${consoleMessage.lineNumber()} message=${consoleMessage.message()}")
+                        }
+                        return super.onConsoleMessage(consoleMessage)
                     }
                 }
             webView.webViewClient =
                 object : WebViewClient() {
+                    override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
+                        super.onPageStarted(view, url, favicon)
+                        if (attempt == loadAttempt && !released) logCaptcha("page_started", "origin=${captchaDiagnosticOrigin(url)}")
+                    }
+
                     override fun onPageFinished(
                         view: WebView?,
                         url: String?,
                     ) {
                         super.onPageFinished(view, url)
+                        if (attempt != loadAttempt || released) return
+                        pageFinished = true
+                        logCaptcha("page_finished", "origin=${captchaDiagnosticOrigin(url)} loadTimer=cancelled")
                         if (isGT) view?.evaluateJavascript("initGTCaptcha()") {}
                         cancelRunOnUiThread(stopWebViewRunnable)
                         view?.translationY(0f)
@@ -233,9 +279,8 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                         errorResponse: WebResourceResponse?,
                     ) {
                         super.onReceivedHttpError(view, request, errorResponse)
-                        val message = "$TAG load $captchaType onReceivedHttpError ${errorResponse?.statusCode} ${errorResponse?.reasonPhrase}"
-                        Timber.e(message)
-                        reportException(CaptchaException(message))
+                        if (attempt != loadAttempt || released) return
+                        logCaptcha("http_error", "status=${errorResponse?.statusCode} reason=${errorResponse?.reasonPhrase} mainFrame=${request?.isForMainFrame} origin=${captchaDiagnosticOrigin(request?.url?.toString())}", failure = true)
                     }
 
                     override fun onReceivedSslError(
@@ -244,9 +289,8 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                         error: SslError?,
                     ) {
                         super.onReceivedSslError(view, handler, error)
-                        val message = "$TAG load $captchaType onReceivedSslError ${error?.toString()}"
-                        Timber.e(message)
-                        reportException(CaptchaException(message))
+                        if (attempt != loadAttempt || released) return
+                        logCaptcha("ssl_error", "code=${error?.primaryError} origin=${captchaDiagnosticOrigin(error?.url)}", failure = true)
                     }
 
                     override fun onReceivedError(
@@ -255,9 +299,15 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                         error: WebResourceError?,
                     ) {
                         super.onReceivedError(view, request, error)
-                        val message = "$TAG load $captchaType onReceivedError ${error?.errorCode} ${error?.description}"
-                        Timber.e(message)
-                        reportException(CaptchaException(message))
+                        if (attempt != loadAttempt || released) return
+                        logCaptcha("resource_error", "code=${error?.errorCode} description=${error?.description} mainFrame=${request?.isForMainFrame} origin=${captchaDiagnosticOrigin(request?.url?.toString())}", failure = true)
+                    }
+
+                    override fun onRenderProcessGone(view: WebView?, detail: RenderProcessGoneDetail?): Boolean {
+                        if (attempt == loadAttempt && !released) {
+                            logCaptcha("renderer_gone", "crashed=${detail?.didCrash()} priority=${detail?.rendererPriorityAtExit()}", failure = true)
+                        }
+                        return super.onRenderProcessGone(view, detail)
                     }
 
                     override fun shouldInterceptRequest(
@@ -286,6 +336,8 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
             }
 
             html = html.replace("#apiKey", apiKey)
+            html = html.replace("#attemptId", attempt.toString())
+            logCaptcha("configuration", "keyConfigured=${apiKey.isNotBlank()}")
             when {
                 isG -> html = html.replace("#src", "https://www.recaptcha.net/recaptcha/api.js?onload=onGCaptchaLoad&render=explicit")
                 isH -> html = html.replace("#src", "https://js.hcaptcha.com/1/api.js?onload=onHCaptchaLoad&render=explicit")
@@ -314,12 +366,12 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         }
     }
 
-    private fun handleCaptchaTimeout() {
+    private fun handleCaptchaFailure(reason: String) {
         if (released) return
-        val message = "$TAG load $captchaType timeout"
-        Timber.e(message)
-        reportException(CaptchaException(message))
+        logCaptchaEnvironment()
+        logCaptcha(reason, "fallback=$fallbackEnabled", failure = true)
         if (!fallbackEnabled) {
+            logCaptcha("preview_stopped")
             updateProgress(100)
             callback.onStop()
             return
@@ -327,12 +379,36 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
         timedOutCaptchaTypes.add(captchaType)
         val fallbackCaptchaType = captchaType.fallback()
         if (fallbackCaptchaType !in timedOutCaptchaTypes) {
+            logCaptcha("fallback", "next=$fallbackCaptchaType")
             loadCaptcha(fallbackCaptchaType, false, true)
         } else {
+            logCaptcha("fallback_exhausted")
             hide()
             toast(R.string.Recaptcha_timeout)
             callback.onStop()
         }
+    }
+
+    private fun logCaptcha(event: String, details: String = "", failure: Boolean = false) {
+        val message = "$TAG session=$diagnosticSession attempt=$loadAttempt captchaType=$captchaType event=$event elapsedMs=${SystemClock.elapsedRealtime() - loadStartedAt} pageFinished=$pageFinished jsStage=$lastJavascriptEvent ${captchaDiagnosticText(details)}"
+        if (failure) Timber.e(message) else Timber.i(message)
+        reportEvent(message)
+        if (failure) reportException(CaptchaException("$TAG $captchaType $event"))
+    }
+
+    private fun logCaptchaEnvironment() {
+        val provider = WebView.getCurrentWebViewPackage()
+        logCaptcha("webview", "app=${BuildConfig.VERSION_NAME}/${BuildConfig.BUILD_TYPE} android=${Build.VERSION.RELEASE} sdk=${Build.VERSION.SDK_INT} device=${Build.MANUFACTURER}/${Build.MODEL} provider=${provider?.packageName}/${provider?.versionName} cookies=${CookieManager.getInstance().acceptCookie()} thirdPartyCookies=${CookieManager.getInstance().acceptThirdPartyCookies(webView)} javaScript=${webView.settings.javaScriptEnabled} domStorage=${webView.settings.domStorageEnabled}")
+        val environment = runCatching {
+            val manager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+            val network = manager.activeNetwork
+            val capabilities = manager.getNetworkCapabilities(network)
+            val privateDns = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) manager.getLinkProperties(network)?.isPrivateDnsActive else null
+            "network=${context.networkType()} " +
+                "internet=${capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET)} validated=${capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)} " +
+                "vpn=${capabilities?.hasTransport(NetworkCapabilities.TRANSPORT_VPN)} captivePortal=${capabilities?.hasCapability(NetworkCapabilities.NET_CAPABILITY_CAPTIVE_PORTAL)} proxy=${manager.defaultProxy != null} privateDns=$privateDns"
+        }.getOrElse { "unavailable=${it.javaClass.simpleName}" }
+        logCaptcha("network", environment)
     }
 
     private fun show() {
@@ -363,6 +439,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
                 updateDialogWindow(this)
             }
             setOnCancelListener {
+                logCaptcha("cancel", "source=dialog")
                 stopCaptcha()
                 captchaDialog = null
                 callback.onStop()
@@ -404,12 +481,14 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
 
     private fun cancelCaptcha() {
         if (released) return
+        logCaptcha("cancel", "source=close_button")
         hide()
         callback.onStop()
     }
 
     fun release() {
         if (released) return
+        if (loadAttempt > 0) logCaptcha("release")
         released = true
         cancelRunOnUiThread(stopWebViewRunnable)
         val dialog = captchaDialog
@@ -424,6 +503,7 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
     }
 
     private fun stopCaptcha() {
+        logCaptcha("stop")
         cancelRunOnUiThread(stopWebViewRunnable)
         updateProgress(100)
         if (!webViewLazy.isInitialized()) return
@@ -435,26 +515,36 @@ class CaptchaView(private val context: Context, private val callback: Callback) 
 
     @Suppress("unused")
     @JavascriptInterface
-    fun postMessage(
-        @Suppress("UNUSED_PARAMETER") value: String,
-    ) {
-        if (released) return
-        if (value.isBlank()) return
-        Timber.e("$TAG postMessage captchaType=$captchaType value=$value")
-        cancelRunOnUiThread(stopWebViewRunnable)
-        runOnUiThread(stopWebViewRunnable)
+    fun postMessage(attempt: Int, value: String?) {
+        runOnUiThread(Runnable {
+            if (released || attempt != loadAttempt) return@Runnable
+            logCaptcha("postMessage", "value=$value")
+            if (value.isNullOrBlank()) return@Runnable
+            cancelRunOnUiThread(stopWebViewRunnable)
+            handleCaptchaFailure("provider_callback")
+        })
     }
 
     @Suppress("unused")
     @JavascriptInterface
-    fun postToken(value: String) {
-        if (released) return
-        cancelRunOnUiThread(stopWebViewRunnable)
-        webView.post {
-            if (released) return@post
+    fun postDiagnostic(attempt: Int, event: String, detail: String?) {
+        runOnUiThread(Runnable {
+            if (released || attempt != loadAttempt) return@Runnable
+            lastJavascriptEvent = captchaDiagnosticText(event).take(48)
+            logCaptcha("javascript", "detail=$detail", failure = event in setOf("script_error", "javascript_error", "unhandled_rejection", "gt_error"))
+        })
+    }
+
+    @Suppress("unused")
+    @JavascriptInterface
+    fun postToken(attempt: Int, value: String) {
+        runOnUiThread(Runnable {
+            if (released || attempt != loadAttempt) return@Runnable
+            cancelRunOnUiThread(stopWebViewRunnable)
+            logCaptcha("token_received")
             hide()
             callback.onPostToken(Pair(captchaType, value))
-        }
+        })
     }
 
     enum class CaptchaType {
