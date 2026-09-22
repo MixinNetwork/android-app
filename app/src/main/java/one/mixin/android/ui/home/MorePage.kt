@@ -1,5 +1,7 @@
 package one.mixin.android.ui.home
 
+import android.graphics.Matrix
+import android.widget.ImageView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -160,13 +162,19 @@ private fun MoreActionCard(bot: Bot, loggedIn: Boolean, showDot: Boolean, modifi
             AndroidView(
                 factory = { context ->
                     RLottieImageView(context).apply {
-                        val size = context.dpToPx(24f)
+                        val size = context.dpToPx(30f)
                         setAnimation(
                             RLottieDrawable(R.raw.referral, "referral", size, size).apply {
                                 setAutoRepeat(1)
                                 setAutoRepeatCount(Int.MAX_VALUE)
                             },
                         )
+                        val offset = (context.dpToPx(24f) - size) / 2f
+                        scaleType = ImageView.ScaleType.MATRIX
+                        imageMatrix = Matrix().apply {
+                            // Exclude the animation's asymmetric transparent padding when centering the artwork.
+                            setTranslate(offset, offset + context.dpToPx(2f))
+                        }
                         playAnimation()
                     }
                 },
