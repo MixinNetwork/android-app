@@ -929,7 +929,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private fun openCashHome(addBank: Boolean = false) {
         if (!addBank) {
-            "${Constants.Scheme.APPS}/${Constants.MIXIN_CASH_USER_ID}?action=open"
+            "${Constants.Scheme.APPS}/${Constants.MIXIN_CASH_USER_ID}?page=add-cash-ban"
                 .openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
             return
         }
