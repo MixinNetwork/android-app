@@ -11,6 +11,16 @@ import org.robolectric.annotation.Config
 @Config(application = Application::class, sdk = [28])
 class ContactInitialTest {
     @Test
+    fun indexDragMapsPositionsAndClampsOutsideTheRail() {
+        assertEquals("A", contactLetterAt(-20f, 378))
+        assertEquals("A", contactLetterAt(13f, 378))
+        assertEquals("B", contactLetterAt(14f, 378))
+        assertEquals("N", contactLetterAt(189f, 378))
+        assertEquals("#", contactLetterAt(378f, 378))
+        assertEquals("#", contactLetterAt(500f, 378))
+    }
+
+    @Test
     fun initialsSupportLatinPinyinAndUnnamedContacts() {
         assertEquals("A", contactInitial(" alice "))
         assertEquals("E", contactInitial("Élodie"))

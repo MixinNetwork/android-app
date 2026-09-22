@@ -44,7 +44,7 @@ class NewChatBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment()
         )
     }
 
-    override fun getBottomSheetHeight(view: View) = requireContext().screenHeight() - view.getSafeAreaInsetsTop() - 56.dp
+    override fun getBottomSheetHeight(view: View) = requireContext().screenHeight() - view.getSafeAreaInsetsTop() - 64.dp
 
     override fun showError(error: String) = Unit
 }

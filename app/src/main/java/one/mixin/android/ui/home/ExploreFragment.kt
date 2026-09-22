@@ -37,7 +37,7 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.QrBottomSheetDialogFragment
 import one.mixin.android.ui.common.profile.MySharedAppsFragment
-import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment
+import one.mixin.android.ui.common.profile.ProfileFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.contacts.ContactListFragment
 import one.mixin.android.ui.contacts.ContactViewModel
@@ -121,7 +121,7 @@ class ExploreFragment : BaseFragment() {
                     botCount = (favoriteApps + apps).distinctBy { it.appId }.size,
                     isDesktopLogin = isDesktopLogin,
                     clickedBotIds = clickedBotIds,
-                    onProfile = { ProfileBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, ProfileBottomSheetDialogFragment.TAG) },
+                    onProfile = { navTo(ProfileFragment(), ProfileFragment.TAG) },
                     onQr = {
                         Session.getAccountId()?.let {
                             QrBottomSheetDialogFragment.newInstance(it, QrBottomSheetDialogFragment.TYPE_MY_QR)

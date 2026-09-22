@@ -29,6 +29,6 @@ val InternalMember = Bot(INTERNAL_MEMBER_ID, R.string.Mixin_One, R.string.mixin_
 
 val InternalReferral = Bot(INTERNAL_REFERRAL_ID, R.string.Referral, R.string.referral_description, R.drawable.ic_referral)
 val InternalLinkDesktop = Bot(INTERNAL_LINK_DESKTOP_ID, R.string.Link_desktop, R.string.link_desktop_description, R.drawable.ic_desktop_login)
-val InternalSupport = Bot(INTERNAL_SUPPORT_ID, R.string.Contact_Support, R.string.leave_message_to_team_mixin, R.drawable.ic_support)
+val InternalSupport = Bot(INTERNAL_SUPPORT_ID, R.string.Contact_Support, R.string.leave_message_to_team_mixin, R.drawable.ic_more_support)
 
 val InternalBots = listOf(InternalBuy, InternalSwap, InternalMember, InternalReferral, InternalLinkDesktop, InternalSupport)
