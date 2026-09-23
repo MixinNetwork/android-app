@@ -494,7 +494,7 @@
     </style>
 
     <style name="MessageActionPopup" parent="AppTheme.PopupMenuStyle">
-        <item name="android:popupBackground">@drawable/bg_round_white_10dp</item>
+        <item name="android:popupBackground">@drawable/bg_message_action_popup</item>
         <item name="android:popupElevation">8dp</item>
         <item name="android:dropDownVerticalOffset">8dp</item>
     </style>
