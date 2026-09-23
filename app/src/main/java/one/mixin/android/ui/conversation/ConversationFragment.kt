@@ -1271,7 +1271,6 @@ class ConversationFragment() :
 
     override fun onDestroyView() {
         pinMessageJob?.cancel()
-        binding.toolView.dismissMenu()
         audioFile?.deleteOnExit()
         audioFile = null
         super.onDestroyView()
