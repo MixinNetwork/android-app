@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.market
 
+import android.content.Context
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,8 +34,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -47,6 +50,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil3.compose.AsyncImage
+import coil3.request.ImageRequest
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
@@ -535,6 +539,7 @@ internal fun MarketChangeColumn(
     change: BigDecimal?,
     sparkline: String?,
     quoteColorReversed: Boolean,
+    sparklineCacheKey: String? = null,
     fontSize: TextUnit = 12.sp,
     modifier: Modifier = Modifier,
 ) {
@@ -583,9 +588,18 @@ internal fun MarketChangeColumn(
             modifier = modifier,
             horizontalAlignment = Alignment.End,
         ) {
+            val context = LocalContext.current
+            var previousPainter by remember { mutableStateOf<Painter?>(null) }
+            val sparklineRequest =
+                remember(context, sparkline, sparklineCacheKey) {
+                    marketSparklineRequest(context, sparkline, sparklineCacheKey)
+                }
             AsyncImage(
-                model = sparkline,
+                model = sparklineRequest,
                 contentDescription = null,
+                placeholder = previousPainter,
+                error = previousPainter,
+                onSuccess = { previousPainter = it.painter },
                 colorFilter = ColorFilter.tint(sparklineColor),
                 contentScale = ContentScale.FillBounds,
                 modifier =
@@ -614,6 +628,13 @@ internal fun MarketChangeColumn(
         }
     }
 }
+
+internal fun marketSparklineRequest(context: Context, url: String, cacheKey: String?): ImageRequest =
+    ImageRequest.Builder(context)
+        .data(url)
+        .memoryCacheKey(cacheKey)
+        .diskCacheKey(cacheKey)
+        .build()
 
 @Composable
 private fun priceChangePeriodLabel(period: MarketPriceChangePeriod): String =

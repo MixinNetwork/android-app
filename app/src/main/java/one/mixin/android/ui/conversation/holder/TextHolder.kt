@@ -121,8 +121,6 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         }
 
         binding.chatTv.setAutoLinkOnLongClickListener { autoLinkMode, matchedText ->
-            textGestureListener?.longPressed = true
-
             when (autoLinkMode) {
                 AutoLinkMode.MODE_URL -> {
                     onItemListener.onUrlLongClick(matchedText)
@@ -155,6 +153,7 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
                 true
             }
         }
+        binding.chatLayout.setOnLongClickListener { itemView.performLongClick() }
 
         if (textGestureListener == null) {
             textGestureListener = TextGestureListener(itemView, messageItem, hasSelect, isSelect, onItemListener, absoluteAdapterPosition)
@@ -223,8 +222,6 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
         var onItemListener: MessageAdapter.OnItemListener,
         var absoluteAdapterPosition: Int = 0,
     ) : GestureDetector.SimpleOnGestureListener() {
-        var longPressed = false
-
         override fun onDoubleTap(e: MotionEvent): Boolean {
             view.context.doubleClickVibrate()
             onItemListener.onTextDoubleClick(messageItem)
@@ -236,19 +233,6 @@ class TextHolder constructor(val binding: ItemChatTextBinding) : BaseMentionHold
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
             }
             return true
-        }
-
-        override fun onLongPress(e: MotionEvent) {
-            if (longPressed) {
-                longPressed = false
-                return
-            }
-
-            if (!hasSelect) {
-                view.performLongClick()
-            } else {
-                onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
-            }
         }
     }
 }

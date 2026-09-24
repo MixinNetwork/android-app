@@ -67,7 +67,13 @@ private class PersistentImageCacheStrategy : CacheStrategy {
         cacheResponse: NetworkResponse,
         networkRequest: NetworkRequest,
         options: Options,
-    ): CacheStrategy.ReadResult = CacheStrategy.DEFAULT.read(cacheResponse, networkRequest, options)
+    ): CacheStrategy.ReadResult =
+        // SVGs such as market sparklines are regenerated behind a stable URL, so honor their freshness lifetime.
+        if (isSvg(cacheResponse, networkRequest)) {
+            cacheControlStrategy.read(cacheResponse, networkRequest, options)
+        } else {
+            CacheStrategy.DEFAULT.read(cacheResponse, networkRequest, options)
+        }
 
     override suspend fun write(
         cacheResponse: NetworkResponse?,
@@ -76,6 +82,17 @@ private class PersistentImageCacheStrategy : CacheStrategy {
         options: Options,
     ): CacheStrategy.WriteResult =
         cacheControlStrategy.write(cacheResponse, networkRequest, networkResponse, options)
+}
+
+private fun isSvg(
+    cacheResponse: NetworkResponse,
+    networkRequest: NetworkRequest,
+): Boolean {
+    val contentType = cacheResponse.headers["Content-Type"]
+    if (contentType != null) {
+        return contentType.startsWith("image/svg+xml", ignoreCase = true)
+    }
+    return networkRequest.url.substringBefore('?').substringBefore('#').endsWith(".svg", ignoreCase = true)
 }
 
 private fun newImageCallFactory(): Call.Factory =

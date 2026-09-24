@@ -17,8 +17,8 @@ apply(plugin = "com.google.firebase.crashlytics")
 
 val versionMajor = 6
 val versionMinor = 2
-val versionPatch = 2
-val versionBuild = 1
+val versionPatch = 6
+val versionBuild = 2
 
 val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
 val jetifierVersion = rootProject.extra["jetifierVersion"] as String
@@ -169,7 +169,7 @@ android {
         }
         jniLibs {
             useLegacyPackaging = true
-            pickFirsts += setOf("lib/x86_64/libcurve25519.so")
+            pickFirsts += setOf("lib/arm64-v8a/libcurve25519.so", "lib/x86_64/libcurve25519.so")
         }
     }
 
