@@ -223,6 +223,17 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         return rect.height()
     }
 
+    override fun onResume() {
+        super.onResume()
+        binding.webView.onResume()
+        binding.webView.resumeTimers()
+    }
+
+    override fun onPause() {
+        binding.webView.onPause()
+        super.onPause()
+    }
+
     override fun onDestroyView() {
         if (contentView.viewTreeObserver.isAlive) {
             contentView.viewTreeObserver.removeOnGlobalLayoutListener(keyboardLayoutListener)
