@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Paint
 import android.os.Bundle
 import android.util.TypedValue
@@ -1649,6 +1650,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
         binding.continueTv.setText(R.string.Review)
         binding.continueVa.displayedChild = if (cashQuoteReviewing) 1 else 0
+        binding.continueVa.backgroundTintList = if (cashQuoteReviewing) {
+            ColorStateList.valueOf(requireContext().getColor(R.color.colorAccent))
+        } else {
+            null
+        }
         if (cashQuoteReviewing) {
             binding.continueVa.isEnabled = false
         }

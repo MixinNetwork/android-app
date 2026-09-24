@@ -396,7 +396,10 @@ internal data class PerpsTradeAction(
     val marketId: String?,
     val leaderPositionId: String?,
     val openPosition: PerpsOpenPositionAction? = null,
+    val addMargin: PerpsAddMarginAction? = null,
 )
+
+internal data class PerpsAddMarginAction(val margin: String?)
 
 internal data class PerpsOpenPositionAction(
     val isLong: Boolean?,
@@ -426,9 +429,16 @@ internal fun String.toPerpsTradeAction(): PerpsTradeAction? {
     val hasLeaderPositionId = query.hasQueryParameter("leader_position")
     val leaderPositionId = query.queryParameter("leader_position")
     if (hasLeaderPositionId && (leaderPositionId == null || !leaderPositionId.isUUID())) return null
+    val isAddMarginAction = query.queryParameter("action").equals("add_margin", true)
     val marketId = query.queryParameter("market")?.takeIf(String::isNotBlank)
-        ?: return if (!hasLeaderPositionId) PerpsTradeAction(null, null) else null
+        ?: return if (!hasLeaderPositionId && !isAddMarginAction) PerpsTradeAction(null, null) else null
     if (!marketId.isUUID()) return null
+
+    if (isAddMarginAction) {
+        val margin = query.queryParameter("margin")?.toPerpsMarginOrNull()
+        if (query.hasQueryParameter("margin") && margin == null) return null
+        return PerpsTradeAction(marketId, leaderPositionId, addMargin = PerpsAddMarginAction(margin))
+    }
 
     val isOpenAction = query.queryParameter("action").equals("open", true)
     val openPosition = if (isOpenAction) {
@@ -521,7 +531,7 @@ private suspend fun openLocalPerpsTradeAction(
     context: Context,
     action: PerpsTradeAction,
 ): Boolean {
-    if (action.openPosition != null) return false
+    if (action.openPosition != null || action.addMargin != null) return false
 
     val marketId = action.marketId
     if (marketId == null) {

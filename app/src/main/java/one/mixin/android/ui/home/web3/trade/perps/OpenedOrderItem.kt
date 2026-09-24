@@ -59,15 +59,18 @@ fun OpenedOrderItem(
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
     val isIncrease = order.orderType == PerpsOrder.TYPE_INCREASE
+    val isMargin = order.orderType == PerpsOrder.TYPE_INCREASE_MARGIN || order.orderType == PerpsOrder.TYPE_DECREASE_MARGIN
     val isFailed = order.status == PerpsOrder.STATUS_REJECTED
     val leverageDimmed = isFailed || order.status == PerpsOrder.STATUS_PROCESSING
     val leverageColor = if (leverageDimmed) MixinAppTheme.colors.textAssist else sideColor
     val leverageBackgroundColor = leverageColor.copy(alpha = 0.1f)
     val title = when {
+        isMargin -> stringResource(if (order.orderType == PerpsOrder.TYPE_INCREASE_MARGIN) R.string.perps_add_margin else R.string.perps_reduce_margin) +
+            if (isFailed) " · ${stringResource(R.string.Failed)}" else ""
         isIncrease && isFailed ->
             stringResource(if (isLong) R.string.Added_Long_Failed else R.string.Added_Short_Failed)
         isIncrease ->
-            stringResource(if (isLong) R.string.Added_Long else R.string.Added_Short)
+            stringResource(R.string.perps_added_position)
         isFailed ->
             stringResource(if (isLong) R.string.Opened_Long_Failed else R.string.Opened_Short_Failed)
         else ->
@@ -75,7 +78,7 @@ fun OpenedOrderItem(
     }
 
     val amountValue = if (!isFailed) {
-        order.payAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        order.payAmount.toBigDecimalOrNull()
     } else {
         null
     }
@@ -127,7 +130,13 @@ fun OpenedOrderItem(
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = "$quantity ${order.tokenSymbol ?: ""}",
+                text = if (isIncrease || isMargin) {
+                    val side = stringResource(if (isLong) R.string.Long else R.string.Short)
+                    val symbol = order.tokenSymbol?.takeIf { it.isNotBlank() } ?: order.displaySymbol.orEmpty()
+                    "$side $symbol".trimEnd()
+                } else {
+                    "$quantity ${order.tokenSymbol.orEmpty()}"
+                },
                 fontSize = 14.sp,
                 color = MixinAppTheme.colors.textAssist,
                 maxLines = 1,

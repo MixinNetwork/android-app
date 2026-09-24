@@ -237,9 +237,9 @@ open class ErrorHandler {
         const val NO_AVAILABLE_QUOTE = 10615
         const val SIMULATE_TRANSACTION_FAILED = 10631
         const val MAX_WALLET_REACHED = 10632
-        const val PERPS_ORDER_VALUE_TOO_SMALL = 10650
+        const val PERPS_MARGIN_TOO_SMALL = 10650
         const val PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION = 10651
-        const val PERPS_ORDER_VALUE_BELOW_MINIMUM = 10654
+        const val PERPS_POSITION_SIZE_TOO_SMALL = 10654
         const val PERPS_POSITION_SIZE_EXCEEDS_LEVERAGE_LIMIT = 10655
         const val PERPS_INVALID_LEADER_POSITION = 10656
 
@@ -286,7 +286,7 @@ fun Context.getMixinErrorStringByCode(
     code: Int,
     message: String,
 ): String {
-    perpsOrderValueErrorResource(code)?.let { resource ->
+    perpsMinimumValueErrorResource(code)?.let { resource ->
         // MixinResponse.errorDescription appends extra as the last JSON line.
         val minimum =
             runCatching {
@@ -299,9 +299,9 @@ fun Context.getMixinErrorStringByCode(
                     ?.toPlainString()
             }.getOrNull()
         if (minimum != null) {
-            return getString(R.string.error_perps_order_value_minimum, code, minimum)
+            return getString(requireNotNull(perpsMinimumValueErrorResource(code, hasMinimum = true)), "\$$minimum")
         }
-        return getString(resource, code)
+        return getString(resource)
     }
 
     return when (code) {
@@ -481,10 +481,11 @@ fun Context.getMixinErrorStringByCode(
 }
 
 @StringRes
-internal fun perpsOrderValueErrorResource(code: Int): Int? =
+internal fun perpsMinimumValueErrorResource(code: Int, hasMinimum: Boolean = false): Int? =
     when (code) {
-        ErrorHandler.PERPS_ORDER_VALUE_TOO_SMALL,
-        ErrorHandler.PERPS_ORDER_VALUE_BELOW_MINIMUM,
-        -> R.string.error_perps_order_value_too_small
+        ErrorHandler.PERPS_MARGIN_TOO_SMALL ->
+            if (hasMinimum) R.string.error_perps_margin_too_small_value else R.string.error_perps_margin_too_small
+        ErrorHandler.PERPS_POSITION_SIZE_TOO_SMALL ->
+            if (hasMinimum) R.string.error_perps_position_size_too_small_value else R.string.error_perps_position_size_too_small
         else -> null
     }

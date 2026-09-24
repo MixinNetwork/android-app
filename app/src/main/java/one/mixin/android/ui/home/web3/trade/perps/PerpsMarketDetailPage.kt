@@ -29,11 +29,13 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -145,6 +147,41 @@ fun PerpsMarketDetailPage(
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
     var isAddingProcessing by remember { mutableStateOf(false) }
     val currentPosition = openPositions?.firstOrNull { it.marketId == marketId }
+    val activity = context as? FragmentActivity
+    val onAdjustment by rememberUpdatedState { action: String ->
+        val position = currentPosition
+        if (activity != null && position?.state == PerpsPosition.STATE_OPEN && !isAddingProcessing) {
+            when (action) {
+                PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
+                PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_MARGIN -> {
+                    PerpsMarginBottomSheetDialogFragment.newInstance(
+                        position,
+                        increase = action == PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
+                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADJUST,
+                    ).show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
+                }
+                PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_POSITION -> {
+                    isAddingProcessing = true
+                    activity.showPerpsAddPosition(
+                        viewModel = viewModel,
+                        position = position,
+                        market = market,
+                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADJUST,
+                        onDismiss = { isAddingProcessing = false },
+                    )
+                }
+            }
+        }
+    }
+    val adjustmentResultKey = currentPosition?.positionId?.let { PerpsAdjustBottomSheetDialogFragment.resultKey(it) }
+    DisposableEffect(activity, lifecycleOwner, adjustmentResultKey) {
+        if (activity == null || adjustmentResultKey == null) return@DisposableEffect onDispose {}
+        val manager = activity.supportFragmentManager
+        manager.setFragmentResultListener(adjustmentResultKey, lifecycleOwner) { _, result ->
+            onAdjustment(result.getString(PerpsAdjustBottomSheetDialogFragment.RESULT_ACTION).orEmpty())
+        }
+        onDispose { manager.clearFragmentResultListener(adjustmentResultKey) }
+    }
     val hasLoadedOpenPositions = openPositions != null
     val closedPositions = allClosedPositions.filter { it.marketId == marketId }
     val timeFrameValues = listOf("1m", "5m", "15m", "1h", "4h", "1d", "1w")
@@ -580,14 +617,10 @@ fun PerpsMarketDetailPage(
                                     enabled = !isAddingProcessing,
                                     onClick = {
                                         if (isAddingProcessing) return@MixinButton
-                                        isAddingProcessing = true
-                                        val activity = context as? FragmentActivity ?: run { isAddingProcessing = false; return@MixinButton }
-                                        activity.showPerpsAddPosition(
-                                            viewModel = viewModel,
-                                            position = currentPosition,
-                                            market = market,
-                                            onDismiss = { isAddingProcessing = false },
-                                        )
+                                        val activity = context as? FragmentActivity ?: return@MixinButton
+                                        if (activity.supportFragmentManager.findFragmentByTag(PerpsAdjustBottomSheetDialogFragment.TAG) != null) return@MixinButton
+                                        PerpsAdjustBottomSheetDialogFragment.newInstance(currentPosition.positionId)
+                                            .show(activity.supportFragmentManager, PerpsAdjustBottomSheetDialogFragment.TAG)
                                     },
                                     backgroundColor = MixinAppTheme.colors.walletGreen,
                                     contentColor = Color.White,
@@ -595,7 +628,7 @@ fun PerpsMarketDetailPage(
                                 ) {
                                     Text(
                                         fontSize = 16.sp,
-                                        text = stringResource(R.string.add_position),
+                                        text = stringResource(R.string.perps_adjust),
                                     )
                                 }
 
