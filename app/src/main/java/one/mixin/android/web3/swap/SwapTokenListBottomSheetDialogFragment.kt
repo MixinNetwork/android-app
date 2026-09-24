@@ -157,7 +157,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioTron.isVisible = inMixin()
             radioToncoin.isVisible = inMixin()
             radioBtc.isVisible = !inMixin()
-            radioArc.isVisible = !inMixin()
+            radioArc.isVisible = true
             radioStock.isVisible = stocks.isNotEmpty()
             radioGroup.setOnCheckedChangeListener(null)
             if (initialStockMode && stocks.isNotEmpty()) {

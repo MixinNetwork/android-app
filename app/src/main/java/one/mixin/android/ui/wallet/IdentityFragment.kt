@@ -7,7 +7,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import com.sumsub.sns.core.SNSMobileSDK
 import com.sumsub.sns.core.data.listener.TokenExpirationHandler
@@ -15,15 +14,13 @@ import com.sumsub.sns.core.data.model.SNSCompletionResult
 import com.sumsub.sns.core.data.model.SNSException
 import com.sumsub.sns.core.data.model.SNSSDKState
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentIdentityBinding
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.toast
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.setting.AppearanceFragment
 import one.mixin.android.ui.setting.getLanguagePos
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
@@ -85,14 +82,7 @@ class IdentityFragment : BaseFragment(R.layout.fragment_identity) {
                         okTv.setText(R.string.chat_with_us)
                         updateTip(true)
                         okTv.setOnClickListener {
-                            lifecycleScope.launch {
-                                val userTeamMixin = fiatMoneyViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
-                                if (userTeamMixin == null) {
-                                    toast(R.string.Data_error)
-                                } else {
-                                    ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
-                                }
-                            }
+                            openCustomerService()
                         }
                     }
                 }
