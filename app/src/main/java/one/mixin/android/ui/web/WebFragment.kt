@@ -1729,22 +1729,6 @@ class WebFragment : BaseFragment() {
         )
     }
 
-    override fun onPause() {
-        if (!requireActivity().isInMultiWindowMode) {
-            webView.onPause()
-            webView.pauseTimers()
-        }
-        super.onPause()
-    }
-
-    override fun onResume() {
-        if (!requireActivity().isInMultiWindowMode) {
-            webView.onResume()
-            webView.resumeTimers()
-        }
-        super.onResume()
-    }
-
     private fun saveImageFromUrl(url: String?) {
         if (viewDestroyed()) return
 
