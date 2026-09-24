@@ -7,17 +7,14 @@ import androidx.appcompat.view.ContextThemeWrapper
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransactionBinding
 import one.mixin.android.databinding.ViewWalletWeb3TransactionBottomBinding
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.SnapshotItem
@@ -68,14 +65,7 @@ class TransactionFragment : BaseFragment(R.layout.fragment_transaction), Transac
         binding.titleView.rightExtraIb.visibility = View.VISIBLE
         binding.titleView.rightExtraIb.setImageResource(R.drawable.ic_support)
         binding.titleView.rightExtraIb.setOnClickListener {
-            lifecycleScope.launch {
-                val userTeamMixin = walletViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
-                if (userTeamMixin == null) {
-                    toast(R.string.Data_error)
-                } else {
-                    ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
-                }
-            }
+            openCustomerService()
         }
         binding.root.isClickable = true
         initView(this, binding, lifecycleScope, walletViewModel, assetId, snapshotId, asset, snapshot)
