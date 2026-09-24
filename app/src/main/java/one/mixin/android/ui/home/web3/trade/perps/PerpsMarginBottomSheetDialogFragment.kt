@@ -180,10 +180,11 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }
         val amountValue = if (increase) marginAdjustmentAmount(amount) else reduceMarginAmount(currentPosition.margin, amount, inputIsPercentage)
         val normalizedAmount = amountValue?.stripTrailingZeros()?.toPlainString().orEmpty()
-        var remoteLiquidationPrice by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf<String?>(null) }
+        val liquidationState = remember(currentPosition.positionId, normalizedAmount, increase) { LiquidationPriceState() }
+        val remoteLiquidationPrice = liquidationState.price
+        val isLiquidationLoading = liquidationState.isLoading
         var liquidationError by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf<String?>(null) }
         var liquidationPriceLimit by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf<LiquidationPriceLimit?>(null) }
-        var isLiquidationLoading by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf(false) }
         val totalMargin = marginAfterAdjustment(currentPosition.margin, normalizedAmount, increase, availableMargin)
         val marginValue = currentPosition.margin?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO }
         val maximumReduction = marginValue?.let { margin -> availableMargin?.min(margin) ?: margin }
@@ -210,13 +211,15 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             }
 
         LaunchedEffect(normalizedAmount, increase, currentPosition.updatedAt, exceedsReductionLimit) {
-            remoteLiquidationPrice = null
-            isLiquidationLoading = false
-            if (totalMargin == null || exceedsReductionLimit) return@LaunchedEffect
-            isLiquidationLoading = true
-            try {
+            liquidationError = null
+            liquidationPriceLimit = null
+            if (totalMargin == null || exceedsReductionLimit) {
+                liquidationState.price = null
+                return@LaunchedEffect
+            }
+            liquidationState.refresh {
                 delay(200L)
-                remoteLiquidationPrice = requestLiquidationPrice(
+                requestLiquidationPrice(
                     onFailure = { liquidationError = it ?: getString(R.string.Data_error) },
                     onLimitExceeded = { liquidationPriceLimit = it },
                     onMarginExceeded = if (increase) null else { available ->
@@ -230,8 +233,6 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         action = if (increase) "increase_margin" else "decrease_margin",
                     )
                 }
-            } finally {
-                isLiquidationLoading = false
             }
         }
         LaunchedEffect(initialPosition.positionId, lifecycleOwner) {

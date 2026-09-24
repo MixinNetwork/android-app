@@ -69,7 +69,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.withResumed
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -298,13 +297,15 @@ private fun PerpsAddContent(
     var amount by remember(position.positionId, initialMargin) {
         mutableStateOf(limitTradeInputDecimalPlaces(initialMargin.orEmpty(), TRADE_INPUT_MAX_DECIMAL_PLACES))
     }
-    var remoteLiquidationPrice by remember(position.positionId) { mutableStateOf<String?>(null) }
-    var liquidationPriceLimit by remember(position.positionId) { mutableStateOf<LiquidationPriceLimit?>(null) }
-    var liquidationError by remember(position.positionId) { mutableStateOf<String?>(null) }
-    var isLiquidationLoading by remember(position.positionId) { mutableStateOf(false) }
-    var liquidationJob by remember(position.positionId) { mutableStateOf<Job?>(null) }
     val tokenBalance = selectedToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val amountValue = amount.toBigDecimalOrNull()
+    val normalizedAmount = amountValue?.stripTrailingZeros()?.toPlainString()
+        ?.let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }.orEmpty()
+    val liquidationState = remember(position.positionId, amount) { LiquidationPriceState() }
+    val remoteLiquidationPrice = liquidationState.price
+    val isLiquidationLoading = liquidationState.isLoading
+    var liquidationPriceLimit by remember(position.positionId) { mutableStateOf<LiquidationPriceLimit?>(null) }
+    var liquidationError by remember(position.positionId) { mutableStateOf<String?>(null) }
     val hasInputAmount = amountValue != null && amountValue > BigDecimal.ZERO
 
     val minimumMargin = market?.minAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -330,24 +331,13 @@ private fun PerpsAddContent(
     LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin, position.updatedAt, market?.last) {
         liquidationPriceLimit = null
         liquidationError = null
-        val addMargin = amount.toBigDecimalOrNull()
-        if (!shouldRequestLiquidationPrice(addMargin, minimumMargin) || aboveMaximumMargin) {
-            liquidationJob?.cancel()
-            remoteLiquidationPrice = null
-            isLiquidationLoading = false
+        if (!shouldRequestLiquidationPrice(amountValue, minimumMargin) || aboveMaximumMargin) {
+            liquidationState.price = null
             return@LaunchedEffect
         }
-        val requestAmount = addMargin ?: return@LaunchedEffect
-        liquidationJob?.cancel()
-        liquidationJob = launch {
-            remoteLiquidationPrice = null
-            isLiquidationLoading = true
+        liquidationState.refresh {
             delay(200L)
-            val normalizedAmount = requestAmount
-                .stripTrailingZeros()
-                .toPlainString()
-                .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
-            remoteLiquidationPrice = requestLiquidationPrice(
+            requestLiquidationPrice(
                 onLimitExceeded = { liquidationPriceLimit = it },
                 onFailure = { liquidationError = it ?: context.getString(R.string.Data_error) },
             ) {
@@ -356,7 +346,6 @@ private fun PerpsAddContent(
                     positionId = position.positionId,
                 )
             }
-            isLiquidationLoading = false
         }
     }
 

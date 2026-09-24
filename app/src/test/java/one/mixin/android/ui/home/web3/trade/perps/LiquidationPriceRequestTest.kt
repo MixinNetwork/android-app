@@ -1,6 +1,10 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import com.google.gson.JsonParser
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
@@ -10,14 +14,51 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.util.ErrorHandler
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigDecimal
 
 class LiquidationPriceRequestTest {
+    @Test
+    fun refreshShowsLoadingOnlyUntilItHasAPrice() = runBlocking {
+        val state = LiquidationPriceState()
+        val initialPrice = CompletableDeferred<String?>()
+        val initialRequest = launch(start = CoroutineStart.UNDISPATCHED) {
+            state.refresh { initialPrice.await() }
+        }
+        assertTrue(state.isLoading)
+        assertNull(state.price)
+        initialPrice.complete("123.45")
+        initialRequest.join()
+        assertFalse(state.isLoading)
+        assertEquals("123.45", state.price)
+
+        val updatedPrice = CompletableDeferred<String?>()
+        val refresh = launch(start = CoroutineStart.UNDISPATCHED) {
+            state.refresh { updatedPrice.await() }
+        }
+        assertFalse(state.isLoading)
+        assertEquals("123.45", state.price)
+        updatedPrice.complete("124.56")
+        refresh.join()
+        assertFalse(state.isLoading)
+        assertEquals("124.56", state.price)
+
+        state.refresh { null }
+        assertNull(state.price)
+        val retry = launch(start = CoroutineStart.UNDISPATCHED) {
+            state.refresh { CompletableDeferred<String?>().await() }
+        }
+        assertTrue(state.isLoading)
+        retry.cancelAndJoin()
+        assertFalse(state.isLoading)
+    }
+
     @Test
     fun marginLimitReportsTheServerErrorWithoutAReductionHandler() = runBlocking {
         var errorMessage: String? = null

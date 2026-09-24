@@ -1,11 +1,29 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import android.content.Context
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import com.google.gson.JsonElement
 import kotlinx.coroutines.delay
 import one.mixin.android.R
 import one.mixin.android.util.ErrorHandler
 import java.math.BigDecimal
+
+internal class LiquidationPriceState {
+    var price by mutableStateOf<String?>(null)
+    var isLoading by mutableStateOf(false)
+        private set
+
+    suspend fun refresh(request: suspend () -> String?) {
+        isLoading = price == null
+        try {
+            price = request()
+        } finally {
+            isLoading = false
+        }
+    }
+}
 
 internal data class LiquidationPriceLimit(
     val maxAmount: String?,
