@@ -21,6 +21,7 @@ import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
+import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.EstimateFeeResponse
 import one.mixin.android.api.request.web3.GaslessFeeRequest
@@ -61,6 +62,7 @@ import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.maxUtxoCount
 import one.mixin.android.ui.home.inscription.component.OwnerState
 import one.mixin.android.ui.oldwallet.AssetRepository
+import one.mixin.android.vo.AssetPrecision
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.mlkit.firstUrl
 import one.mixin.android.vo.Account
@@ -137,6 +139,10 @@ class Web3ViewModel @Inject constructor(
 
     fun observeWeb3Token(walletId: String, assetId: String): Flow<Web3TokenItem?> =
         web3Repository.observeWeb3TokenItemById(walletId, assetId)
+
+    suspend fun findAndRefreshWeb3TokenItem(walletId: String, assetId: String) = withContext(Dispatchers.IO) {
+        web3Repository.findAndRefreshWeb3TokenItem(walletId, assetId)
+    }
 
     fun getTokenPriceUsdFlow(assetId: String): Flow<String?> = flow {
         val item = tokenRepository.findAssetItemById(assetId)?.priceUsd
@@ -240,6 +246,24 @@ class Web3ViewModel @Inject constructor(
         id: String,
         destination: String,
     ) = tokenRepository.getFees(id, destination)
+
+    suspend fun validateExternalAddress(
+        assetId: String,
+        chain: String,
+        destination: String,
+        tag: String?,
+    ) = accountRepository.validateExternalAddress(assetId, chain, destination, tag)
+
+    suspend fun findAssetIdByAssetKey(assetKey: String): String? =
+        tokenRepository.findAssetIdByAssetKey(assetKey)
+
+    suspend fun getAssetPrecisionById(assetId: String): MixinResponse<AssetPrecision> =
+        tokenRepository.getAssetPrecisionById(assetId)
+
+    suspend fun paySuspend(request: TransferRequest) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.paySuspend(request)
+        }
 
     suspend fun findTokenItems(ids: List<String>): List<TokenItem> =
         tokenRepository.findTokenItems(ids)
