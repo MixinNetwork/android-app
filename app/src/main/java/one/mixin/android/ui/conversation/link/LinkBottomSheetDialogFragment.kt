@@ -1319,7 +1319,12 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     showError()
                     return
                 } else {
-                    d.base64RawURLDecode()
+                    try {
+                        d.base64RawURLDecode()
+                    } catch (_: IllegalArgumentException) {
+                        showError()
+                        return
+                    }
                 }
             } else {
                 null
