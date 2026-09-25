@@ -1,19 +1,31 @@
 package one.mixin.android.ui.home.reminder
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.content.ContextCompat
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.BuildConfig
+import one.mixin.android.Constants.Account.PREF_BATTERY_OPTIMIZE
 import one.mixin.android.Constants.INTERVAL_24_HOURS
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.R
@@ -21,20 +33,26 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.compose.theme.languageBasedImage
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.isBatteryOptimizationRestricted
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.openNotificationSetting
+import one.mixin.android.extension.openBatteryOptimizationSetting
+import one.mixin.android.extension.openPermissionSetting
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.MainActivity
+import one.mixin.android.util.RomUtil
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.analytics.AnalyticsTracker
 
 @AndroidEntryPoint
 class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
     companion object {
         const val TAG = "ReminderBottomSheetDialogFragment"
         private const val PREF_NOTIFICATION_ON = "pref_notification_on"
+        private const val PREF_NOTIFICATION_PERMISSION_REQUESTED = "pref_notification_permission_requested"
         const val PREF_NEW_VERSION = "pref_new_version"
         private const val PREF_NEW_VERSION_DEBUG_ALLOW_ONCE = "pref_new_version_debug_allow_once"
         const val ARGS_POPUP_TYPE = "args_popup_type"
@@ -70,6 +88,13 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                 return PopupType.NotificationPermissionReminder
             }
 
+            val lastBatteryOptimizationReminderTime = sharedPreferences.getLong(PREF_BATTERY_OPTIMIZE, 0)
+            if (System.currentTimeMillis() - lastBatteryOptimizationReminderTime > INTERVAL_24_HOURS &&
+                context.isBatteryOptimizationRestricted()
+            ) {
+                return PopupType.BatteryOptimizationReminder
+            }
+
             return null
         }
 
@@ -99,13 +124,38 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
             }
             return 0
         }
+
+        @StringRes
+        private fun getBatteryOptimizationContentResId(): Int {
+            return if (RomUtil.isOneUi) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    R.string.setting_battery_optimize_title_one_ui_above_s
+                } else {
+                    R.string.setting_battery_optimize_title_one_ui_below_s
+                }
+            } else {
+                R.string.setting_battery_optimize_title
+            }
+        }
     }
+
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            context?.let { context ->
+                AnalyticsTracker.setNotificationAuthStatus(context)
+                if (!granted) {
+                    postponeNotificationReminder(context)
+                }
+            }
+            dismissAllowingStateLoss()
+        }
 
     private val popupType by lazy {
         val typeName = requireArguments().getString(ARGS_POPUP_TYPE)
         when (typeName) {
             PopupType.NewVersionReminder::class.java.simpleName -> PopupType.NewVersionReminder
             PopupType.NotificationPermissionReminder::class.java.simpleName -> PopupType.NotificationPermissionReminder
+            PopupType.BatteryOptimizationReminder::class.java.simpleName -> PopupType.BatteryOptimizationReminder
             else -> throw IllegalArgumentException("Unknown PopupType")
         }
     }
@@ -150,7 +200,9 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         title = R.string.New_Update_Available,
                         actionStr = R.string.Update_Now,
                         action = {
-                            Session.getAccount()?.system?.messenger?.let { it -> (requireActivity() as? MainActivity)?.showUpdate(it.releaseUrl) }
+                            Session.getAccount()?.system?.messenger?.let { it ->
+                                (requireActivity() as? MainActivity)?.showUpdate(it.releaseUrl)
+                            }
                             dismissAllowingStateLoss()
                         },
                         dismiss = {
@@ -165,7 +217,7 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                                 text = stringResource(R.string.New_Update_Available_desc),
                                 color = MixinAppTheme.colors.textAssist,
                                 modifier = Modifier.fillMaxWidth(),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                textAlign = TextAlign.Center,
                             )
                         },
                         stickyFooter = true,
@@ -173,22 +225,37 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                 }
 
                 is PopupType.NotificationPermissionReminder -> {
+                    val action = notificationPermissionAction()
                     ReminderPage(
                         contentImage = languageBasedImage(
                             R.drawable.bg_reminder_notifaction,
-                            R.drawable.bg_reminder_notifaction_cn
+                            R.drawable.bg_reminder_notifaction_cn,
                         ),
                         title = R.string.Turn_On_Notifications,
-                        actionStr = R.string.Enable_Notifications,
+                        actionStr =
+                            when (action) {
+                                NotificationPermissionAction.RequestPermission -> R.string.Continue
+                                NotificationPermissionAction.OpenSettings -> R.string.Go_settings
+                            },
                         action = {
-                            requireContext().openNotificationSetting()
-                            dismissAllowingStateLoss()
+                            when (action) {
+                                NotificationPermissionAction.RequestPermission -> {
+                                    requireContext().defaultSharedPreferences.putBoolean(
+                                        PREF_NOTIFICATION_PERMISSION_REQUESTED,
+                                        true,
+                                    )
+                                    notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                }
+                                NotificationPermissionAction.OpenSettings -> {
+                                    val context = requireContext()
+                                    postponeNotificationReminder(context)
+                                    context.openPermissionSetting(false)
+                                    dismissAllowingStateLoss()
+                                }
+                            }
                         },
                         dismiss = {
-                            requireContext().defaultSharedPreferences.putLong(
-                                PREF_NOTIFICATION_ON,
-                                System.currentTimeMillis(),
-                            )
+                            postponeNotificationReminder(requireContext())
                             dismissAllowingStateLoss()
                         },
                         contentSlot = {
@@ -196,13 +263,43 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                                 text = stringResource(R.string.notification_content),
                                 color = MixinAppTheme.colors.textAssist,
                                 modifier = Modifier.fillMaxWidth(),
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                textAlign = TextAlign.Center,
                             )
                         },
                         stickyFooter = true,
                     )
                 }
 
+                is PopupType.BatteryOptimizationReminder -> {
+                    ReminderPage(
+                        contentImage = R.drawable.bg_reminder_battery_optimization,
+                        title = R.string.Battery_Optimization,
+                        actionStr = R.string.Go_settings,
+                        action = {
+                            requireContext().defaultSharedPreferences.putLong(
+                                PREF_BATTERY_OPTIMIZE,
+                                System.currentTimeMillis(),
+                            )
+                            requireContext().openBatteryOptimizationSetting()
+                            dismissAllowingStateLoss()
+                        },
+                        dismiss = {
+                            requireContext().defaultSharedPreferences.putLong(
+                                PREF_BATTERY_OPTIMIZE,
+                                System.currentTimeMillis(),
+                            )
+                            dismissAllowingStateLoss()
+                        },
+                        contentSlot = {
+                            Text(
+                                text = batteryOptimizationContent(),
+                                color = MixinAppTheme.colors.textAssist,
+                                modifier = Modifier.fillMaxWidth(),
+                                textAlign = TextAlign.Center,
+                            )
+                        },
+                    )
+                }
             }
         }
     }
@@ -214,8 +311,103 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
     override fun showError(error: String) {
     }
 
+    private fun batteryOptimizationContent(): AnnotatedString {
+        return batteryOptimizationAnnotatedContent(getString(getBatteryOptimizationContentResId()))
+    }
+
+    private fun notificationPermissionAction(): NotificationPermissionAction {
+        val permissionGranted =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.POST_NOTIFICATIONS,
+                ) == PackageManager.PERMISSION_GRANTED
+        val shouldShowRationale =
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                requireActivity().shouldShowRequestPermissionRationale(Manifest.permission.POST_NOTIFICATIONS)
+        val permissionRequested =
+            requireContext().defaultSharedPreferences.getBoolean(
+                PREF_NOTIFICATION_PERMISSION_REQUESTED,
+                false,
+            )
+        return notificationPermissionAction(
+            sdkInt = Build.VERSION.SDK_INT,
+            permissionGranted = permissionGranted,
+            permissionRequested = permissionRequested,
+            shouldShowRationale = shouldShowRationale,
+        )
+    }
+
+    private fun postponeNotificationReminder(context: Context) {
+        context.defaultSharedPreferences.putLong(
+            PREF_NOTIFICATION_ON,
+            System.currentTimeMillis(),
+        )
+    }
+
     sealed class PopupType {
         object NewVersionReminder : PopupType()
         object NotificationPermissionReminder : PopupType()
+        object BatteryOptimizationReminder : PopupType()
+    }
+}
+
+internal enum class NotificationPermissionAction {
+    RequestPermission,
+    OpenSettings,
+}
+
+internal fun notificationPermissionAction(
+    sdkInt: Int,
+    permissionGranted: Boolean,
+    permissionRequested: Boolean,
+    shouldShowRationale: Boolean,
+): NotificationPermissionAction =
+    if (sdkInt >= Build.VERSION_CODES.TIRAMISU &&
+        !permissionGranted &&
+        (!permissionRequested || shouldShowRationale)
+    ) {
+        NotificationPermissionAction.RequestPermission
+    } else {
+        NotificationPermissionAction.OpenSettings
+    }
+
+internal fun batteryOptimizationAnnotatedContent(content: String): AnnotatedString {
+    return buildAnnotatedString {
+        fun appendBold(text: String) {
+            val start = length
+            append(text)
+            addStyle(SpanStyle(fontWeight = FontWeight.Bold), start, length)
+        }
+
+        var index = 0
+        while (index < content.length) {
+            when {
+                content.startsWith("<b>", index) -> {
+                    val end = content.indexOf("</b>", index + 3)
+                    if (end >= 0) {
+                        appendBold(content.substring(index + 3, end))
+                        index = end + 4
+                    } else {
+                        append("<b>")
+                        index += 3
+                    }
+                }
+                content.startsWith("**", index) -> {
+                    val end = content.indexOf("**", index + 2)
+                    if (end >= 0) {
+                        appendBold(content.substring(index + 2, end))
+                        index = end + 2
+                    } else {
+                        append("**")
+                        index += 2
+                    }
+                }
+                else -> {
+                    append(content[index].toString())
+                    index++
+                }
+            }
+        }
     }
 }
