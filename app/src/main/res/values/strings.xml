@@ -994,6 +994,7 @@
     <string name="Secured_by_TIP">Secured by TIP</string>
     <string name="Security">Security</string>
     <string name="Select">Select</string>
+    <string name="Select_Multiple_Messages">Select Multiple Messages</string>
     <string name="Select_Emergency_Contact">Select Recovery Contact</string>
     <string name="Send">Send</string>
     <string name="Sending">Sending</string>

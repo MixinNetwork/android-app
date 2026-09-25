@@ -12,6 +12,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.view.ContextThemeWrapper
+import android.view.Gravity
 import android.view.View
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.children
@@ -47,7 +48,6 @@ import one.mixin.android.extension.openEmail
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.screenHeight
-import one.mixin.android.extension.showIcon
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
@@ -598,7 +598,8 @@ class ChatHistoryActivity : BaseActivity() {
                 lifecycleScope.launch {
                     val role = withContext(Dispatchers.IO) { conversationRepository.findParticipantById(conversationId, Session.getAccountId()!!) }?.role
                     val isAdmin = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
-                    val popMenu = PopupMenu(this@ChatHistoryActivity, view)
+                    val anchor = binding.recyclerView.findContainingItemView(view) ?: view
+                    val popMenu = PopupMenu(this@ChatHistoryActivity, anchor, Gravity.END, 0, R.style.MessageActionPopup)
                     popMenu.menuInflater.inflate(
                         R.menu.chathistory,
                         popMenu.menu,
@@ -607,7 +608,7 @@ class ChatHistoryActivity : BaseActivity() {
                     popMenu.menu.findItem(R.id.copy).isVisible = messageItem.isText()
                     popMenu.menu.findItem(R.id.forward).isVisible = !isTranscript && !messageItem.isAppButtonGroup()
 
-                    popMenu.showIcon()
+                    popMenu.setForceShowIcon(true)
                     popMenu.setOnMenuItemClickListener {
                         when (it.itemId) {
                             R.id.copy -> {

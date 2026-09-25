@@ -781,6 +781,7 @@
     <string name="Searching">搜尋中</string>
     <string name="Security">安全</string>
     <string name="Select">選擇</string>
+    <string name="Select_Multiple_Messages">多選</string>
     <string name="Select_Emergency_Contact">選擇緊急聯絡人</string>
     <string name="Send">傳送</string>
     <string name="Send_as_file">按檔案傳送</string>
