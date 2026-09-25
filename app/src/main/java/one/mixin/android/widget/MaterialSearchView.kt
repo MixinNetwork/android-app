@@ -38,9 +38,7 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.translationX
 import one.mixin.android.extension.withAlpha
-import one.mixin.android.session.Session
 import one.mixin.android.ui.search.SearchFragment.Companion.SEARCH_DEBOUNCE
-import one.mixin.android.vo.toUser
 import org.jetbrains.annotations.NotNull
 import java.util.concurrent.TimeUnit
 import kotlin.math.roundToInt
@@ -58,7 +56,6 @@ class MaterialSearchView : FrameLayout {
     private var binding: ViewMaterialSearchBinding =
         ViewMaterialSearchBinding.inflate(LayoutInflater.from(context), this, true)
     val actionVa get() = binding.actionVa
-    val avatar get() = binding.avatar
     val logo get() = binding.logo
     val dot get() = binding.dot
     val scan get() = binding.scanIb
@@ -157,10 +154,6 @@ class MaterialSearchView : FrameLayout {
             onSubmitQuery()
             true
         }
-        Session.getAccount()?.toUser()?.let { u ->
-            binding.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-            binding.avatar.setTextSize(14f)
-        }
 
         // Don't auto dispose
         disposable =
@@ -194,7 +187,7 @@ class MaterialSearchView : FrameLayout {
         containerDisplay = false
         binding.searchIb.fadeIn()
         binding.scanIb.fadeIn()
-        binding.avatar.fadeIn()
+        binding.newChat.fadeIn()
         binding.actionVa.fadeOut()
         ValueAnimator.ofFloat(1f, 0f).apply {
             addListener(
@@ -222,7 +215,7 @@ class MaterialSearchView : FrameLayout {
         containerDisplay = true
         binding.searchIb.fadeOut()
         binding.scanIb.fadeOut()
-        binding.avatar.fadeOut()
+        binding.newChat.fadeOut()
         binding.actionVa.fadeIn()
         binding.containerCircle.isVisible = true
         showAction?.invoke()
@@ -256,7 +249,7 @@ class MaterialSearchView : FrameLayout {
     private val rightTranslationX = 168f
 
     fun dragSearch(progress: Float) {
-        binding.avatar.translationX = context.dpToPx(rightTranslationX) * progress
+        binding.newChat.translationX = context.dpToPx(rightTranslationX) * progress
         binding.searchIb.translationX = context.dpToPx(rightTranslationX) * progress
         binding.scanIb.translationX = context.dpToPx(rightTranslationX) * progress
         val fastFadeOut = (1 - 2 * progress).coerceAtLeast(0f)
@@ -317,7 +310,7 @@ class MaterialSearchView : FrameLayout {
         binding.searchEt.setText("")
         oldLeftX = binding.logoLayout.x
         oldSearchWidth = binding.searchEt.measuredWidth
-        binding.avatar.translationX(context.dpToPx(rightTranslationX).toFloat())
+        binding.newChat.translationX(context.dpToPx(rightTranslationX).toFloat())
         binding.searchIb.translationX(context.dpToPx(rightTranslationX).toFloat())
         binding.scanIb.translationX(context.dpToPx(rightTranslationX).toFloat())
         mSearchViewListener?.onSearchViewOpened()
@@ -375,7 +368,7 @@ class MaterialSearchView : FrameLayout {
         binding.rightClear.visibility = View.GONE
         hideLoading()
 
-        binding.avatar.translationX(0f)
+        binding.newChat.translationX(0f)
         binding.searchIb.translationX(0f)
         binding.scanIb.translationX(0f)
         clearFocus()
@@ -470,8 +463,8 @@ class MaterialSearchView : FrameLayout {
         binding.searchView.layoutParams.height = height
     }
 
-    fun setOnGroupClickListener(onClickListener: OnClickListener) {
-        binding.avatar.setOnClickListener(onClickListener)
+    fun setOnNewChatClickListener(onClickListener: OnClickListener) {
+        binding.newChat.setOnClickListener(onClickListener)
     }
 
     fun setOnAddClickListener(onClickListener: OnClickListener) {

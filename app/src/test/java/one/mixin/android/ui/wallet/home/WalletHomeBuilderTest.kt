@@ -8,6 +8,28 @@ import org.junit.Test
 
 class WalletHomeBuilderTest {
     @Test
+    fun collectiblesFollowAssetsOnlyInPrivacyWalletsWithCollectibles() {
+        for (type in WalletHomeType.entries) {
+            for (hasCollectibles in listOf(false, true)) {
+                val cards = WalletHomeBuilder.build(
+                    walletType = type,
+                    hasAssetValue = true,
+                    showBanner = false,
+                    showReferral = false,
+                    hasPositions = false,
+                    hasTopMovers = false,
+                    hasTransactions = true,
+                    hasCollectibles = hasCollectibles,
+                )
+                val expected = mutableListOf(WalletHomeCardType.BALANCE, WalletHomeCardType.TOKENS)
+                if (type == WalletHomeType.PRIVACY && hasCollectibles) expected += WalletHomeCardType.COLLECTIBLES
+                expected += listOf(WalletHomeCardType.TRANSACTIONS, WalletHomeCardType.SUPPORT)
+                assertEquals(expected, cards)
+            }
+        }
+    }
+
+    @Test
     fun privacyWalletWithPositionsDoesNotShowTopMovers() {
         val cards = WalletHomeBuilder.build(
             walletType = WalletHomeType.PRIVACY,

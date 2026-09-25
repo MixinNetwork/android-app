@@ -12,44 +12,44 @@
         android:layout_marginStart="16dp"
         android:textColor="?attr/text_primary"
         android:textSize="18sp"
-        android:textStyle="bold"
+        android:fontFamily="sans-serif-medium"
         tools:ignore="RelativeOverlap"
         tools:text="@string/More" />
 
     <ImageButton
         android:id="@+id/home_toolbar_search"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_centerVertical="true"
-        android:layout_marginEnd="14dp"
+        android:layout_marginEnd="6dp"
         android:layout_toStartOf="@id/home_toolbar_scan"
         android:background="@drawable/mixin_ripple"
-        android:padding="8dp"
-        app:srcCompat="@drawable/ic_search_home"
-        tools:ignore="ContentDescription" />
+        android:padding="12dp"
+        app:srcCompat="@drawable/ic_more_search"
+        android:contentDescription="@string/Search" />
 
     <ImageButton
         android:id="@+id/home_toolbar_scan"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_centerVertical="true"
-        android:layout_marginEnd="14dp"
+        android:layout_marginEnd="6dp"
         android:layout_toStartOf="@id/home_toolbar_settings"
         android:background="@drawable/mixin_ripple"
-        android:padding="8dp"
-        app:srcCompat="@drawable/ic_bot_category_scan"
-        tools:ignore="ContentDescription" />
+        android:padding="12dp"
+        app:srcCompat="@drawable/ic_more_scan"
+        android:contentDescription="@string/Scan_QR_Code" />
 
     <ImageButton
         android:id="@+id/home_toolbar_settings"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
-        android:layout_marginEnd="12dp"
+        android:layout_marginEnd="4dp"
         android:background="@drawable/mixin_ripple"
-        android:padding="8dp"
-        app:srcCompat="@drawable/ic_home_setting"
-        tools:ignore="ContentDescription" />
+        android:padding="12dp"
+        app:srcCompat="@drawable/ic_profile_settings"
+        android:contentDescription="@string/Settings" />
 
 </merge>

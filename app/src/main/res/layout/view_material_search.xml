@@ -49,9 +49,9 @@
             android:id="@+id/scan_ib"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_toStartOf="@id/avatar"
+            android:layout_toStartOf="@id/new_chat"
             android:layout_centerVertical="true"
-            android:layout_marginEnd="14dp"
+            android:layout_marginEnd="10dp"
             android:background="@drawable/mixin_ripple"
             android:padding="8dp"
             app:srcCompat="@drawable/ic_bot_category_scan"
@@ -106,16 +106,17 @@
             app:srcCompat="@drawable/ic_back"
             tools:ignore="ContentDescription" />
 
-        <one.mixin.android.widget.AvatarView
-            android:id="@+id/avatar"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/new_chat"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_centerVertical="true"
-            android:padding="8dp"
-            android:layout_marginEnd="12dp"
+            android:padding="12dp"
+            android:layout_marginEnd="8dp"
             android:layout_alignParentEnd="true"
             android:background="@drawable/mixin_ripple"
-            tools:ignore="ContentDescription" />
+            android:contentDescription="@string/new_chat"
+            app:srcCompat="@drawable/ic_new_chat" />
 
         <ViewAnimator
             android:id="@+id/action_va"
