@@ -46,17 +46,46 @@ class BarcodeScanningAnalyzer : Analyzer<BarcodeResult> {
             val inputImage = InputImage.fromBitmap(bitmap!!, 0)
             mDetector?.process(inputImage)
                 ?.addOnSuccessListener { result: List<Barcode>? ->
-                    if (result.isNullOrEmpty()) {
+                    val items =
+                        result.orEmpty().mapNotNull { barcode ->
+                            val text = barcode.rawValue ?: barcode.displayValue ?: return@mapNotNull null
+                            if (text.isBlank()) return@mapNotNull null
+                            BarcodeScanItem(
+                                text = text,
+                                boundingBox = barcode.boundingBox,
+                                cornerPoints = barcode.cornerPoints?.toList().orEmpty(),
+                                sourceWidth = bitmap.width,
+                                sourceHeight = bitmap.height,
+                            )
+                        }
+                    if (items.isEmpty()) {
                         listener.onFailure()
                     } else {
-                        listener.onSuccess(AnalyzeResult(bitmap, BarcodeResult(result, null)))
+                        listener.onSuccess(AnalyzeResult(bitmap, BarcodeResult(items, barcodes = result)))
                     }
                 }?.addOnFailureListener { e: Exception? -> listener.onFailure() }
         } catch (e: Exception) {
             val bitmap = BitmapUtils.getBitmap(imageProxy)
             val result = bitmap?.decodeQR()
             if (result != null) {
-                listener.onSuccess(AnalyzeResult(bitmap, BarcodeResult(null, result)))
+                listener.onSuccess(
+                    AnalyzeResult(
+                        bitmap,
+                        BarcodeResult(
+                            items =
+                                listOf(
+                                    BarcodeScanItem(
+                                        text = result,
+                                        boundingBox = null,
+                                        cornerPoints = emptyList(),
+                                        sourceWidth = bitmap.width,
+                                        sourceHeight = bitmap.height,
+                                    ),
+                                ),
+                            content = result,
+                        ),
+                    ),
+                )
             } else {
                 listener.onFailure()
             }
