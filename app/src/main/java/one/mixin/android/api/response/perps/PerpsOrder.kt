@@ -53,6 +53,15 @@ data class PerpsOrder(
     @SerializedName("roe")
     @ColumnInfo(name = "roe")
     val roe: String,
+    @SerializedName("net_realized_pnl")
+    @ColumnInfo(name = "net_realized_pnl")
+    val netRealizedPnl: String? = null,
+    @SerializedName("net_roe")
+    @ColumnInfo(name = "net_roe")
+    val netRoe: String? = null,
+    @SerializedName("profit_share_amount")
+    @ColumnInfo(name = "profit_share_amount")
+    val profitShareAmount: String? = null,
     @SerializedName("close_reason")
     @ColumnInfo(name = "close_reason")
     val closeReason: String?,

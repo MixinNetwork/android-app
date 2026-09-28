@@ -2700,5 +2700,6 @@
     <string name="perps_added_margin">증거금 추가</string>
     <string name="perps_reduced_margin">증거금 감소</string>
     <string name="perps_realized_pnl">실현 손익</string>
+    <string name="perps_profit_share">수익 배분</string>
     <string name="perps_unrealized_pnl">미실현 손익</string>
 </resources>

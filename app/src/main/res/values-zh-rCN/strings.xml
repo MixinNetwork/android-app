@@ -2649,5 +2649,6 @@
     <string name="perps_added_margin">增加保证金</string>
     <string name="perps_reduced_margin">减少保证金</string>
     <string name="perps_realized_pnl">已实现盈亏</string>
+    <string name="perps_profit_share">利润分成</string>
     <string name="perps_unrealized_pnl">未实现盈亏</string>
 </resources>

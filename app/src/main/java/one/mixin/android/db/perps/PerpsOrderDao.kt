@@ -82,13 +82,10 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     @Query("DELETE FROM perps_orders")
     suspend fun deleteAll()
 
-    @Query("SELECT MAX(updated_at) FROM perps_orders WHERE status IN ('filled', 'rejected', 'closed')")
-    suspend fun getLatestUpdatedAt(): String?
-
-    @Query("SELECT SUM(CAST(realized_pnl AS REAL)) FROM perps_orders WHERE order_type = 'close'")
+    @Query("SELECT SUM(CAST(COALESCE(NULLIF(net_realized_pnl, ''), realized_pnl) AS REAL)) FROM perps_orders WHERE order_type = 'close'")
     suspend fun getTotalRealizedPnl(): Double?
 
-    @Query("SELECT COALESCE(SUM(CAST(realized_pnl AS REAL)), 0) FROM perps_orders WHERE order_type = 'close'")
+    @Query("SELECT COALESCE(SUM(CAST(COALESCE(NULLIF(net_realized_pnl, ''), realized_pnl) AS REAL)), 0) FROM perps_orders WHERE order_type = 'close'")
     fun observeTotalRealizedPnl(): Flow<Double>
 
     @Query("SELECT SUM(CAST(entry_price AS REAL) * ABS(CAST(quantity AS REAL))) FROM perps_orders WHERE order_type = 'close'")

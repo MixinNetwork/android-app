@@ -2731,5 +2731,6 @@
     <string name="perps_added_margin">Added Margin</string>
     <string name="perps_reduced_margin">Reduced Margin</string>
     <string name="perps_realized_pnl">Realized PnL</string>
+    <string name="perps_profit_share">Profit Share</string>
     <string name="perps_unrealized_pnl">Unrealized PnL</string>
 </resources>

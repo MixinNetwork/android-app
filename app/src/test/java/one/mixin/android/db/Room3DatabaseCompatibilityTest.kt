@@ -4,6 +4,7 @@ import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import androidx.room3.Room
 import androidx.room3.RoomDatabase
+import androidx.room3.migration.Migration
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.JsonParser
 import java.io.File
@@ -56,6 +57,28 @@ class Room3DatabaseCompatibilityTest {
     }
 
     @Test
+    fun perpsNetPnlMigrationPreservesOrdersWithoutInventingNetValues() {
+        verifyLegacyDatabase(
+            PerpsDatabase::class.java,
+            """
+                INSERT INTO perps_orders (
+                    order_id, position_id, market_id, side, order_type, status, leverage,
+                    quantity, pay_amount, fee_amount, entry_price, close_price, realized_pnl,
+                    roe, created_at, updated_at
+                ) VALUES (
+                    'order', 'position', 'market', 'long', 'close', 'filled', 10,
+                    '1', '10', '2', '100', '110', '10', '0.1',
+                    '2026-09-28T00:00:00Z', '2026-09-28T00:00:00Z'
+                )
+            """.trimIndent(),
+            "SELECT realized_pnl || ':' || roe || ':' || COALESCE(net_realized_pnl, 'missing') || ':' || COALESCE(net_roe, 'missing') || ':' || COALESCE(profit_share_amount, 'missing') FROM perps_orders",
+            "10:0.1:missing:missing:missing",
+            schemaVersion = 9,
+            migrations = arrayOf(PerpsDatabase.MIGRATION_9_10),
+        )
+    }
+
+    @Test
     fun signalDatabasePreservesLegacyKeyBytes() {
         verifyLegacyDatabase(
             SignalDatabase::class.java,
@@ -92,14 +115,19 @@ class Room3DatabaseCompatibilityTest {
         selectSql: String,
         expectedValue: String,
         schemaName: String = databaseClass.name,
+        schemaVersion: Int? = null,
+        migrations: Array<Migration> = emptyArray(),
     ) {
         val schemaDirectory = listOf(File("schemas/googlePlay/$schemaName"), File("app/schemas/googlePlay/$schemaName"))
             .firstOrNull(File::isDirectory)
         requireNotNull(schemaDirectory) { "Missing exported schema for $schemaName in ${File(".").absolutePath}" }
-        val schemaFile = requireNotNull(schemaDirectory.listFiles()?.filter { it.extension == "json" }?.maxByOrNull { it.nameWithoutExtension.toInt() })
+        val latestSchemaFile = requireNotNull(schemaDirectory.listFiles()?.filter { it.extension == "json" }?.maxByOrNull { it.nameWithoutExtension.toInt() })
+        val latestSchema = JsonParser.parseString(latestSchemaFile.readText()).asJsonObject.getAsJsonObject("database")
+        val schemaFile = schemaVersion?.let { File(schemaDirectory, "$it.json") } ?: latestSchemaFile
         val schema = JsonParser.parseString(schemaFile.readText()).asJsonObject.getAsJsonObject("database")
         val version = schema.get("version").asInt
-        val identityHash = schema.get("identityHash").asString
+        val targetVersion = latestSchema.get("version").asInt
+        val identityHash = latestSchema.get("identityHash").asString
         val file = File(temporaryFolder.root, "${databaseClass.simpleName}.db")
         SQLiteDatabase.openOrCreateDatabase(file, null).use { legacy ->
             schema.getAsJsonArray("entities").forEach { entityElement ->
@@ -122,13 +150,14 @@ class Room3DatabaseCompatibilityTest {
         val context = ApplicationProvider.getApplicationContext<Context>()
         repeat(2) {
             val database = Room.databaseBuilder(context, databaseClass, file.absolutePath)
-                .setDriver(ReportingAndroidSQLiteDriver(databaseClass.simpleName, version))
+                .setDriver(ReportingAndroidSQLiteDriver(databaseClass.simpleName, targetVersion))
+                .addMigrations(*migrations)
                 .allowMainThreadQueries()
                 .build()
             try {
                 assertScalar(database, selectSql, expectedValue)
                 assertScalar(database, "SELECT identity_hash FROM room_master_table WHERE id = 42", identityHash)
-                assertScalar(database, "PRAGMA user_version", version.toString())
+                assertScalar(database, "PRAGMA user_version", targetVersion.toString())
                 assertScalar(database, "PRAGMA integrity_check", "ok")
                 RoomDatabaseCompat.query(database, "PRAGMA foreign_key_check").use { assertFalse(it.moveToFirst()) }
             } finally {

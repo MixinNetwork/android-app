@@ -2701,5 +2701,6 @@
     <string name="perps_added_margin">增加保證金</string>
     <string name="perps_reduced_margin">減少保證金</string>
     <string name="perps_realized_pnl">已實現盈虧</string>
+    <string name="perps_profit_share">利潤分成</string>
     <string name="perps_unrealized_pnl">未實現盈虧</string>
 </resources>

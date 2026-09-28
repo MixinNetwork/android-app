@@ -35,7 +35,7 @@ import kotlin.math.min
         PerpsFavorite::class,
         PerpsMarketCategoryRelation::class,
     ],
-    version = 9,
+    version = 10,
 )
 @DaoReturnTypeConverters(PagingSourceDaoReturnTypeConverter::class)
 abstract class PerpsDatabase : RoomDatabase() {
@@ -124,6 +124,14 @@ abstract class PerpsDatabase : RoomDatabase() {
                     connection.execSQL("ALTER TABLE `markets` ADD COLUMN `trade_volume_score_1d` INTEGER NOT NULL DEFAULT 0")
                 }
             }
+        val MIGRATION_9_10 =
+            object : Migration(9, 10) {
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE `perps_orders` ADD COLUMN `net_realized_pnl` TEXT")
+                    connection.execSQL("ALTER TABLE `perps_orders` ADD COLUMN `net_roe` TEXT")
+                    connection.execSQL("ALTER TABLE `perps_orders` ADD COLUMN `profit_share_amount` TEXT")
+                }
+            }
 
         @Suppress("DEPRECATION")
         fun getDatabase(
@@ -143,7 +151,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                         context,
                         PerpsDatabase::class.java,
                         File(dir, Constants.DataBase.PERPS_DB_NAME).absolutePath,
-                    ).setDriver(ReportingAndroidSQLiteDriver("Perps", 9))
+                    ).setDriver(ReportingAndroidSQLiteDriver("Perps", 10))
                         .addCallback(
                         object : Callback() {
                             override suspend fun onOpen(connection: SQLiteConnection) {
@@ -151,7 +159,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                                 connection.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                         .fallbackToDestructiveMigration()
                         .enableMultiInstanceInvalidation()
                         .setQueryCoroutineContext(

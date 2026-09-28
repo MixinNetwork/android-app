@@ -180,14 +180,10 @@ class PerpetualViewModel @Inject constructor(
     fun refreshOrders(walletId: String, limit: Int = 100) {
         viewModelScope.launch {
             try {
-                val latestUpdatedAt = withContext(Dispatchers.IO) {
-                    perpsOrderDao.getLatestUpdatedAt()
-                }
                 val response = withContext(Dispatchers.IO) {
                     routeService.getPerpsOrders(
                         walletId = walletId,
                         limit = limit,
-                        offset = latestUpdatedAt,
                     )
                 }
 
