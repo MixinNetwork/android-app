@@ -391,6 +391,7 @@ class PerpetualViewModel @Inject constructor(
         side: String? = null,
         leverage: Int? = null,
         positionId: String? = null,
+        action: String = if (positionId == null) "open" else "increase_position",
     ): LiquidationPriceResult {
         return try {
             val response = withContext(Dispatchers.IO) {
@@ -400,6 +401,7 @@ class PerpetualViewModel @Inject constructor(
                     side = side,
                     leverage = leverage,
                     positionId = positionId,
+                    action = action,
                 )
             }
             if (response.isSuccess) {
@@ -413,16 +415,18 @@ class PerpetualViewModel @Inject constructor(
                     price = null,
                     errorCode = response.errorCode,
                     limit = parseLiquidationPriceLimit(response.error?.extra),
+                    availableMargin = availableMarginFromError(response.error?.extra),
+                    errorMessage = MixinApplication.appContext.getMixinErrorStringByCode(response.errorCode, response.errorDescription),
                 )
             }
         } catch (e: CancellationException) {
             throw e
         } catch (e: HttpException) {
             Timber.e(e, "HTTP error estimating liquidation price")
-            liquidationPriceResult(price = null, errorCode = e.code())
+            liquidationPriceResult(price = null, errorCode = e.code(), errorMessage = ErrorHandler.getErrorMessage(e))
         } catch (e: Exception) {
             Timber.e(e, "Error estimating liquidation price")
-            LiquidationPriceResult.Failure
+            LiquidationPriceResult.Failure(ErrorHandler.getErrorMessage(e))
         }
     }
 
@@ -510,6 +514,13 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    suspend fun adjustPerpsMargin(
+        positionId: String,
+        request: one.mixin.android.api.request.perps.AdjustMarginRequest,
+    ) = withContext(Dispatchers.IO) {
+        routeService.adjustPerpsMargin(positionId, request)
+    }
+
     private var linkPreview: Deferred<Pair<PerpsMarket, PerpsLinkPreview>>? = null
 
     internal suspend fun prepareLinkPreview(
@@ -556,13 +567,13 @@ class PerpetualViewModel @Inject constructor(
             val minimum = market.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
             val maximum = market.maxAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
             if (leverage > market.leverage) {
-                return PerpsLinkPreview.Failure(context.getString(R.string.perps_maximum_leverage, market.leverage))
+                return PerpsLinkPreview.Failure(context.getString(R.string.error_perps_position_size_exceeds_leverage_limit))
             }
             if (minimum > BigDecimal.ZERO && amount < minimum) {
                 return PerpsLinkPreview.Failure(context.getString(R.string.perps_minimum_margin, market.minAmount, market.quoteSymbol))
             }
             if (maximum > BigDecimal.ZERO && amount > maximum) {
-                return PerpsLinkPreview.Failure(context.getString(R.string.perps_maximum_margin, market.maxAmount, market.quoteSymbol))
+                return PerpsLinkPreview.Failure(context.getString(R.string.single_transaction_should_be_less_than, market.maxAmount, market.quoteSymbol))
             }
             if ((market.last.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) throw DataErrorException()
             val token = loadPerpsMarginToken()

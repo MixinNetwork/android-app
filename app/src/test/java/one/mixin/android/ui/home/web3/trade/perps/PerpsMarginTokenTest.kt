@@ -1,11 +1,26 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import one.mixin.android.ui.home.web3.trade.limitTradeInputDecimalPlaces
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNull
 
 class PerpsMarginTokenTest {
+    @Test
+    fun marginBalanceUsesTokenUnitsRegardlessOfUsdPrice() {
+        val token = token("margin", "10.12345678")
+        for (price in listOf("0.99", "1", "1.01", "0", "")) {
+            val balance = perpsMarginTokenBalance(token.copy(priceUsd = price))!!
+            assertEquals(BigDecimal("10.12345678"), balance)
+            assertEquals("10.12345678", limitTradeInputDecimalPlaces(balance.stripTrailingZeros().toPlainString()))
+        }
+        assertEquals(BigDecimal.ZERO, perpsMarginTokenBalance(token.copy(balance = "0")))
+        assertNull(perpsMarginTokenBalance(token.copy(balance = "invalid")))
+        assertNull(perpsMarginTokenBalance(null))
+    }
+
     @Test
     fun usesAcceptedAssetIdsAndBreaksBalanceTiesInApiOrder() {
         val tokens = listOf(

@@ -5,6 +5,7 @@
 /build
 build/
 /captures
+/docs/
 google-services.json
 .DS_Store
 /.kotlin
