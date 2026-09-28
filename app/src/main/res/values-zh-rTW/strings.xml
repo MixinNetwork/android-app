@@ -2435,7 +2435,7 @@
     <string name="impact_on_pnl_2">槓桿越低，盈虧越小且越慢</string>
     <string name="perps_leverage_risk_notice_1">槓桿越高，爆倉風險越大</string>
     <string name="perps_leverage_risk_notice_2">高槓杆下，小幅價格波動也可能導致較大虧損</string>
-    <string name="perps_position_size_overview">當前合約的倉位規模由「金額 × 槓桿」計算得出，表示本次交易所控制的資產規模。</string>
+    <string name="perps_position_size_overview">倉位規模表示目前持倉的價值，按「倉位數量 × 標記價格」計算。</string>
     <string name="perps_position_size_pnl_1">倉位越大，盈虧金額越大</string>
     <string name="perps_position_size_pnl_2">倉位越小，盈虧金額越小</string>
     <string name="perps_tpsl_overview">止盈和止損是預先設定的自動平倉指令，幫助你在不盯盤的情況下管理風險。</string>
@@ -2701,4 +2701,5 @@
     <string name="perps_added_margin">增加保證金</string>
     <string name="perps_reduced_margin">減少保證金</string>
     <string name="perps_realized_pnl">已實現盈虧</string>
+    <string name="perps_unrealized_pnl">未實現盈虧</string>
 </resources>

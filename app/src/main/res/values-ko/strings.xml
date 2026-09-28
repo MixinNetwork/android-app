@@ -2340,7 +2340,7 @@
     <string name="impact_on_pnl_2">낮은 레버리지, 더 작고 느린 손익</string>
     <string name="perps_leverage_risk_notice_1">레버리지가 높을수록 청산 위험이 높아집니다.</string>
     <string name="perps_leverage_risk_notice_2">레버리지가 높으면 작은 가격 변동으로도 큰 손실이 발생할 수 있습니다.</string>
-    <string name="perps_position_size_overview">크기는 마진 × 레버리지로 계산된 포지션의 총 가치를 나타냅니다.</string>
+    <string name="perps_position_size_overview">크기는 현재 포지션의 가치를 나타내며, 포지션 수량 × 마크 가격으로 계산됩니다.</string>
     <string name="perps_position_size_pnl_1">더 큰 규모, 더 큰 손익</string>
     <string name="perps_position_size_pnl_2">더 작은 크기, 더 작은 손익</string>
     <string name="perps_tpsl_overview">이익실현 및 손절매는 발동 가격에 도달하면 자동으로 실행되는 조건부 주문입니다.</string>
@@ -2700,4 +2700,5 @@
     <string name="perps_added_margin">증거금 추가</string>
     <string name="perps_reduced_margin">증거금 감소</string>
     <string name="perps_realized_pnl">실현 손익</string>
+    <string name="perps_unrealized_pnl">미실현 손익</string>
 </resources>

@@ -269,7 +269,7 @@ fun PositionDetailPage(
                 Spacer(modifier = Modifier.height(20.dp))
                 
                 PositionDetailItem(
-                    label = stringResource(R.string.PnL),
+                    label = stringResource(R.string.perps_unrealized_pnl),
                     value = formatSignedFiat(pnl),
                     valueColor = pnlColor,
                     subtitle = formatSignedPercent(roe),

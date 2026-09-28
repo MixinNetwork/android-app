@@ -10,6 +10,7 @@ import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.db.PerpsDatabase
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -52,6 +53,26 @@ class PerpsOrderDaoTest {
         assertEquals(listOf("03", "02"), dao.getOrders(2, "2026-09-14T00:00:04Z").map { it.orderId })
         val page = dao.getOrdersPaged().load(PagingSource.LoadParams.Refresh(key = null, loadSize = 20, placeholdersEnabled = false))
         assertEquals(expected, (page as PagingSource.LoadResult.Page).data.map { it.orderId })
+    }
+
+    @Test
+    fun syncOffsetIgnoresProcessingOrdersUntilTheyComplete() = runBlocking {
+        val dao = database.perpsOrderDao()
+        assertNull(dao.getLatestUpdatedAt())
+
+        val pending = order("05", PerpsOrder.TYPE_INCREASE_MARGIN).copy(status = PerpsOrder.STATUS_PROCESSING)
+        dao.insertAll(listOf(pending))
+        assertNull(dao.getLatestUpdatedAt())
+
+        listOf(PerpsOrder.STATUS_FILLED, PerpsOrder.STATUS_REJECTED, PerpsOrder.STATUS_CLOSED).forEachIndexed { index, status ->
+            val completed = order("0${index + 1}", PerpsOrder.TYPE_INCREASE_MARGIN).copy(status = status)
+            dao.insertAll(listOf(completed))
+            assertEquals(completed.updatedAt, dao.getLatestUpdatedAt())
+        }
+
+        dao.insertAll(listOf(pending.copy(status = PerpsOrder.STATUS_FILLED)))
+        assertEquals(pending.updatedAt, dao.getLatestUpdatedAt())
+        assertEquals(pending.orderId, dao.getOrdersByMarket("market").first().orderId)
     }
 
     private fun order(id: String, type: String) = PerpsOrder(

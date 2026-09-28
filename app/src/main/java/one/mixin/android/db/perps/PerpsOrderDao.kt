@@ -82,7 +82,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     @Query("DELETE FROM perps_orders")
     suspend fun deleteAll()
 
-    @Query("SELECT MAX(updated_at) FROM perps_orders")
+    @Query("SELECT MAX(updated_at) FROM perps_orders WHERE status IN ('filled', 'rejected', 'closed')")
     suspend fun getLatestUpdatedAt(): String?
 
     @Query("SELECT SUM(CAST(realized_pnl AS REAL)) FROM perps_orders WHERE order_type = 'close'")

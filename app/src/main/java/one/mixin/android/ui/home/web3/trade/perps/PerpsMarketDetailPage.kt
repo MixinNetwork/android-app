@@ -1246,7 +1246,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(R.string.PnL).uppercase(),
+                    text = stringResource(R.string.perps_unrealized_pnl).uppercase(),
                     fontSize = 12.sp,
                     lineHeight = 14.sp,
                     style = compactTextStyle,

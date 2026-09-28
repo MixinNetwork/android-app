@@ -2317,7 +2317,7 @@
     <string name="impact_on_pnl_2">杠杆越低，盈亏越小且越慢</string>
     <string name="perps_leverage_risk_notice_1">杠杆越高，爆仓风险越大</string>
     <string name="perps_leverage_risk_notice_2">高杠杆下，小幅价格波动也可能导致较大亏损</string>
-    <string name="perps_position_size_overview">当前合约的仓位规模由「金额 × 杠杆」计算得出，表示本次交易所控制的资产规模。</string>
+    <string name="perps_position_size_overview">仓位规模表示当前持仓的价值，按「仓位数量 × 标记价格」计算。</string>
     <string name="perps_position_size_pnl_1">仓位越大，盈亏金额越大</string>
     <string name="perps_position_size_pnl_2">仓位越小，盈亏金额越小</string>
     <string name="perps_tpsl_overview">止盈和止损是预先设定的自动平仓指令，帮助你在不盯盘的情况下管理风险。</string>
@@ -2649,4 +2649,5 @@
     <string name="perps_added_margin">增加保证金</string>
     <string name="perps_reduced_margin">减少保证金</string>
     <string name="perps_realized_pnl">已实现盈亏</string>
+    <string name="perps_unrealized_pnl">未实现盈亏</string>
 </resources>
