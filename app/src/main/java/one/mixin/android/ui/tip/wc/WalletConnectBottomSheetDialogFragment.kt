@@ -20,6 +20,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.GsonBuilder
 import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -30,7 +31,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
@@ -52,12 +52,13 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.WalletConnectV2.getProposalChainIds
 import one.mixin.android.tip.wc.WalletConnectV2.getNamespaceProposal
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WcBitcoinSendTransfer
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectAddresses
 import one.mixin.android.tip.wc.internal.WalletConnectException
-import one.mixin.android.tip.wc.internal.buildTipGas
+import one.mixin.android.tip.wc.internal.WcSolanaTransaction
 import one.mixin.android.tip.wc.internal.formatProposalAccountText
 import one.mixin.android.tip.wc.internal.getChain
 import one.mixin.android.tip.wc.internal.getChainByChainId
@@ -74,14 +75,17 @@ import one.mixin.android.ui.tip.wc.sessionproposal.SessionProposalPage
 import one.mixin.android.ui.tip.wc.sessionrequest.SessionRequestPage
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.transfer.TransferWeb3BalanceErrorBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
+import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.tickerFlow
 import one.mixin.android.vo.safe.Token
 import one.mixin.android.web3.Rpc
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
-import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import org.sol4k.exception.RpcException
 import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
@@ -142,6 +146,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private var account: String by mutableStateOf("")
     private var signedTransactionData: Any? = null
     private var estimateGasJob: Job? = null
+    private var preflightMessage: JsSignMessage? = null
 
     @Inject
     lateinit var rpc: Rpc
@@ -292,7 +297,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private fun checkV2ChainAndParseSignData() =
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             val topic = this@WalletConnectBottomSheetDialogFragment.topic
 
             when (requestType) {
@@ -342,18 +347,46 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
             this@WalletConnectBottomSheetDialogFragment.signData = signData
 
-            val m = signData.signMessage
-            if (m is WCEthereumTransaction) {
-                refreshEstimatedGasAndAsset(chain)
-            } else if (m is VersionedTransactionCompat) {
-                asset = viewModel.refreshAsset(Chain.Solana.assetId)
+            val message = signData.signMessage
+            preflightMessage = when (message) {
+                is WCEthereumTransaction -> JsSignMessage(signData.requestId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = message)
+                is VersionedTransactionCompat -> JsSignMessage(
+                    signData.requestId,
+                    JsSignMessage.TYPE_RAW_TRANSACTION,
+                    data = GsonHelper.customGson.fromJson(sessionRequest.request.params, WcSolanaTransaction::class.java).transaction,
+                    solanaTxSource = SolanaTxSource.WalletConnect,
+                )
+                else -> null
+            }
+            if (preflightMessage != null) {
+                step = Step.Loading
                 try {
-                    m.throwIfAnyMaliciousInstruction()
+                    if (!preflightTransaction()) return@launch
+                    asset = viewModel.refreshAsset(chain.getWeb3ChainId())
+                    step = Step.Sign
+                    if (message is WCEthereumTransaction) refreshEstimatedGasAndAsset(chain)
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     handleException(e)
                 }
             }
         }
+
+    private suspend fun preflightTransaction(cachedTipGas: TipGas? = null): Boolean {
+        val message = preflightMessage ?: return true
+        val result = viewModel.preflightTransaction(message, chain, account, cachedTipGas) ?: return true
+        tipGas = result.tipGas
+        signData?.tipGas = result.tipGas
+        if (result.insufficientBalance) {
+            stopEstimatedGasRefresh("insufficient_balance")
+            TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(result.balance)
+                .showNow(parentFragmentManager, TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG)
+            dismiss()
+            return false
+        }
+        return true
+    }
 
     private fun stopEstimatedGasRefresh(reason: String) {
         estimateGasJob?.let {
@@ -364,54 +397,29 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private fun refreshEstimatedGasAndAsset(chain: Chain) {
-        val signData = this.signData ?: return
-
-        val tx = signData.signMessage
-        if (tx !is WCEthereumTransaction) return
-        val assetId = chain.getWeb3ChainId()
-
         stopEstimatedGasRefresh("restart")
-        Timber.d("$TAG estimateGas start topic=$topic requestId=${sessionRequest?.request?.id} step=$step chain=${chain.chainId} assetId=$assetId from=${tx.from} to=${tx.to} value=${tx.value} dataLength=${tx.data?.length ?: 0}")
+        var cachedTipGas = tipGas
         estimateGasJob = tickerFlow(15.seconds)
             .onEach {
                 if (processCompleted || step == Step.Done || step == Step.Sending) {
                     stopEstimatedGasRefresh("step_$step")
                     return@onEach
                 }
-                Timber.d("$TAG estimateGas tick topic=$topic requestId=${sessionRequest?.request?.id} step=$step chain=${chain.chainId}")
-                asset = viewModel.refreshAsset(assetId)
-                if (version == WalletConnect.Version.V2) {
-                    try {
-                        val r =
-                            viewModel.estimateFee(
-                                EstimateFeeRequest(
-                                    assetId,
-                                    null,
-                                    tx.data,
-                                    tx.from,
-                                    tx.to,
-                                    tx.value,
-                                )
-                            )
-                        if (r.isSuccess.not()){
-                            Timber.d("$TAG estimateGas result topic=$topic requestId=${sessionRequest?.request?.id} step=$step success=false errorCode=${r.errorCode} errorDescription=${r.errorDescription}")
-                            step = Step.Error
-                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                            tipGas = null
-                        } else {
-                            tipGas = buildTipGas(chain.chainId, r.data!!)
-                            Timber.d("$TAG estimateGas result topic=$topic requestId=${sessionRequest?.request?.id} step=$step success=true gasLimit=${tipGas?.gasLimit} maxFeePerGas=${tipGas?.maxFeePerGas} maxPriorityFeePerGas=${tipGas?.maxPriorityFeePerGas}")
-                        }
-                        if (tipGas != null) {
-                            signData.tipGas = tipGas
-                        }
-                    } catch (e: Exception) {
-                        Timber.e(e, "$TAG estimateGas exception topic=$topic requestId=${sessionRequest?.request?.id} step=$step")
-                        Timber.e(e)
-                    }
+                try {
+                    val initialTipGas = cachedTipGas
+                    cachedTipGas = null
+                    if (!preflightTransaction(initialTipGas)) return@onEach
+                    asset = viewModel.refreshAsset(chain.getWeb3ChainId())
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    tipGas = null
+                    signData?.tipGas = null
+                    handleException(e)
+                    stopEstimatedGasRefresh("error")
                 }
             }
-            .launchIn(lifecycleScope)
+            .launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
     private fun doAfterPinComplete(pin: String) =
@@ -419,6 +427,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             stopEstimatedGasRefresh("confirm")
             step = Step.Loading
             try {
+                if (!preflightTransaction(tipGas)) return@launch
                 val error =
                     withContext(Dispatchers.IO) {
                         if (onPinCompleteAction != null) {
@@ -435,7 +444,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     }
                 if (error == null) {
                     step =
-                        if (isSignEvmTransaction() || isSignSolanaTransaction() || isSendBitcoinTransfer()) {
+                        if (isSendEvmTransaction() || isSignSolanaTransaction() || isSendBitcoinTransfer()) {
                             try {
                                 step = Step.Sending
                                 val sendError =
@@ -472,6 +481,8 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     errorInfo = error
                     step = Step.Error
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 handleException(e)
             }
@@ -588,7 +599,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         )
     }
 
-    private fun isSignEvmTransaction() = signData != null && signData?.signMessage is WCEthereumTransaction
+    private fun isSendEvmTransaction() = signData?.sessionRequest?.request?.method == Method.ETHSendTransaction.name
 
     private fun isSignSolanaTransaction() = signData != null && signData?.signMessage is VersionedTransactionCompat
 
