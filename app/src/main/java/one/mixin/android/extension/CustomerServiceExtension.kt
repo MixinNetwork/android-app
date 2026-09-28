@@ -32,19 +32,13 @@ fun Fragment.openWebBottomSheet(
 }
 
 fun isCustomerServiceUrl(url: String): Boolean {
-    if (url.startsWith(Constants.HelpLink.CUSTOMER_SERVICE)) {
-        return true
-    }
     val currentUri = runCatching { Uri.parse(url) }.getOrNull() ?: return false
     val targetUri = Uri.parse(Constants.HelpLink.CUSTOMER_SERVICE)
     val currentPath = currentUri.path.orEmpty().trimEnd('/')
     val targetPath = targetUri.path.orEmpty().trimEnd('/')
-    val currentWebsiteId = currentUri.getQueryParameter("website_id")
-    val targetWebsiteId = targetUri.getQueryParameter("website_id")
     return currentUri.scheme.equals(targetUri.scheme, ignoreCase = true) &&
         currentUri.host.equals(targetUri.host, ignoreCase = true) &&
-        currentPath == targetPath &&
-        (currentWebsiteId.isNullOrBlank() || currentWebsiteId == targetWebsiteId)
+        currentPath == targetPath
 }
 
 fun Context.openCustomerServiceIfMatched(

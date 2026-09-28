@@ -3,18 +3,12 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.os.Bundle
-import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentAddressChangedBottomBinding
 import one.mixin.android.extension.getParcelableCompat
-import one.mixin.android.extension.toast
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.ConversationActivity
-import one.mixin.android.ui.setting.SettingViewModel
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.BottomSheet
@@ -37,7 +31,6 @@ class AddressChangedBottomSheet : MixinBottomSheetDialogFragment() {
     private val token: TokenItem by lazy {
         requireArguments().getParcelableCompat("token", TokenItem::class.java)!!
     }
-    private val viewModel by viewModels<SettingViewModel>()
     private val bottomSendBinding by viewBinding(FragmentAddressChangedBottomBinding::inflate)
 
     @SuppressLint("RestrictedApi")
@@ -54,15 +47,8 @@ class AddressChangedBottomSheet : MixinBottomSheetDialogFragment() {
             content.text = getString(R.string.depost_address_updated_description, token.symbol)
             gotItTv.setOnClickListener { dismiss() }
             contactSupport.setOnClickListener {
-                lifecycleScope.launch {
-                    val userTeamMixin = viewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
-                    if (userTeamMixin == null) {
-                        toast(R.string.Data_error)
-                    } else {
-                        ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
-                        dismiss()
-                    }
-                }
+                openCustomerService()
+                dismiss()
             }
         }
     }

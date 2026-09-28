@@ -34,16 +34,15 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.notEmptyWithElse
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
-import one.mixin.android.extension.toast
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.profile.MySharedAppsFragment
 import one.mixin.android.ui.common.showUserBottom
-import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.home.bot.Bot
 import one.mixin.android.ui.home.bot.BotManagerViewModel
@@ -382,14 +381,7 @@ class ExploreFragment : BaseFragment() {
                     }
                 }
                 INTERNAL_SUPPORT_ID -> {
-                    lifecycleScope.launch {
-                        val userTeamMixin = botManagerViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
-                        if (userTeamMixin == null) {
-                            toast(R.string.Data_error)
-                        } else {
-                            ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
-                        }
-                    }
+                    openCustomerService()
                 }
             }
         } else {

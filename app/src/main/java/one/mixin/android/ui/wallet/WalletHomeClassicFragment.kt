@@ -52,6 +52,7 @@ import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openAsUrlOrWeb
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
@@ -63,7 +64,6 @@ import one.mixin.android.job.RefreshWeb3TokenJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
@@ -796,14 +796,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         override fun onCashClicked() = Unit
 
         override fun onSupportClicked() {
-            lifecycleScope.launch {
-                val user = web3ViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
-                if (user == null) {
-                    toast(R.string.Data_error)
-                } else {
-                    ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
-                }
-            }
+            openCustomerService()
         }
 
         override fun onHelpCenterClicked() {
