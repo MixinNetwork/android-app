@@ -9,7 +9,7 @@ class AssetChangeListConverter {
     private val gson = Gson()
 
     @ColumnTypeConverter
-    fun fromAssetChangeList(value: List<AssetChange>?): String {
+    fun fromAssetChangeList(value: List<AssetChange>?): String? {
         return if (value == null) {
             "[]"
         } else {

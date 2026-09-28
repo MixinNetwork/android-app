@@ -184,7 +184,7 @@ class TokenRepositoryWalletTransactionTest {
         assertEquals("pending", assertNotNull(raw("signed")).state)
         assertEquals("pending", assertNotNull(transaction("signed")).status)
         assertNull(raw("broadcast"))
-        withTimeout(5_000) { wallet.withRoomTransaction { Unit } }
+        withTimeout(5_000) { wallet.withRoomTransaction {} }
     }
 
     @Test
@@ -241,7 +241,7 @@ class TokenRepositoryWalletTransactionTest {
             repository.insertRawTransactionAndUpdateTransactionStatus(rawRecord("bitcoin", bitcoin), "bitcoin", "failed", bitcoin, hex)
             assertEquals(output, wallet.walletOutputDao().outputByOutpoint(output.transactionHash, 0, bitcoin))
         }
-        withTimeout(5_000) { wallet.withRoomTransaction { Unit } }
+        withTimeout(5_000) { wallet.withRoomTransaction {} }
     }
 
     @Test

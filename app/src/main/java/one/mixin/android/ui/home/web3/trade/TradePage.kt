@@ -115,8 +115,8 @@ fun TradePage(
     onRecommendedMarketViewAllClick: (SwapRecommendedMarketType, Boolean) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
     onShowAllMarkets: (String?, MarketSort?) -> Unit,
-    onShowAllOpenPositions: () -> Unit,
-    onShowAllClosedPositions: () -> Unit,
+    onShowAllOpenPositions: (String) -> Unit,
+    onShowAllClosedPositions: (String) -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
     onMarketItemClick: (PerpsMarket) -> Unit,
     onClosedPositionClick: (PerpsOrderItem) -> Unit,
@@ -313,7 +313,7 @@ fun TradePage(
                         if (!isPerpetualOrderBadgeDismissed) {
                             onDismissPerpetualOrderBadge()
                         }
-                        onShowAllOpenPositions()
+                        onShowAllOpenPositions(AnalyticsTracker.PerpsSource.PERPS_HOME_MENU)
                     } else {
                         onOrderList(currentWalletId, false, spotTypeForPage(pagerState.currentPage))
                     }
@@ -385,7 +385,7 @@ fun TradePage(
                     {
                         val source = when {
                             perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex ->
-                                AnalyticsTracker.CustomerServiceSource.TRADE_PERPS_HOME_MENU
+                                AnalyticsTracker.CustomerServiceSource.PERPS_HOME_MENU
                             pagerState.currentPage == 1 ->
                                 AnalyticsTracker.CustomerServiceSource.TRADE_ADVANCED_HOME_MENU
                             else ->

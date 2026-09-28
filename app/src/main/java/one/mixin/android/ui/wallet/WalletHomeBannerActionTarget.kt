@@ -18,6 +18,7 @@ internal sealed interface WalletHomeBannerActionTarget {
         val margin: String?,
         val leaderPositionId: String?,
     ) : WalletHomeBannerActionTarget
+    data class PerpsAddMargin(val marketId: String, val margin: String?) : WalletHomeBannerActionTarget
     data object PerpsTab : WalletHomeBannerActionTarget
     data object Buy : WalletHomeBannerActionTarget
     data class Web(val url: String) : WalletHomeBannerActionTarget
@@ -26,6 +27,9 @@ internal sealed interface WalletHomeBannerActionTarget {
 internal fun String.toClassicWalletHomeBannerActionTarget(): WalletHomeBannerActionTarget {
     toSpotTradeAction()?.let { return WalletHomeBannerActionTarget.SpotTrade(it) }
     toPerpsTradeAction()?.let { action ->
+        if (action.addMargin != null && action.marketId != null) {
+            return WalletHomeBannerActionTarget.PerpsAddMargin(action.marketId, action.addMargin.margin)
+        }
         return when (val marketId = action.marketId) {
             null -> WalletHomeBannerActionTarget.PerpsTab
             else -> action.openPosition?.let { openPosition ->
