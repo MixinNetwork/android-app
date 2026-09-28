@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet.home.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -37,6 +38,7 @@ internal fun SectionCard(
     contentUsesOwnPadding: Boolean = false,
     contentFlush: Boolean = false,
     showBottomSpacer: Boolean = true,
+    headerPadding: PaddingValues = PaddingValues(start = 20.dp, end = 20.dp, top = 20.dp, bottom = if (contentFlush) 0.dp else 20.dp),
     headerTrailing: (@Composable RowScope.() -> Unit)? = null,
     content: @Composable () -> Unit,
 ) {
@@ -44,12 +46,7 @@ internal fun SectionCard(
         modifier = Modifier
             .fillMaxWidth()
             .clickable { onClick() }
-            .padding(
-                start = 20.dp,
-                end = 20.dp,
-                top = 20.dp,
-                bottom = if (contentFlush) 0.dp else 20.dp,
-            ),
+            .padding(headerPadding),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {

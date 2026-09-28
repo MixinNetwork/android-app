@@ -2,12 +2,10 @@ package one.mixin.android.ui.common
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.app.Activity
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import one.mixin.android.R
-import one.mixin.android.ui.contacts.ContactsActivity
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.ExploreFragment
 import one.mixin.android.ui.home.web3.MarketFragment
@@ -59,10 +57,6 @@ class NavigationController() {
         } catch (e: Exception) {
             Timber.e(e)
         }
-    }
-
-    fun pushContacts(activity: Activity) {
-        ContactsActivity.show(activity)
     }
 
     fun showSearch(fm: FragmentManager) {

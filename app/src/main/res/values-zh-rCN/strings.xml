@@ -2611,4 +2611,7 @@
     <string name="earn_total_earnings">总收益</string>
     <string name="earn_yesterday_earnings">昨日收益</string>
     <string name="earn_reward_rate">收益率</string>
+    <string name="new_chat">发起聊天</string>
+    <string name="contacts_title">联系人</string>
+    <string name="contacts_search_hint">Mixin ID、姓名、手机号</string>
 </resources>

@@ -7,6 +7,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.ListPopupWindow
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
@@ -19,6 +20,7 @@ import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putInt
 import one.mixin.android.job.TipCounterSyncedLiveData
 import one.mixin.android.tip.wc.SortOrder
@@ -26,6 +28,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.inscription.menu.SortMenuAdapter
 import one.mixin.android.ui.home.inscription.menu.SortMenuData
 import one.mixin.android.ui.home.web3.Web3ViewModel
+import one.mixin.android.ui.search.SearchInscriptionFragment
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -77,6 +80,17 @@ class CollectiblesFragment : BaseFragment() {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
+            titleView.setSubTitle(getString(R.string.Collectibles), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
+            titleView.leftIb.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
+            titleView.rightIb.setOnClickListener { anchor ->
+                PopupMenu(requireContext(), anchor).apply {
+                    menu.add(R.string.Search).setOnMenuItemClickListener {
+                        navTo(SearchInscriptionFragment(), SearchInscriptionFragment.TAG)
+                        true
+                    }
+                    show()
+                }
+            }
             root.setOnClickListener {
                 // do nothing
             }
@@ -193,6 +207,11 @@ class CollectiblesFragment : BaseFragment() {
                 binding.sortArrow.animate().rotation(0f).setDuration(200).start()
             }
         }
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 
     private val menuAdapter: SortMenuAdapter by lazy {

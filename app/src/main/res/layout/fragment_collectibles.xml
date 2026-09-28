@@ -8,6 +8,14 @@
     android:gravity="center_horizontal"
     android:orientation="vertical">
 
+    <one.mixin.android.widget.TitleView
+        android:id="@+id/title_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:need_divider="false"
+        app:titleText="@string/Collectibles"
+        app:rightIcon="@drawable/ic_more" />
+
     <RelativeLayout
         android:layout_marginTop="6dp"
         android:layout_width="match_parent"
