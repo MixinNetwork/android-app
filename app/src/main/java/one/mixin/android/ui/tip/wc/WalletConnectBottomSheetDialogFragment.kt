@@ -13,7 +13,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.GsonBuilder
 import com.reown.walletkit.client.Wallet
@@ -41,6 +43,8 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.wc.WCChangeEvent
+import one.mixin.android.tip.wc.WCError
+import one.mixin.android.tip.wc.WCErrorEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectTIP
@@ -205,6 +209,20 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 RequestType.Pay -> Step.Done
             }
         checkV2ChainAndParseSignData()
+        if (requestType == RequestType.Connect) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    val error = WalletConnectV2.pairingErrors.await()
+                    if (step == Step.Connecting && dialog?.isShowing == true) {
+                        RxBus.publish(
+                            WCErrorEvent(
+                                WCError(error ?: IllegalStateException(getString(R.string.error_connection_timeout))),
+                            ),
+                        )
+                    }
+                }
+            }
+        }
     }
 
     override fun getBottomSheetHeight(view: View): Int {
