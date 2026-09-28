@@ -1260,7 +1260,9 @@ private fun validateTpSlPercent(
         priceScale = priceScale,
     )
     if (derivedPrice.isBlank()) {
-        val maxPercent = basis.zeroPriceRoiPercentCeiling().stripTrailingZeros().toPlainString()
+        val maxPercent = basis.zeroPriceRoiPercentCeiling()
+            .setScale(2, RoundingMode.DOWN)
+            .stripTrailingZeros().toPlainString()
         return MixinApplicationHolder.getString(R.string.error_percentage_must_be_less_than_value, "$maxPercent%")
     }
     return validateTpSlPrice(

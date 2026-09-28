@@ -303,9 +303,9 @@ private fun PerpsAddContent(
         ?.let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }.orEmpty()
     val liquidationState = remember(position.positionId, amount) { LiquidationPriceState() }
     val remoteLiquidationPrice = liquidationState.price
-    val isLiquidationLoading = liquidationState.isLoading
-    var liquidationPriceLimit by remember(position.positionId) { mutableStateOf<LiquidationPriceLimit?>(null) }
-    var liquidationError by remember(position.positionId) { mutableStateOf<String?>(null) }
+    var liquidationPriceLimit by remember(position.positionId, amount) { mutableStateOf<LiquidationPriceLimit?>(null) }
+    var liquidationError by remember(position.positionId, amount) { mutableStateOf<String?>(null) }
+    val isLiquidationLoading = liquidationState.isLoading && liquidationPriceLimit == null && liquidationError == null
     val hasInputAmount = amountValue != null && amountValue > BigDecimal.ZERO
 
     val minimumMargin = market?.minAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
@@ -329,22 +329,27 @@ private fun PerpsAddContent(
     val priceScale = market?.priceScale ?: position.priceScale
 
     LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin, position.updatedAt, market?.last) {
-        liquidationPriceLimit = null
-        liquidationError = null
         if (!shouldRequestLiquidationPrice(amountValue, minimumMargin) || aboveMaximumMargin) {
+            liquidationPriceLimit = null
+            liquidationError = null
             liquidationState.price = null
             return@LaunchedEffect
         }
         liquidationState.refresh {
             delay(200L)
+            var nextLimit: LiquidationPriceLimit? = null
+            var nextError: String? = null
             requestLiquidationPrice(
-                onLimitExceeded = { liquidationPriceLimit = it },
-                onFailure = { liquidationError = it ?: context.getString(R.string.Data_error) },
+                onLimitExceeded = { nextLimit = it },
+                onFailure = { nextError = it ?: context.getString(R.string.Data_error) },
             ) {
                 viewModel.estimateLiquidationPrice(
                     amount = normalizedAmount,
                     positionId = position.positionId,
                 )
+            }.also {
+                liquidationPriceLimit = nextLimit
+                liquidationError = nextError
             }
         }
     }
