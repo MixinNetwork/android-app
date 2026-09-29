@@ -11,6 +11,8 @@ import org.junit.Test
 import java.io.File
 import java.io.Serializable
 import java.lang.reflect.Modifier
+import java.net.JarURLConnection
+import java.net.URL
 import java.util.jar.JarFile
 
 class ReleaseKeepRulesTest {
@@ -68,7 +70,13 @@ class ReleaseKeepRulesTest {
     companion object {
         internal val appClasses by lazy {
             val names = setOf(TransferRequest::class.java, Base64::class.java)
-                .map { File(requireNotNull(it.protectionDomain?.codeSource?.location).toURI()) }
+                .map { type ->
+                    val path = type.name.replace('.', '/') + ".class"
+                    val resource = requireNotNull(type.getResource("/$path"))
+                    val source = if (resource.protocol == "jar") (resource.openConnection() as JarURLConnection).jarFileURL
+                        else URL(resource.toExternalForm().removeSuffix(path))
+                    File(source.toURI())
+                }
                 .distinct()
                 .flatMap { source ->
                     if (source.isDirectory) {
