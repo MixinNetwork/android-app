@@ -979,7 +979,7 @@
     <string name="Update">Обновить</string>
     <string name="update_downloaded">Только что было загружено обновление.</string>
     <string name="Update_Mixin">Обновить Mixin</string>
-    <string name="mixin_version_expired_description">Срок действия текущей версии истёк. Нажмите «Обновить» ниже, чтобы установить последнюю версию из магазина приложений. Не удаляйте приложение для повторной установки.</string>
+    <string name="mixin_version_expired_description">Срок действия этой версии истёк. Нажмите «Обновить» ниже, чтобы получить последнюю версию из магазина приложений. Обновите приложение напрямую, не удаляя его.</string>
     <string name="Upgrade_Database">Обновление базы данных</string>
     <string name="Upgrade_TIP">Обновить TIP</string>
     <string name="Upgrade_TIP_successfully">TIP успешно обновлен</string>

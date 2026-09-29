@@ -648,7 +648,7 @@
     <string name="Update">Perbarui</string>
     <string name="update_downloaded">Pembaruan baru saja diunduh.</string>
     <string name="Update_Mixin">Perbarui Mixin</string>
-    <string name="mixin_version_expired_description">Versi saat ini sudah tidak berlaku. Ketuk \"Perbarui\" di bawah untuk memperbarui ke versi terbaru dari toko aplikasi. Jangan hapus lalu instal ulang aplikasi.</string>
+    <string name="mixin_version_expired_description">Versi ini sudah tidak berlaku. Ketuk \"Perbarui\" di bawah untuk mendapatkan versi terbaru dari toko aplikasi. Perbarui langsung tanpa menghapus aplikasi.</string>
     <string name="Upgrade_Database">Tingkatkan Database</string>
     <string name="Upgrading">Meningkatkan</string>
     <string name="Upload_timeout">Batas waktu unggah</string>

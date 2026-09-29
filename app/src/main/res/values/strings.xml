@@ -1204,7 +1204,7 @@
     <string name="Update">Update</string>
     <string name="update_downloaded">An update has just been downloaded.</string>
     <string name="Update_Mixin">Update Mixin</string>
-    <string name="mixin_version_expired_description">The current version has expired. Please tap \"Update\" below to update to the latest version from the app store. Do not uninstall and reinstall the app.</string>
+    <string name="mixin_version_expired_description">This version has expired. Tap \"Update\" below to get the latest version from the app store. Please update directly without uninstalling the app.</string>
     <string name="Upgrade">Upgrade</string>
     <string name="Upgrade_Database">Upgrade Database</string>
     <string name="Upgrade_need_verify_your_PIN">The upgrade requires verifying your PIN.</string>

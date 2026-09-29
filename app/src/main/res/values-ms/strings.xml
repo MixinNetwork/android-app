@@ -702,7 +702,7 @@
     <string name="Update">Kemas kini</string>
     <string name="update_downloaded">Kemas kini baru sahaja dimuat turun.</string>
     <string name="Update_Mixin">Kemas kini Mixin</string>
-    <string name="mixin_version_expired_description">Versi semasa telah tamat tempoh. Sila ketik \"Kemas kini\" di bawah untuk mengemas kini ke versi terkini daripada gedung aplikasi. Jangan nyahpasang dan pasang semula aplikasi.</string>
+    <string name="mixin_version_expired_description">Versi ini telah tamat tempoh. Ketik \"Kemas kini\" di bawah untuk mendapatkan versi terkini daripada gedung aplikasi. Sila kemas kini terus tanpa menyahpasang aplikasi.</string>
     <string name="Upgrade_Database">Naik taraf Pangkalan Data</string>
     <string name="Upgrading">Menaik taraf</string>
     <string name="Upload_timeout">Tamat masa muat naik</string>
