@@ -5,6 +5,7 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.perps.PerpsFavorite
 import one.mixin.android.api.response.perps.PerpsMarketCategoryRelation
 import one.mixin.android.crypto.Base64
+import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -39,7 +40,11 @@ class ReleaseKeepRulesTest {
     fun apiFieldsHaveStableJsonNamesOrExplicitKeepRules() {
         val retained = setOf(PerpsFavorite::class.java, PerpsMarketCategoryRelation::class.java)
         val violations = appClasses
-            .filter { it.name.startsWith("one.mixin.android.api.request.") || it.name.startsWith("one.mixin.android.api.response.") }
+            .filter {
+                it.name.startsWith("one.mixin.android.api.request.") ||
+                    it.name.startsWith("one.mixin.android.api.response.") ||
+                    it == AlertUpdateRequest::class.java
+            }
             .filterNot { it in retained || Enum::class.java.isAssignableFrom(it) }
             .flatMap { it.declaredFields.toList() }
             .filter { field ->
@@ -61,7 +66,7 @@ class ReleaseKeepRulesTest {
         }
 
     companion object {
-        private val appClasses by lazy {
+        internal val appClasses by lazy {
             val names = setOf(TransferRequest::class.java, Base64::class.java)
                 .map { File(requireNotNull(it.protectionDomain?.codeSource?.location).toURI()) }
                 .distinct()
