@@ -1459,12 +1459,8 @@ class TradeFragment : BaseFragment() {
         updateMixinDialog =
             alertDialogBuilder()
                 .setTitle(R.string.Update_Mixin)
-                .setMessage(
-                    getString(
-                        R.string.update_mixin_description,
-                        requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName,
-                    ),
-                ).setNegativeButton(R.string.Later) { dialog, _ ->
+                .setMessage(R.string.mixin_version_expired_description)
+                .setNegativeButton(R.string.Later) { dialog, _ ->
                     dialog.dismiss()
                     activity?.onBackPressedDispatcher?.onBackPressed()
                 }.setPositiveButton(R.string.Update) { dialog, _ ->

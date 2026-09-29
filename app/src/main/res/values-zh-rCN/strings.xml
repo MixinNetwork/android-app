@@ -1175,7 +1175,7 @@
     <string name="Update">升级</string>
     <string name="update_downloaded">一个更新刚下载完成。</string>
     <string name="Update_Mixin">升级 Mixin</string>
-    <string name="update_mixin_description">当前版本（%1$s）不再可用!\n请点击下面的“更新”按钮从应用商店更新到最新版本。</string>
+    <string name="mixin_version_expired_description">当前版本已失效，请点击下方 \"更新\" 从应用商店更新至最新版，请不要卸载再重新安装。</string>
     <string name="Upgrade">升级</string>
     <string name="Upgrade_Database">数据库升级</string>
     <string name="Upgrade_need_verify_your_PIN">升级需要验证你的 PIN</string>

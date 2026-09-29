@@ -970,7 +970,7 @@
     <string name="Update">アップデート</string>
     <string name="update_downloaded">アップデータをダウンロード中</string>
     <string name="Update_Mixin">Mixinのアップデート</string>
-    <string name="update_mixin_description">現在のバージョン(%1$s)は使用できなくなりました。\n「アップデート」をクリックして、Google Playから最新バージョンにアップデートしてください。</string>
+    <string name="mixin_version_expired_description">現在のバージョンは有効期限が切れています。下の「アップデート」をタップして、アプリストアから最新バージョンに更新してください。アンインストールしてから再インストールしないでください。</string>
     <string name="Upgrade_Database">データベースをアップグレード</string>
     <string name="Upgrade_TIP">TIPをアップグレード</string>
     <string name="Upgrade_TIP_successfully">TIPをアップグレードしました</string>
