@@ -9,6 +9,7 @@ import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.showUserBottom
 
@@ -26,7 +27,12 @@ class ContactListFragment : BaseFragment() {
             setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
             setContent {
                 val users by contacts.observeAsState(emptyList())
-                ContactsPage(users, { requireActivity().onBackPressedDispatcher.onBackPressed() }, { showUserBottom(parentFragmentManager, it) })
+                ContactsPage(
+                    contacts = users,
+                    onBack = { requireActivity().onBackPressedDispatcher.onBackPressed() },
+                    onContact = { showUserBottom(parentFragmentManager, it) },
+                    onAddContact = { navTo(AddPeopleFragment.newInstance(), AddPeopleFragment.TAG) },
+                )
             }
         }
 }

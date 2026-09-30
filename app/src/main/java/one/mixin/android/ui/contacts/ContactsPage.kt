@@ -92,7 +92,7 @@ internal fun ContactsPage(
     MixinAppTheme {
         val nameColor = MixinAppTheme.colors.textMinor.toArgb()
         Column(Modifier.fillMaxSize().background(MixinAppTheme.colors.background)) {
-            ContactPageHeader(stringResource(if (newChat) R.string.new_chat else R.string.My_Contacts), onBack, newChat)
+            ContactPageHeader(stringResource(if (newChat) R.string.new_chat else R.string.My_Contacts), onBack, newChat, onAddContact)
             ContactsSearchField(query, { query = it }, stringResource(R.string.contacts_search_hint), newChat)
             BoxWithConstraints(Modifier.weight(1f)) {
                 LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
@@ -109,9 +109,15 @@ internal fun ContactsPage(
                         }
                         items(users, key = { it.userId }) { user ->
                             Row(Modifier.fillMaxWidth().clickable { onContact(user) }.height(70.dp).padding(start = 20.dp, end = 40.dp, bottom = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                                UserAvatarImage(user, 50.dp)
+                                UserAvatarImage(user, if (newChat) 50.dp else 42.dp)
                                 Spacer(Modifier.width(16.dp))
-                                AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(user); it.setTextColor(nameColor) }, modifier = Modifier.weight(1f))
+                                Column(Modifier.weight(1f)) {
+                                    AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(user); it.setTextColor(nameColor) })
+                                    if (!newChat) {
+                                        Spacer(Modifier.height(4.dp))
+                                        Text(user.identityNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp)
+                                    }
+                                }
                             }
                         }
                     }
@@ -159,13 +165,15 @@ internal fun contactLetterAt(y: Float, height: Int): String =
     contactLetters[(y / height.coerceAtLeast(1) * contactLetters.size).toInt().coerceIn(contactLetters.indices)]
 
 @Composable
-internal fun ContactPageHeader(title: String, onBack: () -> Unit, close: Boolean = false) {
+internal fun ContactPageHeader(title: String, onBack: () -> Unit, close: Boolean = false, onAddContact: (() -> Unit)? = null) {
     Row(Modifier.fillMaxWidth().height(if (close) 70.dp else 64.dp).padding(end = if (close) 5.dp else 0.dp), verticalAlignment = Alignment.CenterVertically) {
         if (!close) IconButton(onClick = onBack) { Icon(painterResource(R.drawable.ic_back), stringResource(R.string.Cancel), tint = MixinAppTheme.colors.textPrimary) }
         Text(title, color = if (close) MixinAppTheme.colors.textMinor else MixinAppTheme.colors.textPrimary, fontSize = 18.sp, lineHeight = 21.sp, letterSpacing = if (close) (-0.4).sp else 0.sp, fontWeight = if (close) FontWeight.W600 else FontWeight.W500,
             modifier = Modifier.weight(1f).padding(start = if (close) 16.dp else 0.dp), textAlign = if (close) TextAlign.Start else TextAlign.Center)
         if (close) {
             IconButton(onClick = onBack) { Icon(painterResource(R.drawable.ic_circle_close), stringResource(R.string.Close), tint = Color.Unspecified, modifier = Modifier.size(26.dp)) }
+        } else if (onAddContact != null) {
+            IconButton(onClick = onAddContact) { Icon(painterResource(R.drawable.ic_profile_add_contact), stringResource(R.string.Add_Contact), tint = MixinAppTheme.colors.textPrimary, modifier = Modifier.size(24.dp)) }
         } else Spacer(Modifier.width(48.dp))
     }
 }
