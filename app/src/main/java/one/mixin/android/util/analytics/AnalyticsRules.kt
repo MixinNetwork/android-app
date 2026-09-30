@@ -83,6 +83,13 @@ internal object AnalyticsRules {
     fun spotOrderDetailEvent(type: String) =
         AnalyticsEvent("trade_spot_order_detail", mapOf("type" to type))
 
+    fun perpsAdjustmentSource(source: String, defaultSource: String): String =
+        when (source) {
+            AnalyticsTracker.PerpsSource.APP_CARD -> AnalyticsTracker.PerpsSource.APP_CARD
+            AnalyticsTracker.MarketDetailSource.SCHEMA, AnalyticsTracker.TradeSource.SCHEMA, AnalyticsTracker.PerpsSource.URL -> AnalyticsTracker.PerpsSource.URL
+            else -> defaultSource
+        }
+
     fun assetVisibilityEvent(
         hidden: Boolean,
         wallet: String,

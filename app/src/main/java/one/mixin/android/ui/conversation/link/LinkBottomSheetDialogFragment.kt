@@ -1162,11 +1162,13 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     market.tokenSymbol,
                     source,
                     leaderPositionId = action.leaderPositionId,
+                    addMargin = action.addMargin != null,
+                    initialMargin = action.addMargin?.margin,
                 )
             } else {
                 val (previewMarket, preview) = perpsViewModel.prepareLinkPreview(market, openPosition, action.leaderPositionId, source)
                 if (preview != PerpsLinkPreview.Input) {
-                    showPerpsLinkPreview(previewMarket, openPosition, action.leaderPositionId, preview)
+                    showPerpsLinkPreview(previewMarket, openPosition, action.leaderPositionId, preview, source)
                     return
                 }
                 PerpsActivity.showOpenPosition(
@@ -1224,6 +1226,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         action: PerpsOpenPositionAction,
         leaderPositionId: String?,
         preview: PerpsLinkPreview,
+        source: String,
     ) {
         lifecycle.withResumed {
             val manager = parentFragmentManager
@@ -1260,6 +1263,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                         leverage = action.leverage,
                         margin = action.margin,
                         error = getString(R.string.error_already_had_open_position),
+                        source = source,
                         position = preview.position,
                         leaderPositionId = leaderPositionId,
                         liquidationPrice = preview.liquidationPrice,
@@ -1276,6 +1280,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                         leverage = action.leverage,
                         margin = action.margin,
                         error = preview.message,
+                        source = source,
                         liquidationPrice = preview.liquidationPrice,
                     ).showNow(manager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
                 }

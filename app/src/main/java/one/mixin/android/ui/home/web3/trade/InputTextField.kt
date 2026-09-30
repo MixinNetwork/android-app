@@ -53,7 +53,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.inscription.component.AutoSizeText
 import one.mixin.android.widget.CoilRoundedHexagonTransformation
-import java.math.BigDecimal
 
 internal const val TRADE_INPUT_MAX_DECIMAL_PLACES = 8
 
@@ -80,6 +79,8 @@ internal fun isTradeInputDecimalAllowed(
     value: String,
     maxDecimalPlaces: Int? = TRADE_INPUT_MAX_DECIMAL_PLACES,
 ): Boolean {
+    val decimalValue = if (value.startsWith('.')) "0$value" else value
+    if (value.isNotBlank() && decimalValue.toBigDecimalOrNull() == null) return false
     maxDecimalPlaces ?: return true
     val decimalIndex = value.indexOf('.')
     if (maxDecimalPlaces == 0) return decimalIndex < 0
@@ -185,11 +186,6 @@ fun InputContent(
                                 return@BasicTextField
                             }
                             textFieldValue = it
-                            try {
-                                if (it.text.isBlank()) BigDecimal.ZERO else BigDecimal(it.text)
-                            } catch (e: Exception) {
-                                return@BasicTextField
-                            }
                             onInputChanged?.invoke(it.text)
                         },
                         maxLines = 1,

@@ -23,6 +23,7 @@ class ErrorHandlerDatabaseErrorTest {
     @Before
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+        @Suppress("DEPRECATION")
         val resources = object : Resources(context.assets, context.resources.displayMetrics, context.resources.configuration) {
             override fun getString(id: Int): String = when (id) {
                 R.string.Data_error -> "Data error"

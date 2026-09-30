@@ -461,7 +461,7 @@ private fun MarketRecommendations(
                 entry = entry,
                 selected = selected,
                 quoteColorReversed = quoteColorReversed,
-                perpetualBadgeStyle = PerpetualMarketBadgeStyle.PERPETUAL,
+                perpetualBadgeStyle = PerpetualMarketBadgeStyle.LEVERAGE,
                 onSelect = {
                     selectedIds =
                         if (selected) {
@@ -531,7 +531,7 @@ private fun MarketRow(
                 market = entry.market,
                 isFavored = entry.isFavored,
                 quoteColorReversed = settings.quoteColorReversed,
-                badgeStyle = PerpetualMarketBadgeStyle.PERPETUAL,
+                badgeStyle = PerpetualMarketBadgeStyle.LEVERAGE,
                 onFavorite = onFavorite,
                 onClick = onClick,
             )
