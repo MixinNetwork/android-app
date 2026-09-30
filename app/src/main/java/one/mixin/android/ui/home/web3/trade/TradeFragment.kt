@@ -592,16 +592,16 @@ class TradeFragment : BaseFragment() {
                                 onShowAllMarkets = { initialCategory, initialSort ->
                                     PerpsMarketListBottomSheetDialogFragment.newInstance(initialCategory, initialSort).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
                                 },
-                                onShowAllOpenPositions = {
+                                onShowAllOpenPositions = { source ->
                                     requireActivity().supportFragmentManager.navigateToPerpsRoute(
-                                        AllPositionsFragment.newOpenInstance(),
+                                        AllPositionsFragment.newOpenInstance(source),
                                         AllPositionsFragment.TAG,
                                         R.id.container,
                                     )
                                 },
-                                onShowAllClosedPositions = {
+                                onShowAllClosedPositions = { source ->
                                     requireActivity().supportFragmentManager.navigateToPerpsRoute(
-                                        AllPositionsFragment.newClosedInstance(),
+                                        AllPositionsFragment.newClosedInstance(source),
                                         AllPositionsFragment.TAG,
                                         R.id.container,
                                     )

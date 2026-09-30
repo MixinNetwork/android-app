@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -72,6 +73,7 @@ internal fun WalletHomeCard(
     val contentPadding = when {
         card.hasSelfPaddedItems() -> Modifier
         card == WalletHomeCardType.BALANCE -> Modifier.padding(top = 20.dp, bottom = 12.dp)
+        card == WalletHomeCardType.CASH -> Modifier.padding(start = 16.dp, top = 20.dp, end = 20.dp, bottom = 20.dp)
         else -> Modifier.padding(20.dp)
     }
     Column(
@@ -99,7 +101,7 @@ internal fun WalletHomeCard(
             WalletHomeCardType.BANNER -> Unit
             WalletHomeCardType.CASH -> CashAccountCard(
                 cashAccount = state.cashAccount,
-                callbacks = callbacks,
+                quoteColorReversed = state.quoteColorReversed,
             )
             WalletHomeCardType.ACCOUNTS -> Unit
             WalletHomeCardType.POSITIONS -> SectionCard(
@@ -234,7 +236,7 @@ internal fun WalletHomeCard(
 @Composable
 private fun CashAccountCard(
     cashAccount: WalletHomeCashAccount?,
-    callbacks: WalletHomeCallbacks,
+    quoteColorReversed: Boolean,
 ) {
     if (cashAccount == null) return
 
@@ -248,14 +250,14 @@ private fun CashAccountCard(
             contentDescription = null,
             modifier = Modifier.size(42.dp),
         )
-        Spacer(modifier = Modifier.width(14.dp))
+        Spacer(modifier = Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.heightIn(min = 18.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = stringResource(R.string.cash_balance),
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 14.sp,
-                    lineHeight = 17.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
                     fontWeight = FontWeight.W400,
                     style = CashAccountTextStyle,
                     maxLines = 1,
@@ -273,15 +275,9 @@ private fun CashAccountCard(
                 )
                 cashAccount.apyText?.let { apyText ->
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(
+                    AccountApy(
                         text = stringResource(R.string.cash_account_apy, apyText),
-                        color = Color(0xFF5ECF72),
-                        fontSize = 14.sp,
-                        lineHeight = 16.sp,
-                        fontWeight = FontWeight.W400,
-                        style = CashAccountTextStyle,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        quoteColorReversed = quoteColorReversed,
                     )
                 }
             }

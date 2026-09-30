@@ -19,7 +19,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
         SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
-        WHERE o.order_type IN ('open', 'increase_position', 'close')
+        WHERE o.order_type IN ('open', 'increase_position', 'increase_margin', 'decrease_margin', 'close')
         AND o.status != 'processing'
         AND (:offset IS NULL OR o.created_at < :offset)
         ORDER BY o.created_at DESC
@@ -31,7 +31,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
         SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
-        WHERE o.order_type IN ('open', 'increase_position', 'close')
+        WHERE o.order_type IN ('open', 'increase_position', 'increase_margin', 'decrease_margin', 'close')
         AND o.status != 'processing'
         ORDER BY o.created_at DESC
         LIMIT :limit
@@ -42,7 +42,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
         SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
-        WHERE o.order_type IN ('open', 'increase_position', 'close')
+        WHERE o.order_type IN ('open', 'increase_position', 'increase_margin', 'decrease_margin', 'close')
         AND o.status != 'processing'
         ORDER BY o.created_at DESC
     """)
@@ -52,7 +52,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
         SELECT o.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
         FROM perps_orders o
         LEFT JOIN markets m ON m.market_id = o.market_id
-        WHERE o.order_type IN ('open', 'increase_position', 'close')
+        WHERE o.order_type IN ('open', 'increase_position', 'increase_margin', 'decrease_margin', 'close')
         AND o.status != 'processing'
         AND o.market_id = :marketId
         ORDER BY o.created_at DESC
@@ -82,7 +82,7 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     @Query("DELETE FROM perps_orders")
     suspend fun deleteAll()
 
-    @Query("SELECT MAX(updated_at) FROM perps_orders")
+    @Query("SELECT MAX(updated_at) FROM perps_orders WHERE status IN ('filled', 'rejected', 'closed')")
     suspend fun getLatestUpdatedAt(): String?
 
     @Query("SELECT SUM(CAST(realized_pnl AS REAL)) FROM perps_orders WHERE order_type = 'close'")
