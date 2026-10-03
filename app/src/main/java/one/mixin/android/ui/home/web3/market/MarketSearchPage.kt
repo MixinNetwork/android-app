@@ -527,7 +527,7 @@ private fun PerpetualMarketSearchRow(
     MarketSearchRow(
         iconUrl = market.iconUrl,
         title = market.tokenSymbol,
-        badge = stringResource(R.string.Perp),
+        badge = "${market.leverage}x",
         subtitle = stringResource(R.string.volume_label, formatSearchPerpetualVolume(market.volume)),
         price = formatPerpsMarketListPrice(market.last),
         change = market.changePercentValue(),
