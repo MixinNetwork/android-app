@@ -24,12 +24,8 @@ class OldVersionFragment : BaseFragment(R.layout.fragment_old_version) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        binding.apply {
-            desTv.text =
-                getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName)
-            updateTv.setOnClickListener {
-                requireContext().openMarket()
-            }
+        binding.updateTv.setOnClickListener {
+            requireContext().openMarket()
         }
     }
 }

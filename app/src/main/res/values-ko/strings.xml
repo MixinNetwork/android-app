@@ -1191,7 +1191,7 @@
     <string name="Update">업데이트</string>
     <string name="update_downloaded">업데이트가 방금 다운로드되었습니다.</string>
     <string name="Update_Mixin">Mixin 업데이트</string>
-    <string name="update_mixin_description">현재 버전(%1$s)은 더 이상 사용할 수 없습니다!\nGoogle Play에서 최신 버전으로 업데이트하려면 아래 \"업데이트\"를 클릭하세요.</string>
+    <string name="mixin_version_expired_description">이 버전은 만료되었습니다. 아래 \"업데이트\"를 눌러 앱 스토어에서 최신 버전으로 업데이트하세요. 앱을 삭제하지 말고 바로 업데이트하세요.</string>
     <string name="Upgrade">업그레이드</string>
     <string name="Upgrade_Database">데이터베이스 업그레이드</string>
     <string name="Upgrade_need_verify_your_PIN">업그레이드하려면 PIN 확인이 필요합니다.</string>
