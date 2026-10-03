@@ -65,6 +65,7 @@ import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -250,7 +251,6 @@ import one.mixin.android.vo.giphy.Image
 import one.mixin.android.vo.isAppCard
 import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isAudio
-import one.mixin.android.vo.isData
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
 import one.mixin.android.vo.isSticker
@@ -258,7 +258,6 @@ import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.mediaExists
 import one.mixin.android.vo.saveToLocal
-import one.mixin.android.vo.supportSticker
 import one.mixin.android.vo.toApp
 import one.mixin.android.vo.toTranscript
 import one.mixin.android.vo.toUser
@@ -281,6 +280,7 @@ import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
 import one.mixin.android.widget.LinearSmoothScrollerCustom
 import one.mixin.android.widget.MixinHeadersDecoration
+import one.mixin.android.widget.ToolView
 import one.mixin.android.widget.buildBottomSheetView
 import one.mixin.android.widget.gallery.MimeType
 import one.mixin.android.widget.gallery.ui.GalleryActivity.Companion.IS_VIDEO
@@ -423,36 +423,30 @@ class ConversationFragment() :
         }
     }
 
-    private fun checkPinMessage() {
-        if (messageAdapter.selectSet.valueAt(0).canNotPin()) {
-            binding.toolView.pinIv.visibility = GONE
-        } else {
-            messageAdapter.selectSet.valueAt(0).messageId.let { messageId ->
-                lifecycleScope.launch {
-                    if (isGroup) {
-                        val role =
-                            withContext(Dispatchers.IO) {
-                                chatViewModel.findParticipantById(
-                                    conversationId,
-                                    Session.getAccountId()!!,
-                                )?.role
-                            }
-                        if (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name) {
-                            binding.toolView.pinIv.visibility = GONE
-                            return@launch
-                        }
-                    }
-                    val pinMessage = chatViewModel.findPinMessageById(messageId)
-                    if (pinMessage == null) {
-                        binding.toolView.pinIv.tag = PinAction.PIN
-                        binding.toolView.pinIv.setImageResource(R.drawable.ic_message_pin)
-                        binding.toolView.pinIv.visibility = VISIBLE
-                    } else {
-                        binding.toolView.pinIv.tag = PinAction.UNPIN
-                        binding.toolView.pinIv.setImageResource(R.drawable.ic_message_unpin)
-                        binding.toolView.pinIv.visibility = VISIBLE
-                    }
+    private var pinMessageJob: Job? = null
+
+    private fun updateMessageSelection() {
+        pinMessageJob?.cancel()
+        val messages = messageAdapter.selectSet.toList()
+        binding.toolView.updateSelection(messages)
+        if (messages.isEmpty()) {
+            binding.toolView.fadeOut()
+        } else if (!binding.toolView.isVisible) {
+            binding.toolView.fadeIn()
+        }
+        messageAdapter.notifyItemRangeChanged(0, messageAdapter.itemCount)
+        val message = messages.singleOrNull() ?: return
+        if (message.canNotPin()) return
+        pinMessageJob = viewLifecycleOwner.lifecycleScope.launch {
+            if (isGroup) {
+                val role = withContext(Dispatchers.IO) {
+                    chatViewModel.findParticipantById(conversationId, Session.getAccountId()!!)?.role
                 }
+                if (role != ParticipantRole.OWNER.name && role != ParticipantRole.ADMIN.name) return@launch
+            }
+            val pinAction = if (chatViewModel.findPinMessageById(message.messageId) == null) PinAction.PIN else PinAction.UNPIN
+            if (messageAdapter.selectSet.size == 1 && messageAdapter.selectSet.valueAt(0).messageId == message.messageId) {
+                binding.toolView.updateSelection(messageAdapter.selectSet.toList(), pinAction)
             }
         }
     }
@@ -469,92 +463,20 @@ class ConversationFragment() :
                 } else {
                     messageAdapter.removeSelect(messageItem)
                 }
-                binding.toolView.countTv.text = messageAdapter.selectSet.size.toString()
-                when {
-                    messageAdapter.selectSet.isEmpty() -> binding.toolView.fadeOut()
-                    messageAdapter.selectSet.size == 1 -> {
-                        try {
-                            if (messageAdapter.selectSet.valueAt(0).isText()) {
-                                binding.toolView.copyIv.visibility = VISIBLE
-                            } else {
-                                binding.toolView.copyIv.visibility = GONE
-                            }
-                        } catch (e: ArrayIndexOutOfBoundsException) {
-                            binding.toolView.copyIv.visibility = GONE
-                        }
-                        if (messageAdapter.selectSet.valueAt(0).isData()) {
-                            binding.toolView.shareIv.visibility = VISIBLE
-                        } else {
-                            binding.toolView.shareIv.visibility = GONE
-                        }
-                        if (messageAdapter.selectSet.valueAt(0).supportSticker()) {
-                            binding.toolView.addStickerIv.visibility = VISIBLE
-                        } else {
-                            binding.toolView.addStickerIv.visibility = GONE
-                        }
-                        if (messageAdapter.selectSet.valueAt(0).canNotReply()) {
-                            binding.toolView.replyIv.visibility = GONE
-                        } else {
-                            binding.toolView.replyIv.visibility = VISIBLE
-                        }
-                        checkPinMessage()
-                    }
-                    else -> {
-                        binding.toolView.forwardIv.visibility = VISIBLE
-                        binding.toolView.replyIv.visibility = GONE
-                        binding.toolView.copyIv.visibility = GONE
-                        binding.toolView.addStickerIv.visibility = GONE
-                        binding.toolView.shareIv.visibility = GONE
-                        binding.toolView.pinIv.visibility = GONE
-                    }
-                }
-                if (messageAdapter.selectSet.size > 99 || messageAdapter.selectSet.any { it.canNotForward() }) {
-                    binding.toolView.forwardIv.visibility = GONE
-                } else {
-                    binding.toolView.forwardIv.visibility = VISIBLE
-                }
-                messageAdapter.notifyItemRangeChanged(0, messageAdapter.itemCount)
+                updateMessageSelection()
             }
 
             override fun onLongClick(
                 messageItem: MessageItem,
                 position: Int,
             ): Boolean {
-                val b = messageAdapter.addSelect(messageItem)
-                binding.toolView.countTv.text = messageAdapter.selectSet.size.toString()
-                if (b) {
-                    if (messageItem.isText()) {
-                        binding.toolView.copyIv.visibility = VISIBLE
-                    } else {
-                        binding.toolView.copyIv.visibility = GONE
-                    }
-                    if (messageItem.isData()) {
-                        binding.toolView.shareIv.visibility = VISIBLE
-                    } else {
-                        binding.toolView.shareIv.visibility = GONE
-                    }
-
-                    if (messageItem.supportSticker()) {
-                        binding.toolView.addStickerIv.visibility = VISIBLE
-                    } else {
-                        binding.toolView.addStickerIv.visibility = GONE
-                    }
-
-                    if (messageAdapter.selectSet.any { it.canNotForward() }) {
-                        binding.toolView.forwardIv.visibility = GONE
-                    } else {
-                        binding.toolView.forwardIv.visibility = VISIBLE
-                    }
-                    if (messageAdapter.selectSet.any { it.canNotReply() }) {
-                        binding.toolView.replyIv.visibility = GONE
-                    } else {
-                        binding.toolView.replyIv.visibility = VISIBLE
-                    }
-                    checkPinMessage()
-                    messageAdapter.notifyItemRangeChanged(0, messageAdapter.itemCount)
-                    binding.toolView.fadeIn()
+                val added = messageAdapter.addSelect(messageItem)
+                if (added) {
+                    updateMessageSelection()
+                    val anchor = binding.messageRv.findViewHolderForAdapterPosition(position)?.itemView ?: binding.toolView
+                    binding.toolView.showMenu(anchor)
                 }
-                return b
+                return added
             }
 
             @SuppressLint("MissingPermission")
@@ -1250,6 +1172,7 @@ class ConversationFragment() :
             if (viewDestroyed()) return@launch
             lastReadMessage = chatViewModel.findLastMessage(conversationId)
         }
+        binding.toolView.dismissMenu()
         deleteDialog?.dismiss()
         super.onPause()
         paused = true
@@ -1347,6 +1270,7 @@ class ConversationFragment() :
     }
 
     override fun onDestroyView() {
+        pinMessageJob?.cancel()
         audioFile?.deleteOnExit()
         audioFile = null
         super.onDestroyView()
@@ -1424,7 +1348,126 @@ class ConversationFragment() :
         }
     }
 
+    private fun onMessageAction(action: ToolView.Action) {
+        if (messageAdapter.selectSet.isEmpty()) return
+        when (action) {
+            ToolView.Action.REPLY -> {
+                messageAdapter.selectSet.valueAt(0).let {
+                    binding.chatControl.replyView.bind(it)
+                }
+                displayReplyView()
+                closeTool()
+            }
+            ToolView.Action.COPY -> {
+                try {
+                    context?.getClipboardManager()?.setPrimaryClip(
+                        ClipData.newPlainText(null, messageAdapter.selectSet.valueAt(0).content),
+                    )
+                    toast(R.string.copied_to_clipboard)
+                } catch (_: ArrayIndexOutOfBoundsException) {
+                }
+                closeTool()
+            }
+            ToolView.Action.FORWARD -> {
+                showForwardDialog()
+            }
+            ToolView.Action.PIN, ToolView.Action.UNPIN -> {
+                val pinMessages =
+                    messageAdapter.selectSet.map {
+                        PinMessageData(it.messageId, it.conversationId, requireNotNull(it.type), it.content, nowInUtc())
+                    }
+                val pinAction = if (action == ToolView.Action.PIN) PinAction.PIN else PinAction.UNPIN
+                if (pinMessages.isEmpty()) {
+                    return
+                }
+                lifecycleScope.launch {
+                    chatViewModel.sendPinMessage(
+                        conversationId,
+                        sender,
+                        pinAction,
+                        pinMessages,
+                    )
+                    toast(
+                        if (pinAction == PinAction.PIN) {
+                            R.string.Message_pinned
+                        } else {
+                            R.string.Message_unpinned
+                        },
+                    )
+                    closeTool()
+                }
+            }
+            ToolView.Action.SHARE -> {
+                val messageItem = messageAdapter.selectSet.valueAt(0)
+                Intent().apply {
+                    var uri: Uri? =
+                        try {
+                            messageItem.absolutePath()?.toUri()
+                        } catch (e: NullPointerException) {
+                            null
+                        }
+                    if (uri == null || uri.path == null) {
+                        closeTool()
+                        return
+                    }
+                    if (ContentResolver.SCHEME_CONTENT != uri.scheme) {
+                        uri = requireContext().getUriForFile(File(uri.path!!))
+                    }
+                    this.action = Intent.ACTION_SEND
+                    putExtra(Intent.EXTRA_STREAM, uri)
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    val extraMimeTypes = arrayOf("text/plain", "audio/*", "image/*", "video/*")
+                    putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes)
+                    type = "application/*"
+
+                    val resInfoList = requireContext().packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY)
+                    for (resolveInfo in resInfoList) {
+                        val packageName = resolveInfo.activityInfo.packageName
+                        requireContext().grantUriPermission(packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    }
+                    try {
+                        startActivity(Intent.createChooser(this, messageItem.mediaName))
+                    } catch (ignored: ActivityNotFoundException) {
+                    }
+                }
+                closeTool()
+            }
+            ToolView.Action.ADD_STICKER -> {
+                val messageItem = messageAdapter.selectSet.valueAt(0)
+                messageItem.let { m ->
+                    if (messageItem.isSticker() && m.stickerId != null) {
+                        addSticker(m)
+                    } else if (messageItem.isImage()) {
+                        val url = m.absolutePath(requireContext())
+                        url?.let {
+                            val uri = url.toUri()
+                            val mimeType = getMimeType(uri, true)
+                            if (mimeType?.isStickerSupport() == true) {
+                                StickerActivity.show(requireContext(), url = it, showAdd = true)
+                                closeTool()
+                            } else {
+                                toast(R.string.Invalid_sticker_format)
+                            }
+                        }
+                    }
+                }
+            }
+            ToolView.Action.DELETE -> {
+                messageAdapter.selectSet.filter { it.isAudio() }.forEach {
+                    if (AudioPlayer.isPlay(it.messageId)) {
+                        AudioPlayer.pause()
+                    }
+                }
+                deleteMessage(messageAdapter.selectSet.toList())
+                closeTool()
+            }
+            ToolView.Action.SELECT -> binding.toolView.enterMultipleSelection()
+        }
+    }
+
     private fun closeTool() {
+        pinMessageJob?.cancel()
+        binding.toolView.updateSelection(emptyList())
         messageAdapter.selectSet.clear()
         if (!binding.messageRv.isComputingLayout) {
             messageAdapter.notifyItemRangeChanged(0, messageAdapter.itemCount)
@@ -1628,127 +1671,10 @@ class ConversationFragment() :
                 activity?.onBackPressedDispatcher?.onBackPressed()
             }
         }
-        binding.toolView.deleteIv.setOnClickListener {
-            messageAdapter.selectSet.filter { it.isAudio() }.forEach {
-                if (AudioPlayer.isPlay(it.messageId)) {
-                    AudioPlayer.pause()
-                }
-            }
-            deleteMessage(messageAdapter.selectSet.toList())
-            closeTool()
-        }
+        binding.toolView.onAction = ::onMessageAction
         binding.chatControl.replyView.replyCloseIv.setOnClickListener {
             binding.chatControl.replyView.messageItem = null
             binding.chatControl.replyView.animateHeight(53.dp, 0)
-        }
-        binding.toolView.copyIv.setOnClickListener {
-            try {
-                context?.getClipboardManager()?.setPrimaryClip(
-                    ClipData.newPlainText(null, messageAdapter.selectSet.valueAt(0).content),
-                )
-                toast(R.string.copied_to_clipboard)
-            } catch (_: ArrayIndexOutOfBoundsException) {
-            }
-            closeTool()
-        }
-        binding.toolView.forwardIv.setOnClickListener {
-            showForwardDialog()
-        }
-        binding.toolView.addStickerIv.setOnClickListener {
-            if (messageAdapter.selectSet.isEmpty()) {
-                return@setOnClickListener
-            }
-            val messageItem = messageAdapter.selectSet.valueAt(0)
-            messageItem.let { m ->
-                if (messageItem.isSticker() && m.stickerId != null) {
-                    addSticker(m)
-                } else if (messageItem.isImage()) {
-                    val url = m.absolutePath(requireContext())
-                    url?.let {
-                        val uri = url.toUri()
-                        val mimeType = getMimeType(uri, true)
-                        if (mimeType?.isStickerSupport() == true) {
-                            StickerActivity.show(requireContext(), url = it, showAdd = true)
-                            closeTool()
-                        } else {
-                            toast(R.string.Invalid_sticker_format)
-                        }
-                    }
-                }
-            }
-        }
-
-        binding.toolView.replyIv.setOnClickListener {
-            if (messageAdapter.selectSet.isEmpty()) {
-                return@setOnClickListener
-            }
-            messageAdapter.selectSet.valueAt(0).let {
-                binding.chatControl.replyView.bind(it)
-            }
-            displayReplyView()
-            closeTool()
-        }
-
-        binding.toolView.pinIv.setOnClickListener {
-            val pinMessages =
-                messageAdapter.selectSet.map {
-                    PinMessageData(it.messageId, it.conversationId, requireNotNull(it.type), it.content, nowInUtc())
-                }
-            val action = (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN
-            if (pinMessages.isEmpty()) {
-                return@setOnClickListener
-            }
-            lifecycleScope.launch {
-                chatViewModel.sendPinMessage(
-                    conversationId,
-                    sender,
-                    (binding.toolView.pinIv.tag as PinAction?) ?: PinAction.PIN,
-                    pinMessages,
-                )
-                toast(
-                    if (action == PinAction.PIN) {
-                        R.string.Message_pinned
-                    } else {
-                        R.string.Message_unpinned
-                    },
-                )
-                closeTool()
-            }
-        }
-        binding.toolView.shareIv.setOnClickListener {
-            val messageItem = messageAdapter.selectSet.valueAt(0)
-            Intent().apply {
-                var uri: Uri? =
-                    try {
-                        messageItem.absolutePath()?.toUri()
-                    } catch (e: NullPointerException) {
-                        null
-                    }
-                if (uri == null || uri.path == null) {
-                    closeTool()
-                    return@setOnClickListener
-                }
-                if (ContentResolver.SCHEME_CONTENT != uri.scheme) {
-                    uri = requireContext().getUriForFile(File(uri.path!!))
-                }
-                action = Intent.ACTION_SEND
-                putExtra(Intent.EXTRA_STREAM, uri)
-                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                val extraMimeTypes = arrayOf("text/plain", "audio/*", "image/*", "video/*")
-                putExtra(Intent.EXTRA_MIME_TYPES, extraMimeTypes)
-                type = "application/*"
-
-                val resInfoList = requireContext().packageManager.queryIntentActivities(this, PackageManager.MATCH_DEFAULT_ONLY)
-                for (resolveInfo in resInfoList) {
-                    val packageName = resolveInfo.activityInfo.packageName
-                    requireContext().grantUriPermission(packageName, uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                try {
-                    startActivity(Intent.createChooser(this, messageItem.mediaName))
-                } catch (ignored: ActivityNotFoundException) {
-                }
-            }
-            closeTool()
         }
 
         binding.groupDesc.movementMethod = LinkMovementMethod()
