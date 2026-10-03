@@ -1233,7 +1233,7 @@ internal fun validateTpSlPrice(
     }
 }
 
-private fun validateTpSlPercent(
+internal fun validateTpSlPercent(
     rawValue: String,
     currentPrice: BigDecimal,
     calculationBasis: TpSlCalculationBasis?,
