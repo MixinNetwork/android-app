@@ -16,15 +16,17 @@ import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.response.web3.WalletOutput
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -41,7 +43,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
-import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.BiometricInfo
@@ -66,7 +67,6 @@ import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.SolanaTxSource
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.WalletErrorCode
-import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import one.mixin.android.web3.send.UtxoTransactionSigner
 import org.json.JSONObject
 import org.sol4k.Base58
@@ -75,8 +75,6 @@ import org.sol4k.exception.RpcException
 import org.sol4kt.SignInInput
 import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Hash
-import org.web3j.utils.Convert
-import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -190,6 +188,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private var parsedTx: ParsedTx? by mutableStateOf(null)
     private var solanaSignInInput: SignInInput? by mutableStateOf(null)
     private var requestSettled = false
+    private var transactionRefreshJob: Job? = null
 
     @Inject
     lateinit var rpc: Rpc
@@ -334,39 +333,23 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         val transaction = signMessage.wcEthereumTransaction ?: return
         val cachedTipGas = tipGas
         var useCachedTipGas = cachedTipGas != null
-        tickerFlow(15.seconds)
+        transactionRefreshJob = tickerFlow(15.seconds)
             .onEach {
                 asset = viewModel.refreshAsset(assetId)
                 try {
-                    val currentTipGas = if (useCachedTipGas) {
-                        useCachedTipGas = false
-                        cachedTipGas
-                    } else {
-                        withContext(Dispatchers.IO) {
-                            val r = runCatching {
-                                viewModel.estimateFee(
-                                    EstimateFeeRequest(
-                                        assetId,
-                                        null,
-                                        transaction.data,
-                                        transaction.from,
-                                        transaction.to,
-                                        transaction.value,
-                                    )
-                                )
-                            }.getOrNull()
-                            if (r?.isSuccess != true) {
-                                step = Step.Error
-                                ErrorHandler.handleMixinError(r?.errorCode ?: 0, r?.errorDescription ?: "")
-                                return@withContext null
-                            }
-                            buildTipGas(chain.chainId, r.data!!)
-                        }
-                    } ?: return@onEach
+                    val result = requireNotNull(
+                        viewModel.preflightTransaction(
+                            signMessage, chain, token?.walletId ?: Web3Signer.currentWalletId,
+                            if (useCachedTipGas) cachedTipGas else null,
+                        ),
+                    )
+                    useCachedTipGas = false
+                    val currentTipGas = requireNotNull(result.tipGas)
                     tipGas = currentTipGas
-                    insufficientGas = checkGas(token, chainToken, currentTipGas, transaction.value, transaction.maxFeePerGas)
+                    insufficientGas = result.insufficientBalance
                     if (insufficientGas) {
-                        handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, chainToken?.symbol ?: currentChain.symbol)))
+                        handleException(IllegalArgumentException(requireContext().getString(R.string.insufficient_gas, result.balance.token.symbol)))
+                        return@onEach
                     }
                     val hex = Web3Signer.ethPreviewTransaction(
                         Web3Signer.evmAddress,
@@ -380,15 +363,18 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     if (parsedTx == null) {
                         parsedTx = viewModel.simulateWeb3Tx(hex, assetId, from = Web3Signer.evmAddress, toAddress)
                     }
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
-                    Timber.e(e)
+                    tipGas = null
+                    handleException(e)
                 }
             }
-            .launchIn(lifecycleScope)
+            .launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
     private fun refreshSolana() {
-        tickerFlow(15.seconds)
+        transactionRefreshJob = tickerFlow(15.seconds)
             .onEach {
                 try {
                     if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
@@ -404,20 +390,31 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         if (parsedTx == null) {
                             parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana, Web3Signer.solanaAddress, toAddress)
                         }
-                        tx.throwIfAnyMaliciousInstruction()
+                        val result = viewModel.preflightTransaction(
+                            JsSignMessage(signMessage.callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = tx.serialize().base64Encode()),
+                            Chain.Solana,
+                            token?.walletId ?: Web3Signer.currentWalletId,
+                        )
+                        insufficientGas = result?.insufficientBalance == true
+                        if (result?.insufficientBalance == true) {
+                            handleException(IllegalArgumentException(getString(R.string.insufficient_gas, result.balance.token.symbol)))
+                        }
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
                         solanaSignInInput = SignInInput.from(signMessage.data ?: "", Web3Signer.address)
                     }
+                } catch (e: CancellationException) {
+                    throw e
                 } catch (e: Exception) {
                     handleException(e)
                 }
                 asset = viewModel.refreshAsset(Chain.Solana.assetId)
-            }.launchIn(lifecycleScope)
+            }.launchIn(viewLifecycleOwner.lifecycleScope)
     }
 
     private fun doAfterPinComplete(pin: String) =
         lifecycleScope.launch(Dispatchers.IO) {
             try {
+                transactionRefreshJob?.cancelAndJoin()
                 step = Step.Loading
                 errorInfo = null
                 customPinAction?.let { action ->
@@ -431,6 +428,17 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     }
                     return@launch
                 }
+                val preflightMessage = if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION && solanaTx != null) {
+                    JsSignMessage(signMessage.callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = solanaTx!!.serialize().base64Encode())
+                } else {
+                    signMessage
+                }
+                val preflight = viewModel.preflightTransaction(preflightMessage, currentChain, token?.walletId ?: Web3Signer.currentWalletId, tipGas)
+                if (preflight?.insufficientBalance == true) {
+                    insufficientGas = true
+                    throw IllegalArgumentException(getString(R.string.insufficient_gas, preflight.balance.token.symbol))
+                }
+                preflight?.tipGas?.let { tipGas = it }
                 if (signMessage.type == JsSignMessage.TYPE_UTXO_TRANSACTION) {
                     val rawHex = signMessage.data ?: throw IllegalArgumentException("empty UTXO transaction hex")
                     val chainId = utxoChainId
@@ -487,6 +495,8 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     Constants.BIOMETRIC_PIN_CHECK,
                     System.currentTimeMillis(),
                 )
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 settleError(WalletErrorCode.INTERNAL_ERROR, e.message ?: "Signing failed")
                 handleException(e)
@@ -494,6 +504,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         }
 
     override fun onDismiss(dialog: DialogInterface) {
+        transactionRefreshJob?.cancel()
         super.onDismiss(dialog)
         onDismissAction?.invoke(step == Step.Done)
     }
@@ -512,31 +523,6 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             tx.setPriorityFee(priorityFeeResp.unitPrice, priorityFeeResp.unitLimit)
         }
         return tx
-    }
-
-    private fun checkGas(
-        web3Token: Web3TokenItem?,
-        chainToken: Web3TokenItem?,
-        tipGas: TipGas?,
-        value: String?,
-        maxFeePerGas: String?,
-    ): Boolean {
-        return if (web3Token != null) {
-            if (chainToken == null) {
-                true
-            } else if (tipGas != null) {
-                val maxGas = tipGas.displayValue(maxFeePerGas) ?: BigDecimal.ZERO
-                if (web3Token.assetId == chainToken.assetId && web3Token.chainId == chainToken.chainId) {
-                    Convert.fromWei(Numeric.decodeQuantity(value ?: "0x0").toBigDecimal(), Convert.Unit.ETHER) + maxGas > BigDecimal(chainToken.balance)
-                } else {
-                    maxGas > BigDecimal(chainToken.balance)
-                }
-            } else {
-                false
-            }
-        } else {
-            false
-        }
     }
 
     private fun handleException(e: Throwable) {

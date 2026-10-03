@@ -48,19 +48,16 @@ import com.reown.walletkit.client.Wallet
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.currencyFormat
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.numberFormat12
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
-import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.ui.home.web3.components.ActionBottom
-import one.mixin.android.ui.home.web3.components.ActionButton
 import one.mixin.android.ui.home.web3.components.MessagePreview
 import one.mixin.android.ui.home.web3.components.TransactionPreview
 import one.mixin.android.ui.home.web3.components.Warning
@@ -102,7 +99,6 @@ fun SessionRequestPage(
     val commonWallet = stringResource(R.string.Common_Wallet)
     var walletName by remember { mutableStateOf<String?>(null) }
     var walletDisplayInfo by remember { mutableStateOf<Triple<String?, Int, Boolean?>?>(null) }
-    var chainToken by remember { mutableStateOf<Web3TokenItem?>(null) }
 
     if (version != WalletConnect.Version.TIP && (signData == null || sessionRequest == null)) {
         Loading()
@@ -140,15 +136,6 @@ fun SessionRequestPage(
             walletName = commonWallet
         }
     }
-
-    LaunchedEffect(Unit) {
-        try {
-            chainToken = viewModel.web3TokenItemById(Web3Signer.currentWalletId, assetId = chain.assetId)
-        } catch (e: Exception) {
-            Timber.e(e)
-        }
-    }
-
 
     val fee = tipGas?.displayValue(
         if (sessionRequestUI.data is WCEthereumTransaction) {
@@ -386,7 +373,7 @@ fun SessionRequestPage(
                         }
                     }
                 } else if (step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
-                    if (signData?.sessionRequest?.request?.method == Method.ETHSignTransaction.name || signData?.sessionRequest?.request?.method == Method.ETHSendTransaction.name && tipGas == null) {
+                    if (sessionRequestUI.data is WCEthereumTransaction && tipGas == null) {
                         Column(modifier = Modifier.align(Alignment.BottomCenter)) {
                             Box(modifier = Modifier.height(20.dp))
                             CircularProgressIndicator(
@@ -398,32 +385,10 @@ fun SessionRequestPage(
                             )
                         }
                     } else {
-                        if (fee != null && fee > BigDecimal.ZERO && (chainToken?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO) <= BigDecimal.ZERO) {
-                            Row(
-                                modifier =
-                                    Modifier
-                                        .background(MixinAppTheme.colors.background)
-                                        .padding(8.dp)
-                                        .fillMaxWidth(),
-                                horizontalArrangement = Arrangement.Center,
-                            ) {
-                                ActionButton(
-                                    text = stringResource(id = R.string.insufficient_balance_symbol, chain.symbol),
-                                    onClick = {
-                                        viewModel.rejectRequest(version, topic)
-                                        onDismissRequest.invoke()
-                                    },
-                                    backgroundColor = MixinAppTheme.colors.backgroundGray,
-                                    contentColor = MixinAppTheme.colors.textPrimary
-                                )
-                                Box(modifier = Modifier.width(36.dp))
-                            }
-                        } else {
-                            ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
-                                viewModel.rejectRequest(version, topic)
-                                onDismissRequest.invoke()
-                            }, showPin)
-                        }
+                        ActionBottom(modifier = Modifier.align(Alignment.BottomCenter), stringResource(id = R.string.Cancel), stringResource(id = R.string.Confirm), {
+                            viewModel.rejectRequest(version, topic)
+                            onDismissRequest.invoke()
+                        }, showPin)
                     }
                 }
 
