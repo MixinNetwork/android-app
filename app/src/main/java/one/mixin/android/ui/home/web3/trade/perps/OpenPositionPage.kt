@@ -142,6 +142,7 @@ fun OpenPositionPage(
     var takeProfitPrice by remember { mutableStateOf("") }
     var stopLossPrice by remember { mutableStateOf("") }
     var liquidationPriceLimit by remember { mutableStateOf<LiquidationPriceLimit?>(null) }
+    var liquidationError by remember { mutableStateOf<String?>(null) }
     var isLiquidationLoading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
     var isProcessing by remember { mutableStateOf(false) }
@@ -207,6 +208,7 @@ fun OpenPositionPage(
 
     LaunchedEffect(selectedIsLong, usdtAmount, leverage, currentMarket.minAmount) {
         liquidationPriceLimit = null
+        liquidationError = null
         val amount = usdtAmount.toBigDecimalOrNull()
         val minimumAmount = currentMarket.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         if (!shouldRequestLiquidationPrice(amount, minimumAmount)) {
@@ -226,6 +228,7 @@ fun OpenPositionPage(
                 .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
             remoteLiquidationPrice = requestLiquidationPrice(
                 onLimitExceeded = { liquidationPriceLimit = it },
+                onFailure = { liquidationError = it ?: context.getString(R.string.Data_error) },
             ) {
                 viewModel.estimateLiquidationPrice(
                     marketId = currentMarket.marketId,
@@ -249,23 +252,27 @@ fun OpenPositionPage(
     val insufficientBalance = hasInputAmount && inputAmount > tokenBalance
     val showAddAction = insufficientBalance || tokenBalance <= BigDecimal.ZERO
     val validationCurrentPrice = currentMarket.last.toBigDecimalOrNull() ?: BigDecimal.ZERO
-    val validationLiquidationPrice = remoteLiquidationPrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
+    val validationLiquidationBound = remember(remoteLiquidationPrice, currentMarket.last, leverage, selectedIsLong) {
+        resolveTpSlLiquidationBound(
+            serverLiquidationPrice = remoteLiquidationPrice,
+            entryPrice = currentMarket.last,
+            currentPrice = currentMarket.last,
+            leverage = leverage.toInt(),
+            isLong = selectedIsLong,
+        )
+    }
     val tpSlError = validateTpSlPrice(
         rawValue = takeProfitPrice,
         currentPrice = validationCurrentPrice,
-        liquidationBasePrice = validationCurrentPrice,
-        leverage = leverage.toInt(),
+        liquidationBound = validationLiquidationBound,
         isLong = selectedIsLong,
         isTakeProfit = true,
-        liquidationPrice = validationLiquidationPrice,
     ) ?: validateTpSlPrice(
         rawValue = stopLossPrice,
         currentPrice = validationCurrentPrice,
-        liquidationBasePrice = validationCurrentPrice,
-        leverage = leverage.toInt(),
+        liquidationBound = validationLiquidationBound,
         isLong = selectedIsLong,
         isTakeProfit = false,
-        liquidationPrice = validationLiquidationPrice,
     )
     val canReview = hasInputAmount &&
         !belowMinimumMargin &&
@@ -280,33 +287,22 @@ fun OpenPositionPage(
         currentToken?.symbol.orEmpty(),
     )
     val maximumMarginError = stringResource(
-        R.string.perps_maximum_margin,
+        R.string.single_transaction_should_be_less_than,
         maximumMargin.stripTrailingZeros().toPlainString(),
         currentToken?.symbol.orEmpty(),
     )
-    val liquidationLimitMaxAmount = liquidationPriceLimit?.maxAmount
-        ?.toBigDecimalOrNull()
-        ?.takeIf { it > BigDecimal.ZERO }
-        ?.stripTrailingZeros()
-        ?.toPlainString()
-    val liquidationLimitAmountError = liquidationLimitMaxAmount?.let {
-        stringResource(R.string.perps_maximum_margin, it, currentToken?.symbol.orEmpty())
-    }
-    val liquidationLimitLeverageError = liquidationPriceLimit?.maxLeverage?.let {
-        stringResource(R.string.perps_maximum_leverage, it)
-    }
-    val liquidationLimitError = liquidationPriceLimit?.let {
-        listOfNotNull(liquidationLimitAmountError, liquidationLimitLeverageError)
-            .joinToString(". ")
-            .ifBlank { stringResource(R.string.error_perps_position_size_exceeds_leverage_limit) }
-    }
+    val liquidationLimitError = liquidationPriceLimit?.errorMessage(context, currentToken?.symbol.orEmpty())
     val displayLiquidationPrice = remoteLiquidationPrice
     val marginLimitError = when {
         belowMinimumMargin -> minimumMarginError
         aboveMaximumMargin -> maximumMarginError
         else -> null
     }
-    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError ?: liquidationLimitError ?: tpSlError
+    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() }
+        ?: marginLimitError
+        ?: liquidationLimitError
+        ?: liquidationError
+        ?: tpSlError
     val tokenNetworkName = currentToken?.chainName
         ?.takeIf { it.isNotBlank() }
         ?: currentToken?.chainSymbol
@@ -449,7 +445,6 @@ fun OpenPositionPage(
                         token = currentToken?.toSwapToken(),
                         text = usdtAmount,
                         selectClick = {
-                            AnalyticsTracker.trackPerpsOpenMarginSelect(currentToken?.chainName, currentToken?.symbol)
                             availableTokens?.let(onTokenSelect)
                         },
                         onInputChanged = { usdtAmount = it },
@@ -855,6 +850,7 @@ fun OpenPositionPage(
                                                     leverage = leverage.toInt(),
                                                     margin = normalizedAmount,
                                                     error = message,
+                                                    source = source,
                                                     tokenSymbol = token.symbol,
                                                     liquidationPrice = displayLiquidationPrice,
                                                 ).showNow(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)

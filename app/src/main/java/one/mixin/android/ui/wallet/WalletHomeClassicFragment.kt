@@ -936,7 +936,8 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                     leaderPositionId = target.leaderPositionId,
                 )
             }
-            is WalletHomeBannerActionTarget.PerpsOpen -> {
+            is WalletHomeBannerActionTarget.PerpsOpen,
+            is WalletHomeBannerActionTarget.PerpsAddMargin -> {
                 LinkBottomSheetDialogFragment.newInstance(
                     url,
                     tradeSource = AnalyticsTracker.PerpsSource.WALLET_HOME,

@@ -18,18 +18,21 @@ class URLDecoderTest : TestCase() {
             "1. Incorrect encoding/decoding",
             URLDecoder.decode(
                 URLEncoder.encode(URL, UTF_8.name()),
+                UTF_8.name(),
             ) == URL,
         )
         assertTrue(
             "2. Incorrect encoding/decoding",
             URLDecoder.decode(
                 URLEncoder.encode(URL2, UTF_8.name()),
+                UTF_8.name(),
             ) == URL2,
         )
         assertTrue(
             "3. Incorrect encoding/decoding",
             URLDecoder.decode(
                 URLEncoder.encode(URL3, UTF_8.name()),
+                UTF_8.name(),
             ) == URL3,
         )
     }

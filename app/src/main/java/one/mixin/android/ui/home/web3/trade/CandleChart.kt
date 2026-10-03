@@ -327,7 +327,6 @@ private fun ScrollableCandleChart(
     val baseSpacing = 2.dp
     val density = LocalDensity.current
 
-    val scrollState = rememberScrollState()
     val coroutineScope = rememberCoroutineScope()
     var touchXOnChart by remember { mutableStateOf<Float?>(null) }
     var isTouching by remember { mutableStateOf(false) }
@@ -344,12 +343,6 @@ private fun ScrollableCandleChart(
     val chartStartPaddingPx = with(density) { 8.dp.toPx() }
     val totalChartWidthPx = with(density) {
         (8.dp + (candleWidth * items.size) + (spacing * (items.size - 1).coerceAtLeast(0))).toPx()
-    }
-
-    LaunchedEffect(items.size) {
-        if (items.size > 50) {
-            scrollState.scrollTo(scrollState.maxValue)
-        }
     }
 
     val selectedIndex = touchXOnChart?.let { x ->
@@ -381,6 +374,16 @@ private fun ScrollableCandleChart(
         ) {
             val axisPanelWidthPx = with(density) { axisPanelWidth.toPx() }
             val viewportWidthPx = (with(density) { maxWidth.toPx() } - axisPanelWidthPx).coerceAtLeast(1f)
+            val scrollState = rememberScrollState(
+                initial = (totalChartWidthPx.roundToInt() - viewportWidthPx.roundToInt()).coerceAtLeast(0),
+            )
+
+            LaunchedEffect(items.size) {
+                if (items.size > 50) {
+                    scrollState.scrollTo(scrollState.maxValue)
+                }
+            }
+
             val viewportLeft = scrollState.value.toFloat()
             val viewportRight = viewportLeft + viewportWidthPx
             val startIndex = ((((viewportLeft - chartStartPaddingPx) - candleWidthPx) / candleStepPx).toInt() - 1)

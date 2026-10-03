@@ -23,7 +23,7 @@ class WalletHomeAccountStateTest {
         iconUrl = "https://example.com/usdt.png",
         balanceUsd = BigDecimal("1000"),
         earningsUsd = BigDecimal("1.25"),
-        apyText = "5.00%",
+        maxApy = BigDecimal("5.00"),
     )
     private val zeroBalanceEarnAccount = earnAccount.copy(
         balanceUsd = BigDecimal.ZERO,

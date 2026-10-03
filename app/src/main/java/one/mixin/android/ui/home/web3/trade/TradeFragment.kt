@@ -594,16 +594,16 @@ class TradeFragment : BaseFragment() {
                                 onShowAllMarkets = { initialCategory, initialSort ->
                                     PerpsMarketListBottomSheetDialogFragment.newInstance(initialCategory, initialSort).show(parentFragmentManager, PerpsMarketListBottomSheetDialogFragment.TAG)
                                 },
-                                onShowAllOpenPositions = {
+                                onShowAllOpenPositions = { source ->
                                     requireActivity().supportFragmentManager.navigateToPerpsRoute(
-                                        AllPositionsFragment.newOpenInstance(),
+                                        AllPositionsFragment.newOpenInstance(source),
                                         AllPositionsFragment.TAG,
                                         R.id.container,
                                     )
                                 },
-                                onShowAllClosedPositions = {
+                                onShowAllClosedPositions = { source ->
                                     requireActivity().supportFragmentManager.navigateToPerpsRoute(
-                                        AllPositionsFragment.newClosedInstance(),
+                                        AllPositionsFragment.newClosedInstance(source),
                                         AllPositionsFragment.TAG,
                                         R.id.container,
                                     )
@@ -705,13 +705,7 @@ class TradeFragment : BaseFragment() {
                                 } else {
                                     Constants.ChainId.ETHEREUM_CHAIN_ID
                                 }) ?: return@launch
-                            val address =
-                                when (t.chainId) {
-                                    Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
-                                    Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
-                                    Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
-                                    else -> Web3Signer.evmAddress
-                                }
+                            val address = Web3Signer.addressByChainId(t.chainId) ?: Web3Signer.evmAddress
                             navTo(Web3AddressFragment.newInstance(t, address), Web3AddressFragment.TAG)
                             dismissNow()
                         }
@@ -917,23 +911,7 @@ class TradeFragment : BaseFragment() {
                         quote.payload,
                         getSource(),
                         if (inMixin()) null else {
-                            when (to.chain.chainId) {
-                                Constants.ChainId.SOLANA_CHAIN_ID -> {
-                                    Web3Signer.solanaAddress
-                                }
-                                Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                                    Web3Signer.btcAddress
-                                }
-                                Constants.ChainId.PEARL_CHAIN_ID -> {
-                                    Web3Signer.pearlAddress
-                                }
-                                in Constants.Web3EvmChainIds -> {
-                                    Web3Signer.evmAddress
-                                }
-                                else -> {
-                                    null
-                                }
-                            }
+                            Web3Signer.addressByChainId(to.chain.chainId)
                         },
                         getReferral(),
                         walletId,

@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet
 import android.annotation.SuppressLint
 import android.content.ClipboardManager
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Paint
 import android.os.Bundle
 import android.util.TypedValue
@@ -409,14 +410,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                                 inMixin = false
                                             )
                                         } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                            val address =
-                                                when (web3Token?.chainId) {
-                                                    Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
-                                                    Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
-                                                    Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
-                                                    in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
-                                                    else -> null
-                                                }
+                                            val address = Web3Signer.addressByChainId(web3Token?.chainId)
                                             this@InputFragment.view?.navigate(
                                                 R.id.action_input_fragment_to_web3_address_fragment,
                                                 Bundle().apply {
@@ -474,14 +468,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             inMixin = false
                                         )
                                     } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                        val address =
-                                            when (web3Token?.chainId) {
-                                                Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
-                                                Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
-                                                Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
-                                                in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
-                                                else -> null
-                                            }
+                                        val address = Web3Signer.addressByChainId(web3Token?.chainId)
                                         this@InputFragment.view?.navigate(
                                             R.id.action_input_fragment_to_web3_address_fragment,
                                             Bundle().apply {
@@ -510,14 +497,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                                             inMixin = false
                                         )
                                     } else if (type == AddFeeBottomSheetDialogFragment.ActionType.DEPOSIT) {
-                                        val address =
-                                            when (web3Token?.chainId) {
-                                                Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
-                                                Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
-                                                Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
-                                                in Constants.Web3EvmChainIds -> Web3Signer.evmAddress
-                                                else -> null
-                                            }
+                                        val address = Web3Signer.addressByChainId(web3Token?.chainId)
                                         this@InputFragment.view?.navigate(
                                             R.id.action_input_fragment_to_web3_address_fragment,
                                             Bundle().apply {
@@ -1649,6 +1629,11 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         }
         binding.continueTv.setText(R.string.Review)
         binding.continueVa.displayedChild = if (cashQuoteReviewing) 1 else 0
+        binding.continueVa.backgroundTintList = if (cashQuoteReviewing) {
+            ColorStateList.valueOf(requireContext().getColor(R.color.colorAccent))
+        } else {
+            null
+        }
         if (cashQuoteReviewing) {
             binding.continueVa.isEnabled = false
         }
@@ -1816,13 +1801,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
                 }
 
                 transferType == TransferType.WEB3 -> {
-                    val address =
-                        when (web3Token?.chainId) {
-                            Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
-                            Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
-                            Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
-                            else -> Web3Signer.evmAddress
-                        }
+                    val address = Web3Signer.addressByChainId(web3Token?.chainId) ?: Web3Signer.evmAddress
                     view?.navigate(
                         R.id.action_input_fragment_to_web3_address_fragment,
                         Bundle().apply {

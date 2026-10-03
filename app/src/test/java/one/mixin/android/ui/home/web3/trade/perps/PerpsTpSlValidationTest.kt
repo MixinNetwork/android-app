@@ -42,7 +42,12 @@ class PerpsTpSlValidationTest {
         for ((isLong, price, boundary) in listOf(Triple(true, "92", "95"), Triple(false, "108", "105"))) {
             assertNull(validate(price, isLong, leverage = 10))
             assertNotNull(validate(price, isLong, leverage = 20))
-            assertNull(validate(boundary, isLong, leverage = 20))
+            val beyondBoundary = if (isLong) {
+                BigDecimal(boundary).add(BigDecimal("0.01")).toPlainString()
+            } else {
+                BigDecimal(boundary).subtract(BigDecimal("0.01")).toPlainString()
+            }
+            assertNull(validate(beyondBoundary, isLong, leverage = 20))
             assertNull(validate(price, isLong, leverage = 10))
         }
     }
@@ -52,8 +57,8 @@ class PerpsTpSlValidationTest {
         for (leverage in listOf(2, 10, 100)) {
             assertEquals("above $97", validate("96", true, leverage, liquidationPrice = "97"))
             assertEquals("below $103", validate("104", false, leverage, liquidationPrice = "103"))
-            assertNull(validate("97", true, leverage, liquidationPrice = "97"))
-            assertNull(validate("103", false, leverage, liquidationPrice = "103"))
+            assertEquals("above $97", validate("97", true, leverage, liquidationPrice = "97"))
+            assertEquals("below $103", validate("103", false, leverage, liquidationPrice = "103"))
             assertNull(validate("85", true, leverage, liquidationPrice = "80"))
             assertNull(validate("115", false, leverage, liquidationPrice = "120"))
         }
@@ -62,19 +67,30 @@ class PerpsTpSlValidationTest {
     @Test
     fun percentInputUsesTheSameActualLiquidationBoundary() {
         for ((isLong, liquidationPrice) in listOf(true to "97", false to "103")) {
+            val calculationBasis = resolveTpSlCalculationBasis(
+                entryPrice = "100",
+                currentPrice = "100",
+                marginAmount = "100",
+                positionQuantity = null,
+                leverage = 10,
+            )
             fun validatePercent(percent: String) = validateTpSlPercent(
                 rawValue = percent,
                 currentPrice = BigDecimal("100"),
-                percentBasePrice = BigDecimal("100"),
-                liquidationBasePrice = BigDecimal("100"),
-                leverage = 10,
+                calculationBasis = calculationBasis,
+                liquidationBound = resolveTpSlLiquidationBound(
+                    serverLiquidationPrice = liquidationPrice,
+                    entryPrice = "100",
+                    currentPrice = "100",
+                    leverage = 10,
+                    isLong = isLong,
+                ),
                 isLong = isLong,
                 mode = PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS,
                 priceScale = 2,
-                liquidationPrice = liquidationPrice.toBigDecimal(),
             )
             assertNotNull(validatePercent("50"))
-            assertNull(validatePercent("30"))
+            assertNotNull(validatePercent("30"))
             assertNull(validatePercent("20"))
         }
     }
@@ -105,10 +121,14 @@ class PerpsTpSlValidationTest {
     ) = validateTpSlPrice(
         rawValue = price,
         currentPrice = currentPrice.toBigDecimal(),
-        liquidationBasePrice = BigDecimal("100"),
-        leverage = leverage,
+        liquidationBound = resolveTpSlLiquidationBound(
+            serverLiquidationPrice = liquidationPrice,
+            entryPrice = "100",
+            currentPrice = currentPrice,
+            leverage = leverage,
+            isLong = isLong,
+        ),
         isLong = isLong,
         isTakeProfit = isTakeProfit,
-        liquidationPrice = liquidationPrice?.toBigDecimal(),
     )
 }
