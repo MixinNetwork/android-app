@@ -94,7 +94,7 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                 }
             }
             binding.header.balanceError(asset, t.amount, t.fee)
-            val senderAddress = Web3Signer.addressByChainId(asset.chainId) ?: Web3Signer.evmAddress
+            val senderAddress = Web3Signer.addressByChainId(asset.chainId).orEmpty()
             binding.content.renderAsset(asset, t.amount, t.fee, senderAddress)
             binding.bottom.setText("${getString(R.string.Add)} ${asset.symbol}")
             binding.bottom.setOnClickListener({
