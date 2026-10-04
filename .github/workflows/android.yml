@@ -51,9 +51,9 @@ jobs:
 
     - name: Build
       run: >-
-        ./gradlew --max-workers=2
+        ./gradlew --no-daemon --max-workers=1
         -Dorg.gradle.jvmargs="-Xmx4g -XX:+UseParallelGC"
-        -Pkotlin.daemon.jvmargs=-Xmx4g
+        -Pkotlin.daemon.jvmargs=-Xmx6g
         :app:assembleGooglePlayDebug :app:assembleOtherChannelDebug --stacktrace
 
     - name: Run tests
@@ -82,10 +82,10 @@ jobs:
           done
         ) &
         diagnostics_pid=$!
-        trap 'kill "$diagnostics_pid" 2>/dev/null || true' EXIT
-        ./gradlew --max-workers=2 \
+        trap 'pkill -P "$diagnostics_pid" 2>/dev/null || true; kill "$diagnostics_pid" 2>/dev/null || true; wait "$diagnostics_pid" 2>/dev/null || true' EXIT
+        ./gradlew --no-daemon --max-workers=1 \
           -Dorg.gradle.jvmargs="-Xmx4g -XX:+UseParallelGC" \
-          -Pkotlin.daemon.jvmargs=-Xmx4g \
+          -Pkotlin.daemon.jvmargs=-Xmx6g \
           :app:testGooglePlayDebugUnitTest --init-script "$RUNNER_TEMP/test-diagnostics.gradle"
 
     - name: Upload unit test results
