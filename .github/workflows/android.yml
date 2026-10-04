@@ -6,10 +6,11 @@ on:
     - master
     - bugfix/*
     - feature/*
-  pull_request_target:
+  pull_request:
     branches: [ master ]
 
-
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -29,10 +30,37 @@ jobs:
     - name: Set google-service.json data
       env:
         DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
-      run: echo "$DATA" > app/src/debug/google-services.json
+      run: |
+        if [ -n "$DATA" ]; then
+          printf '%s' "$DATA" > app/src/debug/google-services.json
+        else
+          cat > app/src/debug/google-services.json <<'JSON'
+          {
+            "project_info": {"project_number": "123456789012", "project_id": "mixin-ci"},
+            "client": [{
+              "client_info": {
+                "mobilesdk_app_id": "1:123456789012:android:0000000000000000",
+                "android_client_info": {"package_name": "one.mixin.messenger"}
+              },
+              "api_key": [{"current_key": "ci-placeholder"}]
+            }],
+            "configuration_version": "1"
+          }
+        JSON
+        fi
 
     - name: Build
-      run: ./gradlew clean assembleDebug --stacktrace
+      run: ./gradlew :app:assembleGooglePlayDebug :app:assembleOtherChannelDebug --stacktrace
 
     - name: Run tests
-      run: ./gradlew testGooglePlayDebugUnitTest
+      run: ./gradlew :app:testGooglePlayDebugUnitTest
+
+    - name: Upload unit test results
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: unit-test-results-${{ github.run_attempt }}
+        path: |
+          app/build/reports/tests/testGooglePlayDebugUnitTest/
+          app/build/test-results/testGooglePlayDebugUnitTest/
+        retention-days: 7
