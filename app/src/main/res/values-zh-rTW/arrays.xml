@@ -33,6 +33,12 @@
     <plurals name="time_interval_unit_week">
         <item quantity="other">週</item>
     </plurals>
+    <plurals name="time_interval_unit_month">
+        <item quantity="other">個月</item>
+    </plurals>
+    <plurals name="time_interval_unit_year">
+        <item quantity="other">年</item>
+    </plurals>
 
     <array name="database">
         <item>Mixin 資料庫</item>

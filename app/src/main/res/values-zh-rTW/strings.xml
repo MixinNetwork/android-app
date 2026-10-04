@@ -311,12 +311,13 @@
     <string name="Disable_web_debug">已關閉 Web 除錯</string>
     <string name="Disabled">已停用</string>
     <string name="disappearing_message">限時訊息</string>
-    <string name="disappearing_message_hint">啟用後，在此聊天中傳送和接收的新資訊在被看到後會消失，閱讀檔案以**瞭解更多**。</string>
+    <string name="disappearing_message_hint">啟用後，在此聊天中傳送和接收的新訊息將在一段時間後消失，閱讀檔案以**瞭解更多**。</string>
     <string name="disappearing_option_1">30 秒</string>
     <string name="disappearing_option_2">10 分</string>
     <string name="disappearing_option_3">2 小時</string>
     <string name="disappearing_option_4">1 天</string>
     <string name="disappearing_option_5">1 週</string>
+    <string name="disappearing_option_month">1 個月</string>
     <string name="DISCARD">放棄</string>
     <string name="Dismiss_as_Admin">撤銷管理員身份</string>
     <string name="divide">、</string>

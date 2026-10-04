@@ -32,6 +32,12 @@
     <plurals name="time_interval_unit_week">
         <item quantity="other">minggu</item>
     </plurals>
+    <plurals name="time_interval_unit_month">
+        <item quantity="other">bulan</item>
+    </plurals>
+    <plurals name="time_interval_unit_year">
+        <item quantity="other">tahun</item>
+    </plurals>
 
     <array name="database">
         <item>Database Mixin</item>
