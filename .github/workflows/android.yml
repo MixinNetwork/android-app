@@ -53,7 +53,33 @@ jobs:
       run: ./gradlew :app:assembleGooglePlayDebug :app:assembleOtherChannelDebug --stacktrace
 
     - name: Run tests
-      run: ./gradlew :app:testGooglePlayDebugUnitTest
+      timeout-minutes: 15
+      run: |
+        cat > "$RUNNER_TEMP/test-diagnostics.gradle" <<'GRADLE'
+        allprojects {
+          tasks.withType(Test).configureEach {
+            testLogging {
+              events 'started', 'failed', 'skipped'
+              exceptionFormat 'full'
+            }
+          }
+        }
+        GRADLE
+        (
+          while sleep 300; do
+            date -u
+            free -m
+            ps -eo pid,ppid,rss,comm --sort=-rss | sed -n '1,12p'
+            jps -l
+            for test_pid in $(jps -l | awk '$2 ~ /GradleWorkerMain$/ {print $1}'); do
+              timeout 15s jcmd "$test_pid" GC.heap_info || true
+              timeout 15s jcmd "$test_pid" Thread.print || true
+            done
+          done
+        ) &
+        diagnostics_pid=$!
+        trap 'kill "$diagnostics_pid" 2>/dev/null || true' EXIT
+        ./gradlew :app:testGooglePlayDebugUnitTest --init-script "$RUNNER_TEMP/test-diagnostics.gradle"
 
     - name: Upload unit test results
       if: always()
