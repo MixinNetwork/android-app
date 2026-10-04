@@ -50,7 +50,11 @@ jobs:
         fi
 
     - name: Build
-      run: ./gradlew :app:assembleGooglePlayDebug :app:assembleOtherChannelDebug --stacktrace
+      run: >-
+        ./gradlew --max-workers=2
+        -Dorg.gradle.jvmargs="-Xmx4g -XX:+UseParallelGC"
+        -Pkotlin.daemon.jvmargs=-Xmx4g
+        :app:assembleGooglePlayDebug :app:assembleOtherChannelDebug --stacktrace
 
     - name: Run tests
       timeout-minutes: 15
@@ -66,7 +70,7 @@ jobs:
         }
         GRADLE
         (
-          while sleep 300; do
+          while sleep 120; do
             date -u
             free -m
             ps -eo pid,ppid,rss,comm --sort=-rss | sed -n '1,12p'
@@ -79,7 +83,10 @@ jobs:
         ) &
         diagnostics_pid=$!
         trap 'kill "$diagnostics_pid" 2>/dev/null || true' EXIT
-        ./gradlew :app:testGooglePlayDebugUnitTest --init-script "$RUNNER_TEMP/test-diagnostics.gradle"
+        ./gradlew --max-workers=2 \
+          -Dorg.gradle.jvmargs="-Xmx4g -XX:+UseParallelGC" \
+          -Pkotlin.daemon.jvmargs=-Xmx4g \
+          :app:testGooglePlayDebugUnitTest --init-script "$RUNNER_TEMP/test-diagnostics.gradle"
 
     - name: Upload unit test results
       if: always()
