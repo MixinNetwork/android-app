@@ -17,6 +17,7 @@ import one.mixin.android.extension.blurBitmap
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.isDarkColor
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.matchResourcePattern
 import one.mixin.android.extension.openCustomerServiceIfMatched
 import one.mixin.android.extension.supportsS
 import one.mixin.android.session.Session
@@ -26,6 +27,13 @@ import one.mixin.android.vo.App
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.widget.SixLayout
+
+private fun isTrustedAppWebUrl(url: String, app: App?): Boolean =
+    app != null &&
+        (
+            url.matchResourcePattern(app.resourcePatterns) ||
+                isTrustedWebUrl(url, secureWebOrigin(app.homeUri))
+        )
 
 @AndroidEntryPoint
 class WebActivity : BaseActivity() {
@@ -48,7 +56,8 @@ class WebActivity : BaseActivity() {
             app: App? = null,
             appCard: AppCardData? = null,
             saveName: Boolean? = null,
-            fixedTitle: String? = null
+            fixedTitle: String? = null,
+            allowWalletBridge: Boolean = false,
         ) {
             if (context.openCustomerServiceIfMatched(url)) {
                 return
@@ -72,6 +81,13 @@ class WebActivity : BaseActivity() {
                             putParcelable(WebFragment.ARGS_APP_CARD, appCard)
                             putBoolean(WebFragment.ARGS_SAVE_NAME, saveName ?: false)
                             putString(WebFragment.ARGS_FIXED_TITLE, fixedTitle)
+                            val bridgePolicy = webBridgePolicy(
+                                trustedAppUrl = appCard?.appId != null ||
+                                    isTrustedAppWebUrl(url, app),
+                                dappBrowser = allowWalletBridge,
+                            )
+                            putBoolean(WebFragment.ARGS_MIXIN_CONTEXT, bridgePolicy.mixinContext)
+                            putBoolean(WebFragment.ARGS_INJECTABLE, bridgePolicy.wallet)
                         },
                     )
                 },
@@ -183,6 +199,12 @@ class WebActivity : BaseActivity() {
         extras.putInt(WebFragment.ARGS_INDEX, index)
         extras.putParcelable(WebFragment.ARGS_APP, clip.app)
         clip.shareable?.let { extras.putBoolean(WebFragment.ARGS_SHAREABLE, it) }
+        val bridgePolicy = webBridgePolicy(
+            trustedAppUrl = isTrustedAppWebUrl(clip.url, clip.app),
+            dappBrowser = clip.injectable,
+        )
+        extras.putBoolean(WebFragment.ARGS_MIXIN_CONTEXT, bridgePolicy.mixinContext)
+        extras.putBoolean(WebFragment.ARGS_INJECTABLE, bridgePolicy.wallet)
         isExpand = true
         val safeColor: Int = clip.titleColor.apply {
             val isDark: Boolean = isDarkColor(this)
