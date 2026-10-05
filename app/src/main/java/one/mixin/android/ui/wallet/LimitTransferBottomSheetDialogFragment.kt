@@ -572,7 +572,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             val sig = tx.signatures.first()
                             val rawTx = tx.serialize().base64Encode()
                             val request = Web3RawTransactionRequest(Constants.ChainId.Solana, rawTx, tx.message.accounts[0].toBase58(), null)
-                            val response = bottomViewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), inAsset.assetId)
+                            val response = bottomViewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), to = requireNotNull(depositDestination), assetId = inAsset.assetId)
                             defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                             context?.updatePinCheck()
                             step = Step.Done
@@ -586,7 +586,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                 val nonce = rpc.nonceAt(inAsset.chain.chainId, address) ?: throw IllegalArgumentException("failed to get nonce")
                                 return@ethSignTransaction nonce
                             }
-                            val result = bottomViewModel.postRawTx(pair.first, inAsset.chain.chainId, pair.second, inAsset.assetId)
+                            val result = bottomViewModel.postRawTx(pair.first, inAsset.chain.chainId, pair.second, to = requireNotNull(depositDestination), assetId = inAsset.assetId)
                             defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                             context?.updatePinCheck()
                             step = Step.Done
