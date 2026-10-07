@@ -479,7 +479,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             val app = fiatMoneyViewModel.findOrSyncApp(Constants.MIXIN_CASH_USER_ID)
             val homeUri = app?.homeUri.takeUnless { it.isNullOrBlank() } ?: Constants.API.CASH_HOME_URL
             val url = Uri.parse(homeUri).buildUpon()
-                .appendQueryParameter("action", "add-cash-bank")
+                .appendQueryParameter("page", "add-cash-bank")
                 .build()
                 .toString()
             WebActivity.show(requireActivity(), url = url, app = app, conversationId = null)
