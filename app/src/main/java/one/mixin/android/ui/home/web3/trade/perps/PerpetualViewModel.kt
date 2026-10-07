@@ -692,7 +692,6 @@ class PerpetualViewModel @Inject constructor(
         positionId: String,
         assetId: String,
         amount: String,
-        position: PerpsPositionItem? = null,
         destination: String? = null,
         price: String? = null,
         takeProfitPrice: String? = null,
@@ -719,21 +718,6 @@ class PerpetualViewModel @Inject constructor(
 
                 val data = response.data
                 if (response.isSuccess && data != null) {
-                    val now = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(Date())
-                    withContext(Dispatchers.IO) {
-                        val localPosition = perpsPositionDao.getPosition(positionId)?.toPosition()
-                            ?: position?.toPosition()
-                        if (localPosition != null) {
-                            perpsPositionDao.upsertSuspend(
-                                localPosition.copy(
-                                    state = PerpsPosition.STATE_ADDING,
-                                    updatedAt = now,
-                                )
-                            )
-                        } else {
-                            perpsPositionDao.updateStatus(positionId, PerpsPosition.STATE_ADDING, now)
-                        }
-                    }
                     onSuccess(data)
                 } else {
                     onError(response.errorCode, response.errorDescription)
@@ -1115,11 +1099,12 @@ class PerpetualViewModel @Inject constructor(
                     val resolvedWalletId = data.walletId.ifBlank { localBefore?.walletId ?: "" }
                     val positionForDb = data.copy(walletId = resolvedWalletId)
                     
-                    withContext(Dispatchers.IO) {
+                    val currentPosition = withContext(Dispatchers.IO) {
                         perpsPositionDao.upsertSuspend(positionForDb)
+                        perpsPositionDao.getPosition(positionId)?.toPosition() ?: positionForDb
                     }
                     
-                    onSuccess(positionForDb)
+                    onSuccess(currentPosition)
                 } else {
                     val error = "Failed to load position detail: ${response.errorDescription}"
                     Timber.e(error)

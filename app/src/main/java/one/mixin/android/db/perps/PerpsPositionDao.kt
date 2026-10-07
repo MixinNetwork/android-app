@@ -5,18 +5,33 @@ import androidx.room3.Dao
 import androidx.room3.Insert
 import androidx.room3.OnConflictStrategy
 import androidx.room3.Query
+import androidx.room3.Transaction
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.db.BaseDao
+import org.threeten.bp.OffsetDateTime
 
 @Dao
 interface PerpsPositionDao : BaseDao<PerpsPosition> {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(position: PerpsPosition)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertAll(positions: List<PerpsPosition>)
+    @Transaction
+    suspend fun insertAll(positions: List<PerpsPosition>) {
+        positions.forEach { upsertSuspend(it) }
+    }
+
+    @Transaction
+    override suspend fun upsertSuspend(entity: PerpsPosition) {
+        val current = getPosition(entity.positionId)
+        // Optimistic opening/adding states can carry a client-generated timestamp.
+        if (current != null && current.state != PerpsPosition.STATE_OPENING && current.state != PerpsPosition.STATE_ADDING) {
+            val updatedAt = current.updatedAt?.let(OffsetDateTime::parse)
+            if (updatedAt != null && OffsetDateTime.parse(entity.updatedAt).isBefore(updatedAt)) return
+        }
+        insert(entity)
+    }
 
     @Query("""
         SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale 
