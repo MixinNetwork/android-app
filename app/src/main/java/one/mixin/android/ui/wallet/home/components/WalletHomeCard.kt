@@ -183,8 +183,9 @@ internal fun WalletHomeCard(
                 state.collectibles.take(PREVIEW_LIMIT).forEach { collectible ->
                     Row(
                         modifier = Modifier.fillMaxWidth()
+                            .height(70.dp).padding(bottom = 20.dp)
                             .clickable { callbacks.onCollectibleClicked(collectible.inscriptionHash) }
-                            .height(70.dp).padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
+                            .padding(horizontal = 20.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         CoilImage(
