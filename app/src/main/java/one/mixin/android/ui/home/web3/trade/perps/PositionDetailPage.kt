@@ -438,7 +438,6 @@ fun PositionDetailPage(
     val quantity = closeOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
     val effectiveLeverage = leverage ?: closeOrder.leverage
-    val roe = (closeOrder.roe.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
     val fee = closeOrder.feeAmount.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
 
     fun formatFiat(value: BigDecimal): String {
@@ -599,7 +598,7 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.perps_realized_pnl).uppercase(),
-                    value = "${formatSignedFiat(pnl)} (${formatSignedPercent(roe)})",
+                    value = formatSignedFiat(pnl),
                     valueColor = pnlColor,
                 )
 
