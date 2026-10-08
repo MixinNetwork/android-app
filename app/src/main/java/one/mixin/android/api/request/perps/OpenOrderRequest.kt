@@ -40,7 +40,9 @@ data class OpenOrderResponse(
 
 data class CloseOrderRequest(
     @SerializedName("position_id")
-    val positionId: String
+    val positionId: String,
+    @SerializedName("quantity")
+    val quantity: String? = null,
 )
 
 data class CloseOrderResponse(

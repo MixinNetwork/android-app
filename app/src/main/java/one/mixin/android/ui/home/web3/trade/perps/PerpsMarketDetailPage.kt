@@ -152,6 +152,12 @@ fun PerpsMarketDetailPage(
         val position = currentPosition
         if (activity != null && position?.state == PerpsPosition.STATE_OPEN && !isAddingProcessing) {
             when (action) {
+                PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_POSITION -> {
+                    if (activity.supportFragmentManager.findFragmentByTag(PerpsReduceBottomSheetDialogFragment.TAG) == null) {
+                        PerpsReduceBottomSheetDialogFragment.newInstance(position)
+                            .show(activity.supportFragmentManager, PerpsReduceBottomSheetDialogFragment.TAG)
+                    }
+                }
                 PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
                 PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_MARGIN -> {
                     PerpsMarginBottomSheetDialogFragment.newInstance(

@@ -2650,4 +2650,10 @@
     <string name="perps_reduced_margin">减少保证金</string>
     <string name="perps_realized_pnl">已实现盈亏</string>
     <string name="perps_unrealized_pnl">未实现盈亏</string>
+    <string name="perps_confirm_reduce_position">确认减仓</string>
+    <string name="perps_close_submitted">平仓订单已提交</string>
+    <string name="perps_reduce_quantity_changed">持仓已变化，请返回核对数量后重试。</string>
+    <string name="perps_reduce_invalid_quantity">请输入大于零且不超过当前仓位的金额。</string>
+    <string name="perps_estimated_pnl">预计盈亏</string>
+    <string name="perps_reduction_estimate_note">预估不含手续费，实际到账以成交和结算为准。此处显示当前强平价格。</string>
 </resources>

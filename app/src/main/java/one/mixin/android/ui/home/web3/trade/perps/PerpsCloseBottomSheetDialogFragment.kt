@@ -84,10 +84,13 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     companion object {
         const val TAG = "PerpsCloseBottomSheetDialogFragment"
         const val RESULT_MARGIN_CONFIRMED = "perps_margin_confirmed"
+        const val RESULT_POSITION_REDUCED = "perps_position_reduced"
         const val RESULT_POSITION_ID = "position_id"
         const val RESULT_AMOUNT = "amount"
         private const val ARGS_POSITION_ID = "args_position_id"
         private const val ARGS_REDUCE_MARGIN_AMOUNT = "args_reduce_margin_amount"
+        private const val ARGS_REDUCE_QUANTITY = "args_reduce_quantity"
+        private const val ARGS_QUANTITY = "args_quantity"
         private const val ARGS_SIDE = "args_side"
         private const val ARGS_MARGIN = "args_margin"
         private const val ARGS_LEVERAGE = "args_leverage"
@@ -100,10 +103,13 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         fun newInstance(
             position: PerpsPosition,
             reduceMarginAmount: String? = null,
+            reduceQuantity: String? = null,
         ): PerpsCloseBottomSheetDialogFragment {
             return PerpsCloseBottomSheetDialogFragment().withArgs {
                 putString(ARGS_POSITION_ID, position.positionId)
                 putString(ARGS_REDUCE_MARGIN_AMOUNT, reduceMarginAmount)
+                putString(ARGS_REDUCE_QUANTITY, reduceQuantity)
+                putString(ARGS_QUANTITY, position.quantity)
                 putString(ARGS_SIDE, position.side)
                 putString(ARGS_MARGIN, position.margin)
                 putInt(ARGS_LEVERAGE, position.leverage)
@@ -157,6 +163,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     }
     private val reduceMarginAmount by lazy { arguments?.getString(ARGS_REDUCE_MARGIN_AMOUNT) }
     private val isReduceMargin get() = reduceMarginAmount != null
+    private val reduceQuantity by lazy { arguments?.getString(ARGS_REDUCE_QUANTITY) }
+    private val isReducePosition get() = reduceQuantity != null
 
     private val isLong by lazy {
         requireNotNull(requireArguments().getString(ARGS_SIDE)) { "side is null" }
@@ -180,6 +188,9 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     private var latestMarkPrice by mutableStateOf("")
     private var latestUnrealizedPnl by mutableStateOf("")
+    private var latestQuantity by mutableStateOf("")
+    private var latestMargin by mutableStateOf("")
+    private var latestLiquidationPrice by mutableStateOf<String?>(null)
     private var marketIconUrl by mutableStateOf("")
     private var marketSymbol by mutableStateOf("")
     private var settleAssetSymbol by mutableStateOf("USDT")
@@ -195,6 +206,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         LaunchedEffect(Unit) {
             latestMarkPrice = markPrice
             latestUnrealizedPnl = unrealizedPnl
+            latestQuantity = arguments?.getString(ARGS_QUANTITY).orEmpty()
+            latestMargin = margin
         }
 
         LaunchedEffect(positionId) {
@@ -202,6 +215,9 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             localPosition?.let { position ->
                 latestMarkPrice = position.markPrice ?: latestMarkPrice
                 latestUnrealizedPnl = position.unrealizedPnl ?: latestUnrealizedPnl
+                latestQuantity = position.quantity
+                latestMargin = position.margin ?: latestMargin
+                latestLiquidationPrice = position.liquidationPrice
                 marketIconUrl = position.iconUrl.orEmpty()
                 marketSymbol = position.displaySymbol ?: position.tokenSymbol.orEmpty()
                 refreshAssetAndSender(
@@ -220,6 +236,9 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 onSuccess = { position ->
                     latestMarkPrice = position.markPrice
                     latestUnrealizedPnl = position.unrealizedPnl
+                    latestQuantity = position.quantity
+                    latestMargin = position.margin
+                    latestLiquidationPrice = position.liquidationPrice
 
                     lifecycleScope.launch {
                         viewModel.getMarketFromDb(position.marketId)?.let { market ->
@@ -321,8 +340,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     Text(
                         text = stringResource(
                             id = when (step) {
-                                Step.Pending -> if (isReduceMargin) R.string.perps_confirm_reduce_margin_title else R.string.confirm_closing_position
-                                Step.Done -> if (isReduceMargin) R.string.perps_margin_submitted else R.string.Position_Closed
+                                Step.Pending -> if (isReduceMargin) R.string.perps_confirm_reduce_margin_title else if (isReducePosition) R.string.perps_confirm_reduce_position else R.string.confirm_closing_position
+                                Step.Done -> if (isReduceMargin) R.string.perps_margin_submitted else R.string.perps_close_submitted
                                 Step.Error -> if (isReduceMargin) R.string.perps_reducing_margin_failed else if (isLong) R.string.Closed_Long_Failed else R.string.Closed_Short_Failed
                                 Step.Sending -> if (isReduceMargin) R.string.perps_reducing_margin else R.string.Sending
                             }
@@ -363,7 +382,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     Box(modifier = Modifier.height(20.dp))
 
                     val pnl = try {
-                        BigDecimal(latestUnrealizedPnl)
+                        if (isReducePosition) perpsReductionValue(latestUnrealizedPnl, reduceQuantity.orEmpty(), latestQuantity) ?: BigDecimal.ZERO
+                        else BigDecimal(latestUnrealizedPnl)
                     } catch (e: Exception) {
                         BigDecimal.ZERO
                     }
@@ -376,15 +396,16 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     }
 
                     val estimatedReceive = if (isReduceMargin) reduceMarginAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO else try {
-                        val margin = BigDecimal(margin)
+                        val margin = BigDecimal(latestMargin)
                         val unrealizedPnl = BigDecimal(latestUnrealizedPnl)
-                        margin + unrealizedPnl
+                        val total = margin + unrealizedPnl
+                        (if (isReducePosition) perpsReductionValue(total.toPlainString(), reduceQuantity.orEmpty(), latestQuantity) ?: BigDecimal.ZERO else total).max(BigDecimal.ZERO)
                     } catch (e: Exception) {
                         BigDecimal.ZERO
                     }
 
                     val pnlPercent = try {
-                        val marginValue = BigDecimal(margin)
+                        val marginValue = BigDecimal(latestMargin)
                         if (marginValue <= BigDecimal.ZERO) {
                             BigDecimal.ZERO
                         } else {
@@ -425,6 +446,10 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             )
                         }
                         Box(modifier = Modifier.height(20.dp))
+                        if (isReducePosition) {
+                            PerpsAddInfoRow(stringResource(R.string.Quantity), reduceQuantity.orEmpty())
+                            Spacer(Modifier.height(16.dp))
+                        }
                         settleAssetItem?.let { asset ->
                             Text(
                                 text = stringResource(R.string.Estimated_Receive).uppercase(),
@@ -474,6 +499,12 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 )
                             }
                         }
+                        if (isReducePosition) {
+                            Spacer(Modifier.height(16.dp))
+                            PerpsAddInfoRow(stringResource(R.string.Liquidation_Price), latestLiquidationPrice ?: "-")
+                            Spacer(Modifier.height(8.dp))
+                            Text(stringResource(R.string.perps_reduction_estimate_note), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
+                        }
                     }
                     Box(modifier = Modifier.height(20.dp))
 
@@ -497,6 +528,12 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             ) {
                                 MixinButton(
                                     onClick = {
+                                        if (isReducePosition) {
+                                            parentFragmentManager.setFragmentResult(
+                                                RESULT_POSITION_REDUCED,
+                                                Bundle().apply { putString(RESULT_POSITION_ID, positionId) },
+                                            )
+                                        }
                                         onDoneAction?.invoke()
                                         dismiss()
                                     },
@@ -565,6 +602,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     private fun showVerifyPinThenClose() {
         if (childFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) != null) return
+        if (isReducePosition && perpsReduceQuantity(reduceQuantity.orEmpty(), latestQuantity) == null) {
+            errorInfo = getString(R.string.perps_reduce_quantity_changed)
+            step = Step.Error
+            return
+        }
         if (isReduceMargin && marginAdjustmentAmount(reduceMarginAmount.orEmpty()) == null) {
             errorInfo = getString(R.string.Data_error)
             step = Step.Error
@@ -602,6 +644,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         step = Step.Sending
         viewModel.closePerpsOrder(
             positionId = positionId,
+            quantity = reduceQuantity,
             onSuccess = {
                 step = Step.Done
                 AnalyticsTracker.trackPerpsCloseEnd()
