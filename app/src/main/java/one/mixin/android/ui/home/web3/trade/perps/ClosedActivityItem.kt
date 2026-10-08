@@ -69,7 +69,6 @@ fun ClosedActivityItem(
     } else {
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
-    val pnlPercent = order.roe.toBigDecimalOrNull()?.multiply(BigDecimal(100))
     val titleRes = when {
         isFailed && isLong -> R.string.Closed_Long_Failed
         isFailed -> R.string.Closed_Short_Failed
@@ -132,14 +131,7 @@ fun ClosedActivityItem(
         Spacer(modifier = Modifier.width(8.dp))
 
         BasicText(
-            text = buildString {
-                append(formatPerpsSignedRawUsdDecimal(pnl))
-                pnlPercent?.let {
-                    append(" (")
-                    append(formatPerpsSignedPercent(it, withSign = false))
-                    append(")")
-                }
-            },
+            text = formatPerpsSignedRawUsdDecimal(pnl),
             modifier = Modifier.widthIn(max = 160.dp),
             style = TextStyle(
                 fontSize = 14.sp,
