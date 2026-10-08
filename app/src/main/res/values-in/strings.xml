@@ -782,4 +782,10 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">KESALAHAN 10655: Tidak dapat menambah posisi.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">KESALAHAN 10655: Jumlah pembukaan posisi melebihi batas maksimum %1$s. Kurangi jumlah atau leverage.</string>
     <string name="single_transaction_should_be_less_than">Jumlah maksimum %1$s %2$s</string>
+    <string name="perps_confirm_reduce_position">Konfirmasi Pengurangan Posisi</string>
+    <string name="perps_close_submitted">Order penutupan telah diajukan</string>
+    <string name="perps_reduce_quantity_changed">Posisi telah berubah. Kembali dan periksa jumlahnya sebelum mencoba lagi.</string>
+    <string name="perps_reduce_invalid_quantity">Masukkan nominal lebih besar dari nol yang tidak melebihi nilai posisi saat ini.</string>
+    <string name="perps_estimated_pnl">Estimasi PnL</string>
+    <string name="perps_reduction_estimate_note">Estimasi tidak termasuk biaya. Jumlah akhir yang diterima bergantung pada eksekusi dan penyelesaian. Harga likuidasi yang ditampilkan adalah harga saat ini.</string>
 </resources>
