@@ -8,6 +8,7 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.drag
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
+import androidx.compose.foundation.layout.BoxWithConstraintsScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Icon
@@ -45,6 +47,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -81,13 +84,9 @@ internal fun ContactsPage(
             .toSortedMap(compareBy { if (it == "#") "[" else it })
     }
     val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
     val sectionOffsets = remember(groups, newChat) {
         var offset = if (newChat) 2 else 0
         groups.mapValues { (_, users) -> offset.also { offset += users.size + 1 } }
-    }
-    val scrollToLetter: (String) -> Unit = { letter ->
-        sectionOffsets[letter]?.let { offset -> scope.launch { listState.scrollToItem(offset) } }
     }
     MixinAppTheme {
         val nameColor = MixinAppTheme.colors.textMinor.toArgb()
@@ -113,50 +112,56 @@ internal fun ContactsPage(
                                 Spacer(Modifier.width(16.dp))
                                 Column(Modifier.weight(1f)) {
                                     AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(user); it.setTextColor(nameColor) })
-                                    if (!newChat) {
-                                        Spacer(Modifier.height(4.dp))
-                                        Text(user.identityNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp)
-                                    }
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(user.identityNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp)
                                 }
                             }
                         }
                     }
                 }
-                if (groups.isNotEmpty()) {
-                    val railTop = minOf(if (newChat) 200.dp else 60.dp, (maxHeight - 378.dp).coerceAtLeast(0.dp))
-                    Column(
-                        Modifier.align(Alignment.TopEnd).padding(top = railTop, end = 8.dp)
-                            .height((maxHeight - railTop).coerceAtMost(378.dp))
-                            .pointerInput(sectionOffsets) {
-                                awaitEachGesture {
-                                    val down = awaitFirstDown()
-                                    down.consume()
-                                    var previousLetter: String? = null
-                                    fun selectLetter(y: Float) {
-                                        val letter = contactLetterAt(y, size.height)
-                                        if (letter != previousLetter) {
-                                            previousLetter = letter
-                                            scrollToLetter(letter)
-                                        }
-                                    }
-                                    selectLetter(down.position.y)
-                                    drag(down.id) { change ->
-                                        change.consume()
-                                        selectLetter(change.position.y)
-                                    }
-                                }
-                            },
-                    ) {
-                        contactLetters.forEach { initial ->
-                            Text(initial, color = Color(0xFFB8BDC7), fontSize = 11.sp, lineHeight = 14.sp, letterSpacing = 0.sp,
-                                textAlign = TextAlign.Center,
-                                modifier = Modifier.width(32.dp).weight(1f).semantics {
-                                    onClick { scrollToLetter(initial); true }
-                                })
+                ContactAlphabetIndex(sectionOffsets, listState, if (newChat) 200.dp else 60.dp)
+            }
+        }
+    }
+}
+
+@Composable
+internal fun BoxWithConstraintsScope.ContactAlphabetIndex(sectionOffsets: Map<String, Int>, listState: LazyListState, topOffset: Dp = 60.dp) {
+    if (sectionOffsets.isEmpty()) return
+    val scope = rememberCoroutineScope()
+    val scrollToLetter: (String) -> Unit = { letter ->
+        sectionOffsets[letter]?.let { offset -> scope.launch { listState.scrollToItem(offset) } }
+    }
+    val railTop = minOf(topOffset, (maxHeight - 378.dp).coerceAtLeast(0.dp))
+    Column(
+        Modifier.align(Alignment.TopEnd).padding(top = railTop, end = 8.dp)
+            .height((maxHeight - railTop).coerceAtMost(378.dp))
+            .pointerInput(sectionOffsets) {
+                awaitEachGesture {
+                    val down = awaitFirstDown()
+                    down.consume()
+                    var previousLetter: String? = null
+                    fun selectLetter(y: Float) {
+                        val letter = contactLetterAt(y, size.height)
+                        if (letter != previousLetter) {
+                            previousLetter = letter
+                            scrollToLetter(letter)
                         }
                     }
+                    selectLetter(down.position.y)
+                    drag(down.id) { change ->
+                        change.consume()
+                        selectLetter(change.position.y)
+                    }
                 }
-            }
+            },
+    ) {
+        contactLetters.forEach { initial ->
+            Text(initial, color = Color(0xFFB8BDC7), fontSize = 11.sp, lineHeight = 14.sp, letterSpacing = 0.sp,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.width(32.dp).weight(1f).semantics {
+                    onClick { scrollToLetter(initial); true }
+                })
         }
     }
 }
@@ -168,7 +173,7 @@ internal fun contactLetterAt(y: Float, height: Int): String =
 internal fun ContactPageHeader(title: String, onBack: () -> Unit, close: Boolean = false, onAddContact: (() -> Unit)? = null) {
     Row(Modifier.fillMaxWidth().height(if (close) 70.dp else 64.dp).padding(end = if (close) 5.dp else 0.dp), verticalAlignment = Alignment.CenterVertically) {
         if (!close) IconButton(onClick = onBack) { Icon(painterResource(R.drawable.ic_back), stringResource(R.string.Cancel), tint = MixinAppTheme.colors.textPrimary) }
-        Text(title, color = if (close) MixinAppTheme.colors.textMinor else MixinAppTheme.colors.textPrimary, fontSize = 18.sp, lineHeight = 21.sp, letterSpacing = if (close) (-0.4).sp else 0.sp, fontWeight = if (close) FontWeight.W600 else FontWeight.W500,
+        Text(title, color = if (close) MixinAppTheme.colors.textMinor else MixinAppTheme.colors.textPrimary, fontSize = 18.sp, lineHeight = 21.sp, letterSpacing = if (close) (-0.4).sp else 0.sp, fontWeight = if (close) FontWeight.W600 else FontWeight.Normal,
             modifier = Modifier.weight(1f).padding(start = if (close) 16.dp else 0.dp), textAlign = if (close) TextAlign.Start else TextAlign.Center)
         if (close) {
             IconButton(onClick = onBack) { Icon(painterResource(R.drawable.ic_circle_close), stringResource(R.string.Close), tint = Color.Unspecified, modifier = Modifier.size(26.dp)) }

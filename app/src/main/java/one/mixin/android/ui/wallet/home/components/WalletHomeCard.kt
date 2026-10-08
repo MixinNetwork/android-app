@@ -79,7 +79,7 @@ internal fun WalletHomeCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = if (card == WalletHomeCardType.COLLECTIBLES) 16.dp else 20.dp)
+            .padding(horizontal = 20.dp)
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
             .then(
@@ -178,16 +178,13 @@ internal fun WalletHomeCard(
                 contentUsesOwnPadding = true,
                 contentFlush = true,
                 showBottomSpacer = false,
-                headerPadding = PaddingValues(start = 16.dp, end = 8.dp, top = 13.dp, bottom = 13.dp),
-                headerTrailing = {
-                    Icon(painterResource(R.drawable.ic_more_arrow), null, tint = Color.Unspecified, modifier = Modifier.size(30.dp))
-                },
+                headerPadding = PaddingValues(20.dp),
             ) {
                 state.collectibles.take(PREVIEW_LIMIT).forEach { collectible ->
                     Row(
                         modifier = Modifier.fillMaxWidth()
                             .clickable { callbacks.onCollectibleClicked(collectible.inscriptionHash) }
-                            .height(70.dp).padding(start = 16.dp, end = 16.dp, bottom = 20.dp),
+                            .height(70.dp).padding(start = 20.dp, end = 20.dp, bottom = 20.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         CoilImage(

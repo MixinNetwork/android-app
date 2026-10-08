@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
@@ -47,6 +49,7 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.UserAvatarImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.ui.contacts.ContactAlphabetIndex
 import one.mixin.android.ui.contacts.ContactPageHeader
 import one.mixin.android.ui.contacts.ContactSectionHeader
 import one.mixin.android.ui.contacts.ContactsSearchField
@@ -216,7 +219,7 @@ private fun MoreArrow() {
 
 @Composable
 private fun BotRow(app: ExploreApp, external: Boolean = false, avatarSize: Dp = 50.dp, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clickable(onClick = onClick).height(70.dp).padding(start = if (external) 16.dp else 20.dp, end = if (external) 8.dp else 20.dp, bottom = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().clickable(onClick = onClick).height(70.dp).padding(start = if (external) 16.dp else 20.dp, end = if (external) 8.dp else 40.dp, bottom = 20.dp), verticalAlignment = Alignment.CenterVertically) {
         CoilImage(app.iconUrl, R.drawable.ic_avatar_place_holder, Modifier.size(avatarSize).clip(CircleShape))
         Spacer(Modifier.width(if (external) 14.dp else 16.dp))
         Column(Modifier.weight(1f)) {
@@ -234,28 +237,35 @@ internal fun BotsPage(favorites: List<ExploreApp>, apps: List<ExploreApp>, onBac
     val matches: (ExploreApp) -> Boolean = { it.name.contains(query.trim(), true) || it.appNumber.contains(query.trim(), true) }
     val favoriteIds = favorites.map { it.appId }.toSet()
     val groups = apps.filter { it.appId !in favoriteIds && matches(it) }.groupBy { contactInitial(it.name) }.toSortedMap(compareBy { if (it == "#") "[" else it })
+    val filteredFavorites = favorites.filter(matches)
+    val listState = rememberLazyListState()
+    var offset = filteredFavorites.size + 2
+    val sectionOffsets = groups.mapValues { (_, group) -> offset.also { offset += group.size + 1 } }
     MixinAppTheme {
         Column(Modifier.fillMaxSize().background(MixinAppTheme.colors.background)) {
             ContactPageHeader(stringResource(R.string.bots_title), onBack)
             ContactsSearchField(query, { query = it }, stringResource(R.string.setting_auth_search_hint))
-            LazyColumn(Modifier.weight(1f)) {
-                item { ContactSectionHeader(stringResource(R.string.Favorite)) }
-                items(favorites.filter(matches), key = { "favorite:${it.appId}" }) { app -> BotRow(app) { onFavoriteClick(app) } }
-                item {
-                    Row(Modifier.fillMaxWidth().clickable(onClick = onEdit).height(70.dp).padding(start = 20.dp, end = 20.dp, bottom = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Icon(painterResource(R.drawable.ic_favorite_edit), null, tint = Color.Unspecified, modifier = Modifier.size(50.dp))
-                        Spacer(Modifier.width(16.dp))
-                        Column {
-                            Text(stringResource(R.string.My_favorite_bots), color = MixinAppTheme.colors.textPrimary, fontSize = 16.sp, lineHeight = 19.sp, letterSpacing = 0.sp)
-                            Spacer(Modifier.height(4.dp))
-                            Text(stringResource(R.string.add_or_remove_favorite_bots), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp)
+            BoxWithConstraints(Modifier.weight(1f)) {
+                LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
+                    item { ContactSectionHeader(stringResource(R.string.Favorite)) }
+                    items(filteredFavorites, key = { "favorite:${it.appId}" }) { app -> BotRow(app) { onFavoriteClick(app) } }
+                    item {
+                        Row(Modifier.fillMaxWidth().clickable(onClick = onEdit).height(70.dp).padding(start = 20.dp, end = 20.dp, bottom = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Icon(painterResource(R.drawable.ic_favorite_edit), null, tint = Color.Unspecified, modifier = Modifier.size(50.dp))
+                            Spacer(Modifier.width(16.dp))
+                            Column {
+                                Text(stringResource(R.string.My_favorite_bots), color = MixinAppTheme.colors.textPrimary, fontSize = 16.sp, lineHeight = 19.sp, letterSpacing = 0.sp)
+                                Spacer(Modifier.height(4.dp))
+                                Text(stringResource(R.string.add_or_remove_favorite_bots), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp)
+                            }
                         }
                     }
+                    groups.forEach { (initial, group) ->
+                        item(key = "header:$initial") { ContactSectionHeader(initial) }
+                        items(group, key = { it.appId }) { app -> BotRow(app) { onBotClick(app) } }
+                    }
                 }
-                groups.forEach { (initial, group) ->
-                    item(key = "header:$initial") { ContactSectionHeader(initial) }
-                    items(group, key = { it.appId }) { app -> BotRow(app) { onBotClick(app) } }
-                }
+                ContactAlphabetIndex(sectionOffsets, listState)
             }
         }
     }
