@@ -38,6 +38,8 @@ import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.realizedPnlForDisplay
+import one.mixin.android.api.response.perps.roeForDisplay
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.web3.components.PageScaffold
@@ -403,11 +405,7 @@ fun PositionDetailPage(
         }
     }
 
-    val pnl = try {
-        BigDecimal(closeOrder.realizedPnl)
-    } catch (e: Exception) {
-        BigDecimal.ZERO
-    }
+    val pnl = closeOrder.realizedPnlForDisplay()
 
     val isProfit = pnl >= BigDecimal.ZERO
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
@@ -438,7 +436,7 @@ fun PositionDetailPage(
     val quantity = closeOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
     val effectiveLeverage = leverage ?: closeOrder.leverage
-    val roe = (closeOrder.roe.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
+    val roe = (closeOrder.roeForDisplay() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
     val fee = closeOrder.feeAmount.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
 
     fun formatFiat(value: BigDecimal): String {
