@@ -1,8 +1,12 @@
 package one.mixin.android.ui.common
 
+import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
+import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.WalletCategory
@@ -10,10 +14,15 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
+@RunWith(RobolectricTestRunner::class)
 class LoginRecoveryPolicyTest {
     @Test
     fun missingWalletIsDeletedAndItsErrorIsHandledDuringLogin() = runBlocking {
+        MixinApplication.appContext = ApplicationProvider.getApplicationContext()
+        MixinApplication.appContext.defaultSharedPreferences.edit().putString(PREF_ROUTE_BOT_PK, "cached-key").commit()
         val wallets = mutableListOf("missing", "active")
         var defaultErrorHandled = false
         val result = requestRouteAPI<Unit, Boolean>(

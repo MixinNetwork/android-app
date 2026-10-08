@@ -32,6 +32,18 @@ suspend fun <T, R> requestRouteAPI(
 ): R? {
     val response =
         try {
+            val preferences = MixinApplication.appContext.defaultSharedPreferences
+            if (preferences.getString(PREF_ROUTE_BOT_PK, null).isNullOrBlank()) {
+                val sessionResponse = requestSession(listOf(ROUTE_BOT_USER_ID))
+                if (!sessionResponse.isSuccess) {
+                    defaultErrorHandle(MixinResponse<T>(requireNotNull(sessionResponse.error)))
+                    endBlock?.invoke()
+                    return null
+                }
+                val publicKey = sessionResponse.data?.firstOrNull { it.userId == ROUTE_BOT_USER_ID }?.publicKey
+                check(!publicKey.isNullOrBlank()) { "Route bot public key is missing" }
+                preferences.putString(PREF_ROUTE_BOT_PK, publicKey)
+            }
             invokeNetwork()
         } catch (t: Throwable) {
             if (exceptionBlock?.invoke(t) != true) {
