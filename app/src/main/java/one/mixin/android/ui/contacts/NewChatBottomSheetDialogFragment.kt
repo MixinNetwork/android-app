@@ -6,6 +6,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.navTo
@@ -19,6 +20,8 @@ class NewChatBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment()
     companion object {
         const val TAG = "NewChatBottomSheetDialogFragment"
     }
+
+    override fun getTheme() = R.style.AppTheme_Dialog
 
     private val viewModel by viewModels<ContactViewModel>()
     private val contacts by lazy { viewModel.findContacts() }
