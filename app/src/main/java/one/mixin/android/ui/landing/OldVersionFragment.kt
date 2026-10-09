@@ -3,8 +3,10 @@ package one.mixin.android.ui.landing
 import android.os.Bundle
 import android.view.View
 import dagger.hilt.android.AndroidEntryPoint
+import one.mixin.android.BuildConfig
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentOldVersionBinding
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openMarket
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.viewBinding
@@ -25,11 +27,16 @@ class OldVersionFragment : BaseFragment(R.layout.fragment_old_version) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         binding.apply {
-            desTv.text =
-                getString(R.string.update_mixin_description, requireContext().packageManager.getPackageInfo(requireContext().packageName, 0).versionName)
             updateTv.setOnClickListener {
                 requireContext().openMarket()
             }
+            supportIb.setOnClickListener {
+                openCustomerService()
+            }
+            contactSupport.setOnClickListener {
+                openCustomerService()
+            }
+            version.text = getString(R.string.about_version, BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE)
         }
     }
 }
