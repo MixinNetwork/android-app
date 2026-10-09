@@ -10,6 +10,7 @@ import one.mixin.android.extension.createDocumentTemp
 import one.mixin.android.extension.getDocumentPath
 import one.mixin.android.extension.getExtensionName
 import one.mixin.android.extension.getFilePath
+import one.mixin.android.util.ShareHelper
 import one.mixin.android.vo.MediaStatus
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageStatus
@@ -33,6 +34,10 @@ class ConvertDataJob(
         messageDao.updateMediaStatus(MediaStatus.CANCELED.name, message.messageId)
         MessageFlow.update(message.conversationId, message.messageId)
         removeJob()
+    }
+
+    private fun releaseSource() {
+        message.mediaUrl?.let { ShareHelper.releaseJobSource(MixinApplication.appContext, Uri.parse(it)) }
     }
 
     override fun onRun() {
@@ -73,6 +78,7 @@ class ConvertDataJob(
                     ),
                 ),
             )
+            releaseSource()
         }
     }
 }
