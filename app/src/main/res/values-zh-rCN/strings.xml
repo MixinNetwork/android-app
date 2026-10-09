@@ -2345,7 +2345,7 @@
     <string name="perps_trading_fee_overview">开仓、加仓和平仓均会产生手续费，费用按仓位价值计算，而不是按保证金计算。</string>
     <string name="perps_trading_fee_pnl_1">仓位越大，手续费越高</string>
     <string name="perps_trading_fee_pnl_2">仓位越小，手续费越低</string>
-    <string name="perps_trading_fee_pnl_3">已实现盈亏已扣除相关手续费</string>
+    <string name="perps_trading_fee_pnl_3">净盈亏已扣除相关手续费</string>
     <string name="perps_liquidation_price_short">强平价格</string>
     <string name="Take_Profit_When">止盈条件</string>
     <string name="Stop_Loss_When">止损条件</string>
@@ -2652,6 +2652,6 @@
     <string name="perps_added_position">加仓</string>
     <string name="perps_added_margin">增加保证金</string>
     <string name="perps_reduced_margin">减少保证金</string>
-    <string name="perps_realized_pnl">已实现盈亏</string>
-    <string name="perps_unrealized_pnl">未实现盈亏</string>
+    <string name="perps_realized_pnl">净盈亏</string>
+    <string name="perps_unrealized_pnl">盈亏</string>
 </resources>
