@@ -2,7 +2,7 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.api.RouteBotPublicKey
+import one.mixin.android.api.BotPublicKey
 import one.mixin.android.util.ErrorHandler
 import timber.log.Timber
 
@@ -24,7 +24,7 @@ class RefreshPriceJob(private val assetId: String) : BaseJob(
                     historyPriceDao.insert(it)
                 }
             } else if (response.errorCode == ErrorHandler.AUTHENTICATION) {
-                RouteBotPublicKey.shared.get(userService::fetchSessionsSuspend, force = true)
+                BotPublicKey.route.get(userService::fetchSessionsSuspend, force = true)
             }
         } catch (e: Exception) {
             Timber.e(e)

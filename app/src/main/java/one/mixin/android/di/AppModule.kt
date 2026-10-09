@@ -24,7 +24,6 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
 import okhttp3.ResponseBody.Companion.toResponseBody
@@ -41,6 +40,7 @@ import one.mixin.android.Constants.API.URL
 import one.mixin.android.Constants.Account.PREF_CASH_BOT_PK
 import one.mixin.android.Constants.Account.PREF_EARN_BOT_PK
 import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
+import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
 import one.mixin.android.Constants.DNS
 import one.mixin.android.Constants.RouteConfig.REFERRAL_API_URL
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_URL
@@ -49,7 +49,6 @@ import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.NetworkException
-import one.mixin.android.api.RouteBotPublicKey
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.response.TipConfig
 import one.mixin.android.api.service.AccountService
@@ -124,7 +123,6 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import timber.log.Timber
-import java.io.IOException
 import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -523,9 +521,9 @@ object AppModule {
     @Singleton
     @Provides
     fun provideRouteService(
-        userService: UserService,
         resolver: ContentResolver,
         httpLoggingInterceptor: HttpLoggingInterceptor?,
+        @ApplicationContext appContext: Context,
     ): RouteService {
         val builder = OkHttpClient.Builder()
         builder.connectTimeout(15, TimeUnit.SECONDS)
@@ -544,18 +542,8 @@ object AppModule {
                         .addHeader("Accept-Language", Locale.getDefault().toLanguageTag())
                         .addHeader("Mixin-Device-Id", getStringDeviceId(resolver))
                         .addHeader(xRequestId, UUID.randomUUID().toString())
-                    val botPublicKey = try {
-                        runBlocking {
-                            RouteBotPublicKey.shared.get({ ids ->
-                                val response = userService.fetchSessions(ids).execute()
-                                response.body() ?: throw IOException("Session request failed: ${response.code()}")
-                            })
-                        }
-                    } catch (e: IOException) {
-                        throw e
-                    } catch (e: Exception) {
-                        throw IOException("Unable to load Route bot public key", e)
-                    }
+                    val botPublicKey = appContext.defaultSharedPreferences.getString(PREF_ROUTE_BOT_PK, null)
+                    if (botPublicKey.isNullOrBlank()) return@addInterceptor chain.proceed(b.build())
                     val (ts, signature) = Session.getBotSignature(botPublicKey, sourceRequest)
                     b.addHeader(mrAccessTimestamp, ts.toString())
                     b.addHeader(mrAccessSign, signature)

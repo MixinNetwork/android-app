@@ -3,23 +3,28 @@ package one.mixin.android.ui.wallet.fiatmoney
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
+import one.mixin.android.Constants.MIXIN_CASH_USER_ID
+import one.mixin.android.Constants.MIXIN_EARN_USER_ID
+import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.ResponseError
-import one.mixin.android.api.RouteBotPublicKey
+import one.mixin.android.api.BotPublicKey
 import one.mixin.android.api.response.UserSession
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.util.ErrorHandler
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -45,11 +50,12 @@ class RouteAPITest {
             preferences.edit().remove(PREF_ROUTE_BOT_PK).commit()
             if (mode == "cached") preferences.edit().putString(PREF_ROUTE_BOT_PK, "key").commit()
             val events = mutableListOf<String>()
-            val publicKey = RouteBotPublicKey(
+            var preferenceWrites = 0
+            val publicKey = BotPublicKey(
                 readPreference = { preferences.getString(PREF_ROUTE_BOT_PK, null) },
                 readLocal = { if (mode == "local") "key" else null },
                 saveSession = { assertEquals(session(), it); events.add("save") },
-                savePreference = { preferences.edit().putString(PREF_ROUTE_BOT_PK, it).commit() },
+                savePreference = { preferenceWrites++; preferences.edit().putString(PREF_ROUTE_BOT_PK, it).commit() },
             )
             val result = requestRouteAPI<Unit, Boolean>(
                 invokeNetwork = {
@@ -77,6 +83,7 @@ class RouteAPITest {
                 },
                 publicKey = publicKey,
             )
+            assertEquals(if (mode in listOf("missing", "local")) 1 else 0, preferenceWrites)
             when (mode) {
                 "missing" -> assertEquals(listOf("sync", "save", "request", "end"), events)
                 "cached", "local" -> assertEquals(listOf("request", "end"), events)
@@ -94,7 +101,7 @@ class RouteAPITest {
             var saves = 0
             val started = CompletableDeferred<Unit>()
             val release = CompletableDeferred<Unit>()
-            val publicKey = RouteBotPublicKey({ null }, { null }, { saves++ }, {})
+            val publicKey = BotPublicKey({ null }, { null }, { saves++ }, {})
             val fetch: suspend (List<String>) -> MixinResponse<List<UserSession>> = {
                 calls++
                 started.complete(Unit)
@@ -114,6 +121,54 @@ class RouteAPITest {
     }
 
     @Test
+    fun failedWaiterCanRetryAsSoonAsItResumes() = runBlocking {
+        val started = CompletableDeferred<Unit>()
+        val release = CompletableDeferred<Unit>()
+        val publicKey = BotPublicKey({ null }, { null }, {}, {})
+        val first = async {
+            runCatching {
+                publicKey.get({
+                    started.complete(Unit)
+                    release.await()
+                    MixinResponse(ResponseError(500, 500, "failed"))
+                })
+            }
+        }
+        started.await()
+        val waiter = async(Dispatchers.Unconfined) {
+            assertTrue(runCatching { publicKey.get({ error("Must join pending fetch") }) }.isFailure)
+            publicKey.get({ response(session("new")) })
+        }
+        release.complete(Unit)
+        assertTrue(first.await().isFailure)
+        assertEquals("new", waiter.await())
+    }
+
+    @Test
+    fun allBotsValidateTheirOwnSessionAndReusePreferences() = runBlocking {
+        for (botId in listOf(ROUTE_BOT_USER_ID, REFERRAL_BOT_USER_ID, MIXIN_CASH_USER_ID, MIXIN_EARN_USER_ID)) {
+            var key: String? = null
+            var saved: UserSession? = null
+            var writes = 0
+            val publicKey = BotPublicKey({ key }, { null }, { saved = it }, { key = it; writes++ }, botId)
+            for (sessions in listOf(emptyArray(), arrayOf(session(userId = "other")), arrayOf(session(" ", botId)))) {
+                assertTrue(runCatching { publicKey.get({ response(*sessions) }) }.isFailure)
+                assertNull(key)
+                assertNull(saved)
+            }
+            assertEquals("key", publicKey.get({ ids ->
+                assertEquals(listOf(botId), ids)
+                response(session(userId = "other"), session(userId = botId))
+            }))
+            assertEquals(session(userId = botId), saved)
+            assertEquals("key", publicKey.get({ error("Preference hit must not fetch") }))
+            assertEquals(1, writes)
+        }
+        assertSame(BotPublicKey.route, BotPublicKey.forBot(ROUTE_BOT_USER_ID))
+        assertNull(BotPublicKey.forBot("unknown"))
+    }
+
+    @Test
     fun authenticationRetryUsesValidatedSessionAndEndsOnce() = runBlocking {
         for (mode in listOf("success", "failed", "empty")) {
             var key = "old"
@@ -122,7 +177,7 @@ class RouteAPITest {
             var failures = 0
             var exceptions = 0
             var ends = 0
-            val publicKey = RouteBotPublicKey({ key }, { error("Forced refresh must skip database") }, { saved = it }, { key = it })
+            val publicKey = BotPublicKey({ key }, { error("Forced refresh must skip database") }, { saved = it }, { key = it })
             requestRouteAPI<Unit, Unit>(
                 invokeNetwork = {
                     requests++
@@ -152,7 +207,7 @@ class RouteAPITest {
     @Test
     fun cancellationEndsOnceAndAllowsAnotherSynchronization() = runBlocking {
         val started = CompletableDeferred<Unit>()
-        val publicKey = RouteBotPublicKey({ null }, { null }, {}, {})
+        val publicKey = BotPublicKey({ null }, { null }, {}, {})
         var ends = 0
         val request = launch {
             requestRouteAPI<Unit, Unit>(
@@ -170,6 +225,23 @@ class RouteAPITest {
     }
 
     @Test
+    fun endFailureIsSuppressedOnOriginalFailure() = runBlocking {
+        val original = IllegalStateException("Original failure")
+        val cleanup = IllegalStateException("Cleanup failure")
+        val result = runCatching {
+            requestRouteAPI<Unit, Unit>(
+                invokeNetwork = { MixinResponse() },
+                successBlock = { throw original },
+                endBlock = { throw cleanup },
+                requestSession = { error("Cached") },
+                publicKey = BotPublicKey({ "key" }, { null }, {}, {}),
+            )
+        }
+        assertSame(original, result.exceptionOrNull())
+        assertEquals(listOf(cleanup), original.suppressed.toList())
+    }
+
+    @Test
     fun throwingCallbacksDoNotRepeatEndBlock() = runBlocking {
         for (callback in listOf("error", "end")) {
             var ends = 0
@@ -179,7 +251,7 @@ class RouteAPITest {
                     defaultErrorHandle = { if (callback == "error") error("handler failed") },
                     endBlock = { ends++; if (callback == "end") error("end failed") },
                     requestSession = { error("Cached") },
-                    publicKey = RouteBotPublicKey({ "key" }, { null }, {}, {}),
+                    publicKey = BotPublicKey({ "key" }, { null }, {}, {}),
                 )
             }
             assertTrue(result.isFailure)

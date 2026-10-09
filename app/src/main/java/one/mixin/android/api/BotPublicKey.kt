@@ -7,7 +7,13 @@ import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import one.mixin.android.Constants.Account.PREF_CASH_BOT_PK
+import one.mixin.android.Constants.Account.PREF_EARN_BOT_PK
+import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
 import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
+import one.mixin.android.Constants.MIXIN_CASH_USER_ID
+import one.mixin.android.Constants.MIXIN_EARN_USER_ID
+import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.response.UserSession
@@ -18,11 +24,12 @@ import one.mixin.android.session.Session
 import one.mixin.android.vo.ParticipantSession
 import one.mixin.android.vo.generateConversationId
 
-class RouteBotPublicKey(
+class BotPublicKey(
     private val readPreference: () -> String?,
     private val readLocal: suspend () -> String?,
     private val saveSession: suspend (UserSession) -> Unit,
     private val savePreference: (String) -> Unit,
+    private val botId: String = ROUTE_BOT_USER_ID,
 ) {
     private val mutex = Mutex()
     private var pending: CompletableDeferred<String>? = null
@@ -39,41 +46,52 @@ class RouteBotPublicKey(
             }
         }
         if (!owner) return result.await()
-        try {
-            val key = withContext(Dispatchers.IO) {
-                val cached = if (force) null else readPreference()?.takeIf { it.isNotBlank() }
-                    ?: readLocal()?.takeIf { it.isNotBlank() }
-                cached ?: run {
-                    val response = requestSession(listOf(ROUTE_BOT_USER_ID))
+        val outcome = runCatching {
+            withContext(Dispatchers.IO) {
+                if (!force) {
+                    readPreference()?.takeIf { it.isNotBlank() }?.let { return@withContext it }
+                }
+                val cached = if (force) null else readLocal()?.takeIf { it.isNotBlank() }
+                (cached ?: run {
+                    val response = requestSession(listOf(botId))
                     if (!response.isSuccess) {
                         throw MixinResponseException(response.errorCode, response.errorDescription)
                     }
                     val session = response.data?.firstOrNull {
-                        it.userId == ROUTE_BOT_USER_ID && !it.publicKey.isNullOrBlank()
+                        it.userId == botId && !it.publicKey.isNullOrBlank()
                     }
-                    if (session == null) throw IOException("Route bot public key is missing")
+                    if (session == null) throw IOException("Bot public key is missing")
                     saveSession(session)
                     requireNotNull(session.publicKey)
-                }
+                }).also(savePreference)
             }
-            savePreference(key)
-            result.complete(key)
-            return key
-        } catch (t: Throwable) {
-            result.completeExceptionally(t)
-            throw t
-        } finally {
-            withContext(NonCancellable) { mutex.withLock { pending = null } }
         }
+        withContext(NonCancellable) {
+            mutex.withLock {
+                pending = null
+                outcome.fold(result::complete, result::completeExceptionally)
+            }
+        }
+        return outcome.getOrThrow()
     }
 
     companion object {
-        val shared = RouteBotPublicKey(
-            readPreference = { MixinApplication.appContext.defaultSharedPreferences.getString(PREF_ROUTE_BOT_PK, null) },
+        private val bots = mapOf(
+            ROUTE_BOT_USER_ID to create(ROUTE_BOT_USER_ID, PREF_ROUTE_BOT_PK),
+            REFERRAL_BOT_USER_ID to create(REFERRAL_BOT_USER_ID, PREF_REFERRAL_BOT_PK),
+            MIXIN_CASH_USER_ID to create(MIXIN_CASH_USER_ID, PREF_CASH_BOT_PK),
+            MIXIN_EARN_USER_ID to create(MIXIN_EARN_USER_ID, PREF_EARN_BOT_PK),
+        )
+        val route = requireNotNull(bots[ROUTE_BOT_USER_ID])
+
+        fun forBot(botId: String): BotPublicKey? = bots[botId]
+
+        private fun create(botId: String, preferenceKey: String) = BotPublicKey(
+            readPreference = { MixinApplication.appContext.defaultSharedPreferences.getString(preferenceKey, null) },
             readLocal = {
                 val account = requireNotNull(Session.getAccount())
                 MixinDatabase.getDatabase(MixinApplication.appContext, account.identityNumber)
-                    .participantSessionDao().findBotPublicKey(generateConversationId(ROUTE_BOT_USER_ID, account.userId), ROUTE_BOT_USER_ID)
+                    .participantSessionDao().findBotPublicKey(generateConversationId(botId, account.userId), botId)
             },
             saveSession = { session ->
                 val account = requireNotNull(Session.getAccount())
@@ -82,7 +100,8 @@ class RouteBotPublicKey(
                         ParticipantSession(generateConversationId(session.userId, account.userId), session.userId, session.sessionId, publicKey = session.publicKey),
                     )
             },
-            savePreference = { MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, it) },
+            savePreference = { MixinApplication.appContext.defaultSharedPreferences.putString(preferenceKey, it) },
+            botId = botId,
         )
     }
 }

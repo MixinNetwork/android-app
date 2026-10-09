@@ -4,7 +4,7 @@ import kotlinx.coroutines.CancellationException
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.ResponseError
-import one.mixin.android.api.RouteBotPublicKey
+import one.mixin.android.api.BotPublicKey
 import one.mixin.android.api.response.UserSession
 import one.mixin.android.util.ErrorHandler
 
@@ -23,8 +23,9 @@ suspend fun <T, R> requestRouteAPI(
     endBlock: (() -> Unit)? = null,
     authErrorRetryCount: Int = 1,
     requestSession: suspend (List<String>) -> MixinResponse<List<UserSession>>,
-    publicKey: RouteBotPublicKey = RouteBotPublicKey.shared,
+    publicKey: BotPublicKey = BotPublicKey.route,
 ): R? {
+    var failure: Throwable? = null
     try {
         var retries = authErrorRetryCount
         var force = false
@@ -52,7 +53,16 @@ suspend fun <T, R> requestRouteAPI(
             if (failureBlock?.invoke(response) != true) defaultErrorHandle(response)
             return null
         }
+    } catch (t: Throwable) {
+        failure = t
+        throw t
     } finally {
-        endBlock?.invoke()
+        try {
+            endBlock?.invoke()
+        } catch (t: Throwable) {
+            val original = failure
+            if (original == null) throw t
+            if (original !== t) original.addSuppressed(t)
+        }
     }
 }
