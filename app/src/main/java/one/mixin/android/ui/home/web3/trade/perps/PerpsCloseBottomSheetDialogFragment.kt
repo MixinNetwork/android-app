@@ -188,7 +188,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private var latestUnrealizedPnl by mutableStateOf("")
     private var latestQuantity by mutableStateOf("")
     private var latestMargin by mutableStateOf("")
-    private var latestLiquidationPrice by mutableStateOf<String?>(null)
     private var estimatedCloseFee by mutableStateOf<String?>("")
     private var marketIconUrl by mutableStateOf("")
     private var marketSymbol by mutableStateOf("")
@@ -214,7 +213,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 latestUnrealizedPnl = position.unrealizedPnl ?: latestUnrealizedPnl
                 latestQuantity = position.quantity
                 latestMargin = position.margin ?: latestMargin
-                latestLiquidationPrice = position.liquidationPrice
                 estimatedCloseFee = position.estimatedCloseFee
                 marketIconUrl = position.iconUrl.orEmpty()
                 marketSymbol = position.displaySymbol ?: position.tokenSymbol.orEmpty()
@@ -236,7 +234,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     latestUnrealizedPnl = position.unrealizedPnl
                     latestQuantity = position.quantity
                     latestMargin = position.margin
-                    latestLiquidationPrice = position.liquidationPrice
                     estimatedCloseFee = position.estimatedCloseFee
 
                     lifecycleScope.launch {
@@ -424,10 +421,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             )
                         }
                         Box(modifier = Modifier.height(20.dp))
-                        if (isReducePosition) {
-                            PerpsAddInfoRow(stringResource(R.string.Quantity), reduceQuantity.orEmpty())
-                            Spacer(Modifier.height(16.dp))
-                        }
                         settleAssetItem?.let { asset ->
                             Text(
                                 text = stringResource(R.string.Estimated_Receive).uppercase(),
@@ -465,18 +458,12 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         }
 
                         if (!isReduceMargin) {
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = "${stringResource(R.string.Estimated_Fee)}: ${displayCloseFee?.let(::formatPerpsQuantity) ?: "--"} $settleAssetSymbol",
-                                color = MixinAppTheme.colors.textAssist,
-                                fontSize = 14.sp,
-                            )
-                        }
-                        if (isReducePosition) {
-                            Spacer(Modifier.height(16.dp))
-                            PerpsAddInfoRow(stringResource(R.string.Liquidation_Price), latestLiquidationPrice ?: "-")
-                            Spacer(Modifier.height(8.dp))
-                            Text(stringResource(R.string.perps_reduction_estimate_note), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
+                            Spacer(modifier = Modifier.height(20.dp))
+                            PerpsEstimatedFee(displayCloseFee) {
+                                PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                    PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
+                                ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                            }
                         }
                     }
                     Box(modifier = Modifier.height(20.dp))

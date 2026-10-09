@@ -222,6 +222,11 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
                             assetSymbol = settleAssetSymbol,
                             estimatedReceive = estimatedReceive,
                             estimatedFee = estimatedFee,
+                            onFeeTipClick = {
+                                PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                    PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
+                                ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                            },
                         )
                         Spacer(modifier = Modifier.height(20.dp))
                     }
@@ -532,6 +537,7 @@ private fun BatchCloseSummary(
     assetSymbol: String,
     estimatedReceive: BigDecimal?,
     estimatedFee: BigDecimal?,
+    onFeeTipClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
         Text(
@@ -565,12 +571,8 @@ private fun BatchCloseSummary(
                 fontSize = 14.sp,
             )
         }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "${stringResource(R.string.Estimated_Fee)}: ${estimatedFee?.let(::formatBatchAmount) ?: "--"} $assetSymbol",
-            color = MixinAppTheme.colors.textAssist,
-            fontSize = 14.sp,
-        )
+        Spacer(modifier = Modifier.height(20.dp))
+        PerpsEstimatedFee(estimatedFee, onFeeTipClick)
     }
 }
 
