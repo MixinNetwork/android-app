@@ -9,7 +9,6 @@ import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_CASH_BOT_PK
 import one.mixin.android.Constants.Account.PREF_EARN_BOT_PK
 import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
-import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
 import one.mixin.android.Constants.MIXIN_CASH_USER_ID
 import one.mixin.android.Constants.MIXIN_EARN_USER_ID
 import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
@@ -17,6 +16,7 @@ import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.MixinResponseException
+import one.mixin.android.api.RouteBotPublicKey
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.BindInviteRequest
 import one.mixin.android.api.request.CircleConversationRequest
@@ -366,9 +366,12 @@ class UserRepository
         }
 
         suspend fun getBotPublicKey(botId: String, force: Boolean) {
+            if (botId == ROUTE_BOT_USER_ID) {
+                RouteBotPublicKey.shared.get(::fetchSessionsSuspend, force)
+                return
+            }
             val prefKey =
                 when (botId) {
-                    ROUTE_BOT_USER_ID -> PREF_ROUTE_BOT_PK
                     REFERRAL_BOT_USER_ID -> PREF_REFERRAL_BOT_PK
                     MIXIN_CASH_USER_ID -> PREF_CASH_BOT_PK
                     MIXIN_EARN_USER_ID -> PREF_EARN_BOT_PK

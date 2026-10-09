@@ -13,12 +13,19 @@ import one.mixin.android.vo.WalletCategory
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.After
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 
 @RunWith(RobolectricTestRunner::class)
 class LoginRecoveryPolicyTest {
+    @After
+    fun clearPreferences() {
+        ApplicationProvider.getApplicationContext<android.content.Context>().defaultSharedPreferences
+            .edit().remove(PREF_ROUTE_BOT_PK).commit()
+    }
+
     @Test
     fun missingWalletIsDeletedAndItsErrorIsHandledDuringLogin() = runBlocking {
         MixinApplication.appContext = ApplicationProvider.getApplicationContext()

@@ -2,15 +2,8 @@ package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.MixinApplication
-import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putString
-import one.mixin.android.session.Session
+import one.mixin.android.api.RouteBotPublicKey
 import one.mixin.android.util.ErrorHandler
-import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.generateConversationId
 import timber.log.Timber
 
 class RefreshPriceJob(private val assetId: String) : BaseJob(
@@ -31,12 +24,7 @@ class RefreshPriceJob(private val assetId: String) : BaseJob(
                     historyPriceDao.insert(it)
                 }
             } else if (response.errorCode == ErrorHandler.AUTHENTICATION) {
-                val resp = userService.fetchSessionsSuspend(listOf(ROUTE_BOT_USER_ID))
-                if (resp.isSuccess) {
-                    val sessionData = requireNotNull(resp.data)[0]
-                    MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-                    participantSessionDao.insertSuspend(ParticipantSession(generateConversationId(sessionData.userId, Session.getAccountId()!!), sessionData.userId, sessionData.sessionId, publicKey = sessionData.publicKey))
-                }
+                RouteBotPublicKey.shared.get(userService::fetchSessionsSuspend, force = true)
             }
         } catch (e: Exception) {
             Timber.e(e)

@@ -14,7 +14,6 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -48,8 +47,6 @@ import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
@@ -613,44 +610,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             setLoading(true)
             flow {
                 emit(ROUTE_BOT_USER_ID)
-            }.map { botId ->
-                val key =
-                    fiatMoneyViewModel.findBotPublicKey(
-                        generateConversationId(
-                            botId,
-                            Session.getAccountId()!!,
-                        ),
-                        botId,
-                    )
-                if (!key.isNullOrEmpty()) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(
-                        PREF_ROUTE_BOT_PK,
-                        key
-                    )
-                } else {
-                    val sessionResponse = fiatMoneyViewModel.fetchSessionsSuspend(listOf(botId))
-                    if (sessionResponse.isSuccess) {
-                        val sessionData = requireNotNull(sessionResponse.data)[0]
-                        fiatMoneyViewModel.saveSession(
-                            ParticipantSession(
-                                generateConversationId(
-                                    sessionData.userId,
-                                    Session.getAccountId()!!,
-                                ),
-                                sessionData.userId,
-                                sessionData.sessionId,
-                                publicKey = sessionData.publicKey,
-                            ),
-                        )
-                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-                    } else {
-                        throw MixinResponseException(
-                            sessionResponse.errorCode,
-                            sessionResponse.errorDescription,
-                        )
-                    }
-                }
-                botId
             }.map { _ ->
                 val profileResponse =
                     requestRouteAPI(
