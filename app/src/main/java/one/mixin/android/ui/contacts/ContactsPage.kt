@@ -91,7 +91,7 @@ internal fun ContactsPage(
     MixinAppTheme {
         val nameColor = MixinAppTheme.colors.textMinor.toArgb()
         Column(Modifier.fillMaxSize().background(MixinAppTheme.colors.background)) {
-            ContactPageHeader(stringResource(if (newChat) R.string.new_chat else R.string.My_Contacts), onBack, newChat, onAddContact)
+            ContactPageHeader(stringResource(if (newChat) R.string.new_chat else R.string.contacts_title), onBack, newChat, onAddContact)
             ContactsSearchField(query, { query = it }, stringResource(R.string.contacts_search_hint), newChat)
             BoxWithConstraints(Modifier.weight(1f)) {
                 LazyColumn(state = listState, modifier = Modifier.fillMaxSize()) {
@@ -119,7 +119,7 @@ internal fun ContactsPage(
                         }
                     }
                 }
-                ContactAlphabetIndex(sectionOffsets, listState, if (newChat) 200.dp else 60.dp)
+                ContactAlphabetIndex(sectionOffsets, listState, if (newChat) 140.dp else 60.dp)
             }
         }
     }

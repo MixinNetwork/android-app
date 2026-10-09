@@ -37,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -196,7 +195,10 @@ private fun MoreActionCard(bot: Bot, loggedIn: Boolean, showDot: Boolean, modifi
         Column(Modifier.weight(1f)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(bot.name), color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp, modifier = Modifier.weight(1f, fill = false))
-                if (showDot) Box(Modifier.align(Alignment.Top).padding(start = 4.dp, top = 2.dp).size(5.dp).background(colorResource(R.color.colorRed), CircleShape))
+                if (showDot) Box(
+                    Modifier.align(Alignment.Top).padding(start = 1.dp).size(9.dp)
+                        .background(MixinAppTheme.colors.badgeRed, CircleShape),
+                )
             }
             Spacer(Modifier.height(4.dp))
             Text(stringResource(if (desktop && loggedIn) R.string.Logined else bot.description), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp, lineHeight = 16.sp, letterSpacing = 0.sp)

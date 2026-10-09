@@ -7,7 +7,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.appcompat.widget.ListPopupWindow
-import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.GridLayoutManager
@@ -82,14 +81,9 @@ class CollectiblesFragment : BaseFragment() {
         binding.apply {
             titleView.setSubTitle(getString(R.string.Collectibles), getString(R.string.Privacy_Wallet), R.drawable.ic_wallet_privacy)
             titleView.leftIb.setOnClickListener { requireActivity().onBackPressedDispatcher.onBackPressed() }
-            titleView.rightIb.setOnClickListener { anchor ->
-                PopupMenu(requireContext(), anchor).apply {
-                    menu.add(R.string.Search).setOnMenuItemClickListener {
-                        navTo(SearchInscriptionFragment(), SearchInscriptionFragment.TAG)
-                        true
-                    }
-                    show()
-                }
+            titleView.rightIb.contentDescription = getString(R.string.Search)
+            titleView.rightIb.setOnClickListener {
+                navTo(SearchInscriptionFragment(), SearchInscriptionFragment.TAG)
             }
             root.setOnClickListener {
                 // do nothing

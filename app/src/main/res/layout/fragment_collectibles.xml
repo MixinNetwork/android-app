@@ -14,7 +14,7 @@
         android:layout_height="wrap_content"
         app:need_divider="false"
         app:titleText="@string/Collectibles"
-        app:rightIcon="@drawable/ic_more" />
+        app:rightIcon="@drawable/ic_search_home" />
 
     <RelativeLayout
         android:layout_marginTop="6dp"
