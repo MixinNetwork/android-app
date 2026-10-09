@@ -79,6 +79,8 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         const val ARGS_MNEMONIC_PHRASE = "mnemonic_phrase"
         private const val ARGS_PENDING_IMPORT_MNEMONIC = "pending_import_mnemonic"
         private const val ARGS_PASTED_MNEMONIC = "pasted_mnemonic"
+        private const val STATE_ERROR_INFO = "error_info"
+        private const val STATE_REQUEST_FAILED = "request_failed"
 
         fun newInstance(
             words: ArrayList<String>? = null,
@@ -146,12 +148,27 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
             LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
             true
         }
+        errorInfo = savedInstanceState?.getString(STATE_ERROR_INFO)
+        val restoredRequestFailed = savedInstanceState?.getBoolean(STATE_REQUEST_FAILED) == true
         binding.compose.setContent {
             MnemonicPhrasePage(!words.isNullOrEmpty(), errorInfo) {
                 anonymousRequest(words)
             }
         }
-        anonymousRequest(words)
+        if (shouldRequestAnonymousLogin(restoredRequestFailed)) {
+            anonymousRequest(words)
+        } else {
+            landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        errorInfo?.let { outState.putString(STATE_ERROR_INFO, it) }
+        outState.putBoolean(
+            STATE_REQUEST_FAILED,
+            landingViewModel.mnemonicPhraseState.value == MnemonicPhraseState.Failure,
+        )
     }
 
     private fun applySafeTopPadding(rootView: View) {
@@ -493,3 +510,5 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         }
     }
 }
+
+internal fun shouldRequestAnonymousLogin(restoredRequestFailed: Boolean) = !restoredRequestFailed
