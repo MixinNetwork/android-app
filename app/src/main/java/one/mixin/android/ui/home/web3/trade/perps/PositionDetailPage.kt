@@ -606,7 +606,7 @@ fun PositionDetailPage(
 
                     PositionDetailItem(
                         label = stringResource(R.string.Fee).uppercase(),
-                        value = formatPerpsSignedExactUsdDecimal(fee.negate()),
+                        value = formatPerpsExactUsdDecimal(fee),
                         onTipClick = onFeeTipClick,
                     )
                 }
@@ -869,7 +869,7 @@ fun OpenedOrderDetailPage(
 
                             PositionDetailItem(
                                 label = stringResource(R.string.Fee).uppercase(),
-                                value = formatPerpsSignedExactUsdDecimal(fee.negate()),
+                                value = formatPerpsExactUsdDecimal(fee),
                                 onTipClick = onFeeTipClick,
                             )
                         }
