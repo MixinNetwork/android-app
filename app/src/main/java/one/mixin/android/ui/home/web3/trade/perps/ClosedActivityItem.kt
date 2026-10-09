@@ -32,6 +32,7 @@ import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.realizedPnlForDisplay
+import one.mixin.android.api.response.perps.roeForDisplay
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -70,6 +71,7 @@ fun ClosedActivityItem(
     } else {
         if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     }
+    val pnlPercent = order.roeForDisplay()?.multiply(BigDecimal(100))
     val titleRes = when {
         isFailed && isLong -> R.string.Closed_Long_Failed
         isFailed -> R.string.Closed_Short_Failed
@@ -132,7 +134,14 @@ fun ClosedActivityItem(
         Spacer(modifier = Modifier.width(8.dp))
 
         BasicText(
-            text = formatPerpsSignedRawUsdDecimal(pnl),
+            text = buildString {
+                append(formatPerpsSignedRawUsdDecimal(pnl))
+                pnlPercent?.let {
+                    append(" (")
+                    append(formatPerpsSignedPercent(it, withSign = false))
+                    append(")")
+                }
+            },
             modifier = Modifier.widthIn(max = 160.dp),
             style = TextStyle(
                 fontSize = 14.sp,
