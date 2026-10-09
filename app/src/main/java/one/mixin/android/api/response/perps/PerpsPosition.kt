@@ -74,6 +74,9 @@ data class PerpsPosition(
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String,
+    @SerializedName("estimated_close_fee")
+    @ColumnInfo(name = "estimated_close_fee", defaultValue = "''")
+    val estimatedCloseFee: String? = "",
 ) : Parcelable {
     companion object {
         const val STATE_OPEN = "open"

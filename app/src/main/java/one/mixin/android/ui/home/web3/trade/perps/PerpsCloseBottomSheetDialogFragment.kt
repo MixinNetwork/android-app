@@ -30,14 +30,13 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -49,14 +48,12 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.screenHeight
@@ -76,7 +73,6 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.MixinButton
 import timber.log.Timber
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 @AndroidEntryPoint
 class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -97,6 +93,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         private const val ARGS_ENTRY_PRICE = "args_entry_price"
         private const val ARGS_MARK_PRICE = "args_mark_price"
         private const val ARGS_UNREALIZED_PNL = "args_unrealized_pnl"
+        private const val ARGS_ESTIMATED_CLOSE_FEE = "args_estimated_close_fee"
         private const val ARGS_ROE = "args_roe"
         private const val ARGS_WALLET_NAME = "args_wallet_name"
 
@@ -117,6 +114,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 putString(ARGS_MARK_PRICE, position.markPrice)
                 putString(ARGS_UNREALIZED_PNL, position.unrealizedPnl)
                 putString(ARGS_ROE, position.roe)
+                putString(ARGS_ESTIMATED_CLOSE_FEE, position.estimatedCloseFee)
             }
         }
     }
@@ -191,6 +189,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private var latestQuantity by mutableStateOf("")
     private var latestMargin by mutableStateOf("")
     private var latestLiquidationPrice by mutableStateOf<String?>(null)
+    private var estimatedCloseFee by mutableStateOf<String?>("")
     private var marketIconUrl by mutableStateOf("")
     private var marketSymbol by mutableStateOf("")
     private var settleAssetSymbol by mutableStateOf("USDT")
@@ -199,15 +198,13 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     @Composable
     override fun ComposeContent() {
-        val context = LocalContext.current
-        val quoteColorReversed = context.defaultSharedPreferences
-            .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
 
         LaunchedEffect(Unit) {
             latestMarkPrice = markPrice
             latestUnrealizedPnl = unrealizedPnl
             latestQuantity = arguments?.getString(ARGS_QUANTITY).orEmpty()
             latestMargin = margin
+            estimatedCloseFee = arguments?.getString(ARGS_ESTIMATED_CLOSE_FEE).orEmpty()
         }
 
         LaunchedEffect(positionId) {
@@ -218,6 +215,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 latestQuantity = position.quantity
                 latestMargin = position.margin ?: latestMargin
                 latestLiquidationPrice = position.liquidationPrice
+                estimatedCloseFee = position.estimatedCloseFee
                 marketIconUrl = position.iconUrl.orEmpty()
                 marketSymbol = position.displaySymbol ?: position.tokenSymbol.orEmpty()
                 refreshAssetAndSender(
@@ -239,6 +237,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     latestQuantity = position.quantity
                     latestMargin = position.margin
                     latestLiquidationPrice = position.liquidationPrice
+                    estimatedCloseFee = position.estimatedCloseFee
 
                     lifecycleScope.launch {
                         viewModel.getMarketFromDb(position.marketId)?.let { market ->
@@ -381,40 +380,19 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     )
                     Box(modifier = Modifier.height(20.dp))
 
-                    val pnl = try {
-                        if (isReducePosition) perpsReductionValue(latestUnrealizedPnl, reduceQuantity.orEmpty(), latestQuantity) ?: BigDecimal.ZERO
-                        else BigDecimal(latestUnrealizedPnl)
-                    } catch (e: Exception) {
-                        BigDecimal.ZERO
-                    }
-                    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-                    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-                    val pnlColor = if (pnl >= BigDecimal.ZERO) {
-                        risingColor
+                    val closeReturn = estimatedPerpsCloseReturn(latestMargin, latestUnrealizedPnl, estimatedCloseFee)
+                    val estimatedReceive = if (isReduceMargin) {
+                        reduceMarginAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+                    } else if (isReducePosition) {
+                        perpsReductionValue(closeReturn?.toPlainString(), reduceQuantity.orEmpty(), latestQuantity)
                     } else {
-                        fallingColor
+                        closeReturn
                     }
 
-                    val estimatedReceive = if (isReduceMargin) reduceMarginAmount?.toBigDecimalOrNull() ?: BigDecimal.ZERO else try {
-                        val margin = BigDecimal(latestMargin)
-                        val unrealizedPnl = BigDecimal(latestUnrealizedPnl)
-                        val total = margin + unrealizedPnl
-                        (if (isReducePosition) perpsReductionValue(total.toPlainString(), reduceQuantity.orEmpty(), latestQuantity) ?: BigDecimal.ZERO else total).max(BigDecimal.ZERO)
-                    } catch (e: Exception) {
-                        BigDecimal.ZERO
-                    }
-
-                    val pnlPercent = try {
-                        val marginValue = BigDecimal(latestMargin)
-                        if (marginValue <= BigDecimal.ZERO) {
-                            BigDecimal.ZERO
-                        } else {
-                            BigDecimal(latestUnrealizedPnl)
-                                .divide(marginValue, 8, RoundingMode.HALF_UP)
-                                .multiply(BigDecimal(100))
-                        }
-                    } catch (e: Exception) {
-                        BigDecimal.ZERO
+                    val displayCloseFee = if (isReducePosition) {
+                        perpsReductionValue(estimatedCloseFee, reduceQuantity.orEmpty(), latestQuantity)
+                    } else {
+                        estimatedCloseFee?.toBigDecimalOrNull()
                     }
 
                     Column(
@@ -468,7 +446,9 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 )
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text(
-                                    text = if (isReduceMargin) {
+                                    text = if (estimatedReceive == null) {
+                                        "-- ${asset.symbol}"
+                                    } else if (isReduceMargin) {
                                         "+${formatPerpsQuantity(estimatedReceive)} ${asset.symbol}"
                                     } else "${String.format("%.8f", estimatedReceive)} ${asset.symbol}",
                                     color = MixinAppTheme.colors.textPrimary,
@@ -486,18 +466,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
                         if (!isReduceMargin) {
                             Spacer(modifier = Modifier.height(4.dp))
-                            Row {
-                                Text(
-                                    text = "${stringResource(R.string.PnL)}: ",
-                                    color = MixinAppTheme.colors.textAssist,
-                                    fontSize = 14.sp
-                                )
-                                Text(
-                                    text = "${formatPerpsSignedRawUsdDecimal(pnl)} (${formatPerpsSignedPercent(pnlPercent, withSign = false)})",
-                                    color = pnlColor,
-                                    fontSize = 14.sp
-                                )
-                            }
+                            Text(
+                                text = "${stringResource(R.string.Estimated_Fee)}: ${displayCloseFee?.let(::formatPerpsQuantity) ?: "--"} $settleAssetSymbol",
+                                color = MixinAppTheme.colors.textAssist,
+                                fontSize = 14.sp,
+                            )
                         }
                         if (isReducePosition) {
                             Spacer(Modifier.height(16.dp))

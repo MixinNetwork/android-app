@@ -2708,4 +2708,5 @@
     <string name="perps_reduce_invalid_quantity">請輸入大於零且不超過當前倉位的金額。</string>
     <string name="perps_estimated_pnl">預計盈虧</string>
     <string name="perps_reduction_estimate_note">預估不含手續費，實際到帳以成交和結算為準。此處顯示當前強平價格。</string>
+    <string name="Estimated_Fee">預估手續費</string>
 </resources>

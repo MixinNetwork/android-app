@@ -788,4 +788,5 @@
     <string name="perps_reduce_invalid_quantity">Masukkan nominal lebih besar dari nol yang tidak melebihi nilai posisi saat ini.</string>
     <string name="perps_estimated_pnl">Estimasi PnL</string>
     <string name="perps_reduction_estimate_note">Estimasi tidak termasuk biaya. Jumlah akhir yang diterima bergantung pada eksekusi dan penyelesaian. Harga likuidasi yang ditampilkan adalah harga saat ini.</string>
+    <string name="Estimated_Fee">Estimasi Biaya</string>
 </resources>

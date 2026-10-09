@@ -1171,4 +1171,5 @@
     <string name="perps_reduce_invalid_quantity">Введите сумму больше нуля, не превышающую текущую стоимость позиции.</string>
     <string name="perps_estimated_pnl">Ожидаемая прибыль/убыток</string>
     <string name="perps_reduction_estimate_note">Оценка не включает комиссии. Итоговая сумма зависит от исполнения ордера и расчётов. Показана текущая цена ликвидации.</string>
+    <string name="Estimated_Fee">Расчётная комиссия</string>
 </resources>
