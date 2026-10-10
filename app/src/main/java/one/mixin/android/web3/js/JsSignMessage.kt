@@ -23,6 +23,7 @@ class JsSignMessage(
     val fee: BigDecimal? = null, // UTXO chain fee
     val virtualSize: Int? = null, // UTXO chain vbytes
     val utxoChainId: String? = null,
+    val network: String? = null,
 ) : Parcelable {
     companion object {
         const val TYPE_TYPED_MESSAGE = 0
