@@ -103,3 +103,24 @@ internal fun estimatedPerpsBatchCloseFee(positions: List<PerpsPositionItem>): Bi
         total + (position.estimatedCloseFee?.toBigDecimalOrNull() ?: return null)
     }
 }
+
+internal fun estimatedPerpsClosePnl(unrealizedPnl: String?, estimatedCloseFee: String?): BigDecimal? {
+    val pnl = unrealizedPnl?.toBigDecimalOrNull() ?: return null
+    val fee = estimatedCloseFee?.toBigDecimalOrNull() ?: return null
+    return pnl - fee
+}
+
+internal fun estimatedPerpsClosePnlPercent(pnl: BigDecimal?, margin: BigDecimal?): BigDecimal? {
+    if (pnl == null || margin == null || margin <= BigDecimal.ZERO) return null
+    return pnl.multiply(BigDecimal(100)).divide(margin, 8, RoundingMode.HALF_UP)
+}
+
+internal fun estimatedPerpsBatchClosePnl(positions: List<PerpsPositionItem>): BigDecimal? =
+    positions.fold(BigDecimal.ZERO) { total, position ->
+        total + (estimatedPerpsClosePnl(position.unrealizedPnl, position.estimatedCloseFee) ?: return null)
+    }
+
+internal fun estimatedPerpsBatchCloseMargin(positions: List<PerpsPositionItem>): BigDecimal? =
+    positions.fold(BigDecimal.ZERO) { total, position ->
+        total + (position.margin?.toBigDecimalOrNull() ?: return null)
+    }

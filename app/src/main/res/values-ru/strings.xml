@@ -1172,4 +1172,7 @@
     <string name="perps_estimated_pnl">Ожидаемая прибыль/убыток</string>
     <string name="perps_reduction_estimate_note">Оценка не включает комиссии. Итоговая сумма зависит от исполнения ордера и расчётов. Показана текущая цена ликвидации.</string>
     <string name="Estimated_Fee">Расчётная комиссия</string>
+    <string name="perps_estimated_realized_pnl">Ожидаемая реализованная прибыль/убыток</string>
+    <string name="perps_last_price">Последняя цена</string>
+    <string name="perps_mark_price">Цена маркировки</string>
 </resources>

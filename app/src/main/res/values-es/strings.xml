@@ -1231,4 +1231,7 @@
     <string name="perps_estimated_pnl">PnL estimado</string>
     <string name="perps_reduction_estimate_note">Las estimaciones no incluyen comisiones. El importe final recibido depende de la ejecución y la liquidación. El precio de liquidación mostrado es el actual.</string>
     <string name="Estimated_Fee">Comisión estimada</string>
+    <string name="perps_estimated_realized_pnl">PnL realizado estimado</string>
+    <string name="perps_last_price">Último precio</string>
+    <string name="perps_mark_price">Precio de marca</string>
 </resources>

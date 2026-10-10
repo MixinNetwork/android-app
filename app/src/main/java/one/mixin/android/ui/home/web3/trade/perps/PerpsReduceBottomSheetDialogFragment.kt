@@ -49,6 +49,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
@@ -87,9 +88,6 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
     override fun onStart() {
         super.onStart()
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)
-        childFragmentManager.setFragmentResultListener(PerpsCloseBottomSheetDialogFragment.RESULT_POSITION_REDUCED, this) { _, result ->
-            if (result.getString(PerpsCloseBottomSheetDialogFragment.RESULT_POSITION_ID) == initialPosition.positionId) dismiss()
-        }
     }
 
     @Composable
@@ -98,13 +96,16 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             viewModel.observePosition(initialPosition.positionId)
         }.collectAsStateWithLifecycle(initialValue = initialPosition)
         val position = observedPosition ?: initialPosition
+        var market by remember(position.marketId) { mutableStateOf<PerpsMarket?>(null) }
         var input by rememberSaveable { mutableStateOf("") }
         var isPercentage by rememberSaveable { mutableStateOf(true) }
         val keyboard = LocalSoftwareKeyboardController.current
         LaunchedEffect(initialPosition.positionId) {
+            market = viewModel.getMarketFromDb(initialPosition.marketId)
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 while (isActive) {
                     viewModel.refreshSinglePosition(initialPosition.positionId, initialPosition.walletId)
+                    viewModel.loadMarketDetail(initialPosition.marketId, onSuccess = { market = it }, onError = {})
                     delay(10_000)
                 }
             }
@@ -113,7 +114,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         val price = position.markPrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
         val size = price?.multiply(current)
         val inputValue = input.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        val quantity = perpsReductionQuantity(position.quantity, position.markPrice, input, isPercentage)
+        val quantity = perpsReductionQuantity(position.quantity, position.markPrice, input, isPercentage, market?.quantityScale ?: 0)
         val amount = if (isPercentage) size?.multiply(inputValue)?.movePointLeft(2) else inputValue
         val percentage = if (isPercentage) inputValue else size?.takeIf { it > BigDecimal.ZERO }?.let {
             inputValue.multiply(BigDecimal(100)).divide(it, 8, RoundingMode.DOWN)
@@ -204,10 +205,11 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     }
                     MixinButton(
                         onClick = {
-                            if (quantity != null && canSubmit && childFragmentManager.findFragmentByTag(PerpsCloseBottomSheetDialogFragment.TAG) == null) {
+                            if (quantity != null && canSubmit && parentFragmentManager.findFragmentByTag(PerpsCloseBottomSheetDialogFragment.TAG) == null) {
                                 keyboard?.hide()
                                 PerpsCloseBottomSheetDialogFragment.newInstance(position.toPosition(), reduceQuantity = quantity.stripTrailingZeros().toPlainString())
-                                    .show(childFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
+                                    .show(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
+                                dismiss()
                             }
                         },
                         enabled = canSubmit,

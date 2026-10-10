@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 11,
-    "identityHash": "a5347b1bc8a8c877a494ce1279947eb8",
+    "identityHash": "7e04252bdf212439a82b2dc96ee221ea",
     "entities": [
       {
         "tableName": "positions",
@@ -287,7 +287,7 @@
       },
       {
         "tableName": "markets",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `display_symbol` TEXT NOT NULL, `token_symbol` TEXT NOT NULL, `quote_symbol` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `price_scale` INTEGER NOT NULL DEFAULT 2, `leverage` INTEGER NOT NULL, `icon_url` TEXT NOT NULL, `category` TEXT NOT NULL, `tags` TEXT NOT NULL, `funding_rate` TEXT NOT NULL, `funding_interval_hours` INTEGER NOT NULL DEFAULT 0, `next_funding_at` TEXT NOT NULL DEFAULT '', `open_interest` TEXT NOT NULL DEFAULT '0', `min_amount` TEXT NOT NULL, `max_amount` TEXT NOT NULL, `last` TEXT NOT NULL, `volume` TEXT NOT NULL, `trade_volume_score_1d` INTEGER NOT NULL DEFAULT 0, `high` TEXT NOT NULL, `low` TEXT NOT NULL, `open` TEXT NOT NULL, `change` TEXT NOT NULL, `bid_price` TEXT NOT NULL, `ask_price` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `descriptions` TEXT, PRIMARY KEY(`market_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`market_id` TEXT NOT NULL, `display_symbol` TEXT NOT NULL, `token_symbol` TEXT NOT NULL, `quote_symbol` TEXT NOT NULL, `mark_price` TEXT NOT NULL, `price_scale` INTEGER NOT NULL DEFAULT 2, `quantity_scale` INTEGER NOT NULL DEFAULT 0, `leverage` INTEGER NOT NULL, `icon_url` TEXT NOT NULL, `category` TEXT NOT NULL, `tags` TEXT NOT NULL, `funding_rate` TEXT NOT NULL, `funding_interval_hours` INTEGER NOT NULL DEFAULT 0, `next_funding_at` TEXT NOT NULL DEFAULT '', `open_interest` TEXT NOT NULL DEFAULT '0', `min_amount` TEXT NOT NULL, `max_amount` TEXT NOT NULL, `last` TEXT NOT NULL, `volume` TEXT NOT NULL, `trade_volume_score_1d` INTEGER NOT NULL DEFAULT 0, `high` TEXT NOT NULL, `low` TEXT NOT NULL, `open` TEXT NOT NULL, `change` TEXT NOT NULL, `bid_price` TEXT NOT NULL, `ask_price` TEXT NOT NULL, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, `descriptions` TEXT, PRIMARY KEY(`market_id`))",
         "fields": [
           {
             "fieldPath": "marketId",
@@ -325,6 +325,13 @@
             "affinity": "INTEGER",
             "notNull": true,
             "defaultValue": "2"
+          },
+          {
+            "fieldPath": "quantityScale",
+            "columnName": "quantity_scale",
+            "affinity": "INTEGER",
+            "notNull": true,
+            "defaultValue": "0"
           },
           {
             "fieldPath": "leverage",
@@ -538,7 +545,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'a5347b1bc8a8c877a494ce1279947eb8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7e04252bdf212439a82b2dc96ee221ea')"
     ]
   }
 }

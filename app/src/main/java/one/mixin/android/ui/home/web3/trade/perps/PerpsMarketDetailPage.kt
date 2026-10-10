@@ -1046,9 +1046,9 @@ private fun MarketDetailCard(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
-                            text = stringResource(if (showMarkPrice) R.string.Mark_Price else R.string.Last_Price),
+                            text = stringResource(if (showMarkPrice) R.string.perps_mark_price else R.string.perps_last_price),
                             fontSize = 14.sp,
-                            color = MixinAppTheme.colors.textPrimary,
+                            color = MixinAppTheme.colors.textAssist,
                         )
                         Spacer(modifier = Modifier.width(4.dp))
                         Icon(
@@ -1081,7 +1081,7 @@ private fun MarketDetailCard(
                                 }
                                 Spacer(modifier = Modifier.width(8.dp))
                                 Text(
-                                    text = stringResource(if (markPrice) R.string.Mark_Price else R.string.Last_Price),
+                                    text = stringResource(if (markPrice) R.string.perps_mark_price else R.string.perps_last_price),
                                     color = MixinAppTheme.colors.textPrimary,
                                 )
                             }
@@ -1090,7 +1090,7 @@ private fun MarketDetailCard(
                 }
                 Spacer(modifier = Modifier.height(7.dp))
                 Text(
-                    text = "$PERPS_USD_SYMBOL$displayPrice",
+                    text = formatPerpsPrice(displayPrice, market.priceScale),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary

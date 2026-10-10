@@ -222,6 +222,8 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
                             assetSymbol = settleAssetSymbol,
                             estimatedReceive = estimatedReceive,
                             estimatedFee = estimatedFee,
+                            estimatedPnl = estimatedPerpsBatchClosePnl(displayPositions),
+                            margin = estimatedPerpsBatchCloseMargin(displayPositions),
                             onFeeTipClick = {
                                 PerpetualGuideBottomSheetDialogFragment.newInstance(
                                     PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
@@ -537,6 +539,8 @@ private fun BatchCloseSummary(
     assetSymbol: String,
     estimatedReceive: BigDecimal?,
     estimatedFee: BigDecimal?,
+    estimatedPnl: BigDecimal?,
+    margin: BigDecimal?,
     onFeeTipClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
@@ -571,6 +575,8 @@ private fun BatchCloseSummary(
                 fontSize = 14.sp,
             )
         }
+        Spacer(modifier = Modifier.height(20.dp))
+        PerpsEstimatedRealizedPnl(estimatedPnl, margin)
         Spacer(modifier = Modifier.height(20.dp))
         PerpsEstimatedFee(estimatedFee, onFeeTipClick)
     }

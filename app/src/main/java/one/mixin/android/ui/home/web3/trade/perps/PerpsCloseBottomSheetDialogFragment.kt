@@ -80,7 +80,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     companion object {
         const val TAG = "PerpsCloseBottomSheetDialogFragment"
         const val RESULT_MARGIN_CONFIRMED = "perps_margin_confirmed"
-        const val RESULT_POSITION_REDUCED = "perps_position_reduced"
         const val RESULT_POSITION_ID = "position_id"
         const val RESULT_AMOUNT = "amount"
         private const val ARGS_POSITION_ID = "args_position_id"
@@ -392,6 +391,14 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         estimatedCloseFee?.toBigDecimalOrNull()
                     }
 
+                    val closePnl = estimatedPerpsClosePnl(latestUnrealizedPnl, estimatedCloseFee)
+                    val displayPnl = if (isReducePosition) {
+                        perpsReductionValue(closePnl?.toPlainString(), reduceQuantity.orEmpty(), latestQuantity)
+                    } else closePnl
+                    val displayMargin = if (isReducePosition) {
+                        perpsReductionValue(latestMargin, reduceQuantity.orEmpty(), latestQuantity)
+                    } else latestMargin.toBigDecimalOrNull()
+
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -459,6 +466,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
                         if (!isReduceMargin) {
                             Spacer(modifier = Modifier.height(20.dp))
+                            PerpsEstimatedRealizedPnl(displayPnl, displayMargin)
+                            Spacer(modifier = Modifier.height(20.dp))
                             PerpsEstimatedFee(displayCloseFee) {
                                 PerpetualGuideBottomSheetDialogFragment.newInstance(
                                     PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
@@ -488,12 +497,6 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             ) {
                                 MixinButton(
                                     onClick = {
-                                        if (isReducePosition) {
-                                            parentFragmentManager.setFragmentResult(
-                                                RESULT_POSITION_REDUCED,
-                                                Bundle().apply { putString(RESULT_POSITION_ID, positionId) },
-                                            )
-                                        }
                                         onDoneAction?.invoke()
                                         dismiss()
                                     },

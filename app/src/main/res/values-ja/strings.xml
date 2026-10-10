@@ -1177,4 +1177,7 @@
     <string name="perps_estimated_pnl">予想損益</string>
     <string name="perps_reduction_estimate_note">概算には手数料が含まれていません。実際の受取額は約定と決済の結果によって決まります。表示されている清算価格は現在の価格です。</string>
     <string name="Estimated_Fee">推定手数料</string>
+    <string name="perps_estimated_realized_pnl">予想実現損益</string>
+    <string name="perps_last_price">最終取引価格</string>
+    <string name="perps_mark_price">マーク価格</string>
 </resources>

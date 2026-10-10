@@ -11,6 +11,27 @@ import kotlin.test.assertTrue
 
 class PerpsMarginAmountTest {
     @Test
+    fun closePnlDeductsFeesAndUsesClosedMarginForPercentage() {
+        val pnl = estimatedPerpsClosePnl("2", "0.5")!!
+        assertEquals(BigDecimal("1.5"), pnl)
+        assertEquals(BigDecimal("15"), estimatedPerpsClosePnlPercent(pnl, BigDecimal.TEN)?.stripTrailingZeros())
+        assertEquals(BigDecimal("-0.3"), estimatedPerpsClosePnl("0.2", "0.5"))
+        assertNull(estimatedPerpsClosePnl("2", null))
+        assertNull(estimatedPerpsClosePnlPercent(pnl, BigDecimal.ZERO))
+        assertNull(estimatedPerpsClosePnlPercent(null, BigDecimal.TEN))
+        val partialPnl = perpsReductionValue(pnl.toPlainString(), "0.5", "1")
+        val partialMargin = perpsReductionValue("10", "0.5", "1")
+        assertEquals(BigDecimal("0.75"), partialPnl?.stripTrailingZeros())
+        assertEquals(BigDecimal("15"), estimatedPerpsClosePnlPercent(partialPnl, partialMargin)?.stripTrailingZeros())
+        val first = PerpsPositionItem("p1", "market", "long", "1", "100", 10, margin = "10", unrealizedPnl = "2", estimatedCloseFee = "0.5")
+        val positions = listOf(first, first.copy(positionId = "p2", margin = "20", unrealizedPnl = "-1", estimatedCloseFee = "0.2"))
+        assertEquals(BigDecimal("0.3"), estimatedPerpsBatchClosePnl(positions))
+        assertEquals(BigDecimal("1"), estimatedPerpsClosePnlPercent(estimatedPerpsBatchClosePnl(positions), estimatedPerpsBatchCloseMargin(positions))?.stripTrailingZeros())
+        assertNull(estimatedPerpsBatchClosePnl(listOf(first.copy(estimatedCloseFee = null))))
+        assertNull(estimatedPerpsBatchCloseMargin(listOf(first.copy(margin = "invalid"))))
+    }
+
+    @Test
     fun batchCloseSumsEachReturnAfterFeesAndKeepsUnknownTotalsUnknown() {
         val first = PerpsPositionItem("p1", "market", "long", "1", "100", 10, margin = "10", unrealizedPnl = "2", estimatedCloseFee = "0.5")
         val second = first.copy(positionId = "p2", unrealizedPnl = "-12", estimatedCloseFee = "1")

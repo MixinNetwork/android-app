@@ -137,6 +137,7 @@ abstract class PerpsDatabase : RoomDatabase() {
             object : Migration(10, 11) {
                 override suspend fun migrate(connection: SQLiteConnection) {
                     connection.execSQL("ALTER TABLE `positions` ADD COLUMN `estimated_close_fee` TEXT DEFAULT ''")
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `quantity_scale` INTEGER NOT NULL DEFAULT 0")
                 }
             }
 

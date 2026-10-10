@@ -2472,7 +2472,6 @@
     <string name="Direction">Direction</string>
     <string name="Entry_Price">Entry Price</string>
     <string name="Trigger_Price">Trigger Price</string>
-    <string name="Last_Price">Last Price</string>
     <string name="Mark_Price">Mark Price</string>
     <string name="perps_current_price">Current Price</string>
     <string name="Close_Price">Close Price</string>
@@ -2740,4 +2739,7 @@
     <string name="perps_estimated_pnl">Estimated PnL</string>
     <string name="perps_reduction_estimate_note">Estimates exclude fees. Final proceeds depend on execution and settlement. The liquidation price shown is the current price.</string>
     <string name="Estimated_Fee">Estimated Fee</string>
+    <string name="perps_estimated_realized_pnl">Estimated Realized PnL</string>
+    <string name="perps_last_price">Last Price</string>
+    <string name="perps_mark_price">Mark Price</string>
 </resources>

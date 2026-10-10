@@ -10,17 +10,17 @@ internal fun perpsReduceQuantity(input: String, currentQuantity: String): BigDec
     return quantity.takeIf { it > BigDecimal.ZERO && it <= current }
 }
 
-internal fun perpsReductionQuantity(currentQuantity: String, markPrice: String?, input: String, isPercentage: Boolean): BigDecimal? {
+internal fun perpsReductionQuantity(currentQuantity: String, markPrice: String?, input: String, isPercentage: Boolean, quantityScale: Int): BigDecimal? {
+    if (quantityScale < 0) return null
     val current = currentQuantity.toBigDecimalOrNull()?.abs()?.takeIf { it > BigDecimal.ZERO } ?: return null
     val value = marginAdjustmentAmount(input) ?: return null
     val quantity = if (isPercentage) {
         if ('.' in input || value > BigDecimal(100)) return null
-        current.multiply(value).movePointLeft(2)
+        current.multiply(value).movePointLeft(2).setScale(quantityScale, RoundingMode.DOWN)
     } else {
         val price = markPrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null
         if (value > current.multiply(price)) return null
-        // ponytail: Until quantity_scale is provided, keep eight decimals and let the server validate the exchange step.
-        value.divide(price, maxOf(8, current.scale()), RoundingMode.DOWN)
+        value.divide(price, quantityScale, RoundingMode.DOWN)
     }
     return perpsReduceQuantity(quantity.toPlainString(), currentQuantity)
 }

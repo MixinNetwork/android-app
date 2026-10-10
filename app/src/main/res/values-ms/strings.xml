@@ -854,4 +854,7 @@
     <string name="perps_estimated_pnl">Anggaran PnL</string>
     <string name="perps_reduction_estimate_note">Anggaran tidak termasuk yuran. Amaun akhir yang diterima bergantung pada pelaksanaan dan penyelesaian. Harga pembubaran yang dipaparkan ialah harga semasa.</string>
     <string name="Estimated_Fee">Anggaran Yuran</string>
+    <string name="perps_estimated_realized_pnl">Anggaran PnL Direalisasikan</string>
+    <string name="perps_last_price">Harga Terakhir</string>
+    <string name="perps_mark_price">Harga Tanda</string>
 </resources>
