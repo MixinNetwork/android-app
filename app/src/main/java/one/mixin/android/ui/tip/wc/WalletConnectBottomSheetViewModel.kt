@@ -16,9 +16,12 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
+import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WcBitcoinFeeEstimate
 import one.mixin.android.tip.wc.internal.WcBitcoinSignedTransfer
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.preflightDappTransaction
 import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Hash
 import timber.log.Timber
@@ -34,7 +37,15 @@ class WalletConnectBottomSheetViewModel
         private val tip: Tip,
     ) : ViewModel() {
 
-        suspend fun estimateFee(request: EstimateFeeRequest) = web3Repository.estimateFee(request)
+        suspend fun preflightTransaction(message: JsSignMessage, chain: Chain, account: String, cachedTipGas: TipGas? = null) = withContext(Dispatchers.IO) {
+            val walletId = Web3Signer.currentWalletId
+            preflightDappTransaction(
+                message, chain, account,
+                findToken = { web3Repository.web3TokenItemById(walletId, it) },
+                estimateFee = web3Repository::estimateFee,
+                cachedTipGas = cachedTipGas,
+            )
+        }
 
         suspend fun getV2SessionProposal(topic: String): Wallet.Model.SessionProposal? {
             return withContext(Dispatchers.IO) {
