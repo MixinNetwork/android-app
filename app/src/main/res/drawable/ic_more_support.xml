@@ -1,0 +1,9 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <group android:translateX="-222" android:translateY="-368">
+        <path android:pathData="M231.602 377C231.602 375.821 232.802 375 234.002 375C235.602 375 236.402 375.895 236.402 377C236.402 378.983 234.002 378.451 234.002 379.8V380.2" android:fillColor="#00000000" android:strokeColor="?attr/icon_more" android:strokeWidth="2" android:strokeLineCap="round" />
+        <path android:pathData="M234 387.172C238.474 387.172 242.1 383.552 242.1 379.086C242.1 374.62 238.474 371 234 371C229.527 371 225.9 374.62 225.9 379.086C225.9 381.952 227.394 384.47 229.647 385.906C229.788 385.996 229.842 386.216 229.756 386.381C229.326 387.205 229.265 387.469 228.732 388.22C228.494 388.557 228.695 389.074 229.05 388.991C230.569 388.637 231.48 388.26 232.719 387.232C232.825 387.144 232.951 387.106 233.077 387.12C233.38 387.154 233.688 387.172 234 387.172Z" android:fillColor="#00000000" android:strokeColor="?attr/icon_more" android:strokeWidth="2" />
+        <path android:pathData="M223 377V381" android:fillColor="#00000000" android:strokeColor="?attr/icon_more" android:strokeWidth="2" android:strokeLineCap="round" />
+        <path android:pathData="M245 377V381" android:fillColor="#00000000" android:strokeColor="?attr/icon_more" android:strokeWidth="2" android:strokeLineCap="round" />
+        <path android:pathData="M235 383C235 383.265 234.895 383.52 234.707 383.707C234.52 383.895 234.265 384 234 384C233.735 384 233.48 383.895 233.293 383.707C233.105 383.52 233 383.265 233 383C233 382.735 233.105 382.48 233.293 382.293C233.48 382.105 233.735 382 234 382C234.265 382 234.52 382.105 234.707 382.293C234.895 382.48 235 382.735 235 383Z" android:fillColor="?attr/icon_more" />
+    </group>
+</vector>

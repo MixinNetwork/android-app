@@ -2087,6 +2087,7 @@
     <string name="Total_Balance">Total Balance</string>
     <string name="total_balance_tip">Hidden assets are not included in the statistics.</string>
     <string name="Reset_TpSl_Guide">Reset hidden preferences</string>
+    <string name="Reset_More_Badges">Reset More badges</string>
     <string name="Reset_Wallet_Home_Banners">Reset wallet home banners</string>
     <string name="Delete_Web3_Transactions">Delete Web3 Transaction Data</string>
     <string name="Delete_Web3_Transactions_Confirmation">Are you sure you want to delete all Web3 transaction data? This action cannot be undone. The data will be re-synchronized after deletion.</string>
@@ -2696,6 +2697,9 @@
     <string name="wallet_home_privacy_wallet_reason_2">Avoid transfer errors caused by complex wallet addresses.</string>
     <string name="wallet_home_privacy_wallet_reason_3">Block malicious apps from gaining unsafe permissions.</string>
     <string name="no_tokens">No Tokens</string>
+    <string name="new_chat">New Chat</string>
+    <string name="contacts_title">Contacts</string>
+    <string name="contacts_search_hint">Mixin ID, Name, Phone number</string>
     <string name="perps_adjust">Adjust</string>
     <string name="perps_adjust_title">Adjust Margin or Position</string>
     <string name="perps_add_margin">Add Margin</string>

@@ -11,6 +11,7 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.WalletCategory
+import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
 
@@ -23,6 +24,8 @@ data class WalletHomeState(
     val btcTotal: String = "0.00",
     val fiatSymbol: String = "",
     val privacyTokens: List<TokenItem> = emptyList(),
+    val collectibles: List<SafeCollectible> = emptyList(),
+    val totalCollectibleCount: Int = 0,
     val web3Tokens: List<Web3TokenItem> = emptyList(),
     val privacyTransactions: List<SnapshotItem> = emptyList(),
     val web3Transactions: List<Web3TransactionItem> = emptyList(),
@@ -85,6 +88,8 @@ interface WalletHomeCallbacks {
     fun onWatchIndicatorClicked()
     fun onImportKeyClicked()
     fun onImportKeyLearnMoreClicked()
+    fun onViewMoreCollectiblesClicked() = Unit
+    fun onCollectibleClicked(inscriptionHash: String) = Unit
     fun onViewMoreTokensClicked()
     fun onAllTokensBackClicked()
     fun onViewMoreTransactionsClicked()

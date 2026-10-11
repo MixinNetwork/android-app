@@ -30,6 +30,7 @@ fun SearchTextField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     backgroundColor: Color = MixinAppTheme.colors.backgroundWindow,
+    hint: String = stringResource(R.string.Search),
 ) {
     BasicTextField(
         value = value,
@@ -67,7 +68,7 @@ fun SearchTextField(
                 ) {
                     if (value.isEmpty()) {
                         Text(
-                            stringResource(R.string.Search),
+                            hint,
                             color = MixinAppTheme.colors.textAssist,
                             fontSize = 14.sp
                         )
