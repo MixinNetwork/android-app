@@ -316,12 +316,13 @@
     <string name="Disable_web_debug">Отключить веб-отладку</string>
     <string name="Disabled">Отключенный</string>
     <string name="disappearing_message">Исчезающие сообщения</string>
-    <string name="disappearing_message_hint">Если эта функция включена, отправленные и полученные новые сообщения в этом чате исчезнут после того, как они будут просмотрены. Прочтите документ, чтобы **узнать больше**</string>
+    <string name="disappearing_message_hint">Если эта функция включена, отправленные и полученные новые сообщения в этом чате исчезнут через определённый период времени. Прочтите документ, чтобы **узнать больше**</string>
     <string name="disappearing_option_1">30 секунд</string>
     <string name="disappearing_option_2">10 минут</string>
     <string name="disappearing_option_3">2 часа</string>
     <string name="disappearing_option_4">1 день</string>
     <string name="disappearing_option_5">1 неделя</string>
+    <string name="disappearing_option_month">1 месяц</string>
     <string name="DISCARD">ОТКАЗАТЬСЯ</string>
     <string name="Dismiss_as_Admin">Закрыть как администратор</string>
     <string name="divide">, </string>

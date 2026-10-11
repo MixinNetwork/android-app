@@ -4,23 +4,44 @@ import android.content.res.Resources
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 
+const val INTERVAL_SECOND = 1L
+const val INTERVAL_MINUTE = 60L
+const val INTERVAL_HOUR = 3_600L
+const val INTERVAL_DAY = 86_400L
+const val INTERVAL_WEEK = 604_800L
+const val INTERVAL_MONTH = 2_592_000L
+const val INTERVAL_YEAR = 31_536_000L
+
 val timeIntervalUnits by lazy {
+    listOf(
+        R.plurals.time_interval_unit_day,
+        R.plurals.time_interval_unit_week,
+        R.plurals.time_interval_unit_month,
+        R.plurals.time_interval_unit_year,
+    )
+}
+
+private val displayTimeIntervalUnits by lazy {
     listOf(
         R.plurals.time_interval_unit_second,
         R.plurals.time_interval_unit_minute,
         R.plurals.time_interval_unit_hour,
         R.plurals.time_interval_unit_day,
         R.plurals.time_interval_unit_week,
+        R.plurals.time_interval_unit_month,
+        R.plurals.time_interval_unit_year,
     )
 }
+
+private val pickerIntervals = listOf(INTERVAL_DAY, INTERVAL_WEEK, INTERVAL_MONTH, INTERVAL_YEAR)
 
 private fun timeString(
     resources: Resources,
     count: Long,
-    index: Int,
+    unitRes: Int,
 ) =
     resources.getQuantityString(
-        timeIntervalUnits[index],
+        unitRes,
         count.toInt(),
     )
 
@@ -28,19 +49,18 @@ private fun intervalString(
     resources: Resources,
     interval: Long,
     unit: Long,
-    index: Int,
+    unitRes: Int,
 ): String {
     val count = interval / unit
-    return "$count ${timeString(resources, count, index)}"
+    return "$count ${timeString(resources, count, unitRes)}"
 }
 
 val numberList by lazy {
     listOf(
-        (1..59).map { it.toString() }.toList(),
-        (1..59).map { it.toString() }.toList(),
-        (1..23).map { it.toString() }.toList(),
-        (1..6).map { it.toString() }.toList(),
-        (1..12).map { it.toString() }.toList(),
+        (1..6).map { it.toString() },
+        (1..3).map { it.toString() },
+        (1..6).map { it.toString() },
+        listOf("1"),
     )
 }
 
@@ -49,24 +69,40 @@ internal fun toTimeInterval(
     interval: Long,
 ): String =
     when {
-        interval < 60L -> intervalString(resources, interval, 1L, 0)
-        interval < 3600L -> intervalString(resources, interval, 60L, 1)
-        interval < 86400L -> intervalString(resources, interval, 3600L, 2)
-        interval < 604800L -> intervalString(resources, interval, 86400L, 3)
-        else -> intervalString(resources, interval, 604800L, 4)
+        interval > 0 && interval % INTERVAL_YEAR == 0L ->
+            intervalString(resources, interval, INTERVAL_YEAR, displayTimeIntervalUnits[6])
+        interval >= INTERVAL_MONTH && interval % INTERVAL_MONTH == 0L ->
+            intervalString(resources, interval, INTERVAL_MONTH, displayTimeIntervalUnits[5])
+        interval >= INTERVAL_WEEK && interval % INTERVAL_WEEK == 0L ->
+            intervalString(resources, interval, INTERVAL_WEEK, displayTimeIntervalUnits[4])
+        interval >= INTERVAL_DAY && interval % INTERVAL_DAY == 0L ->
+            intervalString(resources, interval, INTERVAL_DAY, displayTimeIntervalUnits[3])
+        interval >= INTERVAL_HOUR && interval % INTERVAL_HOUR == 0L ->
+            intervalString(resources, interval, INTERVAL_HOUR, displayTimeIntervalUnits[2])
+        interval >= INTERVAL_MINUTE && interval % INTERVAL_MINUTE == 0L ->
+            intervalString(resources, interval, INTERVAL_MINUTE, displayTimeIntervalUnits[1])
+        else ->
+            intervalString(resources, interval, INTERVAL_SECOND, displayTimeIntervalUnits[0])
     }
 
 fun toTimeInterval(interval: Long): String =
     toTimeInterval(MixinApplication.get().resources, interval)
 
-fun toTimeIntervalIndex(interval: Long): Pair<Int, Int> =
-    when {
-        interval < 60L -> Pair(0, (interval / 1L).toInt() - 1)
-        interval < 3600L -> Pair(1, (interval / 60L).toInt() - 1)
-        interval < 86400L -> Pair(2, (interval / 3600L).toInt() - 1)
-        interval < 604800L -> Pair(3, (interval / 86400L).toInt() - 1)
-        else -> Pair(4, (interval / 604800L).toInt() - 1)
+fun toTimeIntervalIndex(interval: Long): Pair<Int, Int> {
+    pickerIntervals.forEachIndexed { index, unit ->
+        if (interval >= unit && interval % unit == 0L) {
+            val count = (interval / unit).toInt()
+            val max = numberList[index].size
+            if (count in 1..max) {
+                return Pair(index, count - 1)
+            }
+        }
     }
+    return Pair(0, 0)
+}
+
+fun pickerIntervalSeconds(unitIndex: Int): Long =
+    pickerIntervals.getOrElse(unitIndex) { INTERVAL_DAY }
 
 fun Long?.getTimeInterval(): String {
     return when {
