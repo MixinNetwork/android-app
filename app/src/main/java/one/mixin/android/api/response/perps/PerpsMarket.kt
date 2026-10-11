@@ -35,6 +35,10 @@ data class PerpsMarket(
     @ColumnInfo(name = "price_scale", defaultValue = "2")
     val priceScale: Int = 2,
 
+    @SerializedName("quantity_scale")
+    @ColumnInfo(name = "quantity_scale", defaultValue = "0")
+    val quantityScale: Int = 0,
+
     @SerializedName("leverage")
     @ColumnInfo(name = "leverage")
     val leverage: Int,

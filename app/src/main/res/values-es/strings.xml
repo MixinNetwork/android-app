@@ -1224,4 +1224,14 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">ERROR 10655: No se puede ampliar la posición.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">ERROR 10655: El importe de apertura supera el límite máximo de %1$s. Reduzca el importe o el apalancamiento.</string>
     <string name="single_transaction_should_be_less_than">Cantidad máxima %1$s %2$s</string>
+    <string name="perps_confirm_reduce_position">Confirmar reducción de posición</string>
+    <string name="perps_close_submitted">Orden de cierre enviada</string>
+    <string name="perps_reduce_quantity_changed">La posición ha cambiado. Vuelve y comprueba la cantidad antes de intentarlo de nuevo.</string>
+    <string name="perps_reduce_invalid_quantity">Introduce un importe mayor que cero que no supere el valor de la posición actual.</string>
+    <string name="perps_estimated_pnl">PnL estimado</string>
+    <string name="perps_reduction_estimate_note">Las estimaciones no incluyen comisiones. El importe final recibido depende de la ejecución y la liquidación. El precio de liquidación mostrado es el actual.</string>
+    <string name="Estimated_Fee">Comisión estimada</string>
+    <string name="perps_estimated_realized_pnl">PnL realizado estimado</string>
+    <string name="perps_last_price">Último precio</string>
+    <string name="perps_mark_price">Precio de marca</string>
 </resources>

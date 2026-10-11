@@ -149,10 +149,8 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
         }
 
         val displayPositions = if (step == Step.Done) positions else remainingPositions
-        val totalMargin = displayPositions.sumOf { it.margin.toBigDecimalOrZero() }
-        val totalPnl = displayPositions.sumOf { it.unrealizedPnl.toBigDecimalOrZero() }
-        val estimatedReceive = (totalMargin + totalPnl).max(BigDecimal.ZERO)
-        val pnlPercent = calculatePnlPercent(totalPnl, totalMargin)
+        val estimatedReceive = estimatedPerpsBatchCloseReturn(displayPositions)
+        val estimatedFee = estimatedPerpsBatchCloseFee(displayPositions)
         val settleAssetSymbol = settleAsset?.symbol ?: "USDT"
 
         MixinAppTheme {
@@ -223,8 +221,14 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
                             asset = settleAsset,
                             assetSymbol = settleAssetSymbol,
                             estimatedReceive = estimatedReceive,
-                            totalPnl = totalPnl,
-                            pnlPercent = pnlPercent,
+                            estimatedFee = estimatedFee,
+                            estimatedPnl = estimatedPerpsBatchClosePnl(displayPositions),
+                            margin = estimatedPerpsBatchCloseMargin(displayPositions),
+                            onFeeTipClick = {
+                                PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                    PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
+                                ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                            },
                         )
                         Spacer(modifier = Modifier.height(20.dp))
                     }
@@ -533,9 +537,11 @@ private fun BatchClosePositionItem(position: PerpsPositionItem) {
 private fun BatchCloseSummary(
     asset: TokenItem?,
     assetSymbol: String,
-    estimatedReceive: BigDecimal,
-    totalPnl: BigDecimal,
-    pnlPercent: BigDecimal,
+    estimatedReceive: BigDecimal?,
+    estimatedFee: BigDecimal?,
+    estimatedPnl: BigDecimal?,
+    margin: BigDecimal?,
+    onFeeTipClick: () -> Unit,
 ) {
     Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp)) {
         Text(
@@ -557,7 +563,7 @@ private fun BatchCloseSummary(
                 Spacer(modifier = Modifier.width(6.dp))
             }
             Text(
-                text = "+${formatBatchAmount(estimatedReceive)} $assetSymbol",
+                text = "${estimatedReceive?.let { "+${formatBatchAmount(it)}" } ?: "--"} $assetSymbol",
                 color = MixinAppTheme.colors.textPrimary,
                 fontSize = 16.sp,
                 fontWeight = FontWeight.W500,
@@ -569,26 +575,12 @@ private fun BatchCloseSummary(
                 fontSize = 14.sp,
             )
         }
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "${stringResource(R.string.PnL)}: ${formatSignedBatchAmount(totalPnl)} $assetSymbol (${formatPerpsSignedPercent(pnlPercent)})",
-            color = if (totalPnl < BigDecimal.ZERO) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen,
-            fontSize = 14.sp,
-        )
+        Spacer(modifier = Modifier.height(20.dp))
+        PerpsEstimatedRealizedPnl(estimatedPnl, margin)
+        Spacer(modifier = Modifier.height(20.dp))
+        PerpsEstimatedFee(estimatedFee, onFeeTipClick)
     }
-}
-
-private fun String?.toBigDecimalOrZero(): BigDecimal = this?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-
-private fun calculatePnlPercent(pnl: BigDecimal, margin: BigDecimal): BigDecimal {
-    if (margin <= BigDecimal.ZERO) return BigDecimal.ZERO
-    return pnl
-        .divide(margin, 8, RoundingMode.HALF_UP)
-        .multiply(BigDecimal(100))
 }
 
 private fun formatBatchAmount(value: BigDecimal): String =
     value.setScale(8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
-
-private fun formatSignedBatchAmount(value: BigDecimal): String =
-    if (value > BigDecimal.ZERO) "+${formatBatchAmount(value)}" else formatBatchAmount(value)

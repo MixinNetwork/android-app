@@ -81,7 +81,6 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         private const val ARGS_CLOSE_LEVERAGE = "args_close_leverage"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
         private const val SHARE_CARD_COVER_URL = "https://dl.mixinpay.com/perps-share-card.png"
-        private val MIN_DISPLAY_PNL_PERCENT = BigDecimal("-100")
 
         fun newInstance(position: PerpsPositionItem) = PerpsPositionShareBottomFragment().withArgs {
             putParcelable(ARGS_POSITION, position)
@@ -534,13 +533,12 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     }
 
     private fun formatSignedPercent(value: BigDecimal): String {
-        val displayValue = value.max(MIN_DISPLAY_PNL_PERCENT)
         val sign = when {
-            displayValue > BigDecimal.ZERO -> "+"
-            displayValue < BigDecimal.ZERO -> "-"
+            value > BigDecimal.ZERO -> "+"
+            value < BigDecimal.ZERO -> "-"
             else -> ""
         }
-        val scaled = displayValue.abs().setScale(2, RoundingMode.FLOOR)
+        val scaled = value.abs().setScale(2, RoundingMode.FLOOR)
         val number = if (scaled.compareTo(BigDecimal.ZERO) == 0) "0.0" else scaled.stripTrailingZeros().toPlainString()
         return "$sign$number%"
     }

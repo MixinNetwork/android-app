@@ -2702,4 +2702,14 @@
     <string name="perps_reduced_margin">減少保證金</string>
     <string name="perps_realized_pnl">淨盈虧</string>
     <string name="perps_unrealized_pnl">盈虧</string>
+    <string name="perps_confirm_reduce_position">確認減倉</string>
+    <string name="perps_close_submitted">平倉訂單已提交</string>
+    <string name="perps_reduce_quantity_changed">持倉已變化，請返回核對數量後重試。</string>
+    <string name="perps_reduce_invalid_quantity">請輸入大於零且不超過當前倉位的金額。</string>
+    <string name="perps_estimated_pnl">預計盈虧</string>
+    <string name="perps_reduction_estimate_note">預估不含手續費，實際到帳以成交和結算為準。此處顯示當前強平價格。</string>
+    <string name="Estimated_Fee">預估手續費</string>
+    <string name="perps_estimated_realized_pnl">預計淨盈虧</string>
+    <string name="perps_last_price">最新價格</string>
+    <string name="perps_mark_price">標記價格</string>
 </resources>

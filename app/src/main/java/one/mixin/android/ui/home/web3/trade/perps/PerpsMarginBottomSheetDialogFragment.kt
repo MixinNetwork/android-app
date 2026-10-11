@@ -453,7 +453,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         }
                     }
                 } else {
-                    PerpsReduceMarginInput(
+                    PerpsReductionInput(
                         input = reduceInput,
                         isPercentage = reduceByPercent,
                         amount = amountValue,
@@ -646,7 +646,7 @@ private fun PerpsMarginActions(
 }
 
 @Composable
-private fun PerpsReduceMarginInput(
+internal fun PerpsReductionInput(
     input: String,
     isPercentage: Boolean,
     amount: BigDecimal?,
@@ -904,7 +904,7 @@ private fun PerpsMarginPreviewContent(initialInput: String, initialIsPercentage:
             onSubmit = {},
             onGuide = {},
         ) {
-            PerpsReduceMarginInput(
+            PerpsReductionInput(
                 input = displayInput,
                 isPercentage = isPercentage,
                 amount = amount,

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.content.SharedPreferences
 import android.text.Layout
 import android.util.TypedValue
 import androidx.compose.foundation.Image
@@ -25,6 +26,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -75,6 +78,7 @@ import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
@@ -98,6 +102,7 @@ import java.util.Locale
 
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
 private const val MARKET_REFRESH_INTERVAL_MS = 30_000L
+private const val PREF_MARKET_DETAIL_MARK_PRICE = "perps_market_detail_mark_price"
 private const val PREF_MARKET_DETAIL_TIME_FRAME = "perps_market_detail_time_frame"
 
 @Composable
@@ -152,6 +157,12 @@ fun PerpsMarketDetailPage(
         val position = currentPosition
         if (activity != null && position?.state == PerpsPosition.STATE_OPEN && !isAddingProcessing) {
             when (action) {
+                PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_POSITION -> {
+                    if (activity.supportFragmentManager.findFragmentByTag(PerpsReduceBottomSheetDialogFragment.TAG) == null) {
+                        PerpsReduceBottomSheetDialogFragment.newInstance(position)
+                            .show(activity.supportFragmentManager, PerpsReduceBottomSheetDialogFragment.TAG)
+                    }
+                }
                 PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
                 PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_MARGIN -> {
                     PerpsMarginBottomSheetDialogFragment.newInstance(
@@ -357,8 +368,6 @@ fun PerpsMarketDetailPage(
                         MarketDetailCard(
                             market = market!!,
                             marketId = marketId,
-                            displaySymbol = displaySymbol,
-                            tokenSymbol = tokenSymbol,
                             selectedTimeFrame = selectedTimeFrame,
                             timeFrameValues = timeFrameValues,
                             timeFrameLabels = timeFrameLabels,
@@ -989,8 +998,6 @@ private fun formatFundingRate(fundingRate: String): String {
 private fun MarketDetailCard(
     market: PerpsMarket,
     marketId: String,
-    displaySymbol: String,
-    tokenSymbol: String,
     selectedTimeFrame: Int,
     timeFrameValues: List<String>,
     timeFrameLabels: List<String>,
@@ -1006,12 +1013,22 @@ private fun MarketDetailCard(
     val isPositive = changePercent >= BigDecimal.ZERO
     val changeColor = if (isPositive) risingColor else fallingColor
     val changeText = formatPerpsSignedPercent(changePercent)
-    val displayTokenSymbol = tokenSymbol
-        .takeIf { it.isNotBlank() }
-        ?: market.tokenSymbol.takeIf { it.isNotBlank() }
-        ?: displaySymbol
-
-    val displayPrice = market.last
+    val preferences = remember(context) { context.defaultSharedPreferences }
+    var showMarkPrice by remember(preferences) {
+        mutableStateOf(preferences.getBoolean(PREF_MARKET_DETAIL_MARK_PRICE, false))
+    }
+    var priceMenuExpanded by remember { mutableStateOf(false) }
+    DisposableEffect(preferences) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == PREF_MARKET_DETAIL_MARK_PRICE) {
+                showMarkPrice = preferences.getBoolean(PREF_MARKET_DETAIL_MARK_PRICE, false)
+            }
+        }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        showMarkPrice = preferences.getBoolean(PREF_MARKET_DETAIL_MARK_PRICE, false)
+        onDispose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    val displayPrice = if (showMarkPrice) market.markPrice else market.last
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -1020,14 +1037,60 @@ private fun MarketDetailCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = displayTokenSymbol,
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textPrimary
-                )
+                Box {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { priceMenuExpanded = true }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(if (showMarkPrice) R.string.perps_mark_price else R.string.perps_last_price),
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            painter = painterResource(R.drawable.ic_type_down),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.iconGray,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = priceMenuExpanded,
+                        onDismissRequest = { priceMenuExpanded = false },
+                        modifier = Modifier.background(MixinAppTheme.colors.background),
+                    ) {
+                        listOf(false, true).forEach { markPrice ->
+                            DropdownMenuItem(onClick = {
+                                showMarkPrice = markPrice
+                                preferences.putBoolean(PREF_MARKET_DETAIL_MARK_PRICE, markPrice)
+                                priceMenuExpanded = false
+                            }) {
+                                if (showMarkPrice == markPrice) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_check_black_24dp),
+                                        contentDescription = null,
+                                        tint = MixinAppTheme.colors.textPrimary,
+                                        modifier = Modifier.size(20.dp),
+                                    )
+                                } else {
+                                    Spacer(modifier = Modifier.size(20.dp))
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(if (markPrice) R.string.perps_mark_price else R.string.perps_last_price),
+                                    color = MixinAppTheme.colors.textPrimary,
+                                )
+                            }
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(7.dp))
                 Text(
-                    text = "$PERPS_USD_SYMBOL$displayPrice",
+                    text = formatPerpsPrice(displayPrice, market.priceScale),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary

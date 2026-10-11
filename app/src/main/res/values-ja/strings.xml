@@ -1170,4 +1170,14 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">エラー 10655：建玉を追加できません。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">エラー 10655：新規建玉の金額が上限の%1$sを超えています。金額またはレバレッジを下げてください。</string>
     <string name="single_transaction_should_be_less_than">最大金額 %1$s %2$s</string>
+    <string name="perps_confirm_reduce_position">ポジション縮小の確認</string>
+    <string name="perps_close_submitted">決済注文を送信しました</string>
+    <string name="perps_reduce_quantity_changed">ポジションが変更されました。前の画面に戻り、数量を確認してから再試行してください。</string>
+    <string name="perps_reduce_invalid_quantity">現在のポジション金額以下の、ゼロより大きい金額を入力してください。</string>
+    <string name="perps_estimated_pnl">予想損益</string>
+    <string name="perps_reduction_estimate_note">概算には手数料が含まれていません。実際の受取額は約定と決済の結果によって決まります。表示されている清算価格は現在の価格です。</string>
+    <string name="Estimated_Fee">推定手数料</string>
+    <string name="perps_estimated_realized_pnl">予想実現損益</string>
+    <string name="perps_last_price">最終取引価格</string>
+    <string name="perps_mark_price">マーク価格</string>
 </resources>

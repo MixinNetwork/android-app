@@ -49,6 +49,7 @@ class PerpsAdjustBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         const val ACTION_ADD_MARGIN = "add_margin"
         const val ACTION_REDUCE_MARGIN = "reduce_margin"
         const val ACTION_ADD_POSITION = "add_position"
+        const val ACTION_REDUCE_POSITION = "reduce_position"
         private const val ARGS_POSITION_ID = "args_position_id"
 
         fun newInstance(positionId: String) = PerpsAdjustBottomSheetDialogFragment().withArgs {
@@ -71,6 +72,7 @@ class PerpsAdjustBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 onAddMargin = { selectAction(ACTION_ADD_MARGIN) },
                 onReduceMargin = { selectAction(ACTION_REDUCE_MARGIN) },
                 onAddPosition = { selectAction(ACTION_ADD_POSITION) },
+                onReducePosition = { selectAction(ACTION_REDUCE_POSITION) },
             )
         }
     }
@@ -90,6 +92,7 @@ private fun PerpsAdjustContent(
     onAddMargin: () -> Unit,
     onReduceMargin: () -> Unit,
     onAddPosition: () -> Unit,
+    onReducePosition: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -131,6 +134,8 @@ private fun PerpsAdjustContent(
             SectionTitle(R.string.perps_position)
             Spacer(Modifier.height(10.dp))
             AdjustAction(R.string.perps_add_to_position, R.string.perps_add_position_description, R.drawable.ic_perps_add_position, onAddPosition)
+            Spacer(Modifier.height(8.dp))
+            AdjustAction(R.string.perps_reduce_position, R.string.perps_reduce_position_description, R.drawable.ic_perps_reduce_position, onReducePosition)
             Spacer(Modifier.height(30.dp))
             Column(
                 modifier = Modifier.padding(horizontal = 12.dp),
@@ -194,6 +199,6 @@ private fun AdjustAction(
 @Composable
 private fun PerpsAdjustPreview() {
     MixinAppTheme {
-        PerpsAdjustContent(onDismiss = {}, onAddMargin = {}, onReduceMargin = {}, onAddPosition = {})
+        PerpsAdjustContent(onDismiss = {}, onAddMargin = {}, onReduceMargin = {}, onAddPosition = {}, onReducePosition = {})
     }
 }

@@ -28,6 +28,7 @@ class PerpsDialogResultTest {
             PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
             PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_MARGIN,
             PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_POSITION,
+            PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_POSITION,
         )) {
             assertRestoredResult(
                 original = PerpsAdjustBottomSheetDialogFragment.newInstance("position"),

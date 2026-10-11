@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import com.google.gson.JsonElement
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import one.mixin.android.vo.safe.TokenItem
@@ -83,3 +84,43 @@ internal fun marginReductionPercentage(currentMargin: String?, amount: BigDecima
     val margin = currentMargin?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null
     return amount?.multiply(BigDecimal(100))?.divide(margin, TRADE_INPUT_MAX_DECIMAL_PLACES, RoundingMode.DOWN)
 }
+
+internal fun estimatedPerpsCloseReturn(margin: String?, unrealizedPnl: String?, estimatedCloseFee: String?): BigDecimal? {
+    val marginValue = margin?.toBigDecimalOrNull() ?: return null
+    val pnl = unrealizedPnl?.toBigDecimalOrNull() ?: return null
+    val fee = estimatedCloseFee?.toBigDecimalOrNull() ?: return null
+    return (marginValue + pnl - fee).max(BigDecimal.ZERO)
+}
+
+internal fun estimatedPerpsBatchCloseReturn(positions: List<PerpsPositionItem>): BigDecimal? {
+    return positions.fold(BigDecimal.ZERO) { total, position ->
+        total + (estimatedPerpsCloseReturn(position.margin, position.unrealizedPnl, position.estimatedCloseFee) ?: return null)
+    }
+}
+
+internal fun estimatedPerpsBatchCloseFee(positions: List<PerpsPositionItem>): BigDecimal? {
+    return positions.fold(BigDecimal.ZERO) { total, position ->
+        total + (position.estimatedCloseFee?.toBigDecimalOrNull() ?: return null)
+    }
+}
+
+internal fun estimatedPerpsClosePnl(unrealizedPnl: String?, estimatedCloseFee: String?): BigDecimal? {
+    val pnl = unrealizedPnl?.toBigDecimalOrNull() ?: return null
+    val fee = estimatedCloseFee?.toBigDecimalOrNull() ?: return null
+    return pnl - fee
+}
+
+internal fun estimatedPerpsClosePnlPercent(pnl: BigDecimal?, margin: BigDecimal?): BigDecimal? {
+    if (pnl == null || margin == null || margin <= BigDecimal.ZERO) return null
+    return pnl.multiply(BigDecimal(100)).divide(margin, 8, RoundingMode.HALF_UP)
+}
+
+internal fun estimatedPerpsBatchClosePnl(positions: List<PerpsPositionItem>): BigDecimal? =
+    positions.fold(BigDecimal.ZERO) { total, position ->
+        total + (estimatedPerpsClosePnl(position.unrealizedPnl, position.estimatedCloseFee) ?: return null)
+    }
+
+internal fun estimatedPerpsBatchCloseMargin(positions: List<PerpsPositionItem>): BigDecimal? =
+    positions.fold(BigDecimal.ZERO) { total, position ->
+        total + (position.margin?.toBigDecimalOrNull() ?: return null)
+    }

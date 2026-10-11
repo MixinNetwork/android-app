@@ -74,7 +74,29 @@ class Room3DatabaseCompatibilityTest {
             "SELECT realized_pnl || ':' || roe || ':' || COALESCE(net_realized_pnl, 'missing') || ':' || COALESCE(net_roe, 'missing') || ':' || COALESCE(profit_share_amount, 'missing') FROM perps_orders",
             "10:0.1:::",
             schemaVersion = 9,
-            migrations = arrayOf(PerpsDatabase.MIGRATION_9_10),
+            migrations = arrayOf(PerpsDatabase.MIGRATION_9_10, PerpsDatabase.MIGRATION_10_11),
+        )
+    }
+
+    @Test
+    fun perpsCloseFeeMigrationPreservesPositionsWithUnknownFee() {
+        verifyLegacyDatabase(
+            PerpsDatabase::class.java,
+            """
+                INSERT INTO positions (
+                    position_id, market_id, side, quantity, entry_price, margin, leverage, state,
+                    mark_price, unrealized_pnl, roe, settle_asset_id, open_pay_amount, open_pay_asset_id,
+                    bot_id, wallet_id, created_at, updated_at
+                ) VALUES (
+                    'position', 'market', 'long', '1', '100', '10', 10, 'open',
+                    '102', '2', '0.2', 'asset', '10', 'asset', 'bot', 'wallet',
+                    '2026-10-09T00:00:00Z', '2026-10-09T00:00:00Z'
+                )
+            """.trimIndent(),
+            "SELECT margin || ':' || unrealized_pnl || ':' || estimated_close_fee FROM positions",
+            "10:2:",
+            schemaVersion = 10,
+            migrations = arrayOf(PerpsDatabase.MIGRATION_10_11),
         )
     }
 

@@ -2701,4 +2701,14 @@
     <string name="perps_reduced_margin">증거금 감소</string>
     <string name="perps_realized_pnl">실현 손익</string>
     <string name="perps_unrealized_pnl">미실현 손익</string>
+    <string name="perps_confirm_reduce_position">포지션 축소 확인</string>
+    <string name="perps_close_submitted">포지션 종료 주문이 제출되었습니다</string>
+    <string name="perps_reduce_quantity_changed">포지션이 변경되었습니다. 이전 화면으로 돌아가 수량을 확인한 후 다시 시도하세요.</string>
+    <string name="perps_reduce_invalid_quantity">0보다 크고 현재 포지션 규모를 초과하지 않는 금액을 입력하세요.</string>
+    <string name="perps_estimated_pnl">예상 손익</string>
+    <string name="perps_reduction_estimate_note">예상 금액에는 수수료가 포함되지 않습니다. 실제 수령액은 체결 및 정산 결과에 따라 달라집니다. 표시된 청산 가격은 현재 가격입니다.</string>
+    <string name="Estimated_Fee">예상 수수료</string>
+    <string name="perps_estimated_realized_pnl">예상 실현 손익</string>
+    <string name="perps_last_price">최근 체결 가격</string>
+    <string name="perps_mark_price">마크 가격</string>
 </resources>
