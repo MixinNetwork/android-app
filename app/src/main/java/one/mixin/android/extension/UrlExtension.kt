@@ -274,7 +274,7 @@ fun String.checkUserOrApp(
     val userDao = db.userDao()
     val appDao = db.appDao()
     scope.launch {
-        val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
+        val isOpenApp = uri.shouldOpenAppHome()
         if (isOpenApp) {
             val localApp = appDao.findAppById(userId)
             if (localApp != null) {
@@ -298,6 +298,9 @@ fun String.checkUserOrApp(
         }
     }
 }
+
+internal fun Uri.shouldOpenAppHome(): Boolean =
+    toString().isAppScheme() && (getQueryParameter("action") == "open" || !getQueryParameter("page").isNullOrBlank())
 
 internal fun App.homeUriWithSchemeParameters(uri: Uri): String =
     runCatching {
