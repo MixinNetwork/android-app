@@ -6,6 +6,7 @@ import org.sol4k.Binary
 import org.sol4k.Constants
 import org.sol4k.Convert.lamportToSol
 import org.sol4k.Keypair
+import org.sol4kt.MessageCompat.MessageVersion
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Base64
@@ -16,20 +17,24 @@ class VersionedTransactionCompat(
     val signatures: MutableList<String>,
 ) {
 
+    val isV1: Boolean get() = message.version == MessageVersion.V1
+
     fun sign(keypair: Keypair) {
         val data = message.serialize()
-        val signature = keypair.sign(data)
-        for (i in 0 until message.header.numRequireSignatures) {
-            val a = message.accounts[i]
-            if (a.verify(signature, data)) {
-                if (signatures.isEmpty()) {
-                    signatures.add(Base58.encode(signature))
-                } else {
-                    signatures[i] = Base58.encode(signature)
-                }
-                break
-            }
+        val index = message.accounts.take(message.header.numRequireSignatures).indexOf(keypair.publicKey)
+        require(index >= 0) { "Account is not a required Solana signer" }
+        if (signatures.isEmpty()) {
+            repeat(message.header.numRequireSignatures) { signatures.add(Base58.encode(ByteArray(SIGNATURE_LENGTH))) }
         }
+        require(signatures.size == message.header.numRequireSignatures) { "Invalid signature count" }
+        val signature = keypair.sign(data)
+        signatures[index] = Base58.encode(signature)
+    }
+
+    fun signatureFor(address: String): String {
+        val index = message.accounts.take(message.header.numRequireSignatures).indexOfFirst { it.toBase58() == address }
+        require(index >= 0 && index < signatures.size) { "Account is not a required Solana signer" }
+        return signatures[index]
     }
 
     fun serialize(): ByteArray {
@@ -39,16 +44,34 @@ class VersionedTransactionCompat(
 
         val messageData = message.serialize()
 
-        val b = Buffer()
-        b.write(Binary.encodeLength(signatures.size))
-        for (s in signatures) {
-            b.write(Base58.decode(s))
-        }
-        b.write(messageData)
-        return b.readByteArray()
+        return when (message.version) {
+            MessageVersion.Legacy, MessageVersion.V0 -> Buffer().apply {
+                write(Binary.encodeLength(signatures.size))
+                writeSignatures()
+                write(messageData)
+            }
+            MessageVersion.V1 -> Buffer().apply {
+                write(messageData)
+                writeSignatures()
+            }
+        }.readByteArray()
     }
 
-    fun setPriorityFee(unitPrice: String, unitLimit: String): Boolean {
+    private fun Buffer.writeSignatures() {
+        for (signature in signatures) {
+            val bytes = Base58.decode(signature)
+            require(bytes.size == SIGNATURE_LENGTH) { "Invalid Solana signature length" }
+            write(bytes)
+        }
+    }
+
+    fun setPriorityFee(unitPrice: String, unitLimit: String): Boolean = when (message.version) {
+        MessageVersion.Legacy, MessageVersion.V0 -> setComputeBudgetPriorityFee(unitPrice, unitLimit)
+        // External V1 messages are signed as supplied, including explicit zero/absent config values.
+        MessageVersion.V1 -> false
+    }
+
+    private fun setComputeBudgetPriorityFee(unitPrice: String, unitLimit: String): Boolean {
         val voidSig = Base58.encode(ByteArray(SIGNATURE_LENGTH))
         if (signatures.any { s ->
                 s != voidSig
@@ -69,7 +92,12 @@ class VersionedTransactionCompat(
         return sigFee.add(priorityFee).setScale(9, RoundingMode.CEILING)
     }
 
-    fun calcPriorityFee(): BigDecimal {
+    fun calcPriorityFee(): BigDecimal = when (message.version) {
+        MessageVersion.Legacy, MessageVersion.V0 -> calcComputeBudgetPriorityFee()
+        MessageVersion.V1 -> lamportToSol((message.transactionConfig.priorityFee ?: 0uL).toString().toBigDecimal())
+    }
+
+    private fun calcComputeBudgetPriorityFee(): BigDecimal {
         val accounts = message.accounts
         val data = mutableListOf<ByteArray>()
         for (i in message.instructions) {
@@ -121,7 +149,30 @@ class VersionedTransactionCompat(
 
         @JvmStatic
         fun from(encodedTransaction: String): VersionedTransactionCompat {
-            var byteArray = Base64.getDecoder().decode(encodedTransaction)
+            val byteArray = Base64.getDecoder().decode(encodedTransaction)
+            require(byteArray.isNotEmpty()) { "Empty Solana transaction" }
+            return when (byteArray[0].toInt() and 0xff) {
+                MessageV1Codec.PREFIX -> deserializeV1(byteArray)
+                in 0 until 0x80 -> deserializeLegacyOrV0(byteArray)
+                else -> throw IllegalArgumentException("Invalid Solana transaction discriminator")
+            }
+        }
+
+        private fun deserializeV1(bytes: ByteArray): VersionedTransactionCompat {
+            require(bytes.size <= MessageV1Codec.MAX_TRANSACTION_SIZE) { "V1 transaction exceeds 4096 bytes" }
+            val buffer = Buffer().write(bytes)
+            val message = MessageV1Codec.read(buffer)
+            require(buffer.size == message.header.numRequireSignatures * SIGNATURE_LENGTH.toLong()) {
+                "Invalid V1 signature tail length"
+            }
+            val signatures = MutableList(message.header.numRequireSignatures) {
+                Base58.encode(buffer.readByteArray(SIGNATURE_LENGTH.toLong()))
+            }
+            return VersionedTransactionCompat(message, signatures)
+        }
+
+        private fun deserializeLegacyOrV0(bytes: ByteArray): VersionedTransactionCompat {
+            var byteArray = bytes
             val signaturesCount = BinaryCompat.decodeLength(byteArray)
             byteArray = signaturesCount.second
             val signatures = mutableListOf<String>()
@@ -132,7 +183,8 @@ class VersionedTransactionCompat(
                 signatures.add(encodedSignature)
             }
 
-            val message = org.sol4kt.MessageCompat.deserialize(byteArray)
+            val message = MessageCompat.deserialize(byteArray)
+            require(message.version != MessageVersion.V1) { "V1 message in legacy transaction envelope" }
 
             if(signaturesCount.first > 0 && message.header.numRequireSignatures != signaturesCount.first) {
                 throw Exception("numRequireSignatures is not equal to signatureCount")

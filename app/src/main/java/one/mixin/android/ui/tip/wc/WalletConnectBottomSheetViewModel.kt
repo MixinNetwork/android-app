@@ -113,6 +113,11 @@ class WalletConnectBottomSheetViewModel
             if (signedTransactionData is WcBitcoinSignedTransfer) {
                 return sendBitcoinTransfer(signedTransactionData, sessionRequest)
             }
+            if (signedTransactionData is VersionedTransactionCompat && signedTransactionData.isV1) {
+                // solana_signTransaction returns this wallet's signature; the dApp owns submission.
+                WalletConnectV2.approveSolanaTransaction(signedTransactionData.signatureFor(account), sessionRequest)
+                return null
+            }
             val signature: String
             val rawTx = if (chain == Chain.Solana) {
                 signedTransactionData as VersionedTransactionCompat
