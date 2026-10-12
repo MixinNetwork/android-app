@@ -624,6 +624,13 @@ class MixinDatabaseMigrations private constructor() {
                 }
             }
 
+        val MIGRATION_72_73: Migration =
+            object : Migration(72, 73) {
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE `tokens` ADD COLUMN `primitive_asset_id` TEXT")
+                }
+            }
+
         // If you add a new table, be sure to add a clear method to the DatabaseUtil
     }
 }

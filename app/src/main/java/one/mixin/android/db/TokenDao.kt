@@ -29,7 +29,7 @@ interface TokenDao : BaseDao<Token> {
             a1.chain_id AS chainId, a1.change_usd AS changeUsd, a1.change_btc AS changeBtc, ae.hidden,
             a1.confirmations,c.icon_url AS chainIconUrl, c.symbol as chainSymbol, c.name as chainName,
             a1.asset_key AS assetKey, a1.dust AS dust, c.withdrawal_memo_possibility AS withdrawalMemoPossibility, a1.collection_hash as collectionHash,
-            a1.precision 
+            a1.precision, a1.primitive_asset_id AS primitiveAssetId
             FROM tokens a1 
             LEFT JOIN chains c ON a1.chain_id = c.chain_id
             LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
@@ -38,8 +38,9 @@ interface TokenDao : BaseDao<Token> {
             " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
         const val POSTFIX_ASSET_ITEM =
             " ORDER BY (CASE WHEN a1.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, c.name ASC"
+        const val NOT_PRIMITIVE_ASSET = "(a1.primitive_asset_id IS NULL OR a1.primitive_asset_id = '')"
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
-            " WHERE ae.hidden IS NULL OR NOT ae.hidden $POSTFIX_ASSET_ITEM"
+            " WHERE (ae.hidden IS NULL OR NOT ae.hidden) AND $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM"
     }
 
     @Query("$PREFIX_ASSET_ITEM")
@@ -85,7 +86,7 @@ interface TokenDao : BaseDao<Token> {
     suspend fun simpleAsset(id: String): Token?
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE ae.hidden = 1 $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE ae.hidden = 1 AND $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM")
     fun hiddenAssetItems(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
@@ -109,6 +110,7 @@ interface TokenDao : BaseDao<Token> {
             CAST(COALESCE(SUM(CASE WHEN ae.hidden = 1 THEN 1 ELSE 0 END), 0) AS INTEGER) AS hidden_token_count
         FROM tokens a1
         LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id
+        WHERE $NOT_PRIMITIVE_ASSET
         """
     )
     fun walletHomeTokenSummary(

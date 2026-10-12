@@ -82,6 +82,10 @@ data class Token(
     @ColumnInfo(name = "precision")
     @SerializedName("precision")
     val precision: Int,
+    @ColumnInfo(name = "primitive_asset_id")
+    @SerializedName("primitive_asset_id")
+    @SerialName("primitive_asset_id")
+    val primitiveAssetId: String? = null,
 ) : Parcelable
 
 data class TokenPriceAndChange(
@@ -120,4 +124,5 @@ fun Token.toAssetItem(chainIconUrl: String? = null): TokenItem =
         collectionHash,
         null,
         precision,
+        primitiveAssetId,
     )

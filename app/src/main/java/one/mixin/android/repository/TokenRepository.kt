@@ -683,7 +683,9 @@ class TokenRepository
 
                 val result = if (needUpdatePrice.isNotEmpty()) {
                     suspendUpdatePrices(needUpdatePrice)
-                    onlyRemoteItems + findAssetsByIds(localExistsIds)
+                    onlyRemoteItems + findAssetsByIds(localExistsIds).map { local ->
+                        local.copy(primitiveAssetId = assetList.first { it.assetId == local.assetId }.primitiveAssetId)
+                    }
                 } else {
                     tokenItemList
                 }

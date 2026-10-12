@@ -17,6 +17,7 @@ interface TopAssetDao : BaseDao<TopAsset> {
         ta.price_usd as priceUsd, ta.change_usd as changeUsd
         FROM top_assets ta
         INNER JOIN assets a ON a.asset_id = ta.chain_id AND (SELECT ta.asset_id FROM assets a WHERE a.asset_id = ta.asset_id) IS NULL
+        WHERE NOT EXISTS (SELECT 1 FROM tokens t WHERE t.asset_id = ta.asset_id AND t.primitive_asset_id IS NOT NULL AND t.primitive_asset_id != '')
         ORDER BY ta.rowid
         """,
     )

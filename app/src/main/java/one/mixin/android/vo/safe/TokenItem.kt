@@ -37,6 +37,7 @@ data class TokenItem(
     val collectionHash: String?,
     val level: Int?,
     val precision: Int,
+    val primitiveAssetId: String? = null,
 ) : Parcelable, Swappable {
     fun fiat(): BigDecimal {
         return try {
