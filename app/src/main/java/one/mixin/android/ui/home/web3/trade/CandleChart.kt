@@ -77,7 +77,7 @@ import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.roundToInt
 
-private const val CANDLE_REFRESH_INTERVAL_MS = 10_000L
+private const val CANDLE_REFRESH_INTERVAL_MS = 3_000L
 private const val DEFAULT_CANDLE_SCALE = 1f
 private const val MIN_CANDLE_SCALE = 0.5f
 private const val MAX_CANDLE_SCALE = 3f
