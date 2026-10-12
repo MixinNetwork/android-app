@@ -62,7 +62,7 @@ fun RecentTokens(web3: Boolean = false, key: String, callback: (TokenItem) -> Un
     val recentToken = if (web3) {
         source.filter { isWeb3RecentTokenChain(it.chainId) }
     } else {
-        source
+        source.filter { it.primitiveAssetId.isNullOrEmpty() }
     }
     LaunchedEffect(Unit) {
         viewModel.getRecentTokenItems(context.defaultSharedPreferences, key)

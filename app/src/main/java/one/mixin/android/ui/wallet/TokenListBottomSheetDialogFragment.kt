@@ -415,14 +415,14 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     }
                 }
 
-                val result = sortQueryAsset(query, localAssets, remoteAssets)
+                val result = sortQueryAsset(query, localAssets, remoteAssets).filter { it.primitiveAssetId.isNullOrEmpty() }
 
                 adapter.submitList(result) {
                     binding.assetRv.scrollToPosition(0)
                 }
                 binding.pb.isVisible = false
 
-                if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
+                if (result.isEmpty()) {
                     binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
                 }
 

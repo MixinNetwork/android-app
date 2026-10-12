@@ -143,7 +143,7 @@ interface TokenDao : BaseDao<Token> {
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """$PREFIX_ASSET_ITEM 
-        WHERE (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
+        WHERE $NOT_PRIMITIVE_ASSET AND (a1.symbol LIKE '%' || :symbol || '%' $ESCAPE_SUFFIX OR a1.name LIKE '%' || :name || '%' $ESCAPE_SUFFIX)
         ORDER BY 
             a1.symbol = :symbol COLLATE NOCASE OR a1.name = :name COLLATE NOCASE DESC,
             a1.price_usd*ae.balance DESC
@@ -175,14 +175,14 @@ interface TokenDao : BaseDao<Token> {
     fun assetItemsWithBalance(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE (ae.hidden IS NULL OR NOT ae.hidden) AND a1.asset_id IN (:usdAssetIds) $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE (ae.hidden IS NULL OR NOT ae.hidden) AND $NOT_PRIMITIVE_ASSET AND a1.asset_id IN (:usdAssetIds) $POSTFIX_ASSET_ITEM")
     fun usdAssetItemsWithBalance(usdAssetIds: List<String>, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND (ae.hidden IS NULL OR NOT ae.hidden) $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND (ae.hidden IS NULL OR NOT ae.hidden) AND $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM")
     suspend fun findAssetItemsWithBalance(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): List<TokenItem>
 
-    @Query("SELECT a1.symbol, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance, a1.price_usd AS priceUsd FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE ae.balance > 0 AND (ae.hidden IS NULL OR ae.hidden = 0) ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC")
+    @Query("SELECT a1.symbol, a1.icon_url AS iconUrl, COALESCE(ae.balance,'0') as balance, a1.price_usd AS priceUsd FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id WHERE ae.balance > 0 AND (ae.hidden IS NULL OR ae.hidden = 0) AND $NOT_PRIMITIVE_ASSET ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC")
     suspend fun findUnifiedAssetItem(): List<UnifiedAssetItem>
 
     @Query("SELECT asset_id FROM tokens WHERE asset_id = :id")
@@ -199,6 +199,9 @@ interface TokenDao : BaseDao<Token> {
 
     @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds)")
     suspend fun suspendFindAssetsByIds(assetIds: List<String>): List<TokenItem>
+
+    @Query("UPDATE tokens SET primitive_asset_id = :primitiveAssetId WHERE asset_id = :assetId")
+    suspend fun updatePrimitiveAssetId(assetId: String, primitiveAssetId: String?)
 
     @Update(entity = Asset::class)
     suspend fun suspendUpdatePrices(priceAndChanges: List<PriceAndChange>)

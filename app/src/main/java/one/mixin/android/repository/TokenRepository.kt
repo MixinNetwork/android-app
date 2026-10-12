@@ -682,10 +682,13 @@ class TokenRepository
                 }
 
                 val result = if (needUpdatePrice.isNotEmpty()) {
-                    suspendUpdatePrices(needUpdatePrice)
-                    onlyRemoteItems + findAssetsByIds(localExistsIds).map { local ->
-                        local.copy(primitiveAssetId = assetList.first { it.assetId == local.assetId }.primitiveAssetId)
+                    appDatabase.withRoomTransaction {
+                        suspendUpdatePrices(needUpdatePrice)
+                        assetList.filter { it.assetId in localExistsIds }.forEach {
+                            tokenDao.updatePrimitiveAssetId(it.assetId, it.primitiveAssetId)
+                        }
                     }
+                    onlyRemoteItems + findAssetsByIds(localExistsIds)
                 } else {
                     tokenItemList
                 }
