@@ -1,9 +1,12 @@
 package one.mixin.android.api
 
 import java.io.IOException
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
@@ -33,46 +36,61 @@ class BotPublicKey(
 ) {
     private val mutex = Mutex()
     private var pending: CompletableDeferred<String>? = null
+    private var pendingForce = false
 
     suspend fun get(
         requestSession: suspend (List<String>) -> MixinResponse<List<UserSession>>,
         force: Boolean = false,
     ): String {
-        var owner = false
-        val result = mutex.withLock {
-            pending ?: CompletableDeferred<String>().also {
-                pending = it
-                owner = true
+        while (true) {
+            currentCoroutineContext().ensureActive()
+            var owner = false
+            var canReuse = false
+            val result = mutex.withLock {
+                (pending ?: CompletableDeferred<String>().also {
+                    pending = it
+                    owner = true
+                    pendingForce = force
+                }).also { canReuse = !force || pendingForce }
             }
-        }
-        if (!owner) return result.await()
-        val outcome = runCatching {
-            withContext(Dispatchers.IO) {
-                if (!force) {
-                    readPreference()?.takeIf { it.isNotBlank() }?.let { return@withContext it }
+            if (!owner) {
+                val key = try {
+                    result.await()
+                } catch (e: CancellationException) {
+                    currentCoroutineContext().ensureActive()
+                    continue
                 }
-                val cached = if (force) null else readLocal()?.takeIf { it.isNotBlank() }
-                (cached ?: run {
-                    val response = requestSession(listOf(botId))
-                    if (!response.isSuccess) {
-                        throw MixinResponseException(response.errorCode, response.errorDescription)
-                    }
-                    val session = response.data?.firstOrNull {
-                        it.userId == botId && !it.publicKey.isNullOrBlank()
-                    }
-                    if (session == null) throw IOException("Bot public key is missing")
-                    saveSession(session)
-                    requireNotNull(session.publicKey)
-                }).also(savePreference)
+                if (canReuse) return key
+                continue
             }
-        }
-        withContext(NonCancellable) {
-            mutex.withLock {
-                pending = null
-                outcome.fold(result::complete, result::completeExceptionally)
+            val outcome = runCatching {
+                withContext(Dispatchers.IO) {
+                    if (!force) {
+                        readPreference()?.takeIf { it.isNotBlank() }?.let { return@withContext it }
+                    }
+                    val cached = if (force) null else readLocal()?.takeIf { it.isNotBlank() }
+                    (cached ?: run {
+                        val response = requestSession(listOf(botId))
+                        if (!response.isSuccess) {
+                            throw MixinResponseException(response.errorCode, response.errorDescription)
+                        }
+                        val session = response.data?.firstOrNull {
+                            it.userId == botId && !it.publicKey.isNullOrBlank()
+                        }
+                        if (session == null) throw IOException("Bot public key is missing")
+                        saveSession(session)
+                        requireNotNull(session.publicKey)
+                    }).also(savePreference)
+                }
             }
+            withContext(NonCancellable) {
+                mutex.withLock {
+                    pending = null
+                    outcome.fold(result::complete, result::completeExceptionally)
+                }
+            }
+            return outcome.getOrThrow()
         }
-        return outcome.getOrThrow()
     }
 
     companion object {

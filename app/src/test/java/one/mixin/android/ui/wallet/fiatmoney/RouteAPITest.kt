@@ -121,6 +121,57 @@ class RouteAPITest {
     }
 
     @Test
+    fun forcedRefreshWaitsForCacheReadAndSharesNetworkRefresh() = runBlocking {
+        val reading = CompletableDeferred<Unit>()
+        val releaseCache = CompletableDeferred<Unit>()
+        val fetching = CompletableDeferred<Unit>()
+        val releaseFetch = CompletableDeferred<Unit>()
+        var calls = 0
+        val publicKey = BotPublicKey({ null }, {
+            reading.complete(Unit)
+            releaseCache.await()
+            "old"
+        }, {}, {})
+        val cached = async { publicKey.get({ error("Cache hit") }) }
+        reading.await()
+        val fetch: suspend (List<String>) -> MixinResponse<List<UserSession>> = {
+            calls++
+            fetching.complete(Unit)
+            releaseFetch.await()
+            response(session("new"))
+        }
+        val forced = async(start = CoroutineStart.UNDISPATCHED) { publicKey.get(fetch, force = true) }
+        releaseCache.complete(Unit)
+        fetching.await()
+        val second = async(start = CoroutineStart.UNDISPATCHED) { publicKey.get(fetch, force = true) }
+        releaseFetch.complete(Unit)
+        assertEquals("old", cached.await())
+        assertEquals("new", forced.await())
+        assertEquals("new", second.await())
+        assertEquals(1, calls)
+    }
+
+    @Test
+    fun ownerCancellationDoesNotCancelActiveWaiters() = runBlocking {
+        val started = CompletableDeferred<Unit>()
+        val publicKey = BotPublicKey({ null }, { null }, {}, {})
+        val owner = launch {
+            publicKey.get({ started.complete(Unit); awaitCancellation() })
+        }
+        started.await()
+        val waiter = async(start = CoroutineStart.UNDISPATCHED) {
+            publicKey.get({ response(session("new")) })
+        }
+        val cancelledWaiter = async(start = CoroutineStart.UNDISPATCHED) {
+            publicKey.get({ error("Cancelled waiter must not fetch") })
+        }
+        cancelledWaiter.cancelAndJoin()
+        owner.cancelAndJoin()
+        assertEquals("new", waiter.await())
+        assertTrue(cancelledWaiter.isCancelled)
+    }
+
+    @Test
     fun failedWaiterCanRetryAsSoonAsItResumes() = runBlocking {
         val started = CompletableDeferred<Unit>()
         val release = CompletableDeferred<Unit>()
