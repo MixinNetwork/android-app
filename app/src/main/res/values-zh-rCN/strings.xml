@@ -2192,6 +2192,7 @@
     <string name="Invalid_Address">地址无效</string>
     <string name="Private_Key_Notice">您的私钥只会本地存储在您的设备上。</string>
     <string name="Imported">导入</string>
+    <string name="wallet_already_imported">该钱包已在钱包列表中，无需重复导入。</string>
     <string name="NoKey">缺少私钥</string>
     <string name="Watching">观察</string>
     <string name="error_too_many_wallets">错误 10632：导入钱包已达上限。</string>
