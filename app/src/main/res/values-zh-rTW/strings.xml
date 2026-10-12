@@ -973,7 +973,7 @@
     <string name="Update">升級</string>
     <string name="update_downloaded">一個更新剛下載完成。</string>
     <string name="Update_Mixin">升級 Mixin</string>
-    <string name="update_mixin_description">當前版本（%1$s）不再可用!\n請點選下面的“更新”按鈕從應用商店更新到最新版本。</string>
+    <string name="mixin_version_expired_description">當前版本已失效，點選下方「更新」前往應用商店更新至最新版。請直接更新，不要解除安裝再重新安裝。</string>
     <string name="Upgrade_Database">資料庫升級</string>
     <string name="Upgrading">升級中…</string>
     <string name="Upload_Mobile_Contacts">上傳通訊錄找好友</string>
