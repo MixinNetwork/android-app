@@ -97,11 +97,11 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }.collectAsStateWithLifecycle(initialValue = initialPosition)
         val position = observedPosition ?: initialPosition
         var market by remember(position.marketId) { mutableStateOf<PerpsMarket?>(null) }
-        var input by rememberSaveable { mutableStateOf("") }
+        var enteredInput by rememberSaveable { mutableStateOf("") }
+        var enteredAsPercentage by rememberSaveable { mutableStateOf(true) }
         var isPercentage by rememberSaveable { mutableStateOf(true) }
         val keyboard = LocalSoftwareKeyboardController.current
         LaunchedEffect(initialPosition.positionId) {
-            market = viewModel.getMarketFromDb(initialPosition.marketId)
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 while (isActive) {
                     viewModel.refreshSinglePosition(initialPosition.positionId, initialPosition.walletId)
@@ -113,23 +113,26 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         val current = position.quantity.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
         val price = position.markPrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
         val size = price?.multiply(current)
-        val inputValue = input.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        val quantity = perpsReductionQuantity(position.quantity, position.markPrice, input, isPercentage, market?.quantityScale ?: 0)
-        val amount = if (isPercentage) size?.multiply(inputValue)?.movePointLeft(2) else inputValue
-        val percentage = if (isPercentage) inputValue else size?.takeIf { it > BigDecimal.ZERO }?.let {
+        val inputValue = enteredInput.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val quantity = perpsReductionQuantity(position.quantity, position.markPrice, enteredInput, enteredAsPercentage, market?.quantityScale ?: -1)
+        val amount = if (enteredAsPercentage) size?.multiply(inputValue)?.movePointLeft(2) else inputValue
+        val percentage = if (enteredAsPercentage) inputValue else size?.takeIf { it > BigDecimal.ZERO }?.let {
             inputValue.multiply(BigDecimal(100)).divide(it, 8, RoundingMode.DOWN)
+        }
+        val input = if (isPercentage == enteredAsPercentage) enteredInput else {
+            (if (isPercentage) percentage else amount)?.stripTrailingZeros()?.toPlainString().orEmpty()
         }
         val error = when {
             observedPosition?.state != PerpsPosition.STATE_OPEN -> stringResource(R.string.perps_reduce_quantity_changed)
-            (isPercentage && inputValue > BigDecimal(100)) || (!isPercentage && size != null && inputValue > size) ->
-                stringResource(R.string.max_removable, if (isPercentage) "100%" else formatPerpsMarginAmount(size))
-            inputValue > BigDecimal.ZERO && quantity == null -> stringResource(R.string.perps_reduce_invalid_quantity)
+            (enteredAsPercentage && inputValue > BigDecimal(100)) || (!enteredAsPercentage && size != null && inputValue > size) ->
+                stringResource(R.string.max_removable, if (enteredAsPercentage) "100%" else formatPerpsMarginAmount(size))
+            market != null && inputValue > BigDecimal.ZERO && quantity == null -> stringResource(R.string.perps_reduce_invalid_quantity)
             else -> null
         }
         val canSubmit = quantity != null && error == null
-        val pnl = perpsReductionValue(position.unrealizedPnl, quantity?.toPlainString().orEmpty(), position.quantity) ?: BigDecimal.ZERO
-        val margin = position.margin?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
-        val roe = margin?.let { position.unrealizedPnl?.toBigDecimalOrNull()?.multiply(BigDecimal(100))?.divide(it, 8, RoundingMode.HALF_UP) }
+        val pnl = perpsReductionValue(estimatedPerpsClosePnl(position.unrealizedPnl, position.estimatedCloseFee)?.toPlainString(), quantity?.toPlainString().orEmpty(), position.quantity)
+        val margin = perpsReductionValue(position.margin, quantity?.toPlainString().orEmpty(), position.quantity)
+        val roe = estimatedPerpsClosePnlPercent(pnl, margin)
         val remaining = quantity?.let { current - it }
         val quoteColorReversed = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
 
@@ -166,9 +169,9 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         margin = size,
                         errorText = error,
                         enabled = observedPosition?.state == PerpsPosition.STATE_OPEN,
-                        onInputChanged = { input = it },
+                        onInputChanged = { enteredInput = it; enteredAsPercentage = isPercentage },
+                        decimalPlaces = 8,
                         onToggleMode = {
-                            input = (if (isPercentage) amount else percentage)?.let { formatMarginAdjustmentInput(it, !isPercentage) }.orEmpty()
                             isPercentage = !isPercentage
                         },
                     )
@@ -178,8 +181,8 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
                         PerpsAddInfoRow(
                             title = stringResource(R.string.perps_estimated_pnl),
-                            value = formatPerpsSignedRawUsdDecimal(pnl) + if (quantity != null && roe != null) " (${formatPerpsSignedPercent(roe, withSign = false)})" else "",
-                            valueColor = if (pnl.signum() == 0) MixinAppTheme.colors.textAssist else if (pnl.signum() > 0) risingColor else fallingColor,
+                            value = if (pnl == null) "--" else formatPerpsSignedRawUsdDecimal(pnl) + if (roe != null) " (${formatPerpsSignedPercent(roe)})" else "",
+                            valueColor = if (pnl == null || pnl.signum() == 0) MixinAppTheme.colors.textAssist else if (pnl.signum() > 0) risingColor else fallingColor,
                         )
                         fun sizeText(value: BigDecimal): String = "${formatPerpsQuantity(value)} ${position.tokenSymbol.orEmpty()} (${formatPerpsMarginAmount(price?.multiply(value))})"
                         PerpsAddInfoRow(

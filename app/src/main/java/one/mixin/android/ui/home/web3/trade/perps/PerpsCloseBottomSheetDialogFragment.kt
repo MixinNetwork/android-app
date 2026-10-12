@@ -162,6 +162,9 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private val isReduceMargin get() = reduceMarginAmount != null
     private val reduceQuantity by lazy { arguments?.getString(ARGS_REDUCE_QUANTITY) }
     private val isReducePosition get() = reduceQuantity != null
+    private val allowFullClose get() = reduceQuantity?.toBigDecimalOrNull()?.compareTo(
+        arguments?.getString(ARGS_QUANTITY)?.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO,
+    ) == 0
 
     private val isLong by lazy {
         requireNotNull(requireArguments().getString(ARGS_SIDE)) { "side is null" }
@@ -565,7 +568,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     private fun showVerifyPinThenClose() {
         if (childFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) != null) return
-        if (isReducePosition && perpsReduceQuantity(reduceQuantity.orEmpty(), latestQuantity) == null) {
+        if (isReducePosition && perpsReduceQuantity(reduceQuantity.orEmpty(), latestQuantity, allowFullClose) == null) {
             errorInfo = getString(R.string.perps_reduce_quantity_changed)
             step = Step.Error
             return
@@ -608,6 +611,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         viewModel.closePerpsOrder(
             positionId = positionId,
             quantity = reduceQuantity,
+            allowFullClose = allowFullClose,
             onSuccess = {
                 step = Step.Done
                 AnalyticsTracker.trackPerpsCloseEnd()

@@ -2656,7 +2656,6 @@
     <string name="perps_reduce_quantity_changed">持仓已变化，请返回核对数量后重试。</string>
     <string name="perps_reduce_invalid_quantity">请输入大于零且不超过当前仓位的金额。</string>
     <string name="perps_estimated_pnl">预计盈亏</string>
-    <string name="perps_reduction_estimate_note">预估不含手续费，实际到账以成交和结算为准。此处显示当前强平价格。</string>
     <string name="Estimated_Fee">预估手续费</string>
     <string name="perps_estimated_realized_pnl">预计净盈亏</string>
     <string name="perps_last_price">最新价格</string>

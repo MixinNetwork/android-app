@@ -3,11 +3,11 @@ package one.mixin.android.ui.home.web3.trade.perps
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-internal fun perpsReduceQuantity(input: String, currentQuantity: String): BigDecimal? {
+internal fun perpsReduceQuantity(input: String, currentQuantity: String, allowFullClose: Boolean = true): BigDecimal? {
     if (input.length > 40 || input.any { it !in '0'..'9' && it != '.' }) return null
     val quantity = input.toBigDecimalOrNull() ?: return null
     val current = currentQuantity.toBigDecimalOrNull()?.abs() ?: return null
-    return quantity.takeIf { it > BigDecimal.ZERO && it <= current }
+    return quantity.takeIf { it > BigDecimal.ZERO && it <= current && (allowFullClose || it < current) }
 }
 
 internal fun perpsReductionQuantity(currentQuantity: String, markPrice: String?, input: String, isPercentage: Boolean, quantityScale: Int): BigDecimal? {
@@ -15,7 +15,7 @@ internal fun perpsReductionQuantity(currentQuantity: String, markPrice: String?,
     val current = currentQuantity.toBigDecimalOrNull()?.abs()?.takeIf { it > BigDecimal.ZERO } ?: return null
     val value = marginAdjustmentAmount(input) ?: return null
     val quantity = if (isPercentage) {
-        if ('.' in input || value > BigDecimal(100)) return null
+        if (value > BigDecimal(100)) return null
         current.multiply(value).movePointLeft(2).setScale(quantityScale, RoundingMode.DOWN)
     } else {
         val price = markPrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null

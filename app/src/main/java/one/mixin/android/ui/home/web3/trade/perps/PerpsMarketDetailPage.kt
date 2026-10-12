@@ -159,6 +159,7 @@ fun PerpsMarketDetailPage(
             when (action) {
                 PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_POSITION -> {
                     if (activity.supportFragmentManager.findFragmentByTag(PerpsReduceBottomSheetDialogFragment.TAG) == null) {
+                        AnalyticsTracker.trackPerpsCloseStart(AnalyticsTracker.PerpsCloseType.REDUCTION)
                         PerpsReduceBottomSheetDialogFragment.newInstance(position)
                             .show(activity.supportFragmentManager, PerpsReduceBottomSheetDialogFragment.TAG)
                     }

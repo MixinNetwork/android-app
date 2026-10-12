@@ -18,7 +18,7 @@ class PerpsReduceQuantityTest {
         assertNull(perpsReductionQuantity("0.00000001", "1", "25", true, 8))
         assertDecimal("1.00000001", perpsReductionQuantity("1.00000001", "88.23", "100", true, 8))
         assertNull(perpsReductionQuantity("1", "88.23", "101", true, 8))
-        assertNull(perpsReductionQuantity("1", "88.23", "25.5", true, 8))
+        assertDecimal("0.255", perpsReductionQuantity("1", "88.23", "25.5", true, 8))
     }
 
     @Test
@@ -54,6 +54,24 @@ class PerpsReduceQuantityTest {
             assertNull(perpsReductionQuantity("100", "1", input, true, 8))
             assertNull(perpsReductionQuantity("100", "1", input, false, 8))
         }
+    }
+
+    @Test
+    fun aPartialReductionCannotBecomeAFullCloseAfterThePositionShrinks() {
+        assertDecimal("0.5", perpsReduceQuantity("0.5", "1", allowFullClose = false))
+        assertNull(perpsReduceQuantity("0.5", "0.5", allowFullClose = false))
+        assertNull(perpsReduceQuantity("0.5", "-0.5", allowFullClose = false))
+        assertDecimal("0.5", perpsReduceQuantity("0.50", "-0.5", allowFullClose = true))
+    }
+
+    @Test
+    fun fractionalInputsPreserveDollarAndSmallPositionAmounts() {
+        assertDecimal("1.999", perpsReductionQuantity("2", "100", "199.90", false, 3))
+        assertDecimal("1.999", perpsReductionQuantity("2", "100", "99.95", true, 3))
+        assertDecimal("0.005", perpsReductionQuantity("0.01", "1", "50", true, 3))
+        assertDecimal("0.005", perpsReductionQuantity("0.01", "1", "0.005", false, 3))
+        assertNull(perpsReductionQuantity("10.5", "1", "50", true, -1))
+        assertDecimal("5.25", perpsReductionQuantity("10.5", "1", "50", true, 2))
     }
 
     @Test

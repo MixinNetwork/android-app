@@ -801,6 +801,9 @@ class PerpetualViewModel @Inject constructor(
     fun refreshSinglePosition(positionId: String, walletId: String? = null) {
         viewModelScope.launch {
             try {
+                val knownWalletId = withContext(Dispatchers.IO) {
+                    walletId?.takeIf { it.isNotBlank() } ?: perpsPositionDao.getPosition(positionId)?.walletId?.takeIf { it.isNotBlank() }
+                }
                 val response = withContext(Dispatchers.IO) {
                     routeService.getPerpsPosition(positionId)
                 }
@@ -811,15 +814,15 @@ class PerpetualViewModel @Inject constructor(
                         if (remotePosition != null) {
                             perpsPositionDao.upsertSuspend(
                                 remotePosition.copy(
-                                    walletId = walletId ?: remotePosition.walletId
+                                    walletId = knownWalletId ?: remotePosition.walletId
                                 )
                             )
                         } else {
-                            Timber.d("Skip deleting local position when remote detail is null: $positionId")
+                            knownWalletId?.takeIf { it.isNotBlank() }?.let(::refreshPositions)
                         }
                     }
                 } else if (response.errorCode == ErrorHandler.NOT_FOUND) {
-                    Timber.d("Skip deleting local position on NOT_FOUND during refresh: $positionId")
+                    knownWalletId?.takeIf { it.isNotBlank() }?.let(::refreshPositions)
                 } else {
                     Timber.e("Failed to refresh position detail: ${response.errorDescription}")
                 }
@@ -1001,9 +1004,10 @@ class PerpetualViewModel @Inject constructor(
         onSuccess: () -> Unit,
         onError: (String) -> Unit,
         quantity: String? = null,
+        allowFullClose: Boolean = false,
     ) {
         viewModelScope.launch {
-            closePerpsOrder(positionId, quantity)
+            closePerpsOrder(positionId, quantity, allowFullClose)
                 .onSuccess { onSuccess() }
                 .onFailure { onError(it.message.orEmpty()) }
         }
@@ -1035,6 +1039,7 @@ class PerpetualViewModel @Inject constructor(
     private suspend fun closePerpsOrder(
         positionId: String,
         quantity: String? = null,
+        allowFullClose: Boolean = false,
     ): Result<Unit> {
         return runCatching {
             val response = withContext(Dispatchers.IO) {
@@ -1042,7 +1047,7 @@ class PerpetualViewModel @Inject constructor(
                     val positionResponse = routeService.getPerpsPosition(positionId)
                     check(positionResponse.isSuccess) { positionResponse.errorDescription.orEmpty() }
                     val position = positionResponse.data
-                    require(position?.state == PerpsPosition.STATE_OPEN && perpsReduceQuantity(quantity, position.quantity) != null) {
+                    require(position?.state == PerpsPosition.STATE_OPEN && perpsReduceQuantity(quantity, position.quantity, allowFullClose) != null) {
                         MixinApplication.appContext.getString(R.string.perps_reduce_quantity_changed)
                     }
                 }

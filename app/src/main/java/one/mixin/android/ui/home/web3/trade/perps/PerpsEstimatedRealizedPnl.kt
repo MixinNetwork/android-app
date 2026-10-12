@@ -31,7 +31,7 @@ internal fun PerpsEstimatedRealizedPnl(pnl: BigDecimal?, margin: BigDecimal?) {
         Spacer(Modifier.height(8.dp))
         Text(
             text = if (pnl == null) "--" else {
-                "${formatPerpsSignedUsdDecimal(pnl)} (${percent?.let { formatPerpsSignedPercent(it, withSign = false) } ?: "--"})"
+                "${formatPerpsSignedUsdDecimal(pnl)} (${percent?.let { formatPerpsSignedPercent(it) } ?: "--"})"
             },
             color = when {
                 pnl == null || pnl.signum() == 0 -> MixinAppTheme.colors.textPrimary

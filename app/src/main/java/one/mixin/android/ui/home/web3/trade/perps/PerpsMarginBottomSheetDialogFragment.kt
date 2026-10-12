@@ -657,6 +657,7 @@ internal fun PerpsReductionInput(
     onInputChanged: (String) -> Unit,
     onToggleMode: () -> Unit,
     onApplyReductionLimit: (() -> Unit)? = null,
+    decimalPlaces: Int = if (isPercentage) 0 else 2,
 ) {
     var textFieldValue by remember(isPercentage) { mutableStateOf(TextFieldValue(input, TextRange(input.length))) }
     LaunchedEffect(input) {
@@ -688,9 +689,10 @@ internal fun PerpsReductionInput(
         focusRequester.requestFocus()
         keyboardController?.show()
     }
+    fun formatInput(value: BigDecimal) = value.setScale(decimalPlaces, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
     fun selectPercentage(value: BigDecimal) {
         val selected = if (isPercentage) value else reduceMarginAmount(margin?.toPlainString(), value.toPlainString(), true) ?: BigDecimal.ZERO
-        updateInput(formatMarginAdjustmentInput(selected, isPercentage))
+        updateInput(formatInput(selected))
     }
     Column(
         modifier = Modifier
@@ -702,7 +704,7 @@ internal fun PerpsReductionInput(
     ) {
         Row(horizontalArrangement = Arrangement.spacedBy(32.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(
-                onClick = { updateInput(formatMarginAdjustmentInput((inputValue - BigDecimal.ONE).max(BigDecimal.ZERO), isPercentage)) },
+                onClick = { updateInput(formatInput((inputValue - BigDecimal.ONE).max(BigDecimal.ZERO))) },
                 enabled = enabled && inputValue > BigDecimal.ZERO,
             ) {
                 Icon(painterResource(R.drawable.ic_perps_minus), stringResource(R.string.perps_reduce_action), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
@@ -713,8 +715,8 @@ internal fun PerpsReductionInput(
                     value = textFieldValue,
                     onValueChange = { value ->
                         val text = value.text
-                        if (text.length <= 40 && text.all { it in '0'..'9' || (!isPercentage && it == '.') } && text.count { it == '.' } <= 1 &&
-                            text.substringAfter('.', "").length <= 2) {
+                        if (text.length <= 40 && text.all { it in '0'..'9' || (decimalPlaces > 0 && it == '.') } && text.count { it == '.' } <= 1 &&
+                            text.substringAfter('.', "").length <= decimalPlaces) {
                             textFieldValue = value
                             if (text != input) onInputChanged(text)
                         }
@@ -723,7 +725,7 @@ internal fun PerpsReductionInput(
                     singleLine = true,
                     modifier = Modifier.widthIn(min = 20.dp, max = 160.dp).width(inputWidth).focusRequester(focusRequester),
                     textStyle = inputTextStyle,
-                    keyboardOptions = KeyboardOptions(keyboardType = if (isPercentage) KeyboardType.Number else KeyboardType.Decimal),
+                    keyboardOptions = KeyboardOptions(keyboardType = if (decimalPlaces == 0) KeyboardType.Number else KeyboardType.Decimal),
                     cursorBrush = SolidColor(MixinAppTheme.colors.accent),
                     decorationBox = { field ->
                         Box(contentAlignment = Alignment.Center) {
@@ -735,7 +737,7 @@ internal fun PerpsReductionInput(
                 if (isPercentage) Text("%", style = inputTextStyle)
             }
             IconButton(
-                onClick = { updateInput(formatMarginAdjustmentInput((inputValue + BigDecimal.ONE).min(maximum), isPercentage)) },
+                onClick = { updateInput(formatInput((inputValue + BigDecimal.ONE).min(maximum))) },
                 enabled = enabled && inputValue < maximum,
             ) {
                 Icon(painterResource(R.drawable.ic_perps_add), stringResource(R.string.Add), tint = Color.Unspecified, modifier = Modifier.size(16.dp))

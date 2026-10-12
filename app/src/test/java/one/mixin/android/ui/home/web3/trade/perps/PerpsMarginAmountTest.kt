@@ -32,6 +32,16 @@ class PerpsMarginAmountTest {
     }
 
     @Test
+    fun reductionFeesCanTurnGrossProfitIntoANetLossWithANegativePercentage() {
+        val pnl = perpsReductionValue(estimatedPerpsClosePnl("0.2", "0.5")?.toPlainString(), "0.5", "1")
+        val margin = perpsReductionValue("10", "0.5", "1")
+        assertEquals(BigDecimal("-0.15"), pnl?.stripTrailingZeros())
+        val percent = requireNotNull(estimatedPerpsClosePnlPercent(pnl, margin))
+        assertEquals("-3%", formatPerpsSignedPercent(percent))
+        assertNull(perpsReductionValue(estimatedPerpsClosePnl("0.2", null)?.toPlainString(), "0.5", "1"))
+    }
+
+    @Test
     fun batchCloseSumsEachReturnAfterFeesAndKeepsUnknownTotalsUnknown() {
         val first = PerpsPositionItem("p1", "market", "long", "1", "100", 10, margin = "10", unrealizedPnl = "2", estimatedCloseFee = "0.5")
         val second = first.copy(positionId = "p2", unrealizedPnl = "-12", estimatedCloseFee = "1")
