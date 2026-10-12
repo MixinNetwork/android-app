@@ -11,7 +11,7 @@ data class MessageCompat(
     var recentBlockhash: String,
     var instructions: List<CompiledInstruction>,
     val addressLookupTables: List<CompiledAddressLookupTable>,
-    val transactionConfig: TransactionConfig = TransactionConfig(),
+    var transactionConfig: TransactionConfig = TransactionConfig(),
 ) {
 
     enum class MessageVersion {

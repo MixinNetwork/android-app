@@ -66,6 +66,15 @@ class TransactionV1Test {
     }
 
     @Test
+    fun emptySignatureListStillChargesAllRequiredSignatures() {
+        val tx = decode(golden("v1GoldenTxFullConfig"))
+        tx.signatures.clear()
+        // Two required signatures (10,000 lamports) plus a 5,000-lamport priority fee.
+        assertEquals(0, "0.000015".toBigDecimal().compareTo(tx.calcFee(tx.message.accounts[0].toBase58())))
+        assertEquals(0, tx.calcFee(tx.message.accounts[1].toBase58()).signum())
+    }
+
+    @Test
     fun configAndFeesUseUnsignedValuesAndTotalLamports() {
         val tx = decode(golden("v1GoldenTxFullConfig"))
         assertEquals(TransactionConfig(5000uL, 200000u, 65536u, 65536u), tx.message.transactionConfig)
@@ -84,15 +93,161 @@ class TransactionV1Test {
     }
 
     @Test
-    fun externalV1ConfigIsNotRewrittenAndComputeInstructionsDoNotSetFees() {
+    fun v1ComputeInstructionsDoNotSetFees() {
         val tx = decode(golden("v1GoldenTxFullConfig"))
-        tx.signatures.replaceAll { zeroSignature }
-        val before = tx.serialize()
-        assertFalse(tx.setPriorityFee("20000", "600000"))
-        assertArrayEquals(before, tx.serialize())
         tx.message.accounts = tx.message.accounts + org.sol4k.Constants.COMPUTE_BUDGET_PROGRAM_ID
         tx.message.instructions = tx.message.instructions + CompiledInstruction(byteArrayOf(3, 1), emptyList(), 6)
         assertEquals(0, "0.000005".toBigDecimal().compareTo(tx.calcPriorityFee()))
+    }
+
+    @Test
+    fun setPriorityFeeUpdatesV1InlineConfigAndSignsUpdatedMessage() {
+        val tx = decode(golden("v1GoldenTxFullConfig"))
+        tx.signatures.replaceAll { zeroSignature }
+        val original = tx.message.copy()
+        assertTrue(tx.setPriorityFee("20000", "600000"))
+        assertEquals(original.copy(transactionConfig = original.transactionConfig.copy(
+            priorityFee = 12000uL, computeUnitLimit = 600000u,
+        )), tx.message)
+        assertEquals(0, "0.000012".toBigDecimal().compareTo(tx.calcPriorityFee()))
+        assertEquals(tx.message.transactionConfig, decode(tx.serialize()).message.transactionConfig)
+        val signer = Keypair.fromSecretKey(ByteArray(32) { 1 })
+        tx.sign(signer)
+        assertTrue(signer.publicKey.verify(Base58.decode(tx.signatures[0]), tx.message.serialize()))
+        assertFalse(signer.publicKey.verify(Base58.decode(tx.signatures[0]), original.serialize()))
+    }
+
+    @Test
+    fun setPriorityFeeRoundsUpAndAvoidsIntermediateOverflow() {
+        val tx = decode(golden("v1GoldenTxEmptyConfig"))
+        tx.signatures.replaceAll { zeroSignature }
+        for ((price, limit, expected) in listOf(
+            Triple("0", "600000", 0uL),
+            Triple("1", "0", 0uL),
+            Triple("1", "1", 1uL),
+            Triple("1", "1000000", 1uL),
+            Triple("1", "1000001", 2uL),
+            Triple(ULong.MAX_VALUE.toString(), "1000000", ULong.MAX_VALUE),
+        )) {
+            assertTrue(tx.setPriorityFee(price, limit))
+            assertEquals(TransactionConfig(priorityFee = expected, computeUnitLimit = limit.toUInt()), tx.message.transactionConfig)
+            assertEquals(tx.message.transactionConfig, decode(tx.serialize()).message.transactionConfig)
+        }
+    }
+
+    @Test
+    fun setPriorityFeeRejectsInvalidOrOverflowingInputWithoutMutation() {
+        val tx = decode(golden("v1GoldenTxEmptyConfig"))
+        tx.signatures.replaceAll { zeroSignature }
+        val before = tx.serialize()
+        for ((price, limit) in listOf(
+            "-1" to "1", "1" to "-1", "1.5" to "1", "" to "1",
+            "18446744073709551616" to "1", "1" to "4294967296",
+            ULong.MAX_VALUE.toString() to "1000001",
+        )) {
+            assertThrows(IllegalArgumentException::class.java) { tx.setPriorityFee(price, limit) }
+            assertArrayEquals(before, tx.serialize())
+        }
+    }
+
+    @Test
+    fun setPriorityFeeValidatesFeeAndLimitSizeTogether() {
+        val original = decode(golden("v1GoldenTxEmptyConfig"))
+        val fixed = original.message.copy(instructions = listOf(CompiledInstruction(byteArrayOf(), listOf(0), 3)))
+        val available = 4096 - fixed.serialize().size - 64
+        // An absent fee and CU limit require twelve bytes, not just the eight fee bytes.
+        for (headroom in listOf(8, 12)) {
+            val message = fixed.copy(instructions = listOf(CompiledInstruction(ByteArray(available - headroom), listOf(0), 3)))
+            val tx = VersionedTransactionCompat(message, mutableListOf(zeroSignature))
+            val before = tx.serialize()
+            if (headroom == 8) {
+                assertThrows(IllegalArgumentException::class.java) { tx.setPriorityFee("20000", "600000") }
+                assertArrayEquals(before, tx.serialize())
+            } else {
+                assertTrue(tx.setPriorityFee("20000", "600000"))
+                assertEquals(4096, tx.serialize().size)
+                assertEquals(TransactionConfig(priorityFee = 12000uL, computeUnitLimit = 600000u), decode(tx.serialize()).message.transactionConfig)
+            }
+        }
+    }
+
+    @Test
+    fun setV1PriorityFeePreservesResourcesAndSignsUpdatedMessage() {
+        val tx = decode(golden("v1GoldenTxFullConfig"))
+        tx.signatures.replaceAll { zeroSignature }
+        val original = tx.message.copy()
+
+        assertTrue(tx.setV1PriorityFee(12000uL))
+        assertEquals(original.copy(transactionConfig = original.transactionConfig.copy(priorityFee = 12000uL)), tx.message)
+        assertEquals(listOf(zeroSignature, zeroSignature), tx.signatures)
+        assertEquals(0, "0.000012".toBigDecimal().compareTo(tx.calcPriorityFee()))
+        assertEquals(tx.message.transactionConfig, decode(tx.serialize()).message.transactionConfig)
+
+        val signer = Keypair.fromSecretKey(ByteArray(32) { 1 })
+        tx.sign(signer)
+        val signature = Base58.decode(tx.signatureFor(signer.publicKey.toBase58()))
+        assertTrue(signer.publicKey.verify(signature, tx.message.serialize()))
+        assertFalse(signer.publicKey.verify(signature, original.serialize()))
+    }
+
+    @Test
+    fun setV1PriorityFeeHandlesAbsentZeroAndUnsignedMaximum() {
+        val tx = decode(golden("v1GoldenTxEmptyConfig"))
+        tx.signatures.clear()
+        val originalSize = tx.message.serialize().size
+        assertTrue(tx.setV1PriorityFee(0uL))
+        assertEquals(originalSize + 8, tx.message.serialize().size)
+        assertEquals(TransactionConfig(priorityFee = 0uL), MessageCompat.deserialize(tx.message.serialize()).transactionConfig)
+
+        assertTrue(tx.setV1PriorityFee(ULong.MAX_VALUE))
+        assertEquals(TransactionConfig(priorityFee = ULong.MAX_VALUE), MessageCompat.deserialize(tx.message.serialize()).transactionConfig)
+        assertEquals(originalSize + 8, tx.message.serialize().size)
+    }
+
+    @Test
+    fun setV1PriorityFeeRejectsFullyAndPartiallySignedTransactions() {
+        for (unsignedIndex in listOf(null, 0, 1)) {
+            val tx = decode(golden("v1GoldenTxFullConfig"))
+            unsignedIndex?.let { tx.signatures[it] = zeroSignature }
+            val original = tx.serialize()
+            assertFalse(tx.setV1PriorityFee(12000uL))
+            assertFalse(tx.setPriorityFee("20000", "600000"))
+            assertArrayEquals(original, tx.serialize())
+        }
+    }
+
+    @Test
+    fun setV1PriorityFeeRejectsLegacyAndV0() {
+        val original = decode(golden("v1GoldenTxEmptyConfig"))
+        for (version in listOf(MessageCompat.MessageVersion.Legacy, MessageCompat.MessageVersion.V0)) {
+            val tx = VersionedTransactionCompat(original.message.copy(version = version), mutableListOf(zeroSignature))
+            val before = tx.serialize()
+            assertThrows(IllegalArgumentException::class.java) { tx.setV1PriorityFee(1uL) }
+            assertArrayEquals(before, tx.serialize())
+        }
+    }
+
+    @Test
+    fun setV1PriorityFeeChecksSizeBeforeMutation() {
+        val original = decode(golden("v1GoldenTxEmptyConfig"))
+        val fixed = original.message.copy(instructions = listOf(CompiledInstruction(byteArrayOf(), listOf(0), 3)))
+        val available = 4096 - fixed.serialize().size - 64
+        for (size in listOf(available - 8, available)) {
+            val message = fixed.copy(instructions = listOf(CompiledInstruction(ByteArray(size), listOf(0), 3)))
+            val tx = VersionedTransactionCompat(message, mutableListOf(zeroSignature))
+            val before = tx.serialize()
+            if (size == available) {
+                assertThrows(IllegalArgumentException::class.java) { tx.setV1PriorityFee(1uL) }
+                assertArrayEquals(before, tx.serialize())
+                assertNull(tx.message.transactionConfig.priorityFee)
+            } else {
+                assertTrue(tx.setV1PriorityFee(1uL))
+                assertEquals(4096, tx.serialize().size)
+                assertEquals(1uL, decode(tx.serialize()).message.transactionConfig.priorityFee)
+                assertTrue(tx.setV1PriorityFee(ULong.MAX_VALUE))
+                assertEquals(4096, tx.serialize().size)
+            }
+        }
     }
 
     @Test

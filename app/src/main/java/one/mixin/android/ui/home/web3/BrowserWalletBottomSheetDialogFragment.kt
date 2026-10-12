@@ -503,7 +503,8 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private suspend fun updateTxPriorityFee(tx: VersionedTransactionCompat, solanaTxSource: SolanaTxSource): VersionedTransactionCompat {
-        if (tx.isV1) return tx
+        // External V1 callers assemble the signature with their original message bytes.
+        if (tx.isV1 && !solanaTxSource.isInnerTx()) return tx
         if (solanaTxSource.isConnectDapp() && tx.calcPriorityFee() != BigDecimal.ZERO) {
             return tx
         }

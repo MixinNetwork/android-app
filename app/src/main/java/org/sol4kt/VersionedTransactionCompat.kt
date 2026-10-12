@@ -10,7 +10,6 @@ import org.sol4kt.MessageCompat.MessageVersion
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.util.Base64
-import kotlin.math.max
 
 class VersionedTransactionCompat(
     val message: MessageCompat,
@@ -65,19 +64,46 @@ class VersionedTransactionCompat(
         }
     }
 
-    fun setPriorityFee(unitPrice: String, unitLimit: String): Boolean = when (message.version) {
-        MessageVersion.Legacy, MessageVersion.V0 -> setComputeBudgetPriorityFee(unitPrice, unitLimit)
-        // External V1 messages are signed as supplied, including explicit zero/absent config values.
-        MessageVersion.V1 -> false
+    fun setPriorityFee(unitPrice: String, unitLimit: String): Boolean {
+        if (hasAnySignature()) return false
+        return when (message.version) {
+            MessageVersion.Legacy, MessageVersion.V0 -> setComputeBudgetPriorityFee(unitPrice, unitLimit)
+            MessageVersion.V1 -> {
+                val limit = unitLimit.toUInt()
+                setV1PriorityFee(calculatePriorityFeeLamports(unitPrice, limit), limit)
+            }
+        }
+    }
+
+    private fun calculatePriorityFeeLamports(unitPrice: String, unitLimit: UInt): ULong {
+        val price = unitPrice.toBigInteger()
+        require(price.signum() >= 0 && price.bitLength() <= 64) { "Invalid compute unit price" }
+        return price.toBigDecimal()
+            .multiply(unitLimit.toLong().toBigDecimal())
+            .divide(BigDecimal(1_000_000), 0, RoundingMode.CEILING)
+            .toPlainString().toULong()
+    }
+
+    fun setV1PriorityFee(totalLamports: ULong, computeUnitLimit: UInt? = null): Boolean {
+        require(message.version == MessageVersion.V1) { "setV1PriorityFee requires a V1 transaction" }
+        if (hasAnySignature()) return false
+
+        val config = message.transactionConfig.copy(
+            priorityFee = totalLamports,
+            computeUnitLimit = computeUnitLimit ?: message.transactionConfig.computeUnitLimit,
+        )
+        // Newly present config fields grow the transaction; validate before changing the message.
+        message.copy(transactionConfig = config).serialize()
+        message.transactionConfig = config
+        return true
+    }
+
+    private fun hasAnySignature(): Boolean {
+        val voidSig = Base58.encode(ByteArray(SIGNATURE_LENGTH))
+        return signatures.any { it != voidSig }
     }
 
     private fun setComputeBudgetPriorityFee(unitPrice: String, unitLimit: String): Boolean {
-        val voidSig = Base58.encode(ByteArray(SIGNATURE_LENGTH))
-        if (signatures.any { s ->
-                s != voidSig
-            }) {
-            return false
-        }
         message.setPriorityFee(unitPrice.toLong(), unitLimit.toInt())
         // TODO check tx exceed max size?
         return true
@@ -87,7 +113,7 @@ class VersionedTransactionCompat(
         if (!onlyOneSigner() && message.accounts.first().toBase58() != address ) {
             return BigDecimal.ZERO
         }
-        val sigFee = lamportToSol(BigDecimal(5000 * max(signatures.size, 1)))
+        val sigFee = lamportToSol(BigDecimal(5000 * message.header.numRequireSignatures))
         val priorityFee = calcPriorityFee()
         return sigFee.add(priorityFee).setScale(9, RoundingMode.CEILING)
     }
