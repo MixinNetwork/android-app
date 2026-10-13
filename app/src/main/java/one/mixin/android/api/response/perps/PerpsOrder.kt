@@ -53,6 +53,15 @@ data class PerpsOrder(
     @SerializedName("roe")
     @ColumnInfo(name = "roe")
     val roe: String,
+    @SerializedName("net_realized_pnl")
+    @ColumnInfo(name = "net_realized_pnl", defaultValue = "''")
+    val netRealizedPnl: String = "",
+    @SerializedName("net_roe")
+    @ColumnInfo(name = "net_roe", defaultValue = "''")
+    val netRoe: String = "",
+    @SerializedName("profit_share_amount")
+    @ColumnInfo(name = "profit_share_amount", defaultValue = "''")
+    val profitShareAmount: String = "",
     @SerializedName("close_reason")
     @ColumnInfo(name = "close_reason")
     val closeReason: String?,
@@ -69,6 +78,8 @@ data class PerpsOrder(
     companion object {
         const val TYPE_OPEN = "open"
         const val TYPE_INCREASE = "increase_position"
+        const val TYPE_INCREASE_MARGIN = "increase_margin"
+        const val TYPE_DECREASE_MARGIN = "decrease_margin"
         const val TYPE_CLOSE = "close"
 
         const val STATUS_PROCESSING = "processing"

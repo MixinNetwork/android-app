@@ -1,5 +1,13 @@
 package one.mixin.android.api.response.perps
 
+import java.math.BigDecimal
+
+fun PerpsOrderItem.realizedPnlForDisplay(): BigDecimal =
+    netRealizedPnl.toBigDecimalOrNull() ?: realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
+
+fun PerpsOrderItem.roeForDisplay(): BigDecimal? =
+    netRoe.toBigDecimalOrNull() ?: roe.toBigDecimalOrNull()
+
 fun PerpsPositionItem.toPosition(): PerpsPosition {
     return PerpsPosition(
         positionId = positionId,

@@ -18,6 +18,7 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.Constants.ChainId.Arc
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.Base
@@ -161,6 +162,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             radioBase.isVisible = true
             radioBsc.isVisible = true
             radioPolygon.isVisible = true
+            radioArc.isVisible = true
             radioGroup.setOnCheckedChangeListener { _, id ->
                 currentChain = when (id) {
                     R.id.radio_eth -> {
@@ -213,6 +215,10 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
 
                     R.id.radio_robinhood -> {
                         Robinhood
+                    }
+
+                    R.id.radio_arc -> {
+                        Arc
                     }
 
                     else -> {

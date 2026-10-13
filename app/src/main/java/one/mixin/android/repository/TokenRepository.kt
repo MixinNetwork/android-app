@@ -1897,7 +1897,7 @@ class TokenRepository
                     updatedAt = updatedAt,
                 ),
             )
-            web3TransactionDao.updateTransaction(hash, status, chainId)
+            web3TransactionDao.updateTransaction(hash, status, chainId, pendingRaw.account)
         }
     }
 
@@ -1910,7 +1910,7 @@ class TokenRepository
     ) {
         walletDatabase.withRoomTransaction {
             web3RawTransactionDao.insertSuspend(raw)
-            web3TransactionDao.updateTransaction(hash, status, chainId)
+            web3TransactionDao.updateTransaction(hash, status, chainId, raw.account)
             if (chainId !in Constants.Web3UtxoChainIds || utxoRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withRoomTransaction
             val cleanedHex: String = utxoRawTransactionHexToDeleteOutputs.removePrefix("0x").trim()
             if (cleanedHex.isBlank()) return@withRoomTransaction

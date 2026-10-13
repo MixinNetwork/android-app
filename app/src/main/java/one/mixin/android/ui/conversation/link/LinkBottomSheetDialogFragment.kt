@@ -56,6 +56,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isValidStartParam
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.shouldOpenAppHome
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toPerpsTradeAction
 import one.mixin.android.extension.toast
@@ -249,7 +250,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 dismiss()
             } else {
                 lifecycleScope.launch(errorHandler) {
-                    val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
+                    val isOpenApp = uri.shouldOpenAppHome()
                     if (isOpenApp) {
                         val localApp = oldLinkViewModel.findAppById(userId)
                         if (localApp != null) {
@@ -1161,11 +1162,13 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                     market.tokenSymbol,
                     source,
                     leaderPositionId = action.leaderPositionId,
+                    addMargin = action.addMargin != null,
+                    initialMargin = action.addMargin?.margin,
                 )
             } else {
                 val (previewMarket, preview) = perpsViewModel.prepareLinkPreview(market, openPosition, action.leaderPositionId, source)
                 if (preview != PerpsLinkPreview.Input) {
-                    showPerpsLinkPreview(previewMarket, openPosition, action.leaderPositionId, preview)
+                    showPerpsLinkPreview(previewMarket, openPosition, action.leaderPositionId, preview, source)
                     return
                 }
                 PerpsActivity.showOpenPosition(
@@ -1223,6 +1226,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         action: PerpsOpenPositionAction,
         leaderPositionId: String?,
         preview: PerpsLinkPreview,
+        source: String,
     ) {
         lifecycle.withResumed {
             val manager = parentFragmentManager
@@ -1259,6 +1263,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                         leverage = action.leverage,
                         margin = action.margin,
                         error = getString(R.string.error_already_had_open_position),
+                        source = source,
                         position = preview.position,
                         leaderPositionId = leaderPositionId,
                         liquidationPrice = preview.liquidationPrice,
@@ -1275,6 +1280,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                         leverage = action.leverage,
                         margin = action.margin,
                         error = preview.message,
+                        source = source,
                         liquidationPrice = preview.liquidationPrice,
                     ).showNow(manager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
                 }

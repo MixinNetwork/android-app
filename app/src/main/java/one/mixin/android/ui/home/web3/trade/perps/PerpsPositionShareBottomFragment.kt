@@ -35,6 +35,8 @@ import one.mixin.android.api.referral.buildReferralShareUrl
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.realizedPnlForDisplay
+import one.mixin.android.api.response.perps.roeForDisplay
 import one.mixin.android.databinding.FragmentPerpsPositionShareBottomBinding
 import one.mixin.android.databinding.ItemPerpsPositionSharePosterBinding
 import one.mixin.android.extension.defaultSharedPreferences
@@ -227,9 +229,9 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
 
         val closed = closeOrder ?: return false
         if (closed.orderType != PerpsOrder.TYPE_CLOSE) return false
-        val pnlAmount = closed.realizedPnl.toBigDecimalSafely() ?: BigDecimal.ZERO
+        val pnlAmount = closed.realizedPnlForDisplay()
         val effectiveLeverage = if (closed.leverage > 0) closed.leverage else 1
-        val pnlPercent = (closed.roe.toBigDecimalSafely() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
+        val pnlPercent = (closed.roeForDisplay() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
         bindCardData(
             marketId = closed.marketId,
             iconUrl = closed.iconUrl,

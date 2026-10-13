@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -54,8 +53,8 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openAsUrlOrWeb
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
@@ -66,7 +65,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
@@ -238,7 +236,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                     sendReceiveView.isVisible = true
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
-                        showBuyOptionsBottomSheet()
+                        showBuy()
                     }
                     sendReceiveView.send.setOnClickListener {
                         if (
@@ -759,14 +757,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
 
         override fun onSupportClicked() {
-            lifecycleScope.launch {
-                val user = walletViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
-                if (user == null) {
-                    toast(R.string.Data_error)
-                } else {
-                    ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
-                }
-            }
+            openCustomerService()
         }
 
         override fun onHelpCenterClicked() {
@@ -774,7 +765,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
 
         override fun onBuyClicked() {
-            showBuyOptionsBottomSheet()
+            showBuy()
         }
 
         override fun onReceiveClicked() {
@@ -918,58 +909,22 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         AddWalletBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
     }
 
-    private fun showBuyOptionsBottomSheet() {
+    private fun showBuy() {
         defaultSharedPreferences.putBoolean(PREF_HAS_USED_BUY, false)
         RxBus.publish(BadgeEvent(PREF_HAS_USED_BUY))
         _headBinding?.sendReceiveView?.buyBadge?.isVisible = false
         renderHome()
-        WalletBuyOptionsBottomSheetDialogFragment.newInstance(
-            walletName = getString(R.string.Privacy_Wallet),
-            walletIconRes = R.drawable.ic_wallet_privacy,
-            cashRewardApy = cashAccount?.rewardApy,
-        )
-            .setOnGooglePayOrCard {
-                WalletActivity.showBuy(requireActivity(), false, null, null)
-            }
-            .setOnBankTransfer { openCashHome(addBank = true) }
-            .showNow(parentFragmentManager, WalletBuyOptionsBottomSheetDialogFragment.TAG)
+        WalletActivity.showBuy(requireActivity(), false, null, null)
     }
 
-    private fun openCashHome(addBank: Boolean = false) {
-        if (!addBank) {
-            "${Constants.Scheme.APPS}/${Constants.MIXIN_CASH_USER_ID}?action=open"
-                .openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
-            return
-        }
-        lifecycleScope.launch {
-            val app = walletViewModel.findOrSyncApp(Constants.MIXIN_CASH_USER_ID)
-            val url = cashHomeUrl(app?.homeUri, addBank)
-            if (app == null) {
-                WebActivity.show(requireActivity(), url = url, app = null, conversationId = null)
-            } else {
-                WebActivity.show(requireActivity(), url = url, app = app, conversationId = null)
-            }
-        }
+    private fun openCashHome() {
+        "${Constants.Scheme.APPS}/${Constants.MIXIN_CASH_USER_ID}?page=add-cash-ban"
+            .openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
     }
 
     private fun openEarnHome() {
         "${Constants.Scheme.APPS}/${Constants.MIXIN_EARN_USER_ID}?action=open"
             .openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
-    }
-
-    private fun cashHomeUrl(
-        homeUri: String?,
-        addBank: Boolean,
-    ): String {
-        val url = homeUri.takeUnless { it.isNullOrBlank() } ?: Constants.API.CASH_HOME_URL
-        return if (addBank) {
-            Uri.parse(url).buildUpon()
-                .appendQueryParameter("action", "add-cash-bank")
-                .build()
-                .toString()
-        } else {
-            url
-        }
     }
 
     override fun onResume() {

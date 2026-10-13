@@ -173,6 +173,15 @@ object Web3Signer {
         persist()
     }
 
+    fun addressByChainId(chainId: String?): String? =
+        when (chainId) {
+            SOLANA_CHAIN_ID -> solanaAddress
+            BITCOIN_CHAIN_ID -> btcAddress
+            Constants.ChainId.PEARL_CHAIN_ID -> pearlAddress
+            in Constants.Web3EvmChainIds -> evmAddress
+            else -> null
+        }
+
     fun useEvm() {
         address = evmAddress
         if (!evmChainList.contains(currentChain)) {

@@ -1,6 +1,7 @@
 package one.mixin.android.ui.conversation
 
 import one.mixin.android.extension.PerpsTradeAction
+import one.mixin.android.extension.PerpsAddMarginAction
 import one.mixin.android.extension.PerpsOpenPositionAction
 import one.mixin.android.extension.SpotTradeAction
 import one.mixin.android.extension.toPerpsTradeAction
@@ -50,6 +51,46 @@ class PerpsTradeActionTest {
         val action = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119"
 
         assertEquals("e015f42e-b0ff-38e7-87b1-7e8d46fea119", action.toPerpsTradeAction()?.marketId)
+    }
+
+    @Test
+    fun parsesAddMarginWithOptionalAmount() {
+        val marketId = "5db61a77-6efc-3b1c-ac56-8d57b07332a5"
+        for (scheme in listOf("https", "mixin")) {
+            for ((parameters, amount) in listOf("" to null, "&margin=10" to "10", "&margin=10.5000" to "10.5")) {
+                val link = "$scheme://mixin.one/trade?type=perps&market=$marketId&action=add_margin$parameters"
+                assertEquals(
+                    PerpsTradeAction(marketId, null, addMargin = PerpsAddMarginAction(amount)),
+                    link.toPerpsTradeAction(),
+                )
+            }
+        }
+        assertEquals(
+            PerpsAddMarginAction(null),
+            "https://mixin.one/trade?type=perpetual&market=$marketId&action=ADD_MARGIN".toPerpsTradeAction()?.addMargin,
+        )
+    }
+
+    @Test
+    fun rejectsInvalidAddMarginParameters() {
+        val base = "https://mixin.one/trade?type=perps&action=add_margin"
+        assertNull(base.toPerpsTradeAction())
+        assertNull("$base&market=".toPerpsTradeAction())
+        assertNull("$base&market=invalid".toPerpsTradeAction())
+        for (amount in listOf("", "0", "-1", "abc", "1e2", "0.000000001", "1".repeat(65))) {
+            assertNull("$base&market=5db61a77-6efc-3b1c-ac56-8d57b07332a5&margin=$amount".toPerpsTradeAction())
+        }
+    }
+
+    @Test
+    fun classicBannerKeepsAddMarginActionAndOptionalAmount() {
+        val marketId = "5db61a77-6efc-3b1c-ac56-8d57b07332a5"
+        for ((parameters, amount) in listOf("" to null, "&margin=10" to "10")) {
+            assertEquals(
+                WalletHomeBannerActionTarget.PerpsAddMargin(marketId, amount),
+                "https://mixin.one/trade?type=perps&market=$marketId&action=add_margin$parameters".toClassicWalletHomeBannerActionTarget(),
+            )
+        }
     }
 
     @Test

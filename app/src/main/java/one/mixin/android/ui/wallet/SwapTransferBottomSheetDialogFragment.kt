@@ -656,7 +656,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 val sig = tx.signatures.first()
                                 val rawTx = tx.serialize().base64Encode()
                                 val request = Web3RawTransactionRequest(Constants.ChainId.Solana, rawTx, tx.message.accounts[0].toBase58(), null)
-                                val response = bottomViewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), inAsset.assetId)
+                                val response = bottomViewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), to = requireNotNull(depositDestination), assetId = inAsset.assetId)
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,
                                     System.currentTimeMillis(),
@@ -673,7 +673,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                     val nonce = rpc.nonceAt(inAsset.chain.chainId, address) ?: throw IllegalArgumentException("failed to get nonce")
                                     return@ethSignTransaction nonce
                                 }
-                                val result = bottomViewModel.postRawTx(pair.first, inAsset.chain.chainId, pair.second, inAsset.assetId)
+                                val result = bottomViewModel.postRawTx(pair.first, inAsset.chain.chainId, pair.second, to = requireNotNull(depositDestination), assetId = inAsset.assetId)
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,
                                     System.currentTimeMillis(),
@@ -691,7 +691,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 val fromAddress = UtxoTransactionSigner.address(priv, chainId)
                                 val localUtxos = web3ViewModel.outputsByAddress(fromAddress, chainId)
                                 val signedResult = UtxoTransactionSigner.sign(rawHex, priv, chainId, localUtxos)
-                                bottomViewModel.postRawTx(signedResult.signedHex, chainId, signedResult.fromAddress, inAsset.assetId, rate = signMessage.rate)
+                                bottomViewModel.postRawTx(signedResult.signedHex, chainId, signedResult.fromAddress, to = requireNotNull(depositDestination), assetId = inAsset.assetId, rate = signMessage.rate)
                                 web3ViewModel.markOutputsToSigned(Web3Signer.currentWalletId, signedResult.fromAddress, signedResult.signedHex, signedResult.consumedOutputIds, chainId)
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,
