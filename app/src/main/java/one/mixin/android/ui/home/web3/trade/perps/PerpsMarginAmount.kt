@@ -124,3 +124,9 @@ internal fun estimatedPerpsBatchCloseMargin(positions: List<PerpsPositionItem>):
     positions.fold(BigDecimal.ZERO) { total, position ->
         total + (position.margin?.toBigDecimalOrNull() ?: return null)
     }
+
+internal fun estimatedPerpsCloseMargin(margin: String?, unrealizedPnl: String?): BigDecimal? {
+    val marginValue = margin?.toBigDecimalOrNull() ?: return null
+    val pnl = unrealizedPnl?.toBigDecimalOrNull() ?: return null
+    return marginValue + pnl
+}

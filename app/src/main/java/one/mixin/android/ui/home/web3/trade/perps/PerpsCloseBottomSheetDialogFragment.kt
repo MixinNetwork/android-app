@@ -48,12 +48,14 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
+import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.screenHeight
@@ -338,7 +340,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                     Text(
                         text = stringResource(
                             id = when (step) {
-                                Step.Pending -> if (isReduceMargin) R.string.perps_confirm_reduce_margin_title else if (isReducePosition) R.string.perps_confirm_reduce_position else R.string.confirm_closing_position
+                                Step.Pending -> if (isReduceMargin) R.string.perps_confirm_reduce_margin_title else R.string.confirm_closing_position
                                 Step.Done -> if (isReduceMargin) R.string.perps_margin_submitted else R.string.perps_close_submitted
                                 Step.Error -> if (isReduceMargin) R.string.perps_reducing_margin_failed else if (isLong) R.string.Closed_Long_Failed else R.string.Closed_Short_Failed
                                 Step.Sending -> if (isReduceMargin) R.string.perps_reducing_margin else R.string.Sending
@@ -394,13 +396,13 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         estimatedCloseFee?.toBigDecimalOrNull()
                     }
 
-                    val closePnl = estimatedPerpsClosePnl(latestUnrealizedPnl, estimatedCloseFee)
+                    val closePnl = latestUnrealizedPnl.toBigDecimalOrNull()
                     val displayPnl = if (isReducePosition) {
                         perpsReductionValue(closePnl?.toPlainString(), reduceQuantity.orEmpty(), latestQuantity)
                     } else closePnl
                     val displayMargin = if (isReducePosition) {
-                        perpsReductionValue(latestMargin, reduceQuantity.orEmpty(), latestQuantity)
-                    } else latestMargin.toBigDecimalOrNull()
+                        perpsReductionValue(estimatedPerpsCloseMargin(latestMargin, latestUnrealizedPnl)?.toPlainString(), reduceQuantity.orEmpty(), latestQuantity)
+                    } else estimatedPerpsCloseMargin(latestMargin, latestUnrealizedPnl)
 
                     Column(
                         modifier = Modifier
@@ -408,7 +410,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             .padding(horizontal = 20.dp),
                     ) {
                         Text(
-                            text = stringResource(R.string.perps_market).uppercase(),
+                            text = stringResource(if (isReduceMargin) R.string.perps_market else R.string.Perpetual).uppercase(),
                             color = MixinAppTheme.colors.textRemarks,
                             fontSize = 14.sp,
                         )
@@ -429,61 +431,96 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold
                             )
+                            if (!isReduceMargin) {
+                                val reversed = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+                                val sideColor = if (isLong != reversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+                                Spacer(Modifier.width(6.dp))
+                                Text(
+                                    text = "${leverage}x",
+                                    color = sideColor,
+                                    fontSize = 12.sp,
+                                    modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(sideColor.copy(alpha = 0.1f)).padding(horizontal = 3.dp, vertical = 1.dp),
+                                )
+                            }
                         }
                         Box(modifier = Modifier.height(20.dp))
-                        settleAssetItem?.let { asset ->
+                        if (!isReduceMargin) {
                             Text(
                                 text = stringResource(R.string.Estimated_Receive).uppercase(),
                                 color = MixinAppTheme.colors.textRemarks,
                                 fontSize = 14.sp,
                             )
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                CoilImage(
-                                    model = asset.iconUrl,
-                                    placeholder = R.drawable.ic_avatar_place_holder,
-                                    modifier = Modifier
-                                        .size(18.dp)
-                                        .clip(CircleShape),
-                                    contentScale = ContentScale.Crop
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                text = estimatedReceive?.let(::formatPerpsRawUsdDecimal) ?: "--",
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontSize = 16.sp,
+                            )
+                        } else {
+                            settleAssetItem?.let { asset ->
                                 Text(
-                                    text = if (estimatedReceive == null) {
-                                        "-- ${asset.symbol}"
-                                    } else if (isReduceMargin) {
-                                        "+${formatPerpsQuantity(estimatedReceive)} ${asset.symbol}"
-                                    } else "${String.format("%.8f", estimatedReceive)} ${asset.symbol}",
-                                    color = MixinAppTheme.colors.textPrimary,
-                                    fontSize = 16.sp,
-                                    fontWeight = FontWeight.W400
+                                    text = stringResource(R.string.Estimated_Receive).uppercase(),
+                                    color = MixinAppTheme.colors.textRemarks,
+                                    fontSize = 14.sp,
                                 )
-                                Spacer(modifier = Modifier.weight(1f))
-                                Text(
-                                    text = asset.chainName ?: "",
-                                    color = MixinAppTheme.colors.textAssist,
-                                    fontSize = 14.sp
-                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    CoilImage(
+                                        model = asset.iconUrl,
+                                        placeholder = R.drawable.ic_avatar_place_holder,
+                                        modifier = Modifier
+                                            .size(18.dp)
+                                            .clip(CircleShape),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Spacer(modifier = Modifier.width(6.dp))
+                                    Text(
+                                        text = if (estimatedReceive == null) {
+                                            "-- ${asset.symbol}"
+                                        } else {
+                                            "+${formatPerpsQuantity(estimatedReceive)} ${asset.symbol}"
+                                        },
+                                        color = MixinAppTheme.colors.textPrimary,
+                                        fontSize = 16.sp,
+                                        fontWeight = FontWeight.W400
+                                    )
+                                    Spacer(modifier = Modifier.weight(1f))
+                                    Text(
+                                        text = asset.chainName ?: "",
+                                        color = MixinAppTheme.colors.textAssist,
+                                        fontSize = 14.sp
+                                    )
+                                }
                             }
                         }
 
                         if (!isReduceMargin) {
                             Spacer(modifier = Modifier.height(20.dp))
-                            PerpsEstimatedRealizedPnl(displayPnl, displayMargin)
+                            PerpsCloseMargin(displayPnl, displayMargin)
                             Spacer(modifier = Modifier.height(20.dp))
-                            PerpsEstimatedFee(displayCloseFee) {
-                                PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                    PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
-                                ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                            }
+                            PerpsEstimatedFee(
+                                fee = displayCloseFee,
+                                title = stringResource(R.string.Fee),
+                                amountFontSize = 16.sp,
+                                onTipClick = {
+                                    PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                        PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
+                                    ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                                },
+                            )
                         }
                     }
                     Box(modifier = Modifier.height(20.dp))
 
-                    ItemWalletContent(title = stringResource(id = R.string.Receiver).uppercase(), fontSize = 16.sp)
-                    Box(modifier = Modifier.height(20.dp))
-
-                    ItemUserContent(title = stringResource(id = R.string.Sender).uppercase(), sender, null)
+                    if (isReduceMargin) {
+                        ItemWalletContent(title = stringResource(R.string.Receiver).uppercase(), fontSize = 16.sp)
+                        Box(modifier = Modifier.height(20.dp))
+                        ItemUserContent(title = stringResource(R.string.Sender).uppercase(), sender, null)
+                    } else {
+                        ItemUserContent(title = stringResource(R.string.Receiver).uppercase(), sender, null)
+                        Box(modifier = Modifier.height(20.dp))
+                        ItemWalletContent(title = stringResource(R.string.Sender).uppercase(), fontSize = 16.sp)
+                    }
                     Box(modifier = Modifier.height(16.dp))
                 }
 

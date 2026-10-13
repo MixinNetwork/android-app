@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -22,20 +23,25 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import java.math.BigDecimal
 
 @Composable
-internal fun PerpsEstimatedFee(fee: BigDecimal?, onTipClick: () -> Unit) {
+internal fun PerpsEstimatedFee(
+    fee: BigDecimal?,
+    onTipClick: () -> Unit,
+    title: String = stringResource(R.string.Estimated_Fee),
+    amountFontSize: TextUnit = 18.sp,
+) {
     Column {
         Row(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = stringResource(R.string.Estimated_Fee).uppercase(),
+                text = title.uppercase(),
                 color = MixinAppTheme.colors.textRemarks,
                 fontSize = 14.sp,
             )
             Spacer(Modifier.width(6.dp))
             Icon(
                 painter = painterResource(R.drawable.ic_tip),
-                contentDescription = stringResource(R.string.Estimated_Fee),
+                contentDescription = title,
                 tint = MixinAppTheme.colors.textAssist,
                 modifier = Modifier.size(16.dp).clickable(role = Role.Button, onClick = onTipClick),
             )
@@ -44,7 +50,7 @@ internal fun PerpsEstimatedFee(fee: BigDecimal?, onTipClick: () -> Unit) {
         Text(
             text = fee?.let(::formatPerpsRawUsdDecimal) ?: "--",
             color = MixinAppTheme.colors.textPrimary,
-            fontSize = 18.sp,
+            fontSize = amountFontSize,
         )
     }
 }

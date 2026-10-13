@@ -2660,4 +2660,6 @@
     <string name="perps_estimated_realized_pnl">预计净盈亏</string>
     <string name="perps_last_price">最新价格</string>
     <string name="perps_mark_price">标记价格</string>
+    <string name="perps_close_position_title">平仓 %1$s %2$s</string>
+    <string name="perps_include_pnl">含盈亏</string>
 </resources>

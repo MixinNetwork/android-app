@@ -1,6 +1,5 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
-import android.os.Bundle
 import android.view.View
 import android.view.WindowManager
 import androidx.compose.foundation.background
@@ -47,7 +46,6 @@ import androidx.lifecycle.repeatOnLifecycle
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPosition
@@ -55,7 +53,6 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.screenHeight
@@ -97,7 +94,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }.collectAsStateWithLifecycle(initialValue = initialPosition)
         val position = observedPosition ?: initialPosition
         var market by remember(position.marketId) { mutableStateOf<PerpsMarket?>(null) }
-        var enteredInput by rememberSaveable { mutableStateOf("") }
+        var enteredInput by rememberSaveable { mutableStateOf("100") }
         var enteredAsPercentage by rememberSaveable { mutableStateOf(true) }
         var isPercentage by rememberSaveable { mutableStateOf(true) }
         val keyboard = LocalSoftwareKeyboardController.current
@@ -130,11 +127,11 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             else -> null
         }
         val canSubmit = quantity != null && error == null
-        val pnl = perpsReductionValue(estimatedPerpsClosePnl(position.unrealizedPnl, position.estimatedCloseFee)?.toPlainString(), quantity?.toPlainString().orEmpty(), position.quantity)
-        val margin = perpsReductionValue(position.margin, quantity?.toPlainString().orEmpty(), position.quantity)
-        val roe = estimatedPerpsClosePnlPercent(pnl, margin)
-        val remaining = quantity?.let { current - it }
-        val quoteColorReversed = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+        val previewQuantity = quantity?.takeIf { canSubmit }?.toPlainString().orEmpty()
+        val pnl = perpsReductionValue(position.unrealizedPnl, previewQuantity, position.quantity)
+        val margin = perpsReductionValue(estimatedPerpsCloseMargin(position.margin, position.unrealizedPnl)?.toPlainString(), previewQuantity, position.quantity)
+        val receive = perpsReductionValue(estimatedPerpsCloseReturn(position.margin, position.unrealizedPnl, position.estimatedCloseFee)?.toPlainString(), previewQuantity, position.quantity)
+        val fee = perpsReductionValue(position.estimatedCloseFee, previewQuantity, position.quantity)
 
         MixinAppTheme {
             Column(Modifier.fillMaxSize().background(MixinAppTheme.colors.background).imePadding()) {
@@ -144,7 +141,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         Spacer(Modifier.width(10.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
-                                stringResource(R.string.perps_reduce_position_title, stringResource(if (position.side.equals("long", true)) R.string.Long else R.string.Short), position.tokenSymbol.orEmpty()),
+                                stringResource(R.string.perps_close_position_title, stringResource(if (position.side.equals("long", true)) R.string.Long else R.string.Short), position.tokenSymbol.orEmpty()),
                                 color = MixinAppTheme.colors.textPrimary,
                                 fontSize = 16.sp,
                                 fontWeight = FontWeight.W600,
@@ -171,28 +168,34 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         enabled = observedPosition?.state == PerpsPosition.STATE_OPEN,
                         onInputChanged = { enteredInput = it; enteredAsPercentage = isPercentage },
                         decimalPlaces = 8,
+                        percentageLabels = true,
+                        autoFocus = false,
                         onToggleMode = {
                             isPercentage = !isPercentage
                         },
                     )
                     Spacer(Modifier.height(18.dp))
                     Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                        val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-                        val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
                         PerpsAddInfoRow(
-                            title = stringResource(R.string.perps_estimated_pnl),
-                            value = if (pnl == null) "--" else formatPerpsSignedRawUsdDecimal(pnl) + if (roe != null) " (${formatPerpsSignedPercent(roe)})" else "",
-                            valueColor = if (pnl == null || pnl.signum() == 0) MixinAppTheme.colors.textAssist else if (pnl.signum() > 0) risingColor else fallingColor,
+                            title = stringResource(R.string.Estimated_Receive),
+                            value = receive?.let(::formatPerpsRawUsdDecimal) ?: "--",
                         )
-                        fun sizeText(value: BigDecimal): String = "${formatPerpsQuantity(value)} ${position.tokenSymbol.orEmpty()} (${formatPerpsMarginAmount(price?.multiply(value))})"
+                        Column(horizontalAlignment = Alignment.End) {
+                            PerpsAddInfoRow(
+                                title = stringResource(R.string.Margin),
+                                value = margin?.let { if (it.signum() < 0) formatPerpsSignedRawUsdDecimal(it) else formatPerpsRawUsdDecimal(it) } ?: "--",
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            PerpsIncludedPnl(pnl)
+                        }
                         PerpsAddInfoRow(
-                            title = stringResource(R.string.Size),
-                            value = if (remaining == null) sizeText(current) else "${sizeText(current)} → ${sizeText(remaining)}",
-                            singleLine = false,
-                        )
-                        PerpsAddInfoRow(
-                            title = stringResource(R.string.Liquidation_Price),
-                            value = position.liquidationPrice?.let { formatPerpsPrice(it, position.priceScale) } ?: "-",
+                            title = stringResource(R.string.Fee),
+                            value = fee?.let(::formatPerpsRawUsdDecimal) ?: "--",
+                            onTipClick = {
+                                PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                    PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
+                                ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                            },
                         )
                     }
                 }
@@ -221,7 +224,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         shape = RoundedCornerShape(32.dp),
                         contentPadding = PaddingValues(vertical = 12.dp),
                     ) {
-                        Text(stringResource(R.string.perps_reduce_action), color = if (canSubmit) Color.White else MixinAppTheme.colors.textAssist, fontSize = 16.sp)
+                        Text(stringResource(R.string.Confirm), color = if (canSubmit) Color.White else MixinAppTheme.colors.textAssist, fontSize = 16.sp)
                     }
                 }
             }
