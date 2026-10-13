@@ -278,7 +278,9 @@ class Tip
                 val safeEntropy = getMnemonicEntropyFromSafe(context, pin)
                 if (safeEntropy.contentEquals(ByteArray(16))) return null
                 val mn = toMnemonic(safeEntropy) // legacy user salt 32 bytes
-                storeValueInEncryptedPreferences(context, Constants.Tip.MNEMONIC, safeEntropy)
+                if (!Session.hasPhone()) {
+                    storeValueInEncryptedPreferences(context, Constants.Tip.MNEMONIC, safeEntropy)
+                }
                 return mn.split(" ")
             }
         }

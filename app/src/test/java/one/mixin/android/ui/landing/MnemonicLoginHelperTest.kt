@@ -88,7 +88,13 @@ class MnemonicLoginHelperTest {
 
     @Test
     fun `keeps local mnemonic for accounts without phone recovery`() {
+        assertEquals(true, shouldStoreLoginMnemonicForSafe(hasSafe = true, hasPhone = false, hasPendingWalletImport = false))
         assertEquals(true, shouldStoreLoginMnemonicForSafe(hasSafe = true, hasPhone = false, hasPendingWalletImport = true))
+    }
+
+    @Test
+    fun `does not retain login mnemonic when phone Safe can recover it`() {
+        assertEquals(false, shouldStoreLoginMnemonicForSafe(hasSafe = true, hasPhone = true, hasPendingWalletImport = false))
     }
 
     @Test
