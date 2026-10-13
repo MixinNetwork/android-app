@@ -856,7 +856,30 @@ fun OpenedOrderDetailPage(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                if (!isFailed) {
+                if (!isFailed && openedOrder.orderType == PerpsOrder.TYPE_OPEN) {
+                    PositionDetailItem(
+                        label = stringResource(R.string.Amount).uppercase(),
+                        value = amountText ?: "--",
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    PositionDetailItem(
+                        label = stringResource(R.string.Margin).uppercase(),
+                        value = perpsOpenedOrderMargin(openedOrder.payAmount, openedOrder.feeAmount)
+                            ?.let(::formatPerpsUsdDecimal) ?: "--",
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    PositionDetailItem(
+                        label = stringResource(R.string.Fee).uppercase(),
+                        value = openedOrder.feeAmount.toBigDecimalOrNull()?.let { formatPerpsExactUsdDecimal(it.abs()) } ?: "--",
+                        onTipClick = onFeeTipClick,
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    PositionDetailItem(
+                        label = stringResource(R.string.Entry_Price).uppercase(),
+                        value = formatPerpsPrice(openedOrder.entryPrice, openedOrder.priceScale),
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                } else if (!isFailed) {
                     if (!isMargin) {
                         PositionDetailItem(
                             label = stringResource(R.string.Entry_Price).uppercase(),
