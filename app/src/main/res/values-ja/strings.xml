@@ -1158,7 +1158,6 @@
     <string name="Debug_Mark_Price">マーク価格（デバッグ）</string>
     <string name="up_to_apy">最大 %1$s APY</string>
     <string name="perps_add_position_title">%1$s %2$s にポジションを追加</string>
-    <string name="perps_reduce_position_title">%1$s %2$s のポジションを減らす</string>
     <string name="max_removable">最大減少量 %1$s</string>
     <string name="perps_added_position">ポジション追加</string>
     <string name="perps_added_margin">証拠金追加</string>
@@ -1170,13 +1169,13 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">エラー 10655：建玉を追加できません。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">エラー 10655：新規建玉の金額が上限の%1$sを超えています。金額またはレバレッジを下げてください。</string>
     <string name="single_transaction_should_be_less_than">最大金額 %1$s %2$s</string>
-    <string name="perps_confirm_reduce_position">ポジション縮小の確認</string>
     <string name="perps_close_submitted">決済注文を送信しました</string>
     <string name="perps_reduce_quantity_changed">ポジションが変更されました。前の画面に戻り、数量を確認してから再試行してください。</string>
     <string name="perps_reduce_invalid_quantity">現在のポジション金額以下の、ゼロより大きい金額を入力してください。</string>
-    <string name="perps_estimated_pnl">予想損益</string>
     <string name="Estimated_Fee">推定手数料</string>
     <string name="perps_estimated_realized_pnl">予想実現損益</string>
     <string name="perps_last_price">最終取引価格</string>
     <string name="perps_mark_price">マーク価格</string>
+    <string name="perps_close_position_title">%1$s %2$s のポジションを決済</string>
+    <string name="perps_include_pnl">損益を含む</string>
 </resources>

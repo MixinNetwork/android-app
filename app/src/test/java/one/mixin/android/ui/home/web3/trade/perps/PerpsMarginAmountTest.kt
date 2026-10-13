@@ -11,11 +11,12 @@ import kotlin.test.assertTrue
 
 class PerpsMarginAmountTest {
     @Test
-    fun closeMarginIncludesPnlBeforeFees() {
-        assertEquals(BigDecimal("5.45"), estimatedPerpsCloseMargin("5.39", "0.06"))
+    fun reductionPreviewKeepsMarginAndPnlSeparate() {
         assertEquals(BigDecimal("5.43"), estimatedPerpsCloseReturn("5.39", "0.06", "0.02"))
-        assertEquals(BigDecimal("-2"), estimatedPerpsCloseMargin("10", "-12"))
-        assertNull(estimatedPerpsCloseMargin("10", null))
+        assertEquals(BigDecimal("2.695"), perpsReductionValue("5.39", "0.5", "1")?.stripTrailingZeros())
+        assertEquals(BigDecimal("0.03"), perpsReductionValue("0.06", "0.5", "1")?.stripTrailingZeros())
+        assertEquals(BigDecimal("0.01"), perpsReductionValue("0.02", "0.5", "1")?.stripTrailingZeros())
+        assertEquals(BigDecimal("2.715"), perpsReductionValue(estimatedPerpsCloseReturn("5.39", "0.06", "0.02")?.toPlainString(), "0.5", "1")?.stripTrailingZeros())
     }
 
     @Test

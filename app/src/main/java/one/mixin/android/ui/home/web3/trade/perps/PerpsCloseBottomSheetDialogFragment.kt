@@ -401,8 +401,8 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         perpsReductionValue(closePnl?.toPlainString(), reduceQuantity.orEmpty(), latestQuantity)
                     } else closePnl
                     val displayMargin = if (isReducePosition) {
-                        perpsReductionValue(estimatedPerpsCloseMargin(latestMargin, latestUnrealizedPnl)?.toPlainString(), reduceQuantity.orEmpty(), latestQuantity)
-                    } else estimatedPerpsCloseMargin(latestMargin, latestUnrealizedPnl)
+                        perpsReductionValue(latestMargin, reduceQuantity.orEmpty(), latestQuantity)
+                    } else latestMargin.toBigDecimalOrNull()
 
                     Column(
                         modifier = Modifier
