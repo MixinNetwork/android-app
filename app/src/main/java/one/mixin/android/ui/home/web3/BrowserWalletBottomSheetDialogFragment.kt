@@ -464,8 +464,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     step = Step.Sending
                     val sig = tx.signatureFor(Web3Signer.solanaAddress)
                     val rawTx = tx.serialize().base64Encode()
-                    // The V1 web provider assembles the signed bytes and sends only on signAndSend.
-                    if (tx.allSignerSigned() && !(tx.isV1 && signMessage.solanaTxSource == SolanaTxSource.Web)) {
+                    if (tx.allSignerSigned()) {
                         viewModel.postRawTx(rawTx, Constants.ChainId.Solana, Web3Signer.solanaAddress, toAddress, token?.assetId, if (isFeeWaived) "free" else null)
                         onTxhash?.invoke(tx.signatures.first(), rawTx)
                     }
