@@ -108,7 +108,7 @@ internal fun ContactsPage(
                         }
                         items(users, key = { it.userId }) { user ->
                             Row(Modifier.fillMaxWidth().clickable { onContact(user) }.height(70.dp).padding(start = 20.dp, end = 40.dp, bottom = 20.dp), verticalAlignment = Alignment.CenterVertically) {
-                                UserAvatarImage(user, if (newChat) 50.dp else 42.dp)
+                                UserAvatarImage(user, 50.dp)
                                 Spacer(Modifier.width(16.dp))
                                 Column(Modifier.weight(1f)) {
                                     AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(user); it.setTextColor(nameColor) })

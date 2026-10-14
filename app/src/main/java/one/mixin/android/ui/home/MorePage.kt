@@ -37,7 +37,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
@@ -46,7 +45,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
 import one.mixin.android.R
-import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.UserAvatarImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -198,8 +196,8 @@ private fun MoreActionCard(bot: Bot, loggedIn: Boolean, showDot: Boolean, modifi
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(bot.name), color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp, modifier = Modifier.weight(1f, fill = false))
                 if (showDot) Box(
-                    Modifier.align(Alignment.Top).padding(start = 2.dp).size(9.dp)
-                        .background(Color(LocalContext.current.colorFromAttribute(R.attr.badge_red)), CircleShape),
+                    Modifier.align(Alignment.Top).padding(start = 2.dp).size(8.dp)
+                        .background(MixinAppTheme.colors.tipError, CircleShape),
                 )
             }
             Spacer(Modifier.height(4.dp))
