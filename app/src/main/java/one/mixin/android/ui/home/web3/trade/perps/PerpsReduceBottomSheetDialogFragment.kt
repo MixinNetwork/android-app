@@ -122,7 +122,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         val error = when {
             observedPosition?.state != PerpsPosition.STATE_OPEN -> stringResource(R.string.perps_reduce_quantity_changed)
             (enteredAsPercentage && inputValue > BigDecimal(100)) || (!enteredAsPercentage && size != null && inputValue > size) ->
-                stringResource(R.string.max_removable, if (enteredAsPercentage) "100%" else formatPerpsMarginAmount(size))
+                stringResource(R.string.perps_reduce_invalid_quantity)
             market != null && inputValue > BigDecimal.ZERO && quantity == null -> stringResource(R.string.perps_reduce_invalid_quantity)
             else -> null
         }
@@ -213,7 +213,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         onClick = {
                             if (quantity != null && canSubmit && parentFragmentManager.findFragmentByTag(PerpsCloseBottomSheetDialogFragment.TAG) == null) {
                                 keyboard?.hide()
-                                PerpsCloseBottomSheetDialogFragment.newInstance(position.toPosition(), reduceQuantity = quantity.stripTrailingZeros().toPlainString())
+                                PerpsCloseBottomSheetDialogFragment.newInstance(position.toPosition(), reduceQuantity = quantity.takeIf { it.compareTo(current) != 0 }?.stripTrailingZeros()?.toPlainString())
                                     .show(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                                 dismiss()
                             }

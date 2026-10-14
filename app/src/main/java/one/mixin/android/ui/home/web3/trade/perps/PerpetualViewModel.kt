@@ -1004,10 +1004,9 @@ class PerpetualViewModel @Inject constructor(
         onSuccess: () -> Unit,
         onError: (String) -> Unit,
         quantity: String? = null,
-        allowFullClose: Boolean = false,
     ) {
         viewModelScope.launch {
-            closePerpsOrder(positionId, quantity, allowFullClose)
+            closePerpsOrder(positionId, quantity)
                 .onSuccess { onSuccess() }
                 .onFailure { onError(it.message.orEmpty()) }
         }
@@ -1039,7 +1038,6 @@ class PerpetualViewModel @Inject constructor(
     private suspend fun closePerpsOrder(
         positionId: String,
         quantity: String? = null,
-        allowFullClose: Boolean = false,
     ): Result<Unit> {
         return runCatching {
             val response = withContext(Dispatchers.IO) {
@@ -1047,7 +1045,7 @@ class PerpetualViewModel @Inject constructor(
                     val positionResponse = routeService.getPerpsPosition(positionId)
                     check(positionResponse.isSuccess) { positionResponse.errorDescription.orEmpty() }
                     val position = positionResponse.data
-                    require(position?.state == PerpsPosition.STATE_OPEN && perpsReduceQuantity(quantity, position.quantity, allowFullClose) != null) {
+                    require(position?.state == PerpsPosition.STATE_OPEN && perpsReduceQuantity(quantity, position.quantity, allowFullClose = false) != null) {
                         MixinApplication.appContext.getString(R.string.perps_reduce_quantity_changed)
                     }
                 }

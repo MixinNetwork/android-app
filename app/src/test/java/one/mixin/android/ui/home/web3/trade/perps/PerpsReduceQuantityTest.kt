@@ -33,6 +33,15 @@ class PerpsReduceQuantityTest {
     }
 
     @Test
+    fun fullReductionMatchesAbsolutePositionForBothInputModes() {
+        for (current in listOf("1.25", "-1.25")) {
+            assertDecimal("1.25", perpsReductionQuantity(current, "80", "100", true, 3))
+            assertDecimal("1.25", perpsReductionQuantity(current, "80", "100", false, 3))
+            assertDecimal("1.249", perpsReductionQuantity(current, "80", "99.99", false, 3))
+        }
+    }
+
+    @Test
     fun reductionsRoundDownToMarketQuantityScale() {
         assertDecimal("0.002", perpsReductionQuantity("0.011", "100", "25", true, 3))
         assertDecimal("0.003", perpsReductionQuantity("1", "300", "1", false, 3))
