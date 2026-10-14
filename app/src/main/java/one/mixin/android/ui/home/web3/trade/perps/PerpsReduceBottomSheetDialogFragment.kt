@@ -107,7 +107,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 }
             }
         }
-        val current = position.quantity.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
+        val current = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val price = position.markPrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
         val size = price?.multiply(current)
         val inputValue = enteredInput.toBigDecimalOrNull() ?: BigDecimal.ZERO

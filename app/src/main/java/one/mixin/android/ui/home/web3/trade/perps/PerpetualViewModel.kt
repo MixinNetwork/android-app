@@ -1021,7 +1021,7 @@ class PerpetualViewModel @Inject constructor(
             val failures = positions
                 .map { position ->
                     async {
-                        position to closePerpsOrder(position.positionId, position.quantity.toBigDecimalOrNull()?.abs()?.toPlainString().orEmpty())
+                        position to closePerpsOrder(position.positionId, position.quantity)
                     }
                 }
                 .awaitAll()

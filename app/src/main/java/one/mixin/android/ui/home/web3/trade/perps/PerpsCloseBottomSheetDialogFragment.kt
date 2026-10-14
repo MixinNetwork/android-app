@@ -644,7 +644,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         step = Step.Sending
         viewModel.closePerpsOrder(
             positionId = positionId,
-            quantity = reduceQuantity ?: latestQuantity.toBigDecimalOrNull()?.abs()?.toPlainString().orEmpty(),
+            quantity = reduceQuantity ?: latestQuantity,
             onSuccess = {
                 step = Step.Done
                 AnalyticsTracker.trackPerpsCloseEnd()
