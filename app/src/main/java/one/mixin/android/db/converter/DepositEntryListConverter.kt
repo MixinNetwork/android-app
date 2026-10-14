@@ -17,7 +17,7 @@ class DepositEntryListConverter {
     }
 
     @ColumnTypeConverter
-    fun converterDate(list: List<OldDepositEntry>?): String =
+    fun converterDate(list: List<OldDepositEntry>?): String? =
         if (list.isNullOrEmpty()) {
             ""
         } else {

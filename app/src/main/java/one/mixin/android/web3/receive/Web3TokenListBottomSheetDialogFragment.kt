@@ -20,6 +20,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.Constants.Account.PREF_WALLET_RECEIVE
 import one.mixin.android.Constants.Account.PREF_WALLET_SEND
+import one.mixin.android.Constants.ChainId.Arc
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.HyperEVM
@@ -121,6 +122,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             radioBsc.isVisible = true
             radioPolygon.isVisible = true
             radioSolana.isVisible = true
+            radioArc.isVisible = true
             radioGroup.setOnCheckedChangeListener { _, id ->
                 currentChain = when (id) {
                     R.id.radio_eth -> {
@@ -173,6 +175,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
 
                     R.id.radio_robinhood -> {
                         Robinhood
+                    }
+
+                    R.id.radio_arc -> {
+                        Arc
                     }
 
                     else -> {

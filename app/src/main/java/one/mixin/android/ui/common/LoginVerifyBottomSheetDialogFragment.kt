@@ -329,6 +329,9 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             )
             val updateResponse = web3Repository.updateWallet(walletItem.id, updateRequest)
             if (updateResponse.isSuccess.not()) {
+                if (removeMissingWalletForLogin(updateResponse.errorCode) { web3Repository.deleteWallet(walletItem.id) }) {
+                    continue
+                }
                 return updateResponse
             } else {
                 val validatedAddresses =

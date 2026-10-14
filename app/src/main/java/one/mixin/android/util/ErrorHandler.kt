@@ -2,6 +2,7 @@ package one.mixin.android.util
 
 import android.content.Context
 import androidx.annotation.StringRes
+import com.google.gson.JsonParser
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import one.mixin.android.MixinApplication
@@ -236,10 +237,11 @@ open class ErrorHandler {
         const val NO_AVAILABLE_QUOTE = 10615
         const val SIMULATE_TRANSACTION_FAILED = 10631
         const val MAX_WALLET_REACHED = 10632
-        const val PERPS_ORDER_VALUE_TOO_SMALL = 10650
+        const val PERPS_MARGIN_TOO_SMALL = 10650
         const val PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION = 10651
-        const val PERPS_ORDER_VALUE_BELOW_MINIMUM = 10654
+        const val PERPS_POSITION_SIZE_TOO_SMALL = 10654
         const val PERPS_POSITION_SIZE_EXCEEDS_LEVERAGE_LIMIT = 10655
+        const val PERPS_INVALID_LEADER_POSITION = 10656
 
         const val UNSUPPORTED_WATCH_ADDRESS = 10633
         const val INVALID_REFERRAL_CODE = 10730
@@ -284,8 +286,22 @@ fun Context.getMixinErrorStringByCode(
     code: Int,
     message: String,
 ): String {
-    perpsOrderValueErrorResource(code)?.let { resource ->
-        return getString(resource, code)
+    perpsMinimumValueErrorResource(code)?.let { resource ->
+        // MixinResponse.errorDescription appends extra as the last JSON line.
+        val minimum =
+            runCatching {
+                JsonParser.parseString(message.substringAfterLast('\n')).asJsonObject
+                    .get("min_order_value")?.asString
+                    ?.takeIf { it.length <= 64 && it.matches(Regex("[0-9]+(?:\\.[0-9]+)?")) }
+                    ?.toBigDecimalOrNull()
+                    ?.takeIf { it.signum() > 0 }
+                    ?.stripTrailingZeros()
+                    ?.toPlainString()
+            }.getOrNull()
+        if (minimum != null) {
+            return getString(requireNotNull(perpsMinimumValueErrorResource(code, hasMinimum = true)), "\$$minimum")
+        }
+        return getString(resource)
     }
 
     return when (code) {
@@ -353,6 +369,9 @@ fun Context.getMixinErrorStringByCode(
         }
         ErrorHandler.PERPS_POSITION_SIZE_EXCEEDS_LEVERAGE_LIMIT -> {
             getString(R.string.error_perps_position_size_exceeds_leverage_limit)
+        }
+        ErrorHandler.PERPS_INVALID_LEADER_POSITION -> {
+            getString(R.string.error_perps_invalid_leader_position)
         }
         ErrorHandler.UNSUPPORTED_WATCH_ADDRESS -> {
             getString(R.string.error_watch_address_not_supported)
@@ -462,10 +481,11 @@ fun Context.getMixinErrorStringByCode(
 }
 
 @StringRes
-internal fun perpsOrderValueErrorResource(code: Int): Int? =
+internal fun perpsMinimumValueErrorResource(code: Int, hasMinimum: Boolean = false): Int? =
     when (code) {
-        ErrorHandler.PERPS_ORDER_VALUE_TOO_SMALL,
-        ErrorHandler.PERPS_ORDER_VALUE_BELOW_MINIMUM,
-        -> R.string.error_perps_order_value_too_small
+        ErrorHandler.PERPS_MARGIN_TOO_SMALL ->
+            if (hasMinimum) R.string.error_perps_margin_too_small_value else R.string.error_perps_margin_too_small
+        ErrorHandler.PERPS_POSITION_SIZE_TOO_SMALL ->
+            if (hasMinimum) R.string.error_perps_position_size_too_small_value else R.string.error_perps_position_size_too_small
         else -> null
     }

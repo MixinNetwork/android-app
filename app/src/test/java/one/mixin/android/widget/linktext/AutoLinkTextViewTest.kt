@@ -16,7 +16,7 @@ class AutoLinkTextViewTest {
     fun setUp() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         runCatching { EmojiCompat.get() }
-            .getOrElse { EmojiCompat.init(BundledEmojiCompatConfig(context)) }
+            .getOrElse { EmojiCompat.init(BundledEmojiCompatConfig(context, Runnable::run)) }
     }
 
     @Test

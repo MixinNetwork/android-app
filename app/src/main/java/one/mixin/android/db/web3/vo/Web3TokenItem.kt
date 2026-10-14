@@ -91,6 +91,7 @@ data class Web3TokenItem(
             chainId == Constants.ChainId.BinanceSmartChain -> "BNB Chain"
             chainId == Constants.ChainId.XLayer -> "X Layer"
             chainId == Constants.ChainId.Robinhood -> "Robinhood"
+            chainId == Constants.ChainId.Arc -> "Arc"
             chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "Bitcoin"
             chainId == Constants.ChainId.PEARL_CHAIN_ID -> "Pearl"
             chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "Solana"
@@ -201,6 +202,7 @@ fun Web3TokenItem.getChainFromName(): Chain {
         chainId == Constants.ChainId.HyperEVM -> Chain.HyperEVM
         chainId == Constants.ChainId.XLayer -> Chain.XLayer
         chainId == Constants.ChainId.Robinhood -> Chain.Robinhood
+        chainId == Constants.ChainId.Arc -> Chain.Arc
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> Chain.Solana
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> Chain.Bitcoin
         chainId == Constants.ChainId.PEARL_CHAIN_ID -> Chain.Bitcoin
@@ -229,6 +231,7 @@ fun Web3TokenItem.getChainSymbolFromName(): String {
         chainId == Constants.ChainId.Polygon -> "POL"
         chainId == Constants.ChainId.XLayer -> "OKB"
         chainId == Constants.ChainId.Robinhood -> "ETH"
+        chainId == Constants.ChainId.Arc -> "USDC"
         chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> "BTC"
         chainId == Constants.ChainId.PEARL_CHAIN_ID -> "PRL"
         chainId == Constants.ChainId.SOLANA_CHAIN_ID -> "SOL"
@@ -241,6 +244,9 @@ fun Web3TokenItem.isNativeEvmAsset(): Boolean =
         Constants.ChainId.Polygon ->
             assetKey == "0x0000000000000000000000000000000000000000" ||
                 assetKey == "0x0000000000000000000000000000000000001010"
+        Constants.ChainId.Arc ->
+            assetKey == "0x0000000000000000000000000000000000000000" ||
+                assetKey == "0x3600000000000000000000000000000000000000"
         Constants.ChainId.ETHEREUM_CHAIN_ID,
         Constants.ChainId.Base,
         Constants.ChainId.Optimism,

@@ -1,26 +1,169 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import com.google.gson.JsonParser
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Request
+import okhttp3.Response
+import okhttp3.ResponseBody.Companion.toResponseBody
+import one.mixin.android.api.service.RouteService
 import one.mixin.android.util.ErrorHandler
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertSame
+import org.junit.Assert.assertTrue
 import org.junit.Test
+import retrofit2.Retrofit
+import retrofit2.converter.gson.GsonConverterFactory
 import java.math.BigDecimal
 
 class LiquidationPriceRequestTest {
     @Test
-    fun nonServerErrorStopsAfterOneRequest() = runBlocking {
-        var requestCount = 0
+    fun refreshShowsLoadingOnlyUntilItHasAPrice() = runBlocking {
+        val state = LiquidationPriceState()
+        val initialPrice = CompletableDeferred<String?>()
+        val initialRequest = launch(start = CoroutineStart.UNDISPATCHED) {
+            state.refresh { initialPrice.await() }
+        }
+        assertTrue(state.isLoading)
+        assertNull(state.price)
+        initialPrice.complete("123.45")
+        initialRequest.join()
+        assertFalse(state.isLoading)
+        assertEquals("123.45", state.price)
 
-        val price = requestLiquidationPrice(retryDelayMillis = 0L) {
+        val updatedPrice = CompletableDeferred<String?>()
+        val refresh = launch(start = CoroutineStart.UNDISPATCHED) {
+            state.refresh { updatedPrice.await() }
+        }
+        assertFalse(state.isLoading)
+        assertEquals("123.45", state.price)
+        updatedPrice.complete("124.56")
+        refresh.join()
+        assertFalse(state.isLoading)
+        assertEquals("124.56", state.price)
+
+        state.refresh { null }
+        assertNull(state.price)
+        val retry = launch(start = CoroutineStart.UNDISPATCHED) {
+            state.refresh { CompletableDeferred<String?>().await() }
+        }
+        assertTrue(state.isLoading)
+        retry.cancelAndJoin()
+        assertFalse(state.isLoading)
+    }
+
+    @Test
+    fun marginLimitReportsTheServerErrorWithoutAReductionHandler() = runBlocking {
+        var errorMessage: String? = null
+        val price = requestLiquidationPrice(onFailure = { errorMessage = it }) {
+            liquidationPriceResult(
+                price = null,
+                errorCode = 10653,
+                availableMargin = BigDecimal("50"),
+                errorMessage = "Margin exceeds the limit",
+            )
+        }
+
+        assertNull(price)
+        assertEquals("Margin exceeds the limit", errorMessage)
+    }
+
+    @Test
+    fun sendsActionAndOnlyTheParametersForEachScenario() = runBlocking {
+        val requests = mutableListOf<Request>()
+        val client = OkHttpClient.Builder().addInterceptor { chain ->
+            requests += chain.request()
+            Response.Builder()
+                .request(chain.request())
+                .protocol(Protocol.HTTP_1_1)
+                .code(200)
+                .message("OK")
+                .body("""{"data":{"liquidation_price":"123.45"}}""".toResponseBody())
+                .build()
+        }.build()
+        val service = Retrofit.Builder()
+            .baseUrl("https://example.com/")
+            .client(client)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(RouteService::class.java)
+
+        listOf(
+            "open" to false,
+            "increase_position" to true,
+            "increase_margin" to true,
+            "decrease_margin" to true,
+            null to false,
+            null to true,
+        ).forEach { (action, hasPosition) ->
+            val response = service.getPerpsLiquidationPrice(
+                marketId = "market".takeUnless { hasPosition },
+                amount = "10.25",
+                side = "long".takeUnless { hasPosition },
+                leverage = 10.takeUnless { hasPosition },
+                positionId = "position".takeIf { hasPosition },
+                action = action,
+            )
+            val url = requests.last().url
+            val expected = mutableMapOf("amount" to "10.25")
+            action?.let { expected["action"] = it }
+            if (hasPosition) {
+                expected["position_id"] = "position"
+            } else {
+                expected.putAll(mapOf("market_id" to "market", "side" to "long", "leverage" to "10"))
+            }
+            assertEquals("GET", requests.last().method)
+            assertEquals("/perps/markets/liquidation-price", url.encodedPath)
+            assertEquals(expected, url.queryParameterNames.associateWith { url.queryParameter(it) })
+            assertEquals("123.45", response.data?.liquidationPrice)
+        }
+    }
+
+    @Test
+    fun marginLimitStopsAndReturnsAvailableMarginIncludingZeroOrMissing() = runBlocking {
+        listOf(BigDecimal("2.50"), BigDecimal.ZERO, null).forEach { available ->
+            var requestCount = 0
+            var callbackCount = 0
+            val result = liquidationPriceResult(price = null, errorCode = 10653, availableMargin = available)
+            assertEquals(LiquidationPriceResult.MarginExceeded(available), result)
+
+            val price = requestLiquidationPrice(
+                retryDelayMillis = 0L,
+                onMarginExceeded = {
+                    callbackCount += 1
+                    assertEquals(available, it)
+                },
+            ) {
+                requestCount += 1
+                result
+            }
+
+            assertNull(price)
+            assertEquals(1, requestCount)
+            assertEquals(1, callbackCount)
+        }
+    }
+
+    @Test
+    fun nonServerErrorStopsAfterOneRequestAndReportsTheReason() = runBlocking {
+        var requestCount = 0
+        var errorMessage: String? = null
+
+        val price = requestLiquidationPrice(retryDelayMillis = 0L, onFailure = { errorMessage = it }) {
             requestCount += 1
-            LiquidationPriceResult.Failure
+            liquidationPriceResult(price = null, errorCode = 400, errorMessage = "Position is closed")
         }
 
         assertNull(price)
         assertEquals(1, requestCount)
+        assertEquals("Position is closed", errorMessage)
     }
 
     @Test
@@ -46,12 +189,12 @@ class LiquidationPriceRequestTest {
             LiquidationPriceResult.Retry,
             liquidationPriceResult(price = null, errorCode = 500),
         )
-        assertSame(
-            LiquidationPriceResult.Failure,
+        assertEquals(
+            LiquidationPriceResult.Failure(null),
             liquidationPriceResult(price = null, errorCode = 400),
         )
-        assertSame(
-            LiquidationPriceResult.Failure,
+        assertEquals(
+            LiquidationPriceResult.Failure(null),
             liquidationPriceResult(price = null, errorCode = null),
         )
         assertEquals(

@@ -103,6 +103,7 @@ fun ImportWalletDetailPage(
         "HyperEVM" to Constants.ChainId.HyperEVM,
         "X Layer" to Constants.ChainId.XLayer,
         "Robinhood" to Constants.ChainId.Robinhood,
+        "Arc" to Constants.ChainId.Arc,
         "Solana" to Constants.ChainId.SOLANA_CHAIN_ID
     )
     var expanded by remember { mutableStateOf(false) }
@@ -128,7 +129,7 @@ fun ImportWalletDetailPage(
 
 
     val isEvmNetwork = when (selectedNetworkName) {
-        "Ethereum", "Base", "BSC", "Polygon", "Arbitrum", "Optimism", "Avalanche", "HyperEVM", "X Layer", "Robinhood" -> true
+        "Ethereum", "Base", "BSC", "Polygon", "Arbitrum", "Optimism", "Avalanche", "HyperEVM", "X Layer", "Robinhood", "Arc" -> true
         else -> false
     }
     val isBitcoin: Boolean = selectedNetworkName == "Bitcoin"

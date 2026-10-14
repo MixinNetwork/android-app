@@ -547,7 +547,7 @@ class TransferInserter(val db: MixinDatabase) {
             if (depositEntries == null) {
                 stmt.bindNull(16)
             } else {
-                stmt.bindString(16, depositEntryListConverter.converterDate(depositEntries))
+                stmt.bindString(16, depositEntryListConverter.converterDate(depositEntries).orEmpty())
             }
             val withdrawalMemoPossibility = asset.withdrawalMemoPossibility
             if (depositEntries == null) {

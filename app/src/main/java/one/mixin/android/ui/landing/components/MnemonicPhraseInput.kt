@@ -388,7 +388,7 @@ fun MnemonicPhraseInput(
                                             ),
                                             keyboardOptions = KeyboardOptions(
                                                 keyboardType = KeyboardType.Text,
-                                                imeAction = if (inputs.all { it.isNotEmpty() }) ImeAction.Done else ImeAction.Next
+                                                imeAction = if (index == inputCount - 1) ImeAction.Done else ImeAction.Next
                                             ),
                                             keyboardActions = KeyboardActions(
                                                 onNext = {

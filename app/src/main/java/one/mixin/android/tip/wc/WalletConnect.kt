@@ -13,9 +13,9 @@ import one.mixin.android.session.Session
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WalletConnectException
+import one.mixin.android.web3.hashEip712Message
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
-import org.web3j.crypto.StructuredDataEncoder
 import org.web3j.protocol.core.Response
 import org.web3j.utils.Numeric
 import timber.log.Timber
@@ -121,8 +121,7 @@ abstract class WalletConnect {
         val keyPair = ECKeyPair.create(priv)
         val signature =
             if (message.type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE) {
-                val encoder = StructuredDataEncoder(message.data)
-                Sign.signMessage(encoder.hashStructuredData(), keyPair, false)
+                Sign.signMessage(hashEip712Message(message.data), keyPair, false)
             } else {
                 Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message.data), keyPair)
             }

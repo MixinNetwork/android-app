@@ -13,6 +13,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.withResumed
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -22,12 +23,13 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.findFragmentActivityOrNull
-import one.mixin.android.extension.putString
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
@@ -37,6 +39,7 @@ import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -52,6 +55,7 @@ class PerpsActivity : BaseActivity() {
     private var selectedToken by mutableStateOf<TokenItem?>(null)
     private var leaderPositionId by mutableStateOf<String?>(null)
     private var renderJob: Job? = null
+    private var directOrderHandled = false
     private val openPositionLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
             intent.removeExtra(EXTRA_LEADER_POSITION_ID)
@@ -71,10 +75,13 @@ class PerpsActivity : BaseActivity() {
         private const val EXTRA_LEADER_POSITION_ID = "extra_leader_position_id"
         private const val EXTRA_INITIAL_LEVERAGE = "extra_initial_leverage"
         private const val EXTRA_INITIAL_MARGIN = "extra_initial_margin"
+        private const val EXTRA_FROM_TRADE_LINK = "extra_from_trade_link"
+        private const val STATE_DIRECT_ORDER_HANDLED = "state_direct_order_handled"
         private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 
         const val MODE_DETAIL = "detail"
         const val MODE_OPEN_POSITION = "open_position"
+        const val MODE_ADD_MARGIN = "add_margin"
 
         fun showDetail(
             context: Context,
@@ -85,6 +92,8 @@ class PerpsActivity : BaseActivity() {
             source: String? = null,
             reuseCurrentActivity: Boolean = true,
             leaderPositionId: String? = null,
+            addMargin: Boolean = false,
+            initialMargin: String? = null,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
                 if (context !is Activity) {
@@ -97,9 +106,10 @@ class PerpsActivity : BaseActivity() {
                 putExtra(EXTRA_MARKET_SYMBOL, marketSymbol)
                 putExtra(EXTRA_MARKET_DISPLAY_SYMBOL, marketDisplaySymbol)
                 putExtra(EXTRA_MARKET_TOKEN_SYMBOL, marketTokenSymbol)
-                putExtra(EXTRA_MODE, MODE_DETAIL)
+                putExtra(EXTRA_MODE, if (addMargin) MODE_ADD_MARGIN else MODE_DETAIL)
                 source?.let { putExtra(EXTRA_SOURCE, it) }
                 leaderPositionId?.let { putExtra(EXTRA_LEADER_POSITION_ID, it) }
+                initialMargin?.let { putExtra(EXTRA_INITIAL_MARGIN, it) }
             }
             context.startActivity(intent)
         }
@@ -116,6 +126,7 @@ class PerpsActivity : BaseActivity() {
             leaderPositionId: String? = null,
             initialLeverage: Int? = null,
             initialMargin: String? = null,
+            fromTradeLink: Boolean = false,
         ) {
             val intent = Intent(context, PerpsActivity::class.java).apply {
                 if (context !is Activity) {
@@ -132,6 +143,7 @@ class PerpsActivity : BaseActivity() {
                 leaderPositionId?.let { putExtra(EXTRA_LEADER_POSITION_ID, it) }
                 initialLeverage?.let { putExtra(EXTRA_INITIAL_LEVERAGE, it) }
                 initialMargin?.let { putExtra(EXTRA_INITIAL_MARGIN, it) }
+                putExtra(EXTRA_FROM_TRADE_LINK, fromTradeLink)
             }
             val hostActivity = context.findFragmentActivityOrNull() as? PerpsActivity
             if (hostActivity != null && returnToDetail && leaderPositionId != null) {
@@ -144,13 +156,29 @@ class PerpsActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        directOrderHandled = savedInstanceState?.getBoolean(STATE_DIRECT_ORDER_HANDLED) == true
+        if (directOrderHandled) intent.putExtra(EXTRA_MODE, MODE_DETAIL)
+        supportFragmentManager.setFragmentResultListener(PerpsConfirmBottomSheetDialogFragment.RESULT_ORDER_CREATED, this) { _, args ->
+            if (leaderPositionId == args.getString(PerpsConfirmBottomSheetDialogFragment.RESULT_LEADER_POSITION_ID)) {
+                intent.removeExtra(EXTRA_LEADER_POSITION_ID)
+                leaderPositionId = null
+            }
+        }
         observePositionRefresh()
         renderPage()
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean(STATE_DIRECT_ORDER_HANDLED, directOrderHandled)
+        super.onSaveInstanceState(outState)
+    }
+
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
+        (supportFragmentManager.findFragmentByTag(PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG) as? PerpsConfirmBottomSheetDialogFragment)?.dismiss()
+        (supportFragmentManager.findFragmentByTag(PerpsMarginBottomSheetDialogFragment.TAG) as? PerpsMarginBottomSheetDialogFragment)?.dismiss()
         setIntent(intent)
+        directOrderHandled = false
         renderPage()
     }
 
@@ -172,6 +200,7 @@ class PerpsActivity : BaseActivity() {
             .takeIf { it.hasExtra(EXTRA_INITIAL_LEVERAGE) }
             ?.getIntExtra(EXTRA_INITIAL_LEVERAGE, 0)
         val initialMargin = currentIntent.getStringExtra(EXTRA_INITIAL_MARGIN)
+        val fromTradeLink = currentIntent.getBooleanExtra(EXTRA_FROM_TRADE_LINK, false)
 
         if (mode == MODE_OPEN_POSITION) {
             renderJob = lifecycleScope.launch {
@@ -182,13 +211,18 @@ class PerpsActivity : BaseActivity() {
                     return@launch
                 }
                 val walletId = Session.getAccountId()
-                val hasOpenPosition = if (walletId.isNullOrEmpty()) {
-                    false
+                val openedPosition = if (walletId.isNullOrEmpty()) {
+                    null
                 } else {
-                    viewModel.getOpenPositionsFromDb(walletId).any { it.marketId == marketId }
+                    viewModel.getOpenPositionsFromDb(walletId).firstOrNull { it.marketId == marketId }
                 }
-                if (!canOpenNewPerpsPosition(hasOpenPosition)) {
-                    if (returnToDetail) {
+                if (!canOpenNewPerpsPosition(openedPosition != null)) {
+                    if (fromTradeLink && isLong != null && openedPosition != null) {
+                        directOrderHandled = true
+                        currentIntent.putExtra(EXTRA_MODE, MODE_DETAIL)
+                        showMarketDetail(marketId, market.displaySymbol, market.displaySymbol, market.tokenSymbol, market, source)
+                        showLeaderPositionFailure(market, openedPosition, isLong, initialLeverage, initialMargin, source)
+                    } else if (returnToDetail) {
                         finish()
                     } else {
                         showDetail(
@@ -234,7 +268,7 @@ class PerpsActivity : BaseActivity() {
                                 }
                             },
                             selectedToken = selectedToken,
-                            onTokenSelect = { showTokenSelection() },
+                            onTokenSelect = { tokens -> showTokenSelection(tokens) },
                             onCurrentTokenChange = { token ->
                                 selectedToken = token
                             },
@@ -261,30 +295,77 @@ class PerpsActivity : BaseActivity() {
             val marketSymbol = marketSymbolExtra.ifBlank { displaySymbol }
             val tokenSymbol = tokenSymbolExtra.ifBlank { market?.tokenSymbol.orEmpty() }
 
-            setContent {
-                MixinAppTheme {
-                    PerpsMarketDetailPage(
-                        marketId = marketId,
-                        marketSymbol = marketSymbol,
-                        displaySymbol = displaySymbol,
-                        tokenSymbol = tokenSymbol,
-                        initialMarket = market,
-                        onBack = { finish() },
-                        onSharePosition = ::showSharePosition,
-                        source = source,
-                        leaderPositionId = leaderPositionId,
-                    )
+            showMarketDetail(marketId, marketSymbol, displaySymbol, tokenSymbol, market, source)
+            if (mode == MODE_ADD_MARGIN) {
+                val accountId = Session.getAccountId()
+                val position = accountId?.let { viewModel.getOpenPerpsPosition(it, marketId) }
+                lifecycle.withResumed {
+                    directOrderHandled = true
+                    currentIntent.putExtra(EXTRA_MODE, MODE_DETAIL)
+                    when {
+                        accountId == null -> toast(R.string.error_authentication)
+                        position == null -> toast(R.string.error_not_found)
+                        position.state != PerpsPosition.STATE_OPEN -> toast(R.string.error_waiting_other_orders)
+                        supportFragmentManager.findFragmentByTag(PerpsMarginBottomSheetDialogFragment.TAG) == null -> {
+                            PerpsMarginBottomSheetDialogFragment.newInstance(position, increase = true, source = source, initialMargin = initialMargin)
+                                .showNow(supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
+                        }
+                    }
                 }
             }
         }
     }
 
-    private fun showTokenSelection() {
+    private fun showMarketDetail(
+        marketId: String,
+        marketSymbol: String,
+        displaySymbol: String,
+        tokenSymbol: String,
+        market: PerpsMarket?,
+        source: String,
+    ) {
+        setContent {
+            MixinAppTheme {
+                PerpsMarketDetailPage(
+                    marketId = marketId,
+                    marketSymbol = marketSymbol,
+                    displaySymbol = displaySymbol,
+                    tokenSymbol = tokenSymbol,
+                    initialMarket = market,
+                    onBack = { finish() },
+                    onSharePosition = ::showSharePosition,
+                    source = source,
+                    leaderPositionId = leaderPositionId,
+                )
+            }
+        }
+    }
+
+    private suspend fun showLeaderPositionFailure(
+        market: PerpsMarket,
+        position: PerpsPositionItem?,
+        isLong: Boolean,
+        leverage: Int?,
+        margin: String?,
+        source: String,
+    ) {
+        lifecycle.withResumed {
+            PerpsConfirmBottomSheetDialogFragment.newFailureInstance(
+                market, isLong, leverage, margin, getString(R.string.error_already_had_open_position),
+                source = source,
+                position = position, leaderPositionId = leaderPositionId,
+            ).showNow(supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
+        }
+    }
+
+    private fun showTokenSelection(tokens: List<TokenItem>) {
         TokenListBottomSheetDialogFragment.newInstance(
             fromType = TokenListBottomSheetDialogFragment.TYPE_FROM_PERP,
-            currentAssetId = selectedToken?.assetId
+            currentAssetId = selectedToken?.assetId,
+            perpsTokens = tokens,
         ).setOnAssetClick { token ->
             selectedToken = token
+            AnalyticsTracker.trackPerpsOpenTokenSelect(token.chainName, token.symbol)
         }.setOnDepositClick {
             showDepositAssetSelection()
         }.show(supportFragmentManager, TokenListBottomSheetDialogFragment.TAG)
@@ -324,3 +405,12 @@ class PerpsActivity : BaseActivity() {
 }
 
 internal fun canOpenNewPerpsPosition(hasOpenPosition: Boolean): Boolean = !hasOpenPosition
+
+internal fun canPreviewPerpsLinkOrder(isLong: Boolean?, leverage: Int?, margin: String?): Boolean =
+    isLong != null && leverage != null && leverage > 0 &&
+        margin?.toBigDecimalOrNull()?.let { it > BigDecimal.ZERO } == true
+
+internal fun canAddPerpsLeaderPosition(position: PerpsPositionItem?, isLong: Boolean, leverage: Int?): Boolean =
+    position?.state == PerpsPosition.STATE_OPEN &&
+        position.side.equals(if (isLong) "long" else "short", ignoreCase = true) &&
+        (leverage == null || leverage == position.leverage)

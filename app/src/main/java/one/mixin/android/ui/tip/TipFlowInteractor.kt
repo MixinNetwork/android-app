@@ -52,6 +52,7 @@ import one.mixin.android.tip.getSpendKeyFromPin
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.privateKeyToAddress
 import one.mixin.android.ui.common.classicWalletAfterUtxoBackfill
+import one.mixin.android.ui.common.removeMissingWalletForLogin
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.wallet.INITIAL_CLASSIC_WALLET_INDEX
 import one.mixin.android.ui.wallet.buildClassicWalletRequest
@@ -468,7 +469,7 @@ class TipFlowInteractor @Inject internal constructor(
             },
             failureBlock = { response ->
                 Timber.e("Failed to update classic UTXO addresses: ${response.errorCode} - ${response.errorDescription}")
-                false
+                removeMissingWalletForLogin(response.errorCode) { web3Repository.deleteWallet(walletId) }
             },
             exceptionBlock = { throwable ->
                 Timber.e(throwable, "Failed to update classic UTXO addresses")

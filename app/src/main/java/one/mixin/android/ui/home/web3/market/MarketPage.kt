@@ -40,6 +40,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -460,7 +461,7 @@ private fun MarketRecommendations(
                 entry = entry,
                 selected = selected,
                 quoteColorReversed = quoteColorReversed,
-                perpetualBadgeStyle = PerpetualMarketBadgeStyle.PERPETUAL,
+                perpetualBadgeStyle = PerpetualMarketBadgeStyle.LEVERAGE,
                 onSelect = {
                     selectedIds =
                         if (selected) {
@@ -530,7 +531,7 @@ private fun MarketRow(
                 market = entry.market,
                 isFavored = entry.isFavored,
                 quoteColorReversed = settings.quoteColorReversed,
-                badgeStyle = PerpetualMarketBadgeStyle.PERPETUAL,
+                badgeStyle = PerpetualMarketBadgeStyle.LEVERAGE,
                 onFavorite = onFavorite,
                 onClick = onClick,
             )
@@ -613,12 +614,15 @@ private fun RowScope.SpotMarketRowContent(
     }
     MarketPriceText(text = priceText)
     Spacer(modifier = Modifier.width(MarketPriceChangeGap))
-    MarketChangeColumn(
-        change = change,
-        sparkline = market.sparkline(settings.priceChangePeriod),
-        quoteColorReversed = settings.quoteColorReversed,
-        modifier = Modifier.width(MarketChangeColumnWidth),
-    )
+    key(market.coinId, settings.priceChangePeriod) {
+        MarketChangeColumn(
+            change = change,
+            sparkline = market.sparkline(settings.priceChangePeriod),
+            quoteColorReversed = settings.quoteColorReversed,
+            sparklineCacheKey = marketSparklineCacheKey(market.coinId, settings.priceChangePeriod, market.updatedAt),
+            modifier = Modifier.width(MarketChangeColumnWidth),
+        )
+    }
 }
 
 @Composable

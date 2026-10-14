@@ -38,6 +38,8 @@ sealed class Chain(
 
     object Robinhood : Chain(Constants.ChainId.Robinhood, "eip155", "4663", "0x1237", "Robinhood", "ETH", listOf("https://rpc.mainnet.chain.robinhood.com"))
 
+    object Arc : Chain(Constants.ChainId.Arc, "eip155", "5042", "0x13b2", "ARC Mainnet", "USDC", listOf("https://rpc.mainnet.arc.io"))
+
     object Solana : Chain(
         SOLANA_CHAIN_ID,
         "solana",
@@ -67,7 +69,6 @@ sealed class Chain(
     fun supportsWalletConnectChainId(chainId: String): Boolean = chainId in walletConnectChainIds
 
     fun getWeb3ChainId(): String =
-        // Blast ->  Constants.ChainId.
         when (this) {
             Ethereum -> ETHEREUM_CHAIN_ID
             BinanceSmartChain -> Constants.ChainId.BinanceSmartChain
@@ -79,13 +80,13 @@ sealed class Chain(
             HyperEVM -> Constants.ChainId.HyperEVM
             XLayer -> Constants.ChainId.XLayer
             Robinhood -> Constants.ChainId.Robinhood
+            Arc -> Constants.ChainId.Arc
             Solana -> Constants.ChainId.Solana
             Bitcoin -> BITCOIN_CHAIN_ID
         }
 }
-// Chain.Blast
-internal val supportChainList = listOf(Chain.Solana, Chain.Bitcoin, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM, Chain.XLayer, Chain.Robinhood)
-internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM, Chain.XLayer, Chain.Robinhood)
+internal val supportChainList = listOf(Chain.Solana, Chain.Bitcoin, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM, Chain.XLayer, Chain.Robinhood, Chain.Arc)
+internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM, Chain.XLayer, Chain.Robinhood, Chain.Arc)
 
 data class WalletConnectAddresses(
     val evm: String,

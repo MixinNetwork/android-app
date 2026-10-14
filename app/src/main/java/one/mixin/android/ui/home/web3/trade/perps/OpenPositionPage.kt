@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.FragmentActivity
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.withResumed
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -78,6 +79,7 @@ import one.mixin.android.ui.home.web3.trade.limitTradeInputDecimalPlaces
 import one.mixin.android.ui.wallet.AddFeeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
@@ -91,34 +93,14 @@ private fun getLeveragePrefKey(marketId: String) = "pref_perps_leverage_$marketI
 private const val MARKET_REFRESH_INTERVAL_MS = 5_000L
 private const val DEFAULT_LEVERAGE = 10
 
-private fun readAcceptedPerpAssetIds(context: android.content.Context): List<String> {
-    return context.defaultSharedPreferences
-        .getString(Constants.Account.PREF_PERPS_ACCEPTED_ASSET_IDS_V2, null)
-        .orEmpty()
-        .split(",")
-        .map { it.trim() }
-        .filter { it.isNotBlank() }
-}
-
 private fun TokenItem.hasPositiveBalance(): Boolean =
     (balance.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal.ZERO
 
 private fun resolveCurrentToken(
     selectedToken: TokenItem?,
     availableTokens: List<TokenItem>,
-    preferredAssetIds: List<String>,
 ): TokenItem? {
-    if (selectedToken == null) {
-        return availableTokens
-            .sortedByDescending { it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO }
-            .firstOrNull()
-    }
-
-    val matchedToken = availableTokens.firstOrNull { it.assetId == selectedToken.assetId }
-    return when {
-        matchedToken != null -> matchedToken
-        else -> selectedToken
-    }
+    return availableTokens.firstOrNull { it.assetId == selectedToken?.assetId } ?: availableTokens.firstOrNull()
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -131,7 +113,7 @@ fun OpenPositionPage(
     onOrderCreated: () -> Unit = {},
     onOpenSuccess: (String) -> Unit = { onBack() },
     selectedToken: TokenItem?,
-    onTokenSelect: () -> Unit = {},
+    onTokenSelect: (List<TokenItem>) -> Unit = {},
     onCurrentTokenChange: (TokenItem?) -> Unit = {},
     leaderPositionId: String? = null,
     initialLeverage: Int? = null,
@@ -144,13 +126,11 @@ fun OpenPositionPage(
     val focusManager = LocalFocusManager.current
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val marketId = market.marketId
-    val acceptedPerpAssetIdsOrdered = remember { readAcceptedPerpAssetIds(context) }
-    val acceptedPerpAssetIds = remember(acceptedPerpAssetIdsOrdered) { acceptedPerpAssetIdsOrdered.toSet() }
 
     var currentMarket by remember(marketId) { mutableStateOf(market) }
     var selectedIsLong by rememberSaveable(marketId, isLong) { mutableStateOf(isLong ?: true) }
-    var currentToken by remember { mutableStateOf<TokenItem?>(selectedToken) }
-    var availableTokens by remember { mutableStateOf<List<TokenItem>>(emptyList()) }
+    var availableTokens by remember { mutableStateOf<List<TokenItem>?>(null) }
+    val currentToken = availableTokens?.let { resolveCurrentToken(selectedToken, it) }
     var usdtAmount by rememberSaveable(marketId, initialMargin) {
         mutableStateOf(
             limitTradeInputDecimalPlaces(
@@ -163,6 +143,7 @@ fun OpenPositionPage(
     var stopLossPrice by remember { mutableStateOf("") }
     var remoteLiquidationPrice by remember { mutableStateOf<String?>(null) }
     var liquidationPriceLimit by remember { mutableStateOf<LiquidationPriceLimit?>(null) }
+    var liquidationError by remember { mutableStateOf<String?>(null) }
     var isLiquidationLoading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
     var isProcessing by remember { mutableStateOf(false) }
@@ -197,38 +178,17 @@ fun OpenPositionPage(
         }
     }
 
-    LaunchedEffect(acceptedPerpAssetIds) {
-        viewModel.loadUsdTokens { tokens ->
-            val supportedTokens = if (acceptedPerpAssetIds.isEmpty()) {
-                tokens
-            } else {
-                tokens.filter { it.assetId in acceptedPerpAssetIds }
-            }
-            val orderedSupportedTokens = if (acceptedPerpAssetIdsOrdered.isEmpty()) {
-                supportedTokens
-            } else {
-                acceptedPerpAssetIdsOrdered.mapNotNull { assetId ->
-                    supportedTokens.firstOrNull { it.assetId == assetId }
-                }
-            }
-            availableTokens = orderedSupportedTokens
-            currentToken = resolveCurrentToken(
-                selectedToken = selectedToken,
-                availableTokens = orderedSupportedTokens,
-                preferredAssetIds = acceptedPerpAssetIdsOrdered,
-            )
-        }
-    }
-
-    LaunchedEffect(selectedToken?.assetId, availableTokens) {
-        currentToken = resolveCurrentToken(
-            selectedToken = selectedToken,
-            availableTokens = availableTokens,
-            preferredAssetIds = acceptedPerpAssetIdsOrdered,
+    LaunchedEffect(Unit) {
+        viewModel.loadPerpsTokens(
+            onSuccess = { tokens ->
+                availableTokens = tokens
+            },
+            onError = { errorInfo = it },
         )
     }
-    LaunchedEffect(currentToken) {
-        onCurrentTokenChange(currentToken)
+
+    LaunchedEffect(currentToken, availableTokens) {
+        if (availableTokens != null) onCurrentTokenChange(currentToken)
     }
     val maxLeverage = currentMarket.leverage.coerceAtLeast(1)
     LaunchedEffect(selectedIsLong, usdtAmount, leverage, currentToken?.assetId, takeProfitPrice, stopLossPrice) {
@@ -246,6 +206,7 @@ fun OpenPositionPage(
 
     LaunchedEffect(selectedIsLong, usdtAmount, leverage, currentMarket.minAmount) {
         liquidationPriceLimit = null
+        liquidationError = null
         val amount = usdtAmount.toBigDecimalOrNull()
         val minimumAmount = currentMarket.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         if (!shouldRequestLiquidationPrice(amount, minimumAmount)) {
@@ -265,6 +226,7 @@ fun OpenPositionPage(
                 .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
             remoteLiquidationPrice = requestLiquidationPrice(
                 onLimitExceeded = { liquidationPriceLimit = it },
+                onFailure = { liquidationError = it ?: context.getString(R.string.Data_error) },
             ) {
                 viewModel.estimateLiquidationPrice(
                     marketId = currentMarket.marketId,
@@ -299,33 +261,18 @@ fun OpenPositionPage(
         currentToken?.symbol.orEmpty(),
     )
     val maximumMarginError = stringResource(
-        R.string.perps_maximum_margin,
+        R.string.single_transaction_should_be_less_than,
         maximumMargin.stripTrailingZeros().toPlainString(),
         currentToken?.symbol.orEmpty(),
     )
-    val liquidationLimitMaxAmount = liquidationPriceLimit?.maxAmount
-        ?.toBigDecimalOrNull()
-        ?.takeIf { it > BigDecimal.ZERO }
-        ?.stripTrailingZeros()
-        ?.toPlainString()
-    val liquidationLimitAmountError = liquidationLimitMaxAmount?.let {
-        stringResource(R.string.perps_maximum_margin, it, currentToken?.symbol.orEmpty())
-    }
-    val liquidationLimitLeverageError = liquidationPriceLimit?.maxLeverage?.let {
-        stringResource(R.string.perps_maximum_leverage, it)
-    }
-    val liquidationLimitError = liquidationPriceLimit?.let {
-        listOfNotNull(liquidationLimitAmountError, liquidationLimitLeverageError)
-            .joinToString(". ")
-            .ifBlank { stringResource(R.string.error_perps_position_size_exceeds_leverage_limit) }
-    }
+    val liquidationLimitError = liquidationPriceLimit?.errorMessage(context, currentToken?.symbol.orEmpty())
     val displayLiquidationPrice = remoteLiquidationPrice
     val marginLimitError = when {
         belowMinimumMargin -> minimumMarginError
         aboveMaximumMargin -> maximumMarginError
         else -> null
     }
-    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError ?: liquidationLimitError
+    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError ?: liquidationLimitError ?: liquidationError
     val tokenNetworkName = currentToken?.chainName
         ?.takeIf { it.isNotBlank() }
         ?: currentToken?.chainSymbol
@@ -467,8 +414,7 @@ fun OpenPositionPage(
                         token = currentToken?.toSwapToken(),
                         text = usdtAmount,
                         selectClick = {
-                            AnalyticsTracker.trackPerpsOpenMarginSelect(currentToken?.chainName, currentToken?.symbol)
-                            onTokenSelect()
+                            availableTokens?.let(onTokenSelect)
                         },
                         onInputChanged = { usdtAmount = it },
                         tokenIconSize = 25.dp,
@@ -511,7 +457,7 @@ fun OpenPositionPage(
                                     val activity = context as? FragmentActivity ?: return@clickable
                                     val token = currentToken
                                     if (token == null) {
-                                        onTokenSelect()
+                                        availableTokens?.let(onTokenSelect)
                                         return@clickable
                                     }
                                     AddFeeBottomSheetDialogFragment.newInstance(token)
@@ -859,10 +805,28 @@ fun OpenPositionPage(
                                     },
                                 onError = { errorCode, errorMessage ->
                                     isProcessing = false
-                                    errorInfo = if (errorCode > 0) {
+                                    val message = if (errorCode > 0) {
                                         context.getMixinErrorStringByCode(errorCode, errorMessage)
                                     } else {
                                         errorMessage.ifBlank { dataError }
+                                    }
+                                    if (errorCode == ErrorHandler.PERPS_INVALID_LEADER_POSITION) {
+                                        scope.launch {
+                                            activity.lifecycle.withResumed {
+                                                PerpsConfirmBottomSheetDialogFragment.newFailureInstance(
+                                                    market = m,
+                                                    isLong = selectedIsLong,
+                                                    leverage = leverage.toInt(),
+                                                    margin = normalizedAmount,
+                                                    error = message,
+                                                    source = source,
+                                                    tokenSymbol = token.symbol,
+                                                    liquidationPrice = displayLiquidationPrice,
+                                                ).showNow(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
+                                            }
+                                        }
+                                    } else {
+                                        errorInfo = message
                                     }
                                 }
                             )

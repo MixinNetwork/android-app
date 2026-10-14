@@ -29,11 +29,13 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +63,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
+import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -94,7 +97,7 @@ import java.math.BigDecimal
 import java.util.Locale
 
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
-private const val MARKET_REFRESH_INTERVAL_MS = 30_000L
+private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
 private const val PREF_MARKET_DETAIL_TIME_FRAME = "perps_market_detail_time_frame"
 
 @Composable
@@ -144,6 +147,41 @@ fun PerpsMarketDetailPage(
     var previousOpenPositionsCount by remember(walletId) { mutableStateOf<Int?>(null) }
     var isAddingProcessing by remember { mutableStateOf(false) }
     val currentPosition = openPositions?.firstOrNull { it.marketId == marketId }
+    val activity = context as? FragmentActivity
+    val onAdjustment by rememberUpdatedState { action: String ->
+        val position = currentPosition
+        if (activity != null && position?.state == PerpsPosition.STATE_OPEN && !isAddingProcessing) {
+            when (action) {
+                PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
+                PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_MARGIN -> {
+                    PerpsMarginBottomSheetDialogFragment.newInstance(
+                        position,
+                        increase = action == PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
+                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADJUST,
+                    ).show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
+                }
+                PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_POSITION -> {
+                    isAddingProcessing = true
+                    activity.showPerpsAddPosition(
+                        viewModel = viewModel,
+                        position = position,
+                        market = market,
+                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADJUST,
+                        onDismiss = { isAddingProcessing = false },
+                    )
+                }
+            }
+        }
+    }
+    val adjustmentResultKey = currentPosition?.positionId?.let { PerpsAdjustBottomSheetDialogFragment.resultKey(it) }
+    DisposableEffect(activity, lifecycleOwner, adjustmentResultKey) {
+        if (activity == null || adjustmentResultKey == null) return@DisposableEffect onDispose {}
+        val manager = activity.supportFragmentManager
+        manager.setFragmentResultListener(adjustmentResultKey, lifecycleOwner) { _, result ->
+            onAdjustment(result.getString(PerpsAdjustBottomSheetDialogFragment.RESULT_ACTION).orEmpty())
+        }
+        onDispose { manager.clearFragmentResultListener(adjustmentResultKey) }
+    }
     val hasLoadedOpenPositions = openPositions != null
     val closedPositions = allClosedPositions.filter { it.marketId == marketId }
     val timeFrameValues = listOf("1m", "5m", "15m", "1h", "4h", "1d", "1w")
@@ -397,6 +435,8 @@ fun PerpsMarketDetailPage(
                             entryPrice = currentPosition.entryPrice,
                             marketId = currentPosition.marketId,
                             priceScale = currentPosition.priceScale,
+                            liquidationPrice = currentPosition.liquidationPrice,
+                            positionQuantity = currentPosition.quantity,
                         ).setOnApply { value ->
                             val normalizedValue = value?.trim().orEmpty()
                             if (normalizedValue == existingPrice) return@setOnApply
@@ -579,62 +619,10 @@ fun PerpsMarketDetailPage(
                                     enabled = !isAddingProcessing,
                                     onClick = {
                                         if (isAddingProcessing) return@MixinButton
-                                        isAddingProcessing = true
-                                        val activity = context as? FragmentActivity ?: run { isAddingProcessing = false; return@MixinButton }
-                                        val positionForAdd = currentPosition
-                                        AnalyticsTracker.trackPerpsAddStart(AnalyticsTracker.PerpsAddType.ADD_POSITION)
-                                        PerpsAddBottomSheetDialogFragment.newInstance(positionForAdd)
-                                            .setOnDestroy {
-                                                isAddingProcessing = false
-                                            }
-                                            .setOnAdd { token, amount, liquidationPrice ->
-                                                isAddingProcessing = false
-                                                val referencePrice = market?.last
-                                                    ?: positionForAdd.markPrice
-                                                    ?: positionForAdd.entryPrice
-                                                viewModel.increasePerpsPosition(
-                                                    positionId = positionForAdd.positionId,
-                                                    assetId = token.assetId,
-                                                    amount = amount,
-                                                    position = positionForAdd,
-                                                    price = referencePrice.takeIf { it.isNotBlank() },
-                                                    onSuccess = { response ->
-                                                        val isLong = positionForAdd.side.equals("long", ignoreCase = true)
-                                                        val symbol = positionForAdd.displaySymbol
-                                                            ?: market?.displaySymbol
-                                                            ?: positionForAdd.tokenSymbol.orEmpty()
-                                                        val iconUrl = positionForAdd.iconUrl
-                                                            ?: market?.iconUrl.orEmpty()
-                                                        val confirmEntryPrice = referencePrice.ifBlank { positionForAdd.entryPrice }
-                                                        PerpsConfirmBottomSheetDialogFragment.newInstance(
-                                                            marketSymbol = symbol,
-                                                            marketIcon = iconUrl,
-                                                            isLong = isLong,
-                                                            amount = response.payAmount,
-                                                            leverage = positionForAdd.leverage,
-                                                            entryPrice = confirmEntryPrice,
-                                                            marginAssetPrice = token.priceUsd,
-                                                            tokenSymbol = token.symbol,
-                                                            takeProfitPrice = null,
-                                                            stopLossPrice = null,
-                                                            liquidationPrice = liquidationPrice,
-                                                            priceScale = market?.priceScale ?: positionForAdd.priceScale,
-                                                            payUrl = response.paymentUrl,
-                                                            isAddPosition = true,
-                                                        ).show(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
-                                                    },
-                                                    onError = { errorCode, errorMessage ->
-                                                        isAddingProcessing = false
-                                                        val message = if (errorCode > 0) {
-                                                            context.getMixinErrorStringByCode(errorCode, errorMessage)
-                                                        } else {
-                                                            errorMessage
-                                                        }
-                                                        toast(message)
-                                                    },
-                                                )
-                                            }
-                                            .show(activity.supportFragmentManager, PerpsAddBottomSheetDialogFragment.TAG)
+                                        val activity = context as? FragmentActivity ?: return@MixinButton
+                                        if (activity.supportFragmentManager.findFragmentByTag(PerpsAdjustBottomSheetDialogFragment.TAG) != null) return@MixinButton
+                                        PerpsAdjustBottomSheetDialogFragment.newInstance(currentPosition.positionId)
+                                            .show(activity.supportFragmentManager, PerpsAdjustBottomSheetDialogFragment.TAG)
                                     },
                                     backgroundColor = MixinAppTheme.colors.walletGreen,
                                     contentColor = Color.White,
@@ -642,7 +630,7 @@ fun PerpsMarketDetailPage(
                                 ) {
                                     Text(
                                         fontSize = 16.sp,
-                                        text = stringResource(R.string.add_position),
+                                        text = stringResource(R.string.perps_adjust),
                                     )
                                 }
 
@@ -878,6 +866,21 @@ private fun MarketInfoCard(
             Spacer(modifier = Modifier.height(4.dp))
             Text(
                 text = formatOpenInterest(market.openInterest, market.markPrice),
+                fontSize = 16.sp,
+                color = MixinAppTheme.colors.textPrimary
+            )
+        }
+
+        if (BuildConfig.DEBUG) {
+            Spacer(modifier = Modifier.height(12.dp))
+            Text(
+                text = stringResource(R.string.Debug_Mark_Price).uppercase(),
+                fontSize = 14.sp,
+                color = MixinAppTheme.colors.textAssist
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = formatPerpsPrice(market.markPrice, market.priceScale),
                 fontSize = 16.sp,
                 color = MixinAppTheme.colors.textPrimary
             )
@@ -1169,6 +1172,7 @@ private fun OpenPositionCard(
             marketId = position.marketId,
             priceScale = position.priceScale,
             liquidationPrice = position.liquidationPrice,
+            positionQuantity = position.quantity,
         ).setOnApply { value ->
             val normalizedValue = value?.trim().orEmpty()
             if (normalizedValue == existingPrice) {
@@ -1242,7 +1246,7 @@ private fun OpenPositionCard(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = stringResource(R.string.PnL).uppercase(),
+                    text = stringResource(R.string.perps_unrealized_pnl).uppercase(),
                     fontSize = 12.sp,
                     lineHeight = 14.sp,
                     style = compactTextStyle,

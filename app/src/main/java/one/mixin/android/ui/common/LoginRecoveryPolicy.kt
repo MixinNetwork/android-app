@@ -1,6 +1,16 @@
 package one.mixin.android.ui.common
 
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.WalletCategory
+
+internal suspend fun removeMissingWalletForLogin(
+    errorCode: Int,
+    deleteWallet: suspend () -> Unit,
+): Boolean {
+    if (errorCode != ErrorHandler.NOT_FOUND) return false
+    deleteWallet()
+    return true
+}
 
 internal fun <T> classicWalletAfterUtxoBackfill(
     refreshedWallets: List<T>,

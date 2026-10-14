@@ -1729,22 +1729,6 @@ class WebFragment : BaseFragment() {
         )
     }
 
-    override fun onPause() {
-        if (!requireActivity().isInMultiWindowMode) {
-            webView.onPause()
-            webView.pauseTimers()
-        }
-        super.onPause()
-    }
-
-    override fun onResume() {
-        if (!requireActivity().isInMultiWindowMode) {
-            webView.onResume()
-            webView.resumeTimers()
-        }
-        super.onResume()
-    }
-
     private fun saveImageFromUrl(url: String?) {
         if (viewDestroyed()) return
 
@@ -1874,7 +1858,10 @@ class WebFragment : BaseFragment() {
             view ?: return
             view.clearCache(true)
             Timber.e("onPageStarted ${Web3Signer.currentChain.name}")
-            if (!redirect && inject) {
+            // Inject on every page start, including pages reached through
+            // shouldOverrideUrlLoading (which sets `redirect`), e.g. a link
+            // tapped in the page; each navigation starts a fresh JS context.
+            if (inject) {
                 view.evaluateJavascript(jsInjectorClient.loadProviderJs(view.context), null)
                 view.evaluateJavascript(jsInjectorClient.initJs(view.context), null)
             }

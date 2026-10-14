@@ -1,15 +1,13 @@
 package one.mixin.android.util
 
 import android.annotation.SuppressLint
-import android.view.ViewGroup
+import android.view.View
 import android.view.Window
-import androidx.annotation.IdRes
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import one.mixin.android.extension.supportsPie
-import timber.log.Timber
 
 @SuppressLint("InlinedApi")
 object SystemUIManager {
@@ -62,25 +60,16 @@ object SystemUIManager {
         }
     }
 
-    fun setSafePaddingOnce(
+    fun setSafeContainerPadding(
         window: Window,
+        container: View,
         color: Int,
-        @IdRes id : Int
     ) {
-        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
+        container.setBackgroundColor(color)
+        ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
             val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
             val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-            Timber.e("setSafePaddingOnce: $statusBarInsets ${navBarInsets.top} ${navBarInsets.bottom}")
-            view.findViewById<ViewGroup>(id)?.let {
-                it.setPadding(
-                    0,
-                    statusBarInsets.top,
-                    0,
-                    navBarInsets.bottom)
-                it.setBackgroundColor(color)
-
-            }
-            ViewCompat.setOnApplyWindowInsetsListener(view, null)
+            container.setPadding(0, statusBarInsets.top, 0, navBarInsets.bottom)
             insets
         }
     }

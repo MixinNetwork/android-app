@@ -6,6 +6,7 @@ import com.checkout.base.model.Environment
 import com.checkout.risk.RiskEnvironment
 import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
+import one.mixin.android.Constants.ChainId.Arc
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
@@ -45,7 +46,7 @@ object Constants {
         const val INSCRIPTION = "https://mixin.one/inscriptions/"
         const val MARKETPLACE = "https://rune.fan/items/"
         const val SPACE = "https://mixin.space/tx/"
-        const val CUSTOMER_SERVICE = "https://go.crisp.chat/chat/embed/?website_id=52662bba-be49-4b06-9edc-7baa9a78f714"
+        const val CUSTOMER_SERVICE = "https://mixin.one/support"
     }
 
     object Tip {
@@ -275,8 +276,8 @@ object Constants {
     }
 
 
-    val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM, XLayer, Robinhood)
-    val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM, XLayer, Robinhood)
+    val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM, XLayer, Robinhood, Arc)
+    val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM, XLayer, Robinhood, Arc)
     val Web3UtxoChainIds = listOf(BITCOIN_CHAIN_ID, ChainId.PEARL_CHAIN_ID)
 
     object ChainId {
@@ -311,6 +312,8 @@ object Constants {
         const val XLayer = "37f5a4d1-905f-3b34-8291-c37438c7dcfc"
 
         const val Robinhood = "b304e03d-d004-3102-875b-8266f8407a1a"
+
+        const val Arc = "3f42cb95-274e-366b-9ab7-e1528d929a06"
 
         const val TON_CHAIN_ID = "ef660437-d915-4e27-ad3f-632bfb6ba0ee"
     }
