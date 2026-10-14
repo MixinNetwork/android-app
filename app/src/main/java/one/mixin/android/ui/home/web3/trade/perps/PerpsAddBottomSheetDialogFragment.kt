@@ -967,7 +967,6 @@ internal fun FragmentActivity.showPerpsAddPosition(
                 positionId = position.positionId,
                 assetId = token.assetId,
                 amount = amount,
-                position = position,
                 price = referencePrice.takeIf { it.isNotBlank() },
                 leaderPositionId = leaderPositionId,
                 onSuccess = { response ->
