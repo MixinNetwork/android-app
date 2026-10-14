@@ -94,27 +94,41 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }.collectAsStateWithLifecycle(initialValue = initialPosition)
         val position = observedPosition ?: initialPosition
         var market by remember(position.marketId) { mutableStateOf<PerpsMarket?>(null) }
-        var enteredInput by rememberSaveable { mutableStateOf("100") }
+        var quantityScaleReady by remember(position.marketId) { mutableStateOf(false) }
+        var enteredInput by rememberSaveable { mutableStateOf("") }
         var enteredAsPercentage by rememberSaveable { mutableStateOf(true) }
         var isPercentage by rememberSaveable { mutableStateOf(true) }
         val keyboard = LocalSoftwareKeyboardController.current
         LaunchedEffect(initialPosition.positionId) {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                val cached = viewModel.getMarketFromDb(initialPosition.marketId)
+                if (cached != null && market == null) {
+                    market = cached
+                    // A cached scale of 0 is the unloaded default. Accept it only after a market refresh.
+                    quantityScaleReady = cached.quantityScale != 0
+                }
                 while (isActive) {
                     viewModel.refreshSinglePosition(initialPosition.positionId, initialPosition.walletId)
-                    viewModel.loadMarketDetail(initialPosition.marketId, onSuccess = { market = it }, onError = {})
+                    viewModel.loadMarketDetail(
+                        initialPosition.marketId,
+                        onSuccess = {
+                            market = it
+                            quantityScaleReady = true
+                        },
+                        onError = {},
+                    )
                     delay(10_000)
                 }
             }
         }
-        val current = position.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val current = position.quantity.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
         val price = position.markPrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
         val size = price?.multiply(current)
         val inputValue = enteredInput.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val quantity = perpsReductionQuantity(position.quantity, position.markPrice, enteredInput, enteredAsPercentage, market?.quantityScale ?: -1)
-        val amount = if (enteredAsPercentage) size?.multiply(inputValue)?.movePointLeft(2) else inputValue
+        val amount = if (enteredAsPercentage) size?.multiply(inputValue)?.movePointLeft(2)?.setScale(2, RoundingMode.DOWN) else inputValue
         val percentage = if (enteredAsPercentage) inputValue else size?.takeIf { it > BigDecimal.ZERO }?.let {
-            inputValue.multiply(BigDecimal(100)).divide(it, 8, RoundingMode.DOWN)
+            inputValue.multiply(BigDecimal(100)).divide(it, 0, RoundingMode.HALF_UP)
         }
         val input = if (isPercentage == enteredAsPercentage) enteredInput else {
             (if (isPercentage) percentage else amount)?.stripTrailingZeros()?.toPlainString().orEmpty()
@@ -129,7 +143,9 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 stringResource(R.string.perps_minimum_order_size, "\$${minimum.stripTrailingZeros().toPlainString()}")
             else -> null
         }
-        val canSubmit = quantity != null && error == null
+        val canSubmit = quantityScaleReady && quantity != null && error == null
+        val subtitleScale = market?.priceScale ?: position.priceScale
+        val subtitlePrice = market?.last?.takeIf { it.isNotBlank() } ?: position.markPrice ?: position.entryPrice
         val previewQuantity = quantity?.takeIf { canSubmit }?.toPlainString().orEmpty()
         val pnl = perpsReductionValue(position.unrealizedPnl, previewQuantity, position.quantity)
         val margin = perpsReductionValue(position.margin, previewQuantity, position.quantity)
@@ -151,7 +167,11 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
-                                stringResource(R.string.auto_close_subtitle_after_open, formatPerpsPrice(position.entryPrice, position.priceScale), formatPerpsPrice(position.markPrice ?: position.entryPrice, position.priceScale)),
+                                stringResource(
+                                    R.string.auto_close_subtitle_after_open,
+                                    formatPerpsPrice(position.entryPrice, subtitleScale),
+                                    formatPerpsPrice(subtitlePrice, subtitleScale),
+                                ),
                                 color = MixinAppTheme.colors.textAssist,
                                 fontSize = 12.sp,
                             )
@@ -170,7 +190,6 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         errorText = error,
                         enabled = observedPosition?.state == PerpsPosition.STATE_OPEN,
                         onInputChanged = { enteredInput = it; enteredAsPercentage = isPercentage },
-                        decimalPlaces = 8,
                         percentageLabels = true,
                         autoFocus = false,
                         onToggleMode = {

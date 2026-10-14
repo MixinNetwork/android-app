@@ -88,12 +88,17 @@ internal fun marginReductionPercentage(currentMargin: String?, amount: BigDecima
 internal fun estimatedPerpsCloseReturn(margin: String?, unrealizedPnl: String?, estimatedCloseFee: String?): BigDecimal? {
     val marginValue = margin?.toBigDecimalOrNull() ?: return null
     val pnl = unrealizedPnl?.toBigDecimalOrNull() ?: return null
-    val fee = estimatedCloseFee?.toBigDecimalOrNull() ?: return null
+    val fee = if (estimatedCloseFee.isNullOrBlank()) {
+        BigDecimal.ZERO
+    } else {
+        estimatedCloseFee.toBigDecimalOrNull() ?: return null
+    }
     return (marginValue + pnl - fee).max(BigDecimal.ZERO)
 }
 
 internal fun estimatedPerpsBatchCloseReturn(positions: List<PerpsPositionItem>): BigDecimal? {
     return positions.fold(BigDecimal.ZERO) { total, position ->
+        position.estimatedCloseFee?.toBigDecimalOrNull() ?: return null
         total + (estimatedPerpsCloseReturn(position.margin, position.unrealizedPnl, position.estimatedCloseFee) ?: return null)
     }
 }

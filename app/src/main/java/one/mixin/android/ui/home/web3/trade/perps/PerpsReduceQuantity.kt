@@ -6,13 +6,18 @@ import java.math.RoundingMode
 internal fun perpsReduceQuantity(input: String, currentQuantity: String): BigDecimal? {
     if (input.length > 40 || input.any { it !in '0'..'9' && it != '.' }) return null
     val quantity = input.toBigDecimalOrNull() ?: return null
-    val current = currentQuantity.toBigDecimalOrNull() ?: return null
+    val current = currentQuantity.toBigDecimalOrNull()?.abs() ?: return null
     return quantity.takeIf { it > BigDecimal.ZERO && it <= current }
 }
 
 internal fun perpsReductionQuantity(currentQuantity: String, markPrice: String?, input: String, isPercentage: Boolean, quantityScale: Int): BigDecimal? {
     if (quantityScale < 0) return null
-    val current = currentQuantity.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null
+    val current = currentQuantity.toBigDecimalOrNull()?.abs()?.takeIf { it > BigDecimal.ZERO } ?: return null
+    if (isPercentage) {
+        if ('.' in input) return null
+    } else if (input.substringAfter('.', "").length > 2) {
+        return null
+    }
     val value = marginAdjustmentAmount(input) ?: return null
     val quantity = if (isPercentage) {
         if (value > BigDecimal(100)) return null
@@ -28,11 +33,12 @@ internal fun perpsReductionQuantity(currentQuantity: String, markPrice: String?,
 internal fun perpsReductionValue(value: String?, quantity: String, currentQuantity: String): BigDecimal? {
     val total = value?.toBigDecimalOrNull() ?: return null
     val reduction = perpsReduceQuantity(quantity, currentQuantity) ?: return null
-    return total.multiply(reduction).divide(BigDecimal(currentQuantity), 16, RoundingMode.DOWN)
+    return total.multiply(reduction).divide(BigDecimal(currentQuantity).abs(), 16, RoundingMode.DOWN)
 }
 
 internal fun perpsReductionMeetsMinimum(quantity: BigDecimal, current: BigDecimal, price: BigDecimal?, minimum: BigDecimal): Boolean {
-    if (quantity.compareTo(current) == 0 || minimum <= BigDecimal.ZERO) return true
+    val position = current.abs()
+    if (quantity.compareTo(position) == 0 || minimum <= BigDecimal.ZERO) return true
     if (price == null || price <= BigDecimal.ZERO) return false
-    return current.subtract(quantity).multiply(price) >= minimum
+    return quantity.multiply(price) >= minimum
 }

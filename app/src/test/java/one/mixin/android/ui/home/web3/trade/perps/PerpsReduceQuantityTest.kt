@@ -13,17 +13,18 @@ class PerpsReduceQuantityTest {
     @Test
     fun percentageReducesQuantityWithoutUsingMarginOrLeverage() {
         assertDecimal("0.25", perpsReductionQuantity("1", "88.23", "25", true, 8))
-        assertNull(perpsReductionQuantity("-1", "88.23", "25", true, 8))
+        assertDecimal("0.25", perpsReductionQuantity("-1", "88.23", "25", true, 8))
         assertDecimal("0.2", perpsReductionQuantity("0.8", "88.23", "25", true, 8))
         assertNull(perpsReductionQuantity("0.00000001", "1", "25", true, 8))
         assertDecimal("1.00000001", perpsReductionQuantity("1.00000001", "88.23", "100", true, 8))
         assertNull(perpsReductionQuantity("1", "88.23", "101", true, 8))
-        assertDecimal("0.255", perpsReductionQuantity("1", "88.23", "25.5", true, 8))
+        assertNull(perpsReductionQuantity("1", "88.23", "25.5", true, 8))
     }
 
     @Test
     fun dollarInputUsesPositionValueAndNeverRoundsAboveTheBudget() {
         assertDecimal("0.2", perpsReductionQuantity("1", "100", "20", false, 8))
+        assertDecimal("0.2", perpsReductionQuantity("-1", "100", "20", false, 8))
         val quantity = requireNotNull(perpsReductionQuantity("10", "3", "1", false, 8))
         assertDecimal("0.33333333", quantity)
         assertTrue(quantity.multiply(BigDecimal("3")) <= BigDecimal.ONE)
@@ -34,9 +35,11 @@ class PerpsReduceQuantityTest {
 
     @Test
     fun fullReductionMatchesPositionForBothInputModes() {
-        assertDecimal("1.25", perpsReductionQuantity("1.25", "80", "100", true, 3))
-        assertDecimal("1.25", perpsReductionQuantity("1.25", "80", "100", false, 3))
-        assertDecimal("1.249", perpsReductionQuantity("1.25", "80", "99.99", false, 3))
+        for (current in listOf("1.25", "-1.25")) {
+            assertDecimal("1.25", perpsReductionQuantity(current, "80", "100", true, 3))
+            assertDecimal("1.25", perpsReductionQuantity(current, "80", "100", false, 3))
+            assertDecimal("1.249", perpsReductionQuantity(current, "80", "99.99", false, 3))
+        }
     }
 
     @Test
@@ -55,7 +58,8 @@ class PerpsReduceQuantityTest {
         assertDecimal("0.5", perpsReduceQuantity("0.5", "1"))
         assertNull(perpsReduceQuantity("0.5", "0.4"))
         assertNull(perpsReduceQuantity("0.5", "0"))
-        assertNull(perpsReduceQuantity("0.5", "-0.5"))
+        assertDecimal("0.5", perpsReduceQuantity("0.5", "-0.5"))
+        assertNull(perpsReduceQuantity("0.5", "-0.4"))
         for (input in listOf("", ".", "-1", "+1", "0", "1e2", "NaN", "1.2.3", "9".repeat(41))) {
             assertNull(perpsReduceQuantity(input, "100"))
             assertNull(perpsReductionQuantity("100", "1", input, true, 8))
@@ -67,16 +71,17 @@ class PerpsReduceQuantityTest {
     fun explicitQuantityAllowsFullCloseButCannotExceedPosition() {
         assertDecimal("0.5", perpsReduceQuantity("0.5", "1"))
         assertDecimal("0.5", perpsReduceQuantity("0.5", "0.5"))
-        assertNull(perpsReduceQuantity("0.5", "-0.5"))
-        assertDecimal("0.5", perpsReduceQuantity("0.50", "0.5"))
+        assertDecimal("0.5", perpsReduceQuantity("0.5", "-0.5"))
+        assertDecimal("0.5", perpsReduceQuantity("0.50", "-0.5"))
     }
 
     @Test
     fun fractionalInputsPreserveDollarAndSmallPositionAmounts() {
         assertDecimal("1.999", perpsReductionQuantity("2", "100", "199.90", false, 3))
-        assertDecimal("1.999", perpsReductionQuantity("2", "100", "99.95", true, 3))
+        assertNull(perpsReductionQuantity("2", "100", "99.95", true, 3))
         assertDecimal("0.005", perpsReductionQuantity("0.01", "1", "50", true, 3))
-        assertDecimal("0.005", perpsReductionQuantity("0.01", "1", "0.005", false, 3))
+        assertNull(perpsReductionQuantity("0.01", "1", "0.005", false, 3))
+        assertDecimal("0.01", perpsReductionQuantity("0.01", "1", "0.01", false, 3))
         assertNull(perpsReductionQuantity("10.5", "1", "50", true, -1))
         assertDecimal("5.25", perpsReductionQuantity("10.5", "1", "50", true, 2))
     }
@@ -85,6 +90,7 @@ class PerpsReduceQuantityTest {
     fun estimatesOnlyTheReducedShareAndPreservesPnlSign() {
         assertDecimal("5", perpsReductionValue("20", "0.25", "1"))
         assertDecimal("-5", perpsReductionValue("-20", "0.25", "1"))
+        assertDecimal("-5", perpsReductionValue("-20", "0.25", "-1"))
         assertDecimal("30", perpsReductionValue("120", "0.25", "1"))
         assertDecimal("120", perpsReductionValue("120", "1", "1"))
         assertNull(perpsReductionValue("120", "1", "0.5"))
@@ -106,27 +112,36 @@ class PerpsReduceQuantityTest {
     }
 
     @Test
-    fun minimumAppliesOnlyToRemainingValueAndExemptsFullClose() {
+    fun minimumAppliesToReductionValueAndIgnoresRemainder() {
         val current = BigDecimal("1")
         val price = BigDecimal("100")
         val minimum = BigDecimal("10")
-        for (percentage in listOf(true, false)) {
-            for (input in listOf("90.01", "99.99")) {
-                val quantity = requireNotNull(perpsReductionQuantity("1", "100", input, percentage, 4))
-                assertFalse(perpsReductionMeetsMinimum(quantity, current, price, minimum))
-            }
-            for (input in listOf("2", "9.99", "10", "90", "100")) {
-                val quantity = requireNotNull(perpsReductionQuantity("1", "100", input, percentage, 4))
-                assertTrue(perpsReductionMeetsMinimum(quantity, current, price, minimum))
-            }
+        for (input in listOf("2", "9.99")) {
+            val quantity = requireNotNull(perpsReductionQuantity("1", "100", input, false, 4))
+            assertFalse(perpsReductionMeetsMinimum(quantity, current, price, minimum))
         }
-        assertTrue(perpsReductionMeetsMinimum(BigDecimal("0.02"), current, price, BigDecimal("5")))
-        assertFalse(perpsReductionMeetsMinimum(BigDecimal("0.96"), current, price, BigDecimal("5")))
+        for (input in listOf("10", "90", "90.01", "99.99")) {
+            val quantity = requireNotNull(perpsReductionQuantity("1", "100", input, false, 4))
+            assertTrue(perpsReductionMeetsMinimum(quantity, current, price, minimum))
+        }
+        for (input in listOf("2", "9")) {
+            val quantity = requireNotNull(perpsReductionQuantity("1", "100", input, true, 4))
+            assertFalse(perpsReductionMeetsMinimum(quantity, current, price, minimum))
+        }
+        for (input in listOf("10", "90", "99", "100")) {
+            val quantity = requireNotNull(perpsReductionQuantity("1", "100", input, true, 4))
+            assertTrue(perpsReductionMeetsMinimum(quantity, current, price, minimum))
+        }
+        assertNull(perpsReductionQuantity("1", "100", "90.01", true, 4))
+        assertFalse(perpsReductionMeetsMinimum(BigDecimal("0.02"), current, price, BigDecimal("5")))
+        assertTrue(perpsReductionMeetsMinimum(BigDecimal("0.96"), current, price, BigDecimal("5")))
         assertTrue(perpsReductionMeetsMinimum(BigDecimal("0.01"), BigDecimal("0.01"), price, minimum))
+        assertTrue(perpsReductionMeetsMinimum(BigDecimal("0.01"), BigDecimal("-0.01"), price, minimum))
+        assertFalse(perpsReductionMeetsMinimum(BigDecimal("0.02"), BigDecimal("-1"), price, BigDecimal("5")))
         assertFalse(perpsReductionMeetsMinimum(BigDecimal("0.5"), current, null, minimum))
         assertTrue(perpsReductionMeetsMinimum(BigDecimal("0.01"), current, price, BigDecimal.ZERO))
         val rounded = requireNotNull(perpsReductionQuantity("1", "3", "1", false, 2))
-        assertTrue(perpsReductionMeetsMinimum(rounded, current, BigDecimal("3"), BigDecimal.ONE))
+        assertFalse(perpsReductionMeetsMinimum(rounded, current, BigDecimal("3"), BigDecimal.ONE))
     }
 
     private fun assertDecimal(expected: String, actual: BigDecimal?) {

@@ -76,9 +76,15 @@ class PerpsMarginAmountTest {
         assertEquals(BigDecimal("11.5"), estimatedPerpsCloseReturn("10", "2", "0.5"))
         assertEquals(BigDecimal.ZERO, estimatedPerpsCloseReturn("10", "-12", "0.5"))
         assertEquals(BigDecimal("12"), estimatedPerpsCloseReturn("10", "2", "0"))
-        for (fee in listOf(null, "", "invalid")) {
-            assertNull(estimatedPerpsCloseReturn("10", "2", fee))
+        for (fee in listOf(null, "")) {
+            assertEquals(BigDecimal("12"), estimatedPerpsCloseReturn("10", "2", fee))
+            assertEquals(BigDecimal.ZERO, estimatedPerpsCloseReturn("10", "-12", fee))
         }
+        assertNull(estimatedPerpsCloseReturn("10", "2", "invalid"))
+        assertEquals(
+            BigDecimal("6"),
+            perpsReductionValue(estimatedPerpsCloseReturn("10", "2", null)?.toPlainString(), "0.5", "-1")?.stripTrailingZeros(),
+        )
     }
 
     @Test
