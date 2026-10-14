@@ -56,6 +56,7 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isValidStartParam
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.shouldOpenAppHome
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.toPerpsTradeAction
 import one.mixin.android.extension.toast
@@ -249,7 +250,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 dismiss()
             } else {
                 lifecycleScope.launch(errorHandler) {
-                    val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
+                    val isOpenApp = uri.shouldOpenAppHome()
                     if (isOpenApp) {
                         val localApp = oldLinkViewModel.findAppById(userId)
                         if (localApp != null) {

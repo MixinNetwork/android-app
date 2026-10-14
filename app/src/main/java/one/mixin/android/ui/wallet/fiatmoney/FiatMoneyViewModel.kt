@@ -63,6 +63,8 @@ class FiatMoneyViewModel
 
         suspend fun findAssetsById(id: String) = tokenRepository.findAssetItemById(id)
 
+        suspend fun findOrSyncApp(id: String) = userRepository.findOrSyncApp(id)
+
         suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 
         suspend fun ticker(tickerRequest: RouteTickerRequest): MixinResponse<RouteTickerResponse> =
