@@ -66,11 +66,11 @@ class PerpsReduceQuantityTest {
     }
 
     @Test
-    fun aPartialReductionCannotBecomeAFullCloseAfterThePositionShrinks() {
-        assertDecimal("0.5", perpsReduceQuantity("0.5", "1", allowFullClose = false))
-        assertNull(perpsReduceQuantity("0.5", "0.5", allowFullClose = false))
-        assertNull(perpsReduceQuantity("0.5", "-0.5", allowFullClose = false))
-        assertDecimal("0.5", perpsReduceQuantity("0.50", "-0.5", allowFullClose = true))
+    fun explicitQuantityAllowsFullCloseButCannotExceedPosition() {
+        assertDecimal("0.5", perpsReduceQuantity("0.5", "1"))
+        assertDecimal("0.5", perpsReduceQuantity("0.5", "0.5"))
+        assertDecimal("0.5", perpsReduceQuantity("0.5", "-0.5"))
+        assertDecimal("0.5", perpsReduceQuantity("0.50", "-0.5"))
     }
 
     @Test
@@ -95,16 +95,38 @@ class PerpsReduceQuantityTest {
     }
 
     @Test
-    fun requestSerializesExplicitQuantityAndOmitsItForExistingFullClose() {
+    fun requestSerializesQuantityForPartialAndFullClose() {
         val gson = Gson()
         val partial = gson.toJsonTree(CloseOrderRequest(positionId = "position", quantity = "0.00000001")).asJsonObject
         assertEquals("position", partial["position_id"].asString)
         assertEquals("0.00000001", partial["quantity"].asString)
         assertFalse(partial.has("price"))
         assertEquals(2, partial.size())
-        val full = gson.toJsonTree(CloseOrderRequest("position")).asJsonObject
-        assertFalse(full.has("quantity"))
-        assertEquals(1, full.size())
+        val full = gson.toJsonTree(CloseOrderRequest("position", quantity = "1")).asJsonObject
+        assertEquals("1", full["quantity"].asString)
+        assertEquals(2, full.size())
+    }
+
+    @Test
+    fun minimumAppliesToRoundedOrderAndRemainingValueButNotFullClose() {
+        val current = BigDecimal("1")
+        val price = BigDecimal("100")
+        val minimum = BigDecimal("10")
+        for (percentage in listOf(true, false)) {
+            for (input in listOf("9.99", "90.01")) {
+                val quantity = requireNotNull(perpsReductionQuantity("1", "100", input, percentage, 4))
+                assertFalse(perpsReductionMeetsMinimum(quantity, current, price, minimum))
+            }
+            for (input in listOf("10", "90", "100")) {
+                val quantity = requireNotNull(perpsReductionQuantity("1", "100", input, percentage, 4))
+                assertTrue(perpsReductionMeetsMinimum(quantity, current, price, minimum))
+            }
+        }
+        assertTrue(perpsReductionMeetsMinimum(BigDecimal("0.01"), BigDecimal("-0.01"), price, minimum))
+        assertFalse(perpsReductionMeetsMinimum(BigDecimal("0.5"), current, null, minimum))
+        assertTrue(perpsReductionMeetsMinimum(BigDecimal("0.01"), current, price, BigDecimal.ZERO))
+        val rounded = requireNotNull(perpsReductionQuantity("1", "3", "1", false, 2))
+        assertFalse(perpsReductionMeetsMinimum(rounded, current, BigDecimal("3"), BigDecimal.ONE))
     }
 
     private fun assertDecimal(expected: String, actual: BigDecimal?) {

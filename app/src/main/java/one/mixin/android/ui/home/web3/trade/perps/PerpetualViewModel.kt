@@ -1003,12 +1003,12 @@ class PerpetualViewModel @Inject constructor(
         positionId: String,
         onSuccess: () -> Unit,
         onError: (String) -> Unit,
-        quantity: String? = null,
+        quantity: String,
     ) {
         viewModelScope.launch {
             closePerpsOrder(positionId, quantity)
                 .onSuccess { onSuccess() }
-                .onFailure { onError(it.message.orEmpty()) }
+                .onFailure { onError(closeOrderErrorMessage(it)) }
         }
     }
 
@@ -1020,7 +1020,7 @@ class PerpetualViewModel @Inject constructor(
             val failures = positions
                 .map { position ->
                     async {
-                        position to closePerpsOrder(position.positionId)
+                        position to closePerpsOrder(position.positionId, position.quantity.toBigDecimalOrNull()?.abs()?.toPlainString().orEmpty())
                     }
                 }
                 .awaitAll()
@@ -1029,36 +1029,41 @@ class PerpetualViewModel @Inject constructor(
             onComplete(
                 BatchCloseResult(
                     failedPositions = failures.map { (position, _) -> position },
-                    errors = failures.map { (_, result) -> result.exceptionOrNull()?.message.orEmpty() },
+                    errors = failures.map { (_, result) -> closeOrderErrorMessage(requireNotNull(result.exceptionOrNull())) },
                 ),
             )
         }
     }
 
+    private fun closeOrderErrorMessage(error: Throwable): String = when (error) {
+        is MixinResponseException -> MixinApplication.appContext.getMixinErrorStringByCode(error.errorCode, error.errorDescription)
+        is IllegalArgumentException -> error.message ?: MixinApplication.appContext.getString(R.string.Data_error)
+        else -> ErrorHandler.getErrorMessage(error)
+    }
+
     private suspend fun closePerpsOrder(
         positionId: String,
-        quantity: String? = null,
+        quantity: String,
     ): Result<Unit> {
         return runCatching {
             val response = withContext(Dispatchers.IO) {
-                if (quantity != null) {
-                    val positionResponse = routeService.getPerpsPosition(positionId)
-                    check(positionResponse.isSuccess) { positionResponse.errorDescription.orEmpty() }
-                    val position = positionResponse.data
-                    require(position?.state == PerpsPosition.STATE_OPEN && perpsReduceQuantity(quantity, position.quantity, allowFullClose = false) != null) {
-                        MixinApplication.appContext.getString(R.string.perps_reduce_quantity_changed)
-                    }
+                val positionResponse = routeService.getPerpsPosition(positionId)
+                if (!positionResponse.isSuccess) throw MixinResponseException(positionResponse.errorCode, positionResponse.errorDescription)
+                val position = positionResponse.data
+                require(position?.state == PerpsPosition.STATE_OPEN && perpsReduceQuantity(quantity, position.quantity) != null) {
+                    MixinApplication.appContext.getString(R.string.perps_reduce_quantity_changed)
                 }
                 routeService.closePerpsOrder(CloseOrderRequest(positionId = positionId, quantity = quantity))
             }
 
             if (!response.isSuccess) {
-                error("Failed to close perps order: ${response.errorDescription}")
+                throw MixinResponseException(response.errorCode, response.errorDescription)
             }
 
             refreshSinglePosition(positionId)
             Timber.d("Perps close order submitted: $positionId")
         }.onFailure { error ->
+            if (error is CancellationException) throw error
             Timber.e(error, "Error closing perps order: $positionId")
         }
     }

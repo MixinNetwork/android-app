@@ -602,7 +602,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
 
     private fun showVerifyPinThenClose() {
         if (childFragmentManager.findFragmentByTag(VerifyBottomSheetDialogFragment.TAG) != null) return
-        if (isReducePosition && perpsReduceQuantity(reduceQuantity.orEmpty(), latestQuantity, allowFullClose = false) == null) {
+        if (isReducePosition && perpsReduceQuantity(reduceQuantity.orEmpty(), latestQuantity) == null) {
             errorInfo = getString(R.string.perps_reduce_quantity_changed)
             step = Step.Error
             return
@@ -644,7 +644,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         step = Step.Sending
         viewModel.closePerpsOrder(
             positionId = positionId,
-            quantity = reduceQuantity,
+            quantity = reduceQuantity ?: latestQuantity.toBigDecimalOrNull()?.abs()?.toPlainString().orEmpty(),
             onSuccess = {
                 step = Step.Done
                 AnalyticsTracker.trackPerpsCloseEnd()

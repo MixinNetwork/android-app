@@ -343,6 +343,8 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
             val successfulCount = attemptedPositions.size - result.failedPositions.size
             if (successfulCount > 0) {
                 AnalyticsTracker.trackPerpsCloseEnd()
+            }
+            if (result.failedPositions.isEmpty()) {
                 step = Step.Done
             } else {
                 remainingPositions = result.failedPositions

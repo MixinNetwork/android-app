@@ -119,11 +119,14 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         val input = if (isPercentage == enteredAsPercentage) enteredInput else {
             (if (isPercentage) percentage else amount)?.stripTrailingZeros()?.toPlainString().orEmpty()
         }
+        val minimum = market?.minOrderValue?.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val error = when {
             observedPosition?.state != PerpsPosition.STATE_OPEN -> stringResource(R.string.perps_reduce_quantity_changed)
             (enteredAsPercentage && inputValue > BigDecimal(100)) || (!enteredAsPercentage && size != null && inputValue > size) ->
                 stringResource(R.string.perps_reduce_invalid_quantity)
             market != null && inputValue > BigDecimal.ZERO && quantity == null -> stringResource(R.string.perps_reduce_invalid_quantity)
+            quantity != null && !perpsReductionMeetsMinimum(quantity, current, price, minimum) ->
+                stringResource(R.string.error_perps_position_size_too_small_value, "\$${minimum.stripTrailingZeros().toPlainString()}")
             else -> null
         }
         val canSubmit = quantity != null && error == null
@@ -213,7 +216,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         onClick = {
                             if (quantity != null && canSubmit && parentFragmentManager.findFragmentByTag(PerpsCloseBottomSheetDialogFragment.TAG) == null) {
                                 keyboard?.hide()
-                                PerpsCloseBottomSheetDialogFragment.newInstance(position.toPosition(), reduceQuantity = quantity.takeIf { it.compareTo(current) != 0 }?.stripTrailingZeros()?.toPlainString())
+                                PerpsCloseBottomSheetDialogFragment.newInstance(position.toPosition(), reduceQuantity = quantity.stripTrailingZeros().toPlainString())
                                     .show(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                                 dismiss()
                             }

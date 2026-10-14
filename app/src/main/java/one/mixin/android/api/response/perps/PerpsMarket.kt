@@ -75,6 +75,10 @@ data class PerpsMarket(
     @ColumnInfo(name = "min_amount")
     val minAmount: String,
 
+    @SerializedName("min_order_value")
+    @ColumnInfo(name = "min_order_value", defaultValue = "'0'")
+    val minOrderValue: String = "0",
+
     @SerializedName("max_amount")
     @ColumnInfo(name = "max_amount")
     val maxAmount: String,
@@ -136,4 +140,5 @@ fun PerpsMarket.withDefaults(): PerpsMarket =
         fundingIntervalHours = fundingIntervalHours.coerceAtLeast(0),
         nextFundingAt = (nextFundingAt as String?) ?: "",
         openInterest = (openInterest as String?) ?: "0",
+        minOrderValue = (minOrderValue as String?) ?: "0",
     )

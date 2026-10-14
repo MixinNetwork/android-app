@@ -3,11 +3,11 @@ package one.mixin.android.ui.home.web3.trade.perps
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-internal fun perpsReduceQuantity(input: String, currentQuantity: String, allowFullClose: Boolean = true): BigDecimal? {
+internal fun perpsReduceQuantity(input: String, currentQuantity: String): BigDecimal? {
     if (input.length > 40 || input.any { it !in '0'..'9' && it != '.' }) return null
     val quantity = input.toBigDecimalOrNull() ?: return null
     val current = currentQuantity.toBigDecimalOrNull()?.abs() ?: return null
-    return quantity.takeIf { it > BigDecimal.ZERO && it <= current && (allowFullClose || it < current) }
+    return quantity.takeIf { it > BigDecimal.ZERO && it <= current }
 }
 
 internal fun perpsReductionQuantity(currentQuantity: String, markPrice: String?, input: String, isPercentage: Boolean, quantityScale: Int): BigDecimal? {
@@ -29,4 +29,10 @@ internal fun perpsReductionValue(value: String?, quantity: String, currentQuanti
     val total = value?.toBigDecimalOrNull() ?: return null
     val reduction = perpsReduceQuantity(quantity, currentQuantity) ?: return null
     return total.multiply(reduction).divide(BigDecimal(currentQuantity).abs(), 16, RoundingMode.DOWN)
+}
+
+internal fun perpsReductionMeetsMinimum(quantity: BigDecimal, current: BigDecimal, price: BigDecimal?, minimum: BigDecimal): Boolean {
+    if (quantity.compareTo(current.abs()) == 0 || minimum <= BigDecimal.ZERO) return true
+    if (price == null || price <= BigDecimal.ZERO) return false
+    return quantity.multiply(price) >= minimum && current.abs().subtract(quantity).multiply(price) >= minimum
 }
