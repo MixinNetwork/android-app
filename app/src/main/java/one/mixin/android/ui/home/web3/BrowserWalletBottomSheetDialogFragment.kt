@@ -464,7 +464,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     step = Step.Sending
                     val sig = tx.signatureFor(Web3Signer.solanaAddress)
                     val rawTx = tx.serialize().base64Encode()
-                    if (tx.allSignerSigned()) {
+                    if (tx.allSignerSigned() && (signMessage.solanaTxSource != SolanaTxSource.Web || signMessage.broadcast)) {
                         viewModel.postRawTx(rawTx, Constants.ChainId.Solana, Web3Signer.solanaAddress, toAddress, token?.assetId, if (isFeeWaived) "free" else null)
                         onTxhash?.invoke(tx.signatures.first(), rawTx)
                     }
@@ -502,6 +502,8 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private suspend fun updateTxPriorityFee(tx: VersionedTransactionCompat, solanaTxSource: SolanaTxSource): VersionedTransactionCompat {
+        // The provider attaches our signature to the original message for every version.
+        if (solanaTxSource == SolanaTxSource.Web) return tx
         // External V1 callers assemble the signature with their original message bytes.
         if (tx.isV1 && !solanaTxSource.isInnerTx()) return tx
         if (solanaTxSource.isConnectDapp() && tx.calcPriorityFee() != BigDecimal.ZERO) {

@@ -9,6 +9,7 @@
         solana: {
             cluster: "%4$s",
             supportsV1Transactions: true,
+            nativeTransactionBroadcast: true,
         },
         isDebug: false
     };
