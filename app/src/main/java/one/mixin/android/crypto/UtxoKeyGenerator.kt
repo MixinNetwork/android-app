@@ -6,9 +6,7 @@ import one.mixin.android.extension.hexString
 import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.bip44.generateBip44Key
 import org.bitcoinj.base.Address
-import org.bitcoinj.base.AddressParser
 import org.bitcoinj.base.BitcoinNetwork
-import org.bitcoinj.base.Network
 import org.bitcoinj.base.ScriptType
 import org.bitcoinj.base.SegwitAddress
 import org.bitcoinj.crypto.DumpedPrivateKey
@@ -23,18 +21,9 @@ import java.security.MessageDigest
 object UtxoKeyGenerator {
     private const val MIN_PEARL_SEED_SIZE = 16
     private const val MAX_PEARL_SEED_SIZE = 64
-    private const val PEARL_HRP = "prl"
     private const val TAP_TWEAK_TAG = "TapTweak"
     private val curve = ECKey.ecDomainParameters()
     private val curveOrder = curve.n
-
-    private object PearlNetwork : Network by BitcoinNetwork.MAINNET {
-        override fun id(): String = "org.pearl.production"
-
-        override fun segwitAddressHrp(): String = PEARL_HRP
-
-        override fun uriScheme(): String = "pearl"
-    }
 
     fun getPrivateKeyFromMnemonic(
         mnemonic: String,
@@ -53,6 +42,7 @@ object UtxoKeyGenerator {
         when (chainId) {
             Constants.ChainId.BITCOIN_CHAIN_ID -> deriveBitcoinPrivateKey(seed, index)
             Constants.ChainId.PEARL_CHAIN_ID -> derivePearlPrivateKey(seed, index)
+            Constants.ChainId.Litecoin -> deriveLitecoinPrivateKey(seed, index)
             else -> unsupportedChain(chainId)
         }
 
@@ -68,6 +58,11 @@ object UtxoKeyGenerator {
             Constants.ChainId.PEARL_CHAIN_ID -> {
                 SegwitAddress.fromProgram(PearlNetwork, 1, taprootOutputKey(privateKey)).toString()
             }
+            Constants.ChainId.Litecoin -> {
+                validateSecp256k1PrivateKey(privateKey)
+                val ecKey = ECKey.fromPrivate(BigInteger(1, privateKey), true)
+                ecKey.toAddress(ScriptType.P2WPKH, LitecoinNetwork).toString()
+            }
             else -> unsupportedChain(chainId)
         }
 
@@ -75,23 +70,40 @@ object UtxoKeyGenerator {
         privateKey: String,
         chainId: String,
     ): String {
-        val dumpedPrivateKey = runCatching {
-            DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKey)
-        }.getOrNull()
         return when (chainId) {
             Constants.ChainId.BITCOIN_CHAIN_ID -> {
+                val dumpedPrivateKey = runCatching {
+                    DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKey)
+                }.getOrNull()
                 dumpedPrivateKey?.key
                     ?.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET)
                     ?.toString()
                     ?: privateKeyToAddress(Numeric.hexStringToByteArray(privateKey), chainId)
             }
             Constants.ChainId.PEARL_CHAIN_ID -> {
+                val dumpedPrivateKey = runCatching {
+                    DumpedPrivateKey.fromBase58(BitcoinNetwork.MAINNET, privateKey)
+                }.getOrNull()
                 val privateKeyBytes = dumpedPrivateKey?.key?.privKeyBytes
                     ?: Numeric.hexStringToByteArray(privateKey)
                 privateKeyToAddress(privateKeyBytes, chainId)
             }
+            Constants.ChainId.Litecoin -> {
+                val privateKeyBytes = parseLitecoinPrivateKey(privateKey)
+                privateKeyToAddress(privateKeyBytes, chainId)
+            }
             else -> unsupportedChain(chainId)
         }
+    }
+
+    fun parseLitecoinPrivateKey(privateKey: String): ByteArray {
+        val bytes = if (litecoinHexPrivateKey.matches(privateKey)) {
+            Numeric.hexStringToByteArray(privateKey.removePrefix("0x").removePrefix("0X"))
+        } else {
+            UtxoChainConfig.forChain(Constants.ChainId.Litecoin).wif.decode(privateKey)
+        }
+        validateSecp256k1PrivateKey(bytes)
+        return bytes
     }
 
     fun mnemonicToAddress(
@@ -106,6 +118,7 @@ object UtxoKeyGenerator {
                 privateKeyToAddress(deriveBitcoinPrivateKey(seed, index), chainId)
             }
             Constants.ChainId.PEARL_CHAIN_ID -> derivePearlFromSeed(seed, index).address
+            Constants.ChainId.Litecoin -> privateKeyToAddress(deriveLitecoinPrivateKey(seed, index), chainId)
             else -> unsupportedChain(chainId)
         }
     }
@@ -123,6 +136,7 @@ object UtxoKeyGenerator {
         when (chainId) {
             Constants.ChainId.BITCOIN_CHAIN_ID -> deriveBitcoinFromTipSeed(seed, index)
             Constants.ChainId.PEARL_CHAIN_ID -> derivePearlFromSeed(seed, index)
+            Constants.ChainId.Litecoin -> deriveLitecoinFromTipSeed(seed, index)
             else -> unsupportedChain(chainId)
         }
 
@@ -130,20 +144,7 @@ object UtxoKeyGenerator {
         address: String,
         chainId: String,
     ): Address =
-        when (chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                AddressParser.getDefault(BitcoinNetwork.MAINNET).parseAddress(address)
-            }
-            Constants.ChainId.PEARL_CHAIN_ID -> {
-                val parsedAddress = SegwitAddress.fromBech32(address, PearlNetwork)
-                require(
-                    parsedAddress.witnessVersion == 1 &&
-                        parsedAddress.witnessProgram.size == SegwitAddress.WITNESS_PROGRAM_LENGTH_TR,
-                ) { "Invalid Pearl address" }
-                parsedAddress
-            }
-            else -> unsupportedChain(chainId)
-        }
+        UtxoChainConfig.forChain(chainId).parseAddress(address)
 
     internal fun taprootOutputKey(privateKey: ByteArray): ByteArray {
         val privateKeyValue = validatePrivateKey(privateKey)
@@ -196,6 +197,11 @@ object UtxoKeyGenerator {
         return TipDerivedKey(privateKey, address)
     }
 
+    private fun deriveLitecoinFromTipSeed(seed: ByteArray, index: Int): TipDerivedKey {
+        val privateKey = deriveLitecoinPrivateKey(seed, index)
+        return TipDerivedKey(privateKey, privateKeyToAddress(privateKey, Constants.ChainId.Litecoin))
+    }
+
     private fun deriveBitcoinPrivateKey(seed: ByteArray, index: Int): ByteArray {
         val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
         val bip84KeyPair = generateBip44Key(masterKeyPair, Bip44Path.bitcoinSegwit(index))
@@ -207,6 +213,13 @@ object UtxoKeyGenerator {
         require(index >= 0) { "Invalid Pearl address index" }
         val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
         val keyPair = generateBip44Key(masterKeyPair, Bip44Path.pearl(index))
+        return Numeric.toBytesPadded(keyPair.privateKey, 32)
+    }
+
+    private fun deriveLitecoinPrivateKey(seed: ByteArray, index: Int): ByteArray {
+        require(index >= 0) { "Invalid Litecoin address index" }
+        val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
+        val keyPair = generateBip44Key(masterKeyPair, Bip44Path.litecoinSegwit(index))
         return Numeric.toBytesPadded(keyPair.privateKey, 32)
     }
 
@@ -247,4 +260,6 @@ object UtxoKeyGenerator {
     private fun ByteArray.toPositiveBigInteger(): BigInteger {
         return if (isEmpty()) BigInteger.ZERO else BigInteger(1, this)
     }
+
+    private val litecoinHexPrivateKey = Regex("^(?:0[xX])?[0-9a-fA-F]{64}$")
 }

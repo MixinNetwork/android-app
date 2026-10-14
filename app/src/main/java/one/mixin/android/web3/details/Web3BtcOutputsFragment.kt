@@ -101,6 +101,7 @@ class Web3BtcOutputsFragment : BaseFragment() {
 
     private fun utxoTitle(chainId: String): String = when (chainId) {
         Constants.ChainId.PEARL_CHAIN_ID -> "PRL UTXO"
+        Constants.ChainId.Litecoin -> "LTC UTXO"
         else -> "BTC UTXO"
     }
 
