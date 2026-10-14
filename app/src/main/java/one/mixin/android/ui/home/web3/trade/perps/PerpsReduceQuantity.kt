@@ -34,5 +34,5 @@ internal fun perpsReductionValue(value: String?, quantity: String, currentQuanti
 internal fun perpsReductionMeetsMinimum(quantity: BigDecimal, current: BigDecimal, price: BigDecimal?, minimum: BigDecimal): Boolean {
     if (quantity.compareTo(current.abs()) == 0 || minimum <= BigDecimal.ZERO) return true
     if (price == null || price <= BigDecimal.ZERO) return false
-    return quantity.multiply(price) >= minimum && current.abs().subtract(quantity).multiply(price) >= minimum
+    return current.abs().subtract(quantity).multiply(price) >= minimum
 }

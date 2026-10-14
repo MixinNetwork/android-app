@@ -108,25 +108,27 @@ class PerpsReduceQuantityTest {
     }
 
     @Test
-    fun minimumAppliesToRoundedOrderAndRemainingValueButNotFullClose() {
+    fun minimumAppliesOnlyToRemainingValueAndExemptsFullClose() {
         val current = BigDecimal("1")
         val price = BigDecimal("100")
         val minimum = BigDecimal("10")
         for (percentage in listOf(true, false)) {
-            for (input in listOf("9.99", "90.01")) {
+            for (input in listOf("90.01", "99.99")) {
                 val quantity = requireNotNull(perpsReductionQuantity("1", "100", input, percentage, 4))
                 assertFalse(perpsReductionMeetsMinimum(quantity, current, price, minimum))
             }
-            for (input in listOf("10", "90", "100")) {
+            for (input in listOf("2", "9.99", "10", "90", "100")) {
                 val quantity = requireNotNull(perpsReductionQuantity("1", "100", input, percentage, 4))
                 assertTrue(perpsReductionMeetsMinimum(quantity, current, price, minimum))
             }
         }
+        assertTrue(perpsReductionMeetsMinimum(BigDecimal("0.02"), current, price, BigDecimal("5")))
+        assertFalse(perpsReductionMeetsMinimum(BigDecimal("0.96"), current.negate(), price, BigDecimal("5")))
         assertTrue(perpsReductionMeetsMinimum(BigDecimal("0.01"), BigDecimal("-0.01"), price, minimum))
         assertFalse(perpsReductionMeetsMinimum(BigDecimal("0.5"), current, null, minimum))
         assertTrue(perpsReductionMeetsMinimum(BigDecimal("0.01"), current, price, BigDecimal.ZERO))
         val rounded = requireNotNull(perpsReductionQuantity("1", "3", "1", false, 2))
-        assertFalse(perpsReductionMeetsMinimum(rounded, current, BigDecimal("3"), BigDecimal.ONE))
+        assertTrue(perpsReductionMeetsMinimum(rounded, current, BigDecimal("3"), BigDecimal.ONE))
     }
 
     private fun assertDecimal(expected: String, actual: BigDecimal?) {
