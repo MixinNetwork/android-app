@@ -38,6 +38,9 @@ data class PerpsOrder(
     @SerializedName("pay_amount")
     @ColumnInfo(name = "pay_amount")
     val payAmount: String = "0",
+    @SerializedName("margin_amount")
+    @ColumnInfo(name = "margin_amount", defaultValue = "''")
+    val marginAmount: String = "",
     @SerializedName("fee_amount")
     @ColumnInfo(name = "fee_amount", defaultValue = "'0'")
     val feeAmount: String = "0",
@@ -92,3 +95,8 @@ data class PerpsOrder(
         const val CLOSE_REASON_LIQUIDATION = "liquidation"
     }
 }
+
+fun PerpsOrder.withDefaults(): PerpsOrder = copy(
+    payAmount = (payAmount as String?) ?: "0",
+    marginAmount = (marginAmount as String?) ?: "",
+)

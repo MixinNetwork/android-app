@@ -784,6 +784,7 @@
     <string name="perps_close_submitted">Order penutupan telah diajukan</string>
     <string name="perps_reduce_quantity_changed">Posisi telah berubah. Kembali dan periksa jumlahnya sebelum mencoba lagi.</string>
     <string name="perps_reduce_invalid_quantity">Masukkan nominal lebih besar dari nol yang tidak melebihi nilai posisi saat ini.</string>
+    <string name="perps_minimum_order_size">Ukuran order minimum adalah %1$s</string>
     <string name="Estimated_Fee">Estimasi Biaya</string>
     <string name="perps_estimated_realized_pnl">Estimasi PnL Terealisasi</string>
     <string name="perps_last_price">Harga Terakhir</string>

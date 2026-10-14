@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 11,
-    "identityHash": "f9fea04add262ec8f3fb78796c0a742c",
+    "identityHash": "460d8f9b85862ba2b70c6bb1b29e3ace",
     "entities": [
       {
         "tableName": "positions",
@@ -147,7 +147,7 @@
       },
       {
         "tableName": "perps_orders",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`order_id` TEXT NOT NULL, `position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `order_type` TEXT NOT NULL, `status` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `quantity` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `fee_amount` TEXT NOT NULL DEFAULT '0', `entry_price` TEXT NOT NULL, `close_price` TEXT NOT NULL, `realized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `net_realized_pnl` TEXT NOT NULL DEFAULT '', `net_roe` TEXT NOT NULL DEFAULT '', `profit_share_amount` TEXT NOT NULL DEFAULT '', `close_reason` TEXT, `trigger_price` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`order_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`order_id` TEXT NOT NULL, `position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `order_type` TEXT NOT NULL, `status` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `quantity` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `margin_amount` TEXT NOT NULL DEFAULT '', `fee_amount` TEXT NOT NULL DEFAULT '0', `entry_price` TEXT NOT NULL, `close_price` TEXT NOT NULL, `realized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `net_realized_pnl` TEXT NOT NULL DEFAULT '', `net_roe` TEXT NOT NULL DEFAULT '', `profit_share_amount` TEXT NOT NULL DEFAULT '', `close_reason` TEXT, `trigger_price` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`order_id`))",
         "fields": [
           {
             "fieldPath": "orderId",
@@ -202,6 +202,13 @@
             "columnName": "pay_amount",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "marginAmount",
+            "columnName": "margin_amount",
+            "affinity": "TEXT",
+            "notNull": true,
+            "defaultValue": "''"
           },
           {
             "fieldPath": "feeAmount",
@@ -552,7 +559,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'f9fea04add262ec8f3fb78796c0a742c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '460d8f9b85862ba2b70c6bb1b29e3ace')"
     ]
   }
 }

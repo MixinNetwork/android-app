@@ -36,6 +36,7 @@ import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.PerpsDatabase
@@ -1206,7 +1207,7 @@ class PerpetualViewModel @Inject constructor(
     private suspend fun upsertSyncedOrders(orders: List<PerpsOrder>) {
         if (orders.isEmpty()) return
 
-        perpsOrderDao.insertAll(orders)
+        perpsOrderDao.insertAll(orders.map { it.withDefaults() })
 
         orders.filter { it.orderType == PerpsOrder.TYPE_CLOSE }
             .distinctBy { it.positionId }

@@ -71,8 +71,8 @@ class Room3DatabaseCompatibilityTest {
                     '2026-09-28T00:00:00Z', '2026-09-28T00:00:00Z'
                 )
             """.trimIndent(),
-            "SELECT realized_pnl || ':' || roe || ':' || COALESCE(net_realized_pnl, 'missing') || ':' || COALESCE(net_roe, 'missing') || ':' || COALESCE(profit_share_amount, 'missing') FROM perps_orders",
-            "10:0.1:::",
+            "SELECT realized_pnl || ':' || roe || ':' || COALESCE(net_realized_pnl, 'missing') || ':' || COALESCE(net_roe, 'missing') || ':' || COALESCE(profit_share_amount, 'missing') || ':' || pay_amount || ':' || margin_amount FROM perps_orders",
+            "10:0.1::::10:",
             schemaVersion = 9,
             migrations = arrayOf(PerpsDatabase.MIGRATION_9_10, PerpsDatabase.MIGRATION_10_11),
         )

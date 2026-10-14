@@ -328,7 +328,7 @@ private fun PerpsAddContent(
         .ifBlank { position.entryPrice }
     val priceScale = market?.priceScale ?: position.priceScale
 
-    LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin, position.updatedAt, market?.last) {
+    LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin, position.updatedAt, position.margin, position.quantity, position.liquidationPrice, currentPrice, market?.markPrice) {
         if (!shouldRequestLiquidationPrice(amountValue, minimumMargin) || aboveMaximumMargin) {
             liquidationPriceLimit = null
             liquidationError = null

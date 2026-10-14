@@ -1167,6 +1167,7 @@
     <string name="perps_close_submitted">Ордер на закрытие отправлен</string>
     <string name="perps_reduce_quantity_changed">Позиция изменилась. Вернитесь и проверьте количество перед повторной попыткой.</string>
     <string name="perps_reduce_invalid_quantity">Введите сумму больше нуля, не превышающую текущую стоимость позиции.</string>
+    <string name="perps_minimum_order_size">Минимальный размер ордера — %1$s</string>
     <string name="Estimated_Fee">Расчётная комиссия</string>
     <string name="perps_estimated_realized_pnl">Ожидаемая реализованная прибыль/убыток</string>
     <string name="perps_last_price">Последняя цена</string>

@@ -849,6 +849,7 @@
     <string name="perps_close_submitted">Pesanan penutupan dihantar</string>
     <string name="perps_reduce_quantity_changed">Posisi telah berubah. Kembali dan semak kuantiti sebelum mencuba lagi.</string>
     <string name="perps_reduce_invalid_quantity">Masukkan amaun lebih besar daripada sifar yang tidak melebihi nilai posisi semasa.</string>
+    <string name="perps_minimum_order_size">Saiz pesanan minimum ialah %1$s</string>
     <string name="Estimated_Fee">Anggaran Yuran</string>
     <string name="perps_estimated_realized_pnl">Anggaran PnL Direalisasikan</string>
     <string name="perps_last_price">Harga Terakhir</string>

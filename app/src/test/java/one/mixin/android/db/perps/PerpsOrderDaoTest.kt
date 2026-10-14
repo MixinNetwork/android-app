@@ -7,6 +7,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.realizedPnlForDisplay
 import one.mixin.android.api.response.perps.roeForDisplay
@@ -33,6 +34,20 @@ class PerpsOrderDaoTest {
 
     @After
     fun tearDown() = database.close()
+
+    @Test
+    fun marginAmountSurvivesStorageWithoutDeprecatedPaymentField() = runBlocking {
+        val gson = Gson()
+        val json = gson.toJsonTree(order("01", PerpsOrder.TYPE_OPEN)).asJsonObject
+        json.remove("pay_amount")
+        json.addProperty("margin_amount", "9.92")
+        val response = gson.fromJson(json, PerpsOrder::class.java).withDefaults()
+        database.perpsOrderDao().insertAll(listOf(response))
+        assertEquals("9.92", database.perpsOrderDao().getOrder("01")?.marginAmount)
+        json.remove("margin_amount")
+        val legacy = gson.fromJson(json, PerpsOrder::class.java).withDefaults()
+        assertEquals("", legacy.marginAmount)
+    }
 
     @Test
     fun allHistoryQueriesIncludeMarginOrdersAndExcludeProcessingOrders() = runBlocking {
@@ -134,7 +149,7 @@ class PerpsOrderDaoTest {
         status = PerpsOrder.STATUS_FILLED,
         leverage = 10,
         quantity = "1",
-        payAmount = "10",
+        marginAmount = "10",
         entryPrice = "100",
         closePrice = "0",
         realizedPnl = "0",

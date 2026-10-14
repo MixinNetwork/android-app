@@ -11,11 +11,11 @@ import kotlin.test.assertTrue
 
 class PerpsMarginAmountTest {
     @Test
-    fun openedOrderMarginDeductsFeeFromPayment() {
-        assertEquals(BigDecimal("9.92"), perpsOpenedOrderMargin("10", "0.08"))
-        assertEquals(BigDecimal("10"), perpsOpenedOrderMargin("10", "0"))
-        assertNull(perpsOpenedOrderMargin("invalid", "0.08"))
-        assertNull(perpsOpenedOrderMargin("10", ""))
+    fun openedOrderAmountAddsFeeToMargin() {
+        assertEquals(BigDecimal("10.08"), perpsOpenedOrderAmount("10", "0.08"))
+        assertEquals(BigDecimal("10"), perpsOpenedOrderAmount("10", "0"))
+        assertNull(perpsOpenedOrderAmount("invalid", "0.08"))
+        assertNull(perpsOpenedOrderAmount("10", ""))
     }
 
     @Test

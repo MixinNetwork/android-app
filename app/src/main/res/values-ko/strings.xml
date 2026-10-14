@@ -2703,6 +2703,7 @@
     <string name="perps_close_submitted">포지션 종료 주문이 제출되었습니다</string>
     <string name="perps_reduce_quantity_changed">포지션이 변경되었습니다. 이전 화면으로 돌아가 수량을 확인한 후 다시 시도하세요.</string>
     <string name="perps_reduce_invalid_quantity">0보다 크고 현재 포지션 규모를 초과하지 않는 금액을 입력하세요.</string>
+    <string name="perps_minimum_order_size">최소 주문 규모는 %1$s입니다</string>
     <string name="Estimated_Fee">예상 수수료</string>
     <string name="perps_estimated_realized_pnl">예상 실현 손익</string>
     <string name="perps_last_price">최근 체결 가격</string>

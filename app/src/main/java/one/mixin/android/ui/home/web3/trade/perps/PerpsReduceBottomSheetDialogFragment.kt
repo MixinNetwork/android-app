@@ -126,7 +126,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 stringResource(R.string.perps_reduce_invalid_quantity)
             market != null && inputValue > BigDecimal.ZERO && quantity == null -> stringResource(R.string.perps_reduce_invalid_quantity)
             quantity != null && !perpsReductionMeetsMinimum(quantity, current, price, minimum) ->
-                stringResource(R.string.error_perps_position_size_too_small_value, "\$${minimum.stripTrailingZeros().toPlainString()}")
+                stringResource(R.string.perps_minimum_order_size, "\$${minimum.stripTrailingZeros().toPlainString()}")
             else -> null
         }
         val canSubmit = quantity != null && error == null

@@ -716,7 +716,7 @@ fun OpenedOrderDetailPage(
         PerpsOrder.TYPE_DECREASE_MARGIN -> "-"
         else -> ""
     }
-    val amountText = openedOrder.payAmount.toBigDecimalOrNull()?.let {
+    val amountText = perpsOpenedOrderAmount(openedOrder.marginAmount, openedOrder.feeAmount)?.let {
         "$adjustmentSign${formatPerpsUsdDecimal(it.abs())}"
     }
 
@@ -864,7 +864,7 @@ fun OpenedOrderDetailPage(
                     Spacer(modifier = Modifier.height(20.dp))
                     PositionDetailItem(
                         label = stringResource(R.string.Margin).uppercase(),
-                        value = perpsOpenedOrderMargin(openedOrder.payAmount, openedOrder.feeAmount)
+                        value = openedOrder.marginAmount.toBigDecimalOrNull()
                             ?.let(::formatPerpsUsdDecimal) ?: "--",
                     )
                     Spacer(modifier = Modifier.height(20.dp))

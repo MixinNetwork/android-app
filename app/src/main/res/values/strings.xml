@@ -2735,6 +2735,7 @@
     <string name="perps_close_submitted">Close order submitted</string>
     <string name="perps_reduce_quantity_changed">The position has changed. Please return and check the quantity before trying again.</string>
     <string name="perps_reduce_invalid_quantity">Enter a positive amount within the current position size.</string>
+    <string name="perps_minimum_order_size">Minimum order size is %1$s</string>
     <string name="Estimated_Fee">Estimated Fee</string>
     <string name="perps_estimated_realized_pnl">Estimated Realized PnL</string>
     <string name="perps_last_price">Last Price</string>

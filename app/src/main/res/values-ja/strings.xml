@@ -1172,6 +1172,7 @@
     <string name="perps_close_submitted">決済注文を送信しました</string>
     <string name="perps_reduce_quantity_changed">ポジションが変更されました。前の画面に戻り、数量を確認してから再試行してください。</string>
     <string name="perps_reduce_invalid_quantity">現在のポジション金額以下の、ゼロより大きい金額を入力してください。</string>
+    <string name="perps_minimum_order_size">最小注文サイズは %1$s です</string>
     <string name="Estimated_Fee">推定手数料</string>
     <string name="perps_estimated_realized_pnl">予想実現損益</string>
     <string name="perps_last_price">最終取引価格</string>

@@ -2704,6 +2704,7 @@
     <string name="perps_close_submitted">平倉訂單已提交</string>
     <string name="perps_reduce_quantity_changed">持倉已變化，請返回核對數量後重試。</string>
     <string name="perps_reduce_invalid_quantity">請輸入大於零且不超過當前倉位的金額。</string>
+    <string name="perps_minimum_order_size">最小下單金額為 %1$s</string>
     <string name="Estimated_Fee">預估手續費</string>
     <string name="perps_estimated_realized_pnl">預計淨盈虧</string>
     <string name="perps_last_price">最新價格</string>

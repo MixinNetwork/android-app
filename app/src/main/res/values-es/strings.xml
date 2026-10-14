@@ -1226,6 +1226,7 @@
     <string name="perps_close_submitted">Orden de cierre enviada</string>
     <string name="perps_reduce_quantity_changed">La posición ha cambiado. Vuelve y comprueba la cantidad antes de intentarlo de nuevo.</string>
     <string name="perps_reduce_invalid_quantity">Introduce un importe mayor que cero que no supere el valor de la posición actual.</string>
+    <string name="perps_minimum_order_size">El tamaño mínimo de la orden es %1$s</string>
     <string name="Estimated_Fee">Comisión estimada</string>
     <string name="perps_estimated_realized_pnl">PnL realizado estimado</string>
     <string name="perps_last_price">Último precio</string>
