@@ -78,6 +78,13 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         requireNotNull(requireArguments().getParcelableCompat(ARGS_POSITION, PerpsPositionItem::class.java))
     }
 
+    private var onDoneAction: (() -> Unit)? = null
+
+    fun setOnDone(callback: () -> Unit): PerpsReduceBottomSheetDialogFragment {
+        onDoneAction = callback
+        return this
+    }
+
     override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun getBottomSheetHeight(view: View): Int = requireContext().screenHeight() - view.getSafeAreaInsetsTop()
@@ -95,7 +102,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         val position = observedPosition ?: initialPosition
         var market by remember(position.marketId) { mutableStateOf<PerpsMarket?>(null) }
         var quantityScaleReady by remember(position.marketId) { mutableStateOf(false) }
-        var enteredInput by rememberSaveable { mutableStateOf("") }
+        var enteredInput by rememberSaveable { mutableStateOf("100") }
         var enteredAsPercentage by rememberSaveable { mutableStateOf(true) }
         var isPercentage by rememberSaveable { mutableStateOf(true) }
         val keyboard = LocalSoftwareKeyboardController.current
@@ -200,11 +207,13 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         PerpsAddInfoRow(
                             title = stringResource(R.string.Estimated_Receive),
+                            valueColor = MixinAppTheme.colors.textPrimary,
                             value = receive?.let(::formatPerpsRawUsdDecimal) ?: "--",
                         )
                         Column(horizontalAlignment = Alignment.End) {
                             PerpsAddInfoRow(
                                 title = stringResource(R.string.Margin),
+                                valueColor = MixinAppTheme.colors.textPrimary,
                                 value = margin?.let { if (it.signum() < 0) formatPerpsSignedRawUsdDecimal(it) else formatPerpsRawUsdDecimal(it) } ?: "--",
                             )
                             Spacer(Modifier.height(4.dp))
@@ -212,6 +221,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         }
                         PerpsAddInfoRow(
                             title = stringResource(R.string.Fee),
+                            valueColor = MixinAppTheme.colors.textPrimary,
                             value = fee?.let(::formatPerpsRawUsdDecimal) ?: "--",
                             onTipClick = {
                                 PerpetualGuideBottomSheetDialogFragment.newInstance(
@@ -236,6 +246,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             if (quantity != null && canSubmit && parentFragmentManager.findFragmentByTag(PerpsCloseBottomSheetDialogFragment.TAG) == null) {
                                 keyboard?.hide()
                                 PerpsCloseBottomSheetDialogFragment.newInstance(position.toPosition(), reduceQuantity = quantity.stripTrailingZeros().toPlainString())
+                                    .apply { onDoneAction?.let { setOnDone(it) } }
                                     .show(parentFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
                                 dismiss()
                             }

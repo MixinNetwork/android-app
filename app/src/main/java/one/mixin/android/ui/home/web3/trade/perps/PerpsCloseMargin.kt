@@ -24,7 +24,7 @@ internal fun PerpsCloseMargin(pnl: BigDecimal?, margin: BigDecimal?) {
         Text(stringResource(R.string.Margin).uppercase(), color = MixinAppTheme.colors.textRemarks, fontSize = 14.sp)
         Spacer(Modifier.height(8.dp))
         Text(margin?.let { if (it.signum() < 0) formatPerpsSignedRawUsdDecimal(it) else formatPerpsRawUsdDecimal(it) } ?: "--", color = MixinAppTheme.colors.textPrimary, fontSize = 16.sp)
-        Spacer(Modifier.height(4.dp))
+        Spacer(Modifier.height(6.dp))
         PerpsIncludedPnl(pnl)
     }
 }
@@ -35,7 +35,7 @@ internal fun PerpsIncludedPnl(pnl: BigDecimal?) {
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
     val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     Row {
-        Text(stringResource(R.string.perps_include_pnl), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
+        Text(stringResource(R.string.perps_include_pnl), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 18.sp)
         Spacer(Modifier.width(4.dp))
         Text(
             text = pnl?.let(::formatPerpsSignedRawUsdDecimal) ?: "--",
@@ -44,7 +44,8 @@ internal fun PerpsIncludedPnl(pnl: BigDecimal?) {
                 pnl.signum() > 0 -> risingColor
                 else -> fallingColor
             },
-            fontSize = 12.sp,
+            fontSize = 14.sp,
+            lineHeight = 18.sp,
         )
     }
 }

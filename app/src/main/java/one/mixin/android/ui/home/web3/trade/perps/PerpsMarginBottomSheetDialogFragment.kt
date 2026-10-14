@@ -570,11 +570,13 @@ private fun PerpsMarginContent(
                 val currentMarginText = position.margin?.toBigDecimalOrNull()?.let { formatPerpsMarginAmount(it) } ?: "-"
                 PerpsAddInfoRow(
                     title = stringResource(R.string.Margin),
+                    valueColor = MixinAppTheme.colors.textPrimary,
                     value = if (totalMargin != null) "$currentMarginText → ${formatPerpsMarginAmount(totalMargin)}" else currentMarginText,
                 )
                 Spacer(Modifier.height(16.dp))
                 PerpsAddInfoRow(
                     title = stringResource(R.string.Liquidation_Price),
+                    valueColor = MixinAppTheme.colors.textPrimary,
                     value = listOfNotNull(
                         position.liquidationPrice?.takeIf { it.isNotBlank() }?.let { formatPerpsPrice(it, priceScale) } ?: "-",
                         estimatedLiquidationPrice?.let { formatPerpsPrice(it, priceScale) },

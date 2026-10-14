@@ -74,7 +74,6 @@ import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
-import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -157,13 +156,6 @@ fun PerpsMarketDetailPage(
         val position = currentPosition
         if (activity != null && position?.state == PerpsPosition.STATE_OPEN && !isAddingProcessing) {
             when (action) {
-                PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_POSITION -> {
-                    if (activity.supportFragmentManager.findFragmentByTag(PerpsReduceBottomSheetDialogFragment.TAG) == null) {
-                        AnalyticsTracker.trackPerpsCloseStart(AnalyticsTracker.PerpsCloseType.REDUCTION)
-                        PerpsReduceBottomSheetDialogFragment.newInstance(position)
-                            .show(activity.supportFragmentManager, PerpsReduceBottomSheetDialogFragment.TAG)
-                    }
-                }
                 PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
                 PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_MARGIN -> {
                     PerpsMarginBottomSheetDialogFragment.newInstance(
@@ -651,11 +643,9 @@ fun PerpsMarketDetailPage(
                                     enabled = true,
                                     onClick = {
                                         val activity = context as? FragmentActivity ?: return@MixinButton
-                                        val position = currentPosition.toPosition()
                                         AnalyticsTracker.trackPerpsCloseStart(AnalyticsTracker.PerpsCloseType.SINGLE)
-                                        PerpsCloseBottomSheetDialogFragment.newInstance(
-                                            position = position,
-                                        ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
+                                        PerpsReduceBottomSheetDialogFragment.newInstance(currentPosition)
+                                            .show(activity.supportFragmentManager, PerpsReduceBottomSheetDialogFragment.TAG)
                                     },
                                     backgroundColor = MixinAppTheme.colors.accent,
                                     contentColor = Color.White,
