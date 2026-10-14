@@ -22,6 +22,7 @@ import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.tip.wc.internal.WalletConnectAddresses
+import one.mixin.android.tip.wc.internal.WalletConnectPairingErrors
 import one.mixin.android.tip.wc.internal.WcInstruction
 import one.mixin.android.tip.wc.internal.WcInstructionDeserializer
 import one.mixin.android.tip.wc.internal.WcBitcoinAccountAddress
@@ -72,6 +73,8 @@ import java.util.concurrent.TimeUnit
 
 object WalletConnectV2 : WalletConnect() {
     const val TAG = "WalletConnectV2"
+
+    internal val pairingErrors = WalletConnectPairingErrors()
 
     private const val CHAIN_TYPE_ETH: String = "eth"
     private const val CHAIN_TYPE_POLYGON: String = "polygon"
@@ -136,7 +139,7 @@ object WalletConnectV2 : WalletConnect() {
 
                 override fun onError(error: Wallet.Model.Error) {
                     Timber.d("$TAG onError $error")
-                    // RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+                    pairingErrors.report(error.throwable)
                 }
 
                 override fun onProposalExpired(proposal: Wallet.Model.ExpiredProposal) {

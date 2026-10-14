@@ -2,6 +2,7 @@ package one.mixin.android.ui.home.web3
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.content.DialogInterface
 import android.os.Bundle
 import android.view.Gravity
 import android.view.View
@@ -15,12 +16,10 @@ import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.response.web3.SwapResponse
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.databinding.FragmentBottomSheetBinding
@@ -35,7 +34,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
-import one.mixin.android.tip.wc.internal.buildTipGas
 import one.mixin.android.ui.wallet.SwapTransferBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferWeb3BalanceErrorBottomSheetDialogFragment
 import one.mixin.android.util.ErrorHandler
@@ -51,8 +49,6 @@ import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.solanaRecipientAccountState
 import one.mixin.android.web3.solanaTransferAmountRange
 import org.sol4kt.VersionedTransactionCompat
-import org.web3j.utils.Convert
-import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigDecimal
 import javax.inject.Inject
@@ -104,46 +100,33 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
 
     private suspend fun checkSolanaBalanceOrShowError() {
-        if (!signMessage.isSolMessage()) {
-            showBrowserWalletBottomSheet()
-            return
+        try {
+            val result = viewModel.preflightTransaction(signMessage, Chain.Solana, Web3Signer.currentWalletId)
+            if (result?.insufficientBalance == true) {
+                showBalanceError(result.balance)
+            } else {
+                showBrowserWalletBottomSheet()
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            showError(ErrorHandler.getErrorMessage(e))
         }
-        if (signMessage.type != JsSignMessage.TYPE_RAW_TRANSACTION) {
-            showBrowserWalletBottomSheet()
-            return
-        }
-        val rawTx: String = signMessage.data ?: run {
-            showError(getString(R.string.Data_error))
-            return
-        }
-        val tx = runCatching { VersionedTransactionCompat.from(rawTx) }.getOrNull() ?: run {
-            showError(getString(R.string.Data_error))
-            return
-        }
-        val requiredFee: BigDecimal = tx.calcFee(Web3Signer.address)
-        val solAsset = viewModel.web3TokenItemById(Web3Signer.currentWalletId, Chain.Solana.assetId)
-        val solBalance: BigDecimal = solAsset?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        if (solBalance >= requiredFee) {
-            showBrowserWalletBottomSheet()
-            return
-        }
-        val solTokenItem: Web3TokenItem? = chainToken ?: viewModel.web3TokenItemById(Web3Signer.currentWalletId, Chain.Solana.assetId)
-        if (solTokenItem == null) {
-            showError(getString(R.string.Data_error))
-            return
-        }
-        TransferWeb3BalanceErrorBottomSheetDialogFragment
-            .newInstance(
-                Web3TokenFeeItem(
-                    solTokenItem,
-                    BigDecimal.ZERO,
-                    requiredFee
-                )
-            ).showNow(
-                parentFragmentManager,
-                TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG
-            )
+    }
+
+    private fun showBalanceError(balance: Web3TokenFeeItem) {
+        TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(balance)
+            .showNow(parentFragmentManager, TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG)
+        handedOff = true
+        onReject?.invoke()
         dismiss()
+    }
+
+    private var handedOff = false
+
+    override fun onDismiss(dialog: DialogInterface) {
+        if (!handedOff) onReject?.invoke()
+        super.onDismiss(dialog)
     }
 
     private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
@@ -295,6 +278,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
             fragment.show(requireActivity().supportFragmentManager, BrowserWalletBottomSheetDialogFragment.TAG)
         }
+        handedOff = true
         dismissAllowingStateLoss()
     }
 
@@ -312,78 +296,25 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             }
             return
         }
-        val chainId = chain.getWeb3ChainId()
         if (transaction == null) {
-            Timber.e("Transaction is null")
             showBrowserWalletBottomSheet()
             return
         }
         try {
-            val tipGas = withContext(Dispatchers.IO) {
-                val r = runCatching {
-                    viewModel.estimateFee(
-                        EstimateFeeRequest(
-                            chainId,
-                            null,
-                            transaction.data,
-                            transaction.from,
-                            transaction.to,
-                            transaction.value,
-                        )
-                    )
-                }.getOrNull()
-                if (r?.isSuccess != true) {
-                    ErrorHandler.handleMixinError(r?.errorCode ?: 0, r?.errorDescription ?: "")
-                    return@withContext null
-                }
-                buildTipGas(chain.chainId, r.data!!)
-            }
-            if (tipGas == null) {
-                Timber.e("Failed to estimate gas for chain: ${chain.chainId}")
-                showBrowserWalletBottomSheet()
-                return
-            }
-            val insufficientGas =
-                checkGas(token, chainId = chainId, tipGas, transaction.value, transaction.maxFeePerGas)
-            if (insufficientGas) {
-                val c = chainToken ?: viewModel.web3TokenItemById(token?.walletId ?: Web3Signer.currentWalletId, chainId)
-                if (c == null) {
-                    Timber.e("Insufficient gas for chain: ${chain.chainId}")
-                    showError(getString(R.string.Data_error))
-                    return
-                } else if (c.balance.toBigDecimal() <= BigDecimal.ZERO) {
-                    Timber.e("Insufficient gas and zero balance for chain: ${c.assetId}")
-                    TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(
-                        Web3TokenFeeItem(
-                            c,
-                            BigDecimal.ZERO,
-                            tipGas.displayValue(transaction.maxFeePerGas) ?: BigDecimal.ZERO
-                        )
-                    ).showNow(
-                        parentFragmentManager,
-                        TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG
-                    )
-                    dismiss()
-                } else {
-                    val fee = tipGas.displayValue(transaction.maxFeePerGas) ?: BigDecimal.ZERO
-                    val amount = transaction.getMainTokenAmount()
-                    Timber.e("Insufficient gas for chain: ${c.assetId}, fee: $fee, amount: $amount")
-                    TransferWeb3BalanceErrorBottomSheetDialogFragment.newInstance(
-                        Web3TokenFeeItem(
-                            c,
-                            amount,
-                            fee
-                        )
-                    ).showNow(
-                        parentFragmentManager,
-                        TransferWeb3BalanceErrorBottomSheetDialogFragment.TAG
-                    )
-                    dismiss()
-                }
+            val result = requireNotNull(
+                viewModel.preflightTransaction(
+                    JsSignMessage(0, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = transaction),
+                    chain,
+                    token?.walletId ?: Web3Signer.currentWalletId,
+                ),
+            )
+            if (result.insufficientBalance) {
+                showBalanceError(result.balance)
             } else {
-                Timber.e("Sufficient gas for chain: ${chain.chainId}, gas: ${tipGas.maxFeePerGas} ${tipGas.gasLimit}")
-                showBrowserWalletBottomSheet(tipGas)
+                showBrowserWalletBottomSheet(result.tipGas)
             }
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             showError(ErrorHandler.getErrorMessage(e))
         }
@@ -496,31 +427,6 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             linkErrorInfo.text = error
             linkLoading.visibility = GONE
             linkErrorInfo.visibility = VISIBLE
-        }
-    }
-
-    private suspend fun checkGas(
-        web3Token: Web3TokenItem?,
-        chainId: String,
-        tipGas: TipGas?,
-        value: String?,
-        maxFeePerGas: String?
-    ): Boolean {
-        val assetId = web3Token?.assetId
-        val walletId = web3Token?.walletId ?: Web3Signer.currentWalletId
-        val c = viewModel.web3TokenItemById(walletId, chainId) ?: return true
-        return if (tipGas != null) {
-            val maxGas = tipGas.displayValue(maxFeePerGas) ?: BigDecimal.ZERO
-            if (assetId == c.assetId && assetId == c.chainId) {
-                Convert.fromWei(
-                    Numeric.decodeQuantity(value ?: "0x0").toBigDecimal(),
-                    Convert.Unit.ETHER
-                ) + maxGas > BigDecimal(c.balance)
-            } else {
-                maxGas > BigDecimal(c.balance)
-            }
-        } else {
-            false
         }
     }
 
