@@ -451,9 +451,12 @@ object WalletConnectV2 : WalletConnect() {
                 }
             }
         } else if (signMessage is VersionedTransactionCompat) {
+            require(signData.sessionRequest.request.method == Method.SolanaSignTransaction.name) {
+                "Unsupported Solana transaction method"
+            }
             val holder = Keypair.fromSecretKey(priv)
             // use latest blockhash should not break other signatures
-            if (signMessage.signatures.size <= 1) {
+            if (!signMessage.isV1 && signMessage.signatures.size <= 1) {
                 signMessage.message.recentBlockhash = getBlockhash()
             }
             signMessage.sign(holder)
