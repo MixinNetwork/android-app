@@ -87,8 +87,6 @@ object WalletConnectV2 : WalletConnect() {
             .create()
 
     init {
-        val projectId = BuildConfig.WC_PROJECT_ID
-        val serverUrl = "wss://relay.walletconnect.com?projectId=$projectId"
         val appMetaData =
             Core.Model.AppMetaData(
                 name = "Mixin",
@@ -98,10 +96,10 @@ object WalletConnectV2 : WalletConnect() {
                 redirect = null,
             )
         CoreClient.initialize(
-            relayServerUrl = serverUrl,
-            connectionType = ConnectionType.AUTOMATIC,
             application = MixinApplication.get(),
+            projectId = BuildConfig.WC_PROJECT_ID,
             metaData = appMetaData,
+            connectionType = ConnectionType.AUTOMATIC,
             onError = { error ->
                 Timber.d("$TAG CoreClient init error: $error")
                 val err = error.throwable
