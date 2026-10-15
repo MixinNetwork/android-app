@@ -10,11 +10,11 @@ import androidx.room3.Update
 import kotlinx.coroutines.flow.Flow
 import one.mixin.android.Constants
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
-import one.mixin.android.vo.Asset
 import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.TokenEntry
 import one.mixin.android.vo.WalletHomeTokenSummary
 import one.mixin.android.vo.safe.Token
+import one.mixin.android.vo.safe.TokenSearchUpdate
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.UnifiedAssetItem
 
@@ -43,7 +43,7 @@ interface TokenDao : BaseDao<Token> {
             " WHERE (ae.hidden IS NULL OR NOT ae.hidden) AND $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM"
     }
 
-    @Query("$PREFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE $NOT_PRIMITIVE_ASSET")
     fun assetFlow(): Flow<List<TokenItem>>
 
     @Query("SELECT a1.* FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id $POSTFIX")
@@ -125,19 +125,19 @@ interface TokenDao : BaseDao<Token> {
     fun assetItemsNotHiddenRaw(query: RoomRawQuery): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM")
     fun assetItems(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM")
     suspend fun allAssetItems(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("""$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:assetIds) $POSTFIX_ASSET_ITEM """)
+    @Query("""$PREFIX_ASSET_ITEM WHERE $NOT_PRIMITIVE_ASSET AND a1.asset_id IN (:assetIds) $POSTFIX_ASSET_ITEM """)
     fun assetItems(assetIds: List<String>, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE a1.asset_id IN (:ids)")
+    @Query("$PREFIX_ASSET_ITEM WHERE $NOT_PRIMITIVE_ASSET AND a1.asset_id IN (:ids)")
     suspend fun findTokenItems(ids: List<String>): List<TokenItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
@@ -171,7 +171,7 @@ interface TokenDao : BaseDao<Token> {
     fun assetItemFlowByChainAndSymbol(chainId: String, symbol: String): Flow<TokenItem?>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND (ae.hidden IS NULL OR NOT ae.hidden) $POSTFIX_ASSET_ITEM")
+    @Query("$PREFIX_ASSET_ITEM WHERE ae.balance > 0 AND (ae.hidden IS NULL OR NOT ae.hidden) AND $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM")
     fun assetItemsWithBalance(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<TokenItem>>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
@@ -203,8 +203,11 @@ interface TokenDao : BaseDao<Token> {
     @Query("UPDATE tokens SET primitive_asset_id = :primitiveAssetId WHERE asset_id = :assetId")
     suspend fun updatePrimitiveAssetId(assetId: String, primitiveAssetId: String?)
 
-    @Update(entity = Asset::class)
+    @Update(entity = Token::class)
     suspend fun suspendUpdatePrices(priceAndChanges: List<PriceAndChange>)
+
+    @Update(entity = Token::class)
+    suspend fun updateSearchResults(updates: List<TokenSearchUpdate>)
 
     @Query("SELECT SUM(balance * price_usd) FROM tokens a1 LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id")
     suspend fun findTotalUSDBalance(): Int?

@@ -174,7 +174,7 @@ class WalletSearchFragment : BaseFragment() {
                 defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
                     ?: return@withContext null
             if (assetList.isEmpty()) return@withContext null
-            val result = viewModel.findAssetsByIds(assetList).filter { it.primitiveAssetId.isNullOrEmpty() }
+            val result = viewModel.findAssetsByIds(assetList)
             if (result.isEmpty()) return@withContext null
             result.sortedBy {
                 assetList.indexOf(it.assetId)
@@ -205,10 +205,10 @@ class WalletSearchFragment : BaseFragment() {
                 binding.pb.isVisible = true
 
                 val localAssets = withContext(Dispatchers.IO) { viewModel.fuzzySearchAssets(query) }
-                searchAdapter.submitList(localAssets?.filter { it.primitiveAssetId.isNullOrEmpty() })
+                searchAdapter.submitList(localAssets)
 
                 val remoteAssets = withContext(Dispatchers.IO) { viewModel.queryAsset(null, query) }
-                val result = sortQueryAsset(query, localAssets, remoteAssets).filter { it.primitiveAssetId.isNullOrEmpty() }
+                val result = sortQueryAsset(query, localAssets, remoteAssets)
 
                 searchAdapter.submitList(result)
                 binding.pb.isVisible = false

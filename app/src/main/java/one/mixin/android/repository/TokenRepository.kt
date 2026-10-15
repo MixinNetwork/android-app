@@ -146,6 +146,8 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.SafeWithdrawal
 import one.mixin.android.vo.safe.Token
+import one.mixin.android.vo.safe.TokenSearchUpdate
+import one.mixin.android.vo.safe.toSearchUpdate
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.safe.UnifiedAssetItem
@@ -668,27 +670,21 @@ class TokenRepository
                     }
                     asset.toAssetItem(chainIconUrl)
                 }
-                val localExistsIds = arrayListOf<String>()
+                val localTokens = if (web3) emptyMap() else tokenDao.suspendFindAssetsByIds(assetList.map { it.assetId }).associateBy { it.assetId }
                 val onlyRemoteItems = arrayListOf<TokenItem>()
-                val needUpdatePrice = arrayListOf<PriceAndChange>()
+                val updates = arrayListOf<TokenSearchUpdate>()
                 tokenItemList.forEach {
-                    val exists = if (web3) null else findAssetItemById(it.assetId) // local
+                    val exists = localTokens[it.assetId]
                     if (exists != null) {
-                        needUpdatePrice.add(it.toPriceAndChange())
-                        localExistsIds.add(exists.assetId)
+                        updates.add(it.toSearchUpdate(exists.primitiveAssetId))
                     } else {
                         onlyRemoteItems.add(it)
                     }
                 }
 
-                val result = if (needUpdatePrice.isNotEmpty()) {
-                    appDatabase.withRoomTransaction {
-                        suspendUpdatePrices(needUpdatePrice)
-                        assetList.filter { it.assetId in localExistsIds }.forEach {
-                            tokenDao.updatePrimitiveAssetId(it.assetId, it.primitiveAssetId)
-                        }
-                    }
-                    onlyRemoteItems + findAssetsByIds(localExistsIds)
+                val result = if (updates.isNotEmpty()) {
+                    tokenDao.updateSearchResults(updates)
+                    onlyRemoteItems + tokenDao.suspendFindAssetsByIds(localTokens.keys.toList())
                 } else {
                     tokenItemList
                 }
@@ -734,7 +730,7 @@ class TokenRepository
 
         suspend fun findAssetItemByCollectionHash(collectionHash: String) = tokenDao.findAssetItemByCollectionHash(collectionHash)
 
-        suspend fun findAssetsByIds(assetIds: List<String>) = tokenDao.suspendFindAssetsByIds(assetIds)
+        suspend fun findAssetsByIds(assetIds: List<String>) = tokenDao.suspendFindAssetsByIds(assetIds).filter { it.primitiveAssetId.isNullOrEmpty() }
 
         suspend fun findSnapshotById(snapshotId: String) = safeSnapshotDao.findSnapshotById(snapshotId)
         suspend fun refreshAndGetSnapshot(snapshotId: String): SnapshotItem? {
