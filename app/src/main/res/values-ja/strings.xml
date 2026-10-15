@@ -1179,4 +1179,6 @@
     <string name="perps_mark_price">マーク価格</string>
     <string name="perps_close_position_title">%1$s %2$s のポジションを決済</string>
     <string name="perps_include_pnl">損益を含む</string>
+    <string name="perps_position_amount">ポジション金額</string>
+    <string name="perps_margin_amount">証拠金額</string>
 </resources>

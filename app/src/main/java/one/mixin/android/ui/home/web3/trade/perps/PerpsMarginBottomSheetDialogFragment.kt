@@ -93,11 +93,9 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
@@ -123,7 +121,6 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         private const val ARGS_INCREASE = "args_increase"
         private const val ARGS_INITIAL_MARGIN = "args_initial_margin"
         private const val ARGS_SOURCE = "args_source"
-        private const val PREF_REDUCE_BY_PERCENT = "perps_reduce_margin_by_percent"
 
         fun newInstance(position: PerpsPositionItem, increase: Boolean, source: String, initialMargin: String? = null) = PerpsMarginBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_POSITION, position)
@@ -159,8 +156,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }.collectAsStateWithLifecycle(initialValue = initialPosition)
         val currentPosition = position ?: initialPosition
         var amount by rememberSaveable { mutableStateOf(arguments?.getString(ARGS_INITIAL_MARGIN).orEmpty()) }
-        val preferences = remember { requireContext().defaultSharedPreferences }
-        var reduceByPercent by rememberSaveable { mutableStateOf(preferences.getBoolean(PREF_REDUCE_BY_PERCENT, true)) }
+        var reduceByPercent by rememberSaveable { mutableStateOf(true) }
         var inputIsPercentage by rememberSaveable { mutableStateOf(reduceByPercent) }
         val keyboardController = LocalSoftwareKeyboardController.current
         val focusManager = LocalFocusManager.current
@@ -454,6 +450,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     }
                 } else {
                     PerpsReductionInput(
+                        title = stringResource(R.string.perps_margin_amount),
                         input = reduceInput,
                         isPercentage = reduceByPercent,
                         amount = amountValue,
@@ -466,7 +463,6 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             {
                                 if (reduceByPercent && !canFillMarginReductionAsPercentage(currentPosition.margin, maximum)) {
                                     reduceByPercent = false
-                                    preferences.putBoolean(PREF_REDUCE_BY_PERCENT, false)
                                 }
                                 changeAmount(maximumMarginReductionInput(currentPosition.margin, maximum, reduceByPercent))
                             }
@@ -475,7 +471,6 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             amount = amountValue?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
                             inputIsPercentage = false
                             reduceByPercent = !reduceByPercent
-                            preferences.putBoolean(PREF_REDUCE_BY_PERCENT, reduceByPercent)
                             error = null
                         },
                     )
@@ -649,6 +644,7 @@ private fun PerpsMarginActions(
 
 @Composable
 internal fun PerpsReductionInput(
+    title: String,
     input: String,
     isPercentage: Boolean,
     amount: BigDecimal?,
@@ -705,9 +701,11 @@ internal fun PerpsReductionInput(
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .padding(start = 16.dp, top = 40.dp, end = 16.dp, bottom = 20.dp),
+            .padding(start = 16.dp, top = 36.dp, end = 16.dp, bottom = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Text(title, color = MixinAppTheme.colors.textRemarks, fontSize = 12.sp)
+        Spacer(Modifier.height(4.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(32.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(
                 onClick = { updateInput(formatInput((inputValue - BigDecimal.ONE).max(BigDecimal.ZERO))) },
@@ -913,6 +911,7 @@ private fun PerpsMarginPreviewContent(initialInput: String, initialIsPercentage:
             onGuide = {},
         ) {
             PerpsReductionInput(
+                title = stringResource(R.string.perps_margin_amount),
                 input = displayInput,
                 isPercentage = isPercentage,
                 amount = amount,

@@ -2742,4 +2742,6 @@
     <string name="perps_mark_price">Mark Price</string>
     <string name="perps_close_position_title">Close Position to %1$s %2$s</string>
     <string name="perps_include_pnl">Include PnL</string>
+    <string name="perps_position_amount">Position Amount</string>
+    <string name="perps_margin_amount">Margin Amount</string>
 </resources>

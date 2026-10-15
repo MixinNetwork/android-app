@@ -1233,4 +1233,6 @@
     <string name="perps_mark_price">Precio de marca</string>
     <string name="perps_close_position_title">Cerrar posición de %1$s %2$s</string>
     <string name="perps_include_pnl">Incluye PnL</string>
+    <string name="perps_position_amount">Importe de la posición</string>
+    <string name="perps_margin_amount">Importe del margen</string>
 </resources>

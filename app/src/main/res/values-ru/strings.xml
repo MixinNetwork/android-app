@@ -1174,4 +1174,6 @@
     <string name="perps_mark_price">Цена маркировки</string>
     <string name="perps_close_position_title">Закрыть позицию %1$s %2$s</string>
     <string name="perps_include_pnl">Включая PnL</string>
+    <string name="perps_position_amount">Размер позиции</string>
+    <string name="perps_margin_amount">Сумма маржи</string>
 </resources>

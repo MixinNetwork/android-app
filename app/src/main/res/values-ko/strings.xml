@@ -2710,4 +2710,6 @@
     <string name="perps_mark_price">마크 가격</string>
     <string name="perps_close_position_title">%1$s %2$s 포지션 종료</string>
     <string name="perps_include_pnl">손익 포함</string>
+    <string name="perps_position_amount">포지션 금액</string>
+    <string name="perps_margin_amount">증거금 금액</string>
 </resources>

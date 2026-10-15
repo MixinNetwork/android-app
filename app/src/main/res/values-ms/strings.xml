@@ -856,4 +856,6 @@
     <string name="perps_mark_price">Harga Tanda</string>
     <string name="perps_close_position_title">Tutup Posisi %1$s %2$s</string>
     <string name="perps_include_pnl">Termasuk PnL</string>
+    <string name="perps_position_amount">Jumlah Posisi</string>
+    <string name="perps_margin_amount">Jumlah Margin</string>
 </resources>

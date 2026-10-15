@@ -189,6 +189,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     }
                     Spacer(Modifier.height(16.dp))
                     PerpsReductionInput(
+                        title = stringResource(R.string.perps_position_amount),
                         input = input,
                         isPercentage = isPercentage,
                         amount = amount,
@@ -219,6 +220,16 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             Spacer(Modifier.height(4.dp))
                             PerpsIncludedPnl(pnl)
                         }
+                        PerpsAddInfoRow(
+                            title = stringResource(R.string.position_size),
+                            valueColor = MixinAppTheme.colors.textPrimary,
+                            value = formatPerpsReductionSize(current, quantity?.takeIf { canSubmit }, price, position.tokenSymbol.orEmpty()),
+                            onTipClick = {
+                                PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                    PerpetualGuideBottomSheetDialogFragment.TAB_POSITION,
+                                ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                            },
+                        )
                         PerpsAddInfoRow(
                             title = stringResource(R.string.Fee),
                             valueColor = MixinAppTheme.colors.textPrimary,

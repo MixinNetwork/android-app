@@ -2711,4 +2711,6 @@
     <string name="perps_mark_price">標記價格</string>
     <string name="perps_close_position_title">平倉 %1$s %2$s</string>
     <string name="perps_include_pnl">含盈虧</string>
+    <string name="perps_position_amount">倉位金額</string>
+    <string name="perps_margin_amount">保證金金額</string>
 </resources>

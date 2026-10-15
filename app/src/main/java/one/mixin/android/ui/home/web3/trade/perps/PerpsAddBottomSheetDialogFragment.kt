@@ -807,7 +807,7 @@ internal fun PerpsAddInfoRow(
     Row(
         modifier = Modifier.fillMaxWidth().animateContentSize(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
