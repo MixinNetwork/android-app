@@ -7,7 +7,6 @@ import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
-import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.realizedPnlForDisplay
 import one.mixin.android.api.response.perps.roeForDisplay
@@ -39,14 +38,12 @@ class PerpsOrderDaoTest {
     fun marginAmountSurvivesStorageWithoutDeprecatedPaymentField() = runBlocking {
         val gson = Gson()
         val json = gson.toJsonTree(order("01", PerpsOrder.TYPE_OPEN)).asJsonObject
-        json.remove("pay_amount")
+        assertNull(json.get("pay_amount"))
         json.addProperty("margin_amount", "9.92")
-        val response = gson.fromJson(json, PerpsOrder::class.java).withDefaults()
+        val response = gson.fromJson(json, PerpsOrder::class.java)
         database.perpsOrderDao().insertAll(listOf(response))
         assertEquals("9.92", database.perpsOrderDao().getOrder("01")?.marginAmount)
-        json.remove("margin_amount")
-        val legacy = gson.fromJson(json, PerpsOrder::class.java).withDefaults()
-        assertEquals("", legacy.marginAmount)
+
     }
 
     @Test

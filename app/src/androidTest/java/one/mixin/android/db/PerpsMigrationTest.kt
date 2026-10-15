@@ -220,6 +220,35 @@ class PerpsMigrationTest {
         assertColumn(migratedDb, "markets", "open_interest", "'0'")
     }
 
+    @Test
+    fun migrate_10_11_rebuildsOrdersAndPreservesPositionsAndMarkets() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 10).apply {
+            insertMarket()
+            insertPositionV2()
+            insertOrderV7()
+            close()
+        }
+        val db = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME, 11, true, PerpsDatabase.MIGRATION_10_11,
+        )
+        db.query("SELECT COUNT(*) FROM perps_orders").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+        for (table in listOf("positions", "markets")) {
+            db.query("SELECT COUNT(*) FROM $table").use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals(1, cursor.getInt(0))
+            }
+        }
+        db.query("PRAGMA table_info(perps_orders)").use { cursor ->
+            val names = mutableListOf<String>()
+            while (cursor.moveToNext()) names += cursor.getString(cursor.getColumnIndexOrThrow("name"))
+            assertTrue("margin_amount" in names)
+            assertTrue("pay_amount" !in names)
+        }
+    }
+
     private fun assertColumn(
         db: SQLiteConnection,
         table: String,

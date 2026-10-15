@@ -155,7 +155,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         val subtitlePrice = market?.last?.takeIf { it.isNotBlank() } ?: position.markPrice ?: position.entryPrice
         val previewQuantity = quantity?.takeIf { canSubmit }?.toPlainString().orEmpty()
         val pnl = perpsReductionValue(position.unrealizedPnl, previewQuantity, position.quantity)
-        val margin = perpsReductionValue(position.margin, previewQuantity, position.quantity)
+        val margin = perpsReductionValue(perpsCloseMarginAmount(position.margin, position.unrealizedPnl)?.toPlainString(), previewQuantity, position.quantity)
         val receive = perpsReductionValue(estimatedPerpsCloseReturn(position.margin, position.unrealizedPnl, position.estimatedCloseFee)?.toPlainString(), previewQuantity, position.quantity)
         val fee = perpsReductionValue(position.estimatedCloseFee, previewQuantity, position.quantity)
 

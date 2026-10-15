@@ -36,7 +36,6 @@ import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
-import one.mixin.android.api.response.perps.withDefaults
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.api.service.RouteService
 import one.mixin.android.db.PerpsDatabase
@@ -184,22 +183,17 @@ class PerpetualViewModel @Inject constructor(
                 val latestUpdatedAt = withContext(Dispatchers.IO) {
                     perpsOrderDao.getLatestUpdatedAt()
                 }
-                val response = withContext(Dispatchers.IO) {
-                    routeService.getPerpsOrders(
-                        walletId = walletId,
+                withContext(Dispatchers.IO) {
+                    syncPerpsOrderPages(
+                        initialOffset = latestUpdatedAt,
                         limit = limit,
-                        offset = latestUpdatedAt,
+                        fetch = { offset ->
+                            val response = routeService.getPerpsOrders(walletId = walletId, limit = limit, offset = offset)
+                            if (!response.isSuccess) throw MixinResponseException(response.errorCode, response.errorDescription)
+                            response.data ?: throw DataErrorException()
+                        },
+                        save = { upsertSyncedOrders(it) },
                     )
-                }
-
-                val data = response.data
-                if (response.isSuccess && data != null) {
-                    withContext(Dispatchers.IO) {
-                        upsertSyncedOrders(data)
-                    }
-                    Timber.d("Perps orders refreshed: ${data.size} items")
-                } else {
-                    Timber.e("Failed to refresh orders: ${response.errorDescription}")
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Error refreshing orders")
@@ -1207,7 +1201,7 @@ class PerpetualViewModel @Inject constructor(
     private suspend fun upsertSyncedOrders(orders: List<PerpsOrder>) {
         if (orders.isEmpty()) return
 
-        perpsOrderDao.insertAll(orders.map { it.withDefaults() })
+        perpsOrderDao.insertAll(orders)
 
         orders.filter { it.orderType == PerpsOrder.TYPE_CLOSE }
             .distinctBy { it.positionId }

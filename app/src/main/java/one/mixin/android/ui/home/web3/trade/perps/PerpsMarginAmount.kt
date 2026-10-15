@@ -20,7 +20,7 @@ internal fun formatPerpsMarginLimit(currentMargin: String?, availableMargin: Big
         val percentage = marginReductionPercentage(currentMargin, availableMargin) ?: BigDecimal.ZERO
         return "${percentage.setScale(2, RoundingMode.DOWN).numberFormat8()}%"
     }
-    val amount = availableMargin.setScale(2, RoundingMode.DOWN)
+    val amount = if (availableMargin < BigDecimal("0.01")) availableMargin else availableMargin.setScale(2, RoundingMode.DOWN)
     return "$PERPS_USD_SYMBOL${amount.numberFormat8()}"
 }
 
@@ -40,7 +40,7 @@ internal fun formatMarginAdjustmentInput(value: BigDecimal, isPercentage: Boolea
     value.setScale(if (isPercentage) 0 else 2, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
 
 internal fun maximumMarginReductionInput(currentMargin: String?, maximumReduction: BigDecimal, isPercentage: Boolean): String =
-    formatMarginAdjustmentInput(
+    if (!isPercentage && maximumReduction < BigDecimal("0.01")) maximumReduction.stripTrailingZeros().toPlainString() else formatMarginAdjustmentInput(
         if (isPercentage) marginReductionPercentage(currentMargin, maximumReduction) ?: BigDecimal.ZERO else maximumReduction,
         isPercentage,
     )
@@ -83,6 +83,12 @@ internal fun reduceMarginAmount(currentMargin: String?, input: String, isPercent
 internal fun marginReductionPercentage(currentMargin: String?, amount: BigDecimal?): BigDecimal? {
     val margin = currentMargin?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null
     return amount?.multiply(BigDecimal(100))?.divide(margin, TRADE_INPUT_MAX_DECIMAL_PLACES, RoundingMode.DOWN)
+}
+
+internal fun perpsCloseMarginAmount(margin: String?, unrealizedPnl: String?): BigDecimal? {
+    val marginValue = margin?.toBigDecimalOrNull() ?: return null
+    val pnl = unrealizedPnl?.toBigDecimalOrNull() ?: return null
+    return marginValue + pnl
 }
 
 internal fun estimatedPerpsCloseReturn(margin: String?, unrealizedPnl: String?, estimatedCloseFee: String?): BigDecimal? {

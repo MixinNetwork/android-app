@@ -19,9 +19,12 @@ class PerpsMarginAmountTest {
     }
 
     @Test
-    fun reductionPreviewKeepsMarginAndPnlSeparate() {
+    fun reductionPreviewIncludesPnlInMargin() {
         assertEquals(BigDecimal("5.43"), estimatedPerpsCloseReturn("5.39", "0.06", "0.02"))
-        assertEquals(BigDecimal("2.695"), perpsReductionValue("5.39", "0.5", "1")?.stripTrailingZeros())
+        assertEquals(BigDecimal("5.45"), perpsCloseMarginAmount("5.39", "0.06"))
+        assertEquals(BigDecimal("2.725"), perpsReductionValue(perpsCloseMarginAmount("5.39", "0.06")?.toPlainString(), "0.5", "1")?.stripTrailingZeros())
+        assertEquals(BigDecimal("80"), perpsCloseMarginAmount("100", "-20"))
+        assertNull(perpsCloseMarginAmount("100", null))
         assertEquals(BigDecimal("0.03"), perpsReductionValue("0.06", "0.5", "1")?.stripTrailingZeros())
         assertEquals(BigDecimal("0.01"), perpsReductionValue("0.02", "0.5", "1")?.stripTrailingZeros())
         assertEquals(BigDecimal("2.715"), perpsReductionValue(estimatedPerpsCloseReturn("5.39", "0.06", "0.02")?.toPlainString(), "0.5", "1")?.stripTrailingZeros())
@@ -125,7 +128,7 @@ class PerpsMarginAmountTest {
         assertEquals("$2.07", formatPerpsMarginLimit("6.98", BigDecimal("2.079999999"), false))
         assertEquals("$1.12", formatPerpsMarginLimit("10.93", BigDecimal("1.12139433"), false))
         assertEquals("1.12", maximumMarginReductionInput("10.93", BigDecimal("1.12139433"), false))
-        assertEquals("$0", formatPerpsMarginLimit("1", BigDecimal("0.00000001"), false))
+        assertEquals("$0.00000001", formatPerpsMarginLimit("1", BigDecimal("0.00000001"), false))
         assertEquals("0%", formatPerpsMarginLimit("6.98", BigDecimal.ZERO, true))
         assertEquals("$0", formatPerpsMarginLimit("6.98", BigDecimal.ZERO, false))
         assertEquals("0%", formatPerpsMarginLimit("0", BigDecimal.ZERO, true))
