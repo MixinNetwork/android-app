@@ -37,13 +37,14 @@ class UtxoKeyGeneratorTest {
     }
 
     @Test
-    fun litecoinTipAndMnemonicKeysAgreeWithReferenceAtNonzeroIndex() {
+    fun litecoinSeedAndMnemonicKeysAgreeWithReferenceAtNonzeroIndex() {
         val seed = org.bitcoinj.crypto.MnemonicCode.toSeed(mnemonic.split(" "), "TREZOR")
-        val derived = TipKeyGenerator.generate(seed, Constants.ChainId.Litecoin, 1)
-        assertEquals("ltc1qxwc6uc7q24vu8njkkgk3a3uzq4xwvak54y8k53", derived.address)
-        assertEquals("ead797a6c88b7fc63fcfec5498a363ea878ab8f64d328927a34d091e01abcd20", derived.privateKey.joinToString("") { "%02x".format(it) })
+        val privateKey = UtxoKeyGenerator.getPrivateKeyFromSeed(seed, Constants.ChainId.Litecoin, 1)
+        val address = UtxoKeyGenerator.privateKeyToAddress(privateKey, Constants.ChainId.Litecoin)
+        assertEquals("ltc1qxwc6uc7q24vu8njkkgk3a3uzq4xwvak54y8k53", address)
+        assertEquals("ead797a6c88b7fc63fcfec5498a363ea878ab8f64d328927a34d091e01abcd20", privateKey.joinToString("") { "%02x".format(it) })
         val wallet = CryptoWalletHelper.mnemonicToLitecoinWallet(mnemonic, "TREZOR", 1)
-        assertEquals(derived.address, wallet.address)
+        assertEquals(address, wallet.address)
         assertEquals("m/84'/2'/0'/0/1", wallet.path)
     }
 

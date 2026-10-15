@@ -199,7 +199,12 @@ object UtxoKeyGenerator {
 
     private fun deriveLitecoinFromTipSeed(seed: ByteArray, index: Int): TipDerivedKey {
         val privateKey = deriveLitecoinPrivateKey(seed, index)
-        return TipDerivedKey(privateKey, privateKeyToAddress(privateKey, Constants.ChainId.Litecoin))
+        val address = privateKeyToAddress(privateKey, Constants.ChainId.Litecoin)
+        val privateKeyAddressFromGo = Blockchain.generateLitecoinAddressFromPrivateKey(privateKey.hexString())
+        check(address == privateKeyAddressFromGo) { "Litecoin private key address mismatch" }
+        val seedAddressFromGo = Blockchain.generateLitecoinAddress(seed.hexString(), Bip44Path.litecoinSegwitPathString(index))
+        check(address == seedAddressFromGo) { "Litecoin seed address mismatch" }
+        return TipDerivedKey(privateKey, address)
     }
 
     private fun deriveBitcoinPrivateKey(seed: ByteArray, index: Int): ByteArray {
