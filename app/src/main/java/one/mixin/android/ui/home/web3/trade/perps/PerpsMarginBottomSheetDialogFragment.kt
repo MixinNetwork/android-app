@@ -61,6 +61,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -679,7 +680,7 @@ internal fun PerpsReductionInput(
         inputValue <= BigDecimal.ZERO -> MixinAppTheme.colors.textRemarks
         else -> MixinAppTheme.colors.textPrimary
     }
-    val inputTextStyle = TextStyle(fontSize = 36.sp, fontWeight = FontWeight.W600, color = inputColor, textAlign = TextAlign.Center)
+    val inputTextStyle = TextStyle(fontSize = 36.sp, lineHeight = 40.sp, platformStyle = PlatformTextStyle(includeFontPadding = false), fontWeight = FontWeight.W600, color = inputColor, textAlign = TextAlign.Center)
     val textMeasurer = rememberTextMeasurer()
     val placeholder = "0"
     val inputWidth = with(LocalDensity.current) {
@@ -708,12 +709,12 @@ internal fun PerpsReductionInput(
             .padding(start = 16.dp, top = 36.dp, end = 16.dp, bottom = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(title, color = MixinAppTheme.colors.textRemarks, fontSize = 12.sp)
-        Spacer(Modifier.height(4.dp))
+        Text(title, color = MixinAppTheme.colors.textRemarks, fontSize = 12.sp, lineHeight = 16.sp)
         Row(horizontalArrangement = Arrangement.spacedBy(32.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(
                 onClick = { updateInput(formatInput((inputValue - BigDecimal.ONE).max(BigDecimal.ZERO))) },
                 enabled = enabled && inputValue > BigDecimal.ZERO,
+                modifier = Modifier.size(40.dp),
             ) {
                 Icon(painterResource(R.drawable.ic_perps_minus), stringResource(R.string.perps_reduce_action), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
             }
@@ -747,11 +748,11 @@ internal fun PerpsReductionInput(
             IconButton(
                 onClick = { updateInput(formatInput((inputValue + BigDecimal.ONE).min(maximum))) },
                 enabled = enabled && inputValue < maximum,
+                modifier = Modifier.size(40.dp),
             ) {
                 Icon(painterResource(R.drawable.ic_perps_add), stringResource(R.string.Add), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
             }
         }
-        Spacer(Modifier.height(6.dp))
         Row(
             modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(enabled = enabled, onClick = onToggleMode).padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -766,7 +767,7 @@ internal fun PerpsReductionInput(
                 painterResource(R.drawable.ic_switch),
                 stringResource(if (isPercentage) R.string.Amount else R.string.perps_percentage),
                 tint = MixinAppTheme.colors.textRemarks,
-                modifier = Modifier.size(30.dp),
+                modifier = Modifier.size(20.dp),
             )
         }
         Spacer(Modifier.height(12.dp))
