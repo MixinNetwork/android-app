@@ -28,7 +28,7 @@ internal fun perpsReductionQuantity(currentQuantity: String, markPrice: String?,
         if (value > current.multiply(price)) return null
         value.divide(price, quantityScale, RoundingMode.DOWN)
     }
-    return perpsReduceQuantity(quantity.toPlainString(), currentQuantity)
+    return quantity.takeIf { it >= BigDecimal.ZERO && it <= current }
 }
 
 internal fun perpsReductionValue(value: String?, quantity: String, currentQuantity: String): BigDecimal? {
@@ -38,10 +38,18 @@ internal fun perpsReductionValue(value: String?, quantity: String, currentQuanti
 }
 
 internal fun perpsReductionMeetsMinimum(quantity: BigDecimal, current: BigDecimal, price: BigDecimal?, minimum: BigDecimal): Boolean {
+    if (quantity <= BigDecimal.ZERO) return false
     val position = current.abs()
     if (quantity.compareTo(position) == 0 || minimum <= BigDecimal.ZERO) return true
     if (price == null || price <= BigDecimal.ZERO) return false
     return quantity.multiply(price) >= minimum
+}
+
+internal fun perpsReductionMinimumAmount(price: BigDecimal?, minimum: BigDecimal, quantityScale: Int): BigDecimal? {
+    if (price == null || price <= BigDecimal.ZERO || quantityScale < 0) return null
+    val step = BigDecimal.ONE.movePointLeft(quantityScale)
+    val quantity = minimum.divide(price, quantityScale, RoundingMode.CEILING).max(step)
+    return quantity.multiply(price).setScale(2, RoundingMode.CEILING)
 }
 
 internal fun perpsReductionInputPercentage(amount: BigDecimal, size: BigDecimal?): BigDecimal? =

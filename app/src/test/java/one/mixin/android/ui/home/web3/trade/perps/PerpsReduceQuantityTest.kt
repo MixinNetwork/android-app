@@ -15,7 +15,7 @@ class PerpsReduceQuantityTest {
         assertDecimal("0.25", perpsReductionQuantity("1", "88.23", "25", true, 8))
         assertDecimal("0.25", perpsReductionQuantity("-1", "88.23", "25", true, 8))
         assertDecimal("0.2", perpsReductionQuantity("0.8", "88.23", "25", true, 8))
-        assertNull(perpsReductionQuantity("0.00000001", "1", "25", true, 8))
+        assertDecimal("0", perpsReductionQuantity("0.00000001", "1", "25", true, 8))
         assertDecimal("1.00000001", perpsReductionQuantity("1.00000001", "88.23", "100", true, 8))
         assertNull(perpsReductionQuantity("1", "88.23", "101", true, 8))
         assertNull(perpsReductionQuantity("1", "88.23", "25.5", true, 8))
@@ -48,8 +48,8 @@ class PerpsReduceQuantityTest {
         assertDecimal("0.003", perpsReductionQuantity("1", "300", "1", false, 3))
         assertDecimal("0.011", perpsReductionQuantity("0.011", "100", "100", true, 3))
         assertDecimal("2", perpsReductionQuantity("11", "100", "25", true, 0))
-        assertNull(perpsReductionQuantity("0.001", "100", "25", true, 3))
-        assertNull(perpsReductionQuantity("1", "300", "0.1", false, 3))
+        assertDecimal("0", perpsReductionQuantity("0.001", "100", "25", true, 3))
+        assertDecimal("0", perpsReductionQuantity("1", "300", "0.1", false, 3))
         assertNull(perpsReductionQuantity("1", "100", "25", true, -1))
     }
 
@@ -166,6 +166,41 @@ class PerpsReduceQuantityTest {
         assertDecimal("100", perpsReductionInputPercentage(size, size))
         assertNull(perpsReductionInputPercentage(BigDecimal.ONE, null))
         assertNull(perpsReductionInputPercentage(BigDecimal.ONE, BigDecimal.ZERO))
+    }
+
+    @Test
+    fun minimumAmountAccountsForQuantityStepsAndRoundsUpToCents() {
+        val price = BigDecimal("82036")
+        val minimum = BigDecimal.TEN
+        val amount = requireNotNull(perpsReductionMinimumAmount(price, minimum, 5))
+        assertDecimal("10.67", amount)
+        for ((input, valid) in listOf("10" to false, "10.66" to false, "10.67" to true)) {
+            val quantity = requireNotNull(perpsReductionQuantity("1", "82036", input, false, 5))
+            assertEquals(valid, perpsReductionMeetsMinimum(quantity, BigDecimal.ONE, price, minimum))
+        }
+        assertDecimal("10", perpsReductionMinimumAmount(BigDecimal("100"), minimum, 4))
+        assertDecimal("3", perpsReductionMinimumAmount(BigDecimal("3"), BigDecimal.ONE, 0))
+        assertNull(perpsReductionMinimumAmount(null, minimum, 5))
+        assertNull(perpsReductionMinimumAmount(BigDecimal.ZERO, minimum, 5))
+        assertNull(perpsReductionMinimumAmount(price, minimum, -1))
+    }
+
+    @Test
+    fun roundedZeroUsesMinimumStepEvenWithoutServerMinimum() {
+        val price = BigDecimal("82036")
+        for (minimum in listOf(BigDecimal.ZERO, BigDecimal("0.01"))) {
+            assertDecimal("0.09", perpsReductionMinimumAmount(price, minimum, 6))
+            for ((input, percentage) in listOf("0.01" to false, "1" to true)) {
+                val quantity = requireNotNull(perpsReductionQuantity("0.00001", "82036", input, percentage, 6))
+                assertDecimal("0", quantity)
+                assertFalse(perpsReductionMeetsMinimum(quantity, BigDecimal("0.00001"), price, minimum))
+            }
+            val quantity = requireNotNull(perpsReductionQuantity("0.00001", "82036", "0.09", false, 6))
+            assertTrue(perpsReductionMeetsMinimum(quantity, BigDecimal("0.00001"), price, minimum))
+        }
+        val full = requireNotNull(perpsReductionQuantity("0.00000001", "82036", "100", true, 6))
+        assertDecimal("0.00000001", full)
+        assertTrue(perpsReductionMeetsMinimum(full, full, price, BigDecimal.TEN))
     }
 
     private fun assertDecimal(expected: String, actual: BigDecimal?) {

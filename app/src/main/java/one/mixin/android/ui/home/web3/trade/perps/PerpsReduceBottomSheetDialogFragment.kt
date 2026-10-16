@@ -139,13 +139,18 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             (if (isPercentage) percentage else amount)?.stripTrailingZeros()?.toPlainString().orEmpty()
         }
         val minimum = market?.minOrderValue?.toBigDecimalOrNull() ?: BigDecimal.ZERO
+        val minimumAmount = perpsReductionMinimumAmount(price, minimum, market?.quantityScale ?: -1)
         val error = when {
             observedPosition?.state != PerpsPosition.STATE_OPEN -> stringResource(R.string.perps_reduce_quantity_changed)
             (enteredAsPercentage && inputValue > BigDecimal(100)) || (!enteredAsPercentage && size != null && inputValue > size) ->
                 stringResource(R.string.perps_reduce_invalid_quantity)
             market != null && inputValue > BigDecimal.ZERO && quantity == null -> stringResource(R.string.perps_reduce_invalid_quantity)
             quantity != null && !perpsReductionMeetsMinimum(quantity, current, price, minimum) ->
-                stringResource(R.string.perps_minimum_order_size, "\$${minimum.stripTrailingZeros().toPlainString()}")
+                if (minimumAmount != null) {
+                    stringResource(R.string.perps_minimum_order_size, "\$${minimumAmount.stripTrailingZeros().toPlainString()}")
+                } else {
+                    stringResource(R.string.perps_reduce_invalid_quantity)
+                }
             else -> null
         }
         val canSubmit = quantityScaleReady && quantity != null && error == null
