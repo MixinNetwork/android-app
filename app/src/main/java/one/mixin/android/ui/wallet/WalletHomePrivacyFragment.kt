@@ -68,6 +68,8 @@ import one.mixin.android.ui.common.UserBottomSheetDialogFragment
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
+import one.mixin.android.ui.home.inscription.CollectiblesFragment
+import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.TradeFragment
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
@@ -117,6 +119,7 @@ import one.mixin.android.vo.PendingDisplay
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.WalletHomeTokenSummary
 import one.mixin.android.vo.notMessengerUser
+import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.toSnapshot
 import one.mixin.android.ui.web.WebActivity
@@ -149,6 +152,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private val walletViewModel by viewModels<WalletViewModel>()
     private var assets: List<TokenItem> = listOf()
+    private var collectibles: List<SafeCollectible> = emptyList()
     private var tokenSummary = WalletHomeTokenSummary()
     private var recentSnapshots: List<SnapshotItem> = emptyList()
     private var positions: List<PerpsPositionItem> = emptyList()
@@ -225,6 +229,10 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     ) {
         super.onViewCreated(view, savedInstanceState)
         Timber.e("onViewCreated called in WalletHomePrivacyFragment")
+        walletViewModel.collectibles().observe(viewLifecycleOwner) {
+            collectibles = it
+            renderHome()
+        }
         _walletId.value = Session.getAccountId().orEmpty()
         loadCachedCashAccount()
         refreshBitcoinPrice()
@@ -455,6 +463,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             hasEarnAccount = currentEarnAccounts.isNotEmpty(),
             hasTopMovers = topMovers.isNotEmpty(),
             hasTransactions = recentSnapshots.isNotEmpty(),
+            hasCollectibles = collectibles.isNotEmpty(),
             hasPendingIndicator = pendingDisplays.isNotEmpty(),
             isLoading = isLoading,
         )
@@ -466,6 +475,8 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             btcTotal = formatWalletHomeBtcTotal(totalBtc),
             fiatSymbol = Fiats.getSymbol(),
             privacyTokens = assets.take(WalletHomeSection.PREVIEW_LIMIT),
+            collectibles = collectibles.take(WalletHomeSection.PREVIEW_LIMIT),
+            totalCollectibleCount = collectibles.size,
             privacyTransactions = recentSnapshots.take(WalletHomeSection.PREVIEW_LIMIT),
             positions = positions.take(WalletHomeSection.PREVIEW_LIMIT),
             positionSummary = positions.toWalletHomePositionSummary(),
@@ -797,6 +808,16 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         override fun onImportKeyClicked() = Unit
 
         override fun onImportKeyLearnMoreClicked() = Unit
+
+        override fun onViewMoreCollectiblesClicked() {
+            navTo(CollectiblesFragment.newInstance(), CollectiblesFragment.TAG)
+            defaultSharedPreferences.putBoolean(Constants.Account.PREF_HAS_USED_MARKET, false)
+            RxBus.publish(BadgeEvent(Constants.Account.PREF_HAS_USED_MARKET))
+        }
+
+        override fun onCollectibleClicked(inscriptionHash: String) {
+            InscriptionActivity.show(requireContext(), inscriptionHash)
+        }
 
         override fun onViewMoreTokensClicked() {
             val state = _homeState.value

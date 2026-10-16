@@ -3,6 +3,7 @@ package one.mixin.android.ui.wallet.home.components
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +32,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
+import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.web3.trade.perps.TopMoversCard
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
@@ -165,6 +167,37 @@ internal fun WalletHomeCard(
                                 onClick = callbacks::onTokenClicked,
                                 modifier = Modifier.fillMaxWidth(),
                             )
+                        }
+                    }
+                }
+            }
+            WalletHomeCardType.COLLECTIBLES -> SectionCard(
+                title = stringResource(R.string.Collectibles),
+                showViewAll = WalletHomeSection.hasMore(state.totalCollectibleCount),
+                onClick = callbacks::onViewMoreCollectiblesClicked,
+                contentUsesOwnPadding = true,
+                contentFlush = true,
+                showBottomSpacer = false,
+                headerPadding = PaddingValues(20.dp),
+            ) {
+                state.collectibles.take(PREVIEW_LIMIT).forEach { collectible ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                            .height(70.dp).padding(bottom = 20.dp)
+                            .clickable { callbacks.onCollectibleClicked(collectible.inscriptionHash) }
+                            .padding(horizontal = 20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        CoilImage(
+                            model = if (collectible.isText) collectible.iconURL else collectible.contentURL,
+                            placeholder = if (collectible.isText) R.drawable.ic_text_inscription else R.drawable.ic_default_inscription,
+                            modifier = Modifier.size(42.dp).clip(RoundedCornerShape(12.dp)),
+                        )
+                        Spacer(Modifier.width(14.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(collectible.name, color = MixinAppTheme.colors.textPrimary, fontSize = 16.sp, lineHeight = 19.sp, letterSpacing = 0.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            Spacer(Modifier.height(4.dp))
+                            Text("#${collectible.sequence}", color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp)
                         }
                     }
                 }
@@ -345,5 +378,6 @@ private fun WalletHomeCardType.hasSelfPaddedItems(): Boolean =
     this == WalletHomeCardType.POSITIONS ||
         this == WalletHomeCardType.TOP_MOVERS ||
         this == WalletHomeCardType.TOKENS ||
+        this == WalletHomeCardType.COLLECTIBLES ||
         this == WalletHomeCardType.TRANSACTIONS ||
         this == WalletHomeCardType.REFERRAL

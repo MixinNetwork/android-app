@@ -1167,6 +1167,7 @@
     <string name="wallet_home_earn_account">理財賬戶</string>
     <string name="Cash_Account">現金賬戶</string>
     <string name="send_to_cash_account_description">輕鬆出售加密貨幣，賬戶餘額自動賺取年化收益。</string>
+    <string name="Reset_More_Badges">重置 More 小紅點</string>
     <string name="Reset_Wallet_Home_Banners">重置錢包首頁 Banner</string>
     <string name="cash_balance">現金餘額</string>
     <string name="earn_balance">理財餘額</string>
@@ -2666,6 +2667,9 @@
     <string name="earn_total_earnings">總收益</string>
     <string name="earn_yesterday_earnings">昨日收益</string>
     <string name="earn_reward_rate">收益率</string>
+    <string name="new_chat">發起聊天</string>
+    <string name="contacts_title">聯絡人</string>
+    <string name="contacts_search_hint">Mixin ID、姓名、手機號碼</string>
     <string name="perps_adjust">調整</string>
     <string name="perps_adjust_title">調整保證金或倉位</string>
     <string name="perps_add_margin">新增保證金</string>
