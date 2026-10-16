@@ -27,6 +27,7 @@ fun PerpsPositionItem.toPosition(): PerpsPosition {
         state = state ?: "open",
         markPrice = markPrice ?: "0",
         unrealizedPnl = unrealizedPnl ?: "0",
+        estimatedCloseFee = estimatedCloseFee,
         roe = roe ?: "0",
         walletId = walletId ?: "",
         createdAt = createdAt ?: "",

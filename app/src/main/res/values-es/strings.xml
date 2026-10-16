@@ -1212,7 +1212,6 @@
     <string name="Debug_Mark_Price">Precio de marca (depuración)</string>
     <string name="up_to_apy">Hasta %1$s APY</string>
     <string name="perps_add_position_title">Añadir posición a %1$s %2$s</string>
-    <string name="perps_reduce_position_title">Reducir posición para %1$s %2$s</string>
     <string name="max_removable">Máximo reducible %1$s</string>
     <string name="perps_added_position">Posición aumentada</string>
     <string name="perps_added_margin">Margen añadido</string>
@@ -1224,4 +1223,16 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">ERROR 10655: No se puede ampliar la posición.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">ERROR 10655: El importe de apertura supera el límite máximo de %1$s. Reduzca el importe o el apalancamiento.</string>
     <string name="single_transaction_should_be_less_than">Cantidad máxima %1$s %2$s</string>
+    <string name="perps_close_submitted">Orden de cierre enviada</string>
+    <string name="perps_reduce_quantity_changed">La posición ha cambiado. Vuelve y comprueba la cantidad antes de intentarlo de nuevo.</string>
+    <string name="perps_reduce_invalid_quantity">Introduce un importe mayor que cero que no supere el valor de la posición actual.</string>
+    <string name="perps_minimum_order_size">El tamaño mínimo de la orden es %1$s</string>
+    <string name="Estimated_Fee">Comisión estimada</string>
+    <string name="perps_estimated_realized_pnl">PnL realizado estimado</string>
+    <string name="perps_last_price">Último precio</string>
+    <string name="perps_mark_price">Precio de marca</string>
+    <string name="perps_close_position_title">Cerrar posición de %1$s %2$s</string>
+    <string name="perps_include_pnl">Incluye PnL</string>
+    <string name="perps_position_amount">Importe de la posición</string>
+    <string name="perps_margin_amount">Importe del margen</string>
 </resources>
