@@ -92,7 +92,7 @@ object WalletConnectV2 : WalletConnect() {
                 name = "Mixin",
                 url = "https://messenger.mixin.one",
                 description = "An open source cryptocurrency wallet with Signal messaging.",
-                icons = emptyList(),
+                icons = listOf("https://messenger.mixin.one/img/favicon.svg"),
                 redirect = null,
             )
         CoreClient.initialize(
