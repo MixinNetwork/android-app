@@ -568,7 +568,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
     private fun settleSuccess(result: String) {
         settleRequest(
-            "mixinwallet.${Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, ${JSONObject.quote(result)});",
+            "mixinwallet.${signMessage.network ?: Web3Signer.currentNetwork}.sendResponse(${signMessage.callbackId}, ${JSONObject.quote(result)});",
         )
     }
 
@@ -577,7 +577,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
         message: String,
     ) {
         settleRequest(
-            "mixinwallet.${Web3Signer.currentNetwork}.sendError(${signMessage.callbackId}, {code: $code, message: ${JSONObject.quote(message)}});",
+            "mixinwallet.${signMessage.network ?: Web3Signer.currentNetwork}.sendError(${signMessage.callbackId}, {code: $code, message: ${JSONObject.quote(message)}});",
         )
     }
 
