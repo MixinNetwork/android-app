@@ -293,7 +293,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             }
         }
 
-        MixinAppTheme {
+        PerpsConfirmationTheme {
             Column(
                 modifier = Modifier
                     .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
@@ -416,7 +416,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             color = MixinAppTheme.colors.textRemarks,
                             fontSize = 14.sp,
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             CoilImage(
                                 model = marketIcon,

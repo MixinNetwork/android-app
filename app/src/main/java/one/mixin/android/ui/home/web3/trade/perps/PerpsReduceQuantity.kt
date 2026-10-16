@@ -21,6 +21,7 @@ internal fun perpsReductionQuantity(currentQuantity: String, markPrice: String?,
     val value = marginAdjustmentAmount(input) ?: return null
     val quantity = if (isPercentage) {
         if (value > BigDecimal(100)) return null
+        if (value.compareTo(BigDecimal(100)) == 0) return current
         current.multiply(value).movePointLeft(2).setScale(quantityScale, RoundingMode.DOWN)
     } else {
         val price = markPrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null
@@ -42,3 +43,8 @@ internal fun perpsReductionMeetsMinimum(quantity: BigDecimal, current: BigDecima
     if (price == null || price <= BigDecimal.ZERO) return false
     return quantity.multiply(price) >= minimum
 }
+
+internal fun perpsReductionInputPercentage(amount: BigDecimal, size: BigDecimal?): BigDecimal? =
+    size?.takeIf { it > BigDecimal.ZERO }?.let {
+        amount.multiply(BigDecimal(100)).divide(it, 0, RoundingMode.DOWN)
+    }

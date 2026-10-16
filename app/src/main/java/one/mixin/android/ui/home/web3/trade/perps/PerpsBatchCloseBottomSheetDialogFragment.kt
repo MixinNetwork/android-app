@@ -153,7 +153,7 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
         val estimatedFee = estimatedPerpsBatchCloseFee(displayPositions)
         val settleAssetSymbol = settleAsset?.symbol ?: "USDT"
 
-        MixinAppTheme {
+        PerpsConfirmationTheme {
             Column(
                 modifier = Modifier
                     .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
@@ -222,7 +222,7 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
                             assetSymbol = settleAssetSymbol,
                             estimatedReceive = estimatedReceive,
                             estimatedFee = estimatedFee,
-                            estimatedPnl = estimatedPerpsBatchClosePnl(displayPositions),
+                            estimatedPnl = estimatedPerpsBatchCloseUnrealizedPnl(displayPositions),
                             margin = estimatedPerpsBatchCloseMargin(displayPositions),
                             onFeeTipClick = {
                                 PerpetualGuideBottomSheetDialogFragment.newInstance(
@@ -466,10 +466,10 @@ private fun BatchClosePositions(positions: List<PerpsPositionItem>) {
             color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
         )
-        Spacer(modifier = Modifier.height(8.dp))
-        positions.forEach { position ->
+        Spacer(modifier = Modifier.height(4.dp))
+        positions.forEachIndexed { index, position ->
+            if (index > 0) Spacer(modifier = Modifier.height(10.dp))
             BatchClosePositionItem(position)
-            Spacer(modifier = Modifier.height(10.dp))
         }
     }
 }
@@ -551,7 +551,7 @@ private fun BatchCloseSummary(
             color = MixinAppTheme.colors.textRemarks,
             fontSize = 14.sp,
         )
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             asset?.let {
                 CoilImage(
@@ -578,9 +578,15 @@ private fun BatchCloseSummary(
             )
         }
         Spacer(modifier = Modifier.height(20.dp))
-        PerpsEstimatedRealizedPnl(estimatedPnl, margin)
+        PerpsCloseMargin(estimatedPnl, margin)
         Spacer(modifier = Modifier.height(20.dp))
-        PerpsEstimatedFee(estimatedFee, onFeeTipClick)
+        PerpsEstimatedFee(
+            fee = estimatedFee,
+            onTipClick = onFeeTipClick,
+            title = stringResource(R.string.Fee),
+            amountFontSize = 16.sp,
+            titleSpacing = 4.dp,
+        )
     }
 }
 

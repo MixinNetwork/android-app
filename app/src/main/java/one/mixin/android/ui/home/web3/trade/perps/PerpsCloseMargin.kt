@@ -22,9 +22,9 @@ import java.math.BigDecimal
 internal fun PerpsCloseMargin(pnl: BigDecimal?, margin: BigDecimal?) {
     Column {
         Text(stringResource(R.string.Margin).uppercase(), color = MixinAppTheme.colors.textRemarks, fontSize = 14.sp)
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(4.dp))
         Text(margin?.let { if (it.signum() < 0) formatPerpsSignedRawUsdDecimal(it) else formatPerpsRawUsdDecimal(it) } ?: "--", color = MixinAppTheme.colors.textPrimary, fontSize = 16.sp)
-        Spacer(Modifier.height(6.dp))
+        Spacer(Modifier.height(4.dp))
         PerpsIncludedPnl(pnl)
     }
 }

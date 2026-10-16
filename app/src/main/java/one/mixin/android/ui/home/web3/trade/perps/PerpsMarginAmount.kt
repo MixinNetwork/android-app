@@ -126,14 +126,14 @@ internal fun estimatedPerpsClosePnlPercent(pnl: BigDecimal?, margin: BigDecimal?
     return pnl.multiply(BigDecimal(100)).divide(margin, 8, RoundingMode.HALF_UP)
 }
 
-internal fun estimatedPerpsBatchClosePnl(positions: List<PerpsPositionItem>): BigDecimal? =
+internal fun estimatedPerpsBatchCloseUnrealizedPnl(positions: List<PerpsPositionItem>): BigDecimal? =
     positions.fold(BigDecimal.ZERO) { total, position ->
-        total + (estimatedPerpsClosePnl(position.unrealizedPnl, position.estimatedCloseFee) ?: return null)
+        total + (position.unrealizedPnl?.toBigDecimalOrNull() ?: return null)
     }
 
 internal fun estimatedPerpsBatchCloseMargin(positions: List<PerpsPositionItem>): BigDecimal? =
     positions.fold(BigDecimal.ZERO) { total, position ->
-        total + (position.margin?.toBigDecimalOrNull() ?: return null)
+        total + (perpsCloseMarginAmount(position.margin, position.unrealizedPnl) ?: return null)
     }
 
 internal fun perpsOpenedOrderAmount(marginAmount: String, feeAmount: String): BigDecimal? {

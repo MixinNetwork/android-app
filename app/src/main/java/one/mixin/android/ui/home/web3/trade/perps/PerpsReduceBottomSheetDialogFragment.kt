@@ -134,9 +134,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         val inputValue = enteredInput.toBigDecimalOrNull() ?: BigDecimal.ZERO
         val quantity = perpsReductionQuantity(position.quantity, position.markPrice, enteredInput, enteredAsPercentage, market?.quantityScale ?: -1)
         val amount = if (enteredAsPercentage) size?.multiply(inputValue)?.movePointLeft(2)?.setScale(2, RoundingMode.DOWN) else inputValue
-        val percentage = if (enteredAsPercentage) inputValue else size?.takeIf { it > BigDecimal.ZERO }?.let {
-            inputValue.multiply(BigDecimal(100)).divide(it, 0, RoundingMode.HALF_UP)
-        }
+        val percentage = if (enteredAsPercentage) inputValue else perpsReductionInputPercentage(inputValue, size)
         val input = if (isPercentage == enteredAsPercentage) enteredInput else {
             (if (isPercentage) percentage else amount)?.stripTrailingZeros()?.toPlainString().orEmpty()
         }
@@ -198,7 +196,10 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         errorText = error,
                         enabled = observedPosition?.state == PerpsPosition.STATE_OPEN,
                         onInputChanged = { enteredInput = it; enteredAsPercentage = isPercentage },
-                        percentageLabels = true,
+                        onPercentageSelected = {
+                            enteredInput = it.toPlainString()
+                            enteredAsPercentage = true
+                        },
                         autoFocus = false,
                         onToggleMode = {
                             isPercentage = !isPercentage
@@ -217,13 +218,16 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                                 valueColor = MixinAppTheme.colors.textPrimary,
                                 value = margin?.let { if (it.signum() < 0) formatPerpsSignedRawUsdDecimal(it) else formatPerpsRawUsdDecimal(it) } ?: "--",
                             )
-                            Spacer(Modifier.height(4.dp))
-                            PerpsIncludedPnl(pnl)
+                            if (percentage?.compareTo(BigDecimal(100)) != 0) {
+                                Spacer(Modifier.height(4.dp))
+                                PerpsIncludedPnl(pnl)
+                            }
                         }
                         PerpsAddInfoRow(
                             title = stringResource(R.string.position_size),
                             valueColor = MixinAppTheme.colors.textPrimary,
                             value = formatPerpsReductionSize(current, quantity?.takeIf { canSubmit }, price, position.tokenSymbol.orEmpty()),
+                            singleLine = false,
                             onTipClick = {
                                 PerpetualGuideBottomSheetDialogFragment.newInstance(
                                     PerpetualGuideBottomSheetDialogFragment.TAB_POSITION,

@@ -45,9 +45,11 @@ class PerpsMarginAmountTest {
         assertEquals(BigDecimal("15"), estimatedPerpsClosePnlPercent(partialPnl, partialMargin)?.stripTrailingZeros())
         val first = PerpsPositionItem("p1", "market", "long", "1", "100", 10, margin = "10", unrealizedPnl = "2", estimatedCloseFee = "0.5")
         val positions = listOf(first, first.copy(positionId = "p2", margin = "20", unrealizedPnl = "-1", estimatedCloseFee = "0.2"))
-        assertEquals(BigDecimal("0.3"), estimatedPerpsBatchClosePnl(positions))
-        assertEquals(BigDecimal("1"), estimatedPerpsClosePnlPercent(estimatedPerpsBatchClosePnl(positions), estimatedPerpsBatchCloseMargin(positions))?.stripTrailingZeros())
-        assertNull(estimatedPerpsBatchClosePnl(listOf(first.copy(estimatedCloseFee = null))))
+        assertEquals(BigDecimal("1"), estimatedPerpsBatchCloseUnrealizedPnl(positions))
+        assertEquals(BigDecimal("31"), estimatedPerpsBatchCloseMargin(positions))
+        assertEquals(BigDecimal("2"), estimatedPerpsBatchCloseUnrealizedPnl(listOf(first.copy(estimatedCloseFee = null))))
+        assertNull(estimatedPerpsBatchCloseUnrealizedPnl(listOf(first.copy(unrealizedPnl = "invalid"))))
+        assertNull(estimatedPerpsBatchCloseMargin(listOf(first.copy(unrealizedPnl = null))))
         assertNull(estimatedPerpsBatchCloseMargin(listOf(first.copy(margin = "invalid"))))
     }
 

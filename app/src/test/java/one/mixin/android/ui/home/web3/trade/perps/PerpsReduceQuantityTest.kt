@@ -144,6 +144,30 @@ class PerpsReduceQuantityTest {
         assertFalse(perpsReductionMeetsMinimum(rounded, current, BigDecimal("3"), BigDecimal.ONE))
     }
 
+    @Test
+    fun fullPercentageKeepsTheEntirePositionEvenBeyondMarketScale() {
+        for (current in listOf("1.23456789", "-1.23456789")) {
+            val quantity = perpsReductionQuantity(current, "7.13", "100", true, 4)
+            assertDecimal("1.23456789", quantity)
+            assertEquals("1.23456789 SOL → 0 SOL ($0)", formatPerpsReductionSize(BigDecimal(current), quantity, BigDecimal("7.13"), "SOL"))
+        }
+    }
+
+    @Test
+    fun dollarBudgetBelowFullValueDoesNotDisplayFullPercentage() {
+        val current = BigDecimal("1.23456789")
+        val price = BigDecimal("7.13")
+        val size = current.multiply(price)
+        val displayedAmount = size.setScale(2, java.math.RoundingMode.DOWN)
+        val partial = requireNotNull(perpsReductionQuantity(current.toPlainString(), price.toPlainString(), displayedAmount.toPlainString(), false, 8))
+        assertTrue(partial < current)
+        assertTrue(partial.multiply(price) <= displayedAmount)
+        assertDecimal("99", perpsReductionInputPercentage(displayedAmount, size))
+        assertDecimal("100", perpsReductionInputPercentage(size, size))
+        assertNull(perpsReductionInputPercentage(BigDecimal.ONE, null))
+        assertNull(perpsReductionInputPercentage(BigDecimal.ONE, BigDecimal.ZERO))
+    }
+
     private fun assertDecimal(expected: String, actual: BigDecimal?) {
         assertEquals(expected, actual?.stripTrailingZeros()?.toPlainString())
     }

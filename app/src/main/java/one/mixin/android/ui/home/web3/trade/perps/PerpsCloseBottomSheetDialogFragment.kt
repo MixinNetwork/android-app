@@ -192,6 +192,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     private var estimatedCloseFee by mutableStateOf<String?>("")
     private var marketIconUrl by mutableStateOf("")
     private var marketSymbol by mutableStateOf("")
+    private var tokenSymbol by mutableStateOf("")
     private var settleAssetSymbol by mutableStateOf("USDT")
     private var settleAssetItem by mutableStateOf<TokenItem?>(null)
     private var sender by mutableStateOf<User?>(null)
@@ -217,6 +218,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 estimatedCloseFee = position.estimatedCloseFee
                 marketIconUrl = position.iconUrl.orEmpty()
                 marketSymbol = position.displaySymbol ?: position.tokenSymbol.orEmpty()
+                tokenSymbol = position.tokenSymbol.orEmpty()
                 refreshAssetAndSender(
                     settleAssetId = position.settleAssetId,
                     botId = position.botId
@@ -225,6 +227,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 viewModel.getMarketFromDb(position.marketId)?.let { market ->
                     marketIconUrl = market.iconUrl
                     marketSymbol = market.displaySymbol
+                    tokenSymbol = market.tokenSymbol
                 }
             }
 
@@ -241,6 +244,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         viewModel.getMarketFromDb(position.marketId)?.let { market ->
                             marketIconUrl = market.iconUrl
                             marketSymbol = market.displaySymbol
+                            tokenSymbol = market.tokenSymbol
                         }
                     }
 
@@ -249,6 +253,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         onSuccess = { market ->
                             marketIconUrl = market.iconUrl
                             marketSymbol = market.displaySymbol
+                            tokenSymbol = market.tokenSymbol
                         },
                         onError = {}
                     )
@@ -263,7 +268,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             )
         }
 
-        MixinAppTheme {
+        PerpsConfirmationTheme {
             Column(
                 modifier = Modifier
                     .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
@@ -412,7 +417,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             color = MixinAppTheme.colors.textRemarks,
                             fontSize = 14.sp,
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             CoilImage(
                                 model = marketIconUrl,
@@ -437,6 +442,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                     text = "${leverage}x",
                                     color = sideColor,
                                     fontSize = 12.sp,
+                                    lineHeight = 14.sp,
                                     modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(sideColor.copy(alpha = 0.1f)).padding(horizontal = 3.dp, vertical = 1.dp),
                                 )
                             }
@@ -448,7 +454,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 color = MixinAppTheme.colors.textRemarks,
                                 fontSize = 14.sp,
                             )
-                            Spacer(Modifier.height(8.dp))
+                            Spacer(Modifier.height(4.dp))
                             Text(
                                 text = estimatedReceive?.let(::formatPerpsRawUsdDecimal) ?: "--",
                                 color = MixinAppTheme.colors.textPrimary,
@@ -461,7 +467,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                     color = MixinAppTheme.colors.textRemarks,
                                     fontSize = 14.sp,
                                 )
-                                Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(4.dp))
                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                     CoilImage(
                                         model = asset.iconUrl,
@@ -496,10 +502,30 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             Spacer(modifier = Modifier.height(20.dp))
                             PerpsCloseMargin(displayPnl, displayMargin)
                             Spacer(modifier = Modifier.height(20.dp))
+                            Text(
+                                text = stringResource(R.string.position_size).uppercase(),
+                                color = MixinAppTheme.colors.textRemarks,
+                                fontSize = 14.sp,
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = latestQuantity.toBigDecimalOrNull()?.let { current ->
+                                    formatPerpsReductionSize(
+                                        currentQuantity = current,
+                                        reductionQuantity = if (isReducePosition) reduceQuantity?.toBigDecimalOrNull() else current.abs(),
+                                        markPrice = latestMarkPrice.toBigDecimalOrNull(),
+                                        tokenSymbol = tokenSymbol,
+                                    )
+                                } ?: "--",
+                                color = MixinAppTheme.colors.textPrimary,
+                                fontSize = 16.sp,
+                            )
+                            Spacer(modifier = Modifier.height(20.dp))
                             PerpsEstimatedFee(
                                 fee = displayCloseFee,
                                 title = stringResource(R.string.Fee),
                                 amountFontSize = 16.sp,
+                                titleSpacing = 4.dp,
                                 onTipClick = {
                                     PerpetualGuideBottomSheetDialogFragment.newInstance(
                                         PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,

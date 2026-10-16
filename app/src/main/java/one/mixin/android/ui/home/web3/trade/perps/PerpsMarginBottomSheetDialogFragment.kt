@@ -656,7 +656,7 @@ internal fun PerpsReductionInput(
     onToggleMode: () -> Unit,
     onApplyReductionLimit: (() -> Unit)? = null,
     decimalPlaces: Int = if (isPercentage) 0 else 2,
-    percentageLabels: Boolean = false,
+    onPercentageSelected: ((BigDecimal) -> Unit)? = null,
     autoFocus: Boolean = true,
 ) {
     var textFieldValue by remember(isPercentage) { mutableStateOf(TextFieldValue(input, TextRange(input.length))) }
@@ -693,6 +693,10 @@ internal fun PerpsReductionInput(
     }
     fun formatInput(value: BigDecimal) = value.setScale(decimalPlaces, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
     fun selectPercentage(value: BigDecimal) {
+        if (onPercentageSelected != null) {
+            onPercentageSelected(value)
+            return
+        }
         val selected = if (isPercentage) value else reduceMarginAmount(margin?.toPlainString(), value.toPlainString(), true) ?: BigDecimal.ZERO
         updateInput(formatInput(selected))
     }
@@ -816,7 +820,7 @@ internal fun PerpsReductionInput(
         Layout(modifier = Modifier.fillMaxWidth(), content = {
             listOf(0, 25, 50, 75, 100).forEach { value ->
                 Text(
-                    text = if (isPercentage || percentageLabels) "$value%" else formatPerpsMarginAmount(reduceMarginAmount(margin?.toPlainString(), value.toString(), true)),
+                    text = "$value%",
                     color = MixinAppTheme.colors.textAssist,
                     fontSize = 12.sp,
                     fontWeight = if (isPercentage) FontWeight.W500 else FontWeight.Normal,
