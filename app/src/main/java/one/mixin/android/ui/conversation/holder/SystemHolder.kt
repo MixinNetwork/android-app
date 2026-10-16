@@ -1,7 +1,9 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.content.Context
+import android.content.res.ColorStateList
 import android.graphics.Color
+import androidx.core.content.ContextCompat
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
@@ -25,6 +27,32 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
         onItemListener: MessageAdapter.OnItemListener,
     ) {
         val id = meId
+        binding.chatInfo.backgroundTintList = if (messageItem.actionName == SystemConversationAction.EXPIRE.name) {
+            ColorStateList.valueOf(
+                ContextCompat.getColor(
+                    context,
+                    if ((messageItem.content?.toLongOrNull() ?: 0L) > 0L) {
+                        R.color.disappearing_message_background
+                    } else if (isNightMode) {
+                        R.color.bgGrayNight
+                    } else {
+                        R.color.disappearing_message_disabled_background
+                    },
+                ),
+            )
+        } else {
+            null
+        }
+        binding.chatInfo.setTextColor(
+            ContextCompat.getColor(
+                context,
+                if (isNightMode && messageItem.actionName == SystemConversationAction.EXPIRE.name && (messageItem.content?.toLongOrNull() ?: 0L) <= 0L) {
+                    R.color.textPrimaryNight
+                } else {
+                    R.color.textPrimary
+                },
+            ),
+        )
         if (hasSelect && isSelect) {
             itemView.setBackgroundColor(SELECT_COLOR)
         } else {
