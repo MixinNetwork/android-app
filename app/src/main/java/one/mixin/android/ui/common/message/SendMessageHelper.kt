@@ -37,6 +37,7 @@ import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.ShareHelper
 import one.mixin.android.util.image.Compressor
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppCardData
@@ -329,6 +330,7 @@ class SendMessageHelper
                     MessageCategory.SIGNAL_DATA,
                     MessageCategory.ENCRYPTED_DATA,
                 )
+            val source = ShareHelper.retainJobSource(MixinApplication.appContext, attachment.uri)
             val message =
                 createAttachmentMessage(
                     UUID.randomUUID().toString(),
@@ -337,7 +339,7 @@ class SendMessageHelper
                     category,
                     null,
                     attachment.filename,
-                    attachment.uri.toString(),
+                    source.toString(),
                     attachment.mimeType,
                     attachment.fileSize,
                     nowInUtc(),
@@ -348,7 +350,12 @@ class SendMessageHelper
                     replyMessage?.messageId,
                     replyMessage?.toQuoteMessageItem(),
                 )
-            jobManager.addJobInBackground(ConvertDataJob(message))
+            try {
+                jobManager.addJobInBackground(ConvertDataJob(message))
+            } catch (e: Exception) {
+                ShareHelper.releaseJobSource(MixinApplication.appContext, source)
+                throw e
+            }
         }
 
         fun sendAudioMessage(
@@ -462,7 +469,13 @@ class SendMessageHelper
             replyMessage: MessageItem? = null,
         ) {
             val mid = messageId ?: UUID.randomUUID().toString()
-            jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, uri, start, end, encryptCategory, mid, createdAt, replyMessage))
+            val source = ShareHelper.retainJobSource(MixinApplication.appContext, uri)
+            try {
+                jobManager.addJobInBackground(ConvertVideoJob(conversationId, senderId, source, start, end, encryptCategory, mid, createdAt, replyMessage))
+            } catch (e: Exception) {
+                ShareHelper.releaseJobSource(MixinApplication.appContext, source)
+                throw e
+            }
         }
 
         fun sendRecallMessage(
