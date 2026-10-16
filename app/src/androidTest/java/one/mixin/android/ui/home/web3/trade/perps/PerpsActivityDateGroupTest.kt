@@ -44,6 +44,7 @@ class PerpsActivityDateGroupTest {
         status = "filled",
         leverage = 1,
         quantity = "1",
+        payAmount = "10",
         marginAmount = "1",
         entryPrice = "1",
         closePrice = "0",

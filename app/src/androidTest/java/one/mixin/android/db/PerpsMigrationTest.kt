@@ -245,7 +245,7 @@ class PerpsMigrationTest {
             val names = mutableListOf<String>()
             while (cursor.moveToNext()) names += cursor.getString(cursor.getColumnIndexOrThrow("name"))
             assertTrue("margin_amount" in names)
-            assertTrue("pay_amount" !in names)
+            assertTrue("pay_amount" in names)
         }
     }
 

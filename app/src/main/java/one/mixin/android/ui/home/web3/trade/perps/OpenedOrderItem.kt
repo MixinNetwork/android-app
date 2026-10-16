@@ -78,7 +78,7 @@ fun OpenedOrderItem(
     }
 
     val amountValue = if (!isFailed) {
-        perpsOpenedOrderAmount(order.marginAmount, order.feeAmount)
+        order.payAmount.toBigDecimalOrNull()
     } else {
         null
     }

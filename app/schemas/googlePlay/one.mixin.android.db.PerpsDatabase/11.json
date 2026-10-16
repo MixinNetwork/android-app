@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 11,
-    "identityHash": "5eb204a25426590bb78fa43eb1c22566",
+    "identityHash": "e0ba827a66c131a3339e0698ede04f61",
     "entities": [
       {
         "tableName": "positions",
@@ -147,7 +147,7 @@
       },
       {
         "tableName": "perps_orders",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`order_id` TEXT NOT NULL, `position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `order_type` TEXT NOT NULL, `status` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `quantity` TEXT NOT NULL, `margin_amount` TEXT NOT NULL, `fee_amount` TEXT NOT NULL DEFAULT '0', `entry_price` TEXT NOT NULL, `close_price` TEXT NOT NULL, `realized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `net_realized_pnl` TEXT NOT NULL DEFAULT '', `net_roe` TEXT NOT NULL DEFAULT '', `profit_share_amount` TEXT NOT NULL DEFAULT '', `close_reason` TEXT, `trigger_price` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`order_id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`order_id` TEXT NOT NULL, `position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `order_type` TEXT NOT NULL, `status` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `quantity` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `margin_amount` TEXT NOT NULL, `fee_amount` TEXT NOT NULL DEFAULT '0', `entry_price` TEXT NOT NULL, `close_price` TEXT NOT NULL, `realized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `net_realized_pnl` TEXT NOT NULL DEFAULT '', `net_roe` TEXT NOT NULL DEFAULT '', `profit_share_amount` TEXT NOT NULL DEFAULT '', `close_reason` TEXT, `trigger_price` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`order_id`))",
         "fields": [
           {
             "fieldPath": "orderId",
@@ -194,6 +194,12 @@
           {
             "fieldPath": "quantity",
             "columnName": "quantity",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "payAmount",
+            "columnName": "pay_amount",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -552,7 +558,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '5eb204a25426590bb78fa43eb1c22566')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e0ba827a66c131a3339e0698ede04f61')"
     ]
   }
 }

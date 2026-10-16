@@ -35,6 +35,7 @@ class PerpsOrderSyncTest {
         status = PerpsOrder.STATUS_FILLED,
         leverage = 10,
         quantity = "1",
+        payAmount = "10",
         marginAmount = "10",
         entryPrice = "100",
         closePrice = "0",

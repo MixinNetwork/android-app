@@ -35,6 +35,9 @@ data class PerpsOrder(
     @SerializedName("quantity")
     @ColumnInfo(name = "quantity")
     val quantity: String,
+    @SerializedName("pay_amount")
+    @ColumnInfo(name = "pay_amount")
+    val payAmount: String,
     @SerializedName("margin_amount")
     @ColumnInfo(name = "margin_amount")
     val marginAmount: String,
