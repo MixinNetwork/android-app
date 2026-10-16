@@ -2130,7 +2130,7 @@ class WebFragment : BaseFragment() {
                 DAppMethod.SIGNRAWTRANSACTION -> {
                     val o = obj.getJSONObject("object")
                     val raw = o.getString("raw")
-                    signRawTransaction(id, raw)
+                    signRawTransaction(id, raw, o.optBoolean("broadcast", false))
                 }
 
                 DAppMethod.SINGIN -> {
@@ -2172,8 +2172,9 @@ class WebFragment : BaseFragment() {
         private fun signRawTransaction(
             callbackId: Long,
             raw: String,
+            broadcast: Boolean,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web, broadcast = broadcast))
         }
 
         private fun signMessage(
