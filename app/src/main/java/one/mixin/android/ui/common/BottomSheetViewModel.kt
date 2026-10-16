@@ -1697,6 +1697,9 @@ class BottomSheetViewModel
                 tokenRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
             }
 
+        suspend fun getWeb3Address(walletId: String, chainId: String) =
+            web3Repository.getAddressesByChainId(walletId, chainId)
+
         suspend fun queryAsset(walletId: String?, query: String, web3: Boolean = false): List<TokenItem> =
             tokenRepository.queryAsset(walletId, query, web3)
 

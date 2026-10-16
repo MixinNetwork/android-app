@@ -1583,6 +1583,7 @@
     <string name="continue_with_pin">Continue with PIN</string>
     <string name="Bitcoin" translatable="false">Bitcoin</string>
     <string name="Pearl" translatable="false">Pearl</string>
+    <string name="Litecoin" translatable="false">Litecoin</string>
     <string name="Ethereum" translatable="false">Ethereum</string>
     <string name="Polygon" translatable="false">Polygon</string>
     <string name="BSC" translatable="false">BSC</string>
