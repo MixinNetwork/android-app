@@ -1,0 +1,30 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <path
+      android:pathData="M3,7 L3,16 M15,3 L15,18"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="@color/wallet_green"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M3,9 L3,13 M15,6 L15,14"
+      android:strokeWidth="3.5"
+      android:fillColor="#00000000"
+      android:strokeColor="@color/wallet_green"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M9,11 L9,21 M21,12 L21,19"
+      android:strokeWidth="2"
+      android:fillColor="#00000000"
+      android:strokeColor="@color/wallet_red"
+      android:strokeLineCap="round"/>
+  <path
+      android:pathData="M9,14 L9,18 M21,14 L21,17"
+      android:strokeWidth="3.5"
+      android:fillColor="#00000000"
+      android:strokeColor="@color/wallet_red"
+      android:strokeLineCap="round"/>
+</vector>
