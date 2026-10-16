@@ -35,6 +35,7 @@ class WebClipBridgeLifecycleTest {
         val activityController = Robolectric.buildActivity(Activity::class.java).setup()
         val activity = activityController.get()
         val webView = MixinWebView(activity)
+        activity.setContentView(webView)
         // ShadowView.onLayout replaces FrameLayout's child layout; set only the backing bounds
         // that the real generateWebClip reads before creating and drawing its bitmap.
         ReflectionHelpers.setField(webView, "mLeft", 0)
@@ -43,23 +44,23 @@ class WebClipBridgeLifecycleTest {
         ReflectionHelpers.setField(webView, "mBottom", 100)
         val fragment = WebFragment.newInstance(Bundle().apply { putString(WebFragment.URL, "https://example.com") })
         var oldOwnerCalls = 0
-        val retainedBridge =
-            WebFragment.WebAppInterface(
-                context,
-                conversationId = null,
-                immersive = false,
-                closeAction = { oldOwnerCalls++ },
+        val token = webView.bridgeBinding.bind(WebViewBridgeBinding.Metadata(null, false)) {
+            WebViewBridgeBinding.Host(
+                WebViewBridgeBinding.MixinHost(closeAction = { oldOwnerCalls++ }),
+                WebViewBridgeBinding.WalletHost(),
             )
+        }
+        val retainedBridge = webView.bridgeBinding.mixinContextInterface
 
         try {
             assertEquals("Fixture WebView must have a width", 100, webView.width)
             assertEquals("Fixture WebView must have a height", 100, webView.height)
-            webView.addJavascriptInterface(retainedBridge, "MixinContext")
             setField(fragment, "webView", webView)
-            setField(fragment, "webAppInterface", retainedBridge)
+            setField(fragment, "bridgeOwnerToken", token)
             setField(fragment, "app", botApp)
 
             retainedBridge.close()
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
             assertEquals("Attached owner must receive the call", 1, oldOwnerCalls)
 
             val clip =
@@ -70,6 +71,7 @@ class WebClipBridgeLifecycleTest {
             assertNotNull("Exercise the actual detach path, not the zero-height early return", clip)
             assertSame("The floating clip must preserve its WebView", webView, clip!!.webView)
             retainedBridge.close()
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idle()
             assertEquals("A retained MixinContext must not call the detached owner", 1, oldOwnerCalls)
         } finally {
             val processor =

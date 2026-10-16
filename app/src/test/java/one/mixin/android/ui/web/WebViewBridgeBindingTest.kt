@@ -336,7 +336,7 @@ class WebViewBridgeBindingTest {
     }
 
     @Test
-    fun unknownNetworkIsRejectedThroughAConstantSafeNamespace() {
+    fun unknownNetworkIsRejectedThroughItsOriginalNamespace() {
         val errors = mutableListOf<Pair<Long, String>>()
         webView.bridgeBinding.bind(metadata()) {
             WebViewBridgeBinding.Host(
@@ -351,7 +351,7 @@ class WebViewBridgeBindingTest {
         webView.bridgeBinding.walletInterface.postMessage(unsupportedRequest(10, "ethereum;attack()"))
         idleMainLooper()
 
-        assertEquals(listOf(10L to Web3Signer.JsSignerNetwork.Ethereum.name), errors)
+        assertEquals(listOf(10L to "ethereum;attack()"), errors)
     }
 
     @Test
@@ -409,12 +409,15 @@ class WebViewBridgeBindingTest {
 
             invokeBridgeMethod(firstFragment, "bindWebViewBridges", false)
             val firstToken = ownerToken(firstFragment)
+            invokeBridgeMethod(firstFragment, "bindWebViewBridges", false)
+            assertSame(firstToken, ownerToken(firstFragment))
             val retainedMixinContext = webView.bridgeBinding.mixinContextInterface
             val retainedWallet = webView.bridgeBinding.walletInterface
             webView.loadUrl(EXISTING_URL)
             val shadowWebView = shadowOf(webView)
             val reloadsBeforeRestore = shadowWebView.reloadInvocations
             setField(firstFragment, "reusingWebDocument", true)
+            setField(firstFragment, "isFinished", true)
             invokeBridgeMethod(firstFragment, "loadWebDocument", emptyMap<String, String>())
 
             assertEquals(reloadsBeforeRestore, shadowWebView.reloadInvocations)
@@ -460,6 +463,118 @@ class WebViewBridgeBindingTest {
             assertFalse(webView.bridgeBinding.isCurrent(token))
             retainedMixinContext.close()
             idleMainLooper()
+            assertFalse(webView.bridgeBinding.isCurrent(token))
+        } finally {
+            closeProcessor(fragment)
+        }
+    }
+
+    @Test
+    fun detachedSigningMessageWithoutNetworkUsesFallbackWithoutCrashing() {
+        val dropped = mutableListOf<Pair<Long, String>>()
+        val binding = WebViewBridgeBinding(webView) { id, network -> dropped += id to network }
+        binding.walletInterface.onBrowserSign(JsSignMessage(20L, JsSignMessage.TYPE_PERSONAL_MESSAGE))
+        idleMainLooper()
+        assertEquals(listOf(20L to Web3Signer.currentNetwork), dropped)
+    }
+
+    @Test
+    fun unknownNetworkErrorEscapesProviderName() {
+        val fragment = fragment()
+        try {
+            val network = "pearl\"];attack();//"
+            val script = WebFragment::class.java.getDeclaredMethod(
+                "walletErrorScript", Long::class.javaPrimitiveType, String::class.java,
+                Int::class.javaPrimitiveType, String::class.java,
+            ).run {
+                isAccessible = true
+                invoke(fragment, 21L, network, 4001, "rejected") as String
+            }
+            assertEquals("mixinwallet[${JSONObject.quote(network)}].sendError(21, {code: 4001, message: \"rejected\"});", script)
+        } finally {
+            closeProcessor(fragment)
+        }
+    }
+
+    @Test
+    fun pendingResponseIsRejectedOnceOnDetachAndLateSuccessCannotOverwriteIt() {
+        val binding = webView.bridgeBinding
+        val token = binding.bind(metadata()) { host(mutableListOf(), mutableListOf()) }
+        val response = binding.request(token, "callback(false)")
+        binding.detach(token)
+        binding.bind(metadata()) { host(mutableListOf(), mutableListOf()) }
+        response.complete("callback(true)")
+        idleMainLooper()
+        assertFalse(response.isActive)
+        assertEquals("callback(false)", shadowOf(webView).lastEvaluatedJavascript)
+        webView.evaluateJavascript("sentinel", null)
+        response.reject()
+        response.complete("callback(true)")
+        idleMainLooper()
+        assertEquals("sentinel", shadowOf(webView).lastEvaluatedJavascript)
+    }
+
+    @Test
+    fun completedResponseIsNotRejectedOnRebind() {
+        val binding = webView.bridgeBinding
+        val token = binding.bind(metadata()) { host(mutableListOf(), mutableListOf()) }
+        val response = binding.request(token, "callback('')")
+        response.complete("callback('signature')")
+        idleMainLooper()
+        binding.bind(metadata()) { host(mutableListOf(), mutableListOf()) }
+        assertEquals("callback('signature')", shadowOf(webView).lastEvaluatedJavascript)
+    }
+
+    @Test
+    fun pendingResponseIsRejectedOnRebindWithoutExplicitDetach() {
+        val binding = webView.bridgeBinding
+        val token = binding.bind(metadata()) { host(mutableListOf(), mutableListOf()) }
+        val response = binding.request(token, "callback('')")
+        binding.bind(metadata()) { host(mutableListOf(), mutableListOf()) }
+        assertFalse(response.isActive)
+        assertEquals("callback('')", shadowOf(webView).lastEvaluatedJavascript)
+    }
+
+    @Test
+    fun queuedMixinRequestIsRejectedWhenOwnerChangesBeforeDispatch() {
+        val binding = webView.bridgeBinding
+        binding.bind(metadata()) { host(mutableListOf(), mutableListOf()) }
+        binding.mixinContextInterface.verifyPin("callback")
+        binding.bind(metadata()) { host(mutableListOf(), mutableListOf()) }
+        idleMainLooper()
+        assertEquals("callback(false)", shadowOf(webView).lastEvaluatedJavascript)
+    }
+
+    @Test
+    fun unfinishedRetainedDocumentIsReloaded() {
+        val fragment = fragment()
+        try {
+            setWebView(fragment, webView)
+            webView.loadUrl(EXISTING_URL)
+            setField(fragment, "reusingWebDocument", true)
+            setField(fragment, "isFinished", false)
+            val reloads = shadowOf(webView).reloadInvocations
+            invokeBridgeMethod(fragment, "loadWebDocument", emptyMap<String, String>())
+            assertEquals(reloads + 1, shadowOf(webView).reloadInvocations)
+        } finally {
+            closeProcessor(fragment)
+        }
+    }
+
+    @Test
+    fun zeroSizedClipRetainsWebViewWithoutScreenshotAndDetachesHost() {
+        val fragment = fragment()
+        try {
+            setWebView(fragment, webView)
+            setField(fragment, "app", BOT_APP)
+            invokeBridgeMethod(fragment, "bindWebViewBridges", false)
+            val token = ownerToken(fragment)
+            val clip = WebFragment::class.java.getDeclaredMethod("generateWebClip").run {
+                isAccessible = true
+                invoke(fragment) as WebClip
+            }
+            assertSame(webView, clip.webView)
+            assertEquals(null, clip.thumb)
             assertFalse(webView.bridgeBinding.isCurrent(token))
         } finally {
             closeProcessor(fragment)

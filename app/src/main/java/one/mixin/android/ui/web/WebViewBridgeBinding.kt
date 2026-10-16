@@ -3,6 +3,7 @@ package one.mixin.android.ui.web
 import org.json.JSONObject
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.WalletErrorCode
+import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.MixinWebView
 import java.util.concurrent.atomic.AtomicLong
 import java.util.concurrent.atomic.AtomicReference
@@ -53,6 +54,7 @@ class WebViewBridgeBinding internal constructor(
     private val nextOwnerId = AtomicLong()
     private val owner = AtomicReference<Owner?>()
     private val ownerLock = Any()
+    private val requests = mutableSetOf<Request>()
     private val walletRequestOwner = ThreadLocal<WalletRequestOwner?>()
 
     @Volatile
@@ -64,23 +66,19 @@ class WebViewBridgeBinding internal constructor(
     val mixinContextInterface =
         WebFragment.WebAppInterface(
             webView.context,
-            conversationId = null,
-            immersive = false,
+            metadataProvider = { metadata },
             reloadThemeAction = { dispatchMixin { it.reloadThemeAction?.invoke() } },
             playlistAction = { list -> dispatchMixin { it.playlistAction?.invoke(list) } },
             closeAction = { dispatchMixin { it.closeAction?.invoke() } },
-            getTipAddressAction = { chainId, callback -> dispatchMixin { it.getTipAddressAction?.invoke(chainId, callback) } },
-            tipSignAction = { chainId, message, callback -> dispatchMixin { it.tipSignAction?.invoke(chainId, message, callback) } },
-            getAssetAction = { ids, callback -> dispatchMixin { it.getAssetAction?.invoke(ids, callback) } },
+            getTipAddressAction = { chainId, callback -> dispatchMixin("$callback('')") { it.getTipAddressAction?.invoke(chainId, callback) } },
+            tipSignAction = { chainId, message, callback -> dispatchMixin("$callback('')") { it.tipSignAction?.invoke(chainId, message, callback) } },
+            getAssetAction = { ids, callback -> dispatchMixin("$callback('[]')") { it.getAssetAction?.invoke(ids, callback) } },
             signBotSignature = { appId, reloadPublicKey, method, path, body, callback ->
-                dispatchMixin { it.signBotSignature?.invoke(appId, reloadPublicKey, method, path, body, callback) }
+                dispatchMixin("$callback('[]')") { it.signBotSignature?.invoke(appId, reloadPublicKey, method, path, body, callback) }
             },
             openInBrowserAction = { url -> callMixin { it.openInBrowserAction?.invoke(url) ?: false } ?: false },
-            verifyPinAction = { callback -> dispatchMixin { it.verifyPinAction?.invoke(callback) } },
-        ).also {
-            it.metadataProvider = { metadata }
-            it.isHolderManaged = true
-        }
+            verifyPinAction = { callback -> dispatchMixin("$callback(false)") { it.verifyPinAction?.invoke(callback) } },
+        )
 
     val walletInterface =
         WebFragment.Web3Interface(
@@ -95,8 +93,9 @@ class WebViewBridgeBinding internal constructor(
                 ) { it.onWalletActionError?.invoke(id, network, code, message) }
             },
             onBrowserSign = { message ->
+                val network = message.network ?: Web3Signer.currentNetwork
                 dispatchWallet(
-                    onDropped = { rejectDetached(message.callbackId, requireNotNull(message.network)) },
+                    onDropped = { rejectDetached(message.callbackId, network) },
                 ) { it.onBrowserSign?.invoke(message) }
             },
             onEmptyAddress = { network -> dispatchWallet { it.onEmptyAddress?.invoke(network) } },
@@ -126,6 +125,7 @@ class WebViewBridgeBinding internal constructor(
             val token = OwnerToken(nextOwnerId.incrementAndGet())
             val host = hostFactory(token)
             this.metadata = metadata
+            requests.toList().forEach { it.reject() }
             owner.set(Owner(token, host))
             token
         }
@@ -135,6 +135,7 @@ class WebViewBridgeBinding internal constructor(
             val current = owner.get() ?: return
             if (current.token !== token) return
             owner.set(null)
+            requests.toList().forEach { it.reject() }
         }
     }
 
@@ -149,18 +150,55 @@ class WebViewBridgeBinding internal constructor(
         }
     }
 
+    inner class Request internal constructor(
+        private val token: OwnerToken,
+        private val rejection: String,
+    ) {
+        val isActive: Boolean
+            get() = synchronized(ownerLock) { this in requests && isCurrent(token) && !disposed }
+
+        fun complete(script: String) {
+            webView.post {
+                synchronized(ownerLock) {
+                    if (requests.remove(this) && !disposed) {
+                        webView.evaluateJavascript(if (isCurrent(token)) script else rejection, null)
+                    }
+                }
+            }
+        }
+
+        fun reject() {
+            synchronized(ownerLock) {
+                if (requests.remove(this) && !disposed) webView.evaluateJavascript(rejection, null)
+            }
+        }
+    }
+
+    fun request(token: OwnerToken, rejection: String): Request =
+        synchronized(ownerLock) {
+            Request(token, rejection).also {
+                requests.add(it)
+                if (!isCurrent(token) || disposed) it.reject()
+            }
+        }
+
     internal fun dispose() {
         synchronized(ownerLock) {
+            requests.clear()
             disposed = true
             owner.set(null)
         }
     }
 
-    private fun dispatchMixin(action: (MixinHost) -> Unit) {
-        val expectedToken = owner.get()?.token ?: return
+    private fun dispatchMixin(rejection: String? = null, action: (MixinHost) -> Unit) {
+        val expectedToken = owner.get()?.token
         webView.post {
             val current = owner.get()
-            if (!disposed && current != null && current.token === expectedToken) action(current.host.mixin)
+            if (!disposed && current != null && current.token === expectedToken) {
+                action(current.host.mixin)
+            } else if (!disposed && rejection != null) {
+                webView.evaluateJavascript(rejection, null)
+            }
         }
     }
 
@@ -199,7 +237,7 @@ class WebViewBridgeBinding internal constructor(
             if (!disposed) {
                 val message = JSONObject.quote(DETACHED_MESSAGE)
                 webView.evaluateJavascript(
-                    "mixinwallet.$network.sendError($id, {code: ${WalletErrorCode.UNAUTHORIZED}, message: $message});",
+                    "mixinwallet[${JSONObject.quote(network)}].sendError($id, {code: ${WalletErrorCode.UNAUTHORIZED}, message: $message});",
                     null,
                 )
             }
