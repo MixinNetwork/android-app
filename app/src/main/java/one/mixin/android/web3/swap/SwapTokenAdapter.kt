@@ -22,10 +22,8 @@ class SwapTokenAdapter(private val selectUnique: String? = null) : RecyclerView.
     var tokens: List<SwapToken> = ArrayList(0)
         @SuppressLint("NotifyDataSetChanged")
         set(value) {
-            if (field != value) {
-                field = value
-                notifyDataSetChanged()
-            }
+            field = value
+            notifyDataSetChanged()
         }
 
     var stocks: List<SwapToken> = ArrayList(0)

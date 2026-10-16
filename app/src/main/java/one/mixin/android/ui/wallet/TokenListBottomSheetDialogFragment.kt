@@ -422,7 +422,7 @@ class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
                 binding.pb.isVisible = false
 
-                if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
+                if (result.isEmpty()) {
                     binding.rvVa.displayedChild = POS_EMPTY_RECEIVE
                 }
 

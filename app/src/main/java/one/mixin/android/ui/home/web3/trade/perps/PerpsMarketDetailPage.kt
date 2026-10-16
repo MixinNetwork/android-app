@@ -96,8 +96,9 @@ import org.threeten.bp.Instant
 import java.math.BigDecimal
 import java.util.Locale
 
+private const val DEFAULT_TIME_FRAME_INDEX = 2
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
-private const val MARKET_REFRESH_INTERVAL_MS = 30_000L
+private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
 private const val PREF_MARKET_DETAIL_TIME_FRAME = "perps_market_detail_time_frame"
 
 @Composable
@@ -195,8 +196,8 @@ fun PerpsMarketDetailPage(
         stringResource(R.string.weeks_count_short, 1),
     )
     var selectedTimeFrame by remember(timeFramePreferenceKey, timeFrameValues.size) {
-        val savedIndex = preferences.getInt(timeFramePreferenceKey, 0)
-        mutableIntStateOf(savedIndex.takeIf { it in timeFrameValues.indices } ?: 0)
+        val savedIndex = preferences.getInt(timeFramePreferenceKey, DEFAULT_TIME_FRAME_INDEX)
+        mutableIntStateOf(savedIndex.takeIf { it in timeFrameValues.indices } ?: DEFAULT_TIME_FRAME_INDEX)
     }
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)

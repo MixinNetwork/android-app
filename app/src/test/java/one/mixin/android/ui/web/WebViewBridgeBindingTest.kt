@@ -14,6 +14,7 @@ import com.google.mlkit.vision.common.internal.VisionCommonRegistrar
 import one.mixin.android.MixinApplication
 import one.mixin.android.ui.qr.QRCodeProcessor
 import one.mixin.android.vo.App
+import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.MixinWebView
 import org.json.JSONObject
@@ -302,6 +303,36 @@ class WebViewBridgeBindingTest {
             ),
             signs,
         )
+    }
+
+    @Test
+    fun rawTransactionPreservesNetworkAndBroadcastIntent() {
+        val signs = mutableListOf<JsSignMessage>()
+        webView.bridgeBinding.bind(metadata()) {
+            WebViewBridgeBinding.Host(
+                mixin = WebViewBridgeBinding.MixinHost(),
+                wallet = WebViewBridgeBinding.WalletHost(onBrowserSign = { signs += it }),
+            )
+        }
+        listOf(null, false, true).forEachIndexed { index, broadcast ->
+            val payload = JSONObject().put("raw", "transaction")
+            if (broadcast != null) payload.put("broadcast", broadcast)
+            val request = JSONObject()
+                .put("id", index)
+                .put("network", "solana")
+                .put("name", "signRawTransaction")
+                .put("object", payload)
+            webView.bridgeBinding.walletInterface.postMessage(request.toString())
+        }
+        idleMainLooper()
+
+        assertEquals(listOf(false, false, true), signs.map { it.broadcast })
+        assertEquals(listOf(0L, 1L, 2L), signs.map { it.callbackId })
+        signs.forEach {
+            assertEquals(Web3Signer.JsSignerNetwork.Solana.name, it.network)
+            assertEquals(JsSignMessage.TYPE_RAW_TRANSACTION, it.type)
+            assertEquals("transaction", it.data)
+        }
     }
 
     @Test

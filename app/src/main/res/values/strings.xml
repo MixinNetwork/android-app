@@ -2259,6 +2259,7 @@
     <string name="Invalid_Address">Invalid Address</string>
     <string name="Private_Key_Notice">Your private key will only be stored locally on your device.</string>
     <string name="Imported">Imported</string>
+    <string name="wallet_already_imported">This wallet has already been imported.</string>
     <string name="NoKey">NoKey</string>
     <string name="Watching">Watching</string>
     <string name="error_too_many_wallets">ERROR 10632: Maximum wallet limit reached</string>

@@ -24,6 +24,7 @@ class JsSignMessage(
     val virtualSize: Int? = null, // UTXO chain vbytes
     val utxoChainId: String? = null,
     val network: String? = null,
+    val broadcast: Boolean = false,
 ) : Parcelable {
     companion object {
         const val TYPE_TYPED_MESSAGE = 0

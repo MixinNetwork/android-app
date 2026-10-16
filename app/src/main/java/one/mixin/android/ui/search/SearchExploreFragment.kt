@@ -353,7 +353,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
             }
             mutableItems
         }
-        searchAdapter.setAssets(mergedItems)
+        searchAdapter.setAssets(mergedItems.filter { it.primitiveAssetId.isNullOrEmpty() })
         decoration.invalidateHeaders()
     }
 

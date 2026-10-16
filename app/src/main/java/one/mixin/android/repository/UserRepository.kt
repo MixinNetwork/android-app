@@ -6,17 +6,8 @@ import androidx.lifecycle.asLiveData
 import androidx.lifecycle.map
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import one.mixin.android.Constants.Account.PREF_CASH_BOT_PK
-import one.mixin.android.Constants.Account.PREF_EARN_BOT_PK
-import one.mixin.android.Constants.Account.PREF_REFERRAL_BOT_PK
-import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
-import one.mixin.android.Constants.MIXIN_CASH_USER_ID
-import one.mixin.android.Constants.MIXIN_EARN_USER_ID
-import one.mixin.android.Constants.RouteConfig.REFERRAL_BOT_USER_ID
-import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
-import one.mixin.android.MixinApplication
 import one.mixin.android.api.MixinResponse
-import one.mixin.android.api.MixinResponseException
+import one.mixin.android.api.BotPublicKey
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.BindInviteRequest
 import one.mixin.android.api.request.CircleConversationRequest
@@ -32,9 +23,7 @@ import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.provider.DataProvider
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.oneWeekAgo
-import one.mixin.android.extension.putString
 import one.mixin.android.session.Session
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Circle
@@ -48,7 +37,6 @@ import one.mixin.android.vo.SearchBot
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserItem
 import one.mixin.android.vo.UserRelationship
-import one.mixin.android.vo.generateConversationId
 import javax.inject.Inject
 
 class UserRepository
@@ -366,48 +354,7 @@ class UserRepository
         }
 
         suspend fun getBotPublicKey(botId: String, force: Boolean) {
-            val prefKey =
-                when (botId) {
-                    ROUTE_BOT_USER_ID -> PREF_ROUTE_BOT_PK
-                    REFERRAL_BOT_USER_ID -> PREF_REFERRAL_BOT_PK
-                    MIXIN_CASH_USER_ID -> PREF_CASH_BOT_PK
-                    MIXIN_EARN_USER_ID -> PREF_EARN_BOT_PK
-                    else -> return
-                }
-
-            val key =
-                findBotPublicKey(
-                    generateConversationId(
-                        botId,
-                        Session.getAccountId()!!,
-                    ),
-                    botId,
-                )
-            if (key != null && !force) {
-                MixinApplication.appContext.defaultSharedPreferences.putString(prefKey, key)
-            } else {
-                val sessionResponse = fetchSessionsSuspend(listOf(botId))
-                if (sessionResponse.isSuccess) {
-                    val sessionData = requireNotNull(sessionResponse.data)[0]
-                    saveSession(
-                        ParticipantSession(
-                            generateConversationId(
-                                sessionData.userId,
-                                Session.getAccountId()!!,
-                            ),
-                            sessionData.userId,
-                            sessionData.sessionId,
-                            publicKey = sessionData.publicKey,
-                        ),
-                    )
-                    MixinApplication.appContext.defaultSharedPreferences.putString(prefKey, sessionData.publicKey)
-                } else {
-                    throw MixinResponseException(
-                        sessionResponse.errorCode,
-                        sessionResponse.errorDescription,
-                    )
-                }
-            }
+            BotPublicKey.forBot(botId)?.get(::fetchSessionsSuspend, force)
         }
 
         suspend fun bindReferral(code: String) = accountService.bindReferral(BindInviteRequest(code))
