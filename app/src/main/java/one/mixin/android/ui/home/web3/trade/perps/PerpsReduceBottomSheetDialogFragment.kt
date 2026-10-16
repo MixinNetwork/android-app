@@ -218,10 +218,8 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                                 valueColor = MixinAppTheme.colors.textPrimary,
                                 value = margin?.let { if (it.signum() < 0) formatPerpsSignedRawUsdDecimal(it) else formatPerpsRawUsdDecimal(it) } ?: "--",
                             )
-                            if (percentage?.compareTo(BigDecimal(100)) != 0) {
-                                Spacer(Modifier.height(4.dp))
-                                PerpsIncludedPnl(pnl)
-                            }
+                            Spacer(Modifier.height(4.dp))
+                            PerpsIncludedPnl(pnl)
                         }
                         PerpsAddInfoRow(
                             title = stringResource(R.string.position_size),
