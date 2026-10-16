@@ -103,7 +103,7 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        jobManager.addJobInBackground(RefreshMarketJob(marketItem.coinId))
+        jobManager.addJobInBackground(RefreshMarketJob(marketItem.coinId, true))
         AnalyticsTracker.trackMarketDetail(
             type = AnalyticsTracker.MarketType.SPOT,
             source = marketSource,
