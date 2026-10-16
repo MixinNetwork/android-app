@@ -22,3 +22,9 @@ internal fun filterSwapTokensByWalletChains(
             (isWeb3TransferSupported(token.chain.chainId) &&
                 (addressChainIds == null || isSwapSearchChainAvailable(token.chain.chainId, addressChainIds)))
     }
+
+internal fun mergeSwapTokenSearchResults(
+    localMatches: List<SwapToken>,
+    remoteMatches: List<SwapToken>,
+): List<SwapToken> =
+    (remoteMatches + localMatches).distinctBy { it.chain.chainId to it.assetId }

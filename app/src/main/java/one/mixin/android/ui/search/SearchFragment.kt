@@ -357,7 +357,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 }
                 m
             }
-        searchAdapter.setAssetData(t)
+        searchAdapter.setAssetData(t.filter { it.primitiveAssetId.isNullOrEmpty() })
         decoration.invalidateHeaders()
     }
 
