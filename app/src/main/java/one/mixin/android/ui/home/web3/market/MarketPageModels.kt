@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.market
 
+import one.mixin.android.api.response.WalletHomeBanner
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.event.MarketPageDataSource
 import one.mixin.android.vo.market.GlobalMarket
@@ -13,6 +14,14 @@ enum class MarketTopTab {
     STOCK,
     INDICATOR,
 }
+
+internal val MarketTopTab.bannerPlacement: String?
+    get() = when (this) {
+        MarketTopTab.CRYPTO -> "market_crypto"
+        MarketTopTab.PERPETUAL -> "market_perps"
+        MarketTopTab.STOCK -> "market_stock"
+        else -> null
+    }
 
 enum class MarketSubTab {
     FAVORITE,
@@ -169,6 +178,7 @@ data class MarketPageUiState(
     val selectedTopTab: MarketTopTab = MarketTopTab.CRYPTO,
     val selectedSubTabs: Map<MarketTopTab, MarketSubTab> = defaultMarketSubTabs(),
     val entries: List<MarketListEntry> = emptyList(),
+    val banners: List<WalletHomeBanner> = emptyList(),
     val displaySettings: MarketDisplaySettings = MarketDisplaySettings(),
     val sortState: MarketSortState = MarketSortState(),
     val indicator: GlobalMarket? = null,

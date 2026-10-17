@@ -91,17 +91,15 @@ fun List<WalletHomeBanner>.filterWalletHomeBannersByChains(chains: Collection<St
     }
 }
 
-fun Set<String>.syncedWalletHomeClosedBannerIds(remoteBanners: List<WalletHomeBanner>): Set<String> {
-    return this
-}
-
 fun List<WalletHomeBanner>.visibleWalletHomeBanners(
     closedBannerIds: Set<String>,
     now: Instant = Instant.now(),
+    placement: String = WalletHomeBanner.BANNER_PLACEMENT_WALLET,
 ): List<WalletHomeBanner> =
     filter { banner ->
         banner.key.isNotBlank() &&
-            (banner.placement.isBlank() || banner.placement == WalletHomeBanner.BANNER_PLACEMENT_WALLET) &&
+            (banner.placement == placement ||
+                (banner.placement.isBlank() && placement == WalletHomeBanner.BANNER_PLACEMENT_WALLET)) &&
             banner.isActive &&
             !banner.isExpired(now) &&
             banner.hasVisualContent &&
