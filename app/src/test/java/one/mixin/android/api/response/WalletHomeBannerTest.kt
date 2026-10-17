@@ -129,6 +129,42 @@ class WalletHomeBannerTest {
         assertEquals(listOf("legacy", "wallet"), banners.map { it.bannerId })
     }
 
+    @Test
+    fun marketPlacementsExcludeWalletAndOtherTabs() {
+        val placements = listOf("market_crypto", "market_perps", "market_stock")
+        val banners = listOf(visibleBanner("legacy"), visibleBanner("wallet", placement = "wallet_banner")) +
+            placements.map { visibleBanner(it, placement = it) }
+
+        placements.forEach { placement ->
+            assertEquals(
+                listOf(placement),
+                banners.visibleWalletHomeBanners(emptySet(), placement = placement).map { it.bannerId },
+            )
+        }
+        assertEquals(listOf("legacy", "wallet"), banners.visibleWalletHomeBanners(emptySet()).map { it.bannerId })
+    }
+
+    @Test
+    fun marketBannersRespectVisibilityAndPriority() {
+        val placement = "market_crypto"
+        val now = Instant.parse("2026-07-08T10:00:00Z")
+        val banner = visibleBanner("normal", placement = placement)
+        val banners = listOf(
+            banner,
+            banner.copy(bannerId = "closed"),
+            banner.copy(bannerId = "inactive", status = "inactive"),
+            banner.copy(bannerId = "expired", endAt = now.toString()),
+            banner.copy(bannerId = "no-action", actionUrl = null),
+            banner.copy(bannerId = "no-content", title = ""),
+            banner.copy(bannerId = "priority", priority = 10),
+            banner.copy(bannerId = "button", actionUrl = null, actions = listOf(WalletHomeBannerAction("Go", "mixin://buy"))),
+        )
+        assertEquals(
+            listOf("priority", "normal", "button"),
+            banners.visibleWalletHomeBanners(setOf("closed"), now, placement).map { it.bannerId },
+        )
+    }
+
     private fun visibleBanner(
         id: String,
         endAt: String = "",
