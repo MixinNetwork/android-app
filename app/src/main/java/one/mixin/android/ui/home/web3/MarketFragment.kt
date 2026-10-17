@@ -149,7 +149,7 @@ class MarketFragment : Web3Fragment() {
         if (url.isNullOrBlank()) return
         AnalyticsTracker.trackWalletHomeAdBanner(trackingKey, source)
         openWalletHomeBannerAction(url, TradeSource.MARKET_BANNER, AnalyticsTracker.PerpsSource.MARKET_BANNER) {
-            MainActivity.showWallet(requireContext(), buy = true)
+            MainActivity.showWallet(requireContext(), buy = true, buySource = TradeSource.MARKET_BANNER)
         }
     }
 

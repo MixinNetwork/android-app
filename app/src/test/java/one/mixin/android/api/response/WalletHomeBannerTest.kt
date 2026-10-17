@@ -92,20 +92,6 @@ class WalletHomeBannerTest {
     }
 
     @Test
-    fun syncClosedBannerIdsKeepsExistingIdsWhenRemoteResponseIsPartial() {
-        val remoteBanners = listOf(
-            WalletHomeBanner(bannerId = "remote-1"),
-            WalletHomeBanner(bannerId = "remote-2"),
-        )
-
-        assertEquals(
-            setOf("remote-1", "other-wallet-banner", "missing-after-failed-request"),
-            setOf("remote-1", "other-wallet-banner", "missing-after-failed-request")
-                .syncedWalletHomeClosedBannerIds(remoteBanners),
-        )
-    }
-
-    @Test
     fun visibleBannersExcludeExpiredItems() {
         val now = Instant.parse("2026-07-08T10:00:00Z")
 

@@ -5,6 +5,7 @@ import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -82,6 +83,7 @@ class MarketPageViewModel
         private var lastBannerRefresh: Long? = null
         private var closedBannerIds: Set<String> = emptySet()
         private var refreshLoopJob: Job? = null
+        private var lastMarketRefresh: Long? = null
         private var failedSources: Set<MarketPageDataSource> = emptySet()
         private var hasCompletedInitialRefresh = false
         private var hasLoadedSpotMarkets = false
@@ -306,6 +308,9 @@ class MarketPageViewModel
             refreshLoopJob =
                 viewModelScope.launch {
                     launch { refreshBanners() }
+                    lastMarketRefresh?.let {
+                        delay((MARKET_REFRESH_INTERVAL_MS - (SystemClock.elapsedRealtime() - it)).coerceAtLeast(0L))
+                    }
                     while (isActive) {
                         refreshNow()
                         delay(MARKET_REFRESH_INTERVAL_MS)
@@ -315,8 +320,14 @@ class MarketPageViewModel
 
         private suspend fun refreshBanners() {
             try {
-                val savedIds = findWalletHomeDynamicBannerClosedIds()
-                closedBannerIds = closedBannerIds + savedIds
+                try {
+                    val savedIds = findWalletHomeDynamicBannerClosedIds()
+                    closedBannerIds = closedBannerIds + savedIds
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.w(e, "Read closed market banners failed")
+                }
                 if (!hasLoadedBannerCache) {
                     banners = withContext(Dispatchers.IO) { preferences.getWalletHomeBannerCache(bannerCacheKey).orEmpty() }
                     hasLoadedBannerCache = true
@@ -339,13 +350,16 @@ class MarketPageViewModel
             tab.bannerPlacement?.let { banners.visibleWalletHomeBanners(closedBannerIds, placement = it) }.orEmpty()
 
         private fun updateVisibleBanners() {
-            _uiState.update { it.copy(banners = visibleBanners(it.selectedTopTab)) }
+            _uiState.update {
+                val visible = visibleBanners(it.selectedTopTab)
+                if (visible == it.banners) it else it.copy(banners = visible)
+            }
         }
 
         fun closeBanner(banner: WalletHomeBanner) {
             closedBannerIds = closedBannerIds + banner.key
             updateVisibleBanners()
-            viewModelScope.launch {
+            viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
                 try {
                     updateWalletHomeDynamicBannerClosedIds(setOf(banner.key))
                 } catch (e: CancellationException) {
@@ -387,7 +401,9 @@ class MarketPageViewModel
                 hasCompletedInitialRefresh = true
                 _uiState.value = _uiState.value.copy(isLoading = false)
             }
-            rebuildEntries()
+            _uiState.update {
+                it.copy(hasError = it.entries.isEmpty() && selectedDataSource(it) in failedSources)
+            }
         }
 
         private fun refreshSelectedPage() {
@@ -396,6 +412,7 @@ class MarketPageViewModel
         }
 
         private fun enqueueRefresh(sources: Set<MarketPageDataSource>) {
+            lastMarketRefresh = SystemClock.elapsedRealtime()
             jobManager.addJobInBackground(
                 RefreshMarketPageJob(
                     duration = selectedDuration(),

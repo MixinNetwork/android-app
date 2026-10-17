@@ -22,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -724,7 +725,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         override fun onDynamicBannerClosed(banner: WalletHomeBanner) {
             closedDynamicBannerIds = closedDynamicBannerIds + banner.key
             updateDynamicBanners(dynamicBanners)
-            lifecycleScope.launch {
+            lifecycleScope.launch(start = CoroutineStart.UNDISPATCHED) {
                 try {
                     updateWalletHomeDynamicBannerClosedIds(setOf(banner.key))
                 } catch (e: CancellationException) {

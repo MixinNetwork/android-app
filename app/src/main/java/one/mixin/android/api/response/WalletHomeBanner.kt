@@ -91,10 +91,6 @@ fun List<WalletHomeBanner>.filterWalletHomeBannersByChains(chains: Collection<St
     }
 }
 
-fun Set<String>.syncedWalletHomeClosedBannerIds(remoteBanners: List<WalletHomeBanner>): Set<String> {
-    return this
-}
-
 fun List<WalletHomeBanner>.visibleWalletHomeBanners(
     closedBannerIds: Set<String>,
     now: Instant = Instant.now(),

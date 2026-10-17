@@ -1,6 +1,9 @@
 package one.mixin.android.ui.wallet
 
 import com.google.gson.Gson
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import one.mixin.android.db.property.PropertyHelper
@@ -15,15 +18,15 @@ private val walletHomePreferencesGson = Gson()
 
 internal fun walletHomeDynamicBannerClosedKey() = PREF_WALLET_HOME_DYNAMIC_BANNER_CLOSED
 
-internal suspend fun findWalletHomeDynamicBannerClosedIds(): Set<String> {
-    val value = PropertyHelper.findValueByKey(walletHomeDynamicBannerClosedKey(), "")
+internal suspend fun findWalletHomeDynamicBannerClosedIds(): Set<String> = withContext(Dispatchers.IO) {
+    parseWalletHomeDynamicBannerClosedIds(PropertyHelper.findValueByKey(walletHomeDynamicBannerClosedKey(), ""))
+}
+
+internal fun parseWalletHomeDynamicBannerClosedIds(value: String): Set<String> {
     if (value.isBlank()) return emptySet()
-    return runCatching {
-        walletHomePreferencesGson.fromJson(value, Array<String>::class.java)
-            .orEmpty()
-            .filter(String::isNotBlank)
-            .toSet()
-    }.getOrDefault(emptySet())
+    return requireNotNull(walletHomePreferencesGson.fromJson(value, Array<String>::class.java)) {
+        "Invalid closed banner ids"
+    }.filter(String::isNotBlank).toSet()
 }
 
 internal suspend fun updateWalletHomeDynamicBannerClosedIds(
@@ -33,7 +36,9 @@ internal suspend fun updateWalletHomeDynamicBannerClosedIds(
         PropertyHelper.updateKeyValue(walletHomeDynamicBannerClosedKey(), walletHomePreferencesGson.toJson(ids.sorted()))
     },
 ) {
-    closedBannerMutex.withLock {
-        write(read() + closedIds)
+    withContext(NonCancellable) {
+        closedBannerMutex.withLock {
+            write(read() + closedIds)
+        }
     }
 }
