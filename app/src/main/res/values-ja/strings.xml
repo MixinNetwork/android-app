@@ -309,12 +309,13 @@
     <string name="Disable_web_debug">Disable webデバッグの無効化</string>
     <string name="Disabled">無効ずみ</string>
     <string name="disappearing_message">表示されないメッセージ</string>
-    <string name="disappearing_message_hint">有効にすると、このチャットで送受信された新しいメッセージは、見た後に消えます。詳しくは、こちらをお読みください。</string>
+    <string name="disappearing_message_hint">有効にすると、このチャットで送受信された新しいメッセージは一定時間後に消えます。詳しくは、こちらをお読みください。</string>
     <string name="disappearing_option_1">30秒</string>
     <string name="disappearing_option_2">10分間</string>
     <string name="disappearing_option_3">2時間</string>
     <string name="disappearing_option_4">1日</string>
     <string name="disappearing_option_5">1週間</string>
+    <string name="disappearing_option_month">1か月</string>
     <string name="DISCARD">破棄</string>
     <string name="Dismiss_as_Admin">管理者権限を解除</string>
     <string name="divide">,</string>

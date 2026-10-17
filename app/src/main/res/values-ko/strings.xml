@@ -383,13 +383,14 @@
     <string name="Disable_web_debug">웹 디버그 비활성화</string>
     <string name="Disabled">비활성화됨</string>
     <string name="disappearing_message">사라지는 메시지</string>
-    <string name="disappearing_message_hint">활성화하면 이 채팅에서 주고받은 새 메시지는 확인한 후 사라집니다. **자세히 알아보려면** 문서를 읽어보세요.</string>
+    <string name="disappearing_message_hint">활성화하면 이 채팅에서 주고받은 새 메시지는 일정 시간이 지나면 사라집니다. **자세히 알아보려면** 문서를 읽어보세요.</string>
     <string name="disappearing_message_url">https://support.mixin.one/en/article/how-to-enable-disappearing-messages-2nzaz8</string>
     <string name="disappearing_option_1">30초</string>
     <string name="disappearing_option_2">10분</string>
     <string name="disappearing_option_3">2시간</string>
     <string name="disappearing_option_4">1일</string>
     <string name="disappearing_option_5">1주</string>
+    <string name="disappearing_option_month">1개월</string>
     <string name="DISCARD">삭제</string>
     <string name="Dismiss_as_Admin">관리자 권한 해제</string>
     <string name="divide">,</string>
