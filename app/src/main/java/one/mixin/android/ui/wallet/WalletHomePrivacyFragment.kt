@@ -22,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -38,7 +39,6 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.WalletHomeBanner
 import one.mixin.android.api.response.WalletHomeBannerAction
-import one.mixin.android.api.response.syncedWalletHomeClosedBannerIds
 import one.mixin.android.api.response.visibleWalletHomeBanners
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
@@ -629,7 +629,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             } ?: return@launch
             defaultSharedPreferences.putWalletHomeBannerCache(privacyWalletHomeCacheKey(), remoteBanners)
             runCatching {
-                syncClosedDynamicBannerIds(remoteBanners)
+                syncClosedDynamicBannerIds()
             }.onFailure {
                 Timber.w(it, "Sync wallet home banner closed ids failed")
             }
@@ -641,7 +641,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         val cachedBanners = defaultSharedPreferences.getWalletHomeBannerCache(cacheKey) ?: return
         updateDynamicBanners(cachedBanners)
         runCatching {
-            syncClosedDynamicBannerIds(cachedBanners)
+            syncClosedDynamicBannerIds()
         }.onFailure {
             Timber.w(it, "Sync cached wallet home banner closed ids failed")
         }
@@ -661,13 +661,9 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         renderHome()
     }
 
-    private suspend fun syncClosedDynamicBannerIds(remoteBanners: List<WalletHomeBanner>) {
-        val closedBannerIds = findWalletHomeDynamicBannerClosedIds()
-        val syncedClosedBannerIds = closedBannerIds.syncedWalletHomeClosedBannerIds(remoteBanners)
-        if (syncedClosedBannerIds != closedBannerIds) {
-            updateWalletHomeDynamicBannerClosedIds(syncedClosedBannerIds)
-        }
-        closedDynamicBannerIds = syncedClosedBannerIds
+    private suspend fun syncClosedDynamicBannerIds() {
+        val savedIds = findWalletHomeDynamicBannerClosedIds()
+        closedDynamicBannerIds = closedDynamicBannerIds + savedIds
     }
 
     private fun privacyWalletHomeCacheKey(): String =
@@ -713,7 +709,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             )
             banner.actionUrl
                 ?.takeIf { it.isNotBlank() }
-                ?.openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
+                ?.let { openWalletHomeBannerAction(it, TradeSource.WALLET_HOME, AnalyticsTracker.PerpsSource.WALLET_HOME, ::showBuy) }
         }
 
         override fun onDynamicBannerActionClicked(banner: WalletHomeBanner, action: WalletHomeBannerAction) {
@@ -723,15 +719,20 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             )
             action.action
                 .takeIf { it.isNotBlank() }
-                ?.openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
+                ?.let { openWalletHomeBannerAction(it, TradeSource.WALLET_HOME, AnalyticsTracker.PerpsSource.WALLET_HOME, ::showBuy) }
         }
 
         override fun onDynamicBannerClosed(banner: WalletHomeBanner) {
-            lifecycleScope.launch {
-                val closedIds = closedDynamicBannerIds.toMutableSet().apply { add(banner.key) }
-                updateWalletHomeDynamicBannerClosedIds(closedIds)
-                closedDynamicBannerIds = closedIds
-                renderHome()
+            closedDynamicBannerIds = closedDynamicBannerIds + banner.key
+            updateDynamicBanners(dynamicBanners)
+            lifecycleScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                try {
+                    updateWalletHomeDynamicBannerClosedIds(setOf(banner.key))
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.w(e, "Save closed wallet banner failed")
+                }
             }
         }
 
