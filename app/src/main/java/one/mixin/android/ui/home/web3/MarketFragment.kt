@@ -102,10 +102,10 @@ class MarketFragment : Web3Fragment() {
                         onAddRecommendations = viewModel::addRecommendations,
                         onEntryClick = { entry -> openMarket(entry, state.selectedTopTab) },
                         onBannerClick = { banner ->
-                            openBanner(banner.actionUrl, banner.trackingKey, AnalyticsTracker.MarketAdBannerSource.BACKGROUND)
+                            openBanner(banner.actionUrl, banner.trackingKey, banner.placement, AnalyticsTracker.AdBannerSource.BACKGROUND)
                         },
                         onBannerActionClick = { banner, action ->
-                            openBanner(action.action, banner.trackingKey, AnalyticsTracker.MarketAdBannerSource.BUTTON)
+                            openBanner(action.action, banner.trackingKey, banner.placement, AnalyticsTracker.AdBannerSource.BUTTON)
                         },
                         onBannerClose = viewModel::closeBanner,
                     )
@@ -145,9 +145,9 @@ class MarketFragment : Web3Fragment() {
         }
     }
 
-    private fun openBanner(url: String?, trackingKey: String, source: String) {
+    private fun openBanner(url: String?, trackingKey: String, placement: String, source: String) {
         if (url.isNullOrBlank()) return
-        AnalyticsTracker.trackWalletHomeAdBanner(trackingKey, source)
+        AnalyticsTracker.trackAdBanner(trackingKey, placement, source)
         openWalletHomeBannerAction(url, TradeSource.MARKET_BANNER, AnalyticsTracker.PerpsSource.MARKET_BANNER) {
             MainActivity.showWallet(requireContext(), buy = true, buySource = TradeSource.MARKET_BANNER)
         }

@@ -703,9 +703,10 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
 
         override fun onDynamicBannerClicked(banner: WalletHomeBanner) {
-            AnalyticsTracker.trackWalletHomeAdBanner(
+            AnalyticsTracker.trackAdBanner(
                 banner.trackingKey,
-                AnalyticsTracker.WalletHomeAdBannerSource.BACKGROUND,
+                banner.placement,
+                AnalyticsTracker.AdBannerSource.BACKGROUND,
             )
             banner.actionUrl
                 ?.takeIf { it.isNotBlank() }
@@ -713,9 +714,10 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
 
         override fun onDynamicBannerActionClicked(banner: WalletHomeBanner, action: WalletHomeBannerAction) {
-            AnalyticsTracker.trackWalletHomeAdBanner(
+            AnalyticsTracker.trackAdBanner(
                 banner.trackingKey,
-                AnalyticsTracker.WalletHomeAdBannerSource.BUTTON,
+                banner.placement,
+                AnalyticsTracker.AdBannerSource.BUTTON,
             )
             action.action
                 .takeIf { it.isNotBlank() }
