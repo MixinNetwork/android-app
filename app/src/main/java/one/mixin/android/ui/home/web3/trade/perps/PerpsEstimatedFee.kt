@@ -40,12 +40,12 @@ internal fun PerpsEstimatedFee(
                 color = MixinAppTheme.colors.textRemarks,
                 fontSize = 14.sp,
             )
-            Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(4.dp))
             Icon(
                 painter = painterResource(R.drawable.ic_tip),
                 contentDescription = title,
                 tint = MixinAppTheme.colors.textAssist,
-                modifier = Modifier.size(16.dp).clickable(role = Role.Button, onClick = onTipClick),
+                modifier = Modifier.size(12.dp).clickable(role = Role.Button, onClick = onTipClick),
             )
         }
         Spacer(Modifier.height(titleSpacing))

@@ -37,20 +37,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
@@ -58,7 +54,6 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
@@ -74,10 +69,8 @@ import one.mixin.android.ui.wallet.components.WalletLabel
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.User
-import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 @AndroidEntryPoint
 class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -131,7 +124,6 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
     private var step by mutableStateOf(Step.Pending)
     private var remainingPositions by mutableStateOf<List<PerpsPositionItem>>(emptyList())
     private var errorInfo by mutableStateOf<String?>(null)
-    private var settleAsset by mutableStateOf<TokenItem?>(null)
     private var receiver by mutableStateOf<User?>(null)
 
     enum class Step {
@@ -151,7 +143,6 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
         val displayPositions = if (step == Step.Done) positions else remainingPositions
         val estimatedReceive = estimatedPerpsBatchCloseReturn(displayPositions)
         val estimatedFee = estimatedPerpsBatchCloseFee(displayPositions)
-        val settleAssetSymbol = settleAsset?.symbol ?: "USDT"
 
         PerpsConfirmationTheme {
             Column(
@@ -218,8 +209,6 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
                         BatchClosePositions(displayPositions)
                         Spacer(modifier = Modifier.height(20.dp))
                         BatchCloseSummary(
-                            asset = settleAsset,
-                            assetSymbol = settleAssetSymbol,
                             estimatedReceive = estimatedReceive,
                             estimatedFee = estimatedFee,
                             estimatedPnl = estimatedPerpsBatchCloseUnrealizedPnl(displayPositions),
@@ -315,9 +304,6 @@ class PerpsBatchCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
 
     private suspend fun refreshPaymentDetails() {
         val firstPosition = positions.firstOrNull() ?: return
-        firstPosition.settleAssetId?.let { assetId ->
-            settleAsset = bottomViewModel.findAssetItemById(assetId)
-        }
         firstPosition.botId?.let { botId ->
             receiver = bottomViewModel.refreshUser(botId)
         }
@@ -476,69 +462,22 @@ private fun BatchClosePositions(positions: List<PerpsPositionItem>) {
 
 @Composable
 private fun BatchClosePositionItem(position: PerpsPositionItem) {
-    val context = LocalContext.current
-    val quoteColorPref = context.defaultSharedPreferences
-        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val isLong = position.side.equals("long", ignoreCase = true)
     val isPending = position.state.equals(PerpsPosition.STATE_OPENING, true) ||
         position.state.equals(PerpsPosition.STATE_ADDING, true)
-    val sideColor = if (isLong) {
-        if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-    } else {
-        if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-    }
-    val leverageTextColor = if (isPending) MixinAppTheme.colors.textAssist else sideColor
-    val leverageBackgroundColor = if (isPending) {
-        MixinAppTheme.colors.backgroundGrayLight
-    } else {
-        sideColor.copy(alpha = 0.1f)
-    }
     val direction = stringResource(if (isLong) R.string.Long else R.string.Short)
     val symbol = position.tokenSymbol ?: stringResource(R.string.Unknown)
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        CoilImage(
-            model = position.iconUrl,
-            placeholder = R.drawable.ic_avatar_place_holder,
-            modifier = Modifier
-                .size(24.dp)
-                .clip(CircleShape),
-        )
-        Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            text = direction,
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.W500,
-        )
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(
-            text = symbol,
-            color = MixinAppTheme.colors.textPrimary,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.W500,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-            modifier = Modifier.weight(1f, fill = false),
-        )
-        Spacer(modifier = Modifier.width(6.dp))
-        Text(
-            text = "${position.leverage}x",
-            color = leverageTextColor,
-            fontSize = 12.sp,
-            lineHeight = 14.sp,
-            modifier = Modifier
-                .clip(RoundedCornerShape(4.dp))
-                .background(leverageBackgroundColor)
-                .padding(horizontal = 3.dp, vertical = 1.dp),
-        )
-    }
+    PerpsConfirmationMarket(
+        iconUrl = position.iconUrl,
+        symbol = "$direction $symbol",
+        leverage = position.leverage,
+        isLong = isLong,
+        isPending = isPending,
+    )
 }
 
 @Composable
 private fun BatchCloseSummary(
-    asset: TokenItem?,
-    assetSymbol: String,
     estimatedReceive: BigDecimal?,
     estimatedFee: BigDecimal?,
     estimatedPnl: BigDecimal?,
@@ -552,31 +491,11 @@ private fun BatchCloseSummary(
             fontSize = 14.sp,
         )
         Spacer(modifier = Modifier.height(4.dp))
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            asset?.let {
-                CoilImage(
-                    model = it.iconUrl,
-                    placeholder = R.drawable.ic_avatar_place_holder,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clip(CircleShape),
-                    contentScale = ContentScale.Crop,
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-            }
-            Text(
-                text = "${estimatedReceive?.let { "+${formatBatchAmount(it)}" } ?: "--"} $assetSymbol",
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W500,
-            )
-            Spacer(modifier = Modifier.weight(1f))
-            Text(
-                text = asset?.chainName.orEmpty(),
-                color = MixinAppTheme.colors.textAssist,
-                fontSize = 14.sp,
-            )
-        }
+        Text(
+            text = estimatedReceive?.let(::formatPerpsRawUsdDecimal) ?: "--",
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 16.sp,
+        )
         Spacer(modifier = Modifier.height(20.dp))
         PerpsCloseMargin(estimatedPnl, margin)
         Spacer(modifier = Modifier.height(20.dp))
@@ -590,5 +509,26 @@ private fun BatchCloseSummary(
     }
 }
 
-private fun formatBatchAmount(value: BigDecimal): String =
-    value.setScale(8, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
+@PerpsSheetPreview
+@Composable
+private fun BatchCloseConfirmationPreview() {
+    val positions = listOf(
+        PerpsPreviewData.position,
+        PerpsPreviewData.position.copy(
+            positionId = "preview-short", marketId = "preview-eth", side = "short",
+            tokenSymbol = "ETH", displaySymbol = "ETH-USDC", leverage = 20,
+            quantity = "0.4", entryPrice = "3000", margin = "60", unrealizedPnl = "12.34",
+        ),
+    )
+    PerpsPreviewContent(R.string.confirm_closing_position) {
+        BatchClosePositions(positions)
+        Spacer(Modifier.height(20.dp))
+        BatchCloseSummary(
+            estimatedReceive = estimatedPerpsBatchCloseReturn(positions),
+            estimatedFee = estimatedPerpsBatchCloseFee(positions),
+            estimatedPnl = estimatedPerpsBatchCloseUnrealizedPnl(positions),
+            margin = estimatedPerpsBatchCloseMargin(positions),
+            onFeeTipClick = {},
+        )
+    }
+}

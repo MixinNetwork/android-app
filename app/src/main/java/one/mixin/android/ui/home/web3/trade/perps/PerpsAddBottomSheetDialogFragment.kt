@@ -804,7 +804,7 @@ internal fun PerpsAddInfoRow(
     singleLine: Boolean = true,
     onTipClick: (() -> Unit)? = null,
 ) {
-    var isMultiline by remember(value, singleLine) { mutableStateOf(false) }
+    var isMultiline by remember(singleLine) { mutableStateOf(false) }
     Row(
         modifier = Modifier.fillMaxWidth().animateContentSize(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -831,7 +831,7 @@ internal fun PerpsAddInfoRow(
                     painter = painterResource(id = R.drawable.ic_tip),
                     contentDescription = null,
                     tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(12.dp),
                 )
             }
         }

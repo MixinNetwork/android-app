@@ -407,133 +407,31 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                         perpsReductionValue(marginWithPnl?.toPlainString(), reduceQuantity.orEmpty(), latestQuantity)
                     } else marginWithPnl
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                    ) {
-                        Text(
-                            text = stringResource(if (isReduceMargin) R.string.perps_market else R.string.Perpetual).uppercase(),
-                            color = MixinAppTheme.colors.textRemarks,
-                            fontSize = 14.sp,
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            CoilImage(
-                                model = marketIconUrl,
-                                placeholder = R.drawable.ic_avatar_place_holder,
-                                modifier = Modifier
-                                    .size(24.dp)
-                                    .clip(CircleShape),
-                                contentScale = ContentScale.Crop
+                    PerpsCloseDetails(
+                        isReduceMargin = isReduceMargin,
+                        marketIconUrl = marketIconUrl,
+                        marketSymbol = marketSymbol,
+                        leverage = leverage,
+                        isLong = isLong,
+                        estimatedReceive = estimatedReceive,
+                        settleAssetItem = settleAssetItem,
+                        displayPnl = displayPnl,
+                        displayMargin = displayMargin,
+                        sizeValue = latestQuantity.toBigDecimalOrNull()?.let { current ->
+                            formatPerpsReductionSize(
+                                currentQuantity = current,
+                                reductionQuantity = if (isReducePosition) reduceQuantity?.toBigDecimalOrNull() else current.abs(),
+                                markPrice = latestMarkPrice.toBigDecimalOrNull(),
+                                tokenSymbol = tokenSymbol,
                             )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = marketSymbol,
-                                color = MixinAppTheme.colors.textPrimary,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Bold
-                            )
-                            if (!isReduceMargin) {
-                                val reversed = requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-                                val sideColor = if (isLong != reversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
-                                Spacer(Modifier.width(6.dp))
-                                Text(
-                                    text = "${leverage}x",
-                                    color = sideColor,
-                                    fontSize = 12.sp,
-                                    lineHeight = 14.sp,
-                                    modifier = Modifier.clip(RoundedCornerShape(4.dp)).background(sideColor.copy(alpha = 0.1f)).padding(horizontal = 3.dp, vertical = 1.dp),
-                                )
-                            }
-                        }
-                        Box(modifier = Modifier.height(20.dp))
-                        if (!isReduceMargin) {
-                            Text(
-                                text = stringResource(R.string.Estimated_Receive).uppercase(),
-                                color = MixinAppTheme.colors.textRemarks,
-                                fontSize = 14.sp,
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = estimatedReceive?.let(::formatPerpsRawUsdDecimal) ?: "--",
-                                color = MixinAppTheme.colors.textPrimary,
-                                fontSize = 16.sp,
-                            )
-                        } else {
-                            settleAssetItem?.let { asset ->
-                                Text(
-                                    text = stringResource(R.string.Estimated_Receive).uppercase(),
-                                    color = MixinAppTheme.colors.textRemarks,
-                                    fontSize = 14.sp,
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    CoilImage(
-                                        model = asset.iconUrl,
-                                        placeholder = R.drawable.ic_avatar_place_holder,
-                                        modifier = Modifier
-                                            .size(18.dp)
-                                            .clip(CircleShape),
-                                        contentScale = ContentScale.Crop
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                    Text(
-                                        text = if (estimatedReceive == null) {
-                                            "-- ${asset.symbol}"
-                                        } else {
-                                            "+${formatPerpsQuantity(estimatedReceive)} ${asset.symbol}"
-                                        },
-                                        color = MixinAppTheme.colors.textPrimary,
-                                        fontSize = 16.sp,
-                                        fontWeight = FontWeight.W400
-                                    )
-                                    Spacer(modifier = Modifier.weight(1f))
-                                    Text(
-                                        text = asset.chainName ?: "",
-                                        color = MixinAppTheme.colors.textAssist,
-                                        fontSize = 14.sp
-                                    )
-                                }
-                            }
-                        }
-
-                        if (!isReduceMargin) {
-                            Spacer(modifier = Modifier.height(20.dp))
-                            PerpsCloseMargin(displayPnl, displayMargin)
-                            Spacer(modifier = Modifier.height(20.dp))
-                            Text(
-                                text = stringResource(R.string.position_size).uppercase(),
-                                color = MixinAppTheme.colors.textRemarks,
-                                fontSize = 14.sp,
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = latestQuantity.toBigDecimalOrNull()?.let { current ->
-                                    formatPerpsReductionSize(
-                                        currentQuantity = current,
-                                        reductionQuantity = if (isReducePosition) reduceQuantity?.toBigDecimalOrNull() else current.abs(),
-                                        markPrice = latestMarkPrice.toBigDecimalOrNull(),
-                                        tokenSymbol = tokenSymbol,
-                                    )
-                                } ?: "--",
-                                color = MixinAppTheme.colors.textPrimary,
-                                fontSize = 16.sp,
-                            )
-                            Spacer(modifier = Modifier.height(20.dp))
-                            PerpsEstimatedFee(
-                                fee = displayCloseFee,
-                                title = stringResource(R.string.Fee),
-                                amountFontSize = 16.sp,
-                                titleSpacing = 4.dp,
-                                onTipClick = {
-                                    PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                        PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
-                                    ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                                },
-                            )
-                        }
-                    }
+                        } ?: "--",
+                        displayCloseFee = displayCloseFee,
+                        onFeeTipClick = {
+                            PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
+                            ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                        },
+                    )
                     Box(modifier = Modifier.height(20.dp))
 
                     if (isReduceMargin) {
@@ -712,5 +610,158 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     override fun showError(error: String) {
         errorInfo = error
         step = Step.Error
+    }
+}
+
+@Composable
+private fun PerpsCloseDetails(
+    isReduceMargin: Boolean,
+    marketIconUrl: String,
+    marketSymbol: String,
+    leverage: Int,
+    isLong: Boolean,
+    estimatedReceive: BigDecimal?,
+    settleAssetItem: TokenItem?,
+    displayPnl: BigDecimal?,
+    displayMargin: BigDecimal?,
+    sizeValue: String,
+    displayCloseFee: BigDecimal?,
+    onFeeTipClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+    ) {
+        Text(
+            text = stringResource(if (isReduceMargin) R.string.perps_market else R.string.Perpetual).uppercase(),
+            color = MixinAppTheme.colors.textRemarks,
+            fontSize = 14.sp,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        PerpsConfirmationMarket(
+            iconUrl = marketIconUrl,
+            symbol = marketSymbol,
+            leverage = leverage,
+            isLong = isLong,
+        )
+        Box(modifier = Modifier.height(20.dp))
+        if (!isReduceMargin) {
+            Text(
+                text = stringResource(R.string.Estimated_Receive).uppercase(),
+                color = MixinAppTheme.colors.textRemarks,
+                fontSize = 14.sp,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = estimatedReceive?.let(::formatPerpsRawUsdDecimal) ?: "--",
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 16.sp,
+            )
+        } else {
+            settleAssetItem?.let { asset ->
+                Text(
+                    text = stringResource(R.string.Estimated_Receive).uppercase(),
+                    color = MixinAppTheme.colors.textRemarks,
+                    fontSize = 14.sp,
+                )
+                Spacer(modifier = Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    CoilImage(
+                        model = asset.iconUrl,
+                        placeholder = R.drawable.ic_avatar_place_holder,
+                        modifier = Modifier
+                            .size(18.dp)
+                            .clip(CircleShape),
+                        contentScale = ContentScale.Crop
+                    )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = if (estimatedReceive == null) {
+                            "-- ${asset.symbol}"
+                        } else {
+                            "+${formatPerpsQuantity(estimatedReceive)} ${asset.symbol}"
+                        },
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.W400
+                    )
+                    Spacer(modifier = Modifier.weight(1f))
+                    Text(
+                        text = asset.chainName ?: "",
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp
+                    )
+                }
+            }
+        }
+
+        if (!isReduceMargin) {
+            Spacer(modifier = Modifier.height(20.dp))
+            PerpsCloseMargin(displayPnl, displayMargin)
+            Spacer(modifier = Modifier.height(20.dp))
+            Text(
+                text = stringResource(R.string.position_size).uppercase(),
+                color = MixinAppTheme.colors.textRemarks,
+                fontSize = 14.sp,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = sizeValue,
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 16.sp,
+            )
+            Spacer(modifier = Modifier.height(20.dp))
+            PerpsEstimatedFee(
+                fee = displayCloseFee,
+                title = stringResource(R.string.Fee),
+                amountFontSize = 16.sp,
+                titleSpacing = 4.dp,
+                onTipClick = onFeeTipClick,
+            )
+        }
+    }
+}
+
+@PerpsSheetPreview
+@Composable
+private fun ReducePositionConfirmationPreview() {
+    PerpsCloseDetailsPreview(reduceMargin = false, fullClose = false)
+}
+
+@PerpsSheetPreview
+@Composable
+private fun ClosePositionConfirmationPreview() {
+    PerpsCloseDetailsPreview(reduceMargin = false, fullClose = true)
+}
+
+@PerpsSheetPreview
+@Composable
+private fun ReduceMarginConfirmationPreview() {
+    PerpsCloseDetailsPreview(reduceMargin = true, fullClose = false)
+}
+
+@Composable
+private fun PerpsCloseDetailsPreview(reduceMargin: Boolean, fullClose: Boolean) {
+    PerpsPreviewContent(if (reduceMargin) R.string.perps_confirm_reduce_margin_title else R.string.confirm_closing_position) {
+        PerpsCloseDetails(
+            isReduceMargin = reduceMargin,
+            marketIconUrl = "",
+            marketSymbol = "BTC-USDC",
+            leverage = 10,
+            isLong = true,
+            estimatedReceive = BigDecimal(if (reduceMargin) "25" else if (fullClose) "79.926855" else "39.9634275"),
+            settleAssetItem = PerpsPreviewData.token,
+            displayPnl = BigDecimal(if (fullClose) "-0.12" else "-0.06"),
+            displayMargin = BigDecimal(if (fullClose) "80.126855" else "40.0634275"),
+            sizeValue = formatPerpsReductionSize(
+                currentQuantity = BigDecimal("0.01234567"),
+                reductionQuantity = BigDecimal(if (fullClose) "0.01234567" else "0.00617283"),
+                markPrice = BigDecimal("64990.28"),
+                tokenSymbol = "BTC",
+            ),
+            displayCloseFee = BigDecimal(if (fullClose) "0.08" else "0.04"),
+            onFeeTipClick = {},
+        )
     }
 }
