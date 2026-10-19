@@ -154,7 +154,7 @@ class PerpetualViewModel @Inject constructor(
                         perpsPositionDao.insertAll(positions)
                     }
                 }
-                perpsPositionDao.getOpenPositions(walletId)
+                perpsPositionDao.getOpenPositions(walletId).filter { it.state == PerpsPosition.STATE_OPEN }
             }
         }.onFailure { error ->
             Timber.e(error, "Failed to refresh positions before batch close")
@@ -1015,7 +1015,7 @@ class PerpetualViewModel @Inject constructor(
             val failures = positions
                 .map { position ->
                     async {
-                        position to closePerpsOrder(position.positionId, position.quantity.toBigDecimalOrNull()?.abs()?.toPlainString().orEmpty())
+                        position to closePerpsOrder(position.positionId)
                     }
                 }
                 .awaitAll()
@@ -1038,17 +1038,18 @@ class PerpetualViewModel @Inject constructor(
 
     private suspend fun closePerpsOrder(
         positionId: String,
-        quantity: String,
+        quantity: String? = null,
     ): Result<Unit> {
         return runCatching {
             val response = withContext(Dispatchers.IO) {
                 val positionResponse = routeService.getPerpsPosition(positionId)
                 if (!positionResponse.isSuccess) throw MixinResponseException(positionResponse.errorCode, positionResponse.errorDescription)
                 val position = positionResponse.data
-                require(position?.state == PerpsPosition.STATE_OPEN && perpsReduceQuantity(quantity, position.quantity) != null) {
+                val closeQuantity = position?.let { perpsReduceQuantity(quantity, it.quantity) }
+                require(position?.state == PerpsPosition.STATE_OPEN && closeQuantity != null) {
                     MixinApplication.appContext.getString(R.string.perps_reduce_quantity_changed)
                 }
-                routeService.closePerpsOrder(CloseOrderRequest(positionId = positionId, quantity = quantity))
+                routeService.closePerpsOrder(CloseOrderRequest(positionId = positionId, quantity = closeQuantity.toPlainString()))
             }
 
             if (!response.isSuccess) {

@@ -3,10 +3,11 @@ package one.mixin.android.ui.home.web3.trade.perps
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-internal fun perpsReduceQuantity(input: String, currentQuantity: String): BigDecimal? {
+internal fun perpsReduceQuantity(input: String?, currentQuantity: String): BigDecimal? {
+    val current = currentQuantity.toBigDecimalOrNull()?.abs() ?: return null
+    if (input == null) return current.takeIf { it > BigDecimal.ZERO }
     if (input.length > 40 || input.any { it !in '0'..'9' && it != '.' }) return null
     val quantity = input.toBigDecimalOrNull() ?: return null
-    val current = currentQuantity.toBigDecimalOrNull()?.abs() ?: return null
     return quantity.takeIf { it > BigDecimal.ZERO && it <= current }
 }
 

@@ -68,6 +68,18 @@ class PerpsReduceQuantityTest {
     }
 
     @Test
+    fun batchCloseUsesFreshQuantityWhilePartialCloseKeepsRequestedQuantity() {
+        for (current in listOf("2", "-2", "0.5", "-0.5")) {
+            assertDecimal(BigDecimal(current).abs().toPlainString(), perpsReduceQuantity(null, current))
+        }
+        assertDecimal("0.5", perpsReduceQuantity("0.5", "2"))
+        assertNull(perpsReduceQuantity("0.5", "0.25"))
+        for (current in listOf("0", "", "bad")) {
+            assertNull(perpsReduceQuantity(null, current))
+        }
+    }
+
+    @Test
     fun explicitQuantityAllowsFullCloseButCannotExceedPosition() {
         assertDecimal("0.5", perpsReduceQuantity("0.5", "1"))
         assertDecimal("0.5", perpsReduceQuantity("0.5", "0.5"))

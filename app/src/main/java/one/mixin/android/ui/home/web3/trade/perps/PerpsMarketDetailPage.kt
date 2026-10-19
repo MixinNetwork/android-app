@@ -440,6 +440,8 @@ fun PerpsMarketDetailPage(
                             priceScale = currentPosition.priceScale,
                             liquidationPrice = currentPosition.liquidationPrice,
                             positionQuantity = currentPosition.quantity,
+                            estimatedCloseFee = currentPosition.estimatedCloseFee,
+                            feeReferencePrice = currentPosition.markPrice.orEmpty().ifBlank { currentPosition.entryPrice },
                         ).setOnApply { value ->
                             val normalizedValue = value?.trim().orEmpty()
                             if (normalizedValue == existingPrice) return@setOnApply
@@ -1228,6 +1230,8 @@ private fun OpenPositionCard(
             priceScale = position.priceScale,
             liquidationPrice = position.liquidationPrice,
             positionQuantity = position.quantity,
+            estimatedCloseFee = position.estimatedCloseFee,
+            feeReferencePrice = position.markPrice.orEmpty().ifBlank { position.entryPrice },
         ).setOnApply { value ->
             val normalizedValue = value?.trim().orEmpty()
             if (normalizedValue == existingPrice) {
