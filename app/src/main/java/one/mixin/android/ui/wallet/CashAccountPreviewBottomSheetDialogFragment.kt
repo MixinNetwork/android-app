@@ -150,7 +150,13 @@ class CashAccountPreviewBottomSheetDialogFragment : MixinBottomSheetDialogFragme
                             System.currentTimeMillis(),
                         )
                         context?.updatePinCheck()
-                        AnalyticsTracker.trackAssetSendEnd()
+                        AnalyticsTracker.trackAssetSendEnd(
+                            wallet = AnalyticsTracker.TradeWallet.MAIN,
+                            destination = if (receiverIds.size == 1) AnalyticsTracker.AssetSendDestination.USER else AnalyticsTracker.AssetSendDestination.MULTISIG,
+                            assetSymbol = asset.symbol,
+                            amountValue = item.amount.toBigDecimalOrNull(),
+                            price = asset.priceUsd,
+                        )
                         isSuccess = true
                         updateStatus(TransferStatus.SUCCESSFUL)
                     } else {
