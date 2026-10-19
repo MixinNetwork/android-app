@@ -8,6 +8,7 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -39,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -431,6 +433,11 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                                 PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
                             ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                         },
+                        onSizeTipClick = {
+                            PerpetualGuideBottomSheetDialogFragment.newInstance(
+                                PerpetualGuideBottomSheetDialogFragment.TAB_POSITION,
+                            ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                        },
                     )
                     Box(modifier = Modifier.height(20.dp))
 
@@ -627,6 +634,7 @@ private fun PerpsCloseDetails(
     sizeValue: String,
     displayCloseFee: BigDecimal?,
     onFeeTipClick: () -> Unit,
+    onSizeTipClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
@@ -700,11 +708,21 @@ private fun PerpsCloseDetails(
             Spacer(modifier = Modifier.height(20.dp))
             PerpsCloseMargin(displayPnl, displayMargin)
             Spacer(modifier = Modifier.height(20.dp))
-            Text(
-                text = stringResource(R.string.position_size).uppercase(),
-                color = MixinAppTheme.colors.textRemarks,
-                fontSize = 14.sp,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                val sizeTitle = stringResource(R.string.position_size)
+                Text(
+                    text = sizeTitle.uppercase(),
+                    color = MixinAppTheme.colors.textRemarks,
+                    fontSize = 14.sp,
+                )
+                Spacer(Modifier.width(4.dp))
+                Icon(
+                    painter = painterResource(R.drawable.ic_tip),
+                    contentDescription = sizeTitle,
+                    tint = MixinAppTheme.colors.textAssist,
+                    modifier = Modifier.size(12.dp).clickable(role = Role.Button, onClick = onSizeTipClick),
+                )
+            }
             Spacer(Modifier.height(4.dp))
             Text(
                 text = sizeValue,
@@ -762,6 +780,7 @@ private fun PerpsCloseDetailsPreview(reduceMargin: Boolean, fullClose: Boolean) 
             ),
             displayCloseFee = BigDecimal(if (fullClose) "0.08" else "0.04"),
             onFeeTipClick = {},
+            onSizeTipClick = {},
         )
     }
 }
