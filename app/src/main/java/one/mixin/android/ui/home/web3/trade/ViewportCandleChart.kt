@@ -57,6 +57,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.heavyClickVibrate
+import one.mixin.android.extension.isScreenWideColorGamut
 import org.threeten.bp.Instant
 import org.threeten.bp.ZoneId
 import org.threeten.bp.format.DateTimeFormatter
@@ -297,9 +298,12 @@ internal fun ViewportCandleChart(
     }
 
     val quoteColorPref = context.defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+    val isP3 = context.isScreenWideColorGamut()
+    val green = if (isP3) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.walletGreen
+    val red = if (isP3) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.walletRed
     val colors = ChartColors(
-        up = if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen,
-        down = if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed,
+        up = if (quoteColorPref) red else green,
+        down = if (quoteColorPref) green else red,
         grid = MixinAppTheme.colors.textAssist.copy(alpha = 0.3f),
         label = MixinAppTheme.colors.textAssist,
         crosshair = MixinAppTheme.colors.textAssist.copy(alpha = 0.7f),
