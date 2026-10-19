@@ -2695,11 +2695,22 @@
     <string name="perps_confirm_reduce_margin_title">確認減少保證金</string>
     <string name="up_to_apy">最高年化 %1$s</string>
     <string name="perps_add_position_title">%1$s %2$s 增加倉位</string>
-    <string name="perps_reduce_position_title">%1$s %2$s 減少倉位</string>
     <string name="max_removable">最多減少 %1$s</string>
     <string name="perps_added_position">加倉</string>
     <string name="perps_added_margin">增加保證金</string>
     <string name="perps_reduced_margin">減少保證金</string>
     <string name="perps_realized_pnl">淨盈虧</string>
     <string name="perps_unrealized_pnl">盈虧</string>
+    <string name="perps_close_submitted">平倉訂單已提交</string>
+    <string name="perps_reduce_quantity_changed">持倉已變化，請返回核對數量後重試。</string>
+    <string name="perps_reduce_invalid_quantity">請輸入大於零且不超過當前倉位的金額。</string>
+    <string name="perps_minimum_order_size">最小下單金額為 %1$s</string>
+    <string name="Estimated_Fee">預估手續費</string>
+    <string name="perps_estimated_realized_pnl">預計淨盈虧</string>
+    <string name="perps_last_price">最新價格</string>
+    <string name="perps_mark_price">標記價格</string>
+    <string name="perps_close_position_title">平倉 %1$s %2$s</string>
+    <string name="perps_include_pnl">含盈虧</string>
+    <string name="perps_position_amount">倉位金額</string>
+    <string name="perps_margin_amount">保證金金額</string>
 </resources>

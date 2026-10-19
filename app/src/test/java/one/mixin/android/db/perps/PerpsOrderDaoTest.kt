@@ -35,6 +35,22 @@ class PerpsOrderDaoTest {
     fun tearDown() = database.close()
 
     @Test
+    fun exactPaymentAndMarginSurviveStorageIndependently() = runBlocking {
+        val gson = Gson()
+        val json = gson.toJsonTree(order("01", PerpsOrder.TYPE_OPEN)).asJsonObject
+        json.addProperty("pay_amount", "5")
+        json.addProperty("margin_amount", "4.96014205")
+        json.addProperty("fee_amount", "0.03985794394")
+        val response = gson.fromJson(json, PerpsOrder::class.java)
+        database.perpsOrderDao().insertAll(listOf(response))
+        val stored = requireNotNull(database.perpsOrderDao().getOrder("01"))
+        assertEquals("5", stored.payAmount)
+        assertEquals("4.96014205", stored.marginAmount)
+        assertEquals("0.03985794394", stored.feeAmount)
+        assertEquals("5", database.perpsOrderDao().getOrders(10).single().payAmount)
+    }
+
+    @Test
     fun allHistoryQueriesIncludeMarginOrdersAndExcludeProcessingOrders() = runBlocking {
         val dao = database.perpsOrderDao()
         dao.insertAll(
@@ -135,6 +151,7 @@ class PerpsOrderDaoTest {
         leverage = 10,
         quantity = "1",
         payAmount = "10",
+        marginAmount = "10",
         entryPrice = "100",
         closePrice = "0",
         realizedPnl = "0",

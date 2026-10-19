@@ -30,7 +30,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
             val updatedAt = current.updatedAt?.let(OffsetDateTime::parse)
             if (updatedAt != null && OffsetDateTime.parse(entity.updatedAt).isBefore(updatedAt)) return
         }
-        insert(entity)
+        insert(if (entity.walletId.isBlank()) entity.copy(walletId = current?.walletId.orEmpty()) else entity)
     }
 
     @Query("""

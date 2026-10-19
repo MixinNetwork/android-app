@@ -117,6 +117,8 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
         private const val ARGS_PRICE_SCALE = "args_price_scale"
         private const val ARGS_LIQUIDATION_PRICE = "args_liquidation_price"
         private const val ARGS_POSITION_QUANTITY = "args_position_quantity"
+        private const val ARGS_ESTIMATED_CLOSE_FEE = "args_estimated_close_fee"
+        private const val ARGS_FEE_REFERENCE_PRICE = "args_fee_reference_price"
 
         fun newInstance(
             mode: Mode,
@@ -132,6 +134,8 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
             priceScale: Int,
             liquidationPrice: String? = null,
             positionQuantity: String? = null,
+            estimatedCloseFee: String? = null,
+            feeReferencePrice: String? = null,
         ): PerpsTpSlBottomSheetDialogFragment {
             return PerpsTpSlBottomSheetDialogFragment().withArgs {
                 putString(ARGS_MODE, mode.name)
@@ -147,6 +151,8 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
                 putInt(ARGS_PRICE_SCALE, priceScale)
                 putString(ARGS_LIQUIDATION_PRICE, liquidationPrice)
                 putString(ARGS_POSITION_QUANTITY, positionQuantity)
+                putString(ARGS_ESTIMATED_CLOSE_FEE, estimatedCloseFee)
+                putString(ARGS_FEE_REFERENCE_PRICE, feeReferencePrice)
             }
         }
     }
@@ -170,6 +176,8 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
     }
     private val liquidationPrice by lazy { requireArguments().getString(ARGS_LIQUIDATION_PRICE) }
     private val positionQuantity by lazy { requireArguments().getString(ARGS_POSITION_QUANTITY) }
+    private val estimatedCloseFee by lazy { requireArguments().getString(ARGS_ESTIMATED_CLOSE_FEE) }
+    private val feeReferencePrice by lazy { requireArguments().getString(ARGS_FEE_REFERENCE_PRICE) }
 
     private var onApply: ((String?) -> Unit)? = null
 
@@ -228,6 +236,8 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
                 priceScale = priceScale,
                 liquidationPrice = liquidationPrice,
                 positionQuantity = positionQuantity,
+                estimatedCloseFee = estimatedCloseFee,
+                feeReferencePrice = feeReferencePrice,
                 onCancel = { dismiss() },
                 onApply = { value ->
                     onApply?.invoke(value)
@@ -263,6 +273,8 @@ private fun PerpsTpSlContent(
     priceScale: Int,
     liquidationPrice: String?,
     positionQuantity: String?,
+    estimatedCloseFee: String?,
+    feeReferencePrice: String?,
     onCancel: () -> Unit,
     onApply: (String?) -> Unit,
 ) {
@@ -291,22 +303,42 @@ private fun PerpsTpSlContent(
     val entryPriceValue = remember(entryPrice) {
         entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
     }
-    val pnlBasis = remember(entryPrice, latestCurrentPrice, marginAmount, positionQuantity, leverage) {
+    val pnlBasis = remember(
+        entryPrice,
+        latestCurrentPrice,
+        marginAmount,
+        positionQuantity,
+        leverage,
+        estimatedCloseFee,
+        feeReferencePrice,
+    ) {
         resolveTpSlCalculationBasis(
             entryPrice = entryPrice,
             currentPrice = latestCurrentPrice,
             marginAmount = marginAmount,
             positionQuantity = positionQuantity,
             leverage = leverage,
+            estimatedCloseFee = estimatedCloseFee,
+            feeReferencePrice = feeReferencePrice,
         )
     }
-    val conversionBasis = remember(entryPrice, latestCurrentPrice, marginAmount, positionQuantity, leverage) {
+    val conversionBasis = remember(
+        entryPrice,
+        latestCurrentPrice,
+        marginAmount,
+        positionQuantity,
+        leverage,
+        estimatedCloseFee,
+        feeReferencePrice,
+    ) {
         resolveTpSlConversionBasis(
             entryPrice = entryPrice,
             currentPrice = latestCurrentPrice,
             marginAmount = marginAmount,
             positionQuantity = positionQuantity,
             leverage = leverage,
+            estimatedCloseFee = estimatedCloseFee,
+            feeReferencePrice = feeReferencePrice,
         )
     }
     val liquidationBound = remember(liquidationPrice, entryPrice, latestCurrentPrice, leverage, isLong) {
@@ -1260,7 +1292,7 @@ private fun validateTpSlPercent(
         priceScale = priceScale,
     )
     if (derivedPrice.isBlank()) {
-        val maxPercent = basis.zeroPriceRoiPercentCeiling()
+        val maxPercent = basis.zeroPriceRoiPercentCeiling(isLong)
             .setScale(2, RoundingMode.DOWN)
             .stripTrailingZeros().toPlainString()
         return MixinApplicationHolder.getString(R.string.error_percentage_must_be_less_than_value, "$maxPercent%")
