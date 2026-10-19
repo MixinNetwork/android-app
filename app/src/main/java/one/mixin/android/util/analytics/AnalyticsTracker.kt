@@ -197,21 +197,17 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackWalletHomeAdBanner(trackingKey: String?, source: String) {
+    fun trackAdBanner(trackingKey: String?, placement: String, source: String) {
         val key = trackingKey?.takeIf { it.isNotBlank() } ?: return
         logEvent(key) {
+            putString("placement", placement)
             putString("source", source)
         }
     }
 
-    object WalletHomeAdBannerSource {
-        const val BACKGROUND = "wallet_home_ad_banner_background"
-        const val BUTTON = "wallet_home_ad_banner_button"
-    }
-
-    object MarketAdBannerSource {
-        const val BACKGROUND = "market_ad_banner_background"
-        const val BUTTON = "market_ad_banner_button"
+    object AdBannerSource {
+        const val BACKGROUND = "ad_banner_background"
+        const val BUTTON = "ad_banner_button"
     }
 
     object AssetSource {
