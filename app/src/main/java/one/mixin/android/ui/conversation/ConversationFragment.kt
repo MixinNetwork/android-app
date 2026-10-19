@@ -1613,6 +1613,7 @@ class ConversationFragment() :
             }
         }
         lifecycleScope.launch {
+            val replyVersion = binding.chatControl.replyView.messageItemVersion
             val conversationDraft =
                 withContext(SINGLE_DB_THREAD) {
                     chatViewModel.getConversationDraftById(conversationId)
@@ -1620,7 +1621,7 @@ class ConversationFragment() :
             if (!viewDestroyed() && conversationDraft.isNotEmpty()) {
                 binding.chatControl.chatEt.setText(conversationDraft)
             }
-            restoreQuoteDraft()
+            restoreQuoteDraft(replyVersion)
         }
         binding.toolView.closeIv.setOnClickListener {
             if (binding.toolView.isVisible) {
@@ -3297,7 +3298,7 @@ class ConversationFragment() :
         }
     }
 
-    private suspend fun restoreQuoteDraft() {
+    private suspend fun restoreQuoteDraft(replyVersion: Int) {
         val quoteMessageId = quoteDraftPreferences.getString(quoteDraftKey, null) ?: return
         val messageItem =
             withContext(Dispatchers.IO) {
@@ -3309,7 +3310,8 @@ class ConversationFragment() :
             return
         }
         val replyView = binding.chatControl.replyView
-        if (replyView.messageItem != null) return
+        // Skip if the user picked, closed or sent a quote while the draft was loading
+        if (replyView.messageItemVersion != replyVersion) return
         replyView.bind(messageItem)
         if (!replyView.isVisible) replyView.animateHeight(0, 53.dp)
     }
