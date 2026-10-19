@@ -1224,4 +1224,8 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">ERROR 10655: No se puede ampliar la posición.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">ERROR 10655: El importe de apertura supera el límite máximo de %1$s. Reduzca el importe o el apalancamiento.</string>
     <string name="single_transaction_should_be_less_than">Cantidad máxima %1$s %2$s</string>
+    <string name="Candle_Open">Apertura</string>
+    <string name="Candle_Close">Cierre</string>
+    <string name="Candle_High">Máximo</string>
+    <string name="Candle_Low">Mínimo</string>
 </resources>

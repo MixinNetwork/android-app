@@ -2733,4 +2733,8 @@
     <string name="perps_reduced_margin">Reduced Margin</string>
     <string name="perps_realized_pnl">Realized PnL</string>
     <string name="perps_unrealized_pnl">Unrealized PnL</string>
+    <string name="Candle_Open">Open</string>
+    <string name="Candle_Close">Close</string>
+    <string name="Candle_High">High</string>
+    <string name="Candle_Low">Low</string>
 </resources>

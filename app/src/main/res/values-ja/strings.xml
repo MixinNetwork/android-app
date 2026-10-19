@@ -1170,4 +1170,8 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">エラー 10655：建玉を追加できません。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">エラー 10655：新規建玉の金額が上限の%1$sを超えています。金額またはレバレッジを下げてください。</string>
     <string name="single_transaction_should_be_less_than">最大金額 %1$s %2$s</string>
+    <string name="Candle_Open">始値</string>
+    <string name="Candle_Close">終値</string>
+    <string name="Candle_High">高値</string>
+    <string name="Candle_Low">安値</string>
 </resources>

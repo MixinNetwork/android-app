@@ -2701,4 +2701,8 @@
     <string name="perps_reduced_margin">증거금 감소</string>
     <string name="perps_realized_pnl">실현 손익</string>
     <string name="perps_unrealized_pnl">미실현 손익</string>
+    <string name="Candle_Open">시가</string>
+    <string name="Candle_Close">종가</string>
+    <string name="Candle_High">고가</string>
+    <string name="Candle_Low">저가</string>
 </resources>

@@ -2702,4 +2702,8 @@
     <string name="perps_reduced_margin">減少保證金</string>
     <string name="perps_realized_pnl">淨盈虧</string>
     <string name="perps_unrealized_pnl">盈虧</string>
+    <string name="Candle_Open">開盤價</string>
+    <string name="Candle_Close">收盤價</string>
+    <string name="Candle_High">最高價</string>
+    <string name="Candle_Low">最低價</string>
 </resources>

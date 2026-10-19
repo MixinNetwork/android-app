@@ -847,4 +847,8 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">RALAT 10655: Posisi tidak dapat ditambah.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">RALAT 10655: Amaun pembukaan posisi melebihi had maksimum %1$s. Kurangkan amaun atau leveraj.</string>
     <string name="single_transaction_should_be_less_than">Jumlah maksimum %1$s %2$s</string>
+    <string name="Candle_Open">Pembukaan</string>
+    <string name="Candle_Close">Penutupan</string>
+    <string name="Candle_High">Tertinggi</string>
+    <string name="Candle_Low">Terendah</string>
 </resources>

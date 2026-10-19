@@ -782,4 +782,8 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">KESALAHAN 10655: Tidak dapat menambah posisi.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">KESALAHAN 10655: Jumlah pembukaan posisi melebihi batas maksimum %1$s. Kurangi jumlah atau leverage.</string>
     <string name="single_transaction_should_be_less_than">Jumlah maksimum %1$s %2$s</string>
+    <string name="Candle_Open">Pembukaan</string>
+    <string name="Candle_Close">Penutupan</string>
+    <string name="Candle_High">Tertinggi</string>
+    <string name="Candle_Low">Terendah</string>
 </resources>
