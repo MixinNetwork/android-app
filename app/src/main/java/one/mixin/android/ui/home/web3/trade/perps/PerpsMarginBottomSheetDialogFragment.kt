@@ -61,6 +61,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.buildAnnotatedString
@@ -93,11 +94,9 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
@@ -123,7 +122,6 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         private const val ARGS_INCREASE = "args_increase"
         private const val ARGS_INITIAL_MARGIN = "args_initial_margin"
         private const val ARGS_SOURCE = "args_source"
-        private const val PREF_REDUCE_BY_PERCENT = "perps_reduce_margin_by_percent"
 
         fun newInstance(position: PerpsPositionItem, increase: Boolean, source: String, initialMargin: String? = null) = PerpsMarginBottomSheetDialogFragment().withArgs {
             putParcelable(ARGS_POSITION, position)
@@ -159,8 +157,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }.collectAsStateWithLifecycle(initialValue = initialPosition)
         val currentPosition = position ?: initialPosition
         var amount by rememberSaveable { mutableStateOf(arguments?.getString(ARGS_INITIAL_MARGIN).orEmpty()) }
-        val preferences = remember { requireContext().defaultSharedPreferences }
-        var reduceByPercent by rememberSaveable { mutableStateOf(preferences.getBoolean(PREF_REDUCE_BY_PERCENT, true)) }
+        var reduceByPercent by rememberSaveable { mutableStateOf(true) }
         var inputIsPercentage by rememberSaveable { mutableStateOf(reduceByPercent) }
         val keyboardController = LocalSoftwareKeyboardController.current
         val focusManager = LocalFocusManager.current
@@ -453,7 +450,8 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         }
                     }
                 } else {
-                    PerpsReduceMarginInput(
+                    PerpsReductionInput(
+                        title = stringResource(R.string.perps_margin_amount),
                         input = reduceInput,
                         isPercentage = reduceByPercent,
                         amount = amountValue,
@@ -466,7 +464,6 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             {
                                 if (reduceByPercent && !canFillMarginReductionAsPercentage(currentPosition.margin, maximum)) {
                                     reduceByPercent = false
-                                    preferences.putBoolean(PREF_REDUCE_BY_PERCENT, false)
                                 }
                                 changeAmount(maximumMarginReductionInput(currentPosition.margin, maximum, reduceByPercent))
                             }
@@ -475,7 +472,6 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             amount = amountValue?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
                             inputIsPercentage = false
                             reduceByPercent = !reduceByPercent
-                            preferences.putBoolean(PREF_REDUCE_BY_PERCENT, reduceByPercent)
                             error = null
                         },
                     )
@@ -570,11 +566,13 @@ private fun PerpsMarginContent(
                 val currentMarginText = position.margin?.toBigDecimalOrNull()?.let { formatPerpsMarginAmount(it) } ?: "-"
                 PerpsAddInfoRow(
                     title = stringResource(R.string.Margin),
+                    valueColor = MixinAppTheme.colors.textPrimary,
                     value = if (totalMargin != null) "$currentMarginText → ${formatPerpsMarginAmount(totalMargin)}" else currentMarginText,
                 )
                 Spacer(Modifier.height(16.dp))
                 PerpsAddInfoRow(
                     title = stringResource(R.string.Liquidation_Price),
+                    valueColor = MixinAppTheme.colors.textPrimary,
                     value = listOfNotNull(
                         position.liquidationPrice?.takeIf { it.isNotBlank() }?.let { formatPerpsPrice(it, priceScale) } ?: "-",
                         estimatedLiquidationPrice?.let { formatPerpsPrice(it, priceScale) },
@@ -646,7 +644,8 @@ private fun PerpsMarginActions(
 }
 
 @Composable
-private fun PerpsReduceMarginInput(
+internal fun PerpsReductionInput(
+    title: String,
     input: String,
     isPercentage: Boolean,
     amount: BigDecimal?,
@@ -657,6 +656,9 @@ private fun PerpsReduceMarginInput(
     onInputChanged: (String) -> Unit,
     onToggleMode: () -> Unit,
     onApplyReductionLimit: (() -> Unit)? = null,
+    decimalPlaces: Int = if (isPercentage) 0 else 2,
+    onPercentageSelected: ((BigDecimal) -> Unit)? = null,
+    autoFocus: Boolean = true,
 ) {
     var textFieldValue by remember(isPercentage) { mutableStateOf(TextFieldValue(input, TextRange(input.length))) }
     LaunchedEffect(input) {
@@ -678,32 +680,41 @@ private fun PerpsReduceMarginInput(
         inputValue <= BigDecimal.ZERO -> MixinAppTheme.colors.textRemarks
         else -> MixinAppTheme.colors.textPrimary
     }
-    val inputTextStyle = TextStyle(fontSize = 36.sp, fontWeight = FontWeight.W600, color = inputColor, textAlign = TextAlign.Center)
+    val inputTextStyle = TextStyle(fontSize = 36.sp, lineHeight = 40.sp, platformStyle = PlatformTextStyle(includeFontPadding = false), fontWeight = FontWeight.W600, color = inputColor, textAlign = TextAlign.Center)
     val textMeasurer = rememberTextMeasurer()
     val placeholder = "0"
     val inputWidth = with(LocalDensity.current) {
         textMeasurer.measure(input.ifEmpty { placeholder }, style = inputTextStyle, softWrap = false).size.width.toDp() + 2.dp
     }
     LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
-        keyboardController?.show()
+        if (autoFocus) {
+            focusRequester.requestFocus()
+            keyboardController?.show()
+        }
     }
+    fun formatInput(value: BigDecimal) = value.setScale(decimalPlaces, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
     fun selectPercentage(value: BigDecimal) {
+        if (onPercentageSelected != null) {
+            onPercentageSelected(value)
+            return
+        }
         val selected = if (isPercentage) value else reduceMarginAmount(margin?.toPlainString(), value.toPlainString(), true) ?: BigDecimal.ZERO
-        updateInput(formatMarginAdjustmentInput(selected, isPercentage))
+        updateInput(formatInput(selected))
     }
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(RoundedCornerShape(8.dp))
             .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-            .padding(start = 16.dp, top = 40.dp, end = 16.dp, bottom = 20.dp),
+            .padding(start = 16.dp, top = 36.dp, end = 16.dp, bottom = 20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        Text(title, color = MixinAppTheme.colors.textRemarks, fontSize = 12.sp, lineHeight = 16.sp)
         Row(horizontalArrangement = Arrangement.spacedBy(32.dp), verticalAlignment = Alignment.CenterVertically) {
             IconButton(
-                onClick = { updateInput(formatMarginAdjustmentInput((inputValue - BigDecimal.ONE).max(BigDecimal.ZERO), isPercentage)) },
+                onClick = { updateInput(formatInput((inputValue - BigDecimal.ONE).max(BigDecimal.ZERO))) },
                 enabled = enabled && inputValue > BigDecimal.ZERO,
+                modifier = Modifier.size(40.dp),
             ) {
                 Icon(painterResource(R.drawable.ic_perps_minus), stringResource(R.string.perps_reduce_action), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
             }
@@ -713,8 +724,8 @@ private fun PerpsReduceMarginInput(
                     value = textFieldValue,
                     onValueChange = { value ->
                         val text = value.text
-                        if (text.length <= 40 && text.all { it in '0'..'9' || (!isPercentage && it == '.') } && text.count { it == '.' } <= 1 &&
-                            text.substringAfter('.', "").length <= 2) {
+                        if (text.length <= 40 && text.all { it in '0'..'9' || (decimalPlaces > 0 && it == '.') } && text.count { it == '.' } <= 1 &&
+                            text.substringAfter('.', "").length <= decimalPlaces) {
                             textFieldValue = value
                             if (text != input) onInputChanged(text)
                         }
@@ -723,7 +734,7 @@ private fun PerpsReduceMarginInput(
                     singleLine = true,
                     modifier = Modifier.widthIn(min = 20.dp, max = 160.dp).width(inputWidth).focusRequester(focusRequester),
                     textStyle = inputTextStyle,
-                    keyboardOptions = KeyboardOptions(keyboardType = if (isPercentage) KeyboardType.Number else KeyboardType.Decimal),
+                    keyboardOptions = KeyboardOptions(keyboardType = if (decimalPlaces == 0) KeyboardType.Number else KeyboardType.Decimal),
                     cursorBrush = SolidColor(MixinAppTheme.colors.accent),
                     decorationBox = { field ->
                         Box(contentAlignment = Alignment.Center) {
@@ -735,13 +746,13 @@ private fun PerpsReduceMarginInput(
                 if (isPercentage) Text("%", style = inputTextStyle)
             }
             IconButton(
-                onClick = { updateInput(formatMarginAdjustmentInput((inputValue + BigDecimal.ONE).min(maximum), isPercentage)) },
+                onClick = { updateInput(formatInput((inputValue + BigDecimal.ONE).min(maximum))) },
                 enabled = enabled && inputValue < maximum,
+                modifier = Modifier.size(40.dp),
             ) {
                 Icon(painterResource(R.drawable.ic_perps_add), stringResource(R.string.Add), tint = Color.Unspecified, modifier = Modifier.size(16.dp))
             }
         }
-        Spacer(Modifier.height(6.dp))
         Row(
             modifier = Modifier.clip(RoundedCornerShape(8.dp)).clickable(enabled = enabled, onClick = onToggleMode).padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -756,7 +767,7 @@ private fun PerpsReduceMarginInput(
                 painterResource(R.drawable.ic_switch),
                 stringResource(if (isPercentage) R.string.Amount else R.string.perps_percentage),
                 tint = MixinAppTheme.colors.textRemarks,
-                modifier = Modifier.size(30.dp),
+                modifier = Modifier.size(20.dp),
             )
         }
         Spacer(Modifier.height(12.dp))
@@ -810,7 +821,7 @@ private fun PerpsReduceMarginInput(
         Layout(modifier = Modifier.fillMaxWidth(), content = {
             listOf(0, 25, 50, 75, 100).forEach { value ->
                 Text(
-                    text = if (isPercentage) "$value%" else formatPerpsMarginAmount(reduceMarginAmount(margin?.toPlainString(), value.toString(), true)),
+                    text = "$value%",
                     color = MixinAppTheme.colors.textAssist,
                     fontSize = 12.sp,
                     fontWeight = if (isPercentage) FontWeight.W500 else FontWeight.Normal,
@@ -904,7 +915,8 @@ private fun PerpsMarginPreviewContent(initialInput: String, initialIsPercentage:
             onSubmit = {},
             onGuide = {},
         ) {
-            PerpsReduceMarginInput(
+            PerpsReductionInput(
+                title = stringResource(R.string.perps_margin_amount),
                 input = displayInput,
                 isPercentage = isPercentage,
                 amount = amount,

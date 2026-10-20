@@ -188,6 +188,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.SERVER
 import one.mixin.android.util.RomUtil
 import one.mixin.android.util.RootUtil
+import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.ThirdPartyUserIdentity
 import one.mixin.android.util.database.databaseFile
@@ -973,7 +974,11 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             }
             binding.bottomNav.selectedItemId = R.id.nav_wallet
             if (intent.getBooleanExtra(BUY, false)) {
-                WalletActivity.showBuy(this, false, null, null)
+                WalletActivity.showBuy(
+                    this, false, null, null,
+                    source = intent.getStringExtra(CalculateFragment.ARGS_BUY_SOURCE) ?: AnalyticsTracker.TradeSource.WALLET_HOME,
+                )
+                clearCodeAfterConsume(intent, CalculateFragment.ARGS_BUY_SOURCE)
                 clearCodeAfterConsume(intent, BUY)
             }
             clearCodeAfterConsume(intent, WALLET_DESTINATION)
@@ -1494,10 +1499,12 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             context: Context,
             buy: Boolean = false,
             walletDestination: WalletDestination? = null,
+            buySource: String = AnalyticsTracker.TradeSource.WALLET_HOME,
         ) {
             Intent(context, MainActivity::class.java).apply {
                 putExtra(WALLET, true)
                 putExtra(BUY, buy)
+                if (buy) putExtra(CalculateFragment.ARGS_BUY_SOURCE, buySource)
                 walletDestination?.let {
                     val json = walletDestinationToJson(it)
                     context.defaultSharedPreferences.putString(Account.PREF_USED_WALLET, json)

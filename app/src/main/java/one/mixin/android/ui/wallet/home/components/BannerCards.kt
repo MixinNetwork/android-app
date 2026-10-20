@@ -7,21 +7,22 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -34,6 +35,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalDensity
@@ -45,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.flow.first
@@ -57,19 +60,42 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeState
+import kotlin.math.absoluteValue
 
 private const val BANNER_AUTO_SWITCH_DELAY_MILLIS = 3_000L
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun BannerPager(
     state: WalletHomeState,
     callbacks: WalletHomeCallbacks,
 ) {
-    val showAddWalletBanner = state.showAddWalletBanner
-    val pages = remember(showAddWalletBanner, state.dynamicBanners) {
+    BannerPager(
+        banners = state.dynamicBanners,
+        showAddWalletBanner = state.showAddWalletBanner,
+        onAddWalletClick = callbacks::onAddWalletClicked,
+        onAddWalletClose = callbacks::onBannerClosed,
+        onBannerClick = callbacks::onDynamicBannerClicked,
+        onActionClick = callbacks::onDynamicBannerActionClicked,
+        onBannerClose = callbacks::onDynamicBannerClosed,
+    )
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+internal fun BannerPager(
+    banners: List<WalletHomeBanner>,
+    onBannerClick: (WalletHomeBanner) -> Unit,
+    onActionClick: (WalletHomeBanner, WalletHomeBannerAction) -> Unit,
+    onBannerClose: (WalletHomeBanner) -> Unit,
+    showAddWalletBanner: Boolean = false,
+    onAddWalletClick: () -> Unit = {},
+    onAddWalletClose: () -> Unit = {},
+    bordered: Boolean = true,
+    horizontalPadding: Dp = 20.dp,
+) {
+    val pages = remember(showAddWalletBanner, banners) {
         buildList {
-            addAll(state.dynamicBanners.map(WalletHomeBannerPage::Dynamic))
+            addAll(banners.map(WalletHomeBannerPage::Dynamic))
             if (showAddWalletBanner) add(WalletHomeBannerPage.AddWallet)
         }
     }
@@ -77,12 +103,7 @@ internal fun BannerPager(
     val pagerState = rememberPagerState(initialPage = 0) { pages.size }
     val density = LocalDensity.current
     var bannerHeightPx by remember(pages) { mutableIntStateOf(0) }
-    val bannerHeightModifier = if (bannerHeightPx > 0) {
-        Modifier.height(with(density) { bannerHeightPx.toDp() })
-    } else {
-        Modifier.wrapContentHeight()
-    }
-    LaunchedEffect(pages.size) {
+    LaunchedEffect(pages) {
         if (pages.size <= 1) return@LaunchedEffect
         while (true) {
             if (pagerState.isScrollInProgress) {
@@ -93,108 +114,77 @@ internal fun BannerPager(
                 true
             } ?: false
             if (!interrupted && !pagerState.isScrollInProgress) {
-                val nextPage = (pagerState.currentPage + 1) % pages.size
-                pagerState.animateScrollToPage(nextPage)
+                pagerState.animateScrollToPage((pagerState.currentPage + 1) % pages.size)
             }
         }
     }
-
-    Column(
+    HorizontalPager(
+        state = pagerState,
         modifier = Modifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.CenterHorizontally,
-    ) {
-        val currentPage = pages.getOrNull(pagerState.currentPage)
-        val cardClickModifier =
-            when (currentPage) {
-                WalletHomeBannerPage.AddWallet -> Modifier.clickable { callbacks.onAddWalletClicked() }
-                is WalletHomeBannerPage.Dynamic -> {
-                    if (currentPage.banner.actionUrl.isNullOrBlank()) {
-                        Modifier
-                    } else {
-                        Modifier.clickable { callbacks.onDynamicBannerClicked(currentPage.banner) }
-                    }
-                }
-                null -> Modifier
+        contentPadding = PaddingValues(horizontal = horizontalPadding),
+        pageSpacing = 8.dp,
+        beyondViewportPageCount = minOf(2, pages.lastIndex),
+        verticalAlignment = Alignment.Top,
+    ) { page ->
+        val bannerPage = pages[page]
+        val clickModifier = when (bannerPage) {
+            WalletHomeBannerPage.AddWallet -> Modifier.clickable(onClick = onAddWalletClick)
+            is WalletHomeBannerPage.Dynamic -> if (bannerPage.banner.actionUrl.isNullOrBlank()) {
+                Modifier
+            } else {
+                Modifier.clickable { onBannerClick(bannerPage.banner) }
             }
+        }
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp)
-                .then(bannerHeightModifier)
-                .clip(RoundedCornerShape(8.dp))
-                .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
-                .then(cardClickModifier),
-        ) {
-            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
-                HorizontalPager(
-                    state = pagerState,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .wrapContentHeight(),
-                    beyondViewportPageCount = minOf(2, pages.lastIndex),
-                    verticalAlignment = Alignment.Top,
-                ) { page ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onSizeChanged { size ->
-                                bannerHeightPx = maxOf(bannerHeightPx, size.height)
-                            },
-                        contentAlignment = Alignment.TopStart,
-                    ) {
-                        when (val bannerPage = pages[page]) {
-                            WalletHomeBannerPage.AddWallet -> BannerCard(
-                                iconRes = R.drawable.ic_wallet_home_add,
-                                titleRes = R.string.wallet_home_add_wallet_banner_title,
-                                descriptionRes = null,
-                                ctaRes = R.string.add_wallet,
-                                onClick = callbacks::onAddWalletClicked,
-                            )
-                            is WalletHomeBannerPage.Dynamic -> DynamicBannerCard(
-                                banner = bannerPage.banner,
-                                onActionClick = callbacks::onDynamicBannerActionClicked,
-                            )
-                        }
-                    }
+                .heightIn(min = with(density) { bannerHeightPx.toDp() })
+                .graphicsLayer {
+                    val pageOffset = ((pagerState.currentPage - page) + pagerState.currentPageOffsetFraction).absoluteValue.coerceIn(0f, 1f)
+                    scaleY = 1f - 0.06f * pageOffset
                 }
-            }
-            Icon(
-                painter = painterResource(R.drawable.ic_wallet_close),
-                contentDescription = null,
-                tint = Color.Unspecified,
+                .clip(RoundedCornerShape(8.dp))
+                .cardBackground(
+                    MixinAppTheme.colors.background,
+                    if (bordered) MixinAppTheme.colors.borderPrimary else Color.Transparent,
+                )
+                .then(clickModifier),
+        ) {
+            Box(
                 modifier = Modifier
-                    .align(Alignment.TopEnd)
-                    .padding(top = 16.dp, end = 16.dp)
-                    .size(12.dp)
-                    .clickable {
-                        when (val currentPage = pages.getOrNull(pagerState.currentPage)) {
-                            WalletHomeBannerPage.AddWallet -> callbacks.onBannerClosed()
-                            is WalletHomeBannerPage.Dynamic -> callbacks.onDynamicBannerClosed(currentPage.banner)
-                            null -> Unit
-                        }
-                    },
-            )
-        }
-        if (pages.size > 1) {
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                verticalAlignment = Alignment.CenterVertically,
+                    .fillMaxWidth()
+                    .onSizeChanged { bannerHeightPx = maxOf(bannerHeightPx, it.height) }
+                    .padding(horizontal = 16.dp),
             ) {
-                repeat(pages.size) { index ->
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .clip(CircleShape)
-                            .background(
-                                if (pagerState.currentPage == index) {
-                                    MixinAppTheme.colors.accent
-                                } else {
-                                    MixinAppTheme.colors.borderColor
-                                },
-                            ),
+                when (bannerPage) {
+                    WalletHomeBannerPage.AddWallet -> BannerCard(
+                        iconRes = R.drawable.ic_wallet_home_add,
+                        titleRes = R.string.wallet_home_add_wallet_banner_title,
+                        descriptionRes = null,
+                        ctaRes = R.string.add_wallet,
+                        onClick = onAddWalletClick,
+                    )
+                    is WalletHomeBannerPage.Dynamic -> DynamicBannerCard(
+                        banner = bannerPage.banner,
+                        onActionClick = onActionClick,
                     )
                 }
+            }
+            IconButton(
+                onClick = {
+                    when (bannerPage) {
+                        WalletHomeBannerPage.AddWallet -> onAddWalletClose()
+                        is WalletHomeBannerPage.Dynamic -> onBannerClose(bannerPage.banner)
+                    }
+                },
+                modifier = Modifier.align(Alignment.TopEnd).size(40.dp),
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_wallet_close),
+                    contentDescription = stringResource(R.string.Close),
+                    tint = Color.Unspecified,
+                    modifier = Modifier.size(12.dp),
+                )
             }
         }
     }

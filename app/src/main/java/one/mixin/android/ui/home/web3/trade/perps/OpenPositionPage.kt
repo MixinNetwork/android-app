@@ -1076,7 +1076,7 @@ private fun PerpsActionRow(
                 contentDescription = null,
                 tint = MixinAppTheme.colors.textAssist,
                 modifier = Modifier
-                    .size(16.dp)
+                    .size(12.dp)
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -1126,7 +1126,7 @@ private fun PerpsInfoRow(
                     contentDescription = null,
                     tint = MixinAppTheme.colors.textAssist,
                     modifier = Modifier
-                        .size(16.dp)
+                        .size(12.dp)
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
                             indication = null,

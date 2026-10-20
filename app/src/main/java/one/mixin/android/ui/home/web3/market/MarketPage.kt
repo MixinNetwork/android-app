@@ -60,6 +60,9 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import one.mixin.android.R
+import one.mixin.android.api.response.WalletHomeBanner
+import one.mixin.android.api.response.WalletHomeBannerAction
+import one.mixin.android.ui.wallet.home.components.BannerPager
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
@@ -88,6 +91,9 @@ fun MarketPage(
     onFavorite: (MarketListEntry, (Boolean) -> Unit) -> Unit,
     onAddRecommendations: (List<MarketListEntry>) -> Unit,
     onEntryClick: (MarketListEntry) -> Unit,
+    onBannerClick: (WalletHomeBanner) -> Unit,
+    onBannerActionClick: (WalletHomeBanner, WalletHomeBannerAction) -> Unit,
+    onBannerClose: (WalletHomeBanner) -> Unit,
 ) {
     Column(
         modifier =
@@ -105,6 +111,19 @@ fun MarketPage(
             onSelect = onSelectTopTab,
         )
         Spacer(modifier = Modifier.height(16.dp))
+        if (state.banners.isNotEmpty()) {
+            key(state.selectedTopTab) {
+                BannerPager(
+                    banners = state.banners,
+                    onBannerClick = onBannerClick,
+                    onActionClick = onBannerActionClick,
+                    onBannerClose = onBannerClose,
+                    bordered = true,
+                    horizontalPadding = 12.dp,
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+        }
         if (state.selectedTopTab != MarketTopTab.INDICATOR) {
             SubTabs(
                 topTab = state.selectedTopTab,

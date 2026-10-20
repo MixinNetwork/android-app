@@ -167,6 +167,11 @@ class ConversationRepository
 
         suspend fun suspendFindMessageById(messageId: String) = messageDao.suspendFindMessageById(messageId)
 
+        suspend fun findMessageItemById(
+            conversationId: String,
+            messageId: String,
+        ): MessageItem? = messageDao.suspendFindMessageItemById(conversationId, messageId)
+
         fun getConversation(conversationId: String) =
             conversationDao.findConversationById(conversationId)
 

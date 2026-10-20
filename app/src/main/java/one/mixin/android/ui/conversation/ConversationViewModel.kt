@@ -136,6 +136,11 @@ class ConversationViewModel
 
         suspend fun getConversationDraftById(id: String): String? = conversationRepository.getConversationDraftById(id)
 
+        suspend fun findMessageItemById(
+            conversationId: String,
+            messageId: String,
+        ): MessageItem? = conversationRepository.findMessageItemById(conversationId, messageId)
+
         fun getConversationInfoById(
             id: String,
             userId: String,

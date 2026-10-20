@@ -835,7 +835,6 @@
     <string name="Debug_Mark_Price">Harga Mark (Nyahpepijat)</string>
     <string name="up_to_apy">Sehingga %1$s APY</string>
     <string name="perps_add_position_title">Tambah Posisi pada %1$s %2$s</string>
-    <string name="perps_reduce_position_title">Kurangkan Posisi untuk %1$s %2$s</string>
     <string name="max_removable">Maksimum boleh dikurangkan %1$s</string>
     <string name="perps_added_position">Posisi Ditambah</string>
     <string name="perps_added_margin">Margin Ditambah</string>
@@ -847,4 +846,20 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">RALAT 10655: Posisi tidak dapat ditambah.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">RALAT 10655: Amaun pembukaan posisi melebihi had maksimum %1$s. Kurangkan amaun atau leveraj.</string>
     <string name="single_transaction_should_be_less_than">Jumlah maksimum %1$s %2$s</string>
+    <string name="Candle_Open">Pembukaan</string>
+    <string name="Candle_Close">Penutupan</string>
+    <string name="Candle_High">Tertinggi</string>
+    <string name="Candle_Low">Terendah</string>
+    <string name="perps_close_submitted">Pesanan penutupan dihantar</string>
+    <string name="perps_reduce_quantity_changed">Posisi telah berubah. Kembali dan semak kuantiti sebelum mencuba lagi.</string>
+    <string name="perps_reduce_invalid_quantity">Masukkan amaun lebih besar daripada sifar yang tidak melebihi nilai posisi semasa.</string>
+    <string name="perps_minimum_order_size">Saiz pesanan minimum ialah %1$s</string>
+    <string name="Estimated_Fee">Anggaran Yuran</string>
+    <string name="perps_estimated_realized_pnl">Anggaran PnL Direalisasikan</string>
+    <string name="perps_last_price">Harga Terakhir</string>
+    <string name="perps_mark_price">Harga Tanda</string>
+    <string name="perps_close_position_title">Tutup Posisi %1$s %2$s</string>
+    <string name="perps_include_pnl">Termasuk PnL</string>
+    <string name="perps_position_amount">Jumlah Posisi</string>
+    <string name="perps_margin_amount">Jumlah Margin</string>
 </resources>
