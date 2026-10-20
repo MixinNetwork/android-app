@@ -1,20 +1,35 @@
+@file:Suppress("OVERRIDE_DEPRECATION")
+
 package one.mixin.android.ui.common
 
+import android.Manifest
 import android.animation.ValueAnimator
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.Dialog
 import android.content.ClipData
+import android.content.Intent
+import android.graphics.Color
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
+import android.util.Base64
 import android.view.View
 import android.view.View.MeasureSpec
 import android.view.ViewGroup
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
+import com.uber.autodispose.autoDispose
+import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,15 +41,25 @@ import one.mixin.android.Constants.Mute.MUTE_8_HOURS
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
+import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.databinding.FragmentGroupBottomSheetBinding
+import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
+import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.dayTime
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getClipboardManager
+import one.mixin.android.extension.getCapturedImage
+import one.mixin.android.extension.getOtherPath
+import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.localTime
 import one.mixin.android.extension.notNullWithElse
+import one.mixin.android.extension.openCamera
+import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.showConfirmDialog
+import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.info.MenuStyle
@@ -43,12 +68,15 @@ import one.mixin.android.ui.common.info.createMenuLayout
 import one.mixin.android.ui.common.info.menu
 import one.mixin.android.ui.common.info.menuGroup
 import one.mixin.android.ui.common.info.menuList
+import one.mixin.android.ui.common.profile.ProfileBottomSheetDialogFragment.Companion.MAX_PHOTO_SIZE
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 import one.mixin.android.ui.group.GroupActivity.Companion.ARGS_EXPAND
 import one.mixin.android.ui.media.SharedMediaActivity
 import one.mixin.android.ui.search.SearchMessageFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.debug.debugLongClick
+import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.Participant
@@ -62,6 +90,7 @@ import java.io.File
 class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment() {
     companion object {
         const val TAG = "GroupBottomSheetDialogFragment"
+        private const val STATE_IMAGE_URI = "state_image_uri"
 
         @SuppressLint("StaticFieldLeak")
         private var instant: GroupBottomSheetDialogFragment? = null
@@ -99,8 +128,31 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
     }
     private lateinit var conversation: Conversation
     private var me: Participant? = null
+    private var photoUri: Uri? = null
+    private val imageUri: Uri
+        get() = photoUri ?: Uri.fromFile(requireContext().getOtherPath().createImageTemp()).also { photoUri = it }
+    private var uploadDialog: Dialog? = null
+    private val pickMedia = registerForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+        if (uri != null && isAdded) cropPhoto(uri)
+    }
 
     private var menuListLayout: ViewGroup? = null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        photoUri = savedInstanceState?.getString(STATE_IMAGE_URI)?.let(Uri::parse)
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_IMAGE_URI, photoUri?.toString())
+    }
+
+    override fun onDestroyView() {
+        uploadDialog?.dismiss()
+        uploadDialog = null
+        super.onDestroyView()
+    }
 
     override fun getLayoutId() = R.layout.fragment_group_bottom_sheet
 
@@ -150,7 +202,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                             ?.setPrimaryClip(ClipData.newPlainText(null, conversationId))
                     },
                 )
-                if (icon == null || !File(icon).exists()) {
+                if (icon.isNullOrBlank() || !icon.isWebUrl() && !File(icon).exists()) {
                     bottomViewModel.startGenerateAvatar(c.conversationId)
                 }
                 renderCollapsedContent(c)
@@ -294,6 +346,18 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                         }
                     },
                 )
+                list.groups.add(
+                    menuGroup {
+                        menu {
+                            title = getString(R.string.Change_Group_Photo_with_Camera)
+                            action = { changePhoto(true) }
+                        }
+                        menu {
+                            title = getString(R.string.Change_Group_Photo_with_Library)
+                            action = { changePhoto(false) }
+                        }
+                    },
+                )
             }
             val muteMenu =
                 if (conversation.muteUntil.notNullWithElse(
@@ -425,6 +489,93 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             }
         }
         updateCollapsedPeekHeight()
+    }
+
+    private fun changePhoto(byCamera: Boolean) {
+        if (!byCamera) {
+            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+        } else {
+            RxPermissions(requireActivity())
+                .request(
+                    *mutableListOf(Manifest.permission.CAMERA).apply {
+                        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    }.toTypedArray(),
+                )
+                .autoDispose(stopScope)
+                .subscribe { granted ->
+                    if (granted) {
+                        openCamera(imageUri)
+                    } else {
+                        context?.openPermissionSetting()
+                    }
+                }
+        }
+    }
+
+    private fun cropPhoto(uri: Uri) {
+        val options = UCrop.Options().apply {
+            setToolbarColor(ContextCompat.getColor(requireContext(), R.color.black))
+            setToolbarWidgetColor(Color.WHITE)
+            setHideBottomControls(true)
+        }
+        UCrop.of(uri, imageUri)
+            .withOptions(options)
+            .withAspectRatio(1f, 1f)
+            .withMaxResultSize(MAX_PHOTO_SIZE, MAX_PHOTO_SIZE)
+            .start(requireContext(), this)
+    }
+
+    override fun onActivityResult(
+        requestCode: Int,
+        resultCode: Int,
+        data: Intent?,
+    ) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (!isAdded) return
+
+        if (requestCode == REQUEST_CAMERA && resultCode == Activity.RESULT_OK) {
+            cropPhoto(imageUri)
+        } else if (requestCode == UCrop.REQUEST_CROP && resultCode == Activity.RESULT_OK && data != null) {
+            UCrop.getOutput(data)?.let { updatePhoto(it) }
+        } else if (requestCode == UCrop.REQUEST_CROP && resultCode == UCrop.RESULT_ERROR && data != null) {
+            UCrop.getError(data)?.let(ErrorHandler::handleError)
+        }
+    }
+
+    private fun updatePhoto(uri: Uri) = lifecycleScope.launch {
+        if (!isAdded || uploadDialog != null) return@launch
+
+        val accountId = Session.getAccountId() ?: return@launch
+        val resolver = requireContext().contentResolver
+        val progress = indeterminateProgressDialog(message = R.string.Please_wait_a_bit) { setCancelable(false) }
+        uploadDialog = progress
+        try {
+            val participant = withContext(Dispatchers.IO) {
+                bottomViewModel.findParticipantById(conversationId, accountId)
+            }
+            if (participant?.role != ParticipantRole.OWNER.name && participant?.role != ParticipantRole.ADMIN.name) {
+                toast(R.string.Access_denied)
+                return@launch
+            }
+            handleMixinResponse<ConversationResponse, Unit>(
+                invokeNetwork = {
+                    val bitmap = uri.getCapturedImage(resolver)
+                    val iconBase64 = try {
+                        Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP)
+                    } finally {
+                        bitmap.recycle()
+                    }
+                    bottomViewModel.updateGroupIcon(conversationId, iconBase64)
+                },
+                exceptionBlock = {
+                    if (it is CancellationException) throw it
+                    false
+                },
+            )
+        } finally {
+            progress.dismiss()
+            uploadDialog = null
+        }
     }
 
     private fun updateCollapsedPeekHeight() {

@@ -148,6 +148,8 @@
     <string name="Change">更改</string>
     <string name="Change_Amount">修改金額</string>
     <string name="Change_emergency_contact">修改復原聯絡人</string>
+    <string name="Change_Group_Photo_with_Camera">更換群頭像（相機）</string>
+    <string name="Change_Group_Photo_with_Library">更換群頭像（相簿）</string>
     <string name="Change_Number_Instead">僅修改手機號碼</string>
     <string name="Change_Phone_Number">修改手機號</string>
     <string name="Change_PIN">修改 PIN</string>

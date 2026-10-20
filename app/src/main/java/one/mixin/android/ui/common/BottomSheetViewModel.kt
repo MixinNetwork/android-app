@@ -1332,6 +1332,11 @@ class BottomSheetViewModel
             )
         }
 
+        suspend fun updateGroupIcon(
+            conversationId: String,
+            iconBase64: String,
+        ) = conversationRepo.updateGroupIcon(conversationId, iconBase64)
+
         fun updateGroup(
             conversationId: String,
             name: String? = null,

@@ -34,7 +34,7 @@ abstract class AvatarWorker(context: Context, parameters: WorkerParameters) : Ba
         val f = applicationContext.getGroupAvatarPath(name, false)
         if (f.exists()) {
             if (f.absolutePath != name) {
-                conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
+                conversationDao.updateGeneratedGroupIconUrl(groupId, f.absolutePath)
             }
             return Triple(true, name, f)
         }

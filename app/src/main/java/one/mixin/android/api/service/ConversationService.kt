@@ -62,6 +62,12 @@ interface ConversationService {
         @Body request: ConversationRequest,
     ): Call<MixinResponse<ConversationResponse>>
 
+    @POST("conversations/{id}")
+    suspend fun updateSuspend(
+        @Path("id") id: String,
+        @Body request: ConversationRequest,
+    ): MixinResponse<ConversationResponse>
+
     @POST("conversations/{id}/exit")
     fun exit(
         @Path("id") id: String,

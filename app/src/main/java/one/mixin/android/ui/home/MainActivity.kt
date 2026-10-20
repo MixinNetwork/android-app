@@ -1066,6 +1066,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                                     ownerId,
                                     data.category,
                                     data.name,
+                                    data.iconUrl,
                                     data.announcement,
                                     data.muteUntil,
                                     data.createdAt,
