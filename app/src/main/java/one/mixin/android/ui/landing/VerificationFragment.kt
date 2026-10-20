@@ -15,14 +15,12 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountRequest
 import one.mixin.android.api.request.VerificationPurpose
@@ -247,23 +245,30 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
 
     private fun handleDeleteAccount() {
         showLoading()
-        viewModel.deactiveVerification(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code())
-            .autoDispose(stopScope).subscribe(
-                { r: MixinResponse<VerificationResponse> ->
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = {
+                    viewModel.deactiveVerification(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code())
+                },
+                successBlock = { r ->
                     binding.verificationNextFab.hide()
                     binding.verificationCover.visibility = GONE
-                    if (!r.isSuccess) {
-                        handleFailure(r)
-                        return@subscribe
-                    }
                     DeleteAccountPinBottomSheetDialogFragment.newInstance(
                         r.data!!.id,
                     ).showNow(parentFragmentManager, DeleteAccountPinBottomSheetDialogFragment.TAG)
                 },
-                { t: Throwable ->
+                failureBlock = { r ->
+                    binding.verificationNextFab.hide()
+                    binding.verificationCover.visibility = GONE
+                    handleFailure(r)
+                    true
+                },
+                exceptionBlock = { t ->
                     handleError(t)
+                    true
                 },
             )
+        }
     }
 
     private fun handlePhoneModification() =
@@ -441,29 +446,32 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 verificationRequest.genTime = t?.genTime
             }
         }
-        viewModel.verification(verificationRequest)
-            .autoDispose(stopScope).subscribe(
-                { r: MixinResponse<VerificationResponse> ->
-                    if (!r.isSuccess) {
-                        if (r.errorCode == NEED_CAPTCHA) {
-                            initAndLoadCaptcha(r.errorDescription)
-                        } else {
-                            hideLoading()
-                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                        }
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = { viewModel.verification(verificationRequest) },
+                successBlock = { r ->
+                    hasEmergencyContact = (r.data as VerificationResponse).hasEmergencyContact
+                    hideLoading()
+                    binding.pinVerificationView.clear()
+                    startCountDown()
+                },
+                failureBlock = { r ->
+                    if (r.errorCode == NEED_CAPTCHA) {
+                        initAndLoadCaptcha(r.errorDescription)
+                        true
                     } else {
-                        hasEmergencyContact = (r.data as VerificationResponse).hasEmergencyContact
                         hideLoading()
-                        binding.pinVerificationView.clear()
-                        startCountDown()
+                        false
                     }
                 },
-                { t: Throwable ->
+                exceptionBlock = { t ->
                     handleError(t)
                     binding.verificationNextFab.visibility = GONE
                     captchaView?.hide()
+                    true
                 },
             )
+        }
     }
 
     private fun initAndLoadCaptcha(errorDescription: String) =

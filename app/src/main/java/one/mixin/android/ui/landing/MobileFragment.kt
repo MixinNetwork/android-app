@@ -17,11 +17,10 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
-import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.VerificationPurpose
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.VerificationResponse
@@ -44,7 +43,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.LandingActivity.Companion.ARGS_PIN
 import one.mixin.android.ui.logs.LogViewerBottomSheet
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.isAnonymousNumber
@@ -430,20 +428,10 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
         }
         binding.continueBn.displayedChild = 1
-        landingViewModel.loginVerification(verificationRequest)
-            .autoDispose(stopScope).subscribe(
-                { r: MixinResponse<VerificationResponse> ->
-                    if (!r.isSuccess) {
-                        if (r.errorCode == NEED_CAPTCHA) {
-                            Timber.i("LoginFlow mobile_verification_request_captcha_required from=$from")
-                            initAndLoadCaptcha(r.errorDescription)
-                        } else {
-                            Timber.i("LoginFlow mobile_verification_request_failed from=$from code=${r.errorCode}")
-                            hideLoading()
-                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                        }
-                        return@subscribe
-                    }
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = { landingViewModel.verification(verificationRequest) },
+                successBlock = { r ->
                     hideLoading()
 
                     val verificationResponse = r.data as VerificationResponse
@@ -481,13 +469,25 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
                         )
                     }
                 },
-                { t: Throwable ->
+                failureBlock = { r ->
+                    if (r.errorCode == NEED_CAPTCHA) {
+                        Timber.i("LoginFlow mobile_verification_request_captcha_required from=$from")
+                        initAndLoadCaptcha(r.errorDescription)
+                        true
+                    } else {
+                        Timber.i("LoginFlow mobile_verification_request_failed from=$from code=${r.errorCode}")
+                        hideLoading()
+                        false
+                    }
+                },
+                exceptionBlock = { t ->
                     hideLoading()
-                    ErrorHandler.handleError(t)
                     reportException("$TAG loginVerification", t)
                     Timber.e(t)
+                    false
                 },
             )
+        }
     }
 
     private fun initAndLoadCaptcha(errorDescription: String) =

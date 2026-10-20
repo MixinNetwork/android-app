@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
@@ -20,7 +19,6 @@ import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.group.InviteActivity.Companion.ARGS_ID
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 
 @AndroidEntryPoint
@@ -57,14 +55,15 @@ class InviteFragment : BaseFragment() {
         layoutInflater.inflate(R.layout.fragment_invite, container, false)
 
     private fun refreshUrl() {
-        inviteViewModel.findConversation(conversationId).autoDispose(stopScope).subscribe(
-            {
-                if (it.isSuccess && it.data != null) {
-                    inviteViewModel.updateCodeUrl(conversationId, it.data!!.codeUrl)
-                }
-            },
-            { ErrorHandler.handleError(it) },
-        )
+        lifecycleScope.launch {
+            handleMixinResponse(
+                invokeNetwork = { inviteViewModel.findConversation(conversationId) },
+                successBlock = { r ->
+                    r.data?.let { inviteViewModel.updateCodeUrl(conversationId, it.codeUrl) }
+                },
+                failureBlock = { true },
+            )
+        }
     }
 
     override fun onViewCreated(

@@ -10,11 +10,12 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.widget.RelativeLayout
 import androidx.fragment.app.viewModels
-import com.uber.autodispose.autoDispose
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.crypto.PrivacyPreference
 import one.mixin.android.databinding.FragmentSetupNameBinding
@@ -25,11 +26,9 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.logs.LogViewerBottomSheet
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.Account
 import one.mixin.android.vo.toUser
 import timber.log.Timber
 import javax.inject.Inject
@@ -95,14 +94,10 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
             setSubmitting(true)
 
             val accountUpdateRequest = AccountUpdateRequest(name)
-            mobileViewModel.update(accountUpdateRequest)
-                .autoDispose(stopScope).subscribe(
-                    { r: MixinResponse<Account> ->
-                        if (!r.isSuccess) {
-                            setSubmitting(false, canRetry = true)
-                            ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                            return@subscribe
-                        }
+            lifecycleScope.launch {
+                handleMixinResponse(
+                    invokeNetwork = { mobileViewModel.update(accountUpdateRequest) },
+                    successBlock = { r ->
                         setSubmitting(false)
                         r.data?.let { data ->
                             Session.storeAccount(data)
@@ -120,12 +115,17 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
                         }
                         activity?.finish()
                     },
-                    { t: Throwable ->
+                    failureBlock = {
                         setSubmitting(false, canRetry = true)
-                        ErrorHandler.handleError(t)
+                        false
+                    },
+                    exceptionBlock = { t ->
+                        setSubmitting(false, canRetry = true)
                         reportException("SetupNameFragment update", t)
+                        false
                     },
                 )
+            }
         }
     }
 

@@ -660,22 +660,16 @@ class ConversationViewModel
             }
         }
 
-        fun trendingGifs(
+        suspend fun trendingGifs(
             limit: Int,
             offset: Int,
-        ): Observable<List<Gif>> =
-            accountRepository.trendingGifs(limit, offset).map { it.data }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        ): List<Gif> = accountRepository.trendingGifs(limit, offset).data
 
-        fun searchGifs(
+        suspend fun searchGifs(
             query: String,
             limit: Int,
             offset: Int,
-        ): Observable<List<Gif>> =
-            accountRepository.searchGifs(query, limit, offset).map { it.data }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        ): List<Gif> = accountRepository.searchGifs(query, limit, offset).data
 
         fun observeAddress(addressId: String) = tokenRepository.observeAddress(addressId)
 

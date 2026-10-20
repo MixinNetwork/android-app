@@ -16,7 +16,6 @@ import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersTouchListener
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -24,6 +23,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentSearchBinding
 import one.mixin.android.databinding.ItemSearchAppBinding
 import one.mixin.android.databinding.ItemSearchHeaderBinding
@@ -169,31 +169,34 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 override fun onTipClick() {
                     binding.searchRv.hideKeyboard()
                     searchAdapter.searchingId = true
-                    searchViewModel.search(searchAdapter.query).autoDispose(stopScope).subscribe(
-                        { r ->
-                            searchAdapter.searchingId = false
-                            when {
-                                r.isSuccess ->
-                                    r.data?.let { data ->
-                                        if (data.userId == Session.getAccountId()) {
-                                            ProfileBottomSheetDialogFragment.newInstance().showNow(
-                                                parentFragmentManager,
-                                                UserBottomSheetDialogFragment.TAG,
-                                            )
-                                        } else {
-                                            searchViewModel.insertUser(user = data)
-                                            showUserBottom(parentFragmentManager, data, botEntrySource = AnalyticsTracker.BotSource.SEARCH_MAO_NAME)
-                                        }
+                    val query = searchAdapter.query
+                    viewLifecycleOwner.lifecycleScope.launch {
+                        handleMixinResponse(
+                            invokeNetwork = { searchViewModel.search(query) },
+                            successBlock = { r ->
+                                r.data?.let { data ->
+                                    if (data.userId == Session.getAccountId()) {
+                                        ProfileBottomSheetDialogFragment.newInstance().showNow(
+                                            parentFragmentManager,
+                                            UserBottomSheetDialogFragment.TAG,
+                                        )
+                                    } else {
+                                        searchViewModel.insertUser(user = data)
+                                        showUserBottom(parentFragmentManager, data, botEntrySource = AnalyticsTracker.BotSource.SEARCH_MAO_NAME)
                                     }
-                                r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.User_not_found)
-                                else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                            }
-                        },
-                        { t: Throwable ->
-                            searchAdapter.searchingId = false
-                            ErrorHandler.handleError(t)
-                        },
-                    )
+                                }
+                            },
+                            failureBlock = { r ->
+                                if (r.errorCode == ErrorHandler.NOT_FOUND) {
+                                    toast(R.string.User_not_found)
+                                    true
+                                } else {
+                                    false
+                                }
+                            },
+                            endBlock = { searchAdapter.searchingId = false },
+                        )
+                    }
                 }
 
                 override fun onUrlClick(url: String) {

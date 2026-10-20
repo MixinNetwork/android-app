@@ -19,6 +19,7 @@ import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.databinding.FragmentJoinGroupBottomSheetBinding
 import one.mixin.android.event.AvatarEvent
@@ -30,7 +31,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.CODE
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 @Parcelize
@@ -81,11 +81,10 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
         binding.joinTv.setOnClickListener {
             binding.joinTv.visibility = View.INVISIBLE
             binding.joinProgress.visibility = View.VISIBLE
-            bottomViewModel.join(code).autoDispose(stopScope).subscribe(
-                {
-                    binding.joinTv.visibility = View.VISIBLE
-                    binding.joinProgress.visibility = View.GONE
-                    if (it.isSuccess) {
+            lifecycleScope.launch {
+                handleMixinResponse(
+                    invokeNetwork = { bottomViewModel.join(code) },
+                    successBlock = {
                         val conversationResponse = it.data as ConversationResponse
                         val accountId = Session.getAccountId()
                         val result =
@@ -97,16 +96,13 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
                             ConversationActivity.showAndClear(requireContext(), c.conversationId)
                             dismiss()
                         }
-                    } else {
-                        ErrorHandler.handleMixinError(it.errorCode, it.errorDescription)
-                    }
-                },
-                {
-                    binding.joinTv.visibility = View.VISIBLE
-                    binding.joinProgress.visibility = View.GONE
-                    ErrorHandler.handleError(it)
-                },
-            )
+                    },
+                    endBlock = {
+                        binding.joinTv.visibility = View.VISIBLE
+                        binding.joinProgress.visibility = View.GONE
+                    },
+                )
+            }
         }
         binding.detailTv.movementMethod = LinkMovementMethod()
         binding.detailTv.addAutoLinkMode(AutoLinkMode.MODE_URL)

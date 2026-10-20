@@ -1,6 +1,5 @@
 package one.mixin.android.api.service
 
-import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.ConversationRequest
@@ -32,17 +31,12 @@ interface ConversationService {
     ): Call<MixinResponse<ConversationResponse>>
 
     @GET("conversations/{id}")
-    fun findConversation(
-        @Path("id") id: String,
-    ): Observable<MixinResponse<ConversationResponse>>
-
-    @GET("conversations/{id}")
     suspend fun findConversationSuspend(
         @Path("id") id: String,
     ): MixinResponse<ConversationResponse>
 
     @POST("attachments")
-    fun requestAttachment(): Observable<MixinResponse<AttachmentResponse>>
+    suspend fun requestAttachment(): MixinResponse<AttachmentResponse>
 
     @GET("attachments/{id}")
     fun getAttachment(
@@ -68,9 +62,9 @@ interface ConversationService {
     ): Call<MixinResponse<ConversationResponse>>
 
     @POST("conversations/{code_id}/join")
-    fun join(
+    suspend fun join(
         @Path("code_id") codeId: String,
-    ): Observable<MixinResponse<ConversationResponse>>
+    ): MixinResponse<ConversationResponse>
 
     @POST("conversations/{id}/rotate")
     suspend fun rotate(

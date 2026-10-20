@@ -16,12 +16,12 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.databinding.FragmentAuthenticationsBinding
 import one.mixin.android.databinding.ItemAuthBinding
@@ -31,7 +31,6 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highLight
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.App
 import java.util.concurrent.CountDownLatch
@@ -150,9 +149,10 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                 },
             )
 
-            viewModel.authorizations().autoDispose(stopScope).subscribe(
-                { list ->
-                    if (list.isSuccess) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                handleMixinResponse(
+                    invokeNetwork = { viewModel.authorizations() },
+                    successBlock = { list ->
                         this@AuthenticationsFragment.list =
                             list.data?.map {
                                 it.app
@@ -169,17 +169,18 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                         dataChange()
 
                         authResponseList = list.data?.toMutableList()
-                    } else {
+                    },
+                    failureBlock = {
                         authVa.displayedChild = 1
-                    }
-                    progress.visibility = View.GONE
-                },
-                {
-                    progress.visibility = View.GONE
-                    authVa.displayedChild = 1
-                    ErrorHandler.handleError(it)
-                },
-            )
+                        true
+                    },
+                    exceptionBlock = {
+                        authVa.displayedChild = 1
+                        false
+                    },
+                    endBlock = { progress.visibility = View.GONE },
+                )
+            }
             authRv.adapter = adapter
         }
     }

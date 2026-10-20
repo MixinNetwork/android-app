@@ -11,10 +11,12 @@ import android.widget.ImageView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerBinding
 import one.mixin.android.extension.clear
@@ -23,7 +25,6 @@ import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
-import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterAdapter
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
@@ -117,23 +118,21 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
                     }
                 }
             stickerProgress.visibility = View.VISIBLE
-            stickerViewModel.trendingGifs(26, 0)
-                .autoDispose(stopScope)
-                .subscribe(
-                    { list ->
-                        if (viewDestroyed()) return@subscribe
-                        giphyAdapter.data = list
-                        giphyAdapter.notifyDataSetChanged()
-                        stickerProgress.visibility = View.GONE
-                    },
-                    { t ->
-                        Timber.d("Trending gifs failed, t: ${t.printStackTrace()}")
-                        if (t is HttpException && t.code() == 429) {
-                            toast(R.string.giphy_api_rate_limit_exceeded)
-                        }
-                        stickerProgress.visibility = View.GONE
-                    },
-                )
+            viewLifecycleOwner.lifecycleScope.launch {
+                try {
+                    val list = stickerViewModel.trendingGifs(26, 0)
+                    giphyAdapter.data = list
+                    giphyAdapter.notifyDataSetChanged()
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (t: Exception) {
+                    Timber.d("Trending gifs failed, t: ${t.printStackTrace()}")
+                    if (t is HttpException && t.code() == 429) {
+                        toast(R.string.giphy_api_rate_limit_exceeded)
+                    }
+                }
+                stickerProgress.visibility = View.GONE
+            }
         }
     }
 

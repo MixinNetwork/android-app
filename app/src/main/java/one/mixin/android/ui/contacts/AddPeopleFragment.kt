@@ -7,10 +7,12 @@ import android.view.View
 import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.lifecycleScope
 import com.google.i18n.phonenumbers.PhoneNumberUtil
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAddPeopleBinding
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.tickVibrate
@@ -68,33 +70,37 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
             searchTv.setOnClickListener {
                 searchAnimator.displayedChild = POS_PROGRESS
                 searchTv.isEnabled = false
-                contactsViewModel.search(searchEt.text.toString()).autoDispose(stopScope).subscribe(
-                    { r ->
-                        searchAnimator.displayedChild = POS_SEARCH
-                        searchTv.isEnabled = true
-                        when {
-                            r.isSuccess ->
-                                r.data?.let { data ->
-                                    if (data.userId == Session.getAccountId()) {
-                                        ProfileBottomSheetDialogFragment.newInstance().showNow(
-                                            parentFragmentManager,
-                                            UserBottomSheetDialogFragment.TAG,
-                                        )
-                                    } else {
-                                        contactsViewModel.insertUser(user = data)
-                                        showUserBottom(parentFragmentManager, data)
-                                    }
+                val query = searchEt.text.toString()
+                viewLifecycleOwner.lifecycleScope.launch {
+                    handleMixinResponse(
+                        invokeNetwork = { contactsViewModel.search(query) },
+                        successBlock = { r ->
+                            r.data?.let { data ->
+                                if (data.userId == Session.getAccountId()) {
+                                    ProfileBottomSheetDialogFragment.newInstance().showNow(
+                                        parentFragmentManager,
+                                        UserBottomSheetDialogFragment.TAG,
+                                    )
+                                } else {
+                                    contactsViewModel.insertUser(user = data)
+                                    showUserBottom(parentFragmentManager, data)
                                 }
-                            r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.User_not_found)
-                            else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                        }
-                    },
-                    { t: Throwable ->
-                        searchAnimator.displayedChild = POS_SEARCH
-                        searchTv.isEnabled = true
-                        ErrorHandler.handleError(t)
-                    },
-                )
+                            }
+                        },
+                        failureBlock = { r ->
+                            if (r.errorCode == ErrorHandler.NOT_FOUND) {
+                                toast(R.string.User_not_found)
+                                true
+                            } else {
+                                false
+                            }
+                        },
+                        endBlock = {
+                            searchAnimator.displayedChild = POS_SEARCH
+                            searchTv.isEnabled = true
+                        },
+                    )
+                }
             }
         }
     }

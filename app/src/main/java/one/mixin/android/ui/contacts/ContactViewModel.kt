@@ -4,9 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
@@ -44,9 +41,7 @@ class ContactViewModel
                 userRepository.upsert(user)
             }
 
-        fun search(query: String): Observable<MixinResponse<User>> =
-            accountRepository.search(query).subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        suspend fun search(query: String): MixinResponse<User> = userRepository.searchSuspend(query)
 
         fun findUserById(id: String): LiveData<User?> = userRepository.findUserById(id)
 

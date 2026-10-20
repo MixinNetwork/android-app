@@ -6,9 +6,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kernel.Kernel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -178,8 +175,7 @@ class BottomSheetViewModel
                 accountRepository.searchCode(code)
             }
 
-        fun join(code: String): Observable<MixinResponse<ConversationResponse>> =
-            accountRepository.join(code).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        suspend fun join(code: String): MixinResponse<ConversationResponse> = accountRepository.join(code)
 
         fun refreshConversation(conversationId: String) {
             jobManager.addJobInBackground(RefreshConversationJob(conversationId))
@@ -1377,22 +1373,16 @@ class BottomSheetViewModel
             verificationId: String,
         ): MixinResponse<Account> = accountRepository.deactivate(pin, verificationId)
 
-        fun trendingGifs(
+        suspend fun trendingGifs(
             limit: Int,
             offset: Int,
-        ): Observable<List<Gif>> =
-            accountRepository.trendingGifs(limit, offset).map { it.data }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        ): List<Gif> = accountRepository.trendingGifs(limit, offset).data
 
-        fun searchGifs(
+        suspend fun searchGifs(
             query: String,
             limit: Int,
             offset: Int,
-        ): Observable<List<Gif>> =
-            accountRepository.searchGifs(query, limit, offset).map { it.data }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        ): List<Gif> = accountRepository.searchGifs(query, limit, offset).data
 
         suspend fun getLogoutTipBody(
             sessionId: String,
@@ -1565,8 +1555,7 @@ class BottomSheetViewModel
                 tokenRepository.insertSnapshot(snapshot)
             }
 
-        fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
-            accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        suspend fun update(request: AccountUpdateRequest): MixinResponse<Account> = accountRepository.update(request)
 
         fun insertUser(user: User) =
             viewModelScope.launch(Dispatchers.IO) {

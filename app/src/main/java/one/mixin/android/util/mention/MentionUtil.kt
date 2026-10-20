@@ -3,6 +3,7 @@ package one.mixin.android.util.mention
 import android.graphics.Color
 import android.widget.EditText
 import androidx.collection.arraySetOf
+import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.service.UserService
 import one.mixin.android.db.AppDao
 import one.mixin.android.db.MessageMentionDao
@@ -103,7 +104,7 @@ fun resolveMentionUsers(
 ): List<MentionUser> =
     identityNumbers.mapNotNull { identityNumber ->
         try {
-            val response = userService.search(identityNumber).blockingFirst()
+            val response = runBlocking { userService.searchSuspend(identityNumber) }
             val user = response.data?.takeIf { response.isSuccess && it.identityNumber == identityNumber } ?: return@mapNotNull null
             val fullName = user.fullName?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
             userDao.insertUpdate(user, appDao)
