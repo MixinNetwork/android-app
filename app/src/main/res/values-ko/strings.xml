@@ -2700,6 +2700,10 @@
     <string name="perps_reduced_margin">증거금 감소</string>
     <string name="perps_realized_pnl">실현 손익</string>
     <string name="perps_unrealized_pnl">미실현 손익</string>
+    <string name="Candle_Open">시가</string>
+    <string name="Candle_Close">종가</string>
+    <string name="Candle_High">고가</string>
+    <string name="Candle_Low">저가</string>
     <string name="perps_close_submitted">포지션 종료 주문이 제출되었습니다</string>
     <string name="perps_reduce_quantity_changed">포지션이 변경되었습니다. 이전 화면으로 돌아가 수량을 확인한 후 다시 시도하세요.</string>
     <string name="perps_reduce_invalid_quantity">0보다 크고 현재 포지션 규모를 초과하지 않는 금액을 입력하세요.</string>

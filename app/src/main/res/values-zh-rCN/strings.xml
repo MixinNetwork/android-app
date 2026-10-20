@@ -2650,6 +2650,10 @@
     <string name="perps_reduced_margin">减少保证金</string>
     <string name="perps_realized_pnl">净盈亏</string>
     <string name="perps_unrealized_pnl">盈亏</string>
+    <string name="Candle_Open">开盘价</string>
+    <string name="Candle_Close">收盘价</string>
+    <string name="Candle_High">最高价</string>
+    <string name="Candle_Low">最低价</string>
     <string name="perps_close_submitted">平仓订单已提交</string>
     <string name="perps_reduce_quantity_changed">持仓已变化，请返回核对数量后重试。</string>
     <string name="perps_reduce_invalid_quantity">请输入大于零且不超过当前仓位的金额。</string>

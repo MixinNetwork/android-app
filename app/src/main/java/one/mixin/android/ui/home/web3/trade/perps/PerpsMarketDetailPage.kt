@@ -3,10 +3,14 @@ package one.mixin.android.ui.home.web3.trade.perps
 import android.content.SharedPreferences
 import android.text.Layout
 import android.util.TypedValue
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -36,6 +40,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -44,15 +49,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -66,6 +77,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -78,10 +90,10 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.putInt
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
@@ -98,6 +110,7 @@ import one.mixin.android.widget.components.MixinButton
 import org.threeten.bp.Instant
 import java.math.BigDecimal
 import java.util.Locale
+import kotlin.math.roundToInt
 
 private const val DEFAULT_TIME_FRAME_INDEX = 2
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
@@ -1119,44 +1132,105 @@ private fun MarketDetailCard(
             CandleChart(
                 marketId = marketId,
                 timeFrame = timeFrameValues[selectedTimeFrame],
-                marketPrice = market.last
+                marketPrice = market.last,
+                priceScale = market.priceScale,
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            timeFrameLabels.forEachIndexed { index, timeFrameLabel ->
+        TimeFrameSelector(
+            labels = timeFrameLabels,
+            selectedIndex = selectedTimeFrame,
+            onSelect = onTimeFrameChange,
+        )
+    }
+}
+
+/** Segmented time-frame picker: a grey track with a pill that slides to the selected option. */
+@Composable
+private fun TimeFrameSelector(
+    labels: List<String>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+) {
+    val density = LocalDensity.current
+    val scrollState = rememberScrollState()
+    var viewportWidth by remember { mutableIntStateOf(0) }
+    val itemBounds = remember(labels.size) { mutableStateListOf<Rect?>().apply { repeat(labels.size) { add(null) } } }
+    val indicatorX = remember { Animatable(0f) }
+    val indicatorWidth = remember { Animatable(0f) }
+    var indicatorPlaced by remember { mutableStateOf(false) }
+    val target = itemBounds.getOrNull(selectedIndex)
+
+    LaunchedEffect(target) {
+        target ?: return@LaunchedEffect
+        if (!indicatorPlaced) {
+            indicatorX.snapTo(target.left)
+            indicatorWidth.snapTo(target.width)
+            indicatorPlaced = true
+        } else {
+            val spec = spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)
+            launch { indicatorX.animateTo(target.left, spec) }
+            indicatorWidth.animateTo(target.width, spec)
+        }
+    }
+    LaunchedEffect(selectedIndex, target, viewportWidth, scrollState.maxValue) {
+        val bounds = target ?: return@LaunchedEffect
+        if (viewportWidth <= 0) return@LaunchedEffect
+        val centeredOffset = bounds.center.x + with(density) { 3.dp.toPx() } - viewportWidth / 2f
+        scrollState.animateScrollTo(centeredOffset.roundToInt().coerceIn(0, scrollState.maxValue))
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(21.dp))
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .onSizeChanged { viewportWidth = it.width },
+    ) {
+        Box(Modifier.horizontalScroll(scrollState).padding(3.dp)) {
+            if (indicatorPlaced) {
                 Box(
                     modifier = Modifier
+                        .offset { IntOffset(indicatorX.value.roundToInt(), 0) }
+                        .width(with(density) { indicatorWidth.value.toDp() })
                         .height(36.dp)
-                        .clip(RoundedCornerShape(18.dp))
-                        .then(
-                            if (selectedTimeFrame == index) {
-                                Modifier.background(MixinAppTheme.colors.backgroundWindow)
-                            } else {
-                                Modifier
-                            }
+                        .background(MixinAppTheme.colors.background, RoundedCornerShape(18.dp))
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                labels.forEachIndexed { index, label ->
+                    if (index > 0) {
+                        // Hide the divider next to the selected pill.
+                        val showDivider = index != selectedIndex && index - 1 != selectedIndex
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .height(12.dp)
+                                .background(if (showDivider) MixinAppTheme.colors.borderColor else Color.Transparent)
                         )
-                        .clickable { onTimeFrameChange(index) }
-                        .padding(horizontal = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = timeFrameLabel,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = if (selectedTimeFrame == index) {
-                            MixinAppTheme.colors.textPrimary
-                        } else {
-                            MixinAppTheme.colors.textAssist
-                        }
-                    )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .onPlaced { itemBounds[index] = it.boundsInParent() }
+                            .height(36.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) { onSelect(index) }
+                            .padding(horizontal = 12.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = label,
+                            fontSize = 14.sp,
+                            fontWeight = if (index == selectedIndex) FontWeight.SemiBold else FontWeight.Medium,
+                            color = MixinAppTheme.colors.textPrimary,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
+                    }
                 }
             }
         }
