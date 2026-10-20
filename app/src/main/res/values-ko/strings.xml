@@ -2695,11 +2695,26 @@
     <string name="perps_confirm_reduce_margin_title">증거금 감소 확인</string>
     <string name="up_to_apy">최대 %1$s APY</string>
     <string name="perps_add_position_title">%1$s %2$s에 포지션 추가</string>
-    <string name="perps_reduce_position_title">%1$s %2$s의 포지션 축소</string>
     <string name="max_removable">최대 축소 가능 %1$s</string>
     <string name="perps_added_position">포지션 추가</string>
     <string name="perps_added_margin">증거금 추가</string>
     <string name="perps_reduced_margin">증거금 감소</string>
     <string name="perps_realized_pnl">실현 손익</string>
     <string name="perps_unrealized_pnl">미실현 손익</string>
+    <string name="Candle_Open">시가</string>
+    <string name="Candle_Close">종가</string>
+    <string name="Candle_High">고가</string>
+    <string name="Candle_Low">저가</string>
+    <string name="perps_close_submitted">포지션 종료 주문이 제출되었습니다</string>
+    <string name="perps_reduce_quantity_changed">포지션이 변경되었습니다. 이전 화면으로 돌아가 수량을 확인한 후 다시 시도하세요.</string>
+    <string name="perps_reduce_invalid_quantity">0보다 크고 현재 포지션 규모를 초과하지 않는 금액을 입력하세요.</string>
+    <string name="perps_minimum_order_size">최소 주문 규모는 %1$s입니다</string>
+    <string name="Estimated_Fee">예상 수수료</string>
+    <string name="perps_estimated_realized_pnl">예상 실현 손익</string>
+    <string name="perps_last_price">최근 체결 가격</string>
+    <string name="perps_mark_price">마크 가격</string>
+    <string name="perps_close_position_title">%1$s %2$s 포지션 종료</string>
+    <string name="perps_include_pnl">손익 포함</string>
+    <string name="perps_position_amount">포지션 금액</string>
+    <string name="perps_margin_amount">증거금 금액</string>
 </resources>

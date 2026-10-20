@@ -1,11 +1,16 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
+import android.content.SharedPreferences
 import android.text.Layout
 import android.util.TypedValue
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,6 +30,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.DropdownMenu
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
@@ -33,6 +40,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -41,15 +49,21 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.onPlaced
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -63,6 +77,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -71,14 +86,14 @@ import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
-import one.mixin.android.api.response.perps.toPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
-import one.mixin.android.extension.putInt
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
+import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.home.web3.components.PageScaffold
@@ -95,10 +110,12 @@ import one.mixin.android.widget.components.MixinButton
 import org.threeten.bp.Instant
 import java.math.BigDecimal
 import java.util.Locale
+import kotlin.math.roundToInt
 
 private const val DEFAULT_TIME_FRAME_INDEX = 2
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
 private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
+private const val PREF_MARKET_DETAIL_MARK_PRICE = "perps_market_detail_mark_price"
 private const val PREF_MARKET_DETAIL_TIME_FRAME = "perps_market_detail_time_frame"
 
 @Composable
@@ -358,8 +375,6 @@ fun PerpsMarketDetailPage(
                         MarketDetailCard(
                             market = market!!,
                             marketId = marketId,
-                            displaySymbol = displaySymbol,
-                            tokenSymbol = tokenSymbol,
                             selectedTimeFrame = selectedTimeFrame,
                             timeFrameValues = timeFrameValues,
                             timeFrameLabels = timeFrameLabels,
@@ -438,6 +453,8 @@ fun PerpsMarketDetailPage(
                             priceScale = currentPosition.priceScale,
                             liquidationPrice = currentPosition.liquidationPrice,
                             positionQuantity = currentPosition.quantity,
+                            estimatedCloseFee = currentPosition.estimatedCloseFee,
+                            feeReferencePrice = currentPosition.markPrice.orEmpty().ifBlank { currentPosition.entryPrice },
                         ).setOnApply { value ->
                             val normalizedValue = value?.trim().orEmpty()
                             if (normalizedValue == existingPrice) return@setOnApply
@@ -642,11 +659,9 @@ fun PerpsMarketDetailPage(
                                     enabled = true,
                                     onClick = {
                                         val activity = context as? FragmentActivity ?: return@MixinButton
-                                        val position = currentPosition.toPosition()
                                         AnalyticsTracker.trackPerpsCloseStart(AnalyticsTracker.PerpsCloseType.SINGLE)
-                                        PerpsCloseBottomSheetDialogFragment.newInstance(
-                                            position = position,
-                                        ).show(activity.supportFragmentManager, PerpsCloseBottomSheetDialogFragment.TAG)
+                                        PerpsReduceBottomSheetDialogFragment.newInstance(currentPosition)
+                                            .show(activity.supportFragmentManager, PerpsReduceBottomSheetDialogFragment.TAG)
                                     },
                                     backgroundColor = MixinAppTheme.colors.accent,
                                     contentColor = Color.White,
@@ -990,8 +1005,6 @@ private fun formatFundingRate(fundingRate: String): String {
 private fun MarketDetailCard(
     market: PerpsMarket,
     marketId: String,
-    displaySymbol: String,
-    tokenSymbol: String,
     selectedTimeFrame: Int,
     timeFrameValues: List<String>,
     timeFrameLabels: List<String>,
@@ -1007,12 +1020,22 @@ private fun MarketDetailCard(
     val isPositive = changePercent >= BigDecimal.ZERO
     val changeColor = if (isPositive) risingColor else fallingColor
     val changeText = formatPerpsSignedPercent(changePercent)
-    val displayTokenSymbol = tokenSymbol
-        .takeIf { it.isNotBlank() }
-        ?: market.tokenSymbol.takeIf { it.isNotBlank() }
-        ?: displaySymbol
-
-    val displayPrice = market.last
+    val preferences = remember(context) { context.defaultSharedPreferences }
+    var showMarkPrice by remember(preferences) {
+        mutableStateOf(preferences.getBoolean(PREF_MARKET_DETAIL_MARK_PRICE, false))
+    }
+    var priceMenuExpanded by remember { mutableStateOf(false) }
+    DisposableEffect(preferences) {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == PREF_MARKET_DETAIL_MARK_PRICE) {
+                showMarkPrice = preferences.getBoolean(PREF_MARKET_DETAIL_MARK_PRICE, false)
+            }
+        }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        showMarkPrice = preferences.getBoolean(PREF_MARKET_DETAIL_MARK_PRICE, false)
+        onDispose { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+    val displayPrice = if (showMarkPrice) market.markPrice else market.last
 
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(
@@ -1021,14 +1044,60 @@ private fun MarketDetailCard(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = displayTokenSymbol,
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textPrimary
-                )
+                Box {
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(4.dp))
+                            .clickable { priceMenuExpanded = true }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Text(
+                            text = stringResource(if (showMarkPrice) R.string.perps_mark_price else R.string.perps_last_price),
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Icon(
+                            painter = painterResource(R.drawable.ic_type_down),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.iconGray,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = priceMenuExpanded,
+                        onDismissRequest = { priceMenuExpanded = false },
+                        modifier = Modifier.background(MixinAppTheme.colors.background),
+                    ) {
+                        listOf(false, true).forEach { markPrice ->
+                            DropdownMenuItem(onClick = {
+                                showMarkPrice = markPrice
+                                preferences.putBoolean(PREF_MARKET_DETAIL_MARK_PRICE, markPrice)
+                                priceMenuExpanded = false
+                            }) {
+                                if (showMarkPrice == markPrice) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_check_black_24dp),
+                                        contentDescription = null,
+                                        tint = MixinAppTheme.colors.textPrimary,
+                                        modifier = Modifier.size(20.dp),
+                                    )
+                                } else {
+                                    Spacer(modifier = Modifier.size(20.dp))
+                                }
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text(
+                                    text = stringResource(if (markPrice) R.string.perps_mark_price else R.string.perps_last_price),
+                                    color = MixinAppTheme.colors.textPrimary,
+                                )
+                            }
+                        }
+                    }
+                }
                 Spacer(modifier = Modifier.height(7.dp))
                 Text(
-                    text = "$PERPS_USD_SYMBOL$displayPrice",
+                    text = formatPerpsPrice(displayPrice, market.priceScale),
                     fontSize = 22.sp,
                     fontWeight = FontWeight.W500,
                     color = MixinAppTheme.colors.textPrimary
@@ -1063,44 +1132,105 @@ private fun MarketDetailCard(
             CandleChart(
                 marketId = marketId,
                 timeFrame = timeFrameValues[selectedTimeFrame],
-                marketPrice = market.last
+                marketPrice = market.last,
+                priceScale = market.priceScale,
             )
         }
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            timeFrameLabels.forEachIndexed { index, timeFrameLabel ->
+        TimeFrameSelector(
+            labels = timeFrameLabels,
+            selectedIndex = selectedTimeFrame,
+            onSelect = onTimeFrameChange,
+        )
+    }
+}
+
+/** Segmented time-frame picker: a grey track with a pill that slides to the selected option. */
+@Composable
+private fun TimeFrameSelector(
+    labels: List<String>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+) {
+    val density = LocalDensity.current
+    val scrollState = rememberScrollState()
+    var viewportWidth by remember { mutableIntStateOf(0) }
+    val itemBounds = remember(labels.size) { mutableStateListOf<Rect?>().apply { repeat(labels.size) { add(null) } } }
+    val indicatorX = remember { Animatable(0f) }
+    val indicatorWidth = remember { Animatable(0f) }
+    var indicatorPlaced by remember { mutableStateOf(false) }
+    val target = itemBounds.getOrNull(selectedIndex)
+
+    LaunchedEffect(target) {
+        target ?: return@LaunchedEffect
+        if (!indicatorPlaced) {
+            indicatorX.snapTo(target.left)
+            indicatorWidth.snapTo(target.width)
+            indicatorPlaced = true
+        } else {
+            val spec = spring<Float>(dampingRatio = Spring.DampingRatioNoBouncy, stiffness = Spring.StiffnessMediumLow)
+            launch { indicatorX.animateTo(target.left, spec) }
+            indicatorWidth.animateTo(target.width, spec)
+        }
+    }
+    LaunchedEffect(selectedIndex, target, viewportWidth, scrollState.maxValue) {
+        val bounds = target ?: return@LaunchedEffect
+        if (viewportWidth <= 0) return@LaunchedEffect
+        val centeredOffset = bounds.center.x + with(density) { 3.dp.toPx() } - viewportWidth / 2f
+        scrollState.animateScrollTo(centeredOffset.roundToInt().coerceIn(0, scrollState.maxValue))
+    }
+
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(21.dp))
+            .background(MixinAppTheme.colors.backgroundWindow)
+            .onSizeChanged { viewportWidth = it.width },
+    ) {
+        Box(Modifier.horizontalScroll(scrollState).padding(3.dp)) {
+            if (indicatorPlaced) {
                 Box(
                     modifier = Modifier
+                        .offset { IntOffset(indicatorX.value.roundToInt(), 0) }
+                        .width(with(density) { indicatorWidth.value.toDp() })
                         .height(36.dp)
-                        .clip(RoundedCornerShape(18.dp))
-                        .then(
-                            if (selectedTimeFrame == index) {
-                                Modifier.background(MixinAppTheme.colors.backgroundWindow)
-                            } else {
-                                Modifier
-                            }
+                        .background(MixinAppTheme.colors.background, RoundedCornerShape(18.dp))
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                labels.forEachIndexed { index, label ->
+                    if (index > 0) {
+                        // Hide the divider next to the selected pill.
+                        val showDivider = index != selectedIndex && index - 1 != selectedIndex
+                        Box(
+                            modifier = Modifier
+                                .width(1.dp)
+                                .height(12.dp)
+                                .background(if (showDivider) MixinAppTheme.colors.borderColor else Color.Transparent)
                         )
-                        .clickable { onTimeFrameChange(index) }
-                        .padding(horizontal = 12.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        text = timeFrameLabel,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = if (selectedTimeFrame == index) {
-                            MixinAppTheme.colors.textPrimary
-                        } else {
-                            MixinAppTheme.colors.textAssist
-                        }
-                    )
+                    }
+                    Box(
+                        modifier = Modifier
+                            .onPlaced { itemBounds[index] = it.boundsInParent() }
+                            .height(36.dp)
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                            ) { onSelect(index) }
+                            .padding(horizontal = 12.dp),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text = label,
+                            fontSize = 14.sp,
+                            fontWeight = if (index == selectedIndex) FontWeight.SemiBold else FontWeight.Medium,
+                            color = MixinAppTheme.colors.textPrimary,
+                            maxLines = 1,
+                            softWrap = false,
+                        )
+                    }
                 }
             }
         }
@@ -1174,6 +1304,8 @@ private fun OpenPositionCard(
             priceScale = position.priceScale,
             liquidationPrice = position.liquidationPrice,
             positionQuantity = position.quantity,
+            estimatedCloseFee = position.estimatedCloseFee,
+            feeReferencePrice = position.markPrice.orEmpty().ifBlank { position.entryPrice },
         ).setOnApply { value ->
             val normalizedValue = value?.trim().orEmpty()
             if (normalizedValue == existingPrice) {

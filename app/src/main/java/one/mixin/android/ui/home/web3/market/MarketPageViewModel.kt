@@ -1,9 +1,11 @@
 package one.mixin.android.ui.home.web3.market
 
 import android.content.SharedPreferences
+import android.os.SystemClock
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -12,6 +14,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -19,7 +22,9 @@ import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.RxBus
+import one.mixin.android.api.response.WalletHomeBanner
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.visibleWalletHomeBanners
 import one.mixin.android.event.ALL_MARKET_PAGE_DATA_SOURCES
 import one.mixin.android.event.MarketPageDataSource
 import one.mixin.android.event.MarketPageRefreshEvent
@@ -28,7 +33,13 @@ import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshMarketPageJob
 import one.mixin.android.repository.PerpsMarketRepository
+import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.repository.TokenRepository
+import one.mixin.android.session.Session
+import one.mixin.android.ui.wallet.findWalletHomeDynamicBannerClosedIds
+import one.mixin.android.ui.wallet.home.getWalletHomeBannerCache
+import one.mixin.android.ui.wallet.home.putWalletHomeBannerCache
+import one.mixin.android.ui.wallet.updateWalletHomeDynamicBannerClosedIds
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.market.GlobalMarket
@@ -37,6 +48,7 @@ import one.mixin.android.vo.market.MarketItem
 import timber.log.Timber
 import javax.inject.Inject
 
+private const val BANNER_REFRESH_INTERVAL_MS = 5 * 60_000L
 private const val MARKET_REFRESH_INTERVAL_MS = 30_000L
 private const val REFRESH_REQUEUE_DELAY_MS = 250L
 private const val PREF_MARKET_PAGE_TOP_TAB = "pref_market_page_top_tab"
@@ -47,6 +59,7 @@ class MarketPageViewModel
     @Inject
     constructor(
         private val tokenRepository: TokenRepository,
+        private val referralRepository: ReferralRepository,
         private val perpsMarketRepository: PerpsMarketRepository,
         private val jobManager: MixinJobManager,
         private val preferences: SharedPreferences,
@@ -64,7 +77,13 @@ class MarketPageViewModel
         private var featuredSpotMarkets: List<MarketItem> = emptyList()
         private var perpetualMarkets: List<PerpsMarket> = emptyList()
         private var featuredPerpetualMarkets: List<PerpsMarket> = emptyList()
+        private val bannerCacheKey = "markets:${Session.getAccountId().orEmpty()}"
+        private var banners: List<WalletHomeBanner> = emptyList()
+        private var hasLoadedBannerCache = false
+        private var lastBannerRefresh: Long? = null
+        private var closedBannerIds: Set<String> = emptySet()
         private var refreshLoopJob: Job? = null
+        private var lastMarketRefresh: Long? = null
         private var failedSources: Set<MarketPageDataSource> = emptySet()
         private var hasCompletedInitialRefresh = false
         private var hasLoadedSpotMarkets = false
@@ -288,11 +307,67 @@ class MarketPageViewModel
             if (refreshLoopJob?.isActive == true) return
             refreshLoopJob =
                 viewModelScope.launch {
+                    launch { refreshBanners() }
+                    lastMarketRefresh?.let {
+                        delay((MARKET_REFRESH_INTERVAL_MS - (SystemClock.elapsedRealtime() - it)).coerceAtLeast(0L))
+                    }
                     while (isActive) {
                         refreshNow()
                         delay(MARKET_REFRESH_INTERVAL_MS)
                     }
                 }
+        }
+
+        private suspend fun refreshBanners() {
+            try {
+                try {
+                    val savedIds = findWalletHomeDynamicBannerClosedIds()
+                    closedBannerIds = closedBannerIds + savedIds
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.w(e, "Read closed market banners failed")
+                }
+                if (!hasLoadedBannerCache) {
+                    banners = withContext(Dispatchers.IO) { preferences.getWalletHomeBannerCache(bannerCacheKey).orEmpty() }
+                    hasLoadedBannerCache = true
+                }
+                updateVisibleBanners()
+                if (lastBannerRefresh?.let { SystemClock.elapsedRealtime() - it < BANNER_REFRESH_INTERVAL_MS } == true) return
+                val remote = referralRepository.fetchWalletHomeBanners() ?: return
+                withContext(Dispatchers.IO) { preferences.putWalletHomeBannerCache(bannerCacheKey, remote) }
+                banners = remote
+                lastBannerRefresh = SystemClock.elapsedRealtime()
+                updateVisibleBanners()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.w(e, "Fetch market banners failed")
+            }
+        }
+
+        private fun visibleBanners(tab: MarketTopTab): List<WalletHomeBanner> =
+            tab.bannerPlacement?.let { banners.visibleWalletHomeBanners(closedBannerIds, placement = it) }.orEmpty()
+
+        private fun updateVisibleBanners() {
+            _uiState.update {
+                val visible = visibleBanners(it.selectedTopTab)
+                if (visible == it.banners) it else it.copy(banners = visible)
+            }
+        }
+
+        fun closeBanner(banner: WalletHomeBanner) {
+            closedBannerIds = closedBannerIds + banner.key
+            updateVisibleBanners()
+            viewModelScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                try {
+                    updateWalletHomeDynamicBannerClosedIds(setOf(banner.key))
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.w(e, "Save closed market banner failed")
+                }
+            }
         }
 
         fun stopRefresh() {
@@ -326,7 +401,9 @@ class MarketPageViewModel
                 hasCompletedInitialRefresh = true
                 _uiState.value = _uiState.value.copy(isLoading = false)
             }
-            rebuildEntries()
+            _uiState.update {
+                it.copy(hasError = it.entries.isEmpty() && selectedDataSource(it) in failedSources)
+            }
         }
 
         private fun refreshSelectedPage() {
@@ -335,6 +412,7 @@ class MarketPageViewModel
         }
 
         private fun enqueueRefresh(sources: Set<MarketPageDataSource>) {
+            lastMarketRefresh = SystemClock.elapsedRealtime()
             jobManager.addJobInBackground(
                 RefreshMarketPageJob(
                     duration = selectedDuration(),
@@ -533,6 +611,7 @@ class MarketPageViewModel
                             period = state.effectivePriceChangePeriod,
                             useMarketCapForSpot = state.showsMarketCapColumn,
                         ),
+                    banners = visibleBanners(state.selectedTopTab),
                     hasError = entries.isEmpty() && selectedDataSource(state) in failedSources,
                     hasLoadedLocalData = hasLoadedSelectedLocalData(state),
                     isShowingRecommendations = isShowingRecommendations,

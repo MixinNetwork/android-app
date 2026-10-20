@@ -293,7 +293,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             }
         }
 
-        MixinAppTheme {
+        PerpsConfirmationTheme {
             Column(
                 modifier = Modifier
                     .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
@@ -406,135 +406,30 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     )
                     Box(modifier = Modifier.height(20.dp))
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.perps_market).uppercase(),
-                            color = MixinAppTheme.colors.textRemarks,
-                            fontSize = 14.sp,
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            CoilImage(
-                                model = marketIcon,
-                                placeholder = R.drawable.ic_avatar_place_holder,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .clip(CircleShape)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = marketSymbol,
-                                color = MixinAppTheme.colors.textPrimary,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.W400
-                            )
-                        }
-                    }
-                    Box(modifier = Modifier.height(20.dp))
-
-                    if (!isAddMargin) {
-                        PerpsInfoItem(
-                            title = stringResource(R.string.Direction).uppercase(),
-                            value = (if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)) +
-                                if (leverage > 0) " ${leverage}x" else ""
-                        )
-                        if (leverage > 0 && amount.isNotBlank()) {
-                            Box(modifier = Modifier.height(6.dp))
-                            ProfitLossInfo(
-                                amount = amount,
-                                leverage = leverage,
-                                isLong = isLong
-                            )
-                        }
-                        Box(modifier = Modifier.height(20.dp))
-                    }
-
-                    if (amount.isNotBlank()) {
-                        PerpsInfoItem(
-                            title = stringResource(R.string.Amount).uppercase(),
-                            value = "$amount $tokenSymbol",
-                            subValue = if (isAddMargin && marginAfter != null) {
-                                "${stringResource(R.string.perps_total_margin)} ${formatPerpsMarginAmount(marginBefore?.toBigDecimalOrNull())} → ${formatPerpsMarginAmount(marginAfter)}"
-                            } else null,
-                        )
-                        Box(modifier = Modifier.height(20.dp))
-                    }
-
-                    if (!isAddMargin) {
-                        PerpsInfoItem(
-                            title = stringResource(R.string.Entry_Price).uppercase(),
-                            value = entryFiatPrice
-                        )
-                        Box(modifier = Modifier.height(20.dp))
-
-                        takeProfitFiatPrice?.let { takeProfit ->
-                            val tpSubValue = calculateTpSlSubValue(
-                                targetPrice = takeProfitPrice,
-                                entryPrice = entryPrice,
-                                leverage = leverage,
-                                amount = amount,
-                                isLong = isLong,
-                                isTakeProfit = true,
-                            )
-                            PerpsInfoItem(
-                                title = stringResource(R.string.Take_Profit).uppercase(),
-                                value = takeProfit,
-                                subValueAnnotated = tpSubValue,
-                                info = true,
-                                guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL,
-                            )
-                            Box(modifier = Modifier.height(20.dp))
-                        }
-
-                        stopLossFiatPrice?.let { stopLoss ->
-                            val slSubValue = calculateTpSlSubValue(
-                                targetPrice = stopLossPrice,
-                                entryPrice = entryPrice,
-                                leverage = leverage,
-                                amount = amount,
-                                isLong = isLong,
-                                isTakeProfit = false,
-                            )
-                            PerpsInfoItem(
-                                title = stringResource(R.string.Stop_Loss).uppercase(),
-                                value = stopLoss,
-                                subValueAnnotated = slSubValue,
-                                info = true,
-                                guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL,
-                            )
-                            Box(modifier = Modifier.height(20.dp))
-                        }
-                    }
-
-                    if (orderError == null || rawLiquidationPrice != null) {
-                        val lossPercent = if (isAddMargin) {
-                            marginLiquidationLossPercent(entryPrice, rawLiquidationPrice)?.let { formatPerpsQuantity(it) }
-                        } else {
-                            String.format("%.2f", 100.0 / leverage)
-                        }
-                        val lossSubValue = lossPercent?.let {
-                            stringResource(
-                                if (isLong) R.string.Price_Down_Loss else R.string.Price_Up_Loss,
-                                it,
-                                if (isAddMargin) formatPerpsMarginAmount(marginAfter) else amount,
-                                if (isAddMargin) "" else tokenSymbol,
-                            ).trimEnd()
-                        }
-
-                        PerpsInfoItem(
-                            title = stringResource(R.string.Estimated_Liquidation_Price).uppercase(),
-                            value = liquidationPrice,
-                            subValue = lossSubValue,
-                            info = true,
-                            guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION,
-                        )
-
-                        Box(modifier = Modifier.height(20.dp))
-                    }
+                    PerpsConfirmDetails(
+                        marketIcon = marketIcon,
+                        marketSymbol = marketSymbol,
+                        leverage = leverage,
+                        isLong = isLong,
+                        isAddMargin = isAddMargin,
+                        amount = amount,
+                        tokenSymbol = tokenSymbol,
+                        entryPrice = entryPrice,
+                        entryFiatPrice = entryFiatPrice,
+                        takeProfitPrice = takeProfitPrice,
+                        takeProfitFiatPrice = takeProfitFiatPrice,
+                        stopLossPrice = stopLossPrice,
+                        stopLossFiatPrice = stopLossFiatPrice,
+                        rawLiquidationPrice = rawLiquidationPrice,
+                        liquidationPrice = liquidationPrice,
+                        marginBefore = marginBefore,
+                        marginAfter = marginAfter,
+                        hasOrderError = orderError != null,
+                        onGuide = { tab ->
+                            PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
+                                .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                        },
+                    )
 
                     if (orderError == null) {
                         ItemUserContent(title = stringResource(id = R.string.Receiver).uppercase(), receiver, null)
@@ -672,101 +567,6 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             }
         }
     }
-
-    @Composable
-    private fun PerpsInfoItem(
-        title: String,
-        value: String,
-        subValue: String? = null,
-        subValueAnnotated: AnnotatedString? = null,
-        info: Boolean = false,
-        guideTab: Int = PerpetualGuideBottomSheetDialogFragment.TAB_POSITION,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = title,
-                    color = MixinAppTheme.colors.textRemarks,
-                    fontSize = 14.sp,
-                    maxLines = 1,
-                )
-                if (info) {
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_tip),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clickable {
-                                PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                    guideTab
-                                ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                            },
-                        tint = MixinAppTheme.colors.textAssist
-                    )
-                }
-            }
-            Box(modifier = Modifier.height(4.dp))
-            Text(
-                text = value,
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W400
-            )
-            if (subValueAnnotated != null) {
-                Box(modifier = Modifier.height(4.dp))
-                Text(
-                    text = subValueAnnotated,
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 14.sp,
-                )
-            } else {
-                subValue?.let {
-                    Box(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = it,
-                        color = MixinAppTheme.colors.textAssist,
-                        fontSize = 14.sp,
-                    )
-                }
-            }
-        }
-    }
-
-    @Composable
-    private fun ProfitLossInfo(
-        amount: String,
-        leverage: Int,
-        isLong: Boolean,
-    ) {
-        val context = LocalContext.current
-        val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        val profitPercent = 1.0 * leverage
-        val profitAmount = amountValue * BigDecimal(profitPercent / 100)
-        val formattedProfitAmount = formatPerpsUsdDecimal(profitAmount)
-
-        Timber.d("ProfitLossInfo - amount: $amount, amountValue: $amountValue, leverage: $leverage, isLong: $isLong, profitPercent: $profitPercent, profitAmount: $profitAmount")
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            text = context.formatPerpsProfitPreview(
-                isLong = isLong,
-                priceChangeText = "1",
-                profitPercentText = String.format("%.1f", profitPercent),
-                profitAmountText = formattedProfitAmount,
-            ),
-            color = MixinAppTheme.colors.textAssist,
-            fontSize = 14.sp,
-        )
-    }
-
 
     override fun getBottomSheetHeight(view: View): Int {
         return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
@@ -1011,5 +811,289 @@ private fun calculateTpSlSubValue(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun PerpsConfirmDetails(
+    marketIcon: String,
+    marketSymbol: String,
+    leverage: Int,
+    isLong: Boolean,
+    isAddMargin: Boolean,
+    amount: String,
+    tokenSymbol: String,
+    entryPrice: String,
+    entryFiatPrice: String,
+    takeProfitPrice: String,
+    takeProfitFiatPrice: String?,
+    stopLossPrice: String,
+    stopLossFiatPrice: String?,
+    rawLiquidationPrice: String?,
+    liquidationPrice: String,
+    marginBefore: String?,
+    marginAfter: BigDecimal?,
+    hasOrderError: Boolean,
+    onGuide: (Int) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.perps_market).uppercase(),
+            color = MixinAppTheme.colors.textRemarks,
+            fontSize = 14.sp,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        PerpsConfirmationMarket(
+            iconUrl = marketIcon,
+            symbol = marketSymbol,
+            leverage = leverage,
+            isLong = isLong,
+        )
+    }
+    Box(modifier = Modifier.height(20.dp))
+
+    if (!isAddMargin) {
+        PerpsInfoItem(
+            onGuide = onGuide,
+            title = stringResource(R.string.Direction).uppercase(),
+            value = (if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)) +
+                if (leverage > 0) " ${leverage}x" else ""
+        )
+        if (leverage > 0 && amount.isNotBlank()) {
+            Box(modifier = Modifier.height(6.dp))
+            ProfitLossInfo(
+                amount = amount,
+                leverage = leverage,
+                isLong = isLong
+            )
+        }
+        Box(modifier = Modifier.height(20.dp))
+    }
+
+    if (amount.isNotBlank()) {
+        PerpsInfoItem(
+            onGuide = onGuide,
+            title = stringResource(R.string.Amount).uppercase(),
+            value = "$amount $tokenSymbol",
+            subValue = if (isAddMargin && marginAfter != null) {
+                "${stringResource(R.string.perps_total_margin)} ${formatPerpsMarginAmount(marginBefore?.toBigDecimalOrNull())} → ${formatPerpsMarginAmount(marginAfter)}"
+            } else null,
+        )
+        Box(modifier = Modifier.height(20.dp))
+    }
+
+    if (!isAddMargin) {
+        PerpsInfoItem(
+            onGuide = onGuide,
+            title = stringResource(R.string.Entry_Price).uppercase(),
+            value = entryFiatPrice
+        )
+        Box(modifier = Modifier.height(20.dp))
+
+        takeProfitFiatPrice?.let { takeProfit ->
+            val tpSubValue = calculateTpSlSubValue(
+                targetPrice = takeProfitPrice,
+                entryPrice = entryPrice,
+                leverage = leverage,
+                amount = amount,
+                isLong = isLong,
+                isTakeProfit = true,
+            )
+            PerpsInfoItem(
+                onGuide = onGuide,
+                title = stringResource(R.string.Take_Profit).uppercase(),
+                value = takeProfit,
+                subValueAnnotated = tpSubValue,
+                info = true,
+                guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL,
+            )
+            Box(modifier = Modifier.height(20.dp))
+        }
+
+        stopLossFiatPrice?.let { stopLoss ->
+            val slSubValue = calculateTpSlSubValue(
+                targetPrice = stopLossPrice,
+                entryPrice = entryPrice,
+                leverage = leverage,
+                amount = amount,
+                isLong = isLong,
+                isTakeProfit = false,
+            )
+            PerpsInfoItem(
+                onGuide = onGuide,
+                title = stringResource(R.string.Stop_Loss).uppercase(),
+                value = stopLoss,
+                subValueAnnotated = slSubValue,
+                info = true,
+                guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL,
+            )
+            Box(modifier = Modifier.height(20.dp))
+        }
+    }
+
+    if (!hasOrderError || rawLiquidationPrice != null) {
+        val lossPercent = if (isAddMargin) {
+            marginLiquidationLossPercent(entryPrice, rawLiquidationPrice)?.let { formatPerpsQuantity(it) }
+        } else {
+            String.format("%.2f", 100.0 / leverage)
+        }
+        val lossSubValue = lossPercent?.let {
+            stringResource(
+                if (isLong) R.string.Price_Down_Loss else R.string.Price_Up_Loss,
+                it,
+                if (isAddMargin) formatPerpsMarginAmount(marginAfter) else amount,
+                if (isAddMargin) "" else tokenSymbol,
+            ).trimEnd()
+        }
+
+        PerpsInfoItem(
+            onGuide = onGuide,
+            title = stringResource(R.string.Estimated_Liquidation_Price).uppercase(),
+            value = liquidationPrice,
+            subValue = lossSubValue,
+            info = true,
+            guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION,
+        )
+
+        Box(modifier = Modifier.height(20.dp))
+    }
+
+}
+
+@Composable
+private fun PerpsInfoItem(
+    title: String,
+    value: String,
+    subValue: String? = null,
+    subValueAnnotated: AnnotatedString? = null,
+    info: Boolean = false,
+    guideTab: Int = PerpetualGuideBottomSheetDialogFragment.TAB_POSITION,
+    onGuide: (Int) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = title,
+                color = MixinAppTheme.colors.textRemarks,
+                fontSize = 14.sp,
+                maxLines = 1,
+            )
+            if (info) {
+                Spacer(modifier = Modifier.width(4.dp))
+
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_tip),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clickable {
+                            onGuide(guideTab)
+                        },
+                    tint = MixinAppTheme.colors.textAssist
+                )
+            }
+        }
+        Box(modifier = Modifier.height(4.dp))
+        Text(
+            text = value,
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W400
+        )
+        if (subValueAnnotated != null) {
+            Box(modifier = Modifier.height(4.dp))
+            Text(
+                text = subValueAnnotated,
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 14.sp,
+            )
+        } else {
+            subValue?.let {
+                Box(modifier = Modifier.height(4.dp))
+                Text(
+                    text = it,
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 14.sp,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfitLossInfo(
+    amount: String,
+    leverage: Int,
+    isLong: Boolean,
+) {
+    val context = LocalContext.current
+    val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val profitPercent = 1.0 * leverage
+    val profitAmount = amountValue * BigDecimal(profitPercent / 100)
+    val formattedProfitAmount = formatPerpsUsdDecimal(profitAmount)
+
+    Timber.d("ProfitLossInfo - amount: $amount, amountValue: $amountValue, leverage: $leverage, isLong: $isLong, profitPercent: $profitPercent, profitAmount: $profitAmount")
+
+    Text(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        text = context.formatPerpsProfitPreview(
+            isLong = isLong,
+            priceChangeText = "1",
+            profitPercentText = String.format("%.1f", profitPercent),
+            profitAmountText = formattedProfitAmount,
+        ),
+        color = MixinAppTheme.colors.textAssist,
+        fontSize = 14.sp,
+    )
+}
+
+
+
+@PerpsSheetPreview
+@Composable
+private fun OpenPositionConfirmationPreview() {
+    PerpsConfirmDetailsPreview(isAddMargin = false)
+}
+
+@PerpsSheetPreview
+@Composable
+private fun AddMarginConfirmationPreview() {
+    PerpsConfirmDetailsPreview(isAddMargin = true)
+}
+
+@Composable
+private fun PerpsConfirmDetailsPreview(isAddMargin: Boolean) {
+    PerpsPreviewContent(if (isAddMargin) R.string.perps_confirm_add_margin else R.string.confirm_opening_position) {
+        PerpsConfirmDetails(
+            marketIcon = "",
+            marketSymbol = "BTC-USDC",
+            leverage = 10,
+            isLong = true,
+            isAddMargin = isAddMargin,
+            amount = "25.00",
+            tokenSymbol = "USDC",
+            entryPrice = "65000",
+            entryFiatPrice = "$65,000.00",
+            takeProfitPrice = if (isAddMargin) "" else "70000",
+            takeProfitFiatPrice = if (isAddMargin) null else "$70,000.00",
+            stopLossPrice = if (isAddMargin) "" else "62000",
+            stopLossFiatPrice = if (isAddMargin) null else "$62,000.00",
+            rawLiquidationPrice = "58500",
+            liquidationPrice = "$58,500.00",
+            marginBefore = "80.126855",
+            marginAfter = BigDecimal("105.126855"),
+            hasOrderError = false,
+            onGuide = {},
+        )
     }
 }

@@ -45,8 +45,8 @@ class AppColors(
     val walletRed: Color = Color(0xFFF67070),
     val walletGreen: Color = Color(0xFF50BD5C),
     val walletOrange: Color = Color(0xFFFFAA00),
-    val marketRed: Color = Color(0xFFE57874),
-    val marketGreen: Color = Color(0xFF50BD5C),
+    val marketRed: Color = Color(0xFFF55666),
+    val marketGreen: Color = Color(0xFF00B86B),
     val shadow: Color = Color(0x33AAAAAA),
     val unchecked: Color,
     val tipWarning: Color,
@@ -152,26 +152,26 @@ private fun marketRed(isP3Supported: Boolean) =
     if (isP3Supported) {
         Color(
             colorSpace = ColorSpaces.DisplayP3,
-            red = 0.898f,
-            green = 0.471f,
-            blue = 0.455f,
+            red = 0.961f,
+            green = 0.337f,
+            blue = 0.400f,
             alpha = 1f,
         )
     } else {
-        Color(0xFFE57874)
+        Color(0xFFF55666)
     }
 
 private fun marketGreen(isP3Supported: Boolean) =
     if (isP3Supported) {
         Color(
             colorSpace = ColorSpaces.DisplayP3,
-            red = 0.314f,
-            green = 0.741f,
-            blue = 0.361f,
+            red = 0f,
+            green = 0.722f,
+            blue = 0.420f,
             alpha = 1f,
         )
     } else {
-        Color(0xFF50BD5C)
+        Color(0xFF00B86B)
     }
 
 private val LocalColors = compositionLocalOf { lightColorPalette(false) }

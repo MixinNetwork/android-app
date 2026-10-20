@@ -242,7 +242,7 @@ interface ConversationDao : BaseDao<Conversation> {
         iconUrl: String,
     )
 
-    @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId AND draft != :text")
+    @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId AND draft IS NOT :text")
     suspend fun saveDraft(
         conversationId: String,
         text: String,

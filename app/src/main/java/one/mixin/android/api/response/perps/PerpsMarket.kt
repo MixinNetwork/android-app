@@ -35,6 +35,10 @@ data class PerpsMarket(
     @ColumnInfo(name = "price_scale", defaultValue = "2")
     val priceScale: Int = 2,
 
+    @SerializedName("quantity_scale")
+    @ColumnInfo(name = "quantity_scale", defaultValue = "0")
+    val quantityScale: Int = 0,
+
     @SerializedName("leverage")
     @ColumnInfo(name = "leverage")
     val leverage: Int,
@@ -70,6 +74,10 @@ data class PerpsMarket(
     @SerializedName("min_amount")
     @ColumnInfo(name = "min_amount")
     val minAmount: String,
+
+    @SerializedName("min_order_value")
+    @ColumnInfo(name = "min_order_value", defaultValue = "'0'")
+    val minOrderValue: String = "0",
 
     @SerializedName("max_amount")
     @ColumnInfo(name = "max_amount")
@@ -132,4 +140,5 @@ fun PerpsMarket.withDefaults(): PerpsMarket =
         fundingIntervalHours = fundingIntervalHours.coerceAtLeast(0),
         nextFundingAt = (nextFundingAt as String?) ?: "",
         openInterest = (openInterest as String?) ?: "0",
+        minOrderValue = (minOrderValue as String?) ?: "0",
     )
