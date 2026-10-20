@@ -6,15 +6,21 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentDisappearingBinding
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.withArgs
+import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.ParticipantRole
+import one.mixin.android.vo.isGroupConversation
 import one.mixin.android.widget.picker.INTERVAL_DAY
 import one.mixin.android.widget.picker.INTERVAL_MONTH
 import one.mixin.android.widget.picker.INTERVAL_WEEK
@@ -49,8 +55,8 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
 
     private val viewModel by viewModels<ConversationViewModel>()
     private val binding by viewBinding(FragmentDisappearingBinding::bind)
-    private val checkGroup by lazy {
-        binding.run {
+    private val checkGroup
+        get() = binding.run {
             listOf(
                 disappearingOffIv,
                 disappearingOption1Iv,
@@ -59,10 +65,9 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                 disappearingOption6Iv,
             )
         }
-    }
 
-    private val pbGroup by lazy {
-        binding.run {
+    private val pbGroup
+        get() = binding.run {
             listOf(
                 disappearingOffPb,
                 disappearingOption1Pb,
@@ -71,7 +76,6 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                 disappearingOption6Pb,
             )
         }
-    }
 
     private fun Long?.initOption() {
         when {
@@ -91,18 +95,42 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        canEdit = false
+        updating = false
         binding.titleView.leftIb.setOnClickListener {
             activity?.onBackPressedDispatcher?.onBackPressed()
         }
         val info = getString(R.string.disappearing_message_hint)
         val learnUrl = getString(R.string.disappearing_message_url)
         binding.tipTv.highlightStarTag(info, arrayOf(learnUrl))
-        (parentFragmentManager.findFragmentByTag(DisappearingIntervalBottomFragment.TAG) as? DisappearingIntervalBottomFragment)
-            ?.onSetCallback(::onIntervalSelected)
+        val intervalPicker = parentFragmentManager.findFragmentByTag(DisappearingIntervalBottomFragment.TAG) as? DisappearingIntervalBottomFragment
+        intervalPicker?.onSetCallback(null)
+        val options = binding.run {
+            listOf(disappearingOff, disappearingOption1, disappearingOption2, disappearingOption3, disappearingOption6)
+        }
+        options.forEach { it.isEnabled = false }
 
         viewLifecycleOwner.lifecycleScope.launch {
-            timeInterval = viewModel.getConversation(conversationId)?.expireIn
+            val conversation = viewModel.getConversation(conversationId)
+            canEdit = if (conversation?.isGroupConversation() == true) {
+                val role = withContext(Dispatchers.IO) {
+                    Session.getAccountId()?.let { viewModel.findParticipantById(conversationId, it)?.role }
+                }
+                role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
+            } else {
+                conversation != null || userId != null
+            }
+            timeInterval = conversation?.expireIn
             timeInterval.initOption()
+            options.forEach {
+                it.isEnabled = canEdit
+                it.isFocusable = canEdit
+            }
+            if (!canEdit) {
+                intervalPicker?.dismissAllowingStateLoss()
+                return@launch
+            }
+            intervalPicker?.onSetCallback(::onIntervalSelected)
             binding.apply {
                 disappearingOff.setOnClickListener {
                     updateUI(0, 0L)
@@ -130,8 +158,17 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
 
     private var timeInterval: Long? = null
     private var updating = false
+    private var canEdit = false
+
+    override fun onDestroyView() {
+        canEdit = false
+        (parentFragmentManager.findFragmentByTag(DisappearingIntervalBottomFragment.TAG) as? DisappearingIntervalBottomFragment)
+            ?.onSetCallback(null)
+        super.onDestroyView()
+    }
 
     private fun onIntervalSelected(interval: Long) {
+        if (!canEdit) return
         val index = when (interval) {
             INTERVAL_DAY -> 1
             INTERVAL_WEEK -> 2
@@ -154,7 +191,7 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
         index: Int,
         interval: Long,
     ) {
-        if (timeInterval == interval || updating) {
+        if (!canEdit || timeInterval == interval || updating) {
             return
         }
         viewLifecycleOwner.lifecycleScope.launch(ErrorHandler.errorHandler) {
@@ -191,6 +228,7 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
                     updating = false
                 },
                 defaultExceptionHandle = {
+                    if (it is CancellationException) throw it
                     ErrorHandler.handleError(it)
                     pbGroup[index].isVisible = false
                     updating = false
@@ -203,7 +241,7 @@ class DisappearingFragment : BaseFragment(R.layout.fragment_disappearing) {
         for ((i, iv) in checkGroup.withIndex()) {
             iv.isVisible = index == i
         }
-        binding.disappearingOption6Arrow.isVisible = index != 4
+        binding.disappearingOption6Arrow.isVisible = canEdit && index != 4
         binding.disappearingOption6Interval.isVisible = index == 4
     }
 }

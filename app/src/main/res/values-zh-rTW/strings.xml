@@ -2718,4 +2718,7 @@
     <string name="perps_include_pnl">含盈虧</string>
     <string name="perps_position_amount">倉位金額</string>
     <string name="perps_margin_amount">保證金金額</string>
+    <string name="changed_disappearing_message_settings_hint">%1$s修改了限時訊息設定。點擊開啟限時訊息設定。</string>
+    <string name="disable_disappearing_message_hint">%1$s關閉了限時訊息。點擊開啟限時訊息設定。</string>
+    <string name="set_disappearing_message_time_to_hint">%1$s將限時訊息設定為 %2$s。點擊開啟限時訊息設定。</string>
 </resources>

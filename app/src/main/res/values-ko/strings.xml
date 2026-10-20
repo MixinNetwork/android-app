@@ -2717,4 +2717,7 @@
     <string name="perps_include_pnl">손익 포함</string>
     <string name="perps_position_amount">포지션 금액</string>
     <string name="perps_margin_amount">증거금 금액</string>
+    <string name="changed_disappearing_message_settings_hint">%1$s: 사라지는 메시지 설정이 변경되었습니다. 눌러서 사라지는 메시지 설정을 여세요.</string>
+    <string name="disable_disappearing_message_hint">%1$s: 사라지는 메시지가 꺼졌습니다. 눌러서 사라지는 메시지 설정을 여세요.</string>
+    <string name="set_disappearing_message_time_to_hint">%1$s: 사라지는 메시지 시간이 %2$s로 설정되었습니다. 눌러서 사라지는 메시지 설정을 여세요.</string>
 </resources>

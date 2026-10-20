@@ -1240,4 +1240,7 @@
     <string name="perps_include_pnl">Incluye PnL</string>
     <string name="perps_position_amount">Importe de la posición</string>
     <string name="perps_margin_amount">Importe del margen</string>
+    <string name="changed_disappearing_message_settings_hint">%1$s: se ha cambiado la configuración de los mensajes temporales. Toca para abrir los ajustes de mensajes temporales.</string>
+    <string name="disable_disappearing_message_hint">%1$s: se han desactivado los mensajes temporales. Toca para abrir los ajustes de mensajes temporales.</string>
+    <string name="set_disappearing_message_time_to_hint">%1$s: se ha establecido la duración de los mensajes temporales en %2$s. Toca para abrir los ajustes de mensajes temporales.</string>
 </resources>

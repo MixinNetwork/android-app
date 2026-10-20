@@ -2667,4 +2667,7 @@
     <string name="perps_include_pnl">含盈亏</string>
     <string name="perps_position_amount">仓位金额</string>
     <string name="perps_margin_amount">保证金金额</string>
+    <string name="changed_disappearing_message_settings_hint">%1$s修改了限时消息设置。点击打开限时消息设置。</string>
+    <string name="disable_disappearing_message_hint">%1$s关闭了限时消息。点击打开限时消息设置。</string>
+    <string name="set_disappearing_message_time_to_hint">%1$s将限时消息设置为 %2$s。点击打开限时消息设置。</string>
 </resources>

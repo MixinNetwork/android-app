@@ -1186,4 +1186,7 @@
     <string name="perps_include_pnl">損益を含む</string>
     <string name="perps_position_amount">ポジション金額</string>
     <string name="perps_margin_amount">証拠金額</string>
+    <string name="changed_disappearing_message_settings_hint">%1$sが消えるメッセージの設定を変更しました。タップして消えるメッセージの設定を開きます。</string>
+    <string name="disable_disappearing_message_hint">%1$sが消えるメッセージを無効にしました。タップして消えるメッセージの設定を開きます。</string>
+    <string name="set_disappearing_message_time_to_hint">%1$sが消えるメッセージの有効時間を%2$sに設定しました。タップして消えるメッセージの設定を開きます。</string>
 </resources>

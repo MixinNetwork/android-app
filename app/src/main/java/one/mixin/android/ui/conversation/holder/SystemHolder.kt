@@ -3,6 +3,7 @@ package one.mixin.android.ui.conversation.holder
 import android.content.Context
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.text.TextUtils
 import androidx.core.content.ContextCompat
 import one.mixin.android.Constants.Colors.SELECT_COLOR
 import one.mixin.android.MixinApplication
@@ -27,7 +28,15 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
         onItemListener: MessageAdapter.OnItemListener,
     ) {
         val id = meId
-        binding.chatInfo.backgroundTintList = if (messageItem.actionName == SystemConversationAction.EXPIRE.name) {
+        val isDisappearing = messageItem.actionName == SystemConversationAction.EXPIRE.name
+        binding.chatInfo.movementMethod = null
+        binding.chatInfo.setOnClickListener(null)
+        binding.chatInfo.isClickable = false
+        binding.chatInfo.setOnLongClickListener(null)
+        binding.chatInfo.isLongClickable = false
+        binding.chatInfo.maxLines = if (isDisappearing) Int.MAX_VALUE else 2
+        binding.chatInfo.ellipsize = if (isDisappearing) null else TextUtils.TruncateAt.END
+        binding.chatInfo.backgroundTintList = if (isDisappearing) {
             ColorStateList.valueOf(
                 ContextCompat.getColor(
                     context,
@@ -46,7 +55,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
         binding.chatInfo.setTextColor(
             ContextCompat.getColor(
                 context,
-                if (isNightMode && messageItem.actionName == SystemConversationAction.EXPIRE.name && (messageItem.content?.toLongOrNull() ?: 0L) <= 0L) {
+                if (isNightMode && isDisappearing && (messageItem.content?.toLongOrNull() ?: 0L) <= 0L) {
                     R.color.textPrimaryNight
                 } else {
                     R.color.textPrimary
@@ -69,7 +78,13 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
         itemView.setOnClickListener {
             if (hasSelect) {
                 onItemListener.onSelect(!isSelect, messageItem, absoluteAdapterPosition)
+            } else if (isDisappearing) {
+                onItemListener.onDisappearingMessagesClick()
             }
+        }
+        if (isDisappearing) {
+            binding.chatInfo.setOnClickListener { itemView.performClick() }
+            binding.chatInfo.setOnLongClickListener { itemView.performLongClick() }
         }
 
         when (messageItem.actionName) {
@@ -153,19 +168,19 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                     when {
                         timeInterval == null -> { // Messages received in the old version
                             String.format(
-                                getText(R.string.changed_disappearing_message_settings),
+                                getText(R.string.changed_disappearing_message_settings_hint),
                                 name,
                             )
                         }
                         timeInterval <= 0 -> {
                             String.format(
-                                getText(R.string.disable_disappearing_message),
+                                getText(R.string.disable_disappearing_message_hint),
                                 name,
                             )
                         }
                         else -> {
                             String.format(
-                                getText(R.string.set_disappearing_message_time_to),
+                                getText(R.string.set_disappearing_message_time_to_hint),
                                 name,
                                 toTimeInterval(timeInterval),
                             )

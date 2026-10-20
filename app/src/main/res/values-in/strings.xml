@@ -797,4 +797,7 @@
     <string name="perps_include_pnl">Termasuk PnL</string>
     <string name="perps_position_amount">Jumlah Posisi</string>
     <string name="perps_margin_amount">Jumlah Margin</string>
+    <string name="changed_disappearing_message_settings_hint">%1$s mengubah setelan pesan yang hilang. Ketuk untuk membuka setelan pesan yang hilang.</string>
+    <string name="disable_disappearing_message_hint">%1$s menonaktifkan pesan yang hilang. Ketuk untuk membuka setelan pesan yang hilang.</string>
+    <string name="set_disappearing_message_time_to_hint">%1$s menyetel waktu hilangnya pesan ke %2$s. Ketuk untuk membuka setelan pesan yang hilang.</string>
 </resources>

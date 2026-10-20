@@ -1095,6 +1095,8 @@ class MessageAdapter(
 
         open fun onUrlClick(url: String) {}
 
+        open fun onDisappearingMessagesClick() {}
+
         open fun onUrlLongClick(url: String) {}
 
         open fun onAddClick() {}

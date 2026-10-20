@@ -2749,4 +2749,7 @@
     <string name="perps_include_pnl">Include PnL</string>
     <string name="perps_position_amount">Position Amount</string>
     <string name="perps_margin_amount">Margin Amount</string>
+    <string name="changed_disappearing_message_settings_hint">%1$s changed disappearing message settings. Tap to open disappearing message settings.</string>
+    <string name="disable_disappearing_message_hint">%1$s disabled disappearing message. Click to set them up or learn more.</string>
+    <string name="set_disappearing_message_time_to_hint">%1$s set disappearing message time to %2$s, click to change it or get more information.</string>
 </resources>
