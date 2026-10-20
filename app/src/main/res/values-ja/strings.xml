@@ -1189,4 +1189,8 @@
     <string name="changed_disappearing_message_settings_hint">%1$sが消えるメッセージの設定を変更しました。タップして消えるメッセージの設定を開きます。</string>
     <string name="disable_disappearing_message_hint">%1$sが消えるメッセージを無効にしました。タップして消えるメッセージの設定を開きます。</string>
     <string name="set_disappearing_message_time_to_hint">%1$sが消えるメッセージの有効時間を%2$sに設定しました。タップして消えるメッセージの設定を開きます。</string>
+    <string name="group_disappearing_message_enabled_hint">このグループの消えるメッセージの有効時間は%1$sに設定されています。タップして変更するか、詳細をご確認ください。</string>
+    <string name="group_disappearing_message_disabled_hint">このグループでは消えるメッセージが有効になっていません。タップして設定するか、詳細をご確認ください。</string>
+    <string name="chat_disappearing_message_enabled_hint">このチャットの消えるメッセージの有効時間は%1$sに設定されています。タップして変更するか、詳細をご確認ください。</string>
+    <string name="chat_disappearing_message_disabled_hint">このチャットでは消えるメッセージが有効になっていません。タップして設定するか、詳細をご確認ください。</string>
 </resources>

@@ -2720,4 +2720,8 @@
     <string name="changed_disappearing_message_settings_hint">%1$s: 사라지는 메시지 설정이 변경되었습니다. 눌러서 사라지는 메시지 설정을 여세요.</string>
     <string name="disable_disappearing_message_hint">%1$s: 사라지는 메시지가 꺼졌습니다. 눌러서 사라지는 메시지 설정을 여세요.</string>
     <string name="set_disappearing_message_time_to_hint">%1$s: 사라지는 메시지 시간이 %2$s로 설정되었습니다. 눌러서 사라지는 메시지 설정을 여세요.</string>
+    <string name="group_disappearing_message_enabled_hint">이 그룹의 사라지는 메시지 시간이 %1$s로 설정되었습니다. 눌러서 변경하거나 자세히 알아보세요.</string>
+    <string name="group_disappearing_message_disabled_hint">이 그룹에서는 사라지는 메시지가 활성화되어 있지 않습니다. 눌러서 설정하거나 자세히 알아보세요.</string>
+    <string name="chat_disappearing_message_enabled_hint">이 채팅의 사라지는 메시지 시간이 %1$s로 설정되었습니다. 눌러서 변경하거나 자세히 알아보세요.</string>
+    <string name="chat_disappearing_message_disabled_hint">이 채팅에서는 사라지는 메시지가 활성화되어 있지 않습니다. 눌러서 설정하거나 자세히 알아보세요.</string>
 </resources>

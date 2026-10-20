@@ -865,4 +865,8 @@
     <string name="changed_disappearing_message_settings_hint">%1$s menukar tetapan mesej menghilang. Ketik untuk membuka tetapan mesej menghilang.</string>
     <string name="disable_disappearing_message_hint">%1$s melumpuhkan mesej menghilang. Ketik untuk membuka tetapan mesej menghilang.</string>
     <string name="set_disappearing_message_time_to_hint">%1$s menetapkan masa mesej menghilang kepada %2$s. Ketik untuk membuka tetapan mesej menghilang.</string>
+    <string name="group_disappearing_message_enabled_hint">Tempoh mesej menghilang untuk kumpulan ini telah ditetapkan kepada %1$s. Ketik untuk menukarnya atau mengetahui maklumat lanjut.</string>
+    <string name="group_disappearing_message_disabled_hint">Mesej menghilang belum didayakan untuk kumpulan ini. Ketik untuk menetapkannya atau mengetahui maklumat lanjut.</string>
+    <string name="chat_disappearing_message_enabled_hint">Tempoh mesej menghilang untuk sembang ini telah ditetapkan kepada %1$s. Ketik untuk menukarnya atau mengetahui maklumat lanjut.</string>
+    <string name="chat_disappearing_message_disabled_hint">Mesej menghilang belum didayakan untuk sembang ini. Ketik untuk menetapkannya atau mengetahui maklumat lanjut.</string>
 </resources>

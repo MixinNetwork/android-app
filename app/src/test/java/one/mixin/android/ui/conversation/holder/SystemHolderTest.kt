@@ -4,12 +4,16 @@ import android.content.Context
 import android.content.res.Resources
 import android.graphics.Color
 import android.text.TextUtils
+import android.view.View
 import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
+import one.mixin.android.databinding.ItemChatSecretBinding
 import one.mixin.android.databinding.ItemChatSystemBinding
 import one.mixin.android.session.Session
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
@@ -51,6 +55,11 @@ class SystemHolderTest {
             R.string.set_disappearing_message_time_to_hint -> "enabled(%1\$s,%2\$s)"
             R.string.disable_disappearing_message_hint -> "disabled(%1\$s)"
             R.string.changed_disappearing_message_settings_hint -> "changed(%1\$s)"
+            R.string.group_disappearing_message_enabled_hint -> "group-enabled(%1\$s)"
+            R.string.group_disappearing_message_disabled_hint -> "group-disabled"
+            R.string.chat_disappearing_message_enabled_hint -> "chat-enabled(%1\$s)"
+            R.string.chat_disappearing_message_disabled_hint -> "chat-disabled"
+            R.string.secret_url -> "https://example.com/encryption"
             R.string.created_this_group -> "created(%1\$s)"
             R.string.Learn_More -> "learn"
             R.string.chat_not_support -> "unsupported(%1\$s)"
@@ -89,11 +98,16 @@ class SystemHolderTest {
     private lateinit var holder: SystemHolder
     private var previousAccount: Account? = null
     private var openedSettings = 0
+    private var openedUrl: String? = null
     private var selected = 0
     private var longPressed = 0
     private val listener = object : MessageAdapter.OnItemListener() {
         override fun onDisappearingMessagesClick() {
             openedSettings++
+        }
+
+        override fun onUrlClick(url: String) {
+            openedUrl = url
         }
 
         override fun onSelect(isSelect: Boolean, messageItem: MessageItem, position: Int) {
@@ -178,6 +192,71 @@ class SystemHolderTest {
         holder.binding.chatInfo.performClick()
         holder.itemView.performClick()
         assertEquals(1, openedSettings)
+    }
+
+    @Test
+    fun groupNoticeTracksLatestSettingsAndKeepsEncryptionLink() {
+        val root = LinearLayout(context)
+        root.addView(TextView(context).apply { id = R.id.chat_info })
+        root.addView(TextView(context).apply { id = R.id.disappearing_info })
+        val secretHolder = SecretHolder(ItemChatSecretBinding.bind(root))
+        val notice = secretHolder.binding.disappearingInfo
+
+        secretHolder.bind(86400L, true, true, false, listener)
+        assertEquals(View.VISIBLE, secretHolder.binding.chatInfo.visibility)
+        assertEquals(View.VISIBLE, notice.visibility)
+        assertEquals("group-enabled(1 day-unit)", notice.text.toString())
+        assertEquals(Color.MAGENTA, notice.backgroundTintList?.defaultColor)
+        notice.performClick()
+        assertEquals(1, openedSettings)
+
+        secretHolder.bind(1209600L, true, true, false, listener)
+        assertEquals("group-enabled(2 week-unit)", notice.text.toString())
+        secretHolder.bind(2592000L, true, true, false, listener)
+        assertEquals("group-enabled(1 month-unit)", notice.text.toString())
+
+        secretHolder.bind(0L, true, true, false, listener)
+        assertEquals("group-disabled", notice.text.toString())
+        assertEquals(Color.GRAY, notice.backgroundTintList?.defaultColor)
+        notice.performClick()
+        assertEquals(2, openedSettings)
+
+        secretHolder.bind(86400L, true, true, true, listener)
+        notice.performClick()
+        assertEquals(2, openedSettings)
+        secretHolder.binding.chatInfo.performClick()
+        assertEquals("https://example.com/encryption", openedUrl)
+    }
+
+    @Test
+    fun botNoticeStaysVisibleWithoutEncryptionAndUsesChatText() {
+        val root = LinearLayout(context)
+        root.addView(TextView(context).apply { id = R.id.chat_info })
+        root.addView(TextView(context).apply { id = R.id.disappearing_info })
+        val secretHolder = SecretHolder(ItemChatSecretBinding.bind(root))
+        val notice = secretHolder.binding.disappearingInfo
+
+        secretHolder.bind(0L, true, false, false, listener)
+        assertEquals(View.VISIBLE, secretHolder.binding.chatInfo.visibility)
+        assertEquals("chat-disabled", notice.text.toString())
+
+        secretHolder.bind(0L, false, false, false, listener)
+        assertEquals(View.GONE, secretHolder.binding.chatInfo.visibility)
+        assertFalse(secretHolder.binding.chatInfo.isClickable)
+        secretHolder.binding.chatInfo.performClick()
+        assertNull(openedUrl)
+        assertEquals(View.VISIBLE, notice.visibility)
+        assertEquals("chat-disabled", notice.text.toString())
+        assertEquals(Color.GRAY, notice.backgroundTintList?.defaultColor)
+        notice.performClick()
+        assertEquals(1, openedSettings)
+
+        secretHolder.bind(2592000L, false, false, false, listener)
+        assertEquals("chat-enabled(1 month-unit)", notice.text.toString())
+        assertEquals(Color.MAGENTA, notice.backgroundTintList?.defaultColor)
+        assertEquals(View.GONE, secretHolder.binding.chatInfo.visibility)
+        notice.performClick()
+        assertEquals(2, openedSettings)
     }
 
     private fun message(content: String?, userId: String = "alice") =

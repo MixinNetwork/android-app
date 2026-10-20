@@ -2670,4 +2670,8 @@
     <string name="changed_disappearing_message_settings_hint">%1$s修改了限时消息设置。点击打开限时消息设置。</string>
     <string name="disable_disappearing_message_hint">%1$s关闭了限时消息。点击打开限时消息设置。</string>
     <string name="set_disappearing_message_time_to_hint">%1$s将限时消息设置为 %2$s。点击打开限时消息设置。</string>
+    <string name="group_disappearing_message_enabled_hint">本群已将限时消息时长设置为 %1$s。点击修改设置或了解详情。</string>
+    <string name="group_disappearing_message_disabled_hint">本群尚未启用限时消息。点击设置或了解更多。</string>
+    <string name="chat_disappearing_message_enabled_hint">本会话已将限时消息时长设置为 %1$s。点击修改设置或了解详情。</string>
+    <string name="chat_disappearing_message_disabled_hint">本会话尚未启用限时消息。点击设置或了解更多。</string>
 </resources>

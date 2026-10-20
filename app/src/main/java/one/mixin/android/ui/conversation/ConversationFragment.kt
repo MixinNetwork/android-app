@@ -403,7 +403,7 @@ class ConversationFragment() :
             lifecycleScope.launch {
                 val (_, data) = messageFetcher.initMessages(conversationId, null, true)
                 messageAdapter.refreshData(data)
-                messageLayoutManager.scrollWithOffset(messageAdapter.itemCount - 1, messageRvOffset)
+                messageLayoutManager.scrollToPositionWithOffset(messageAdapter.itemCount - 1, messageRvOffset)
             }
         }
     }
@@ -1462,7 +1462,7 @@ class ConversationFragment() :
             }
 
             fun scroll() {
-                val targetPosition = messageAdapter.itemCount
+                val targetPosition = messageAdapter.itemCount - 1
                 findFirstVisibleItemPosition().let { firstPosition ->
                     if (abs(targetPosition - firstPosition) > MessageFetcher.PAGE_SIZE) {
                         scrollToPositionWithOffset(targetPosition - MessageFetcher.PAGE_SIZE / 2, 0)
@@ -1594,9 +1594,6 @@ class ConversationFragment() :
             renderGroup()
         } else {
             renderUser(recipient!!)
-        }
-        chatViewModel.observeConversation(conversationId).observe(viewLifecycleOwner) { conversation ->
-            binding.actionBar.setExpireIconVisible((conversation?.expireIn ?: 0L) > 0L)
         }
         binding.mentionRv.adapter = mentionAdapter
         binding.mentionRv.layoutManager = LinearLayoutManager(context)
@@ -2021,6 +2018,11 @@ class ConversationFragment() :
                     keyword = keyword,
                 )
             binding.messageRv.adapter = messageAdapter
+            chatViewModel.observeConversation(conversationId).observe(viewLifecycleOwner) { conversation ->
+                val expireIn = conversation?.expireIn ?: 0L
+                binding.actionBar.setExpireIconVisible(expireIn > 0L)
+                messageAdapter.expireIn = expireIn
+            }
             binding.messageRv.addItemDecoration(decoration)
             binding.messageRv.itemAnimator = null
             binding.messageRv.layoutManager = messageLayoutManager

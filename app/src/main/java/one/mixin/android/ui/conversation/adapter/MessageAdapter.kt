@@ -128,6 +128,13 @@ class MessageAdapter(
     private val isSecret: Boolean = true,
     var keyword: String? = null,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
+    var expireIn: Long = 0L
+        set(value) {
+            if (field == value) return
+            field = value
+            notifyItemChanged(0)
+        }
+
     override fun onCreateViewHolder(
         parent: ViewGroup,
         viewType: Int,
@@ -581,7 +588,13 @@ class MessageAdapter(
                 }
 
                 SECRET_TYPE -> {
-                    (holder as SecretHolder).bind(onItemListener)
+                    (holder as SecretHolder).bind(
+                        expireIn,
+                        isSecret,
+                        isGroup,
+                        selectSet.size > 0,
+                        onItemListener,
+                    )
                 }
 
                 CALL_TYPE -> {
@@ -737,70 +750,24 @@ class MessageAdapter(
             NULL_TYPE,
         )
 
-    fun layoutPosition(position: Int): Int {
-        if (isSecret) {
-            return position + 1
-        } else {
-            return position
-        }
-    }
+    fun layoutPosition(position: Int): Int = position + 1
 
     // Item and position
     fun getItem(position: Int): MessageItem? {
         return if (position > itemCount - 1 || position < 0) {
             null
-        } else if (isSecret && hasBottomView) {
-            when (position) {
-                itemCount - 1 ->
-                    create(
-                        MessageCategory.STRANGER.name,
-                        if (data.size > 0) {
-                            data.last()?.createdAt
-                        } else {
-                            null
-                        },
-                    )
-
-                0 ->
-                    create(
-                        MessageCategory.SECRET.name,
-                        if (data.size > 0) {
-                            data.first()?.createdAt
-                        } else {
-                            null
-                        },
-                    )
-
-                else -> getItemInternal(position - 1)
-            }
-        } else if (isSecret) {
-            if (position == 0) {
-                create(
-                    MessageCategory.SECRET.name,
-                    if (data.size > 0) {
-                        data.first()?.createdAt
-                    } else {
-                        null
-                    },
-                )
-            } else {
-                getItemInternal(position - 1)
-            }
-        } else if (hasBottomView) {
-            if (position == itemCount - 1) {
-                create(
-                    MessageCategory.STRANGER.name,
-                    if (data.size > 0) {
-                        data.last()?.createdAt
-                    } else {
-                        null
-                    },
-                )
-            } else {
-                getItemInternal(position)
-            }
+        } else if (position == 0) {
+            create(
+                MessageCategory.SECRET.name,
+                if (data.size > 0) data.first()?.createdAt else null,
+            )
+        } else if (hasBottomView && position == itemCount - 1) {
+            create(
+                MessageCategory.STRANGER.name,
+                if (data.size > 0) data.last()?.createdAt else null,
+            )
         } else {
-            getItemInternal(position)
+            getItemInternal(position - 1)
         }
     }
 
@@ -889,16 +856,7 @@ class MessageAdapter(
         }
     }
 
-    override fun getItemCount(): Int {
-        return data.size +
-            if (hasBottomView && isSecret) {
-                2
-            } else if (hasBottomView || isSecret) {
-                1
-            } else {
-                0
-            }
-    }
+    override fun getItemCount(): Int = data.size + 1 + if (hasBottomView) 1 else 0
 
     override fun getItemViewType(position: Int): Int = getItemType(getItem(position))
 

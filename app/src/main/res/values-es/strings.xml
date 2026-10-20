@@ -1243,4 +1243,8 @@
     <string name="changed_disappearing_message_settings_hint">%1$s: se ha cambiado la configuración de los mensajes temporales. Toca para abrir los ajustes de mensajes temporales.</string>
     <string name="disable_disappearing_message_hint">%1$s: se han desactivado los mensajes temporales. Toca para abrir los ajustes de mensajes temporales.</string>
     <string name="set_disappearing_message_time_to_hint">%1$s: se ha establecido la duración de los mensajes temporales en %2$s. Toca para abrir los ajustes de mensajes temporales.</string>
+    <string name="group_disappearing_message_enabled_hint">En este grupo, la duración de los mensajes temporales se ha establecido en %1$s. Toca para cambiarla u obtener más información.</string>
+    <string name="group_disappearing_message_disabled_hint">Los mensajes temporales no están activados en este grupo. Toca para configurarlos u obtener más información.</string>
+    <string name="chat_disappearing_message_enabled_hint">En este chat, la duración de los mensajes temporales se ha establecido en %1$s. Toca para cambiarla u obtener más información.</string>
+    <string name="chat_disappearing_message_disabled_hint">Los mensajes temporales no están activados en este chat. Toca para configurarlos u obtener más información.</string>
 </resources>

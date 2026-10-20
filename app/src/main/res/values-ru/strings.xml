@@ -1184,4 +1184,8 @@
     <string name="changed_disappearing_message_settings_hint">%1$s: настройки исчезающих сообщений изменены. Нажмите, чтобы открыть настройки исчезающих сообщений.</string>
     <string name="disable_disappearing_message_hint">%1$s: исчезающие сообщения отключены. Нажмите, чтобы открыть настройки исчезающих сообщений.</string>
     <string name="set_disappearing_message_time_to_hint">%1$s: время исчезновения сообщений установлено на %2$s. Нажмите, чтобы открыть настройки исчезающих сообщений.</string>
+    <string name="group_disappearing_message_enabled_hint">В этой группе время исчезновения сообщений установлено на %1$s. Нажмите, чтобы изменить его или узнать больше.</string>
+    <string name="group_disappearing_message_disabled_hint">В этой группе исчезающие сообщения не включены. Нажмите, чтобы настроить их или узнать больше.</string>
+    <string name="chat_disappearing_message_enabled_hint">В этом чате время исчезновения сообщений установлено на %1$s. Нажмите, чтобы изменить его или узнать больше.</string>
+    <string name="chat_disappearing_message_disabled_hint">В этом чате исчезающие сообщения не включены. Нажмите, чтобы настроить их или узнать больше.</string>
 </resources>

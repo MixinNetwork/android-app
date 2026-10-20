@@ -2721,4 +2721,8 @@
     <string name="changed_disappearing_message_settings_hint">%1$s修改了限時訊息設定。點擊開啟限時訊息設定。</string>
     <string name="disable_disappearing_message_hint">%1$s關閉了限時訊息。點擊開啟限時訊息設定。</string>
     <string name="set_disappearing_message_time_to_hint">%1$s將限時訊息設定為 %2$s。點擊開啟限時訊息設定。</string>
+    <string name="group_disappearing_message_enabled_hint">本群已將限時訊息時長設為 %1$s。點擊修改設定或瞭解詳情。</string>
+    <string name="group_disappearing_message_disabled_hint">本群尚未啟用限時訊息。點擊設定或瞭解更多。</string>
+    <string name="chat_disappearing_message_enabled_hint">本對話已將限時訊息時長設為 %1$s。點擊修改設定或瞭解詳情。</string>
+    <string name="chat_disappearing_message_disabled_hint">本對話尚未啟用限時訊息。點擊設定或瞭解更多。</string>
 </resources>

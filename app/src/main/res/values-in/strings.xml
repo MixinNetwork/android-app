@@ -800,4 +800,8 @@
     <string name="changed_disappearing_message_settings_hint">%1$s mengubah setelan pesan yang hilang. Ketuk untuk membuka setelan pesan yang hilang.</string>
     <string name="disable_disappearing_message_hint">%1$s menonaktifkan pesan yang hilang. Ketuk untuk membuka setelan pesan yang hilang.</string>
     <string name="set_disappearing_message_time_to_hint">%1$s menyetel waktu hilangnya pesan ke %2$s. Ketuk untuk membuka setelan pesan yang hilang.</string>
+    <string name="group_disappearing_message_enabled_hint">Waktu hilangnya pesan di grup ini telah disetel ke %1$s. Ketuk untuk mengubahnya atau mempelajari lebih lanjut.</string>
+    <string name="group_disappearing_message_disabled_hint">Pesan yang hilang belum diaktifkan untuk grup ini. Ketuk untuk mengaturnya atau mempelajari lebih lanjut.</string>
+    <string name="chat_disappearing_message_enabled_hint">Waktu hilangnya pesan di obrolan ini telah disetel ke %1$s. Ketuk untuk mengubahnya atau mempelajari lebih lanjut.</string>
+    <string name="chat_disappearing_message_disabled_hint">Pesan yang hilang belum diaktifkan untuk obrolan ini. Ketuk untuk mengaturnya atau mempelajari lebih lanjut.</string>
 </resources>
