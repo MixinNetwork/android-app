@@ -867,6 +867,7 @@ object AnalyticsTracker {
     }
 
     object PerpsCloseType {
+        const val REDUCTION = "reduction"
         const val SINGLE = "single"
         const val MULTIPLE = "multiple"
     }

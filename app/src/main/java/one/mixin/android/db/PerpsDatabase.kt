@@ -35,7 +35,7 @@ import kotlin.math.min
         PerpsFavorite::class,
         PerpsMarketCategoryRelation::class,
     ],
-    version = 10,
+    version = 11,
 )
 @DaoReturnTypeConverters(PagingSourceDaoReturnTypeConverter::class)
 abstract class PerpsDatabase : RoomDatabase() {
@@ -133,6 +133,17 @@ abstract class PerpsDatabase : RoomDatabase() {
                 }
             }
 
+        val MIGRATION_10_11 =
+            object : Migration(10, 11) {
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE `positions` ADD COLUMN `estimated_close_fee` TEXT DEFAULT ''")
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `quantity_scale` INTEGER NOT NULL DEFAULT 0")
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `min_order_value` TEXT NOT NULL DEFAULT '0'")
+                    connection.execSQL("DROP TABLE IF EXISTS `perps_orders`")
+                    connection.execSQL("CREATE TABLE IF NOT EXISTS `perps_orders` (`order_id` TEXT NOT NULL, `position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `order_type` TEXT NOT NULL, `status` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `quantity` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `margin_amount` TEXT NOT NULL, `fee_amount` TEXT NOT NULL DEFAULT '0', `entry_price` TEXT NOT NULL, `close_price` TEXT NOT NULL, `realized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `net_realized_pnl` TEXT NOT NULL DEFAULT '', `net_roe` TEXT NOT NULL DEFAULT '', `profit_share_amount` TEXT NOT NULL DEFAULT '', `close_reason` TEXT, `trigger_price` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`order_id`))")
+                }
+            }
+
         @Suppress("DEPRECATION")
         fun getDatabase(
             context: Context,
@@ -151,7 +162,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                         context,
                         PerpsDatabase::class.java,
                         File(dir, Constants.DataBase.PERPS_DB_NAME).absolutePath,
-                    ).setDriver(ReportingAndroidSQLiteDriver("Perps", 10))
+                    ).setDriver(ReportingAndroidSQLiteDriver("Perps", 11))
                         .addCallback(
                         object : Callback() {
                             override suspend fun onOpen(connection: SQLiteConnection) {
@@ -159,7 +170,7 @@ abstract class PerpsDatabase : RoomDatabase() {
                                 connection.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                         .fallbackToDestructiveMigration()
                         .enableMultiInstanceInvalidation()
                         .setQueryCoroutineContext(

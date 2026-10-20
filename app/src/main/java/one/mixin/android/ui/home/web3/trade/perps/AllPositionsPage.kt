@@ -63,6 +63,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -257,6 +258,7 @@ private fun OpenPositionsContent(
 ) {
     val refreshState = positions.loadState.refresh
     val isEmpty = refreshState is LoadState.NotLoading && positions.itemCount == 0
+    val closeablePositionCount = openPositions.count { it.state == PerpsPosition.STATE_OPEN }
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (!isEmpty) {
@@ -302,7 +304,7 @@ private fun OpenPositionsContent(
             }
         }
 
-        if (openPositions.isNotEmpty()) {
+        if (closeablePositionCount > 0) {
             MixinButton(
                 onClick = onCloseAllPositions,
                 enabled = !isCloseAllLoading,
@@ -321,7 +323,7 @@ private fun OpenPositionsContent(
                     )
                 } else {
                     Text(
-                        text = stringResource(R.string.Close_All_Positions, openPositions.size),
+                        text = stringResource(R.string.Close_All_Positions, closeablePositionCount),
                         fontSize = 16.sp,
                     )
                 }

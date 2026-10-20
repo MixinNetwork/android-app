@@ -328,7 +328,7 @@ private fun PerpsAddContent(
         .ifBlank { position.entryPrice }
     val priceScale = market?.priceScale ?: position.priceScale
 
-    LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin, position.updatedAt, market?.last) {
+    LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin, position.updatedAt, position.margin, position.quantity, position.liquidationPrice, currentPrice, market?.markPrice) {
         if (!shouldRequestLiquidationPrice(amountValue, minimumMargin) || aboveMaximumMargin) {
             liquidationPriceLimit = null
             liquidationError = null
@@ -804,10 +804,11 @@ internal fun PerpsAddInfoRow(
     singleLine: Boolean = true,
     onTipClick: (() -> Unit)? = null,
 ) {
+    var isMultiline by remember(singleLine) { mutableStateOf(false) }
     Row(
         modifier = Modifier.fillMaxWidth().animateContentSize(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = if (!isLoading && isMultiline) Alignment.Top else Alignment.CenterVertically,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
@@ -830,7 +831,7 @@ internal fun PerpsAddInfoRow(
                     painter = painterResource(id = R.drawable.ic_tip),
                     contentDescription = null,
                     tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(12.dp),
                 )
             }
         }
@@ -850,6 +851,7 @@ internal fun PerpsAddInfoRow(
                 ),
                 maxLines = if (singleLine) 1 else Int.MAX_VALUE,
                 softWrap = !singleLine,
+                onTextLayout = { isMultiline = it.lineCount > 1 },
                 autoSize = if (singleLine) TextAutoSize.StepBased(
                     minFontSize = 8.sp,
                     maxFontSize = 14.sp,
@@ -866,6 +868,13 @@ internal fun PerpsAddInfoRow(
 private fun PerpsAddInfoRowPreview() {
     MixinAppTheme {
         Column(Modifier.background(MixinAppTheme.colors.background).padding(32.dp)) {
+            PerpsAddInfoRow(
+                title = stringResource(R.string.position_size),
+                value = "1 SOL → 0 SOL ($0)",
+                singleLine = false,
+                onTipClick = {},
+            )
+            Spacer(Modifier.height(16.dp))
             PerpsAddInfoRow(
                 title = stringResource(R.string.position_size),
                 value = "0.000078 BTC ($5.07) → 0.00123857 BTC ($80.51)",
