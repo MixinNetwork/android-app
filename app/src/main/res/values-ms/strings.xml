@@ -862,4 +862,10 @@
     <string name="perps_include_pnl">Termasuk PnL</string>
     <string name="perps_position_amount">Jumlah Posisi</string>
     <string name="perps_margin_amount">Jumlah Margin</string>
+    <string name="membership_benefit_mixin_card_platinum">Kad kredit Visa Platinum percuma</string>
+    <string name="membership_benefit_mixin_card_signature">Kad kredit Visa Signature percuma</string>
+    <string name="free_inheritance_service">Perkhidmatan Pewarisan Percuma</string>
+    <string name="membership_benefit_free_inheritance_service">Gunakan perkhidmatan pewarisan secara percuma.</string>
+    <string name="membership_renew_option_card_desc">Gunakan Google Pay, kad kredit atau debit untuk memperbaharui pelan anda.</string>
+    <string name="membership_renew_option_crypto_desc">Gunakan USDT, USDC atau kripto lain untuk memperbaharui pelan anda.</string>
 </resources>

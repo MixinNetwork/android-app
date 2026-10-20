@@ -2102,6 +2102,12 @@
     <string name="membership_benefit_get_stars">得到 %1$d 个 Mixin Stars。</string>
     <string name="membership_benefit_safe_members">每个金库最多 %1$d 个共管人，所有金库最多 %2$d 个共管人。</string>
     <string name="membership_benefit_free_recovery_service">资产恢复服务免费使用。</string>
+    <string name="membership_benefit_mixin_card_platinum">免费的 Visa Platinum 信用卡。</string>
+    <string name="membership_benefit_mixin_card_signature">免费的 Visa Signature 信用卡。</string>
+    <string name="free_inheritance_service">免费的财富传承服务</string>
+    <string name="membership_benefit_free_inheritance_service">财富传承服务免费使用。</string>
+    <string name="membership_renew_option_card_desc">使用 Google Pay、信用卡或借记卡续费会员。</string>
+    <string name="membership_renew_option_crypto_desc">使用 USDT、USDC 或其他加密货币续费会员。</string>
     <string name="membership_benefit_paid_recovery_service">支付 %1$d Mixin Stars 使用资产恢复服务。</string>
     <string name="Invoice">票据</string>
     <string name="Invoices">账单</string>

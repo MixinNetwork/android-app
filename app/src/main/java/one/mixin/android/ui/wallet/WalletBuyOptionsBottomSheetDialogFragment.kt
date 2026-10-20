@@ -180,7 +180,7 @@ private fun WalletBuyOptionsSheet(
 }
 
 @Composable
-private fun WalletBuyOptionItem(
+internal fun WalletBuyOptionItem(
     @DrawableRes iconRes: Int,
     title: String,
     description: String,
