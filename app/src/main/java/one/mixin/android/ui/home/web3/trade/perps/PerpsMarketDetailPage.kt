@@ -104,6 +104,7 @@ import one.mixin.android.ui.home.web3.trade.CandleChart
 import one.mixin.android.ui.wallet.MarketDescriptionTextView
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.selectLocalizedMarketDescription
+import one.mixin.android.ui.wallet.MarketShareBottomFragment
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.components.MixinButton
@@ -338,6 +339,22 @@ fun PerpsMarketDetailPage(
                     modifier = Modifier.size(24.dp),
                     animationIntent = favoriteAnimationIntent,
                     onAnimationFinished = { completedFavoriteAnimationIntentId = it },
+                )
+            }
+            IconButton(
+                enabled = market != null,
+                onClick = {
+                    val currentMarket = market ?: return@IconButton
+                    val manager = activity?.supportFragmentManager ?: return@IconButton
+                    MarketShareBottomFragment.newInstance(currentMarket, timeFrameValues[selectedTimeFrame])
+                        .show(manager, MarketShareBottomFragment.TAG)
+                },
+            ) {
+                Icon(
+                    painter = painterResource(R.drawable.ic_share_arrow),
+                    modifier = Modifier.size(24.dp),
+                    contentDescription = stringResource(R.string.Share),
+                    tint = MixinAppTheme.colors.icon,
                 )
             }
             IconButton(onClick = {
