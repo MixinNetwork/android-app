@@ -2723,4 +2723,6 @@
     <string name="perps_liquidation_price_down_description">下跌 %1$s 將觸發清算。</string>
     <string name="perps_liquidation_price_up_description">上漲 %1$s 將觸發清算。</string>
     <string name="Details">詳情</string>
+    <string name="perps_tpsl_requires_amount_leverage">在設定止盈止損之前，請先設定好金額和槓桿倍數。</string>
+    <string name="perps_estimated_profit">預估收益 %1$s</string>
 </resources>

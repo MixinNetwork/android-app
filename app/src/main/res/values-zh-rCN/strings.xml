@@ -2672,4 +2672,6 @@
     <string name="perps_liquidation_price_down_description">下跌 %1$s 将触发强平。</string>
     <string name="perps_liquidation_price_up_description">上涨 %1$s 将触发强平。</string>
     <string name="Details">详情</string>
+    <string name="perps_tpsl_requires_amount_leverage">在设置止盈止损之前，请先设置好金额和杠杆倍数。</string>
+    <string name="perps_estimated_profit">预估收益 %1$s</string>
 </resources>

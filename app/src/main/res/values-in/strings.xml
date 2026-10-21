@@ -803,4 +803,6 @@
     <string name="perps_liquidation_price_down_description">Penurunan sebesar %1$s akan memicu likuidasi.</string>
     <string name="perps_liquidation_price_up_description">Kenaikan sebesar %1$s akan memicu likuidasi.</string>
     <string name="Details">Detail</string>
+    <string name="perps_tpsl_requires_amount_leverage">Silakan atur jumlah dan leverage terlebih dahulu sebelum mengatur Ambil Untung dan Hentikan Kerugian.</string>
+    <string name="perps_estimated_profit">Estimasi Keuntungan %1$s</string>
 </resources>

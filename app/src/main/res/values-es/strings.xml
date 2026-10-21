@@ -1245,4 +1245,6 @@
     <string name="perps_liquidation_price_down_description">Una bajada del %1$s activará la liquidación.</string>
     <string name="perps_liquidation_price_up_description">Una subida del %1$s activará la liquidación.</string>
     <string name="Details">Detalles</string>
+    <string name="perps_tpsl_requires_amount_leverage">Establezca el importe y el apalancamiento antes de configurar el Take Profit y el Stop Loss.</string>
+    <string name="perps_estimated_profit">Beneficio estimado %1$s</string>
 </resources>

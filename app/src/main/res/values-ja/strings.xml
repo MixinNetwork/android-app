@@ -1191,4 +1191,6 @@
     <string name="perps_liquidation_price_down_description">%1$s 下落すると清算が発動します。</string>
     <string name="perps_liquidation_price_up_description">%1$s 上昇すると清算が発動します。</string>
     <string name="Details">詳細</string>
+    <string name="perps_tpsl_requires_amount_leverage">利益確定とストップロスを設定する前に、金額とレバレッジを設定してください。</string>
+    <string name="perps_estimated_profit">予想利益 %1$s</string>
 </resources>

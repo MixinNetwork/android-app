@@ -60,6 +60,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.MixinAlertDialog
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormat8
@@ -140,6 +141,7 @@ fun OpenPositionPage(
     }
     var takeProfitPrice by remember { mutableStateOf("") }
     var stopLossPrice by remember { mutableStateOf("") }
+    var showTpSlRequirements by remember { mutableStateOf(false) }
     var remoteLiquidationPrice by remember { mutableStateOf<String?>(null) }
     var liquidationPriceLimit by remember { mutableStateOf<LiquidationPriceLimit?>(null) }
     var liquidationError by remember { mutableStateOf<String?>(null) }
@@ -285,6 +287,10 @@ fun OpenPositionPage(
     }
 
     fun showTpSlBottomSheet(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
+        if (!hasInputAmount || leverage < 1f) {
+            showTpSlRequirements = true
+            return
+        }
         val activity = context as? FragmentActivity ?: return
         PerpsTpSlBottomSheetDialogFragment.newInstance(
             mode = mode,
@@ -312,6 +318,14 @@ fun OpenPositionPage(
     }
 
     MixinAppTheme {
+        if (showTpSlRequirements) {
+            MixinAlertDialog(
+                onDismissRequest = { showTpSlRequirements = false },
+                onConfirmClick = { showTpSlRequirements = false },
+                confirmText = stringResource(R.string.Got_it),
+                text = { Text(stringResource(R.string.perps_tpsl_requires_amount_leverage)) },
+            )
+        }
         PageScaffold(
             title = stringResource(R.string.Open_Position),
             verticalScrollable = false,
