@@ -2716,4 +2716,10 @@
     <string name="perps_include_pnl">손익 포함</string>
     <string name="perps_position_amount">포지션 금액</string>
     <string name="perps_margin_amount">증거금 금액</string>
+    <string name="perps_funding_payments">펀딩 수수료</string>
+    <string name="perps_funding_payments_description">이 포지션을 개설한 이후 받거나 지급한 펀딩 수수료의 누적 합계입니다. 녹색(양수)은 펀딩 수수료를 받았음을, 빨간색(음수)은 펀딩 수수료를 지급했음을 의미합니다.</string>
+    <string name="perps_margin_description">증거금은 포지션에 배정하는 담보입니다. 해당 거래에서 손실을 볼 수 있는 최대 금액을 나타냅니다.</string>
+    <string name="perps_liquidation_price_down_description">%1$s 하락하면 청산이 발생합니다.</string>
+    <string name="perps_liquidation_price_up_description">%1$s 상승하면 청산이 발생합니다.</string>
+    <string name="Details">세부정보</string>
 </resources>

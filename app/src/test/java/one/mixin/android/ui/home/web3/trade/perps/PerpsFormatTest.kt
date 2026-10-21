@@ -8,6 +8,23 @@ import java.math.BigDecimal
 import java.util.Locale
 
 class PerpsFormatTest {
+    @Test
+    fun liquidationDistanceUsesMarkPriceInBothDirections() {
+        assertEquals("49.13%", liquidationDistancePercent("50.87", "100"))
+        assertEquals("49.13%", liquidationDistancePercent("149.13", "100"))
+        assertEquals("0.00%", liquidationDistancePercent("100", "100"))
+        assertEquals("33.33%", liquidationDistancePercent("2", "3"))
+        assertEquals("150.00%", liquidationDistancePercent("250", "100"))
+    }
+
+    @Test
+    fun liquidationDistanceHidesUnavailablePrices() {
+        for (price in listOf(null, "", "invalid", "0", "-1")) {
+            assertEquals(null, liquidationDistancePercent(price, "100"))
+            assertEquals(null, liquidationDistancePercent("100", price))
+        }
+    }
+
     private lateinit var previousDefaultLocale: Locale
 
     @Before

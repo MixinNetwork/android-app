@@ -2748,4 +2748,10 @@
     <string name="perps_include_pnl">Include PnL</string>
     <string name="perps_position_amount">Position Amount</string>
     <string name="perps_margin_amount">Margin Amount</string>
+    <string name="perps_funding_payments">Funding payments</string>
+    <string name="perps_funding_payments_description">The total funding you’ve received or paid since opening this position. Green (positive) means you received funding, while red (negative) means you paid funding.</string>
+    <string name="perps_margin_description">Margin is the collateral you allocate to a position. It represents the maximum amount you can lose on that trade.</string>
+    <string name="perps_liquidation_price_down_description">Going down %1$s will trigger liquidation.</string>
+    <string name="perps_liquidation_price_up_description">Going up %1$s will trigger liquidation.</string>
+    <string name="Details">Details</string>
 </resources>

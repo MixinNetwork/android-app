@@ -220,6 +220,12 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         Column(horizontalAlignment = Alignment.End) {
                             PerpsAddInfoRow(
                                 title = stringResource(R.string.Margin),
+                                onTipClick = {
+                                    PerpsInfoBottomSheetDialogFragment.newInstance(
+                                        R.string.Margin,
+                                        R.string.perps_margin_description,
+                                    ).show(parentFragmentManager, PerpsInfoBottomSheetDialogFragment.TAG)
+                                },
                                 valueColor = MixinAppTheme.colors.textPrimary,
                                 value = margin?.let { if (it.signum() < 0) formatPerpsSignedRawUsdDecimal(it) else formatPerpsRawUsdDecimal(it) } ?: "--",
                             )

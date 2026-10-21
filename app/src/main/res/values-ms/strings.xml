@@ -862,4 +862,10 @@
     <string name="perps_include_pnl">Termasuk PnL</string>
     <string name="perps_position_amount">Jumlah Posisi</string>
     <string name="perps_margin_amount">Jumlah Margin</string>
+    <string name="perps_funding_payments">Bayaran pembiayaan</string>
+    <string name="perps_funding_payments_description">Jumlah bayaran pembiayaan yang anda terima atau bayar sejak membuka posisi ini. Hijau (positif) bermaksud anda menerima bayaran pembiayaan, manakala merah (negatif) bermaksud anda membayar bayaran pembiayaan.</string>
+    <string name="perps_margin_description">Margin ialah cagaran yang anda peruntukkan kepada suatu posisi. Ia mewakili jumlah maksimum yang boleh anda kehilangan dalam dagangan tersebut.</string>
+    <string name="perps_liquidation_price_down_description">Penurunan sebanyak %1$s akan mencetuskan pencairan.</string>
+    <string name="perps_liquidation_price_up_description">Kenaikan sebanyak %1$s akan mencetuskan pencairan.</string>
+    <string name="Details">Butiran</string>
 </resources>

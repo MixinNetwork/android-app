@@ -249,6 +249,22 @@ class PerpsMigrationTest {
         }
     }
 
+    @Test
+    fun migrate_11_12_preservesPositionsAndAddsNullableFunding() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 11).apply {
+            insertPositionV2()
+            close()
+        }
+        val db = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME, 12, true, PerpsDatabase.MIGRATION_11_12,
+        )
+        db.query("SELECT margin, funding_amount FROM positions WHERE position_id = 'position-1'").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("100", cursor.getString(0))
+            assertTrue(cursor.isNull(1))
+        }
+    }
+
     private fun assertColumn(
         db: SQLiteConnection,
         table: String,

@@ -2666,4 +2666,10 @@
     <string name="perps_include_pnl">含盈亏</string>
     <string name="perps_position_amount">仓位金额</string>
     <string name="perps_margin_amount">保证金金额</string>
+    <string name="perps_funding_payments">资金费用</string>
+    <string name="perps_funding_payments_description">自该合约开仓以来，您累计收到或支付的资金费用。绿色（正数）表示您收到资金费用，红色（负数）表示您支付资金费用。</string>
+    <string name="perps_margin_description">保证金是您为合约仓位提供的抵押资金，也是您在该笔交易中可能损失的最大金额。</string>
+    <string name="perps_liquidation_price_down_description">下跌 %1$s 将触发强平。</string>
+    <string name="perps_liquidation_price_up_description">上涨 %1$s 将触发强平。</string>
+    <string name="Details">详情</string>
 </resources>

@@ -1239,4 +1239,10 @@
     <string name="perps_include_pnl">Incluye PnL</string>
     <string name="perps_position_amount">Importe de la posición</string>
     <string name="perps_margin_amount">Importe del margen</string>
+    <string name="perps_funding_payments">Pagos de financiación</string>
+    <string name="perps_funding_payments_description">El total de financiación que ha recibido o pagado desde que abrió esta posición. El verde (positivo) indica que ha recibido financiación, mientras que el rojo (negativo) indica que ha pagado financiación.</string>
+    <string name="perps_margin_description">El margen es la garantía que asigna a una posición. Representa la cantidad máxima que puede perder en esa operación.</string>
+    <string name="perps_liquidation_price_down_description">Una bajada del %1$s activará la liquidación.</string>
+    <string name="perps_liquidation_price_up_description">Una subida del %1$s activará la liquidación.</string>
+    <string name="Details">Detalles</string>
 </resources>

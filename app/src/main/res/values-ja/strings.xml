@@ -1185,4 +1185,10 @@
     <string name="perps_include_pnl">損益を含む</string>
     <string name="perps_position_amount">ポジション金額</string>
     <string name="perps_margin_amount">証拠金額</string>
+    <string name="perps_funding_payments">資金調達料</string>
+    <string name="perps_funding_payments_description">このポジションを開いてから受け取った、または支払った資金調達料の累計です。緑色（プラス）は資金調達料を受け取ったことを、赤色（マイナス）は資金調達料を支払ったことを示します。</string>
+    <string name="perps_margin_description">証拠金は、ポジションに割り当てる担保です。その取引で損失を被る可能性のある最大額を表します。</string>
+    <string name="perps_liquidation_price_down_description">%1$s 下落すると清算が発動します。</string>
+    <string name="perps_liquidation_price_up_description">%1$s 上昇すると清算が発動します。</string>
+    <string name="Details">詳細</string>
 </resources>

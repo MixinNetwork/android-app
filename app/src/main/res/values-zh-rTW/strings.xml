@@ -2717,4 +2717,10 @@
     <string name="perps_include_pnl">含盈虧</string>
     <string name="perps_position_amount">倉位金額</string>
     <string name="perps_margin_amount">保證金金額</string>
+    <string name="perps_funding_payments">資金費用</string>
+    <string name="perps_funding_payments_description">自該合約開倉以來，您累計收到或支付的資金費用。綠色（正數）表示您收到資金費用，紅色（負數）表示您支付資金費用。</string>
+    <string name="perps_margin_description">保證金是您為合約倉位提供的抵押資金，也是您在該筆交易中可能損失的最大金額。</string>
+    <string name="perps_liquidation_price_down_description">下跌 %1$s 將觸發清算。</string>
+    <string name="perps_liquidation_price_up_description">上漲 %1$s 將觸發清算。</string>
+    <string name="Details">詳情</string>
 </resources>
