@@ -48,7 +48,6 @@ class GroupViewModel
         icon: String?,
         users: List<User>,
         sender: User,
-        duration: Long,
     ): Conversation =
         withContext(Dispatchers.IO) {
             val participants = users.map { it.userId }
@@ -68,7 +67,6 @@ class GroupViewModel
                     .setAnnouncement(announcement)
                     .setOwnerId(sender.userId)
                     .setUnseenMessageCount(0)
-                    .setExpireIn(duration)
                     .build()
             val mutableList = mutableListOf<Participant>()
             users.mapTo(mutableList) { Participant(conversationId, it.userId, "", createdAt) }
@@ -84,7 +82,6 @@ class GroupViewModel
                     icon,
                     announcement,
                     participantRequestList,
-                    duration = duration,
                     randomId = randomId,
                 )
             jobManager.addJobInBackground(ConversationJob(request, type = TYPE_CREATE))

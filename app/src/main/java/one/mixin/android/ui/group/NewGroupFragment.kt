@@ -3,12 +3,10 @@ package one.mixin.android.ui.group
 import android.app.Dialog
 import android.graphics.Typeface
 import android.os.Bundle
-import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import androidx.appcompat.widget.PopupMenu
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.updatePadding
@@ -29,24 +27,18 @@ import one.mixin.android.extension.showKeyboard
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.common.DisappearingIntervalBottomFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.AvatarView
-import one.mixin.android.widget.picker.INTERVAL_DAY
-import one.mixin.android.widget.picker.INTERVAL_MONTH
-import one.mixin.android.widget.picker.INTERVAL_WEEK
-import one.mixin.android.widget.picker.getTimeInterval
 
 @AndroidEntryPoint
 class NewGroupFragment : BaseFragment() {
     companion object {
         const val TAG = "NewGroupFragment"
         private const val ARGS_USERS = "args_users"
-        private const val STATE_DURATION = "duration"
 
         fun newInstance(users: ArrayList<User>): NewGroupFragment {
             val fragment = NewGroupFragment()
@@ -63,21 +55,9 @@ class NewGroupFragment : BaseFragment() {
         requireNotNull(requireArguments().getParcelableArrayListCompat(ARGS_USERS, User::class.java))
     }
     private var dialog: Dialog? = null
-    private var duration = INTERVAL_WEEK
-    private var durationMenu: PopupMenu? = null
 
     private var _binding: FragmentNewGroupBinding? = null
     private val binding get() = requireNotNull(_binding)
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        duration = savedInstanceState?.getLong(STATE_DURATION, INTERVAL_WEEK) ?: INTERVAL_WEEK
-    }
-
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putLong(STATE_DURATION, duration)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -112,12 +92,6 @@ class NewGroupFragment : BaseFragment() {
         binding.createBtn.setOnClickListener {
             createGroup()
         }
-        binding.disappearingValue.text = duration.getTimeInterval()
-        (childFragmentManager.findFragmentByTag(DisappearingIntervalBottomFragment.TAG) as? DisappearingIntervalBottomFragment)
-            ?.onSetCallback(::setDuration)
-        binding.disappearingRow.setOnClickListener {
-            showDurationMenu()
-        }
         binding.nameDescEt.doAfterTextChanged {
             binding.createBtn.isEnabled = !it.isNullOrEmpty()
         }
@@ -129,46 +103,7 @@ class NewGroupFragment : BaseFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         dialog?.dismiss()
-        durationMenu?.dismiss()
         _binding = null
-    }
-
-    private fun setDuration(value: Long) {
-        duration = value
-        binding.disappearingValue.text = value.getTimeInterval()
-    }
-
-    private fun showDurationMenu() {
-        val options = listOf(
-            0L to R.string.Off,
-            INTERVAL_DAY to R.string.disappearing_option_4,
-            INTERVAL_WEEK to R.string.disappearing_option_5,
-            INTERVAL_MONTH to R.string.disappearing_option_month,
-            null to R.string.Custom,
-        )
-        val selected = options.indexOfFirst { it.first == duration }.takeIf { it >= 0 } ?: options.lastIndex
-        durationMenu?.dismiss()
-        durationMenu = PopupMenu(requireContext(), binding.disappearingRow, Gravity.END).apply {
-            options.forEachIndexed { index, (_, title) ->
-                menu.add(0, index, index, title)
-            }
-            menu.setGroupCheckable(0, true, true)
-            menu.findItem(selected).isChecked = true
-            setOnMenuItemClickListener { item ->
-                val interval = options[item.itemId].first
-                if (interval == null) {
-                    binding.nameDescEt.hideKeyboard()
-                    DisappearingIntervalBottomFragment.newInstance(duration)
-                        .apply { onSetCallback(::setDuration) }
-                        .showNow(childFragmentManager, DisappearingIntervalBottomFragment.TAG)
-                } else {
-                    setDuration(interval)
-                }
-                true
-            }
-            setOnDismissListener { durationMenu = null }
-            show()
-        }
     }
 
     private fun createGroup() =
@@ -191,7 +126,6 @@ class NewGroupFragment : BaseFragment() {
                     null,
                     users,
                     sender,
-                    duration = duration,
                 )
             val liveData = groupViewModel.getConversationStatusById(conversation.conversationId)
             liveData.observe(
