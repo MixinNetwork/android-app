@@ -49,6 +49,33 @@ class UtxoKeyGeneratorTest {
     }
 
     @Test
+    fun derivesLitecoinAddressesForTenIndexesMatchingTipGo() {
+        val mnemonic = "legal winner thank year wave sausage worth useful legal winner thank yellow"
+        val expected = listOf(
+            "ltc1qg0457yp54vvw74mdkrqhkvp2fyu387x2c8zs43",
+            "ltc1qyphatmk7eyt42trujmw7xv6hm6xtn02nrwz3dc",
+            "ltc1q2pukppfle0lfshrgvk5p9f3u3egj3zm5umndjl",
+            "ltc1qlnjvu55vv4ha38xxlh3hphfl7wuz0y5cnvp2ec",
+            "ltc1qngdv4kjwvzcc2elvch2rhzphs2m2knlhs02999",
+            "ltc1q9rypjupr6p07lw5me23ad3t66ez3at2l4w4skc",
+            "ltc1qfwkceza9zaeqcrt2dje00e9eckdwjw08v8w49a",
+            "ltc1qyv0kumrp25pjng3n3xjepxvftkj83ykgt2pg8w",
+            "ltc1qls842u5p03n8w9e5xvl5tw9sfaaq5kz8cy2k23",
+            "ltc1qa6fngmkg45qgyhqjw8za4ug8ep33uy9ylwf52m",
+        )
+        val seed = org.bitcoinj.crypto.MnemonicCode.toSeed(mnemonic.split(" "), "")
+
+        expected.forEachIndexed { index, address ->
+            val privateKey = UtxoKeyGenerator.getPrivateKeyFromSeed(seed, Constants.ChainId.Litecoin, index)
+            assertEquals(address, UtxoKeyGenerator.privateKeyToAddress(privateKey, Constants.ChainId.Litecoin))
+            assertEquals(address, UtxoKeyGenerator.mnemonicToAddress(mnemonic, Constants.ChainId.Litecoin, "", index))
+            val wallet = CryptoWalletHelper.mnemonicToLitecoinWallet(mnemonic, "", index)
+            assertEquals(address, wallet.address)
+            assertEquals("m/84'/2'/0'/0/$index", wallet.path)
+        }
+    }
+
+    @Test
     fun importedLitecoinHexAndWifResolveToTheSameSigningKey() {
         val hex = "4ab54480cbbaa53d5d3ba43a3e85d221df085490e88346ad11579e17000db7bb"
         val expected = hex.hexStringToByteArray()
