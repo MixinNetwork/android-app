@@ -14,7 +14,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.text.TextUtils
-import android.util.Base64
 import android.view.View
 import android.view.View.MeasureSpec
 import android.view.ViewGroup
@@ -44,6 +43,7 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.databinding.FragmentGroupBottomSheetBinding
 import one.mixin.android.extension.REQUEST_CAMERA
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.createImageTemp
@@ -561,7 +561,7 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
                 invokeNetwork = {
                     val bitmap = uri.getCapturedImage(resolver)
                     val iconBase64 = try {
-                        Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP)
+                        bitmap.toBytes().base64RawURLEncode()
                     } finally {
                         bitmap.recycle()
                     }
