@@ -70,6 +70,16 @@ class PerpsPositionDaoTest {
         }
     }
 
+    @Test
+    fun detailWithoutWalletIdKeepsTheReducedPositionInItsWallet() = runBlocking {
+        val dao = database.perpsPositionDao()
+        val initial = position()
+        dao.upsertSuspend(initial)
+        dao.upsertSuspend(initial.copy(walletId = "", quantity = "0.5", updatedAt = "2026-10-07T00:00:01Z"))
+        assertEquals("0.5", dao.getOpenPositions("wallet").single().quantity)
+        assertEquals("wallet", dao.getPosition(initial.positionId)?.walletId)
+    }
+
     private fun position() = PerpsPosition(
         positionId = "position",
         marketId = "market",

@@ -197,16 +197,17 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackWalletHomeAdBanner(trackingKey: String?, source: String) {
+    fun trackAdBanner(trackingKey: String?, placement: String, source: String) {
         val key = trackingKey?.takeIf { it.isNotBlank() } ?: return
         logEvent(key) {
+            putString("placement", placement)
             putString("source", source)
         }
     }
 
-    object WalletHomeAdBannerSource {
-        const val BACKGROUND = "wallet_home_ad_banner_background"
-        const val BUTTON = "wallet_home_ad_banner_button"
+    object AdBannerSource {
+        const val BACKGROUND = "ad_banner_background"
+        const val BUTTON = "ad_banner_button"
     }
 
     object AssetSource {
@@ -414,6 +415,7 @@ object AnalyticsTracker {
     }
 
     object TradeSource {
+        const val MARKET_BANNER = "market_banner"
         const val WALLET_HOME = "wallet_home"
         const val MARKET_DETAIL = "market_detail"
         const val APP_CARD = "app_card"
@@ -625,6 +627,7 @@ object AnalyticsTracker {
     }
 
     object PerpsSource {
+        const val MARKET_BANNER = TradeSource.MARKET_BANNER
         const val WALLET_HOME = TradeSource.WALLET_HOME
         const val MORE_EXPLORE = "more_explore"
         const val APP_CARD = TradeSource.APP_CARD
@@ -864,6 +867,7 @@ object AnalyticsTracker {
     }
 
     object PerpsCloseType {
+        const val REDUCTION = "reduction"
         const val SINGLE = "single"
         const val MULTIPLE = "multiple"
     }

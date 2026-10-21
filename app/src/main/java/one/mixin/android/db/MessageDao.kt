@@ -708,6 +708,13 @@ interface MessageDao : BaseDao<Message> {
     @Query("$PREFIX_MESSAGE_ITEM WHERE m.id = :messageId")
     fun findMessageItemByMessageId(messageId: String): LiveData<MessageItem?>
 
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
+    @Query("$PREFIX_MESSAGE_ITEM WHERE m.conversation_id = :conversationId AND m.id = :messageId")
+    suspend fun suspendFindMessageItemById(
+        conversationId: String,
+        messageId: String,
+    ): MessageItem?
+
     @Query("SELECT id FROM messages WHERE conversation_id = :conversationId AND category IN ($TRANSCRIPTS)")
     suspend fun findTranscriptIdByConversationId(conversationId: String): List<String>
 

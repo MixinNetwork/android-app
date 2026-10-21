@@ -10,6 +10,34 @@ import org.junit.Test
 
 class SwapTokenSearchFilterTest {
     @Test
+    fun remoteStockCategorySurvivesMergeWithOwnedToken() {
+        val local = token("aaplx", "solana").copy(balance = "2", price = "100")
+        val remote = local.copy(category = "stock")
+        val result = mergeSwapTokenSearchResults(listOf(local), listOf(remote))
+        assertEquals(1, result.size)
+        assertEquals("stock", result.single().category)
+        assertEquals("2", result.single().balance)
+        assertEquals("100", result.single().price)
+    }
+
+    @Test
+    fun remoteMatchSurvivesWhenLocalNameDidNotMatch() {
+        val remote = token("aaplx", "solana").copy(category = "stock")
+        val result = mergeSwapTokenSearchResults(emptyList(), listOf(remote))
+        assertEquals(1, result.size)
+        assertEquals("stock", result.single().category)
+    }
+
+    @Test
+    fun localOnlyMatchesAndDifferentChainsAreKept() {
+        val local = token("asset", "ethereum")
+        val remote = token("asset", "solana")
+        val result = mergeSwapTokenSearchResults(listOf(local), listOf(remote))
+        assertEquals(listOf("solana", "ethereum"), result.map { it.chain.chainId })
+        assertEquals(listOf(local), mergeSwapTokenSearchResults(listOf(local), emptyList()))
+    }
+
+    @Test
     fun ethereumAddressMakesXLayerSearchable() {
         assertTrue(
             isSwapSearchChainAvailable(

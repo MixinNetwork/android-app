@@ -78,7 +78,7 @@ class PerpsTpSlCalculationTest {
             assertEquals("105", targetPriceForRoiPercent(basis, "50", isLong = false, isTakeProfit = false, priceScale = 2))
             assertDecimalEquals("50", basis.pnlAt(BigDecimal("105"), isLong = true)?.signedRoiPercent)
             assertDecimalEquals("-50", basis.pnlAt(BigDecimal("105"), isLong = false)?.signedRoiPercent)
-            assertDecimalEquals("1000", basis.zeroPriceRoiPercentCeiling())
+            assertDecimalEquals("1000", basis.zeroPriceRoiPercentCeiling(isLong = true))
             assertNull(resolveTpSlCalculationBasis("", "100", margin, null, 10))
         }
     }
@@ -134,7 +134,57 @@ class PerpsTpSlCalculationTest {
     fun zeroPriceRoiCeilingUsesActualExistingPositionBasis() {
         val basis = existingBasis(quantity = "10", margin = "200")!!
 
-        assertDecimalEquals("500", basis.zeroPriceRoiPercentCeiling())
+        assertDecimalEquals("500", basis.zeroPriceRoiPercentCeiling(isLong = true))
+        assertDecimalEquals("500", basis.zeroPriceRoiPercentCeiling(isLong = false))
+    }
+
+    @Test
+    fun existingPositionUsesOpenAndCloseFeesInPnlAndTargetPrice() {
+        val basis = existingBasis(quantity = "10", margin = "200", estimatedCloseFee = "1", feeReferencePrice = "100")!!
+
+        assertDecimalEquals("0.001", basis.feeRate)
+        assertResult(basis.pnlAt(BigDecimal("110"), isLong = true), pnl = "97.9", roiPercent = "48.95")
+        assertEquals("110.2102102102102102", targetPriceForRoiPercent(basis, "50", isLong = true, isTakeProfit = true, priceScale = 16))
+        assertEquals("90.1901901901901902", targetPriceForRoiPercent(basis, "50", isLong = true, isTakeProfit = false, priceScale = 16))
+        assertEquals("89.8101898101898102", targetPriceForRoiPercent(basis, "50", isLong = false, isTakeProfit = true, priceScale = 16))
+        assertEquals("109.7902097902097902", targetPriceForRoiPercent(basis, "50", isLong = false, isTakeProfit = false, priceScale = 16))
+        assertDecimalEquals("500.5", basis.zeroPriceRoiPercentCeiling(isLong = true))
+        assertDecimalEquals("499.5", basis.zeroPriceRoiPercentCeiling(isLong = false))
+    }
+
+    @Test
+    fun existingPositionFeeRoundsBackToRequestedRoi() {
+        val basis = existingBasis(quantity = "10", margin = "200", estimatedCloseFee = "1", feeReferencePrice = "100")!!
+
+        for ((isLong, isTakeProfit) in listOf(true to true, true to false, false to true, false to false)) {
+            val price = targetPriceForRoiPercent(basis, "50", isLong, isTakeProfit, priceScale = 16)
+            val result = basis.pnlAt(BigDecimal(price), isLong)!!
+            val expectedPnl = if (isTakeProfit) "100" else "-100"
+            assertDecimalEquals(expectedPnl, result.signedPnl.setScale(8, RoundingMode.HALF_UP))
+            assertDecimalEquals(if (isTakeProfit) "50" else "-50", result.signedRoiPercent.setScale(8, RoundingMode.HALF_UP))
+        }
+    }
+
+    @Test
+    fun missingOrUnusableCloseFeeKeepsGrossPnl() {
+        for (fee in listOf(null, "", "0", "bad", "-1")) {
+            val basis = existingBasis(quantity = "10", margin = "200", estimatedCloseFee = fee, feeReferencePrice = "100")!!
+            assertEquals(0, BigDecimal.ZERO.compareTo(basis.feeRate))
+            assertEquals("110", targetPriceForRoiPercent(basis, "50", isLong = true, isTakeProfit = true, priceScale = 2))
+        }
+        val extremeFee = existingBasis(quantity = "10", margin = "200", estimatedCloseFee = "10000", feeReferencePrice = "100")!!
+        assertEquals(0, BigDecimal.ZERO.compareTo(extremeFee.feeRate))
+        val preOpen = resolveTpSlCalculationBasis(
+            entryPrice = "100",
+            currentPrice = "100",
+            marginAmount = "100",
+            positionQuantity = null,
+            leverage = 10,
+            estimatedCloseFee = "1",
+            feeReferencePrice = "100",
+        )!!
+        assertEquals(0, BigDecimal.ZERO.compareTo(preOpen.feeRate))
+        assertEquals("105", targetPriceForRoiPercent(preOpen, "50", isLong = true, isTakeProfit = true, priceScale = 2))
     }
 
     @Test
@@ -170,8 +220,20 @@ class PerpsTpSlCalculationTest {
         assertNull(resolveTpSlLiquidationBound("0", "100", "90", 10, isLong = true))
     }
 
-    private fun existingBasis(quantity: String, margin: String): TpSlCalculationBasis? =
-        resolveTpSlCalculationBasis("100", "100", margin, quantity, 10)
+    private fun existingBasis(
+        quantity: String,
+        margin: String,
+        estimatedCloseFee: String? = null,
+        feeReferencePrice: String? = null,
+    ): TpSlCalculationBasis? = resolveTpSlCalculationBasis(
+        entryPrice = "100",
+        currentPrice = "100",
+        marginAmount = margin,
+        positionQuantity = quantity,
+        leverage = 10,
+        estimatedCloseFee = estimatedCloseFee,
+        feeReferencePrice = feeReferencePrice,
+    )
 
     private fun assertResult(result: TpSlPnlResult?, pnl: String, roiPercent: String) {
         requireNotNull(result)
