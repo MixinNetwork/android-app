@@ -321,6 +321,11 @@ android {
             }
         }
         exclude(group = "org.bouncycastle", module = "bcprov-jdk18on")
+        if ((name.endsWith("RuntimeClasspath") || name.endsWith("CompileClasspath")) && !name.contains("Test")) {
+            // spongycastle leaks junit into the app, which pins androidTest to hamcrest 1.3
+            exclude(group = "junit", module = "junit")
+            exclude(group = "org.hamcrest")
+        }
     }
 }
 
