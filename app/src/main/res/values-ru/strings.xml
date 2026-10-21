@@ -1180,4 +1180,6 @@
     <string name="perps_include_pnl">Включая PnL</string>
     <string name="perps_position_amount">Размер позиции</string>
     <string name="perps_margin_amount">Сумма маржи</string>
+    <string name="perps_share_card_max_leverage">📈 Максимальное плечо: %1$dx</string>
+    <string name="perps_share_card_volume">💰 Объём за 24 ч: %1$s</string>
 </resources>

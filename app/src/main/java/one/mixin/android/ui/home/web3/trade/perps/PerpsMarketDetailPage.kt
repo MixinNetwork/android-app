@@ -91,7 +91,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
@@ -354,19 +353,6 @@ fun PerpsMarketDetailPage(
                     painter = painterResource(R.drawable.ic_share_arrow),
                     modifier = Modifier.size(24.dp),
                     contentDescription = stringResource(R.string.Share),
-                    tint = MixinAppTheme.colors.icon,
-                )
-            }
-            IconButton(onClick = {
-                context.openUrl(
-                    Constants.HelpLink.CUSTOMER_SERVICE,
-                    source = AnalyticsTracker.CustomerServiceSource.PERPS_MARKET_DETAIL,
-                    wallet = AnalyticsTracker.TradeWallet.WEB3,
-                )
-            }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_support),
-                    contentDescription = stringResource(R.string.Contact_Support),
                     tint = MixinAppTheme.colors.icon,
                 )
             }

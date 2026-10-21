@@ -239,7 +239,8 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     private fun bindMarketCard() {
         perpsMarket?.let { market ->
             binding.assetSymbol.text = market.displaySymbol
-            binding.assetRank.isVisible = false
+            binding.assetRank.isVisible = true
+            binding.assetRank.text = getString(R.string.Perpetual_Leverage_Format, market.leverage)
             binding.icon.badge.isVisible = false
             binding.icon.bg.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
             binding.priceValue.text = formatPerpsPrice(market.last, market.priceScale)
@@ -352,7 +353,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
 
     private fun showLoading(show: Boolean) {
         isLoading = show
-        binding.shareCardLoading.isVisible = show
+        binding.shareCardLoading.isVisible = isUploading
     }
 
     private fun bindFooter(qrCode: Bitmap) {
@@ -461,26 +462,39 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
                 iconUrl = market.iconUrl,
                 coverUrl = coverUrl,
                 cover = null,
-                title = getString(R.string.perps_share_card_title, market.tokenSymbol),
+                title = getString(R.string.market_share_card_title, market.displaySymbol),
                 description = listOf(
-                    getString(R.string.perps_share_card_market, market.displaySymbol),
+                    getString(R.string.market_share_card_asset, market.displaySymbol, getString(R.string.Perpetual)),
+                    getString(R.string.perps_share_card_max_leverage, market.leverage),
                     getString(R.string.market_share_card_price, formatPerpsPrice(market.last, market.priceScale)),
-                    getString(R.string.market_share_card_price_change, "${market.changePercent().numberFormat2()}%"),
+                    getString(R.string.perps_share_card_volume, market.volume.toBigDecimalOrNull()?.numberFormatCompact() ?: market.volume),
                 ).joinToString("\n"),
                 action = null,
                 updatedAt = null,
                 shareable = true,
-                actions = listOf(ActionButtonData(
-                    label = getString(R.string.perps_share_card_trade_now),
-                    color = "#3D75E3",
-                    action = marketLink,
-                )),
+                actions = listOf(
+                    ActionButtonData(
+                        label = getString(R.string.Long),
+                        color = "#50BD5C",
+                        action = "$marketLink&action=open&side=long",
+                    ),
+                    ActionButtonData(
+                        label = getString(R.string.Short),
+                        color = "#DB454F",
+                        action = "$marketLink&action=open&side=short",
+                    ),
+                    ActionButtonData(
+                        label = getString(R.string.Market),
+                        color = "#3D75E3",
+                        action = marketLink,
+                    ),
+                ),
             )
             return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
         }
         val referral = Session.getAccount()?.identityNumber
         val buildTradeUrl = { input: String, output: String ->
-            "${Constants.Scheme.HTTPS_SWAP}?input=$input&output=$output&referral=$referral"
+            "${Constants.Scheme.HTTPS_SWAP}?type=swap&input=$input&output=$output&referral=$referral"
         }
         val stableAssetId = Constants.AssetId.USDT_ASSET_ETH_ID
         val targetAssetId = marketItem.assetIds?.firstOrNull().orEmpty()

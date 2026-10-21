@@ -88,7 +88,7 @@
                             android:id="@+id/logo"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="12dp"
+                            android:layout_marginStart="20dp"
                             android:contentDescription="@string/Mixin"
                             android:src="?attr/market_logo" />
                     </LinearLayout>
@@ -97,8 +97,8 @@
                         android:id="@+id/market_card"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
+                        android:paddingStart="20dp"
+                        android:paddingEnd="20dp"
                         android:paddingBottom="18dp">
 
                         <RelativeLayout
@@ -211,15 +211,6 @@
                                 android:layout_height="match_parent"
                                 android:visibility="gone" />
 
-                            <ProgressBar
-                                android:id="@+id/share_card_loading"
-                                style="?android:attr/progressBarStyleLarge"
-                                android:theme="@style/AppTheme.WalletBlue"
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:layout_gravity="center"
-                                android:visibility="gone"
-                                tools:visibility="visible" />
                         </FrameLayout>
 
                     </RelativeLayout>
@@ -288,6 +279,29 @@
                     </FrameLayout>
                 </RelativeLayout>
             </LinearLayout>
+            <FrameLayout
+                android:id="@+id/share_card_loading"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_round_8_solid_dark_gray"
+                android:backgroundTint="@color/black_20"
+                android:visibility="gone">
+
+                <FrameLayout
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_round_8_solid_dark_gray"
+                    android:backgroundTint="?attr/bg_white">
+
+                    <ProgressBar
+                        style="?android:attr/progressBarStyleLarge"
+                        android:theme="@style/AppTheme.WalletBlue"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:layout_gravity="center" />
+                </FrameLayout>
+            </FrameLayout>
         </FrameLayout>
 
         <LinearLayout

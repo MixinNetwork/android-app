@@ -797,4 +797,6 @@
     <string name="perps_include_pnl">Termasuk PnL</string>
     <string name="perps_position_amount">Jumlah Posisi</string>
     <string name="perps_margin_amount">Jumlah Margin</string>
+    <string name="perps_share_card_max_leverage">📈 Leverage Maksimum: %1$dx</string>
+    <string name="perps_share_card_volume">💰 Volume 24 Jam: %1$s</string>
 </resources>
