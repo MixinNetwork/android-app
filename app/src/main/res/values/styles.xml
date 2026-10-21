@@ -14,7 +14,6 @@
         <item name="android:windowContentTransitions">true</item>
         <item name="android:textColorHighlight">@color/blue_highlight</item>
         <item name="android:textViewStyle">@style/NoneHFTextViewStyle</item>
-        <item name="viewInflaterClass">one.mixin.android.widget.MixinViewInflater</item>
         <item name="enableEdgeToEdge">true</item>
 
         <item name="color_primary">@color/colorPrimaryDark</item>
@@ -252,7 +251,6 @@
     </style>
 
     <style name="MixinBottomSheet" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
-        <item name="viewInflaterClass">one.mixin.android.widget.MixinViewInflater</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">?attr/bg_white</item>
         <item name="android:windowFrame">@null</item>
@@ -266,7 +264,6 @@
     </style>
 
     <style name="AppTheme.Dialog" parent="Theme.MaterialComponents.Light.BottomSheetDialog">
-        <item name="viewInflaterClass">one.mixin.android.widget.MixinViewInflater</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">?attr/bg_white</item>
         <item name="android:windowFrame">@null</item>

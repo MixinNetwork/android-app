@@ -14,8 +14,6 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
 import one.mixin.android.vo.Fiats
-import one.mixin.android.widget.QuoteColors
-import one.mixin.android.widget.WideGamutColorSpan
 import java.math.BigDecimal
 
 class CashAccountTransferContent : LinearLayout {
@@ -64,14 +62,8 @@ class CashAccountTransferContent : LinearLayout {
         amounts.forEach { amount ->
             val start = indexOf(amount)
             if (start >= 0) {
-                val packed = if (QuoteColors.supportsWideGamut(context)) QuoteColors.colorLongOrNull(green) else null
-                val span = if (packed != null) {
-                    WideGamutColorSpan(packed, green and 0xFFFFFF, upgrade = false)
-                } else {
-                    ForegroundColorSpan(green)
-                }
                 spannable.setSpan(
-                    span,
+                    ForegroundColorSpan(green),
                     start,
                     start + amount.length,
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,

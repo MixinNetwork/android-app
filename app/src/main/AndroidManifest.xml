@@ -49,7 +49,6 @@
         android:requestLegacyExternalStorage="true"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
-        android:colorMode="wideColorGamut"
         android:theme="@style/AppTheme"
         android:localeConfig="@xml/locales_config"
         android:largeHeap="true"
@@ -60,6 +59,7 @@
         tools:replace="android:dataExtractionRules,android:fullBackupContent,android:allowBackup">
         <activity
             android:name=".ui.home.MainActivity"
+            android:colorMode="wideColorGamut"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="true"
             android:launchMode="singleTop"

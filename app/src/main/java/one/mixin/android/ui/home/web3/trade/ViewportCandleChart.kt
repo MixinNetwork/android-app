@@ -302,6 +302,8 @@ internal fun ViewportCandleChart(
     val colors = ChartColors(
         up = if (quoteColorPref) red else green,
         down = if (quoteColorPref) green else red,
+        upText = if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen,
+        downText = if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed,
         grid = MixinAppTheme.colors.textAssist.copy(alpha = 0.3f),
         label = MixinAppTheme.colors.textAssist,
         crosshair = MixinAppTheme.colors.textAssist.copy(alpha = 0.7f),
@@ -358,6 +360,8 @@ internal fun ViewportCandleChart(
 private data class ChartColors(
     val up: Color,
     val down: Color,
+    val upText: Color,
+    val downText: Color,
     val grid: Color,
     val label: Color,
     val crosshair: Color,
@@ -565,7 +569,8 @@ private fun DrawScope.drawChart(
     val latestColor = if (latestPrice >= candles.last().open) colors.up else colors.down
     val latestY = yOf(latestPrice)
     val showLatest = latestY in plotTop..plotBottom
-    val latestLayout = textMeasurer.measure(latestPriceText, labelStyle.copy(color = latestColor))
+    val latestTextColor = if (latestPrice >= candles.last().open) colors.upText else colors.downText
+    val latestLayout = textMeasurer.measure(latestPriceText, labelStyle.copy(color = latestTextColor))
     val tagPadH = 6.dp.toPx()
     val tagPadV = 2.dp.toPx()
     val latestTagHeight = latestLayout.size.height + tagPadV * 2
@@ -670,7 +675,7 @@ private fun DrawScope.drawSelection(
     val labelStyle = TextStyle(fontSize = 11.sp, color = colors.cardLabel)
     val valueStyle = TextStyle(fontSize = 11.sp, color = colors.cardValue)
     val change = if (selected.open != 0.0) (selected.close - selected.open) / selected.open * 100 else 0.0
-    val changeColor = if (selected.close >= selected.open) colors.up else colors.down
+    val changeColor = if (selected.close >= selected.open) colors.upText else colors.downText
     val changeText = (if (change >= 0) "\u2191" else "\u2193") +
         BigDecimal(abs(change)).setScale(2, RoundingMode.HALF_UP).toPlainString() + "%"
     val rows = listOf(

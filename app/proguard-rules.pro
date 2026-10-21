@@ -73,9 +73,6 @@
     int label;
 }
 
-# AppCompat instantiates this class by the viewInflaterClass theme string.
--keep class one.mixin.android.widget.MixinViewInflater { <init>(); }
-
 # JobQueue persists jobs by class name and serializes non-transient fields.
 -keep class one.mixin.android.job.**
 -keepclassmembers,allowoptimization class one.mixin.android.job.** {
