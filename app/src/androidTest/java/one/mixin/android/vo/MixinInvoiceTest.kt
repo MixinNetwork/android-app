@@ -81,7 +81,7 @@ class MixinInvoiceTest {
     fun testStorageRecipient() {
         val recipient = MixinInvoice(
             version = MIXIN_INVOICE_VERSION,
-            recipient = MixAddress.newStorageRecipient()!!,
+            recipient = MixAddress.newStorageRecipient(),
             entries = mutableListOf()
         )
         
@@ -118,7 +118,7 @@ class MixinInvoiceTest {
     fun testAddStorageEntry() {
         val invoice = MixinInvoice(
             version = MIXIN_INVOICE_VERSION,
-            recipient = MixAddress.newStorageRecipient()!!,
+            recipient = MixAddress.newStorageRecipient(),
             entries = mutableListOf()
         )
         
@@ -140,7 +140,7 @@ class MixinInvoiceTest {
     fun testAddStorageEntryWithTooLargeData() {
         val invoice = MixinInvoice(
             version = MIXIN_INVOICE_VERSION,
-            recipient = MixAddress.newStorageRecipient()!!,
+            recipient = MixAddress.newStorageRecipient(),
             entries = mutableListOf()
         )
         

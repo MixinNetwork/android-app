@@ -8,14 +8,12 @@ import one.mixin.android.Constants
 import one.mixin.android.db.datasource.execSQL
 import one.mixin.android.db.datasource.query
 import org.junit.Assert.assertEquals
-import org.junit.After
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 
 class PerpsMigrationTest {
     @Suppress("DEPRECATION")
-    @get:Rule
     val migrationTestHelper =
         MigrationTestHelper(
             InstrumentationRegistry.getInstrumentation(),
@@ -24,10 +22,8 @@ class PerpsMigrationTest {
             PerpsDatabase::class,
         )
 
-    @After
-    fun tearDown() {
-        deleteMigrationTestDatabase(Constants.DataBase.PERPS_DB_NAME)
-    }
+    @get:Rule
+    val migrationTestDatabaseRule = migrationTestHelper.withMigrationTestDatabaseCleanup(Constants.DataBase.PERPS_DB_NAME)
 
     @Test
     fun migrate_1_3() {

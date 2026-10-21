@@ -10,7 +10,6 @@ import org.junit.Rule
 
 open class BaseMigrationTest {
     @Suppress("DEPRECATION")
-    @get:Rule
     val migrationTestHelper =
         MigrationTestHelper(
             InstrumentationRegistry.getInstrumentation(),
@@ -19,13 +18,15 @@ open class BaseMigrationTest {
             MixinDatabase::class,
         )
 
+    @get:Rule
+    val migrationTestDatabaseRule = migrationTestHelper.withMigrationTestDatabaseCleanup(Constants.DataBase.DB_NAME)
+
     @Before
     fun setUp() {
     }
 
     @After
     fun tearDown() {
-        deleteMigrationTestDatabase(Constants.DataBase.DB_NAME)
     }
 
     fun create15() {

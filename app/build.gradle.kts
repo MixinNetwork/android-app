@@ -233,7 +233,8 @@ android {
         }
     }
 
-    testBuildType = "debug"
+    // Instrumented tests install one.mixin.messenger.test, leaving the debug and release package in place.
+    testBuildType = "staging"
 
     signingConfigs {
         getByName("debug") {
