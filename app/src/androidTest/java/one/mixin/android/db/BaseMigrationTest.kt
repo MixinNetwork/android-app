@@ -14,7 +14,7 @@ open class BaseMigrationTest {
     val migrationTestHelper =
         MigrationTestHelper(
             InstrumentationRegistry.getInstrumentation(),
-            InstrumentationRegistry.getInstrumentation().targetContext.getDatabasePath(Constants.DataBase.DB_NAME),
+            freshMigrationTestDatabase(Constants.DataBase.DB_NAME),
             AndroidSQLiteDriver(),
             MixinDatabase::class,
         )
@@ -25,6 +25,7 @@ open class BaseMigrationTest {
 
     @After
     fun tearDown() {
+        deleteMigrationTestDatabase(Constants.DataBase.DB_NAME)
     }
 
     fun create15() {
