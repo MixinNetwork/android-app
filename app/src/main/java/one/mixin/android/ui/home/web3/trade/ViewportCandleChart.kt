@@ -78,6 +78,9 @@ private const val MAX_VISIBLE_CANDLES = 200f
 // Empty slots kept to the right of the latest candle, in candle widths.
 private const val RIGHT_PADDING_CANDLES = 0.3f
 private const val GRID_LINE_COUNT = 4
+
+// Space above the highest high and below the lowest low, as a fraction of the price span.
+private const val PRICE_PADDING_RATIO = 0.08
 private const val BODY_WIDTH_RATIO = 0.7f
 private const val WICK_WIDTH_RATIO = 0.3f
 private const val LONG_PRESS_TIMEOUT_MS = 300L
@@ -399,7 +402,8 @@ private fun visiblePriceRange(candles: List<ChartCandle>, visible: IntRange, lat
         val pad = max(abs(high) * 0.001, 1e-8)
         return PriceRange(low - pad, high + pad)
     }
-    return PriceRange(low, high)
+    val pad = (high - low) * PRICE_PADDING_RATIO
+    return PriceRange(low - pad, high + pad)
 }
 
 @Composable
@@ -407,11 +411,14 @@ private fun animatedPriceRange(target: PriceRange, hold: Boolean): PriceRange {
     var from by remember { mutableStateOf(target) }
     var to by remember { mutableStateOf(target) }
     val progress = remember { Animatable(1f) }
-    // While held, keep the current range; once released, animate to the latest target.
+    // While held, only grow the range so candles scrolled into view are never clipped;
+    // once released, animate to the latest target.
     LaunchedEffect(target, hold) {
-        if (hold || (target == to && progress.value == 1f)) return@LaunchedEffect
-        from = lerp(from, to, progress.value)
-        to = target
+        val current = lerp(from, to, progress.value)
+        val next = if (hold) PriceRange(min(current.min, target.min), max(current.max, target.max)) else target
+        if (next == to || (hold && next == current)) return@LaunchedEffect
+        from = current
+        to = next
         progress.snapTo(0f)
         progress.animateTo(1f, tween(durationMillis = 220, easing = FastOutSlowInEasing))
     }
