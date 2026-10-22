@@ -944,7 +944,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         if (chain == Chain.Bitcoin) {
             tickerFlow(15.seconds)
                 .onEach {
-                    asset = bottomViewModel.refreshAsset(chain.assetId)
+                    asset = bottomViewModel.refreshAsset(token?.chainId ?: chain.assetId)
                 }
                 .launchIn(lifecycleScope)
             return

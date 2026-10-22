@@ -14,14 +14,16 @@ import org.junit.Test
 
 class PerpsMigrationTest {
     @Suppress("DEPRECATION")
-    @get:Rule
     val migrationTestHelper =
         MigrationTestHelper(
             InstrumentationRegistry.getInstrumentation(),
-            InstrumentationRegistry.getInstrumentation().targetContext.getDatabasePath(Constants.DataBase.PERPS_DB_NAME),
+            freshMigrationTestDatabase(Constants.DataBase.PERPS_DB_NAME),
             AndroidSQLiteDriver(),
             PerpsDatabase::class,
         )
+
+    @get:Rule
+    val migrationTestDatabaseRule = migrationTestHelper.withMigrationTestDatabaseCleanup(Constants.DataBase.PERPS_DB_NAME)
 
     @Test
     fun migrate_1_3() {

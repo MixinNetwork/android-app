@@ -239,7 +239,8 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             val derivationIndex = CryptoWalletHelper.extractIndexFromPaths(localAddresses.map { it.path }) ?: 0
             val hasBtcAddress: Boolean = localAddresses.any { it.chainId == BITCOIN_CHAIN_ID }
             val hasPearlAddress: Boolean = localAddresses.any { it.chainId == PEARL_CHAIN_ID }
-            if (hasBtcAddress && hasPearlAddress) {
+            val hasLitecoinAddress: Boolean = localAddresses.any { it.chainId == Constants.ChainId.Litecoin }
+            if (hasBtcAddress && hasPearlAddress && hasLitecoinAddress) {
                 continue
             }
             val now: Instant = Instant.now()
@@ -318,6 +319,40 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
                     destination = pearlWallet.first,
                     chainId = PEARL_CHAIN_ID,
                     path = Bip44Path.pearlPathString(derivationIndex),
+                    signature = signature,
+                    timestamp = now.toString(),
+                )
+            }
+            if (!hasLitecoinAddress) {
+                val litecoinWallet: Pair<String, ByteArray> = if (walletItem.category == WalletCategory.CLASSIC.value) {
+                    val litecoinAddress: String = bottomViewModel.getTipAddress(
+                        requireContext(),
+                        pin,
+                        Constants.ChainId.Litecoin,
+                        derivationIndex,
+                    )
+                    val litecoinPrivateKey: ByteArray = bottomViewModel.getTipPrivateKey(
+                        requireContext(),
+                        pin,
+                        Constants.ChainId.Litecoin,
+                        derivationIndex,
+                    )
+                    Pair(litecoinAddress, litecoinPrivateKey)
+                } else {
+                    val importedMnemonic = requireNotNull(mnemonic)
+                    val derivedWallet = CryptoWalletHelper.mnemonicToLitecoinWallet(importedMnemonic, index = derivationIndex)
+                    Pair(derivedWallet.address, Numeric.hexStringToByteArray(derivedWallet.privateKey))
+                }
+                val message = "${litecoinWallet.first}\n$userId\n${now.epochSecond}"
+                val signature = try {
+                    signUtxoAddressMessage(litecoinWallet.second, message, Constants.ChainId.Litecoin)
+                } finally {
+                    litecoinWallet.second.fill(0)
+                }
+                addressRequests += Web3AddressRequest(
+                    destination = litecoinWallet.first,
+                    chainId = Constants.ChainId.Litecoin,
+                    path = Bip44Path.litecoinSegwitPathString(derivationIndex),
                     signature = signature,
                     timestamp = now.toString(),
                 )

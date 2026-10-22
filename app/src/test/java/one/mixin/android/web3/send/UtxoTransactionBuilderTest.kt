@@ -24,11 +24,187 @@ class UtxoTransactionBuilderTest {
         Constants.ChainId.PEARL_CHAIN_ID,
     )
     private val receiver = "prl1pf7fr22zh8f49j9neucnrwvrk5vz47zj8p2sqr2j0g2w5sylmm2tsg7x98l"
+    private val litecoinSender = "ltc1qjmxnz78nmc8nq77wuxh25n2es7rzm5c2rkk4wh"
 
     @Test
     fun minimumTransferAmountUsesChainSpecificOutputLimits() {
         assertEquals(BigDecimal("0.00001"), BtcTransactionBuilder.minimumTransferAmount(Constants.ChainId.BITCOIN_CHAIN_ID))
         assertEquals(BigDecimal("0.001"), BtcTransactionBuilder.minimumTransferAmount(Constants.ChainId.PEARL_CHAIN_ID))
+        assertEquals(BigDecimal("0.0000546"), BtcTransactionBuilder.minimumTransferAmount(Constants.ChainId.Litecoin))
+    }
+
+    @Test
+    fun litecoinDustThresholdDependsOnTransparentDestinationScript() {
+        val destinations = listOf(
+            "ltc1qjmxnz78nmc8nq77wuxh25n2es7rzm5c2rkk4wh" to 2_940L,
+            "LYyKS4hm5QcmAWntuZSA6Kp5TKg9fCeLQn" to 5_460L,
+            "MUi6eFEWq7Sj3XaWUzJTDvSFTpaSdDR3fq" to 5_400L,
+            "3NVxLMpYszbJF2JcP7K7QHBr97yzhfQbf4" to 5_400L,
+        )
+        destinations.forEach { (destination, threshold) ->
+            BtcTransactionBuilder.buildSendTransaction(
+                chainId = Constants.ChainId.Litecoin,
+                fromAddress = litecoinSender,
+                toAddress = destination,
+                amountBtc = BigDecimal.valueOf(threshold, 8).toPlainString(),
+                localUtxos = listOf(litecoinOutput()),
+                feeRate = BigDecimal.TEN,
+            )
+            assertThrows(IllegalArgumentException::class.java) {
+                BtcTransactionBuilder.buildSendTransaction(
+                    chainId = Constants.ChainId.Litecoin,
+                    fromAddress = litecoinSender,
+                    toAddress = destination,
+                    amountBtc = BigDecimal.valueOf(threshold - 1, 8).toPlainString(),
+                    localUtxos = listOf(litecoinOutput()),
+                    feeRate = BigDecimal.TEN,
+                )
+            }
+        }
+    }
+
+    @Test
+    fun litecoinBuildsOneAndMultipleInputTransactionsWithAndWithoutChange() {
+        val first = litecoinOutput(amount = "0.001")
+        val second = litecoinOutput(
+            outputId = "second",
+            transactionHash = "1123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+            amount = "0.001",
+        )
+        val withChange = BtcTransactionBuilder.buildSendTransaction(
+            chainId = Constants.ChainId.Litecoin,
+            fromAddress = litecoinSender,
+            toAddress = litecoinSender,
+            amountBtc = "0.0005",
+            localUtxos = listOf(first),
+            feeRate = BigDecimal.TEN,
+        )
+        val multipleInputs = BtcTransactionBuilder.buildSendTransaction(
+            chainId = Constants.ChainId.Litecoin,
+            fromAddress = litecoinSender,
+            toAddress = litecoinSender,
+            amountBtc = "0.0015",
+            localUtxos = listOf(first, second),
+            feeRate = BigDecimal.TEN,
+        )
+        val withoutChange = BtcTransactionBuilder.buildSendTransaction(
+            chainId = Constants.ChainId.Litecoin,
+            fromAddress = litecoinSender,
+            toAddress = litecoinSender,
+            amountBtc = "0.000989",
+            localUtxos = listOf(first),
+            feeRate = BigDecimal.TEN,
+        )
+
+        assertEquals(2, Transaction.read(ByteBuffer.wrap(withChange.rawHex.hexStringToByteArray())).outputs.size)
+        assertEquals(2, Transaction.read(ByteBuffer.wrap(multipleInputs.rawHex.hexStringToByteArray())).inputs.size)
+        assertEquals(1, Transaction.read(ByteBuffer.wrap(withoutChange.rawHex.hexStringToByteArray())).outputs.size)
+    }
+
+    @Test
+    fun litecoinBuilderRejectsCrossChainAndWrongAddressUtxos() {
+        assertThrows(IllegalArgumentException::class.java) {
+            BtcTransactionBuilder.buildSendTransaction(
+                chainId = Constants.ChainId.Litecoin,
+                fromAddress = litecoinSender,
+                toAddress = litecoinSender,
+                amountBtc = "0.0001",
+                localUtxos = listOf(litecoinOutput().copy(assetId = Constants.ChainId.BITCOIN_CHAIN_ID)),
+                feeRate = BigDecimal.TEN,
+            )
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            BtcTransactionBuilder.buildSendTransaction(
+                chainId = Constants.ChainId.Litecoin,
+                fromAddress = litecoinSender,
+                toAddress = litecoinSender,
+                amountBtc = "0.0001",
+                localUtxos = listOf(litecoinOutput().copy(address = "ltc1qwlezpr3890hcp6vva9twqh27mr6edadreqvhnn")),
+                feeRate = BigDecimal.TEN,
+            )
+        }
+    }
+
+    @Test
+    fun litecoinRbfRejectsNonOptInAndInsufficientTargetRate() {
+        val output = litecoinOutput()
+        val original = BtcTransactionBuilder.buildSendTransaction(
+            chainId = Constants.ChainId.Litecoin,
+            fromAddress = litecoinSender,
+            toAddress = litecoinSender,
+            amountBtc = "0.001",
+            localUtxos = listOf(output),
+            feeRate = BigDecimal.TEN,
+        )
+        val nonOptIn = Transaction.read(ByteBuffer.wrap(original.rawHex.hexStringToByteArray())).let { transaction ->
+            transaction.replaceInput(0, transaction.inputs.single().withSequence(0xffffffffL))
+            transaction.serialize().toHex()
+        }
+
+        assertThrows(IllegalArgumentException::class.java) {
+            BtcTransactionBuilder.buildSpeedUpReplacement(
+                Constants.ChainId.Litecoin,
+                nonOptIn,
+                litecoinSender,
+                listOf(output),
+                BigDecimal("20"),
+            )
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            BtcTransactionBuilder.buildSpeedUpReplacement(
+                Constants.ChainId.Litecoin,
+                original.rawHex,
+                litecoinSender,
+                listOf(output),
+                BigDecimal.TEN,
+            )
+        }
+    }
+
+    @Test
+    fun litecoinSpeedUpAndCancelPreserveBip125AndAbsoluteFeeRules() {
+        val output = litecoinOutput()
+        val original = BtcTransactionBuilder.buildSendTransaction(
+            chainId = Constants.ChainId.Litecoin,
+            fromAddress = litecoinSender,
+            toAddress = "ltc1qwlezpr3890hcp6vva9twqh27mr6edadreqvhnn",
+            amountBtc = "0.001",
+            localUtxos = listOf(output),
+            feeRate = BigDecimal.TEN,
+        )
+        val originalTransaction = Transaction.read(ByteBuffer.wrap(original.rawHex.hexStringToByteArray()))
+        val recipientScript = originalTransaction.outputs.first().scriptBytes
+
+        val speedUpHex = BtcTransactionBuilder.buildSpeedUpReplacement(
+            chainId = Constants.ChainId.Litecoin,
+            rawTransactionHex = original.rawHex,
+            fromAddress = litecoinSender,
+            localUtxos = listOf(output),
+            feeRate = BigDecimal("20"),
+        )
+        val speedUp = Transaction.read(ByteBuffer.wrap(speedUpHex.hexStringToByteArray()))
+        val oldFeeAtomic = BtcTransactionBuilder.fee(original.rawHex, listOf(output)).movePointRight(8).longValueExact()
+        val newFeeAtomic = BtcTransactionBuilder.fee(speedUpHex, listOf(output)).movePointRight(8).longValueExact()
+
+        assertTrue(BtcTransactionBuilder.isReplaceable(speedUpHex))
+        assertTrue(speedUp.outputs.any { it.scriptBytes.contentEquals(recipientScript) })
+        assertTrue(newFeeAtomic >= oldFeeAtomic + BtcTransactionBuilder.virtualSize(Constants.ChainId.Litecoin, speedUpHex))
+
+        val cancelHex = BtcTransactionBuilder.buildCancelReplacement(
+            chainId = Constants.ChainId.Litecoin,
+            rawTransactionHex = original.rawHex,
+            fromAddress = litecoinSender,
+            localUtxos = listOf(output),
+            feeRate = BigDecimal("20"),
+        )
+        val cancel = Transaction.read(ByteBuffer.wrap(cancelHex.hexStringToByteArray()))
+        val selfScript = ScriptBuilder.createOutputScript(
+            UtxoKeyGenerator.parseAddress(litecoinSender, Constants.ChainId.Litecoin),
+        ).program()
+
+        assertEquals(1, cancel.outputs.size)
+        assertTrue(cancel.outputs.single().scriptBytes.contentEquals(selfScript))
+        assertFalse(BtcTransactionBuilder.canCancel(Constants.ChainId.Litecoin, cancelHex, litecoinSender))
     }
 
     @Test
@@ -52,6 +228,41 @@ class UtxoTransactionBuilderTest {
             )
             assertTrue(built.rawHex.isNotBlank())
         }
+    }
+
+    @Test
+    fun bitcoinRbfKeepsExistingAbsoluteFeeFallbackAndNonOptInBehavior() {
+        val bitcoinSender = UtxoKeyGenerator.privateKeyToAddress(
+            privateKey.hexStringToByteArray(),
+            Constants.ChainId.BITCOIN_CHAIN_ID,
+        )
+        val localOutput = output(
+            address = bitcoinSender,
+            assetId = Constants.ChainId.BITCOIN_CHAIN_ID,
+            amount = "0.001",
+        )
+        val original = BtcTransactionBuilder.buildSendTransaction(
+            chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+            fromAddress = bitcoinSender,
+            toAddress = bitcoinSender,
+            amountBtc = "0.000995",
+            localUtxos = listOf(localOutput),
+            feeRate = BigDecimal.ONE,
+        )
+        val nonOptIn = Transaction.read(ByteBuffer.wrap(original.rawHex.hexStringToByteArray())).let { transaction ->
+            transaction.replaceInput(0, transaction.inputs.single().withSequence(0xffffffffL))
+            transaction.serialize().toHex()
+        }
+
+        val replacementHex = BtcTransactionBuilder.buildCancelReplacement(
+            chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+            rawTransactionHex = nonOptIn,
+            fromAddress = bitcoinSender,
+            localUtxos = listOf(localOutput),
+            feeRate = BigDecimal("2"),
+        )
+
+        assertTrue(BtcTransactionBuilder.fee(replacementHex, listOf(localOutput)) > BtcTransactionBuilder.fee(nonOptIn, listOf(localOutput)))
     }
 
     @Test
@@ -242,6 +453,13 @@ class UtxoTransactionBuilderTest {
         status: String = "unspent",
         amount: String = "0.004",
     ) = output(sender, Constants.ChainId.PEARL_CHAIN_ID, outputId, transactionHash, status, amount)
+
+    private fun litecoinOutput(
+        outputId: String = "ltc-output",
+        transactionHash: String = "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+        status: String = "unspent",
+        amount: String = "0.004",
+    ) = output(litecoinSender, Constants.ChainId.Litecoin, outputId, transactionHash, status, amount)
 
     private fun output(
         address: String,

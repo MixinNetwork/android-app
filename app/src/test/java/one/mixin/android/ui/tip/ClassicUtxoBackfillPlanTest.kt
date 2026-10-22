@@ -17,7 +17,7 @@ class ClassicUtxoBackfillPlanTest {
 
         assertEquals(1, plan.derivationIndex)
         assertEquals(
-            setOf(Constants.ChainId.BITCOIN_CHAIN_ID, Constants.ChainId.PEARL_CHAIN_ID),
+            setOf(Constants.ChainId.BITCOIN_CHAIN_ID, Constants.ChainId.PEARL_CHAIN_ID, Constants.ChainId.Litecoin),
             plan.missingChainIds,
         )
     }
@@ -32,7 +32,7 @@ class ClassicUtxoBackfillPlanTest {
         )
 
         assertEquals(0, plan.derivationIndex)
-        assertEquals(setOf(Constants.ChainId.PEARL_CHAIN_ID), plan.missingChainIds)
+        assertEquals(setOf(Constants.ChainId.PEARL_CHAIN_ID, Constants.ChainId.Litecoin), plan.missingChainIds)
     }
 
     @Test
