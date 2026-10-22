@@ -20,7 +20,7 @@ class AppSchemeTest {
         assertEquals(Constants.RouteConfig.SAFE_BOT_USER_ID, uri.lastPathSegment)
         assertTrue(uri.shouldOpenAppHome())
         assertEquals(
-            "https://example.com?modal=plan",
+            "https://example.com?modal=plan&plan=renew",
             "https://example.com".appendQueryParamsFromOtherUri(uri),
         )
     }
