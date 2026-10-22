@@ -28,6 +28,7 @@ import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getColorCode
 import one.mixin.android.extension.getGroupAvatarPath
+import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.md5
 import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
@@ -56,6 +57,8 @@ class GenerateAvatarJob(
 
     override fun onRun() =
         runBlocking {
+            val icon = conversationDao.getGroupIconUrl(groupId)
+            if (icon?.isWebUrl() == true) return@runBlocking
             val users = mutableListOf<User>()
             texts = ArrayMap()
             if (list == null) {
@@ -66,12 +69,11 @@ class GenerateAvatarJob(
             }
             val name = getIconUrlName(groupId, users)
             val f = applicationContext.getGroupAvatarPath(name, false)
-            val icon = conversationDao.getGroupIconUrl(groupId)
             if (f.exists()) {
-                if (f.absolutePath != name) {
-                    conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
+                if (f.absolutePath != icon) {
+                    conversationDao.updateGeneratedGroupIconUrl(groupId, f.absolutePath)
                 }
-                RxBus.publish(AvatarEvent(groupId, f.absolutePath))
+                RxBus.publish(AvatarEvent(groupId, conversationDao.getGroupIconUrl(groupId) ?: f.absolutePath))
                 return@runBlocking
             }
 
@@ -91,8 +93,8 @@ class GenerateAvatarJob(
                 } catch (e: Exception) {
                 }
             }
-            conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
-            RxBus.publish(AvatarEvent(groupId, f.absolutePath))
+            conversationDao.updateGeneratedGroupIconUrl(groupId, f.absolutePath)
+            RxBus.publish(AvatarEvent(groupId, conversationDao.getGroupIconUrl(groupId) ?: f.absolutePath))
         }
 
     private fun drawInternal(

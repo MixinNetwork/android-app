@@ -68,6 +68,7 @@ class WalletMissingBtcAddressFragment : Fragment(R.layout.fragment_wallet_missin
         parentFragmentManager.findFragmentByTag(LoginVerifyBottomSheetDialogFragment.TAG) as? LoginVerifyBottomSheetDialogFragment
 
     private fun bindLoginVerify(dialog: LoginVerifyBottomSheetDialogFragment) {
+        dialog.hideMoreMenu()
         dialog.onDismissCallback = { isSuccess: Boolean, _ ->
             if (isSuccess) {
                 this@WalletMissingBtcAddressFragment.lifecycleScope.launch {

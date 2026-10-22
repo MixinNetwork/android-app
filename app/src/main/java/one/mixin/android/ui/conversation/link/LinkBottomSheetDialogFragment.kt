@@ -554,7 +554,9 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                             }
                             val avatar4List = avatarUserIds.take(4)
                             val iconUrl =
-                                if (notExistsUserIdList.isNotEmpty()) {
+                                if (!response.iconUrl.isNullOrBlank()) {
+                                    response.iconUrl
+                                } else if (notExistsUserIdList.isNotEmpty()) {
                                     oldLinkViewModel.refreshUsers(
                                         notExistsUserIdList,
                                         response.conversationId,
