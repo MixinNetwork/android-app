@@ -3,8 +3,10 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.os.Bundle
 import android.view.ContextThemeWrapper
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +57,7 @@ import javax.inject.Inject
 class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     companion object {
         const val TAG = "LoginVerifyBottomSheetDialogFragment"
+        private const val ARGS_HIDE_MORE_MENU = "args_hide_more_menu"
 
         fun newInstance() = LoginVerifyBottomSheetDialogFragment()
     }
@@ -94,6 +97,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
             true
         }
+        binding.more.isVisible = arguments?.getBoolean(ARGS_HIDE_MORE_MENU) != true
         binding.more.setOnClickListener {
             showMoreMenu()
         }
@@ -108,8 +112,16 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         }
     }
 
+    fun hideMoreMenu() {
+        val args = arguments ?: Bundle().also { arguments = it }
+        args.putBoolean(ARGS_HIDE_MORE_MENU, true)
+        if (dialog != null) {
+            binding.more.isVisible = false
+        }
+    }
+
     private fun showMoreMenu() {
-        if (!isAdded) return
+        if (!isAdded || arguments?.getBoolean(ARGS_HIDE_MORE_MENU) == true) return
         val builder = BottomSheet.Builder(requireActivity())
         val view: View =
             View.inflate(
