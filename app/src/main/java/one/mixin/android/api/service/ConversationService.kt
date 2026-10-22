@@ -44,6 +44,9 @@ interface ConversationService {
     @POST("attachments")
     fun requestAttachment(): Observable<MixinResponse<AttachmentResponse>>
 
+    @POST("attachments")
+    suspend fun requestAttachmentSuspend(): MixinResponse<AttachmentResponse>
+
     @GET("attachments/{id}")
     fun getAttachment(
         @Path("id") id: String,

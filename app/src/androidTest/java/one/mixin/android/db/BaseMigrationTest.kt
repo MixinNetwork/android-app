@@ -10,14 +10,16 @@ import org.junit.Rule
 
 open class BaseMigrationTest {
     @Suppress("DEPRECATION")
-    @get:Rule
     val migrationTestHelper =
         MigrationTestHelper(
             InstrumentationRegistry.getInstrumentation(),
-            InstrumentationRegistry.getInstrumentation().targetContext.getDatabasePath(Constants.DataBase.DB_NAME),
+            freshMigrationTestDatabase(Constants.DataBase.DB_NAME),
             AndroidSQLiteDriver(),
             MixinDatabase::class,
         )
+
+    @get:Rule
+    val migrationTestDatabaseRule = migrationTestHelper.withMigrationTestDatabaseCleanup(Constants.DataBase.DB_NAME)
 
     @Before
     fun setUp() {
