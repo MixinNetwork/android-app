@@ -1247,4 +1247,6 @@
     <string name="Details">Detalles</string>
     <string name="perps_tpsl_requires_amount_leverage">Establezca el importe y el apalancamiento antes de configurar el Take Profit y el Stop Loss.</string>
     <string name="perps_estimated_profit">Beneficio estimado %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 Apalancamiento máximo: %1$dx</string>
+    <string name="perps_share_card_volume">💰 Volumen de 24 h: %1$s</string>
 </resources>

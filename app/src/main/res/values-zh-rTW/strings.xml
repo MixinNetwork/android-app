@@ -2725,4 +2725,6 @@
     <string name="Details">詳情</string>
     <string name="perps_tpsl_requires_amount_leverage">在設定止盈止損之前，請先設定好金額和槓桿倍數。</string>
     <string name="perps_estimated_profit">預估收益 %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 最大槓桿：%1$dx</string>
+    <string name="perps_share_card_volume">💰 24小時成交量：%1$s</string>
 </resources>

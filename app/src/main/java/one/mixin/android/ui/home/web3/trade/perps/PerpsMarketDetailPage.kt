@@ -93,7 +93,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
@@ -106,6 +105,7 @@ import one.mixin.android.ui.home.web3.trade.CandleChart
 import one.mixin.android.ui.wallet.MarketDescriptionTextView
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.selectLocalizedMarketDescription
+import one.mixin.android.ui.wallet.MarketShareBottomFragment
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.components.MixinButton
@@ -342,16 +342,19 @@ fun PerpsMarketDetailPage(
                     onAnimationFinished = { completedFavoriteAnimationIntentId = it },
                 )
             }
-            IconButton(onClick = {
-                context.openUrl(
-                    Constants.HelpLink.CUSTOMER_SERVICE,
-                    source = AnalyticsTracker.CustomerServiceSource.PERPS_MARKET_DETAIL,
-                    wallet = AnalyticsTracker.TradeWallet.WEB3,
-                )
-            }) {
+            IconButton(
+                enabled = market != null,
+                onClick = {
+                    val currentMarket = market ?: return@IconButton
+                    val manager = activity?.supportFragmentManager ?: return@IconButton
+                    MarketShareBottomFragment.newInstance(currentMarket, timeFrameValues[selectedTimeFrame])
+                        .show(manager, MarketShareBottomFragment.TAG)
+                },
+            ) {
                 Icon(
-                    painter = painterResource(id = R.drawable.ic_support),
-                    contentDescription = stringResource(R.string.Contact_Support),
+                    painter = painterResource(R.drawable.ic_share_arrow),
+                    modifier = Modifier.size(24.dp),
+                    contentDescription = stringResource(R.string.Share),
                     tint = MixinAppTheme.colors.icon,
                 )
             }

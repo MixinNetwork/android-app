@@ -805,4 +805,6 @@
     <string name="Details">Detail</string>
     <string name="perps_tpsl_requires_amount_leverage">Silakan atur jumlah dan leverage terlebih dahulu sebelum mengatur Ambil Untung dan Hentikan Kerugian.</string>
     <string name="perps_estimated_profit">Estimasi Keuntungan %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 Leverage Maksimum: %1$dx</string>
+    <string name="perps_share_card_volume">💰 Volume 24 Jam: %1$s</string>
 </resources>

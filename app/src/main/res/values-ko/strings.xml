@@ -2724,4 +2724,6 @@
     <string name="Details">세부정보</string>
     <string name="perps_tpsl_requires_amount_leverage">이익 실현 및 손절매를 설정하기 전에 금액과 레버리지를 먼저 설정해 주세요.</string>
     <string name="perps_estimated_profit">예상 수익 %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 최대 레버리지: %1$dx</string>
+    <string name="perps_share_card_volume">💰 24시간 거래량: %1$s</string>
 </resources>

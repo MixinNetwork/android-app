@@ -1193,4 +1193,6 @@
     <string name="Details">詳細</string>
     <string name="perps_tpsl_requires_amount_leverage">利益確定とストップロスを設定する前に、金額とレバレッジを設定してください。</string>
     <string name="perps_estimated_profit">予想利益 %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 最大レバレッジ: %1$dx</string>
+    <string name="perps_share_card_volume">💰 24時間取引高: %1$s</string>
 </resources>

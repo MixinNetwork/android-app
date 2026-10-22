@@ -1188,4 +1188,6 @@
     <string name="Details">Детали</string>
     <string name="perps_tpsl_requires_amount_leverage">Прежде чем настраивать тейк-профит и стоп-лосс, укажите сумму и кредитное плечо.</string>
     <string name="perps_estimated_profit">Ожидаемая прибыль %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 Максимальное плечо: %1$dx</string>
+    <string name="perps_share_card_volume">💰 Объём за 24 ч: %1$s</string>
 </resources>

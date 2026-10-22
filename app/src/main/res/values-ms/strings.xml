@@ -870,4 +870,6 @@
     <string name="Details">Butiran</string>
     <string name="perps_tpsl_requires_amount_leverage">Sila tetapkan amaun dan leveraj sebelum menetapkan Ambil Untung dan Henti Kehilangan.</string>
     <string name="perps_estimated_profit">Anggaran Keuntungan %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 Leveraj Maksimum: %1$dx</string>
+    <string name="perps_share_card_volume">💰 Volum 24 Jam: %1$s</string>
 </resources>
