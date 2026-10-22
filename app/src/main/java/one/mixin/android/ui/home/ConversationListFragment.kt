@@ -59,6 +59,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
@@ -654,12 +655,9 @@ class ConversationListFragment : LinkFragment() {
     private fun enqueueMissingAvatars(items: List<ConversationItem>) {
         items
             .filter { item ->
-                item.isGroupConversation() && (
-                    item.iconUrl() == null ||
-                        !File(
-                            item.iconUrl() ?: "",
-                        ).exists()
-                )
+                val iconUrl = item.iconUrl()
+                item.isGroupConversation() && iconUrl?.isWebUrl() != true &&
+                    (iconUrl.isNullOrEmpty() || !File(iconUrl).exists())
             }.forEach {
                 jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
             }

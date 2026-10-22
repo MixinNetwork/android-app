@@ -162,6 +162,9 @@ class ConversationJob(
                     conversationId?.let { conversationDao.updateGroupMuteUntil(it, cr.muteUntil) }
                 }
             } else {
+                if (type == TYPE_UPDATE) {
+                    conversationRepo.insertOrUpdateConversation(cr)
+                }
                 RxBus.publish(ConversationEvent(type, true))
             }
         } else {

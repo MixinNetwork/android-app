@@ -5,7 +5,6 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
-import android.util.Base64
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -17,6 +16,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentNewGroupBinding
 import one.mixin.android.databinding.ItemContactNormalBinding
+import one.mixin.android.extension.base64RawURLEncode
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
@@ -116,7 +116,7 @@ class NewGroupFragment : BaseFragment() {
                     null
                 } else {
                     val bitmap = uri.getCapturedImage(requireContext().contentResolver)
-                    Base64.encodeToString(bitmap.toBytes(), Base64.NO_WRAP)
+                    bitmap.toBytes().base64RawURLEncode()
                 }
             val conversation =
                 groupViewModel.createGroupConversation(

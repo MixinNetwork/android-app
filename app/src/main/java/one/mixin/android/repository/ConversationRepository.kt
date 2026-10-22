@@ -425,6 +425,7 @@ class ConversationRepository
                     ownerId,
                     data.category,
                     data.name,
+                    data.iconUrl,
                     data.announcement,
                     data.muteUntil,
                     data.createdAt,
@@ -505,6 +506,20 @@ class ConversationRepository
         }
 
         fun observeAllConversationUnread() = conversationDao.observeAllConversationUnread()
+
+        suspend fun updateGroupIcon(
+            conversationId: String,
+            iconBase64: String,
+        ): MixinResponse<ConversationResponse> = withContext(Dispatchers.IO) {
+            val response = conversationService.updateSuspend(
+                conversationId,
+                ConversationRequest(conversationId, iconBase64 = iconBase64),
+            )
+            if (response.isSuccess) {
+                response.data?.let { insertOrUpdateConversation(it) }
+            }
+            response
+        }
 
         suspend fun muteSuspend(
             id: String,
