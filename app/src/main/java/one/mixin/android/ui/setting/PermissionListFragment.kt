@@ -27,6 +27,7 @@ import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
@@ -117,20 +118,20 @@ class PermissionListFragment : BaseFragment(R.layout.fragment_permission_list) {
                     indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                         setCancelable(false)
                     }
-                lifecycleScope.launch {
+                viewLifecycleOwner.launchUntilStop {
                     try {
                         viewModel.deauthApp(app.appId)
                     } catch (e: CancellationException) {
                         throw e
                     } catch (e: Exception) {
-                        pb.dismiss()
                         ErrorHandler.handleError(e)
-                        return@launch
+                        return@launchUntilStop
+                    } finally {
+                        pb.dismiss()
                     }
                     clearRelatedCookies(app)
                     deauthCallback?.onSuccess(app.homeUri)
 
-                    pb.dismiss()
                     activity?.setResult(
                         Activity.RESULT_OK,
                         Intent().apply {

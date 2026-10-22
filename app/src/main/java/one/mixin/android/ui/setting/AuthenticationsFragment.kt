@@ -29,6 +29,7 @@ import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.equalsIgnoreCase
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highLight
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.navTo
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.util.viewBinding
@@ -149,37 +150,40 @@ class AuthenticationsFragment : BaseFragment(R.layout.fragment_authentications) 
                 },
             )
 
-            viewLifecycleOwner.lifecycleScope.launch {
-                handleMixinResponse(
-                    invokeNetwork = { viewModel.authorizations() },
-                    successBlock = { list ->
-                        this@AuthenticationsFragment.list =
-                            list.data?.map {
-                                it.app
-                            }?.run {
-                                MutableList(this.size) {
-                                    this[it]
+            viewLifecycleOwner.launchUntilStop {
+                try {
+                    handleMixinResponse(
+                        invokeNetwork = { viewModel.authorizations() },
+                        successBlock = { list ->
+                            this@AuthenticationsFragment.list =
+                                list.data?.map {
+                                    it.app
+                                }?.run {
+                                    MutableList(this.size) {
+                                        this[it]
+                                    }
                                 }
+                            if (this@AuthenticationsFragment.list?.isNotEmpty() == true) {
+                                authVa.displayedChild = 0
+                            } else {
+                                authVa.displayedChild = 1
                             }
-                        if (this@AuthenticationsFragment.list?.isNotEmpty() == true) {
-                            authVa.displayedChild = 0
-                        } else {
-                            authVa.displayedChild = 1
-                        }
-                        dataChange()
+                            dataChange()
 
-                        authResponseList = list.data?.toMutableList()
-                    },
-                    failureBlock = {
-                        authVa.displayedChild = 1
-                        true
-                    },
-                    exceptionBlock = {
-                        authVa.displayedChild = 1
-                        false
-                    },
-                    endBlock = { progress.visibility = View.GONE },
-                )
+                            authResponseList = list.data?.toMutableList()
+                        },
+                        failureBlock = {
+                            authVa.displayedChild = 1
+                            true
+                        },
+                        exceptionBlock = {
+                            authVa.displayedChild = 1
+                            false
+                        },
+                    )
+                } finally {
+                    progress.visibility = View.GONE
+                }
             }
             authRv.adapter = adapter
         }

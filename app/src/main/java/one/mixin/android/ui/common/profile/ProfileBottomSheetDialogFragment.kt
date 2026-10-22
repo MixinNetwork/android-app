@@ -45,6 +45,7 @@ import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
@@ -459,7 +460,7 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 TYPE_BIOGRAPHY -> AccountUpdateRequest(biography = content)
                 else -> AccountUpdateRequest(content, null)
             }
-        lifecycleScope.launch {
+        launchUntilStop {
             handleMixinResponse(
                 invokeNetwork = { bottomViewModel.update(accountUpdateRequest) },
                 successBlock = { r ->

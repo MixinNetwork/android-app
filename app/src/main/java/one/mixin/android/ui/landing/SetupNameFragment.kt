@@ -10,9 +10,9 @@ import android.view.View.INVISIBLE
 import android.view.View.VISIBLE
 import android.widget.RelativeLayout
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.isActive
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -20,6 +20,7 @@ import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.crypto.PrivacyPreference
 import one.mixin.android.databinding.FragmentSetupNameBinding
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
@@ -94,37 +95,44 @@ class SetupNameFragment : BaseFragment(R.layout.fragment_setup_name) {
             setSubmitting(true)
 
             val accountUpdateRequest = AccountUpdateRequest(name)
-            lifecycleScope.launch {
-                handleMixinResponse(
-                    invokeNetwork = { mobileViewModel.update(accountUpdateRequest) },
-                    successBlock = { r ->
-                        setSubmitting(false)
-                        r.data?.let { data ->
-                            Session.storeAccount(data)
-                            mobileViewModel.insertUser(data.toUser())
-                        }
+            val viewLifecycle = viewLifecycleOwner.lifecycle
+            viewLifecycleOwner.launchUntilStop {
+                try {
+                    handleMixinResponse(
+                        invokeNetwork = { mobileViewModel.update(accountUpdateRequest) },
+                        successBlock = { r ->
+                            setSubmitting(false)
+                            r.data?.let { data ->
+                                Session.storeAccount(data)
+                                mobileViewModel.insertUser(data.toUser())
+                            }
 
-                        nameEt.hideKeyboard()
-                        val context = requireContext()
-                        if (!PrivacyPreference.getIsLoaded(requireContext(), false) ||
-                            !PrivacyPreference.getIsSyncSession(context, false)
-                        ) {
-                            InitializeActivity.showLoading(context, false, source = InitializeActivity.SOURCE_SIGN_UP)
-                        } else {
-                            startActivity(Intent(context, MainActivity::class.java))
-                        }
-                        activity?.finish()
-                    },
-                    failureBlock = {
+                            nameEt.hideKeyboard()
+                            val context = requireContext()
+                            if (!PrivacyPreference.getIsLoaded(requireContext(), false) ||
+                                !PrivacyPreference.getIsSyncSession(context, false)
+                            ) {
+                                InitializeActivity.showLoading(context, false, source = InitializeActivity.SOURCE_SIGN_UP)
+                            } else {
+                                startActivity(Intent(context, MainActivity::class.java))
+                            }
+                            activity?.finish()
+                        },
+                        failureBlock = {
+                            setSubmitting(false, canRetry = true)
+                            false
+                        },
+                        exceptionBlock = { t ->
+                            setSubmitting(false, canRetry = true)
+                            reportException("SetupNameFragment update", t)
+                            false
+                        },
+                    )
+                } finally {
+                    if (!isActive && viewLifecycle.currentState != Lifecycle.State.DESTROYED) {
                         setSubmitting(false, canRetry = true)
-                        false
-                    },
-                    exceptionBlock = { t ->
-                        setSubmitting(false, canRetry = true)
-                        reportException("SetupNameFragment update", t)
-                        false
-                    },
-                )
+                    }
+                }
             }
         }
     }

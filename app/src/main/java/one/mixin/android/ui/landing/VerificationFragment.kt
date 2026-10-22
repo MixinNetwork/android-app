@@ -14,9 +14,11 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
@@ -35,6 +37,7 @@ import one.mixin.android.extension.alert
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.containsIgnoreCase
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putInt
@@ -245,29 +248,38 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
 
     private fun handleDeleteAccount() {
         showLoading()
-        lifecycleScope.launch {
-            handleMixinResponse(
-                invokeNetwork = {
-                    viewModel.deactiveVerification(requireArguments().getString(ARGS_ID)!!, binding.pinVerificationView.code())
-                },
-                successBlock = { r ->
-                    binding.verificationNextFab.hide()
-                    binding.verificationCover.visibility = GONE
-                    DeleteAccountPinBottomSheetDialogFragment.newInstance(
-                        r.data!!.id,
-                    ).showNow(parentFragmentManager, DeleteAccountPinBottomSheetDialogFragment.TAG)
-                },
-                failureBlock = { r ->
-                    binding.verificationNextFab.hide()
-                    binding.verificationCover.visibility = GONE
-                    handleFailure(r)
-                    true
-                },
-                exceptionBlock = { t ->
-                    handleError(t)
-                    true
-                },
-            )
+        val verificationId = requireArguments().getString(ARGS_ID)!!
+        val code = binding.pinVerificationView.code()
+        val viewLifecycle = viewLifecycleOwner.lifecycle
+        viewLifecycleOwner.launchUntilStop {
+            try {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        viewModel.deactiveVerification(verificationId, code)
+                    },
+                    successBlock = { r ->
+                        binding.verificationNextFab.hide()
+                        binding.verificationCover.visibility = GONE
+                        DeleteAccountPinBottomSheetDialogFragment.newInstance(
+                            r.data!!.id,
+                        ).showNow(parentFragmentManager, DeleteAccountPinBottomSheetDialogFragment.TAG)
+                    },
+                    failureBlock = { r ->
+                        binding.verificationNextFab.hide()
+                        binding.verificationCover.visibility = GONE
+                        handleFailure(r)
+                        true
+                    },
+                    exceptionBlock = { t ->
+                        handleError(t)
+                        true
+                    },
+                )
+            } finally {
+                if (!isActive && viewLifecycle.currentState != Lifecycle.State.DESTROYED) {
+                    hideLoading()
+                }
+            }
         }
     }
 
@@ -446,31 +458,38 @@ class VerificationFragment : PinCodeFragment(R.layout.fragment_verification) {
                 verificationRequest.genTime = t?.genTime
             }
         }
-        lifecycleScope.launch {
-            handleMixinResponse(
-                invokeNetwork = { viewModel.verification(verificationRequest) },
-                successBlock = { r ->
-                    hasEmergencyContact = (r.data as VerificationResponse).hasEmergencyContact
-                    hideLoading()
-                    binding.pinVerificationView.clear()
-                    startCountDown()
-                },
-                failureBlock = { r ->
-                    if (r.errorCode == NEED_CAPTCHA) {
-                        initAndLoadCaptcha(r.errorDescription)
-                        true
-                    } else {
+        val viewLifecycle = viewLifecycleOwner.lifecycle
+        viewLifecycleOwner.launchUntilStop {
+            try {
+                handleMixinResponse(
+                    invokeNetwork = { viewModel.verification(verificationRequest) },
+                    successBlock = { r ->
+                        hasEmergencyContact = (r.data as VerificationResponse).hasEmergencyContact
                         hideLoading()
-                        false
-                    }
-                },
-                exceptionBlock = { t ->
-                    handleError(t)
-                    binding.verificationNextFab.visibility = GONE
-                    captchaView?.hide()
-                    true
-                },
-            )
+                        binding.pinVerificationView.clear()
+                        startCountDown()
+                    },
+                    failureBlock = { r ->
+                        if (r.errorCode == NEED_CAPTCHA) {
+                            initAndLoadCaptcha(r.errorDescription)
+                            true
+                        } else {
+                            hideLoading()
+                            false
+                        }
+                    },
+                    exceptionBlock = { t ->
+                        handleError(t)
+                        binding.verificationNextFab.visibility = GONE
+                        captchaView?.hide()
+                        true
+                    },
+                )
+            } finally {
+                if (!isActive && viewLifecycle.currentState != Lifecycle.State.DESTROYED) {
+                    hideLoading()
+                }
+            }
         }
     }
 

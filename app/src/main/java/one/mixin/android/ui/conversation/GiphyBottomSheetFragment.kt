@@ -9,16 +9,15 @@ import android.view.inputmethod.EditorInfo
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.view.updateLayoutParams
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentGiphySearchBottomSheetBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
@@ -39,7 +38,7 @@ import timber.log.Timber
 class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "GiphyBottomSheetFragment"
-        const val LIMIT = 51
+        const val LIMIT = 50
         const val INTERVAL = 4000
 
         const val POS_RV = 0
@@ -132,7 +131,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     private fun update(list: List<Gif>) {
         offset += LIMIT
         totalGifs.addAll(list)
-        adapter.submitList(totalGifs)
+        adapter.submitList(totalGifs.toList())
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -142,7 +141,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
             binding.stickerVa.displayedChild = POS_PB
         }
         val query = binding.searchEt.et.text.toString()
-        lifecycleScope.launch {
+        launchUntilStop {
             val list =
                 try {
                     if (searching) {
@@ -151,6 +150,8 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                         bottomViewModel.trendingGifs(LIMIT, offset)
                     }
                 } catch (e: CancellationException) {
+                    fetching = false
+                    binding.stickerVa.displayedChild = if (totalGifs.isEmpty()) POS_EMPTY else POS_RV
                     throw e
                 } catch (t: Exception) {
                     fetching = false
@@ -159,14 +160,14 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
                     if (t is HttpException && t.code() == 429) {
                         toast(R.string.giphy_api_rate_limit_exceeded)
                     }
-                    return@launch
+                    return@launchUntilStop
                 }
-            if (!isAdded) return@launch
+            if (!isAdded) return@launchUntilStop
             if (offset == 0) {
                 adapter.notifyDataSetChanged()
             }
             if (list.isEmpty()) {
-                binding.stickerVa.displayedChild = POS_EMPTY
+                binding.stickerVa.displayedChild = if (totalGifs.isEmpty()) POS_EMPTY else POS_RV
             } else {
                 binding.stickerVa.displayedChild = POS_RV
                 update(list)

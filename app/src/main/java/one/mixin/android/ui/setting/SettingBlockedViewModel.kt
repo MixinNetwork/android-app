@@ -2,9 +2,8 @@ package one.mixin.android.ui.setting
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 import one.mixin.android.api.service.UserService
 import one.mixin.android.repository.AccountRepository
 import one.mixin.android.repository.UserRepository
@@ -20,15 +19,20 @@ class SettingBlockedViewModel
         private val accountRepository: AccountRepository,
         private val userRepository: UserRepository,
     ) : ViewModel() {
-        fun blockingUsers(): LiveData<List<User>> {
-            viewModelScope.launch {
-                val response = runCatching { userService.blockingUsers() }.getOrNull() ?: return@launch
-                if (!response.isSuccess) return@launch
-                response.data?.forEach { user ->
-                    user.relationship = UserRelationship.BLOCKING.name
-                    userRepository.upsertBlock(user)
-                }
+        suspend fun refreshBlockingUsers() {
+            val response = try {
+                userService.blockingUsers()
+            } catch (e: CancellationException) {
+                throw e
+            } catch (_: Exception) {
+                return
             }
-            return accountRepository.findUsersByType(UserRelationship.BLOCKING.name)
+            if (!response.isSuccess) return
+            response.data?.forEach { user ->
+                user.relationship = UserRelationship.BLOCKING.name
+                userRepository.upsertBlock(user)
+            }
         }
+
+        fun blockingUsers(): LiveData<List<User>> = accountRepository.findUsersByType(UserRelationship.BLOCKING.name)
     }

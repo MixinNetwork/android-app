@@ -147,40 +147,44 @@ class NotificationsFragment : BaseFragment(R.layout.fragment_notifications) {
                 }
             pb.show()
 
-            handleMixinResponse(
-                invokeNetwork = {
-                    viewModel.preferences(
-                        if (isNotification) {
-                            AccountUpdateRequest(
-                                fiatCurrency = Session.getFiatCurrency(),
-                                transferNotificationThreshold = threshold,
-                            )
-                        } else {
-                            AccountUpdateRequest(
-                                fiatCurrency = Session.getFiatCurrency(),
-                                transferConfirmationThreshold = threshold,
-                            )
-                        },
-                    )
-                },
-                successBlock = {
-                    it.data?.let { account ->
-                        Session.storeAccount(account)
-                        if (isNotification) {
-                            refreshNotification(account.transferNotificationThreshold)
-                        } else {
-                            refreshLargeAmount(account.transferConfirmationThreshold)
+            try {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        viewModel.preferences(
+                            if (isNotification) {
+                                AccountUpdateRequest(
+                                    fiatCurrency = Session.getFiatCurrency(),
+                                    transferNotificationThreshold = threshold,
+                                )
+                            } else {
+                                AccountUpdateRequest(
+                                    fiatCurrency = Session.getFiatCurrency(),
+                                    transferConfirmationThreshold = threshold,
+                                )
+                            },
+                        )
+                    },
+                    successBlock = {
+                        it.data?.let { account ->
+                            Session.storeAccount(account)
+                            if (isNotification) {
+                                refreshNotification(account.transferNotificationThreshold)
+                            } else {
+                                refreshLargeAmount(account.transferConfirmationThreshold)
+                            }
                         }
-                    }
-                },
-                doAfterNetworkSuccess = {
-                    pb.dismiss()
-                },
-                exceptionBlock = {
-                    pb.dismiss()
-                    return@handleMixinResponse false
-                },
-            )
+                    },
+                    doAfterNetworkSuccess = {
+                        pb.dismiss()
+                    },
+                    exceptionBlock = {
+                        pb.dismiss()
+                        return@handleMixinResponse false
+                    },
+                )
+            } finally {
+                pb.dismiss()
+            }
         }
 
     @SuppressLint("SetTextI18n")

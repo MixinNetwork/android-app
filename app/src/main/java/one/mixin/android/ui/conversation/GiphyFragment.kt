@@ -11,16 +11,15 @@ import android.widget.ImageView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.core.view.updateLayoutParams
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentStickerBinding
 import one.mixin.android.extension.clear
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
@@ -118,7 +117,7 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
                     }
                 }
             stickerProgress.visibility = View.VISIBLE
-            viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.launchUntilStop {
                 try {
                     val list = stickerViewModel.trendingGifs(26, 0)
                     giphyAdapter.data = list
@@ -130,8 +129,9 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
                     if (t is HttpException && t.code() == 429) {
                         toast(R.string.giphy_api_rate_limit_exceeded)
                     }
+                } finally {
+                    stickerProgress.visibility = View.GONE
                 }
-                stickerProgress.visibility = View.GONE
             }
         }
     }

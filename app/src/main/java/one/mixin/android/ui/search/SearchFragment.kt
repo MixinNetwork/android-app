@@ -33,6 +33,7 @@ import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isValidMao
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -170,32 +171,35 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                     binding.searchRv.hideKeyboard()
                     searchAdapter.searchingId = true
                     val query = searchAdapter.query
-                    viewLifecycleOwner.lifecycleScope.launch {
-                        handleMixinResponse(
-                            invokeNetwork = { searchViewModel.search(query) },
-                            successBlock = { r ->
-                                r.data?.let { data ->
-                                    if (data.userId == Session.getAccountId()) {
-                                        ProfileBottomSheetDialogFragment.newInstance().showNow(
-                                            parentFragmentManager,
-                                            UserBottomSheetDialogFragment.TAG,
-                                        )
-                                    } else {
-                                        searchViewModel.insertUser(user = data)
-                                        showUserBottom(parentFragmentManager, data, botEntrySource = AnalyticsTracker.BotSource.SEARCH_MAO_NAME)
+                    viewLifecycleOwner.launchUntilStop {
+                        try {
+                            handleMixinResponse(
+                                invokeNetwork = { searchViewModel.search(query) },
+                                successBlock = { r ->
+                                    r.data?.let { data ->
+                                        if (data.userId == Session.getAccountId()) {
+                                            ProfileBottomSheetDialogFragment.newInstance().showNow(
+                                                parentFragmentManager,
+                                                UserBottomSheetDialogFragment.TAG,
+                                            )
+                                        } else {
+                                            searchViewModel.insertUser(user = data)
+                                            showUserBottom(parentFragmentManager, data, botEntrySource = AnalyticsTracker.BotSource.SEARCH_MAO_NAME)
+                                        }
                                     }
-                                }
-                            },
-                            failureBlock = { r ->
-                                if (r.errorCode == ErrorHandler.NOT_FOUND) {
-                                    toast(R.string.User_not_found)
-                                    true
-                                } else {
-                                    false
-                                }
-                            },
-                            endBlock = { searchAdapter.searchingId = false },
-                        )
+                                },
+                                failureBlock = { r ->
+                                    if (r.errorCode == ErrorHandler.NOT_FOUND) {
+                                        toast(R.string.User_not_found)
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                },
+                            )
+                        } finally {
+                            searchAdapter.searchingId = false
+                        }
                     }
                 }
 

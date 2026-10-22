@@ -65,6 +65,7 @@ import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getPublicDownloadPath
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
@@ -427,7 +428,7 @@ class InscriptionActivity : BaseActivity() {
         content: String,
     ) {
         val accountUpdateRequest = AccountUpdateRequest(null, content)
-        lifecycleScope.launch {
+        launchUntilStop {
             handleMixinResponse(
                 invokeNetwork = { web3ViewModel.update(accountUpdateRequest) },
                 successBlock = { r ->

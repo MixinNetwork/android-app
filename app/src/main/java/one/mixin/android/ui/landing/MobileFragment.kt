@@ -14,10 +14,12 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.i18n.phonenumbers.PhoneNumberUtil
 import com.google.i18n.phonenumbers.Phonenumber
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.handleMixinResponse
@@ -34,6 +36,7 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.highlightStarTag
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.showKeyboard
@@ -428,65 +431,72 @@ class MobileFragment: BaseFragment(R.layout.fragment_mobile) {
             }
         }
         binding.continueBn.displayedChild = 1
-        lifecycleScope.launch {
-            handleMixinResponse(
-                invokeNetwork = { landingViewModel.verification(verificationRequest) },
-                successBlock = { r ->
-                    hideLoading()
-
-                    val verificationResponse = r.data as VerificationResponse
-                    Timber.i(
-                        "LoginFlow mobile_verification_request_success from=$from deactivation_dialog=${!r.data?.deactivationEffectiveAt.isNullOrBlank()} emergency_contact=${verificationResponse.hasEmergencyContact}"
-                    )
-                    if (!r.data?.deactivationEffectiveAt.isNullOrBlank() && from == FROM_LANDING) {
-                        LandingDeleteAccountFragment.newInstance(r.data?.deactivationRequestedAt, r.data?.deactivationEffectiveAt)
-                            .setContinueCallback {
-                                activity?.addFragment(
-                                    this@MobileFragment,
-                                    VerificationFragment.newInstance(
-                                        verificationResponse.id,
-                                        phoneNum,
-                                        pin,
-                                        verificationResponse.hasEmergencyContact,
-                                        from,
-                                        addPhoneSource,
-                                    ),
-                                    VerificationFragment.TAG,
-                                )
-                            }.showNow(parentFragmentManager, LandingDeleteAccountFragment.TAG)
-                    } else {
-                        activity?.addFragment(
-                            this@MobileFragment,
-                            VerificationFragment.newInstance(
-                                verificationResponse.id,
-                                phoneNum,
-                                pin,
-                                verificationResponse.hasEmergencyContact,
-                                from,
-                                addPhoneSource,
-                            ),
-                            VerificationFragment.TAG,
-                        )
-                    }
-                },
-                failureBlock = { r ->
-                    if (r.errorCode == NEED_CAPTCHA) {
-                        Timber.i("LoginFlow mobile_verification_request_captcha_required from=$from")
-                        initAndLoadCaptcha(r.errorDescription)
-                        true
-                    } else {
-                        Timber.i("LoginFlow mobile_verification_request_failed from=$from code=${r.errorCode}")
+        val viewLifecycle = viewLifecycleOwner.lifecycle
+        viewLifecycleOwner.launchUntilStop {
+            try {
+                handleMixinResponse(
+                    invokeNetwork = { landingViewModel.verification(verificationRequest) },
+                    successBlock = { r ->
                         hideLoading()
+
+                        val verificationResponse = r.data as VerificationResponse
+                        Timber.i(
+                            "LoginFlow mobile_verification_request_success from=$from deactivation_dialog=${!r.data?.deactivationEffectiveAt.isNullOrBlank()} emergency_contact=${verificationResponse.hasEmergencyContact}"
+                        )
+                        if (!r.data?.deactivationEffectiveAt.isNullOrBlank() && from == FROM_LANDING) {
+                            LandingDeleteAccountFragment.newInstance(r.data?.deactivationRequestedAt, r.data?.deactivationEffectiveAt)
+                                .setContinueCallback {
+                                    activity?.addFragment(
+                                        this@MobileFragment,
+                                        VerificationFragment.newInstance(
+                                            verificationResponse.id,
+                                            phoneNum,
+                                            pin,
+                                            verificationResponse.hasEmergencyContact,
+                                            from,
+                                            addPhoneSource,
+                                        ),
+                                        VerificationFragment.TAG,
+                                    )
+                                }.showNow(parentFragmentManager, LandingDeleteAccountFragment.TAG)
+                        } else {
+                            activity?.addFragment(
+                                this@MobileFragment,
+                                VerificationFragment.newInstance(
+                                    verificationResponse.id,
+                                    phoneNum,
+                                    pin,
+                                    verificationResponse.hasEmergencyContact,
+                                    from,
+                                    addPhoneSource,
+                                ),
+                                VerificationFragment.TAG,
+                            )
+                        }
+                    },
+                    failureBlock = { r ->
+                        if (r.errorCode == NEED_CAPTCHA) {
+                            Timber.i("LoginFlow mobile_verification_request_captcha_required from=$from")
+                            initAndLoadCaptcha(r.errorDescription)
+                            true
+                        } else {
+                            Timber.i("LoginFlow mobile_verification_request_failed from=$from code=${r.errorCode}")
+                            hideLoading()
+                            false
+                        }
+                    },
+                    exceptionBlock = { t ->
+                        hideLoading()
+                        reportException("$TAG loginVerification", t)
+                        Timber.e(t)
                         false
-                    }
-                },
-                exceptionBlock = { t ->
+                    },
+                )
+            } finally {
+                if (!isActive && viewLifecycle.currentState != Lifecycle.State.DESTROYED) {
                     hideLoading()
-                    reportException("$TAG loginVerification", t)
-                    Timber.e(t)
-                    false
-                },
-            )
+                }
+            }
         }
     }
 

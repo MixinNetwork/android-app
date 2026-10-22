@@ -366,32 +366,36 @@ class WalletPasswordFragment :
             dialog.setCancelable(false)
             dialog.show()
 
-            handleMixinResponse(
-                invokeNetwork = { walletViewModel.verifyPin(pinCode) },
-                successBlock = { response ->
-                    dialog.dismiss()
-                    context?.updatePinCheck()
-                    response.data?.let {
-                        val pin = binding.pin.code()
-                        val tipBundle = requireArguments().getTipBundle()
-                        tipBundle.oldPin = pin
-                        toStep1()
-                        binding.pin.clear()
-                    }
-                },
-                exceptionBlock = {
-                    if (it is TipNetworkException) {
-                        return@handleMixinResponse handleFailure(it.error, dialog)
-                    } else {
+            try {
+                handleMixinResponse(
+                    invokeNetwork = { walletViewModel.verifyPin(pinCode) },
+                    successBlock = { response ->
                         dialog.dismiss()
-                        binding.pin.clear()
-                        return@handleMixinResponse false
-                    }
-                },
-                failureBlock = {
-                    return@handleMixinResponse handleFailure(requireNotNull(it.error), dialog)
-                },
-            )
+                        context?.updatePinCheck()
+                        response.data?.let {
+                            val pin = binding.pin.code()
+                            val tipBundle = requireArguments().getTipBundle()
+                            tipBundle.oldPin = pin
+                            toStep1()
+                            binding.pin.clear()
+                        }
+                    },
+                    exceptionBlock = {
+                        if (it is TipNetworkException) {
+                            return@handleMixinResponse handleFailure(it.error, dialog)
+                        } else {
+                            dialog.dismiss()
+                            binding.pin.clear()
+                            return@handleMixinResponse false
+                        }
+                    },
+                    failureBlock = {
+                        return@handleMixinResponse handleFailure(requireNotNull(it.error), dialog)
+                    },
+                )
+            } finally {
+                dialog.dismiss()
+            }
         }
 
     private suspend fun handleFailure(

@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -58,6 +59,7 @@ fun BlockedPage() {
                 .fillMaxSize(),
         ) {
             val viewModel = hiltViewModel<SettingBlockedViewModel>()
+            LaunchedEffect(viewModel) { viewModel.refreshBlockingUsers() }
             val users by viewModel.blockingUsers().observeAsState()
             if (users.isNullOrEmpty()) {
                 EmptyBlockedView()

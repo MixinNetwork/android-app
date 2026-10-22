@@ -24,6 +24,7 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.databinding.FragmentJoinGroupBottomSheetBinding
 import one.mixin.android.event.AvatarEvent
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.screenHeight
@@ -81,27 +82,28 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
         binding.joinTv.setOnClickListener {
             binding.joinTv.visibility = View.INVISIBLE
             binding.joinProgress.visibility = View.VISIBLE
-            lifecycleScope.launch {
-                handleMixinResponse(
-                    invokeNetwork = { bottomViewModel.join(code) },
-                    successBlock = {
-                        val conversationResponse = it.data as ConversationResponse
-                        val accountId = Session.getAccountId()
-                        val result =
-                            conversationResponse.participants.any { participant ->
-                                participant.userId == accountId
+            launchUntilStop {
+                try {
+                    handleMixinResponse(
+                        invokeNetwork = { bottomViewModel.join(code) },
+                        successBlock = {
+                            val conversationResponse = it.data as ConversationResponse
+                            val accountId = Session.getAccountId()
+                            val result =
+                                conversationResponse.participants.any { participant ->
+                                    participant.userId == accountId
+                                }
+                            if (result) {
+                                bottomViewModel.refreshConversation(c.conversationId)
+                                ConversationActivity.showAndClear(requireContext(), c.conversationId)
+                                dismiss()
                             }
-                        if (result) {
-                            bottomViewModel.refreshConversation(c.conversationId)
-                            ConversationActivity.showAndClear(requireContext(), c.conversationId)
-                            dismiss()
-                        }
-                    },
-                    endBlock = {
-                        binding.joinTv.visibility = View.VISIBLE
-                        binding.joinProgress.visibility = View.GONE
-                    },
-                )
+                        },
+                    )
+                } finally {
+                    binding.joinTv.visibility = View.VISIBLE
+                    binding.joinProgress.visibility = View.GONE
+                }
             }
         }
         binding.detailTv.movementMethod = LinkMovementMethod()
