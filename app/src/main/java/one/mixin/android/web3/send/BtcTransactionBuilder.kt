@@ -2,6 +2,7 @@ package one.mixin.android.web3.send
 
 import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.WalletOutput
+import one.mixin.android.crypto.UtxoChainConfig
 import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.toHex
@@ -21,24 +22,24 @@ import java.nio.ByteBuffer
 object BtcTransactionBuilder {
 
     private const val RBF_SEQUENCE: Long = 0xfffffffdL
-    private const val BTC_MINIMUM_OUTPUT_SATOSHIS: Long = 1_000L
-    private const val PEARL_MINIMUM_OUTPUT_SATOSHIS: Long = 100_000L
-    private const val INCREMENTAL_RELAY_FEE_SAT_PER_VB: Long = 1L
-    private const val RBF_SAFETY_EXTRA_SATOSHIS: Long = 300L
-
     private val satoshisPerBtc: BigDecimal = BigDecimal.valueOf(Coin.COIN.value)
 
     private fun calculateRbfRequiredTotalFeeSatoshis(
         oldTotalFeeSatoshis: Long,
         replacementVirtualSize: Int,
         targetFeeRateSatPerVb: Long,
+        config: UtxoChainConfig,
     ): Long {
         if (replacementVirtualSize <= 0) {
             throw IllegalArgumentException("invalid transaction")
         }
         val feeByTargetRate: Long = replacementVirtualSize.toLong() * targetFeeRateSatPerVb
-        val feeByRbfIncrement: Long = oldTotalFeeSatoshis + (replacementVirtualSize.toLong() * INCREMENTAL_RELAY_FEE_SAT_PER_VB)
-        val feeBySafetyExtra: Long = oldTotalFeeSatoshis + RBF_SAFETY_EXTRA_SATOSHIS
+        val incrementalFee = ceilDiv(
+            replacementVirtualSize.toLong() * config.incrementalRelayFeeAtomicPerKvB,
+            1_000L,
+        )
+        val feeByRbfIncrement: Long = oldTotalFeeSatoshis + incrementalFee
+        val feeBySafetyExtra: Long = oldTotalFeeSatoshis + config.replacementSafetyExtraAtomic
         return maxOf(feeByTargetRate, feeByRbfIncrement, feeBySafetyExtra)
     }
 
@@ -95,15 +96,16 @@ object BtcTransactionBuilder {
         feeRate: BigDecimal,
         minimumChangeSatoshis: Long,
     ): BuiltBtcTransaction {
-        require(chainId in Constants.Web3UtxoChainIds) { "Unsupported UTXO chain: $chainId" }
+        val config = UtxoChainConfig.forChain(chainId)
         require(localUtxos.all { it.assetId == chainId && it.address == fromAddress }) {
             "UTXOs do not belong to the selected chain and address"
         }
         val changeAddress = parseAddress(chainId, fromAddress)
         val recipientAddress = parseAddress(chainId, toAddress)
         val sendAmount = Coin.parseCoin(amountBtc)
-        require(sendAmount.value >= minimumOutputSatoshis(chainId)) {
-            "Amount must be at least ${minimumTransferAmount(chainId).toPlainString()}"
+        val recipientDustAtomic = config.dustThresholdAtomic(recipientAddress.outputScriptType)
+        require(sendAmount.value >= recipientDustAtomic) {
+            "Amount must be at least ${BigDecimal.valueOf(recipientDustAtomic).divide(satoshisPerBtc).toPlainString()}"
         }
         val minimumChangeAmount: Coin = Coin.valueOf(minimumChangeSatoshis)
         var selectedAmount: Coin = Coin.ZERO
@@ -182,9 +184,10 @@ object BtcTransactionBuilder {
         maxExtraInputs: Int = 2,
     ): String {
         validateUtxos(chainId, fromAddress, localUtxos)
+        val config = UtxoChainConfig.forChain(chainId)
         val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
-        require(chainId != Constants.ChainId.PEARL_CHAIN_ID || isReplaceable(cleanedRawHex)) {
-            "Pearl transaction does not signal RBF"
+        require(!config.requiresOriginalRbfSignal || isReplaceable(cleanedRawHex)) {
+            "Transaction does not signal RBF"
         }
         val originalTx: BtcTransaction = BtcTransaction.read(java.nio.ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
         val fromScriptBytes: ByteArray = buildOutputScript(chainId, fromAddress).program()
@@ -194,6 +197,9 @@ object BtcTransactionBuilder {
         val originalOutputAmount: Coin = originalOutputs.fold(Coin.ZERO) { acc, output -> acc.add(output.value) }
         val oldTotalFeeSatoshis: Long = originalInputAmount.subtract(originalOutputAmount).value
         val targetFeeRateSatPerVb: Long = feeRate.setScale(0, RoundingMode.UP).longValueExact()
+        if (config.requiresHigherTargetFeeRate) {
+            requireTargetFeeRateIncrease(chainId, originalTx, oldTotalFeeSatoshis, targetFeeRateSatPerVb)
+        }
         val extraUtxos: List<WalletOutput> = findAdditionalUtxos(originalInputs, localUtxos, maxExtraInputs)
         val minimumChangeAmount: Coin = Coin.valueOf(minimumChangeSatoshis)
         val changeIndex: Int = originalOutputs.indexOfFirst { output -> output.scriptBytes.contentEquals(fromScriptBytes) }
@@ -214,10 +220,11 @@ object BtcTransactionBuilder {
                 oldTotalFeeSatoshis = oldTotalFeeSatoshis,
                 replacementVirtualSize = virtualSize,
                 targetFeeRateSatPerVb = targetFeeRateSatPerVb,
+                config = config,
             )
             val feeDelta: Coin = Coin.valueOf(desiredTotalFeeSatoshis - oldTotalFeeSatoshis)
             if (feeDelta.isZero || feeDelta.isNegative) {
-                return cleanedRawHex
+                throw IllegalArgumentException("Replacement fee must increase")
             }
             val updatedChange: Coin = if (changeIndex >= 0) {
                 originalOutputs[changeIndex].value.add(extraInputAmount).subtract(feeDelta)
@@ -257,9 +264,10 @@ object BtcTransactionBuilder {
         maxExtraInputs: Int = 2,
     ): String {
         validateUtxos(chainId, fromAddress, localUtxos)
+        val config = UtxoChainConfig.forChain(chainId)
         val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
-        require(chainId != Constants.ChainId.PEARL_CHAIN_ID || isReplaceable(cleanedRawHex)) {
-            "Pearl transaction does not signal RBF"
+        require(!config.requiresOriginalRbfSignal || isReplaceable(cleanedRawHex)) {
+            "Transaction does not signal RBF"
         }
         val originalTx: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
         val originalInputs: List<TransactionInput> = originalTx.inputs
@@ -272,6 +280,9 @@ object BtcTransactionBuilder {
         }
         val oldTotalFeeSatoshis: Long = originalInputAmount.subtract(originalOutputAmount).value
         val targetFeeRateSatPerVb: Long = feeRate.setScale(0, RoundingMode.UP).longValueExact()
+        if (config.requiresHigherTargetFeeRate) {
+            requireTargetFeeRateIncrease(chainId, originalTx, oldTotalFeeSatoshis, targetFeeRateSatPerVb)
+        }
         for (extraCount: Int in 0..extraUtxos.size) {
             val usedExtraUtxos: List<WalletOutput> = extraUtxos.take(extraCount)
             val extraInputAmount: Coin = usedExtraUtxos.fold(Coin.ZERO) { acc: Coin, utxo: WalletOutput ->
@@ -286,6 +297,7 @@ object BtcTransactionBuilder {
                 oldTotalFeeSatoshis = oldTotalFeeSatoshis,
                 replacementVirtualSize = replacementVSize,
                 targetFeeRateSatPerVb = targetFeeRateSatPerVb,
+                config = config,
             )
             val sendToSelf: Coin = candidateInputAmount.subtract(Coin.valueOf(desiredTotalFeeSatoshis))
             if (sendToSelf.isNegative || sendToSelf.isZero || sendToSelf.isLessThan(minimumChangeAmount)) {
@@ -329,7 +341,7 @@ object BtcTransactionBuilder {
         rawTransactionHex: String,
         fromAddress: String,
     ): Boolean {
-        if (chainId !in Constants.Web3UtxoChainIds) return false
+        if (runCatching { UtxoChainConfig.forChain(chainId) }.isFailure) return false
         val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
         if (cleanedRawHex.isBlank()) return false
         val transaction: BtcTransaction = runCatching {
@@ -344,7 +356,7 @@ object BtcTransactionBuilder {
         chainId: String,
         rawTransactionHex: String,
     ): Int {
-        require(chainId in Constants.Web3UtxoChainIds) { "Unsupported UTXO chain: $chainId" }
+        UtxoChainConfig.forChain(chainId)
         val cleanedRawHex: String = rawTransactionHex.removePrefix("0x").trim()
         val transaction: BtcTransaction = BtcTransaction.read(ByteBuffer.wrap(cleanedRawHex.hexStringToByteArray()))
         return estimateVirtualSize(transaction, chainId)
@@ -363,21 +375,14 @@ object BtcTransactionBuilder {
         ScriptBuilder.createOutputScript(parseAddress(chainId, address))
 
     internal fun minimumTransferAmount(chainId: String): BigDecimal =
-        BigDecimal.valueOf(minimumOutputSatoshis(chainId))
+        BigDecimal.valueOf(UtxoChainConfig.forChain(chainId).conservativeMinimumRecipientAtomic)
             .divide(satoshisPerBtc)
             .stripTrailingZeros()
 
-    private fun minimumChangeSatoshis(chainId: String): Long = minimumOutputSatoshis(chainId)
-
-    private fun minimumOutputSatoshis(chainId: String): Long =
-        when (chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> BTC_MINIMUM_OUTPUT_SATOSHIS
-            Constants.ChainId.PEARL_CHAIN_ID -> PEARL_MINIMUM_OUTPUT_SATOSHIS
-            else -> throw IllegalArgumentException("Unsupported UTXO chain: $chainId")
-        }
+    private fun minimumChangeSatoshis(chainId: String): Long = UtxoChainConfig.forChain(chainId).minimumChangeAtomic
 
     private fun validateUtxos(chainId: String, fromAddress: String, localUtxos: List<WalletOutput>) {
-        require(chainId in Constants.Web3UtxoChainIds) { "Unsupported UTXO chain: $chainId" }
+        UtxoChainConfig.forChain(chainId)
         if (localUtxos.isEmpty()) throw InsufficientBtcBalanceException()
         require(localUtxos.all { it.assetId == chainId && it.address == fromAddress }) {
             "UTXOs do not belong to the selected chain and address"
@@ -388,10 +393,15 @@ object BtcTransactionBuilder {
         UtxoKeyGenerator.parseAddress(address, chainId)
 
     private fun estimateVirtualSize(transaction: BtcTransaction, chainId: String): Int {
-        if (chainId != Constants.ChainId.PEARL_CHAIN_ID) return transaction.vsize
+        if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID) return transaction.vsize
         val originalInputs = transaction.inputs.toList()
         originalInputs.forEachIndexed { index, input ->
-            transaction.replaceInput(index, input.withWitness(org.bitcoinj.core.TransactionWitness.of(ByteArray(64))))
+            val witness = if (chainId == Constants.ChainId.PEARL_CHAIN_ID) {
+                org.bitcoinj.core.TransactionWitness.of(ByteArray(64))
+            } else {
+                org.bitcoinj.core.TransactionWitness.of(ByteArray(73), ByteArray(33))
+            }
+            transaction.replaceInput(index, input.withWitness(witness))
         }
         val virtualSize = transaction.vsize
         originalInputs.forEachIndexed(transaction::replaceInput)
@@ -433,6 +443,21 @@ object BtcTransactionBuilder {
         val outputAmount: Coin = tx.outputs.fold(Coin.ZERO) { acc, output -> acc.add(output.value) }
         return inputAmount.subtract(outputAmount).value
     }
+
+    private fun requireTargetFeeRateIncrease(
+        chainId: String,
+        originalTx: BtcTransaction,
+        oldTotalFeeAtomic: Long,
+        targetFeeRateAtomicPerVb: Long,
+    ) {
+        require(targetFeeRateAtomicPerVb > 0) { "Target fee rate must be positive" }
+        val originalVirtualSize = estimateVirtualSize(originalTx, chainId)
+        require(oldTotalFeeAtomic < targetFeeRateAtomicPerVb * originalVirtualSize.toLong()) {
+            "Target fee rate must exceed the original fee rate"
+        }
+    }
+
+    private fun ceilDiv(value: Long, divisor: Long): Long = (value + divisor - 1L) / divisor
 }
 
 class InsufficientBtcBalanceException(
