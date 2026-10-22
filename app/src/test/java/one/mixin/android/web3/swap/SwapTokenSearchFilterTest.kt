@@ -87,6 +87,13 @@ class SwapTokenSearchFilterTest {
     }
 
     @Test
+    fun litecoinRequiresItsOwnWalletAddress() {
+        val tokens = listOf(token("litecoin", Constants.ChainId.Litecoin))
+        assertEquals(emptyList<SwapToken>(), filterSwapTokensByWalletChains(tokens, setOf(Constants.ChainId.BITCOIN_CHAIN_ID), false))
+        assertEquals(tokens, filterSwapTokensByWalletChains(tokens, setOf(Constants.ChainId.Litecoin), false))
+    }
+
+    @Test
     fun privacyWalletDoesNotApplyWeb3AddressChainFiltering() {
         val tokens = listOf(
             token("xlayer", Constants.ChainId.XLayer),

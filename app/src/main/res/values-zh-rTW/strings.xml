@@ -148,6 +148,8 @@
     <string name="Change">更改</string>
     <string name="Change_Amount">修改金額</string>
     <string name="Change_emergency_contact">修改復原聯絡人</string>
+    <string name="Change_Group_Photo_with_Camera">更換群頭像（相機）</string>
+    <string name="Change_Group_Photo_with_Library">更換群頭像（相簿）</string>
     <string name="Change_Number_Instead">僅修改手機號碼</string>
     <string name="Change_Phone_Number">修改手機號</string>
     <string name="Change_PIN">修改 PIN</string>
@@ -2717,4 +2719,6 @@
     <string name="perps_include_pnl">含盈虧</string>
     <string name="perps_position_amount">倉位金額</string>
     <string name="perps_margin_amount">保證金金額</string>
+    <string name="perps_share_card_max_leverage">📈 最大槓桿：%1$dx</string>
+    <string name="perps_share_card_volume">💰 24小時成交量：%1$s</string>
 </resources>

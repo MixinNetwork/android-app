@@ -1328,6 +1328,11 @@ class BottomSheetViewModel
             )
         }
 
+        suspend fun updateGroupIcon(
+            conversationId: String,
+            iconBase64: String,
+        ) = conversationRepo.updateGroupIcon(conversationId, iconBase64)
+
         fun updateGroup(
             conversationId: String,
             name: String? = null,
@@ -1685,6 +1690,9 @@ class BottomSheetViewModel
                 val escapedQuery = query.trim().escapeSql()
                 tokenRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
             }
+
+        suspend fun getWeb3Address(walletId: String, chainId: String) =
+            web3Repository.getAddressesByChainId(walletId, chainId)
 
         suspend fun queryAsset(walletId: String?, query: String, web3: Boolean = false): List<TokenItem> =
             tokenRepository.queryAsset(walletId, query, web3)

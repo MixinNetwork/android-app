@@ -36,6 +36,8 @@ fun CandleChart(
     timeFrame: String,
     marketPrice: String? = null,
     priceScale: Int? = null,
+    interactive: Boolean = true,
+    onLoading: (Boolean) -> Unit = {},
 ) {
     val dataError = stringResource(R.string.Data_error)
     val viewModel = hiltViewModel<PerpetualViewModel>()
@@ -43,6 +45,10 @@ fun CandleChart(
     var candles by remember { mutableStateOf<List<CandleView>>(emptyList()) }
     var isLoading by remember { mutableStateOf(true) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(isLoading) {
+        onLoading(isLoading)
+    }
 
     LaunchedEffect(marketId, timeFrame, lifecycleOwner) {
         candles = emptyList()
@@ -104,6 +110,7 @@ fun CandleChart(
                     timeFrame = candleView.timeFrame,
                     marketPriceText = marketPrice,
                     priceScale = priceScale,
+                    interactive = interactive,
                 )
             }
         }

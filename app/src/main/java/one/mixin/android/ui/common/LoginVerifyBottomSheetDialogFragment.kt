@@ -3,8 +3,10 @@ package one.mixin.android.ui.common
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
+import android.os.Bundle
 import android.view.ContextThemeWrapper
 import android.view.View
+import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +57,7 @@ import javax.inject.Inject
 class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment() {
     companion object {
         const val TAG = "LoginVerifyBottomSheetDialogFragment"
+        private const val ARGS_HIDE_MORE_MENU = "args_hide_more_menu"
 
         fun newInstance() = LoginVerifyBottomSheetDialogFragment()
     }
@@ -94,6 +97,7 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             LogViewerBottomSheet.newInstance().showNow(parentFragmentManager, LogViewerBottomSheet.TAG)
             true
         }
+        binding.more.isVisible = arguments?.getBoolean(ARGS_HIDE_MORE_MENU) != true
         binding.more.setOnClickListener {
             showMoreMenu()
         }
@@ -108,8 +112,16 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
         }
     }
 
+    fun hideMoreMenu() {
+        val args = arguments ?: Bundle().also { arguments = it }
+        args.putBoolean(ARGS_HIDE_MORE_MENU, true)
+        if (dialog != null) {
+            binding.more.isVisible = false
+        }
+    }
+
     private fun showMoreMenu() {
-        if (!isAdded) return
+        if (!isAdded || arguments?.getBoolean(ARGS_HIDE_MORE_MENU) == true) return
         val builder = BottomSheet.Builder(requireActivity())
         val view: View =
             View.inflate(
@@ -239,7 +251,8 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
             val derivationIndex = CryptoWalletHelper.extractIndexFromPaths(localAddresses.map { it.path }) ?: 0
             val hasBtcAddress: Boolean = localAddresses.any { it.chainId == BITCOIN_CHAIN_ID }
             val hasPearlAddress: Boolean = localAddresses.any { it.chainId == PEARL_CHAIN_ID }
-            if (hasBtcAddress && hasPearlAddress) {
+            val hasLitecoinAddress: Boolean = localAddresses.any { it.chainId == Constants.ChainId.Litecoin }
+            if (hasBtcAddress && hasPearlAddress && hasLitecoinAddress) {
                 continue
             }
             val now: Instant = Instant.now()
@@ -318,6 +331,40 @@ class LoginVerifyBottomSheetDialogFragment : BiometricBottomSheetDialogFragment(
                     destination = pearlWallet.first,
                     chainId = PEARL_CHAIN_ID,
                     path = Bip44Path.pearlPathString(derivationIndex),
+                    signature = signature,
+                    timestamp = now.toString(),
+                )
+            }
+            if (!hasLitecoinAddress) {
+                val litecoinWallet: Pair<String, ByteArray> = if (walletItem.category == WalletCategory.CLASSIC.value) {
+                    val litecoinAddress: String = bottomViewModel.getTipAddress(
+                        requireContext(),
+                        pin,
+                        Constants.ChainId.Litecoin,
+                        derivationIndex,
+                    )
+                    val litecoinPrivateKey: ByteArray = bottomViewModel.getTipPrivateKey(
+                        requireContext(),
+                        pin,
+                        Constants.ChainId.Litecoin,
+                        derivationIndex,
+                    )
+                    Pair(litecoinAddress, litecoinPrivateKey)
+                } else {
+                    val importedMnemonic = requireNotNull(mnemonic)
+                    val derivedWallet = CryptoWalletHelper.mnemonicToLitecoinWallet(importedMnemonic, index = derivationIndex)
+                    Pair(derivedWallet.address, Numeric.hexStringToByteArray(derivedWallet.privateKey))
+                }
+                val message = "${litecoinWallet.first}\n$userId\n${now.epochSecond}"
+                val signature = try {
+                    signUtxoAddressMessage(litecoinWallet.second, message, Constants.ChainId.Litecoin)
+                } finally {
+                    litecoinWallet.second.fill(0)
+                }
+                addressRequests += Web3AddressRequest(
+                    destination = litecoinWallet.first,
+                    chainId = Constants.ChainId.Litecoin,
+                    path = Bip44Path.litecoinSegwitPathString(derivationIndex),
                     signature = signature,
                     timestamp = now.toString(),
                 )

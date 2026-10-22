@@ -168,6 +168,8 @@
     <string name="Change_Amount">修改金额</string>
     <string name="ASSET_CHANGES">资产变动</string>
     <string name="Change_emergency_contact">修改恢复联系人</string>
+    <string name="Change_Group_Photo_with_Camera">更换群头像（相机）</string>
+    <string name="Change_Group_Photo_with_Library">更换群头像（相册）</string>
     <string name="Change_Number_Instead">仅修改手机号码</string>
     <string name="Change_Phone_Number">修改手机号</string>
     <string name="Change_PIN">修改 PIN</string>
@@ -2459,6 +2461,8 @@
     <string name="perps_market">合约</string>
     <string name="perps_share_card_title">🚀 合约 %1$s</string>
     <string name="perps_share_card_market">- 📈 市场：%1$s</string>
+    <string name="perps_share_card_max_leverage">📈 最大杠杆：%1$dx</string>
+    <string name="perps_share_card_volume">💰 24小时成交量：%1$s</string>
     <string name="perps_share_card_side">- ↕️ 方向：%1$s（%2$d倍）</string>
     <string name="perps_share_card_trade_now">💰 立即交易</string>
     <string name="market_share_card_title">交易 %1$s</string>

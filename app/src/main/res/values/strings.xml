@@ -175,6 +175,8 @@
     <string name="Change">Change</string>
     <string name="Change_Amount">Change Amount</string>
     <string name="Change_emergency_contact">Change recovery contact</string>
+    <string name="Change_Group_Photo_with_Camera">Change Group Photo with Camera</string>
+    <string name="Change_Group_Photo_with_Library">Change Group Photo with Library</string>
     <string name="Change_Number_Instead">Change Number Instead</string>
     <string name="Change_Phone_Number">Change Phone Number</string>
     <string name="Change_PIN">Change PIN</string>
@@ -1583,6 +1585,7 @@
     <string name="continue_with_pin">Continue with PIN</string>
     <string name="Bitcoin" translatable="false">Bitcoin</string>
     <string name="Pearl" translatable="false">Pearl</string>
+    <string name="Litecoin" translatable="false">Litecoin</string>
     <string name="Ethereum" translatable="false">Ethereum</string>
     <string name="Polygon" translatable="false">Polygon</string>
     <string name="BSC" translatable="false">BSC</string>
@@ -2548,6 +2551,8 @@
     <string name="perps_badge" translatable="false">Perp</string>
     <string name="perps_share_card_title">🚀 Perps %1$s</string>
     <string name="perps_share_card_market">- 📈 Market: %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 Max Leverage: %1$dx</string>
+    <string name="perps_share_card_volume">💰 24h Volume: %1$s</string>
     <string name="perps_share_card_side">- ↕️ Side: %1$s (%2$dx)</string>
     <string name="perps_share_card_trade_now">💰 Trade Now</string>
     <string name="market_share_card_title">Trade %1$s</string>

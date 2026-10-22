@@ -32,7 +32,6 @@ import one.mixin.android.extension.navigate
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.numberFormatCompact
-import one.mixin.android.extension.priceFormat2
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.setQuoteTextWithBackgroud
@@ -267,7 +266,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
             allTimeHighTitle.text = getString(R.string.All_Time_High).uppercase()
             marketCapStatsTitle.text = getString(R.string.Market_Cap).uppercase()
             marketVolUTitle.text = getString(R.string.vol_24h).uppercase()
-            riseTitle.text = getString(R.string.hours_count_short, 24)
             radio1d.text = getString(R.string.days_count_short, 1)
             radio1w.text = getString(R.string.weeks_count_short, 1)
             radio1m.text = getString(R.string.months_count_short, 1)
@@ -518,8 +516,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
 
     @SuppressLint("SetTextI18n")
     private fun loadBalance(marketItem: MarketItem) {
-        val changeUsd = BigDecimal(marketItem.priceChange24h)
-        val isPositive = changeUsd >= BigDecimal.ZERO
         binding.apply {
             viewLifecycleOwner.lifecycleScope.launch(CoroutineExceptionHandler { _, error ->
                 Timber.e(error)
@@ -548,15 +544,6 @@ class MarketDetailsFragment : BaseFragment(R.layout.fragment_details_market) {
                     }
                     priceRise.visibility = VISIBLE
                     currentRise = "${(BigDecimal(marketItem.priceChangePercentage24H)).numberFormat2()}%"
-                    if (balances != BigDecimal.ZERO && marketItem.priceChangePercentage24H.isNotEmpty()) {
-                        val change = changeUsd.multiply(balances).multiply(BigDecimal(Fiats.getRate()))
-                        balanceChange.setQuoteText("${if (change >= BigDecimal.ZERO) "+" else "-"}${Fiats.getSymbol()}${change.priceFormat2().replace("-", "")} ($currentRise)", isPositive)
-                        riseTitle.isVisible = true
-                    } else {
-                        balanceChange.setTextColor(requireContext().colorAttr(R.attr.text_assist))
-                        balanceChange.text = "0.00%"
-                        riseTitle.isVisible = false
-                    }
                     priceRise.setQuoteTextWithBackgroud(currentRise, !marketItem.priceChangePercentage24H.startsWith("-"))
                     balanceRl.setOnClickListener {
                         lifecycleScope.launch {
