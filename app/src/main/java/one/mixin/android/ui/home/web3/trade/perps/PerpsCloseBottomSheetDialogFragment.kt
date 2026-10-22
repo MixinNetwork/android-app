@@ -424,6 +424,13 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             )
                         } ?: "--",
                         displayCloseFee = displayCloseFee,
+                        marginText = reduceMarginText(latestMargin, reduceMarginAmount),
+                        onMarginTipClick = {
+                            PerpsInfoBottomSheetDialogFragment.newInstance(
+                                R.string.Margin,
+                                R.string.perps_margin_description,
+                            ).show(parentFragmentManager, PerpsInfoBottomSheetDialogFragment.TAG)
+                        },
                         onFeeTipClick = {
                             PerpetualGuideBottomSheetDialogFragment.newInstance(
                                 PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
@@ -629,6 +636,8 @@ private fun PerpsCloseDetails(
     displayMargin: BigDecimal?,
     sizeValue: String,
     displayCloseFee: BigDecimal?,
+    marginText: String? = null,
+    onMarginTipClick: () -> Unit = {},
     onFeeTipClick: () -> Unit,
     onSizeTipClick: () -> Unit,
 ) {
@@ -698,6 +707,18 @@ private fun PerpsCloseDetails(
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(20.dp))
+            PerpsInfoLabel(
+                text = stringResource(R.string.Margin).uppercase(),
+                color = MixinAppTheme.colors.textRemarks,
+                onTipClick = onMarginTipClick,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = marginText ?: "--",
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 16.sp,
+            )
         }
 
         if (!isReduceMargin) {
@@ -725,6 +746,13 @@ private fun PerpsCloseDetails(
             )
         }
     }
+}
+
+private fun reduceMarginText(currentMargin: String, reduction: String?): String {
+    val before = currentMargin.toBigDecimalOrNull() ?: return "--"
+    val after = reduction?.toBigDecimalOrNull()?.let { before.subtract(it) }
+    val beforeText = formatPerpsMarginAmount(before)
+    return if (after != null) "$beforeText → ${formatPerpsMarginAmount(after)}" else beforeText
 }
 
 @PerpsSheetPreview
@@ -765,6 +793,12 @@ private fun PerpsCloseDetailsPreview(reduceMargin: Boolean, fullClose: Boolean) 
                 tokenSymbol = "BTC",
             ),
             displayCloseFee = BigDecimal(if (fullClose) "0.08" else "0.04"),
+            marginText = if (reduceMargin) {
+                "${formatPerpsMarginAmount(BigDecimal("80.126855"))} → ${formatPerpsMarginAmount(BigDecimal("55.126855"))}"
+            } else {
+                null
+            },
+            onMarginTipClick = {},
             onFeeTipClick = {},
             onSizeTipClick = {},
         )

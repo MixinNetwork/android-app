@@ -426,6 +426,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
                                 .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                         },
+                        onMarginTipClick = {
+                            PerpsInfoBottomSheetDialogFragment.newInstance(
+                                R.string.Margin,
+                                R.string.perps_margin_description,
+                            ).show(parentFragmentManager, PerpsInfoBottomSheetDialogFragment.TAG)
+                        },
                     )
 
                     if (orderError == null) {
@@ -832,6 +838,7 @@ private fun PerpsConfirmDetails(
     marginAfter: BigDecimal?,
     hasOrderError: Boolean,
     onGuide: (Int) -> Unit,
+    onMarginTipClick: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -877,8 +884,10 @@ private fun PerpsConfirmDetails(
             title = stringResource(R.string.Amount).uppercase(),
             value = "$amount $tokenSymbol",
             subValue = if (isAddMargin && marginAfter != null) {
-                "${stringResource(R.string.perps_total_margin)} ${formatPerpsMarginAmount(marginBefore?.toBigDecimalOrNull())} → ${formatPerpsMarginAmount(marginAfter)}"
+                " ${formatPerpsMarginAmount(marginBefore?.toBigDecimalOrNull())} → ${formatPerpsMarginAmount(marginAfter)}"
             } else null,
+            marginInfo = isAddMargin && marginAfter != null,
+            onMarginTipClick = onMarginTipClick,
         )
         Box(modifier = Modifier.height(20.dp))
     }
@@ -968,6 +977,8 @@ private fun PerpsInfoItem(
     subValue: String? = null,
     subValueAnnotated: AnnotatedString? = null,
     info: Boolean = false,
+    marginInfo: Boolean = false,
+    onMarginTipClick: () -> Unit = {},
     guideTab: Int = PerpetualGuideBottomSheetDialogFragment.TAB_POSITION,
     onGuide: (Int) -> Unit,
 ) {
@@ -999,11 +1010,27 @@ private fun PerpsInfoItem(
         } else {
             subValue?.let {
                 Box(modifier = Modifier.height(4.dp))
-                Text(
-                    text = it,
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 14.sp,
-                )
+                if (marginInfo) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        PerpsInfoLabel(
+                            text = stringResource(R.string.perps_total_margin),
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                            onTipClick = onMarginTipClick,
+                        )
+                        Text(
+                            text = it,
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 14.sp,
+                        )
+                    }
+                } else {
+                    Text(
+                        text = it,
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp,
+                    )
+                }
             }
         }
     }
