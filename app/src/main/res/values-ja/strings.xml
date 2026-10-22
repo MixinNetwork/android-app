@@ -1191,4 +1191,6 @@
     <string name="perps_include_pnl">損益を含む</string>
     <string name="perps_position_amount">ポジション金額</string>
     <string name="perps_margin_amount">証拠金額</string>
+    <string name="perps_share_card_max_leverage">📈 最大レバレッジ: %1$dx</string>
+    <string name="perps_share_card_volume">💰 24時間取引高: %1$s</string>
 </resources>

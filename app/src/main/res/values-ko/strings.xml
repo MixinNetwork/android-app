@@ -2722,4 +2722,6 @@
     <string name="perps_include_pnl">손익 포함</string>
     <string name="perps_position_amount">포지션 금액</string>
     <string name="perps_margin_amount">증거금 금액</string>
+    <string name="perps_share_card_max_leverage">📈 최대 레버리지: %1$dx</string>
+    <string name="perps_share_card_volume">💰 24시간 거래량: %1$s</string>
 </resources>

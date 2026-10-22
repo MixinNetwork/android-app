@@ -1245,4 +1245,6 @@
     <string name="perps_include_pnl">Incluye PnL</string>
     <string name="perps_position_amount">Importe de la posición</string>
     <string name="perps_margin_amount">Importe del margen</string>
+    <string name="perps_share_card_max_leverage">📈 Apalancamiento máximo: %1$dx</string>
+    <string name="perps_share_card_volume">💰 Volumen de 24 h: %1$s</string>
 </resources>
