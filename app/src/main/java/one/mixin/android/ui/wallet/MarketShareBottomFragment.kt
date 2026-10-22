@@ -19,6 +19,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.doOnLayout
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.core.view.doOnAttach
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
@@ -240,6 +241,8 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         perpsMarket?.let { market ->
             binding.assetSymbol.text = market.displaySymbol
             binding.assetRank.isVisible = true
+            binding.assetRank.setBackgroundResource(R.drawable.bg_market_badge_round_4dp)
+            binding.assetRank.updatePadding(left = 3.dp, right = 3.dp)
             binding.assetRank.text = getString(R.string.Perpetual_Leverage_Format, market.leverage)
             binding.icon.badge.isVisible = false
             binding.icon.bg.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
