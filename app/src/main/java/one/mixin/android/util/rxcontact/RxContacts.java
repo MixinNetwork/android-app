@@ -55,7 +55,7 @@ public class RxContacts {
     }
 
 
-    private void fetch(ObservableEmitter emitter) {
+    private void fetch(ObservableEmitter<Contact> emitter) {
         LongSparseArray<Contact> contacts = new LongSparseArray<>();
         Cursor cursor = createCursor();
         if (cursor == null) {

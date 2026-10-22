@@ -690,7 +690,7 @@ private fun DrawScope.drawSelection(
     val labelWidth = rows.maxOf { it.first.size.width }.toFloat()
     val valueWidth = rows.mapIndexed { i, (_, value) ->
         value.size.width + if (i == 1) changeGap + changeLayout.size.width else 0f
-    }.maxOf { it.toFloat() }
+    }.max()
     val rowHeight = rows.maxOf { max(it.first.size.height, it.second.size.height) }.toFloat()
     val cardSize = Size(
         padH * 2 + labelWidth + columnGap + valueWidth,

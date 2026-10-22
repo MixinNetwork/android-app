@@ -89,6 +89,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
 
     override fun getBottomSheetHeight(view: View): Int = requireContext().screenHeight() - view.getSafeAreaInsetsTop()
 
+    @Suppress("DEPRECATION")
     override fun onStart() {
         super.onStart()
         dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE)

@@ -19,6 +19,7 @@ class LiquidationPriceLimitTest {
     @Test
     fun showsOnlyMaximumAmountAndFallsBackWhenItIsInvalid() {
         val application = ApplicationProvider.getApplicationContext<Context>()
+        @Suppress("DEPRECATION")
         val resources = object : Resources(application.assets, application.resources.displayMetrics, application.resources.configuration) {
             override fun getString(id: Int): String = when (id) {
                 R.string.error_perps_position_size_exceeds_leverage_limit_value -> "错误 10655：开仓金额超出最大限额 %1\$s，请减少金额或降低杠杆。"

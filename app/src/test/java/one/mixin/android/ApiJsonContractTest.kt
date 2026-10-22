@@ -91,7 +91,7 @@ class ApiJsonContractTest {
             add("contracts", contracts)
         }
         File("build/reports/api-json-contracts.json").apply {
-            parentFile.mkdirs()
+            parentFile?.mkdirs()
             writeText(Gson().toJson(report))
         }
         println("API JSON contracts: $endpoints endpoints, ${models.size} models, ${fields.size()} fields, ${contracts.size()} payloads")
@@ -125,7 +125,7 @@ class ApiJsonContractTest {
             add("arguments", JsonArray().apply { type.actualTypeArguments.forEach { add(typeDescription(it)) } })
         }
         is GenericArrayType -> JsonObject().apply { add("component", typeDescription(type.genericComponentType)) }
-        is Class<*> -> if (type.isArray) JsonObject().apply { add("component", typeDescription(type.componentType)) }
+        is Class<*> -> if (type.isArray) JsonObject().apply { add("component", typeDescription(type.componentType!!)) }
             else JsonObject().apply { addProperty("name", type.name) }
         else -> error("Unsupported API type: $type")
     }
@@ -140,21 +140,21 @@ class ApiJsonContractTest {
         val arguments = (type as? ParameterizedType)?.actualTypeArguments.orEmpty()
         val resolved = bindings + raw.typeParameters.zip(arguments)
         if (raw == ByteArray::class.java && custom) return JsonPrimitive("AQID")
-        if (raw.isArray) return JsonArray().apply { add(sample(raw.componentType, custom, resolved, next, models)) }
+        if (raw.isArray) return JsonArray().apply { add(sample(raw.componentType!!, custom, resolved, next, models)) }
         if (Collection::class.java.isAssignableFrom(raw)) return JsonArray().apply {
             add(sample(arguments.firstOrNull() ?: Any::class.java, custom, resolved, next, models))
         }
         if (Map::class.java.isAssignableFrom(raw)) return JsonObject().apply {
             add("sample", sample(arguments.getOrNull(1) ?: Any::class.java, custom, resolved, next, models))
         }
-        if (raw == String::class.java || raw == Any::class.java || raw == Char::class.java || raw == java.lang.Character::class.java) return JsonPrimitive("x")
-        if (raw == Boolean::class.java || raw == java.lang.Boolean::class.java) return JsonPrimitive(true)
+        if (raw == String::class.java || raw == Any::class.java || raw == Char::class.java || raw == Char::class.javaObjectType) return JsonPrimitive("x")
+        if (raw == Boolean::class.java || raw == Boolean::class.javaObjectType) return JsonPrimitive(true)
         if (raw.isPrimitive || Number::class.java.isAssignableFrom(raw)) return JsonPrimitive(7)
         if (raw == Void::class.java || raw == Unit::class.java) return JsonNull.INSTANCE
         if (JsonElement::class.java.isAssignableFrom(raw)) return if (raw == JsonArray::class.java) JsonArray().apply { add("sample") }
             else JsonObject().apply { addProperty("sample", "value") }
         if (raw.isEnum) {
-            val constant = raw.enumConstants.first() as Enum<*>
+            val constant = raw.enumConstants!!.first() as Enum<*>
             if (custom && raw.name == "one.mixin.android.vo.WithdrawalMemoPossibility") return JsonPrimitive("negative")
             return JsonPrimitive(raw.getField(constant.name).getAnnotation(SerializedName::class.java)?.value ?: constant.name)
         }

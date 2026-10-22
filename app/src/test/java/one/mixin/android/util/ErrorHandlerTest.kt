@@ -31,6 +31,7 @@ class ErrorHandlerTest {
     @Test
     fun showsMinimumValueWithCurrencyOrFallsBackToTheMatchingError() {
         val application = ApplicationProvider.getApplicationContext<Context>()
+        @Suppress("DEPRECATION")
         val resources =
             object : Resources(application.assets, application.resources.displayMetrics, application.resources.configuration) {
                 override fun getString(id: Int): String =

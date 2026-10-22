@@ -22,7 +22,7 @@ class RemoveStickersWorker
         }
 
         override suspend fun onRun(): Result {
-            val stickerIds = inputData.getStringArray(STICKER_IDS)?.toList()
+            val stickerIds = inputData.getNullableStringArray(STICKER_IDS)?.filterNotNull()
             if (stickerIds.isNullOrEmpty()) return Result.failure()
             stickerRelationshipDao.getPersonalAlbumId()?.let { albumId ->
                 for (i in stickerIds) {
