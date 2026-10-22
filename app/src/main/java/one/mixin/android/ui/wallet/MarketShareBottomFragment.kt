@@ -532,7 +532,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
                 targetAssetId.takeIf { it.isNotBlank() }?.let {
                     ActionButtonData(
                         label = getString(R.string.buy_token, marketItem.symbol),
-                        color = "#50BD5C",
+                        color = "#00B86B",
                         action = buildTradeUrl(stableAssetId, it),
                     )
                 },
