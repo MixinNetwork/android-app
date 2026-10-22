@@ -48,6 +48,19 @@ jobs:
           }
         JSON
         fi
+        cat > app/src/staging/google-services.json <<'JSON'
+        {
+          "project_info": {"project_number": "123456789012", "project_id": "mixin-ci"},
+          "client": [{
+            "client_info": {
+              "mobilesdk_app_id": "1:123456789012:android:0000000000000001",
+              "android_client_info": {"package_name": "one.mixin.messenger.test"}
+            },
+            "api_key": [{"current_key": "ci-placeholder"}]
+          }],
+          "configuration_version": "1"
+        }
+        JSON
 
     - name: Build
       run: >-
@@ -86,7 +99,7 @@ jobs:
         ./gradlew --no-daemon --max-workers=1 \
           -Dorg.gradle.jvmargs="-Xmx4g -XX:+UseParallelGC" \
           -Pkotlin.daemon.jvmargs=-Xmx6g \
-          :app:testGooglePlayDebugUnitTest --init-script "$RUNNER_TEMP/test-diagnostics.gradle"
+          :app:testGooglePlayStagingUnitTest --init-script "$RUNNER_TEMP/test-diagnostics.gradle"
 
     - name: Upload unit test results
       if: always()
@@ -94,6 +107,6 @@ jobs:
       with:
         name: unit-test-results-${{ github.run_attempt }}
         path: |
-          app/build/reports/tests/testGooglePlayDebugUnitTest/
-          app/build/test-results/testGooglePlayDebugUnitTest/
+          app/build/reports/tests/testGooglePlayStagingUnitTest/
+          app/build/test-results/testGooglePlayStagingUnitTest/
         retention-days: 7

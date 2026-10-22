@@ -260,6 +260,7 @@ internal fun ViewportCandleChart(
     timeFrame: String,
     marketPriceText: String?,
     priceScale: Int?,
+    interactive: Boolean = true,
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -330,15 +331,21 @@ internal fun ViewportCandleChart(
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(state) {
-                    detectChartGestures(
-                        state = state,
-                        scope = scope,
-                        decay = decay,
-                        onLongPress = context::heavyClickVibrate,
-                        onSelectionMove = context::clickVibrate,
-                    )
-                },
+                .then(
+                    if (interactive) {
+                        Modifier.pointerInput(state) {
+                            detectChartGestures(
+                                state = state,
+                                scope = scope,
+                                decay = decay,
+                                onLongPress = context::heavyClickVibrate,
+                                onSelectionMove = context::clickVibrate,
+                            )
+                        }
+                    } else {
+                        Modifier
+                    },
+                ),
         ) {
             drawChart(
                 state = state,

@@ -2300,6 +2300,7 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
         if (!t.isTransferSupported()) return
         setFeeLoading(true)
         refreshWeb3TransferFees(
+            chainId = t.chainId,
             refreshNativeFee = { refreshGas(t) },
             refreshGaslessFee = { refreshGaslessFees(t) },
         ) {
