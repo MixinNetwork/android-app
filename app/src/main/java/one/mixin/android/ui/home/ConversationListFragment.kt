@@ -80,6 +80,7 @@ import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.common.editDialog
 import one.mixin.android.ui.common.recyclerview.NormalHolder
 import one.mixin.android.ui.common.recyclerview.PagingHeaderAdapter
+import one.mixin.android.ui.contacts.NewChatBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.home.circle.CirclesFragment
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
@@ -102,7 +103,6 @@ import one.mixin.android.vo.ConversationStatus
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PinMessageMinimal
-import one.mixin.android.vo.User
 import one.mixin.android.vo.explain
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isCallMessage
@@ -347,7 +347,7 @@ class ConversationListFragment : LinkFragment() {
             if (cid != null) {
                 openCircleEdit(cid)
             } else {
-                navigationController.pushContacts(requireActivity())
+                NewChatBottomSheetDialogFragment().showNow(parentFragmentManager, NewChatBottomSheetDialogFragment.TAG)
             }
         }
 
@@ -366,15 +366,6 @@ class ConversationListFragment : LinkFragment() {
                     selectCircle(null,null)
                 }
             }
-        RxBus.listen(User::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe { u ->
-                if (Session.getAccountId() == u.userId) {
-                    binding.searchBar.avatar.setInfo(u.fullName, u.avatarUrl, u.userId)
-                }
-            }
-
         initSearch()
         analytics()
     }
@@ -452,8 +443,8 @@ class ConversationListFragment : LinkFragment() {
             searchBar.setOnLeftClickListener {
                 openSearch()
             }
-            searchBar.setOnGroupClickListener {
-                navigationController.pushContacts(requireActivity())
+            searchBar.setOnNewChatClickListener {
+                NewChatBottomSheetDialogFragment().showNow(parentFragmentManager, NewChatBottomSheetDialogFragment.TAG)
             }
             searchBar.setOnAddClickListener {
                 addCircle(it.context)

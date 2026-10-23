@@ -238,11 +238,6 @@
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
-            android:name=".ui.contacts.ContactsActivity"
-            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
-        <activity
             android:name=".ui.wallet.WalletActivity"
             android:colorMode="wideColorGamut"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
