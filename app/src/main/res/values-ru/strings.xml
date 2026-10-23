@@ -1190,4 +1190,5 @@
     <string name="perps_estimated_profit">Ожидаемая прибыль %1$s</string>
     <string name="perps_share_card_max_leverage">📈 Максимальное плечо: %1$dx</string>
     <string name="perps_share_card_volume">💰 Объём за 24 ч: %1$s</string>
+    <string name="price_change_tpsl">Цена %1$s → Ожидаемая прибыль %2$s</string>
 </resources>

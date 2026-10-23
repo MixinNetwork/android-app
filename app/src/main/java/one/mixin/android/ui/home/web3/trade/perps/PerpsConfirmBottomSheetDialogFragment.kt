@@ -788,7 +788,7 @@ private fun calculateTpSlSubValue(
         val amountText = "+${formatPerpsRawUsdDecimal(pnlAmount)}"
         val pnlPercentStr = pnlPercent.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
         val outcomeText = "$amountText ($pnlPercentStr%)"
-        val fullText = stringResource(R.string.price_change_take_profit, priceChangeText, outcomeText)
+        val fullText = stringResource(R.string.price_change_tpsl, priceChangeText, outcomeText)
         buildAnnotatedString {
             append(fullText)
             val outcomeStart = fullText.indexOf(outcomeText)
@@ -802,7 +802,7 @@ private fun calculateTpSlSubValue(
         }
     } else {
         val amountText = "-${formatPerpsRawUsdDecimal(pnlAmount)}"
-        val fullText = stringResource(R.string.price_change_stop_loss, priceChangeText, amountText)
+        val fullText = stringResource(R.string.price_change_tpsl, priceChangeText, amountText)
         buildAnnotatedString {
             append(fullText)
             val outcomeStart = fullText.indexOf(amountText)

@@ -2322,8 +2322,7 @@
     <string name="Price_Up_Loss">가격 상승 %1$s%% → 손실 -%2$s %3$s</string>
     <string name="Max_Profit">최대 이익 %1$s</string>
     <string name="Max_Loss">최대 손실 %1$s</string>
-    <string name="price_change_take_profit">가격 %1$s → 최대 이익 %2$s</string>
-    <string name="price_change_stop_loss">가격 %1$s → 최대 손실 %2$s</string>
+    <string name="price_change_tpsl">가격 %1$s → 예상 수익 %2$s</string>
     <string name="example_amount">금액</string>
     <string name="example_scene1_decreasing">시나리오 1: 가격 하락</string>
     <string name="example_scene1_increasing">시나리오 1: 가격 상승</string>
