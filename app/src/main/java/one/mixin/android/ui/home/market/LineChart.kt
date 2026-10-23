@@ -94,7 +94,7 @@ fun LineChart(
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
         val isRising = dataPointsData.last() >= dataPointsData.first()
         val color = if (isRising != quoteColorPref) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
-        val textColor = if (isRising != quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+        val textColor = if (isRising != quoteColorPref) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
         val circleColor = MixinAppTheme.colors.background
         val lineWidth = Dp(1.5f)
 
