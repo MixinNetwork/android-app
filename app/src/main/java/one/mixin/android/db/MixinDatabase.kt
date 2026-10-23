@@ -83,6 +83,7 @@ import one.mixin.android.db.converter.MembershipConverter
 import one.mixin.android.db.converter.MessageStatusConverter
 import one.mixin.android.db.converter.OutputStateConverter
 import one.mixin.android.db.converter.PriceListConverter
+import one.mixin.android.db.converter.RawTransactionStateConverter
 import one.mixin.android.db.converter.RawTransactionTypeConverter
 import one.mixin.android.db.converter.SafeDepositConverter
 import one.mixin.android.db.converter.SafeWithdrawalConverter
@@ -216,6 +217,7 @@ import kotlin.math.min
     SafeDepositConverter::class,
     SafeWithdrawalConverter::class,
     RawTransactionTypeConverter::class,
+    RawTransactionStateConverter::class,
     OutputStateConverter::class,
     TreasuryConverter::class,
     PriceListConverter::class,
