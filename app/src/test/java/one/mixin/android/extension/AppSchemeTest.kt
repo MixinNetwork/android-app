@@ -15,6 +15,17 @@ import kotlin.test.assertTrue
 @Config(application = Application::class)
 class AppSchemeTest {
     @Test
+    fun membershipRenewLinkOpensSafePlan() {
+        val uri = Uri.parse(Constants.HelpLink.SAFE_RENEW_PLAN)
+        assertEquals(Constants.RouteConfig.SAFE_BOT_USER_ID, uri.lastPathSegment)
+        assertTrue(uri.shouldOpenAppHome())
+        assertEquals(
+            "https://example.com?modal=plan&plan=renew",
+            "https://example.com".appendQueryParamsFromOtherUri(uri),
+        )
+    }
+
+    @Test
     fun appPageLinksOpenHomeAndForwardPage() {
         for (scheme in listOf(Constants.Scheme.APPS, Constants.Scheme.HTTPS_APPS)) {
             val base = "$scheme/${Constants.MIXIN_CASH_USER_ID}"

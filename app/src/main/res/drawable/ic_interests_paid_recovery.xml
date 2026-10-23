@@ -1,0 +1,5 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android" android:width="24dp" android:height="24dp" android:viewportWidth="24" android:viewportHeight="24">
+    <path android:pathData="M15.5099 21.5369C16.812 22.1777 18.3996 22.178 19.7508 21.3979C21.9031 20.1552 22.6405 17.4031 21.3979 15.2508C20.1552 13.0984 17.4031 12.361 15.2508 13.6036C13.6734 14.5143 12.856 16.2357 13.0209 17.9376L14.9838 16.9376" android:fillColor="#00000000" android:strokeColor="?attr/music_text" android:strokeWidth="2.23256" android:strokeLineCap="round" android:strokeLineJoin="round" />
+    <path android:pathData="M7 13H9" android:fillColor="#00000000" android:strokeColor="?attr/music_text" android:strokeWidth="2" android:strokeLineCap="round" android:strokeLineJoin="round" />
+    <path android:pathData="M17 2C19.7614 2 22 4.23858 22 7V11.5C21.3973 11.0473 20.7242 10.6837 20 10.4277V9H4V16C4 17.6569 5.34315 19 7 19H10.1504C10.2941 19.7081 10.5382 20.3796 10.8662 21H7C4.23858 21 2 18.7614 2 16V7C2 4.23858 4.23858 2 7 2H17ZM7 4C5.34315 4 4 5.34315 4 7H20C20 5.34315 18.6569 4 17 4H7Z" android:fillColor="?attr/music_text" />
+</vector>

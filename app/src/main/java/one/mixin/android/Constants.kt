@@ -47,6 +47,7 @@ object Constants {
         const val MARKETPLACE = "https://rune.fan/items/"
         const val SPACE = "https://mixin.space/tx/"
         const val CUSTOMER_SERVICE = "https://mixin.one/support"
+        const val SAFE_RENEW_PLAN = "mixin://apps/b5418449-9ed6-4979-a690-82690949c542?action=open&modal=plan&plan=renew"
     }
 
     object Tip {

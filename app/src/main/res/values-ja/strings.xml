@@ -1081,6 +1081,12 @@
     <string name="safe_members">Mixin Safeメンバー</string>
     <string name="membership_benefit_safe_members">Mixin Safeごとに%1$d人、合計%2$d人。</string>
     <string name="membership_elite_description">Mixin Safeで家族、友人、同僚と大きな資産を管理し、盗難、事故、カストディリスクを回避しましょう。</string>
+    <string name="membership_benefit_mixin_card_platinum">無料のVisa Platinumクレジットカード</string>
+    <string name="membership_benefit_mixin_card_signature">無料のVisa Signatureクレジットカード</string>
+    <string name="free_inheritance_service">無料相続サービス</string>
+    <string name="membership_benefit_free_inheritance_service">相続サービスを無料でご利用ください。</string>
+    <string name="membership_renew_option_card_desc">Google Pay、クレジットカードまたはデビットカードでプランを更新します。</string>
+    <string name="membership_renew_option_crypto_desc">USDT、USDC、またはその他の仮想通貨でプランを更新します。</string>
     <string name="mnemonic_login_security_title">Mixinにインポートしても安全ですか？</string>
     <string name="mobile_number_description">アカウントに紐づけられた携帯電話番号です</string>
     <string name="My_Balance">自分の残高</string>
