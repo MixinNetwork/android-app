@@ -268,7 +268,9 @@ suspend fun restore(
 ) = withContext(Dispatchers.IO) {
     val target =
         internalFindBackup(context, coroutineContext)
-            ?: return@withContext callback(Result.NOT_FOUND)
+            ?: return@withContext withContext(Dispatchers.Main) {
+                callback(Result.NOT_FOUND)
+            }
     val file = resolveRestoreDatabaseFile(context)
     try {
         file.parentFile?.mkdirs()
