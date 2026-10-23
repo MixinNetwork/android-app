@@ -6,6 +6,7 @@ import androidx.work.WorkerParameters
 import com.bumptech.glide.Glide
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import one.mixin.android.extension.isWebUrl
 import one.mixin.android.vo.User
 import java.util.concurrent.TimeUnit
 
@@ -18,6 +19,7 @@ class DownloadAvatarWorker
     ) : AvatarWorker(context, parameters) {
         override suspend fun onRun(): Result {
             val groupId = inputData.getString(GROUP_ID) ?: return Result.failure()
+            if (conversationDao.getGroupIconUrl(groupId)?.isWebUrl() == true) return Result.success()
             val triple = checkGroupAvatar(groupId)
             if (triple.first) {
                 return Result.success()

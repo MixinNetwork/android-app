@@ -198,6 +198,7 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query(
         "UPDATE conversations SET owner_id = :ownerId, category = :category, name = :name, announcement = :announcement, " +
+            "icon_url = CASE WHEN :iconUrl != '' THEN :iconUrl WHEN icon_url LIKE 'http://%' OR icon_url LIKE 'https://%' THEN NULL ELSE icon_url END, " +
             "mute_until = :muteUntil, created_at = :createdAt, expire_in = :expireIn, status = :status WHERE conversation_id = :conversationId",
     )
     fun updateConversation(
@@ -205,6 +206,7 @@ interface ConversationDao : BaseDao<Conversation> {
         ownerId: String,
         category: String,
         name: String,
+        iconUrl: String?,
         announcement: String?,
         muteUntil: String?,
         createdAt: String,
@@ -236,8 +238,8 @@ interface ConversationDao : BaseDao<Conversation> {
         muteUntil: String,
     )
 
-    @Query("UPDATE conversations SET icon_url = :iconUrl WHERE conversation_id = :conversationId")
-    fun updateGroupIconUrl(
+    @Query("UPDATE conversations SET icon_url = :iconUrl WHERE conversation_id = :conversationId AND (icon_url IS NULL OR (icon_url NOT LIKE 'http://%' AND icon_url NOT LIKE 'https://%'))")
+    fun updateGeneratedGroupIconUrl(
         conversationId: String,
         iconUrl: String,
     )

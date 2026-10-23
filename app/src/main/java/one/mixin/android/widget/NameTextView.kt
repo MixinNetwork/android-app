@@ -937,7 +937,9 @@ class NameTextView : LinearLayoutCompat {
     }
 
     private fun getBadge(item: ConversationItem): Drawable? {
-        val resources = if (item.isMembership()) {
+        val resources = if (item.isGroupConversation()) {
+            R.drawable.ic_group_badge
+        } else if (item.isMembership()) {
             item.membership.membershipIcon()
         } else if (item.isVerified()) {
             R.drawable.ic_user_verified

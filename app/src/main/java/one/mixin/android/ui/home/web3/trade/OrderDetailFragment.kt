@@ -238,7 +238,7 @@ class OrderDetailFragment : BaseFragment() {
         val actions: List<ActionButtonData> = listOf(
             ActionButtonData(
                 label = getString(R.string.buy_token, token.symbol),
-                color = "#50BD5C",
+                color = "#00B86B",
                 action = buildTradeUrl(payId, receiveId)
             ),
             ActionButtonData(

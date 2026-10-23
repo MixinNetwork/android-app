@@ -684,7 +684,7 @@ internal fun PerpsReductionInput(
     val inactiveMarkerColor = MixinAppTheme.colors.textRemarks
     val maximum = if (isPercentage) BigDecimal(100) else margin ?: BigDecimal.ZERO
     val inputColor = when {
-        errorText != null -> MixinAppTheme.colors.marketRed
+        errorText != null -> MixinAppTheme.colors.walletRed
         inputValue <= BigDecimal.ZERO -> MixinAppTheme.colors.textRemarks
         else -> MixinAppTheme.colors.textPrimary
     }

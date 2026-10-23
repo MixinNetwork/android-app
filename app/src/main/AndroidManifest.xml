@@ -59,6 +59,7 @@
         tools:replace="android:dataExtractionRules,android:fullBackupContent,android:allowBackup">
         <activity
             android:name=".ui.home.MainActivity"
+            android:colorMode="wideColorGamut"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="true"
             android:launchMode="singleTop"

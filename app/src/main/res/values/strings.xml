@@ -175,6 +175,8 @@
     <string name="Change">Change</string>
     <string name="Change_Amount">Change Amount</string>
     <string name="Change_emergency_contact">Change recovery contact</string>
+    <string name="Change_Group_Photo_with_Camera">Change Group Photo with Camera</string>
+    <string name="Change_Group_Photo_with_Library">Change Group Photo with Library</string>
     <string name="Change_Number_Instead">Change Number Instead</string>
     <string name="Change_Phone_Number">Change Phone Number</string>
     <string name="Change_PIN">Change PIN</string>

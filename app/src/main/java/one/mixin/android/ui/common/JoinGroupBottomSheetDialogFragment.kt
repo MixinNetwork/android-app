@@ -23,6 +23,7 @@ import one.mixin.android.api.response.ConversationResponse
 import one.mixin.android.databinding.FragmentJoinGroupBottomSheetBinding
 import one.mixin.android.event.AvatarEvent
 import one.mixin.android.extension.getParcelableCompat
+import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.screenHeight
@@ -123,7 +124,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
             .observeOn(AndroidSchedulers.mainThread())
             .autoDispose(stopScope)
             .subscribe {
-                if (it.conversationId == c.conversationId) {
+                if (it.conversationId == c.conversationId && c.iconUrl?.isWebUrl() != true) {
                     binding.avatar.setGroup(it.url)
                 }
             }
