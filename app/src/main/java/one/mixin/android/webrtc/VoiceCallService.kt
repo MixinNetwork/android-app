@@ -12,6 +12,7 @@ import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.job.SendMessageJob
 import one.mixin.android.ui.call.CallActivity
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.CallType
 import one.mixin.android.vo.ConversationCategory
 import one.mixin.android.vo.ConversationStatus
@@ -19,6 +20,7 @@ import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.Message
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
+import one.mixin.android.vo.Participant
 import one.mixin.android.vo.Sdp
 import one.mixin.android.vo.User
 import one.mixin.android.vo.createCallMessage
@@ -136,10 +138,11 @@ class VoiceCallService : CallService() {
             callState.state = CallState.STATE_DIALING
             callState.callType = CallType.Voice
             val user = intent.getParcelableExtraCompat(ARGS_USER, User::class.java)
-            val cid = user?.let { generateConversationId(self.userId, it.userId) } ?: intent.getStringExtra(EXTRA_CONVERSATION_ID)
+            val requestedCid = intent.getStringExtra(EXTRA_CONVERSATION_ID)
+            val cid = user?.let { generateConversationId(self.userId, it.userId) } ?: requestedCid
             require(cid != null)
             if (user != null) {
-                ensureContactConversation(cid, user.userId, intent.getStringExtra(EXTRA_CONVERSATION_ID))
+                ensureContactConversation(cid, user.userId, requestedCid)
             }
             callState.conversationId = cid
             callState.user = user
@@ -460,12 +463,17 @@ class VoiceCallService : CallService() {
         requestedConversationId: String?,
     ) {
         if (requestedConversationId != null && requestedConversationId != conversationId) {
-            Timber.e("$TAG_CALL outgoing conversation id mismatch, requested: $requestedConversationId, expected: $conversationId")
+            reportException(IllegalStateException("$TAG_CALL outgoing conversation id mismatch, requested: $requestedConversationId, expected: $conversationId"))
         }
-        val conversationDao = database.conversationDao()
-        if (conversationDao.findConversationById(conversationId) == null) {
-            conversationDao.upsert(createConversation(conversationId, ConversationCategory.CONTACT.name, recipientId, ConversationStatus.START.ordinal))
-        }
+        if (conversationRepo.getConversation(conversationId) != null) return
+        val createdAt = nowInUtc()
+        conversationRepo.syncInsertConversation(
+            createConversation(conversationId, ConversationCategory.CONTACT.name, recipientId, ConversationStatus.START.ordinal),
+            listOf(
+                Participant(conversationId, self.userId, "", createdAt),
+                Participant(conversationId, recipientId, "", createdAt),
+            ),
+        )
     }
 
     private fun saveMessage(m: Message) {

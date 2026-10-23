@@ -245,9 +245,6 @@ class ConversationRepository
             return if (item.isAppCard() && !item.isAppCardWithMediaCover()) null else item
         }
 
-        suspend fun getConversationIdIfExistsSync(recipientId: String) =
-            conversationDao.getConversationIdIfExistsSync(recipientId)
-
         fun getUnreadMessage(
             conversationId: String,
             accountId: String,
@@ -365,10 +362,6 @@ class ConversationRepository
             accountId: String,
         ) =
             messageDao.findUnreadMessagesSync(conversationId, accountId)
-
-        fun findContactConversationByOwnerId(ownerId: String): Conversation? {
-            return conversationDao.findContactConversationByOwnerId(ownerId)
-        }
 
         fun insertList(it: List<Job>) {
             jobDao.insertList(it)

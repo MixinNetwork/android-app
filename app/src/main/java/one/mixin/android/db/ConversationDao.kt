@@ -70,9 +70,6 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     suspend fun successConversationList(): List<ConversationMinimal>
 
-    @Query("SELECT DISTINCT c.conversation_id FROM conversations c WHERE c.owner_id = :recipientId and c.category = 'CONTACT'")
-    suspend fun getConversationIdIfExistsSync(recipientId: String): String?
-
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversationById(conversationId: String): LiveData<Conversation?>
 
@@ -167,9 +164,6 @@ interface ConversationDao : BaseDao<Conversation> {
         """,
     )
     fun hasUnreadMessage(circleId: String): LiveData<Int?>
-
-    @Query("SELECT * FROM conversations WHERE owner_id =:ownerId AND category = 'CONTACT'")
-    fun findContactConversationByOwnerId(ownerId: String): Conversation?
 
     // Update SQL
     @Query("UPDATE conversations SET code_url = :codeUrl WHERE conversation_id = :conversationId")
