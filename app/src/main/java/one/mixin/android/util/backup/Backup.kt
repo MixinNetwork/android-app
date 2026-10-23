@@ -23,9 +23,12 @@ import one.mixin.android.extension.getDisplayPath
 import one.mixin.android.extension.getLegacyBackupPath
 import one.mixin.android.extension.getMediaPath
 import one.mixin.android.extension.getOldBackupPath
+import one.mixin.android.job.MigratedFts4Job
 import one.mixin.android.session.Session
 import one.mixin.android.util.database.databaseFile
+import one.mixin.android.util.database.ftsDatabaseFile
 import one.mixin.android.util.database.legacyDatabaseFile
+import one.mixin.android.util.database.legacyFtsDatabaseFile
 import timber.log.Timber
 import java.io.File
 import java.io.FileInputStream
@@ -282,6 +285,7 @@ suspend fun restore(
             Constants.BackUp.BACKUP_LAST_TIME,
             System.currentTimeMillis(),
         )
+        resetFtsIndex(context)
 
         withContext(Dispatchers.Main) {
             callback(Result.SUCCESS)
@@ -350,6 +354,7 @@ suspend fun restoreApi29(
             Constants.BackUp.BACKUP_LAST_TIME,
             System.currentTimeMillis(),
         )
+        resetFtsIndex(context)
 
         withContext(Dispatchers.Main) {
             callback(Result.SUCCESS)
@@ -532,6 +537,22 @@ private fun resolveRestoreDatabaseFile(context: Context): File =
     Session.getAccount()?.identityNumber?.let { identityNumber ->
         databaseFile(context, identityNumber)
     } ?: legacyDatabaseFile(context)
+
+// The backup does not include fts.db, so drop any stale index and rebuild it from the restored messages
+private suspend fun resetFtsIndex(context: Context) {
+    Session.getAccount()?.identityNumber?.let { identityNumber ->
+        deleteDatabaseFiles(ftsDatabaseFile(context, identityNumber))
+    }
+    deleteDatabaseFiles(legacyFtsDatabaseFile(context))
+    PropertyHelper.deleteKeyValue(MigratedFts4Job.FTS_NEED_MIGRATED_LAST_ROW_ID)
+}
+
+private fun deleteDatabaseFiles(file: File) {
+    file.delete()
+    File("${file.absolutePath}-wal").delete()
+    File("${file.absolutePath}-shm").delete()
+    File("${file.absolutePath}-journal").delete()
+}
 
 private fun copyFileToDirectory(
     file: File,
