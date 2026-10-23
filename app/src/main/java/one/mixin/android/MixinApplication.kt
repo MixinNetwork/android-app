@@ -188,6 +188,7 @@ open class MixinApplication :
             entityInitialize()
         }
         initBugsnag()
+        Session.migrateSecrets()
         initAppsFlyer()
         Session.getAccount()?.let(ThirdPartyUserIdentity::setUser)
     }

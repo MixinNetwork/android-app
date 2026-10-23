@@ -30,8 +30,7 @@ suspend fun initializeAccountSession(
     // Store session data first
     val privateKey = sessionKey.privateKey
     val pinToken = decryptPinToken(account.pinToken.decodeBase64(), privateKey)
-    Session.storeEd25519Seed(privateKey.base64Encode())
-    Session.storePinToken(pinToken.base64Encode())
+    Session.storeSessionKeys(sessionKey, pinToken.base64Encode())
     Session.storeAccount(account)
     MixinApplication.get().startAppsFlyer(account.userId)
 
