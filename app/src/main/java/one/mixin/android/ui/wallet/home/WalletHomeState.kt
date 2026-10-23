@@ -29,6 +29,8 @@ data class WalletHomeState(
     val positions: List<PerpsPositionItem> = emptyList(),
     val positionSummary: WalletHomePositionSummary? = null,
     val cashAccount: WalletHomeCashAccount? = null,
+    val earnAccounts: List<WalletHomeEarnAccount> = emptyList(),
+    val earnAssetIds: Set<String> = emptySet(),
     val totalTokenCount: Int = 0,
     val totalTransactionCount: Int = 0,
     val totalPositionCount: Int = 0,
@@ -72,6 +74,7 @@ interface WalletHomeCallbacks {
     fun onReferralClicked()
     fun onReferralClosed()
     fun onCashClicked()
+    fun onEarnAccountClicked() = Unit
     fun onSupportClicked()
     fun onHelpCenterClicked()
     fun onBuyClicked()

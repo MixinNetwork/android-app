@@ -16,6 +16,7 @@ import androidx.core.net.toUri
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withResumed
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.annotations.SerializedName
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,10 +36,11 @@ import one.mixin.android.api.response.NonFungibleOutputResponse
 import one.mixin.android.api.response.PaymentCodeResponse
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.getScopes
+import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.signature.SignatureAction
 import one.mixin.android.api.response.signature.SignatureState
 import one.mixin.android.databinding.FragmentBottomSheetBinding
-import one.mixin.android.extension.appendQueryParamsFromOtherUri
+import one.mixin.android.extension.PerpsOpenPositionAction
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.base64RawURLDecode
 import one.mixin.android.extension.booleanFromAttribute
@@ -46,6 +48,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getGroupAvatarPath
 import one.mixin.android.extension.handleSchemeSend
+import one.mixin.android.extension.homeUriWithSchemeParameters
 import one.mixin.android.extension.isExternalScheme
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
@@ -53,11 +56,14 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isValidStartParam
 import one.mixin.android.extension.putInt
+import one.mixin.android.extension.shouldOpenAppHome
 import one.mixin.android.extension.stripAmountZero
+import one.mixin.android.extension.toPerpsTradeAction
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAssetsJob
+import one.mixin.android.job.RefreshPerpsPositionsJob
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.job.getIconUrlName
 import one.mixin.android.repository.QrCodeType
@@ -74,6 +80,7 @@ import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.SchemeBottomSheet
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
+import one.mixin.android.ui.common.biometric.buildTransferBiometricItem
 import one.mixin.android.ui.common.profile.InputReferralBottomSheetDialogFragment
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.conversation.ConversationActivity
@@ -87,7 +94,10 @@ import one.mixin.android.ui.home.web3.GasCheckBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.SwapActivity
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.TAB_PERPETUAL
+import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
+import one.mixin.android.ui.home.web3.trade.perps.PerpsConfirmBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpsLinkPreview
 import one.mixin.android.ui.oldwallet.BottomSheetViewModel
 import one.mixin.android.ui.oldwallet.MultisigsBottomSheetDialogFragment
 import one.mixin.android.ui.oldwallet.NftBottomSheetDialogFragment
@@ -140,6 +150,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         const val TAG = "LinkBottomSheetDialogFragment"
         const val CODE = "code"
         const val FROM = "from"
+        private const val TRADE_SOURCE = "trade_source"
 
         const val FROM_EXTERNAL = 0
         const val FROM_INTERNAL = 1
@@ -148,10 +159,12 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         fun newInstance(
             code: String,
             from: Int = FROM_INTERNAL,
+            tradeSource: String? = null,
         ) =
             LinkBottomSheetDialogFragment().withArgs {
                 putString(CODE, code)
                 putInt(FROM, from)
+                putString(TRADE_SOURCE, tradeSource)
             }
     }
 
@@ -168,6 +181,7 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     private val oldLinkViewModel by viewModels<BottomSheetViewModel>()
 
     val linkViewModel by viewModels<CommonBottomSheetViewModel>()
+    private val perpsViewModel by viewModels<PerpetualViewModel>()
 
     private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
 
@@ -236,28 +250,29 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 dismiss()
             } else {
                 lifecycleScope.launch(errorHandler) {
+                    val isOpenApp = uri.shouldOpenAppHome()
+                    if (isOpenApp) {
+                        val localApp = oldLinkViewModel.findAppById(userId)
+                        if (localApp != null) {
+                            AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, localApp.appNumber)
+                            WebActivity.show(requireActivity(), localApp.homeUriWithSchemeParameters(uri), null, localApp)
+                            dismiss()
+                            return@launch
+                        }
+                    }
                     val user = oldLinkViewModel.refreshUser(userId)
                     if (user == null) {
                         toast(getUserOrAppNotFoundTip(isAppScheme))
                         dismiss()
                         return@launch
                     }
-                    val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
                     if (isOpenApp && user.appId != null) {
-                        lifecycleScope.launch(errorHandler) {
-                            val app = oldLinkViewModel.findAppById(user.appId!!)
-                            if (app != null) {
-                                val url =
-                                    try {
-                                        app.homeUri.appendQueryParamsFromOtherUri(uri)
-                                    } catch (e: Exception) {
-                                        app.homeUri
-                                    }
-                                AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
-                                WebActivity.show(requireActivity(), url, null, app)
-                            } else {
-                                showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
-                            }
+                        val app = oldLinkViewModel.findAppById(user.appId!!)
+                        if (app != null) {
+                            AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
+                            WebActivity.show(requireActivity(), app.homeUriWithSchemeParameters(uri), null, app)
+                        } else {
+                            showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
                         }
                     } else {
                         showUserBottom(parentFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
@@ -539,7 +554,9 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                             }
                             val avatar4List = avatarUserIds.take(4)
                             val iconUrl =
-                                if (notExistsUserIdList.isNotEmpty()) {
+                                if (!response.iconUrl.isNullOrBlank()) {
+                                    response.iconUrl
+                                } else if (notExistsUserIdList.isNotEmpty()) {
                                     oldLinkViewModel.refreshUsers(
                                         notExistsUserIdList,
                                         response.conversationId,
@@ -765,21 +782,17 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                         } else if (address == null) {
                             showError(R.string.error_address_not_sync)
                         } else {
-                            if (asset != null) {
-                                TransferBottomSheetDialogFragment.newInstance(
-                                    AddressManageBiometricItem(
-                                        asset = asset,
-                                        addressId = addressId,
-                                        label = address.label,
-                                        destination = address.destination,
-                                        tag = address.tag,
-                                        type = TransferBottomSheetDialogFragment.DELETE,
-                                    ),
-                                ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
-                                dismiss()
-                            } else {
-                                showError()
-                            }
+                            TransferBottomSheetDialogFragment.newInstance(
+                                AddressManageBiometricItem(
+                                    asset = asset,
+                                    addressId = addressId,
+                                    label = address.label,
+                                    destination = address.destination,
+                                    tag = address.tag,
+                                    type = TransferBottomSheetDialogFragment.DELETE,
+                                ),
+                            ).showNow(this@LinkBottomSheetDialogFragment.parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                            dismiss()
                         }
                     }
                 } else {
@@ -1109,8 +1122,13 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         val type = uri.getQueryParameter("type")
         
         if (type.equals("perps", true) || type.equals("perpetual", true)) {
-            val marketId = uri.getQueryParameter("market")
-            if (marketId.isNullOrBlank() || !marketId.isUUID()) {
+            val action = uri.toString().toPerpsTradeAction()
+            if (action == null) {
+                showError(R.string.Data_error)
+                return
+            }
+            val marketId = action.marketId
+            if (marketId == null) {
                 defaultSharedPreferences.putInt(
                     "$PREF_TRADE_SELECTED_TAB_PREFIX${Session.getAccountId() ?: ""}",
                     TAB_PERPETUAL,
@@ -1131,14 +1149,44 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
                 return
             }
 
-            PerpsActivity.showDetail(
-                requireContext(),
-                market.marketId,
-                market.displaySymbol,
-                market.displaySymbol,
-                market.tokenSymbol,
-                AnalyticsTracker.PerpsSource.APP_CARD,
-            )
+            val source = requireArguments().getString(TRADE_SOURCE) ?: if (activity is ConversationActivity) {
+                AnalyticsTracker.MarketDetailSource.APP_CARD
+            } else {
+                AnalyticsTracker.MarketDetailSource.SCHEMA
+            }
+            val openPosition = action.openPosition
+            if (openPosition == null) {
+                PerpsActivity.showDetail(
+                    requireContext(),
+                    market.marketId,
+                    market.displaySymbol,
+                    market.displaySymbol,
+                    market.tokenSymbol,
+                    source,
+                    leaderPositionId = action.leaderPositionId,
+                    addMargin = action.addMargin != null,
+                    initialMargin = action.addMargin?.margin,
+                )
+            } else {
+                val (previewMarket, preview) = perpsViewModel.prepareLinkPreview(market, openPosition, action.leaderPositionId, source)
+                if (preview != PerpsLinkPreview.Input) {
+                    showPerpsLinkPreview(previewMarket, openPosition, action.leaderPositionId, preview, source)
+                    return
+                }
+                PerpsActivity.showOpenPosition(
+                    context = requireContext(),
+                    marketId = market.marketId,
+                    marketSymbol = market.displaySymbol,
+                    marketDisplaySymbol = market.displaySymbol,
+                    marketTokenSymbol = market.tokenSymbol,
+                    isLong = openPosition.isLong,
+                    source = source,
+                    leaderPositionId = action.leaderPositionId,
+                    initialLeverage = openPosition.leverage,
+                    initialMargin = openPosition.margin,
+                    fromTradeLink = true,
+                )
+            }
             closeSourceWebActivityIfNeeded()
             dismiss()
             return
@@ -1173,6 +1221,74 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
         )
         closeSourceWebActivityIfNeeded()
         dismiss()
+    }
+
+    private suspend fun showPerpsLinkPreview(
+        market: PerpsMarket,
+        action: PerpsOpenPositionAction,
+        leaderPositionId: String?,
+        preview: PerpsLinkPreview,
+        source: String,
+    ) {
+        lifecycle.withResumed {
+            val manager = parentFragmentManager
+            when (preview) {
+                PerpsLinkPreview.Input -> return@withResumed
+                is PerpsLinkPreview.Ready -> {
+                    val accountId = Session.getAccountId()
+                    PerpsConfirmBottomSheetDialogFragment.newInstance(
+                        marketSymbol = market.displaySymbol,
+                        marketIcon = market.iconUrl,
+                        isLong = requireNotNull(action.isLong),
+                        amount = preview.order.payAmount,
+                        leverage = requireNotNull(action.leverage),
+                        entryPrice = market.last,
+                        marginAssetPrice = preview.token.priceUsd,
+                        tokenSymbol = preview.token.symbol,
+                        liquidationPrice = preview.liquidationPrice,
+                        priceScale = market.priceScale,
+                        payUrl = preview.order.paymentUrl,
+                    ).setOnDone {
+                        accountId?.let { jobManager.addJobInBackground(RefreshPerpsPositionsJob(it)) }
+                    }.showNow(manager, PerpsConfirmBottomSheetDialogFragment.TAG)
+                }
+                is PerpsLinkPreview.InsufficientBalance -> {
+                    val sender = Session.getAccount()?.toUser() ?: return@withResumed
+                    TransferBalanceErrorBottomSheetDialogFragment.newInstance(
+                        buildTransferBiometricItem(sender, preview.token, preview.amount, null, null, null),
+                    ).showNow(manager, TransferBalanceErrorBottomSheetDialogFragment.TAG)
+                }
+                is PerpsLinkPreview.ExistingPosition -> {
+                    PerpsConfirmBottomSheetDialogFragment.newFailureInstance(
+                        market = market,
+                        isLong = requireNotNull(action.isLong),
+                        leverage = action.leverage,
+                        margin = action.margin,
+                        error = getString(R.string.error_already_had_open_position),
+                        source = source,
+                        position = preview.position,
+                        leaderPositionId = leaderPositionId,
+                        liquidationPrice = preview.liquidationPrice,
+                    ).showNow(manager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
+                }
+                is PerpsLinkPreview.Failure -> {
+                    val isLong = action.isLong ?: run {
+                        showError(preview.message)
+                        return@withResumed
+                    }
+                    PerpsConfirmBottomSheetDialogFragment.newFailureInstance(
+                        market = market,
+                        isLong = isLong,
+                        leverage = action.leverage,
+                        margin = action.margin,
+                        error = preview.message,
+                        source = source,
+                        liquidationPrice = preview.liquidationPrice,
+                    ).showNow(manager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
+                }
+            }
+            dismiss()
+        }
     }
 
     private fun closeSourceWebActivityIfNeeded() {

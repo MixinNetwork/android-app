@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.tween
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -110,7 +110,7 @@ class SetupPinFragment : BaseFragment(R.layout.fragment_compose) {
                         )
                     }
                     composable(SetupPinDestination.Quiz.name) {
-                        LaunchedEffect(Unit) {
+                        SideEffect(Unit) {
                             AnalyticsTracker.trackSignUpPinQuiz()
                         }
                         QuizPage(

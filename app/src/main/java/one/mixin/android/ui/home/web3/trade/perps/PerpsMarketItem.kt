@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -18,6 +17,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -25,6 +25,7 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.ui.home.web3.market.formatPerpsMarketListPrice
 import java.math.BigDecimal
 
 @Composable
@@ -49,7 +50,7 @@ fun PerpsMarketItem(
         }
     }
     val changeText = formatPerpsSignedPercent(changePercent)
-    val displayPrice = market.last
+    val displayPrice = formatPerpsMarketListPrice(market.last)
 
     val formattedVolume = try {
         BigDecimal(market.volume).numberFormatCompact()
@@ -68,11 +69,11 @@ fun PerpsMarketItem(
             model = market.iconUrl,
             placeholder = R.drawable.ic_avatar_place_holder,
             modifier = Modifier
-                .size(42.dp)
+                .size(38.dp)
                 .clip(CircleShape)
         )
 
-        Spacer(modifier = Modifier.width(12.dp))
+        Spacer(modifier = Modifier.width(10.dp))
 
         Column(modifier = Modifier.weight(1f)) {
             Row(
@@ -85,34 +86,24 @@ fun PerpsMarketItem(
                 ) {
                     Text(
                         text = market.tokenSymbol,
-                        fontSize = 16.sp,
+                        fontSize = 14.sp,
                         color = MixinAppTheme.colors.textPrimary,
                     )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text(
-                        text = "${market.leverage}x",
-                        fontSize = 12.sp,
-                        color = MixinAppTheme.colors.textAssist,
-                        lineHeight = 14.sp,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .background(MixinAppTheme.colors.backgroundGrayLight)
-                            .padding(horizontal = 3.dp, vertical = 1.dp)
-                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    PerpsLeverageBadge(leverage = market.leverage)
                 }
                 Text(
-                    text = "$PERPS_USD_SYMBOL$displayPrice",
+                    text = displayPrice,
                     fontSize = 14.sp,
                     color = MixinAppTheme.colors.textPrimary,
                 )
             }
-            Spacer(modifier = Modifier.height(2.dp))
             Row(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(
                     text = stringResource(R.string.Vol, formattedVolume),
-                    fontSize = 14.sp,
+                    fontSize = 12.sp,
                     color = MixinAppTheme.colors.textAssist,
                     modifier = Modifier.weight(1f)
                 )
@@ -124,4 +115,23 @@ fun PerpsMarketItem(
             }
         }
     }
+}
+
+@Composable
+fun PerpsLeverageBadge(
+    leverage: Int,
+    modifier: Modifier = Modifier,
+) {
+    Text(
+        text = "${leverage}x",
+        fontSize = 12.sp,
+        fontWeight = FontWeight.W500,
+        color = MixinAppTheme.colors.textAssist,
+        lineHeight = 14.sp,
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(4.dp))
+                .background(MixinAppTheme.colors.marketBadgeBackground)
+                .padding(horizontal = 3.dp, vertical = 1.dp),
+    )
 }

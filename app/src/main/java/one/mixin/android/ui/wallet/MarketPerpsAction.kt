@@ -40,7 +40,7 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import kotlin.math.hypot
 
-private val MarketPerpsButtonOverlap = 13.dp
+private val MarketPerpsButtonOverlap = 16.dp
 private val MarketPerpsButtonSlant = 27.dp
 private val MarketPerpsButtonContentOffset = 6.dp
 private val MarketPerpsButtonVerticalPadding = 7.dp
@@ -55,8 +55,8 @@ fun MarketPerpsAction(
 ) {
     val quoteColorReversed = LocalContext.current.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    val longColor = if (quoteColorReversed) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.marketGreen
-    val shortColor = if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
+    val longColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val shortColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
     val longBackgroundColor = if (quoteColorReversed) MarketPerpsButtonRedBackground else MarketPerpsButtonGreenBackground
     val shortBackgroundColor = if (quoteColorReversed) MarketPerpsButtonGreenBackground else MarketPerpsButtonRedBackground
 

@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.repository
 
 import android.os.CancellationSignal
@@ -8,8 +10,7 @@ import androidx.paging.PagingConfig
 import androidx.paging.PagingData
 import androidx.paging.PagingSource
 import androidx.paging.liveData
-import androidx.room.RoomRawQuery
-import androidx.room.withTransaction
+import androidx.room3.RoomRawQuery
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.withContext
@@ -56,11 +57,13 @@ import one.mixin.android.db.DepositDao
 import one.mixin.android.db.HistoryPriceDao
 import one.mixin.android.db.InscriptionCollectionDao
 import one.mixin.android.db.InscriptionDao
+import one.mixin.android.db.MarketCapRankDao
+import one.mixin.android.db.MarketCategoryDao
 import one.mixin.android.db.MarketCoinDao
 import one.mixin.android.db.MarketDao
-import one.mixin.android.db.OrderDao
 import one.mixin.android.db.MarketFavoredDao
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.OrderDao
 import one.mixin.android.db.OutputDao
 import one.mixin.android.db.RawTransactionDao
 import one.mixin.android.db.SafeSnapshotDao
@@ -73,6 +76,8 @@ import one.mixin.android.db.TraceDao
 import one.mixin.android.db.UserDao
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
+import one.mixin.android.db.WalletDatabase
+import one.mixin.android.db.withRoomTransaction
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.provider.DataProvider
 import one.mixin.android.db.web3.WalletOutputDao
@@ -124,9 +129,12 @@ import one.mixin.android.vo.UtxoItem
 import one.mixin.android.vo.assetIdToAsset
 import one.mixin.android.vo.createMessage
 import one.mixin.android.vo.market.Market
+import one.mixin.android.vo.market.MarketCapRank
+import one.mixin.android.vo.market.MarketCategory
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.vo.market.MarketRefreshResult
 import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.route.OrderItem
 import one.mixin.android.vo.safe.DepositEntry
@@ -138,6 +146,8 @@ import one.mixin.android.vo.safe.SafeSnapshot
 import one.mixin.android.vo.safe.SafeSnapshotType
 import one.mixin.android.vo.safe.SafeWithdrawal
 import one.mixin.android.vo.safe.Token
+import one.mixin.android.vo.safe.TokenSearchUpdate
+import one.mixin.android.vo.safe.toSearchUpdate
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
 import one.mixin.android.vo.safe.UnifiedAssetItem
@@ -158,10 +168,15 @@ import kotlin.String
 import org.bitcoinj.core.Transaction
 import org.sol4kt.VersionedTransactionCompat
 
+private const val CATEGORY_ALL = "all"
+private const val CATEGORY_FAVORITE = "favorite"
+private const val MARKET_COINS_DELETE_BATCH_SIZE = 500
+
 class TokenRepository
     @Inject
     constructor(
         private val appDatabase: MixinDatabase,
+        private val walletDatabase: WalletDatabase,
         private val tokenService: TokenService,
         private val assetService: AssetService,
         private val utxoService: UtxoService,
@@ -185,6 +200,8 @@ class TokenRepository
         private val marketDao: MarketDao,
         private val marketCoinDao: MarketCoinDao,
         private val marketFavoredDao: MarketFavoredDao,
+        private val marketCapRankDao: MarketCapRankDao,
+        private val marketCategoryDao: MarketCategoryDao,
         private val alertDao: AlertDao,
         private val orderDao: OrderDao,
         private val web3TokenDao: Web3TokenDao,
@@ -484,7 +501,7 @@ class TokenRepository
             id: String,
             hidden: Boolean,
         ) {
-            appDatabase.withTransaction {
+            appDatabase.withRoomTransaction {
                 val tokensExtra = tokensExtraDao.findByAssetId(id)
                 if (tokensExtra != null) {
                     tokensExtraDao.updateHiddenByAssetId(id, hidden)
@@ -564,7 +581,7 @@ class TokenRepository
         suspend fun fuzzySearchAssetIgnoreAmount(query: String) =
             tokenDao.fuzzySearchAssetIgnoreAmount(query, query)
 
-        fun assetItem(id: String) = tokenDao.assetItem(id)
+        fun assetItem(id: String): LiveData<TokenItem?> = tokenDao.assetItem(id)
 
         fun assetItemFlow(id: String): Flow<TokenItem?> = tokenDao.assetItemFlow(id)
 
@@ -653,22 +670,21 @@ class TokenRepository
                     }
                     asset.toAssetItem(chainIconUrl)
                 }
-                val localExistsIds = arrayListOf<String>()
+                val localTokens = if (web3) emptyMap() else tokenDao.suspendFindAssetsByIds(assetList.map { it.assetId }).associateBy { it.assetId }
                 val onlyRemoteItems = arrayListOf<TokenItem>()
-                val needUpdatePrice = arrayListOf<PriceAndChange>()
+                val updates = arrayListOf<TokenSearchUpdate>()
                 tokenItemList.forEach {
-                    val exists = if (web3) null else findAssetItemById(it.assetId) // local
+                    val exists = localTokens[it.assetId]
                     if (exists != null) {
-                        needUpdatePrice.add(it.toPriceAndChange())
-                        localExistsIds.add(exists.assetId)
+                        updates.add(it.toSearchUpdate(exists.primitiveAssetId))
                     } else {
                         onlyRemoteItems.add(it)
                     }
                 }
 
-                val result = if (needUpdatePrice.isNotEmpty()) {
-                    suspendUpdatePrices(needUpdatePrice)
-                    onlyRemoteItems + findAssetsByIds(localExistsIds)
+                val result = if (updates.isNotEmpty()) {
+                    tokenDao.updateSearchResults(updates)
+                    onlyRemoteItems + tokenDao.suspendFindAssetsByIds(localTokens.keys.toList())
                 } else {
                     tokenItemList
                 }
@@ -714,7 +730,7 @@ class TokenRepository
 
         suspend fun findAssetItemByCollectionHash(collectionHash: String) = tokenDao.findAssetItemByCollectionHash(collectionHash)
 
-        suspend fun findAssetsByIds(assetIds: List<String>) = tokenDao.suspendFindAssetsByIds(assetIds)
+        suspend fun findAssetsByIds(assetIds: List<String>) = tokenDao.suspendFindAssetsByIds(assetIds).filter { it.primitiveAssetId.isNullOrEmpty() }
 
         suspend fun findSnapshotById(snapshotId: String) = safeSnapshotDao.findSnapshotById(snapshotId)
         suspend fun refreshAndGetSnapshot(snapshotId: String): SnapshotItem? {
@@ -1111,7 +1127,7 @@ class TokenRepository
             if (r.isSuccess) {
                 val raw = r.data!!
                 val existingPendingTransaction = web3TransactionDao.getLatestTransaction(raw.hash, raw.chainId)
-                val gaslessPendingTransaction = existingPendingTransaction?.takeIf { it.fee.isNotBlank() }
+                val gaslessPendingTransaction = existingPendingTransaction?.takeIf { it.getSponsorFee() != null }
                 web3RawTransactionDao.insertSuspend(
                     buildRawTransactionForInsert(raw, gaslessPendingTransaction, rate)
                 )
@@ -1147,31 +1163,10 @@ class TokenRepository
             rate: BigDecimal?,
         ): Web3Transaction {
             val resolvedAddress = gaslessPendingTransaction?.address ?: raw.account
-            val senders = mutableListOf<AssetChange>()
-            val receivers = mutableListOf<AssetChange>()
+            val pendingChanges = pendingAssetChanges(raw.simulateTx?.balanceChanges)
+            val senders = pendingChanges.senders
+            val receivers = pendingChanges.receivers
             val approvals = mutableListOf<AssetChange>()
-
-            raw.simulateTx?.balanceChanges?.forEach { bc ->
-                val amt = bc.amount.toBigDecimalOrNull()
-                if (amt != null) {
-                    receivers.add(
-                        AssetChange(
-                            assetId = bc.assetId,
-                            amount = amt.abs().toPlainString(),
-                            from = bc.from,
-                            to = bc.to
-                        )
-                    )
-                    senders.add(
-                        AssetChange(
-                            assetId = bc.assetId,
-                            amount = amt.toPlainString(),
-                            from = bc.from,
-                            to = bc.to,
-                        )
-                    )
-                }
-            }
 
             raw.simulateTx?.approves?.forEach { approve ->
                 approvals.add(
@@ -1188,33 +1183,27 @@ class TokenRepository
             var receiveAssetId: String? = null
 
             val txType = when {
-                assetId == Constants.ChainId.BITCOIN_CHAIN_ID -> TransactionType.TRANSFER_OUT.value
+                assetId in Constants.Web3UtxoChainIds -> TransactionType.TRANSFER_OUT.value
                 raw.simulateTx?.approves?.isNotEmpty() == true -> TransactionType.APPROVAL.value
-                (raw.simulateTx?.balanceChanges?.size ?: 0) > 1 -> TransactionType.SWAP.value
-                raw.simulateTx?.balanceChanges?.size == 1 -> TransactionType.TRANSFER_OUT.value
+                senders.isNotEmpty() && receivers.isNotEmpty() -> TransactionType.SWAP.value
+                senders.isNotEmpty() -> TransactionType.TRANSFER_OUT.value
+                receivers.isNotEmpty() -> TransactionType.TRANSFER_IN.value
                 else -> TransactionType.UNKNOWN.value
             }
 
             when (txType) {
                 TransactionType.SWAP.value -> {
-                    raw.simulateTx?.balanceChanges?.forEach { bc ->
-                        val amt = bc.amount.toBigDecimalOrNull()
-                        if (amt != null) {
-                            if (amt < BigDecimal.ZERO) {
-                                sendAssetId = bc.assetId
-                            } else if (amt > BigDecimal.ZERO) {
-                                receiveAssetId = bc.assetId
-                            }
-                        }
-                    }
+                    sendAssetId = senders.firstOrNull()?.assetId
+                    receiveAssetId = receivers.firstOrNull()?.assetId
                 }
                 TransactionType.TRANSFER_OUT.value -> {
-                    raw.simulateTx?.balanceChanges?.firstOrNull {
-                        it.amount.toBigDecimalOrNull()?.let { amt -> amt < BigDecimal.ZERO } == true
-                    }?.let {
+                    senders.firstOrNull()?.let {
                         sendAssetId = it.assetId
                         receiveAssetId = it.assetId
                     }
+                }
+                TransactionType.TRANSFER_IN.value -> {
+                    receiveAssetId = receivers.firstOrNull()?.assetId
                 }
                 else -> {
                     sendAssetId = assetId
@@ -1222,17 +1211,17 @@ class TokenRepository
                 }
             }
 
-            if (assetId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                sendAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
-                receiveAssetId = Constants.ChainId.BITCOIN_CHAIN_ID
+            if (assetId in Constants.Web3UtxoChainIds) {
+                sendAssetId = assetId
+                receiveAssetId = assetId
             }
-            if (raw.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-                Timber.e("bitcoin tx,hash=%s, rate=%s", raw.hash, rate ?: "null")
+            if (raw.chainId in Constants.Web3UtxoChainIds) {
+                Timber.e("utxo tx,hash=%s, rate=%s", raw.hash, rate ?: "null")
             }
 
             val shouldFallbackToGaslessPending = sendAssetId == null && receiveAssetId == null && gaslessPendingTransaction != null
 
-            return Web3Transaction(
+            val pendingTransaction = Web3Transaction(
                 transactionHash = raw.hash,
                 chainId = raw.chainId,
                 address = resolvedAddress,
@@ -1266,6 +1255,12 @@ class TokenRepository
                 updatedAt = raw.updatedAt,
                 level = Constants.AssetLevel.GOOD,
             )
+            return gaslessPendingTransaction?.getSponsorFee()?.let { (assetId, amount) ->
+                pendingTransaction.copy(
+                    sponsorFeeAssetId = assetId,
+                    sponsorFeeAmount = amount,
+                )
+            } ?: pendingTransaction
         }
 
 
@@ -1332,6 +1327,141 @@ class TokenRepository
 
     fun getFavoredWeb3Markets(sort: MarketSort): PagingSource<Int, MarketItem> = marketDao.getFavoredWeb3Markets(sort.value)
 
+    fun observeFavoredMarkets(): Flow<List<MarketItem>> = marketDao.observeFavoredMarkets()
+
+    fun observeAllMarkets(): Flow<List<MarketItem>> = marketDao.observeAllMarkets()
+
+    fun observeMarketsByCategory(category: MarketCategory): Flow<List<MarketItem>> =
+        marketCategoryDao.observeMarketsByCategory(category.value)
+
+    suspend fun markets(
+        category: String? = null,
+        limit: Int? = null,
+        sort: String? = null,
+        duration: String? = null,
+    ) = routeService.markets(
+        category = category,
+        limit = limit,
+        sort = sort,
+        duration = duration,
+    )
+
+    suspend fun fetchMarkets(
+        category: String,
+        duration: String? = null,
+        limit: Int? = null,
+    ): List<MarketItem>? =
+        when (val result = fetchMarketsResult(category, duration, limit)) {
+            is MarketRefreshResult.Success -> result.markets
+            is MarketRefreshResult.Failure -> null
+        }
+
+    internal suspend fun fetchMarketsResult(
+        category: String,
+        duration: String? = null,
+        limit: Int? = null,
+        persist: Boolean = true,
+    ): MarketRefreshResult {
+        var failure = MarketRefreshResult.Failure()
+        val result: MarketRefreshResult? =
+            requestRouteAPI(
+                invokeNetwork = {
+                    markets(
+                        category = category,
+                        duration = duration,
+                        limit = limit,
+                    )
+                },
+                successBlock = { response ->
+                    val markets = response.data.orEmpty()
+                    if (persist) {
+                        val now = nowInUtc()
+                        appDatabase.withRoomTransaction {
+                            marketDao.upsertList(markets)
+                            when (category) {
+                                CATEGORY_ALL ->
+                                    marketCapRankDao.replaceAll(
+                                        markets.map { market ->
+                                            MarketCapRank(
+                                                coinId = market.coinId,
+                                                marketCapRank = market.marketCapRank,
+                                                updatedAt = market.updatedAt,
+                                            )
+                                        },
+                                    )
+
+                                CATEGORY_FAVORITE ->
+                                    marketFavoredDao.replaceAll(
+                                        markets.map { market ->
+                                            MarketFavored(
+                                                coinId = market.coinId,
+                                                isFavored = true,
+                                                createdAt = now,
+                                            )
+                                        },
+                                    )
+
+                                else ->
+                                    MarketCategory.fromApiValue(category)?.let { marketCategory ->
+                                        marketCategoryDao.replaceCategory(
+                                            category = marketCategory.value,
+                                            coinIds = markets.map(Market::coinId),
+                                        )
+                                    }
+                            }
+                            if (category == CATEGORY_ALL) {
+                                syncMarketCoins(markets, now)
+                            }
+                        }
+                    }
+                    MarketRefreshResult.Success(markets.map(MarketItem::fromMarket))
+                },
+                failureBlock = { response ->
+                    failure =
+                        MarketRefreshResult.Failure(
+                            errorCode = response.errorCode,
+                            errorDescription = response.errorDescription,
+                        )
+                    true
+                },
+                exceptionBlock = {
+                    failure = MarketRefreshResult.Failure()
+                    true
+                },
+                defaultErrorHandle = {},
+                defaultExceptionHandle = {},
+                requestSession = {
+                    userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+                },
+            )
+        return result ?: failure
+    }
+
+    private suspend fun syncMarketCoins(
+        markets: List<Market>,
+        createdAt: String,
+    ) {
+        val marketCoins =
+            markets.flatMap { market ->
+                market.assetIds.orEmpty().map { assetId ->
+                    MarketCoin(
+                        coinId = market.coinId,
+                        assetId = assetId,
+                        createdAt = createdAt,
+                    )
+                }
+            }
+        markets
+            .map(Market::coinId)
+            .chunked(MARKET_COINS_DELETE_BATCH_SIZE)
+            .forEach { coinIds ->
+                marketCoinDao.deleteByCoinIds(coinIds)
+            }
+        if (marketCoins.isNotEmpty()) {
+            marketCoinDao.insertIgnoreList(marketCoins)
+        }
+    }
+
     suspend fun findTokensByCoinId(coinId: String) = marketCoinDao.findTokensByCoinId(coinId)
 
     suspend fun findTokenIdsByCoinId(coinId: String) = marketCoinDao.findTokenIdsByCoinId(coinId)
@@ -1372,9 +1502,9 @@ class TokenRepository
         }
     }
 
-    suspend fun updateMarketFavored(symbol: String, coinId: String, isFavored: Boolean?) {
+    suspend fun updateMarketFavored(symbol: String, coinId: String, isFavored: Boolean?): Boolean {
         val now = nowInUtc()
-        if (isFavored == true) {
+        return if (isFavored == true) {
             requestRouteAPI(
                 invokeNetwork = { routeService.unfavorite(coinId) },
                 successBlock = { _ ->
@@ -1385,11 +1515,15 @@ class TokenRepository
                             now
                         )
                     )
+                    withContext(Dispatchers.Main) {
+                        toast(MixinApplication.appContext.getString(R.string.watchlist_remove_desc, symbol))
+                    }
+                    true
                 },
                 requestSession = {
                     userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
                 }
-            )
+            ) ?: false
         } else {
             requestRouteAPI(
                 invokeNetwork = { routeService.favorite(coinId) },
@@ -1404,12 +1538,44 @@ class TokenRepository
                     withContext(Dispatchers.Main) {
                         toast(MixinApplication.appContext.getString(R.string.watchlist_add_desc, symbol))
                     }
+                    true
                 },
                 requestSession = {
                     userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
                 }
-            )
+            ) ?: false
         }
+    }
+
+    suspend fun addFavoriteMarkets(marketIds: Set<String>): Set<String> {
+        val favoriteMarketIds = marketFavoredDao.favoriteMarketIds().toSet()
+        val addedMarketIds = marketIds - favoriteMarketIds
+        if (addedMarketIds.isEmpty()) return emptySet()
+        return requestRouteAPI(
+            invokeNetwork = {
+                routeService.updateMarketFavorites(addedMarketIds.toList())
+            },
+            successBlock = {
+                val createdAt = nowInUtc()
+                marketFavoredDao.insertListSuspend(
+                    addedMarketIds.map { coinId ->
+                        MarketFavored(
+                            coinId = coinId,
+                            isFavored = true,
+                            createdAt = createdAt,
+                        )
+                    },
+                )
+                addedMarketIds
+            },
+            failureBlock = { true },
+            exceptionBlock = { true },
+            defaultErrorHandle = {},
+            defaultExceptionHandle = {},
+            requestSession = {
+                userService.fetchSessionsSuspend(listOf(Constants.RouteConfig.ROUTE_BOT_USER_ID))
+            },
+        ) ?: emptySet()
     }
 
     suspend fun addAlert(alert: AlertRequest): MixinResponse<Alert>? {
@@ -1558,7 +1724,8 @@ class TokenRepository
         account: String,
         assetId: String,
         amount: String,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         to: String,
         nonce: String,
         createdAt: String,
@@ -1570,22 +1737,25 @@ class TokenRepository
             account = account,
             assetId = assetId,
             amount = amount,
-            fee = fee,
+            fee = "",
             to = to,
             raw = buildGaslessSponsorPendingRawMarker(sponsorTxId),
             nonce = nonce,
             createdAt = createdAt,
             updatedAt = updatedAt,
+            sponsorFeeAssetId = feeAssetId,
+            sponsorFeeAmount = feeAmount,
         )
     }
 
-    suspend fun insertSignedPendingTransaction(
+    suspend fun insertGaslessSignedPendingTransaction(
         hash: String,
         chainId: String,
         account: String,
         assetId: String,
         amount: String,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         to: String,
         raw: String,
         createdAt: String,
@@ -1597,12 +1767,14 @@ class TokenRepository
             account = account,
             assetId = assetId,
             amount = amount,
-            fee = fee,
+            fee = "",
             to = to,
             raw = raw,
             nonce = "",
             createdAt = createdAt,
             updatedAt = updatedAt,
+            sponsorFeeAssetId = feeAssetId,
+            sponsorFeeAmount = feeAmount,
         )
     }
 
@@ -1618,10 +1790,13 @@ class TokenRepository
         nonce: String,
         createdAt: String,
         updatedAt: String,
+        sponsorFeeAssetId: String? = null,
+        sponsorFeeAmount: String? = null,
     ) {
         val normalizedAmount = amount.removePrefix("-")
         val normalizedFee = fee.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: fee
-        appDatabase.withTransaction {
+        val normalizedSponsorFeeAmount = sponsorFeeAmount?.toBigDecimalOrNull()?.stripTrailingZeros()?.toPlainString() ?: sponsorFeeAmount
+        walletDatabase.withRoomTransaction {
             web3RawTransactionDao.insertSuspend(
                 Web3RawTransaction(
                     hash = hash,
@@ -1644,6 +1819,8 @@ class TokenRepository
                     status = TransactionStatus.PENDING.value,
                     blockNumber = 0,
                     fee = normalizedFee,
+                    sponsorFeeAssetId = sponsorFeeAssetId,
+                    sponsorFeeAmount = normalizedSponsorFeeAmount,
                     senders = listOf(
                         AssetChange(
                             assetId = assetId,
@@ -1679,9 +1856,9 @@ class TokenRepository
         chainId: String,
         updatedAt: String,
     ) {
-        appDatabase.withTransaction {
+        walletDatabase.withRoomTransaction {
             val pendingRaw = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, sponsorTxId, chainId)
-                ?: return@withTransaction
+                ?: return@withRoomTransaction
             val pendingTransaction = web3TransactionDao.getLatestTransaction(sponsorTxId, chainId)
 
             web3RawTransactionDao.insertSuspend(
@@ -1712,16 +1889,16 @@ class TokenRepository
         status: String,
         updatedAt: String,
     ) {
-        appDatabase.withTransaction {
+        walletDatabase.withRoomTransaction {
             val pendingRaw = web3RawTransactionDao.getRawTransactionByHashAndChain(walletId, hash, chainId)
-                ?: return@withTransaction
+                ?: return@withRoomTransaction
             web3RawTransactionDao.insertSuspend(
                 pendingRaw.copy(
                     state = status,
                     updatedAt = updatedAt,
                 ),
             )
-            web3TransactionDao.updateTransaction(hash, status, chainId)
+            web3TransactionDao.updateTransaction(hash, status, chainId, pendingRaw.account)
         }
     }
 
@@ -1730,19 +1907,19 @@ class TokenRepository
         hash: String,
         status: String,
         chainId: String,
-        btcRawTransactionHexToDeleteOutputs: String?,
+        utxoRawTransactionHexToDeleteOutputs: String?,
     ) {
-        appDatabase.withTransaction {
+        walletDatabase.withRoomTransaction {
             web3RawTransactionDao.insertSuspend(raw)
-            web3TransactionDao.updateTransaction(hash, status, chainId)
-            if (btcRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withTransaction
-            val cleanedHex: String = btcRawTransactionHexToDeleteOutputs.removePrefix("0x").trim()
-            if (cleanedHex.isBlank()) return@withTransaction
+            web3TransactionDao.updateTransaction(hash, status, chainId, raw.account)
+            if (chainId !in Constants.Web3UtxoChainIds || utxoRawTransactionHexToDeleteOutputs.isNullOrBlank()) return@withRoomTransaction
+            val cleanedHex: String = utxoRawTransactionHexToDeleteOutputs.removePrefix("0x").trim()
+            if (cleanedHex.isBlank()) return@withRoomTransaction
             val tx: Transaction = runCatching {
                 Transaction.read(ByteBuffer.wrap(cleanedHex.hexStringToByteArray()))
-            }.getOrNull() ?: return@withTransaction
+            }.getOrNull() ?: return@withRoomTransaction
             val txHash: String = tx.txId.toString()
-            walletOutputDao.deleteByTransactionHash(txHash, Constants.ChainId.BITCOIN_CHAIN_ID)
+            walletOutputDao.deleteByTransactionHash(txHash, chainId)
 
             val pendingOutpoints: Set<String> = web3RawTransactionDao.getPendingRawTransactionsByAccount(raw.account, chainId)
                 .asSequence()
@@ -1765,9 +1942,9 @@ class TokenRepository
                 if (pendingOutpoints.contains(outpointKey)) {
                     continue
                 }
-                val localOutput: WalletOutput? = walletOutputDao.outputByOutpoint(prevHash, prevIndex, Constants.ChainId.BITCOIN_CHAIN_ID)
+                val localOutput: WalletOutput? = walletOutputDao.outputByOutpoint(prevHash, prevIndex, chainId)
                 if (localOutput != null) {
-                    walletOutputDao.deleteSignedByOutpoint(prevHash, prevIndex, localOutput.address, Constants.ChainId.BITCOIN_CHAIN_ID)
+                    walletOutputDao.deleteSignedByOutpoint(prevHash, prevIndex, localOutput.address, chainId)
                 }
             }
         }

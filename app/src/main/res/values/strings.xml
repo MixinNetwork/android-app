@@ -95,9 +95,7 @@
     <string name="Anonymous_Number">Anonymous Number</string>
     <string name="ANSWER">ANSWER</string>
     <string name="app_card_shareable_false">The card has been set to not allow sharing</string>
-    <string name="app_name">Mixin</string>
-    <string name="mixin_messenger" translatable="false">Mixin</string>
-    <string name="mixin_one">Mixin One</string>
+    <string name="app_name" translatable="false">Mixin</string>
     <string name="App_version">App version</string>
     <string name="Appearance">Appearance</string>
     <string name="Apply">Apply</string>
@@ -177,6 +175,8 @@
     <string name="Change">Change</string>
     <string name="Change_Amount">Change Amount</string>
     <string name="Change_emergency_contact">Change recovery contact</string>
+    <string name="Change_Group_Photo_with_Camera">Change Group Photo with Camera</string>
+    <string name="Change_Group_Photo_with_Library">Change Group Photo with Library</string>
     <string name="Change_Number_Instead">Change Number Instead</string>
     <string name="Change_Phone_Number">Change Phone Number</string>
     <string name="Change_PIN">Change PIN</string>
@@ -419,6 +419,13 @@
     <string name="Enable_immediately">Enabled immediately</string>
     <string name="Enable_web_debug">Enable web debug</string>
     <string name="Web_debug">Web debug</string>
+    <string name="Bot_sign_debug_apps">Bot sign debug apps</string>
+    <string name="Debug_Wallet_Account_Visibility">Wallet account visibility</string>
+    <string name="Debug_Earn_Account">Earn Account</string>
+    <string name="Earn">Earn</string>
+    <string name="earn_total_earnings">Total Earnings</string>
+    <string name="earn_yesterday_earnings">Yesterday Earnings</string>
+    <string name="earn_reward_rate">Reward Rate</string>
     <string name="Encrypted">Encrypted</string>
     <string name="End_to_End_Encryption">End-to-end Encrypted</string>
     <string name="Enter_new_phone_number">Enter your new phone number</string>
@@ -487,9 +494,17 @@
     <string name="error_invalid_quote_amount">ERROR 10614: The input amount is either too small or too large, please adjust the amount.</string>
     <string name="error_invalid_quote_amount_detailed">ERROR 10614: The amount exceeds the maximum allowable value of %1$s. Please adjust the amount. Try placing a limit order? No restrictions on amount or token.</string>
     <string name="error_no_available_quote">ERROR 10615: This trading pair is currently not supported, please try switching to a different token.</string>
-    <string name="error_perps_order_value_too_small">ERROR 10650: Position size is too small.</string>
+    <string name="error_perps_margin_too_small">ERROR 10650: Margin is too small</string>
+    <string name="error_perps_margin_too_small_value">ERROR 10650: Margin must have minimum value of %1$s</string>
+    <string name="error_perps_position_size_too_small">ERROR 10654: Position size is too small</string>
+    <string name="error_perps_position_size_too_small_value">ERROR 10654: Position must have minimum size of %1$s</string>
     <string name="error_already_had_open_position">ERROR 10651: You already had a open position</string>
     <string name="error_waiting_other_orders">ERROR 10652: The current market is still processing other orders, please try again later.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit">ERROR 10655: Position size exceeds the limit for the selected leverage. Reduce the amount or leverage.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_add">ERROR 10655: Amount exceeds the %1$s limit. Reduce the amount.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">ERROR 10655: Cannot add to the position.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_value">ERROR 10655: Amount exceeds the %1$s limit. Reduce the amount or leverage.</string>
+    <string name="error_perps_invalid_leader_position">ERROR 10656: The leader position is invalid. Please select another position to copy.</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>
@@ -512,7 +527,7 @@
     <string name="error_unknown_with_code">ERROR %1$d</string>
     <string name="error_unknown_with_message">ERROR: %1$s</string>
     <string name="error_used_phone">ERROR 20122: This phone number is already associated with another account.</string>
-    <string name="error_watch_address_not_supported">ERROR 10633: Invalid Address</string>
+    <string name="error_watch_address_not_supported">ERROR 10633: This address is currently not supported</string>
     <string name="error_invalid_referral_code">ERROR 10730: Invalid Referral Code</string>
     <string name="error_already_bonded_referral_code">ERROR 10731: This account has already applied a referral code</string>
     <string name="error_cannot_apply_your_own_referral_code">ERROR 10732: Cannot apply your own referral code</string>
@@ -597,8 +612,10 @@
         <item quantity="other">%d Hours</item>
     </plurals>
     <string name="minutes_count_short">%1$dm</string>
-    <string name="hours_count_short">%1$dH</string>
-    <string name="days_count_short">%1$dD</string>
+    <string name="hours_count_short">%1$dh</string>
+    <string name="days_count_short">%1$dd</string>
+    <string name="hours_count_long">%1$d Hours</string>
+    <string name="days_count_long">%1$d Days</string>
     <string name="weeks_count_short">%1$dW</string>
     <string name="months_count_short">%1$dM</string>
     <string name="ytd">1Y</string>
@@ -718,7 +735,7 @@
         <item quantity="one">%d Minute</item>
         <item quantity="other">%d Minutes</item>
     </plurals>
-    <string name="Mixin">Mixin</string>
+    <string name="Mixin" translatable="false">Mixin</string>
     <string name="Mixin_ID">Mixin ID</string>
     <string name="Mixin_Locked">Mixin Locked</string>
     <string name="Mixin_Messenger_Desktop">Mixin Desktop</string>
@@ -1190,7 +1207,7 @@
     <string name="Update">Update</string>
     <string name="update_downloaded">An update has just been downloaded.</string>
     <string name="Update_Mixin">Update Mixin</string>
-    <string name="update_mixin_description">The current version (%1$s) is no longer available!\nPlease click \"Update\" below to update to the latest version from the Google Play.</string>
+    <string name="mixin_version_expired_description">This version has expired. Tap \"Update\" below to get the latest version from the app store. Please update directly without uninstalling the app.</string>
     <string name="Upgrade">Upgrade</string>
     <string name="Upgrade_Database">Upgrade Database</string>
     <string name="Upgrade_need_verify_your_PIN">The upgrade requires verifying your PIN.</string>
@@ -1246,6 +1263,7 @@
     <string name="wallet_withdrawal_changed">The withdrawal fee has been changed from %1$s to %2$s, would you like to proceed with the request?</string>
     <string name="wallet_withdrawal_not_in_addresses">%1$s This address is not in the white list of withdrawal addresses, please check the address carefully.</string>
     <string name="wallet_withdrawal_recent_tip">You have already withdrawn %3$s to %2$s %1$s ago, Do you want to withdraw it again?</string>
+    <string name="web_bot_cannot_reached_desc">The %1$s webpage can\'t be reached. Please check your network and try to switch 4G, Wi-Fi or VPN to reload the page.</string>
     <string name="web_cannot_reached_desc">%1$s took too long to respond. Please check your network and try to switch 4G, Wi-Fi or VPN to reload the page.</string>
     <string name="web_cannot_reached_title">This webpage can\'t be reached</string>
     <string name="web_floating_permission">You can\'t floating as Mixin isn\'t authorized to use floating windows</string>
@@ -1275,7 +1293,8 @@
     <string name="Write_Circles">Write Circles</string>
     <string name="you">you</string>
     <string name="You">You</string>
-    <string name="You_deleted_this_message">You deleted this message</string>
+    <string name="You_deleted_this_message">You deleted this message.</string>
+    <string name="User_deleted_this_message">%1$s deleted this message.</string>
     <string name="You_have_left_the_group">You have left the group</string>
     <string name="Your_emergency_contact_has_been_changed">Your recovery contact has been changed</string>
     <string name="text_size">Text Size</string>
@@ -1565,18 +1584,23 @@
     <string name="edit_by_pin">Edit by PIN</string>
     <string name="Sender">Sender</string>
     <string name="continue_with_pin">Continue with PIN</string>
-    <string name="Bitcoin">Bitcoin</string>
-    <string name="Ethereum">Ethereum</string>
-    <string name="Polygon">Polygon</string>
-    <string name="BSC">BSC</string>
-    <string name="Solana">Solana</string>
-    <string name="Base">Base</string>
-    <string name="TRON">TRON</string>
-    <string name="Optimism">Optimism</string>
-    <string name="Arbitrum">Arbitrum</string>
-    <string name="Avalanche">Avalanche</string>
-    <string name="HyperEVM">HyperEVM</string>
-    <string name="Toncoin">TON</string>
+    <string name="Bitcoin" translatable="false">Bitcoin</string>
+    <string name="Pearl" translatable="false">Pearl</string>
+    <string name="Litecoin" translatable="false">Litecoin</string>
+    <string name="Ethereum" translatable="false">Ethereum</string>
+    <string name="Polygon" translatable="false">Polygon</string>
+    <string name="BSC" translatable="false">BSC</string>
+    <string name="Solana" translatable="false">Solana</string>
+    <string name="Base" translatable="false">Base</string>
+    <string name="TRON" translatable="false">TRON</string>
+    <string name="Optimism" translatable="false">Optimism</string>
+    <string name="Arbitrum" translatable="false">Arbitrum</string>
+    <string name="Avalanche" translatable="false">Avalanche</string>
+    <string name="HyperEVM" translatable="false">HyperEVM</string>
+    <string name="XLayer" translatable="false">X Layer</string>
+    <string name="Robinhood" translatable="false">Robinhood</string>
+    <string name="Arc" translatable="false">Arc</string>
+    <string name="Toncoin" translatable="false">TON</string>
     <string name="web3_account_network">%1$s Account</string>
     <string name="web3_account">Account</string>
     <string name="access_dapps_defi_projects">Access apps and DeFi projects.</string>
@@ -1667,7 +1691,6 @@
     <string name="single_transaction_should_be_less_than">Maximum amount %1$s %2$s</string>
     <string name="single_transaction_should_be_between">Amount must be between %1$s %2$s and %3$s %4$s</string>
     <string name="perps_minimum_margin">The minimum amount is %1$s %2$s</string>
-    <string name="perps_maximum_margin">The maximum amount is %1$s %2$s</string>
     <!-- Web3 -->
     <string name="web3_approve">Approve</string>
     <string name="web3_borrow">Borrow</string>
@@ -1794,9 +1817,20 @@
     <string name="multisig_safe_state_signed">You have already approved this transaction; you cannot approve it again.</string>
     <string name="multisig_safe_state_unlocked">This transaction has already been rejected by someone else; you cannot reject it again.</string>
     <string name="watchlist_empty">Your watchlist is empty</string>
-    <string name="Dominance">Dominance</string>
+    <string name="Add_to_Watchlist">Add to Watchlist</string>
+    <string name="Remove_from_Watchlist">Remove from Watchlist</string>
+    <string name="Keep">Keep</string>
+    <string name="Bitcoin_Dominance">Bitcoin Dominance</string>
     <string name="volume_24h">24h Volume</string>
+    <string name="market_volume_short">Vol</string>
+    <string name="market_change_short">Change</string>
     <string name="Watchlist">Watchlist</string>
+    <string name="Crypto">Crypto</string>
+    <string name="market_stock">Stock</string>
+    <string name="Indicator">Indicator</string>
+    <string name="market_display">Market Display</string>
+    <string name="Perp">Perp</string>
+    <string name="volume_label">VOL: %1$s</string>
     <string name="top_count">Top %1$d</string>
     <string name="change_percent_period_day">%1$dD %%</string>
     <string name="change_percent_period_hour">%1$dh %%</string>
@@ -1804,6 +1838,7 @@
     <string name="Choose_Token">Choose %1$s Network</string>
     <string name="choose_token_desc">%1$s is issued on multiple networks</string>
     <string name="watchlist_add_desc">%1$s is now on your watchlist</string>
+    <string name="watchlist_remove_desc">%1$s has been removed from your watchlist</string>
     <string name="Stats">Stats</string>
     <string name="share_desc">Visit mixin.one/mm or scan the QR code to install.</string>
     <string name="referral_share_desc">Scan to install Mixin, use this referral code for %1$s rebate.</string>
@@ -2033,7 +2068,7 @@
     <string name="Privacy_Wallet">Privacy Wallet</string>
     <string name="Common_Wallet">Common Wallet</string>
     <string name="Watch_Wallet">Watch Wallet</string>
-    <string name="classic_wallet_btc_intro_title">Common Wallet now supports Bitcoin</string>
+    <string name="common_wallet_now_supports_chain">Common Wallet now supports %1$s</string>
     <string name="feature_decentralized">Decentralized</string>
     <string name="feature_decentralized_description">A fully decentralized wallet where you control the private key.</string>
     <string name="feature_privacy_by_default">Privacy by Default</string>
@@ -2228,6 +2263,7 @@
     <string name="Invalid_Address">Invalid Address</string>
     <string name="Private_Key_Notice">Your private key will only be stored locally on your device.</string>
     <string name="Imported">Imported</string>
+    <string name="wallet_already_imported">This wallet has already been imported.</string>
     <string name="NoKey">NoKey</string>
     <string name="Watching">Watching</string>
     <string name="error_too_many_wallets">ERROR 10632: Maximum wallet limit reached</string>
@@ -2367,7 +2403,7 @@
     <string name="impact_on_pnl_2">Lower leverage, smaller and slower PnL</string>
     <string name="perps_leverage_risk_notice_1">Higher leverage increases liquidation risk</string>
     <string name="perps_leverage_risk_notice_2">Under high leverage, small price movements can lead to large losses</string>
-    <string name="perps_position_size_overview">Size represents the total value of your position, calculated as margin × leverage.</string>
+    <string name="perps_position_size_overview">Size represents the current value of your position, calculated as position quantity × mark price.</string>
     <string name="perps_position_size_pnl_1">Larger size, larger PnL</string>
     <string name="perps_position_size_pnl_2">Smaller size, smaller PnL</string>
     <string name="perps_tpsl_overview">Take-profit and stop-loss are conditional orders that execute automatically when the trigger price is reached.</string>
@@ -2385,8 +2421,16 @@
     <string name="perps_funding_rate_key_point_2">Balance long and short positions</string>
     <string name="perps_funding_rate_key_point_3">Create arbitrage opportunities</string>
     <string name="perps_funding_frequency">Frequency</string>
-    <string name="perps_funding_frequency_value">8 hours</string>
+    <string name="perps_funding_frequency_value">1/4/8 hours</string>
     <string name="perps_receive">Receive</string>
+    <string name="Trading_Fee">Trading Fee</string>
+    <string name="perps_funding_title_interval">Funding Rate (%1$dH)</string>
+    <string name="Open_Fee">Open Fee</string>
+    <string name="Close_Fee">Close Fee</string>
+    <string name="perps_trading_fee_overview">Fees apply when opening, adding to, or closing a position. They are calculated based on position value, not margin.</string>
+    <string name="perps_trading_fee_pnl_1">Larger position, higher fees</string>
+    <string name="perps_trading_fee_pnl_2">Smaller position, lower fees</string>
+    <string name="perps_trading_fee_pnl_3">Fees are included in your realized PnL</string>
     <string name="perps_liquidation_price_short">Liq. Price</string>
     <string name="Take_Profit_When">Take Profit When</string>
     <string name="Stop_Loss_When">Stop Loss When</string>
@@ -2451,7 +2495,9 @@
     <string name="learn_how_to_trade_perps">Learn how to trade perpetual futures</string>
     <string name="Volume_24H">24H VOLUME</string>
     <string name="Open_Interest">Open Interest</string>
+    <string name="Debug_Mark_Price">Mark Price (Debug)</string>
     <string name="Funding_Rate">Funding Rate</string>
+    <string name="position_opening_failed">Position Opening Failed</string>
     <string name="confirm_opening_position">Confirm Opening</string>
     <string name="confirm_adding_position">Confirm Adding</string>
     <string name="Position_Submitted">Position Submitted</string>
@@ -2503,8 +2549,11 @@
     <string name="perps_markets">Trending</string>
     <string name="perps_top_movers">Top Movers</string>
     <string name="perps_market">Market</string>
+    <string name="perps_badge" translatable="false">Perp</string>
     <string name="perps_share_card_title">🚀 Perps %1$s</string>
     <string name="perps_share_card_market">- 📈 Market: %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 Max Leverage: %1$dx</string>
+    <string name="perps_share_card_volume">💰 24h Volume: %1$s</string>
     <string name="perps_share_card_side">- ↕️ Side: %1$s (%2$dx)</string>
     <string name="perps_share_card_trade_now">💰 Trade Now</string>
     <string name="market_share_card_title">Trade %1$s</string>
@@ -2518,6 +2567,7 @@
     <string name="perps_category_indices">Indices</string>
     <string name="perps_category_commodities">Commodities</string>
     <string name="perps_category_forex">Forex</string>
+    <string name="perps_category_meme">Memes</string>
     <string name="perps_sort_volume_24">24 VOL</string>
     <string name="Forget_Pin">Forgot PIN</string>
     <string name="forget_pin_help_url">https://support.mixin.one/en/article/what-should-i-do-if-i-forget-my-pin-g12pmo/</string>
@@ -2624,7 +2674,9 @@
     <string name="wallet_home_cashback_banner_cta">Claim Now</string>
     <string name="wallet_home_referral_banner_title">Referral</string>
     <string name="wallet_home_referral_banner_desc">Invite and get up to 60% trading fee and exclusive revenue sharing.</string>
+    <string name="wallet_home_earn_account">Earn Account</string>
     <string name="cash_balance">Cash Balance</string>
+    <string name="earn_balance">Earn Balance</string>
     <string name="cash_account_apy">%1$s APY</string>
     <string name="cash_account_minimum_receive">Input amount must be worth at least %1$s %2$s. Please re-enter.</string>
     <string name="cash_account_minimum_send">ERROR 10614: Minimum amount is %1$s %2$s.</string>
@@ -2651,4 +2703,55 @@
     <string name="wallet_home_privacy_wallet_reason_2">Avoid transfer errors caused by complex wallet addresses.</string>
     <string name="wallet_home_privacy_wallet_reason_3">Block malicious apps from gaining unsafe permissions.</string>
     <string name="no_tokens">No Tokens</string>
+    <string name="perps_adjust">Adjust</string>
+    <string name="perps_adjust_title">Adjust Margin or Position</string>
+    <string name="perps_add_margin">Add Margin</string>
+    <string name="perps_reduce_margin">Reduce Margin</string>
+    <string name="perps_add_to_position">Add to Position</string>
+    <string name="perps_reduce_position">Reduce Position</string>
+    <string name="perps_add_margin_description">Add margin to lower liquidation risk and keep your position safer</string>
+    <string name="perps_reduce_margin_description">Withdraw excess margin to free up funds while maintaining your position</string>
+    <string name="perps_add_position_description">Increase your position for greater potential gains and losses</string>
+    <string name="perps_reduce_position_description">Partially close to lock in profits or limit losses</string>
+    <string name="perps_margin_or_position">Add Margin or Increase Position?</string>
+    <string name="perps_margin_tip">Add margin to lower liquidation risk</string>
+    <string name="perps_position_tip">Increase position for more gains and losses</string>
+    <string name="perps_low_margin_tip">If margin is low, add margin first</string>
+    <string name="perps_total_margin">Total Margin</string>
+    <string name="perps_margin_submitted">Margin adjustment submitted</string>
+    <string name="perps_confirm_add_margin">Confirm Adding Margin</string>
+    <string name="perps_adding_margin">Adding Margin</string>
+    <string name="perps_adding_margin_failed">Failed to Add Margin</string>
+    <string name="perps_confirm_reduce_margin">Confirm Reducing Margin</string>
+    <string name="perps_reducing_margin">Reducing Margin</string>
+    <string name="perps_reducing_margin_failed">Failed to Reduce Margin</string>
+    <string name="perps_add_margin_title">Add Margin to %1$s %2$s</string>
+    <string name="perps_reduce_margin_title">Reduce Margin for %1$s %2$s</string>
+    <string name="perps_reduce_action">Reduce</string>
+    <string name="perps_percentage">Percentage</string>
+    <string name="perps_confirm_reduce_margin_title">Confirm Reducing Margin</string>
+    <string name="up_to_apy">Up to %1$s APY</string>
+    <string name="perps_add_position_title">Add Position to %1$s %2$s</string>
+    <string name="max_removable">Max removable %1$s</string>
+    <string name="perps_added_position">Added Position</string>
+    <string name="perps_added_margin">Added Margin</string>
+    <string name="perps_reduced_margin">Reduced Margin</string>
+    <string name="perps_realized_pnl">Realized PnL</string>
+    <string name="perps_unrealized_pnl">Unrealized PnL</string>
+    <string name="Candle_Open">Open</string>
+    <string name="Candle_Close">Close</string>
+    <string name="Candle_High">High</string>
+    <string name="Candle_Low">Low</string>
+    <string name="perps_close_submitted">Close order submitted</string>
+    <string name="perps_reduce_quantity_changed">The position has changed. Please return and check the quantity before trying again.</string>
+    <string name="perps_reduce_invalid_quantity">Enter a positive amount within the current position size.</string>
+    <string name="perps_minimum_order_size">Minimum order size is %1$s</string>
+    <string name="Estimated_Fee">Estimated Fee</string>
+    <string name="perps_estimated_realized_pnl">Estimated Realized PnL</string>
+    <string name="perps_last_price">Last Price</string>
+    <string name="perps_mark_price">Mark Price</string>
+    <string name="perps_close_position_title">Close Position to %1$s %2$s</string>
+    <string name="perps_include_pnl">Include PnL</string>
+    <string name="perps_position_amount">Position Amount</string>
+    <string name="perps_margin_amount">Margin Amount</string>
 </resources>

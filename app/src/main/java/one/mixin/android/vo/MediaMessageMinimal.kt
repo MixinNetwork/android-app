@@ -1,6 +1,6 @@
 package one.mixin.android.vo
 
-import androidx.room.Entity
+import androidx.room3.Entity
 
 @Entity
 data class MediaMessageMinimal(

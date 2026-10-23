@@ -17,11 +17,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.doOnLayout
+import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
 import androidx.core.view.doOnAttach
-import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withResumed
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -33,13 +37,17 @@ import one.mixin.android.R
 import one.mixin.android.api.referral.ReferralShareInfo
 import one.mixin.android.api.referral.buildReferralCopyUrl
 import one.mixin.android.api.referral.buildReferralShareUrl
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentMarketShareBottomBinding
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getPublicDownloadPath
 import one.mixin.android.extension.getSafeAreaInsetsTop
+import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.marketPriceFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
@@ -49,15 +57,21 @@ import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.repository.ShareCoverRepository
 import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.buildReferralDescription
+import one.mixin.android.ui.common.drawShareCover
+import one.mixin.android.ui.common.drawShareBitmap
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
 import one.mixin.android.ui.home.market.Market
+import one.mixin.android.ui.home.web3.trade.CandleChart
+import one.mixin.android.ui.home.web3.trade.perps.changePercent
+import one.mixin.android.ui.home.web3.trade.perps.formatPerpsPrice
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
@@ -78,8 +92,8 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         const val TAG = "MarketShareBottomFragment"
         private const val ARGS_MARKET = "market"
         private const val ARGS_TYPE = "type"
+        private const val ARGS_PERPS_MARKET = "perps_market"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
-        private const val SHARE_CARD_COVER_URL = "https://dl.mixinpay.com/share-market-card.png"
 
         fun newInstance(
             marketItem: MarketItem,
@@ -88,15 +102,36 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
             putParcelable(ARGS_MARKET, marketItem)
             putString(ARGS_TYPE, selectedType)
         }
+
+        fun newInstance(market: PerpsMarket, timeFrame: String) = MarketShareBottomFragment().withArgs {
+            putString(ARGS_PERPS_MARKET, GsonHelper.customGson.toJson(market))
+            putString(ARGS_TYPE, timeFrame)
+        }
     }
 
     @Inject
     lateinit var referralRepository: ReferralRepository
 
+    @Inject
+    lateinit var shareCoverRepository: ShareCoverRepository
+
     private val binding by viewBinding(FragmentMarketShareBottomBinding::inflate)
     private val marketItem: MarketItem by lazy {
         requireNotNull(requireArguments().getParcelableCompat(ARGS_MARKET, MarketItem::class.java))
     }
+    private val perpsMarket: PerpsMarket? by lazy {
+        arguments?.getString(ARGS_PERPS_MARKET)?.let {
+            GsonHelper.customGson.fromJson(it, PerpsMarket::class.java)
+        }
+    }
+    private val shareSymbol: String
+        get() = perpsMarket?.tokenSymbol ?: marketItem.symbol
+    private val marketLink: String
+        get() = perpsMarket?.let { "${Constants.Scheme.HTTPS_TRADE}?type=perps&market=${it.marketId}" }
+            ?: "$HTTPS_MARKET/$coinId"
+    private val marketType: String
+        get() = if (perpsMarket != null) AnalyticsTracker.MarketType.PERPS else AnalyticsTracker.MarketType.SPOT
+
     private var selectedType: String = "1D"
     private val coinId: String? by lazy {
         marketItem.coinId.ifBlank { marketItem.assetIds?.firstOrNull().orEmpty() }
@@ -108,6 +143,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
 
     private var referralShareInfo: ReferralShareInfo? = null
     private var isLoading = false
+    private var isUploading = false
     private var isChartLoading = true
     private var isChartContentSet = false
 
@@ -131,28 +167,45 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         selectedType = arguments?.getString(ARGS_TYPE) ?: "1D"
         bindMarketCard()
         setupMarketChart()
+        binding.marketCover.doOnLayout { cover ->
+            binding.marketChartContainer.updateLayoutParams {
+                height = (binding.marketChartContainer.height + cover.width - cover.height).coerceAtLeast(96.dp)
+            }
+        }
         bindMixinContact()
 
         binding.apply {
             close.setOnClickListener { dismiss() }
             share.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                AnalyticsTracker.trackShareMarket(AnalyticsTracker.MarketShareType.SHARE_IMAGE)
+                AnalyticsTracker.trackMarketShare(
+                    type = marketType,
+                    target = AnalyticsTracker.MarketShareType.SHARE_IMAGE,
+                )
                 shareToSystem()
             }
             mixinContact.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                AnalyticsTracker.trackShareMarket(AnalyticsTracker.MarketShareType.MIXIN_CONTACT)
+                AnalyticsTracker.trackMarketShare(
+                    type = marketType,
+                    target = AnalyticsTracker.MarketShareType.MIXIN_CONTACT,
+                )
                 shareToMixinContact()
             }
             copy.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                AnalyticsTracker.trackShareMarket(AnalyticsTracker.MarketShareType.COPY_LINK)
+                AnalyticsTracker.trackMarketShare(
+                    type = marketType,
+                    target = AnalyticsTracker.MarketShareType.COPY_LINK,
+                )
                 copyLink()
             }
             save.setOnClickListener {
                 if (isLoading) return@setOnClickListener
-                AnalyticsTracker.trackShareMarket(AnalyticsTracker.MarketShareType.SAVE_TO_ALBUM)
+                AnalyticsTracker.trackMarketShare(
+                    type = marketType,
+                    target = AnalyticsTracker.MarketShareType.SAVE_TO_ALBUM,
+                )
                 saveToAlbum()
             }
         }
@@ -185,6 +238,18 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     }
 
     private fun bindMarketCard() {
+        perpsMarket?.let { market ->
+            binding.assetSymbol.text = market.displaySymbol
+            binding.assetRank.isVisible = true
+            binding.assetRank.setBackgroundResource(R.drawable.bg_market_badge_round_4dp)
+            binding.assetRank.updatePadding(left = 3.dp, right = 3.dp)
+            binding.assetRank.text = getString(R.string.Perpetual_Leverage_Format, market.leverage)
+            binding.icon.badge.isVisible = false
+            binding.icon.bg.loadImage(market.iconUrl, R.drawable.ic_avatar_place_holder)
+            binding.priceValue.text = formatPerpsPrice(market.last, market.priceScale)
+            bindRiseText(market.changePercent().toFloat(), useNumberFormat = true)
+            return
+        }
         binding.assetSymbol.text = marketItem.symbol
         binding.assetRank.isVisible = marketItem.marketCapRank.isNotBlank()
         binding.assetRank.text = "#${marketItem.marketCapRank}"
@@ -213,6 +278,23 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         isChartContentSet = true
 
         binding.marketChart.setContent {
+            val perps = perpsMarket
+            if (perps != null) {
+                MixinAppTheme {
+                    CandleChart(
+                        marketId = perps.marketId,
+                        timeFrame = selectedType,
+                        marketPrice = perps.last,
+                        priceScale = perps.priceScale,
+                        interactive = false,
+                        onLoading = { loading ->
+                            isChartLoading = loading
+                            updateLoadingState()
+                        },
+                    )
+                }
+                return@setContent
+            }
             Market(
                 selectedType,
                 chartAssetId,
@@ -269,12 +351,12 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     }
 
     private fun updateLoadingState() {
-        showLoading(isChartLoading || binding.qr.drawable == null)
+        showLoading(isUploading || isChartLoading || binding.qr.drawable == null)
     }
 
     private fun showLoading(show: Boolean) {
         isLoading = show
-        binding.shareCardLoading.isVisible = show
+        binding.shareCardLoading.isVisible = isUploading
     }
 
     private fun bindFooter(qrCode: Bitmap) {
@@ -284,7 +366,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
             if (rebatePercent.isNullOrBlank()) {
                 binding.shareDesc.isVisible = true
                 binding.shareDesc.minLines = 1
-                binding.title.text = getString(R.string.mixin_messenger)
+                binding.title.text = getString(R.string.Mixin)
                 binding.shareDesc.text = getString(R.string.share_desc)
             } else {
                 binding.title.text = info.code
@@ -296,7 +378,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         } else {
             binding.shareDesc.isVisible = true
             binding.shareDesc.minLines = 1
-            binding.title.text = getString(R.string.mixin_messenger)
+            binding.title.text = getString(R.string.Mixin)
             binding.shareDesc.text = getString(R.string.share_desc)
         }
         binding.qr.setImageBitmap(qrCode)
@@ -328,7 +410,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
 
     private fun currentQrUrl(): String = referralCode?.let(::buildReferralShareUrl) ?: SHARE_QR_URL
 
-    private fun createShareBitmap(): Bitmap = binding.llMarketShare.drawToBitmap()
+    private fun createShareBitmap(): Bitmap = binding.llMarketShare.drawShareBitmap()
 
     private fun shareToSystem() {
         lifecycleScope.launch {
@@ -345,17 +427,77 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     }
 
     private fun shareToMixinContact() {
-        val manager = parentFragmentManager
-        dismiss()
-        ShareMessageBottomSheetDialogFragment.newInstance(buildMarketAppCardMessage(), null)
-            .show(manager, ShareMessageBottomSheetDialogFragment.TAG)
+        viewLifecycleOwner.lifecycleScope.launch {
+            if (binding.marketCover.width == 0 || binding.marketCover.height == 0) return@launch
+            val background = binding.marketCover.background
+            val bitmap = try {
+                binding.marketCover.setBackgroundColor(requireContext().colorAttr(R.attr.bg_white))
+                binding.marketCover.drawShareCover()
+            } finally {
+                binding.marketCover.background = background
+            }
+            isUploading = true
+            showLoading(true)
+            try {
+                val coverUrl = shareCoverRepository.upload(bitmap)
+                val message = buildMarketAppCardMessage(coverUrl)
+                lifecycle.withResumed {
+                    ShareMessageBottomSheetDialogFragment.newInstance(message, null)
+                        .show(parentFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+                    dismiss()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                toast(R.string.Retry_upload_failed)
+            } finally {
+                bitmap.recycle()
+                isUploading = false
+                if (view != null) updateLoadingState()
+            }
+        }
     }
 
-    private fun buildMarketAppCardMessage(): ForwardMessage {
-        val marketLink = "$HTTPS_MARKET/$coinId"
+    private fun buildMarketAppCardMessage(coverUrl: String): ForwardMessage {
+        perpsMarket?.let { market ->
+            val appCard = AppCardData(
+                appId = Constants.RouteConfig.ROUTE_BOT_USER_ID,
+                iconUrl = market.iconUrl,
+                coverUrl = coverUrl,
+                cover = null,
+                title = getString(R.string.market_share_card_title, market.displaySymbol),
+                description = listOf(
+                    getString(R.string.market_share_card_asset, market.displaySymbol, getString(R.string.Perpetual)),
+                    getString(R.string.perps_share_card_max_leverage, market.leverage),
+                    getString(R.string.market_share_card_price, formatPerpsPrice(market.last, market.priceScale)),
+                    getString(R.string.perps_share_card_volume, market.volume.toBigDecimalOrNull()?.numberFormatCompact() ?: market.volume),
+                ).joinToString("\n"),
+                action = null,
+                updatedAt = null,
+                shareable = true,
+                actions = listOf(
+                    ActionButtonData(
+                        label = getString(R.string.Long),
+                        color = "#50BD5C",
+                        action = "$marketLink&action=open&side=long",
+                    ),
+                    ActionButtonData(
+                        label = getString(R.string.Short),
+                        color = "#DB454F",
+                        action = "$marketLink&action=open&side=short",
+                    ),
+                    ActionButtonData(
+                        label = getString(R.string.Market),
+                        color = "#3D75E3",
+                        action = marketLink,
+                    ),
+                ),
+            )
+            return ForwardMessage(ShareCategory.AppCard, GsonHelper.customGson.toJson(appCard))
+        }
         val referral = Session.getAccount()?.identityNumber
         val buildTradeUrl = { input: String, output: String ->
-            "${Constants.Scheme.HTTPS_SWAP}?input=$input&output=$output&referral=$referral"
+            "${Constants.Scheme.HTTPS_SWAP}?type=swap&input=$input&output=$output&referral=$referral"
         }
         val stableAssetId = Constants.AssetId.USDT_ASSET_ETH_ID
         val targetAssetId = marketItem.assetIds?.firstOrNull().orEmpty()
@@ -371,7 +513,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         val appCard = AppCardData(
             appId = Constants.RouteConfig.ROUTE_BOT_USER_ID,
             iconUrl = marketItem.iconUrl,
-            coverUrl = SHARE_CARD_COVER_URL,
+            coverUrl = coverUrl,
             cover = null,
             title = getString(R.string.market_share_card_title, marketItem.symbol),
             description = buildString {
@@ -390,7 +532,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
                 targetAssetId.takeIf { it.isNotBlank() }?.let {
                     ActionButtonData(
                         label = getString(R.string.buy_token, marketItem.symbol),
-                        color = "#50BD5C",
+                        color = "#00B86B",
                         action = buildTradeUrl(stableAssetId, it),
                     )
                 },
@@ -421,11 +563,12 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     }
 
     private fun copyLink() {
-        val marketLink = "$HTTPS_MARKET/$coinId"
         val link = buildReferralCopyUrl(
             referralCode = referralCode,
             defaultUrl = marketLink,
-            legacyReferralUrl = Session.getAccount()?.identityNumber?.let { "$marketLink?ref=$it" },
+            legacyReferralUrl = Session.getAccount()?.identityNumber?.let {
+                if (perpsMarket != null) "$marketLink&referral=$it" else "$marketLink?ref=$it"
+            },
         )
         requireContext().getClipboardManager().setPrimaryClip(ClipData.newPlainText(null, link))
         dismiss()
@@ -452,7 +595,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         }
     }
 
-    private fun buildFileName(): String = marketItem.symbol.replace("[^A-Za-z0-9._-]".toRegex(), "_").ifBlank { "market" }
+    private fun buildFileName(): String = shareSymbol.replace("[^A-Za-z0-9._-]".toRegex(), "_").ifBlank { "market" }
 
     private fun formatMarketPrice(price: String): String {
         return runCatching {

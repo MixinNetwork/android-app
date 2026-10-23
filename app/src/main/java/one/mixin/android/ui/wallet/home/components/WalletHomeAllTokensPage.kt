@@ -102,6 +102,7 @@ fun WalletHomeAllTokensPage(
                         if (isPrivacy) {
                             PrivacyWalletTokenItem(
                                 token = state.privacyTokens[index],
+                                isEarn = state.privacyTokens[index].assetId in state.earnAssetIds,
                                 onClick = { callbacks.onTokenClicked(index) },
                             )
                         } else {

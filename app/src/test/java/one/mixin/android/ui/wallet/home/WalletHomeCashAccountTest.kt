@@ -8,6 +8,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.math.BigDecimal
 
@@ -157,6 +158,31 @@ class WalletHomeCashAccountTest {
     }
 
     @Test
+    fun walletHomeCacheDropsIncompleteEarnAccounts() {
+        val json = """
+            {
+              "walletType":"PRIVACY",
+              "fiatTotal":"0.00",
+              "btcTotal":"0.00",
+              "fiatSymbol":"USD",
+              "totalTokenCount":0,
+              "totalTransactionCount":0,
+              "earnAccounts":[
+                {"assetId":"asset-1","assetSymbol":"USD","iconUrl":"","earningsUsd":"0"},
+                {"assetId":"asset-2","assetSymbol":"USD","iconUrl":"","balanceUsd":"1.25","earningsUsd":"0","apyText":"3.00%-5.00%"}
+              ]
+            }
+        """.trimIndent()
+
+        val cache = json.parseWalletHomeCache()
+
+        assertTrue(cache != null)
+        assertEquals(listOf("asset-2"), cache?.toState()?.earnAccounts?.map { it.assetId })
+        assertEquals(BigDecimal("1.25"), cache?.toState()?.earnAccounts?.single()?.balanceUsd)
+        assertNull(cache?.toState()?.earnAccounts?.single()?.maxApyText)
+    }
+
+    @Test
     fun walletHomeStateShowsDynamicBannerWhenStillLoading() {
         val banner = WalletHomeBanner(
             bannerId = "ad-1",
@@ -183,5 +209,34 @@ class WalletHomeCashAccountTest {
             state.cards,
         )
         assertFalse(state.isLoading)
+    }
+
+    @Test
+    fun watchingWalletDoesNotShowFundEmptyGuideWhenBannersLoad() {
+        val banner = WalletHomeBanner(
+            bannerId = "ad-1",
+            title = "Ad",
+            actionUrl = "mixin://ad",
+        )
+
+        val state = WalletHomeState(
+            walletType = WalletHomeType.CLASSIC,
+            isWatchWallet = true,
+            isLoading = true,
+        ).withDynamicBanners(
+            dynamicBanners = listOf(banner),
+            showAddWalletBanner = false,
+        )
+
+        assertEquals(
+            listOf(
+                WalletHomeCardType.BALANCE,
+                WalletHomeCardType.BANNER,
+                WalletHomeCardType.TOKENS,
+                WalletHomeCardType.SUPPORT,
+            ),
+            state.cards,
+        )
+        assertFalse(state.cards.contains(WalletHomeCardType.EMPTY_GUIDE))
     }
 }

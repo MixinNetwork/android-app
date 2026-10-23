@@ -123,6 +123,19 @@ class HiddenAssetsFragment : BaseFragment(R.layout.fragment_hidden_assets), Head
                 }
             }
         }
+        refreshEarnAssetIds()
+    }
+
+    private fun refreshEarnAssetIds() {
+        lifecycleScope.launch {
+            runCatching {
+                walletViewModel.earnAccounts()
+            }.onSuccess { response ->
+                if (response.isSuccess) {
+                    assetsAdapter.updateEarnAssetIds(response.data.orEmpty().map { it.assetId }.toSet())
+                }
+            }
+        }
     }
 
     override fun onStop() {

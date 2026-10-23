@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.conversation
 
 import android.Manifest
@@ -59,7 +61,6 @@ import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
-import com.twilio.audioswitch.AudioSwitch
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -92,6 +93,7 @@ import one.mixin.android.event.GroupEvent
 import one.mixin.android.event.MentionReadEvent
 import one.mixin.android.event.MessageEventAction
 import one.mixin.android.event.RecallEvent
+import one.mixin.android.extension.AudioSwitch
 import one.mixin.android.extension.REQUEST_CAMERA
 import one.mixin.android.extension.REQUEST_FILE
 import one.mixin.android.extension.REQUEST_GALLERY
@@ -125,7 +127,6 @@ import one.mixin.android.extension.isImageSupport
 import one.mixin.android.extension.isStickerSupport
 import one.mixin.android.extension.isVideo
 import one.mixin.android.extension.isWebp
-import one.mixin.android.extension.lateOneHours
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.openAsUrlOrWeb
@@ -137,6 +138,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.safeActivate
 import one.mixin.android.extension.safeStop
@@ -241,7 +243,7 @@ import one.mixin.android.vo.TranscriptMessage
 import one.mixin.android.vo.User
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.absolutePath
-import one.mixin.android.vo.canRecall
+import one.mixin.android.vo.canRecallBy
 import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.getEncryptedCategory
 import one.mixin.android.vo.getSendText
@@ -252,6 +254,7 @@ import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isData
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
@@ -309,9 +312,12 @@ class ConversationFragment() :
         const val RECIPIENT_ID = "recipient_id"
         const val RECIPIENT = "recipient"
         const val MESSAGE_ID = "initial_position_message_id"
+        const val INITIAL_UNREAD_MESSAGE_ID = "initial_unread_message_id"
+        const val INITIAL_UNREAD_COUNT = "initial_unread_count"
         const val TRANSCRIPT_DATA = "transcript_data"
         private const val KEY_WORD = "key_word"
         private const val START_PARAM = "start_param"
+        private const val PREF_QUOTE_DRAFT = "quote_draft"
 
         fun putBundle(
             conversationId: String?,
@@ -319,7 +325,8 @@ class ConversationFragment() :
             keyword: String?,
             messageId: String? = null,
             transcriptData: TranscriptData? = null,
-            startParam: String? = null
+            startParam: String? = null,
+            initialUnreadCount: Int? = null,
         ): Bundle =
             Bundle().apply {
                 require(!(conversationId == null && recipientId == null)) { "lose data" }
@@ -331,6 +338,7 @@ class ConversationFragment() :
                 putString(MESSAGE_ID, messageId)
                 putParcelable(TRANSCRIPT_DATA, transcriptData)
                 startParam?.let { putString(START_PARAM, startParam) }
+                initialUnreadCount?.let { putInt(INITIAL_UNREAD_COUNT, it) }
             }
 
         fun newInstance(bundle: Bundle) = ConversationFragment().apply { arguments = bundle }
@@ -454,7 +462,6 @@ class ConversationFragment() :
 
     private val onItemListener: MessageAdapter.OnItemListener by lazy {
         @UnstableApi object : MessageAdapter.OnItemListener() {
-            @SuppressLint("NotifyDataSetChanged")
             override fun onSelect(
                 isSelect: Boolean,
                 messageItem: MessageItem,
@@ -509,10 +516,9 @@ class ConversationFragment() :
                 } else {
                     binding.toolView.forwardIv.visibility = VISIBLE
                 }
-                messageAdapter.notifyDataSetChanged()
+                messageAdapter.notifyItemRangeChanged(0, messageAdapter.itemCount)
             }
 
-            @SuppressLint("NotifyDataSetChanged")
             override fun onLongClick(
                 messageItem: MessageItem,
                 position: Int,
@@ -548,7 +554,7 @@ class ConversationFragment() :
                         binding.toolView.replyIv.visibility = VISIBLE
                     }
                     checkPinMessage()
-                    messageAdapter.notifyDataSetChanged()
+                    messageAdapter.notifyItemRangeChanged(0, messageAdapter.itemCount)
                     binding.toolView.fadeIn()
                 }
                 return b
@@ -1007,6 +1013,20 @@ class ConversationFragment() :
         requireArguments().getString(MESSAGE_ID, null)
     }
 
+    private val initialUnreadMessageId: String? by lazy {
+        requireArguments().getString(INITIAL_UNREAD_MESSAGE_ID, null)
+    }
+
+    private val initialUnreadCount: Int? by lazy {
+        requireArguments().let { arguments ->
+            if (arguments.containsKey(INITIAL_UNREAD_COUNT)) {
+                arguments.getInt(INITIAL_UNREAD_COUNT)
+            } else {
+                null
+            }
+        }
+    }
+
     private var keyword: String? = null
 
     private val sender: User by lazy { Session.getAccount()!!.toUser() }
@@ -1303,6 +1323,7 @@ class ConversationFragment() :
         markRead()
         val draftText = binding.chatControl.chatEt.text?.toString() ?: ""
         chatRoomHelper.saveDraft(conversationId, draftText)
+        saveQuoteDraft()
 
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.PREVIEW, vibrate = false, false)
@@ -1387,10 +1408,6 @@ class ConversationFragment() :
                 binding.chatControl.cancelExternal()
                 true
             }
-            binding.chatControl.replyView.visibility == VISIBLE -> {
-                binding.chatControl.replyView.animateHeight(53.dp, 0)
-                true
-            }
             else -> false
         }
     }
@@ -1407,11 +1424,10 @@ class ConversationFragment() :
         }
     }
 
-    @SuppressLint("NotifyDataSetChanged")
     private fun closeTool() {
         messageAdapter.selectSet.clear()
         if (!binding.messageRv.isComputingLayout) {
-            messageAdapter.notifyDataSetChanged()
+            messageAdapter.notifyItemRangeChanged(0, messageAdapter.itemCount)
         }
         binding.toolView.fadeOut()
     }
@@ -1468,7 +1484,9 @@ class ConversationFragment() :
                 if (viewDestroyed()) return@launch
 
                 binding.messageRv.post {
-                    messageAdapter.submitPrevious(pageData)
+                    if (messageAdapter.data.first()?.messageId == id) {
+                        messageAdapter.submitPrevious(pageData)
+                    }
                 }
             }
         }
@@ -1481,7 +1499,9 @@ class ConversationFragment() :
                 if (viewDestroyed()) return@launch
 
                 binding.messageRv.post {
-                    messageAdapter.submitNext(pageData)
+                    if (messageAdapter.data.last()?.messageId == id) {
+                        messageAdapter.submitNext(pageData)
+                    }
                 }
             }
         }
@@ -1593,6 +1613,7 @@ class ConversationFragment() :
             }
         }
         lifecycleScope.launch {
+            val replyVersion = binding.chatControl.replyView.messageItemVersion
             val conversationDraft =
                 withContext(SINGLE_DB_THREAD) {
                     chatViewModel.getConversationDraftById(conversationId)
@@ -1600,6 +1621,7 @@ class ConversationFragment() :
             if (!viewDestroyed() && conversationDraft.isNotEmpty()) {
                 binding.chatControl.chatEt.setText(conversationDraft)
             }
+            restoreQuoteDraft(replyVersion)
         }
         binding.toolView.closeIv.setOnClickListener {
             if (binding.toolView.isVisible) {
@@ -1860,37 +1882,49 @@ class ConversationFragment() :
     private var deleteDialog: AlertDialog? = null
 
     private fun deleteMessage(messages: List<MessageItem>) {
-        deleteDialog?.dismiss()
-        val showRecall =
-            messages.all { item ->
-                item.userId == sender.userId && item.status != MessageStatus.SENDING.name && !item.createdAt.lateOneHours() && item.canRecall()
-            }
-        val deleteDialogLayoutBinding = generateDeleteDialogLayout()
-        deleteDialog =
-            alertDialogBuilder()
-                .setMessage(requireContext().resources.getQuantityString(R.plurals.chat_delete_message, messages.size, messages.size))
-                .setView(deleteDialogLayoutBinding.root)
-                .create()
-        if (showRecall) {
-            deleteDialogLayoutBinding.deleteEveryone.setOnClickListener {
-                if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RECALL_SHOW, true)) {
-                    deleteDialog?.dismiss()
-                    deleteAlert(messages)
-                    defaultSharedPreferences.putBoolean(Constants.Account.PREF_RECALL_SHOW, false)
+        lifecycleScope.launch {
+            val canRecallOthers =
+                if (isGroup) {
+                    val role =
+                        withContext(Dispatchers.IO) {
+                            chatViewModel.findParticipantById(conversationId, sender.userId)?.role
+                        }
+                    role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
                 } else {
-                    chatViewModel.sendRecallMessage(conversationId, sender, messages)
-                    deleteDialog?.dismiss()
+                    true
                 }
-            }
-            deleteDialogLayoutBinding.deleteEveryone.visibility = VISIBLE
-        } else {
-            deleteDialogLayoutBinding.deleteEveryone.visibility = GONE
-        }
-        deleteDialogLayoutBinding.deleteMe.setOnClickListener {
-            chatViewModel.deleteMessages(messages)
             deleteDialog?.dismiss()
+            val showRecall =
+                messages.all { item ->
+                    item.canRecallBy(sender.userId, isGroup, canRecallOthers)
+                }
+            val deleteDialogLayoutBinding = generateDeleteDialogLayout()
+            deleteDialog =
+                alertDialogBuilder()
+                    .setMessage(requireContext().resources.getQuantityString(R.plurals.chat_delete_message, messages.size, messages.size))
+                    .setView(deleteDialogLayoutBinding.root)
+                    .create()
+            if (showRecall) {
+                deleteDialogLayoutBinding.deleteEveryone.setOnClickListener {
+                    if (defaultSharedPreferences.getBoolean(Constants.Account.PREF_RECALL_SHOW, true)) {
+                        deleteDialog?.dismiss()
+                        deleteAlert(messages)
+                        defaultSharedPreferences.putBoolean(Constants.Account.PREF_RECALL_SHOW, false)
+                    } else {
+                        chatViewModel.sendRecallMessage(conversationId, sender, messages)
+                        deleteDialog?.dismiss()
+                    }
+                }
+                deleteDialogLayoutBinding.deleteEveryone.visibility = VISIBLE
+            } else {
+                deleteDialogLayoutBinding.deleteEveryone.visibility = GONE
+            }
+            deleteDialogLayoutBinding.deleteMe.setOnClickListener {
+                chatViewModel.deleteMessages(messages)
+                deleteDialog?.dismiss()
+            }
+            deleteDialog?.show()
         }
-        deleteDialog?.show()
     }
 
     private var permissionAlert: AlertDialog? = null
@@ -1949,7 +1983,13 @@ class ConversationFragment() :
     private fun initMessageRecyclerView() {
         lifecycleScope.launch {
             // init message data
-            val (position, data, unreadMessageId) = messageFetcher.initMessages(conversationId, initialMessageId)
+            val (position, data, unreadMessageId) =
+                messageFetcher.initMessages(
+                    conversationId = conversationId,
+                    messageId = initialMessageId,
+                    initialUnreadMessageId = initialUnreadMessageId,
+                    initialUnreadCount = initialUnreadCount,
+                )
             if (isFirstMessage && data.isNotEmpty()) {
                 isFirstMessage = false
             }
@@ -1960,6 +2000,7 @@ class ConversationFragment() :
                     onItemListener,
                     previousAction,
                     nextAction,
+                    messageFetcher::onWindowTrimmed,
                     isGroup = isGroup,
                     unreadMessageId = if (initialMessageId != null) null else unreadMessageId,
                     recipient = recipient,
@@ -2001,7 +2042,7 @@ class ConversationFragment() :
                         if (messageFetcher.isBottom()) {
                             val message = messageFetcher.findMessageById(event.ids)
                             if (message.isNotEmpty()) {
-                                (binding.messageRv.adapter as MessageAdapter).insert(message)
+                                (binding.messageRv.adapter as MessageAdapter).insert(message, isBottom)
                             }
                             if (isBottom) {
                                 scrollToDown()
@@ -3237,6 +3278,42 @@ class ConversationFragment() :
             val notCompress = data.getBooleanExtra(ImageEditorActivity.ARGS_NOT_COMPRESS, false)
             sendImageMessage(uri, notCompress)
         }
+    }
+
+    private val quoteDraftPreferences by lazy {
+        requireContext().sharedPreferences(PREF_QUOTE_DRAFT)
+    }
+
+    // Keyed by account because the same group conversation id can exist under multiple accounts
+    private val quoteDraftKey: String
+        get() = "${Session.getAccountId()}_$conversationId"
+
+    private fun saveQuoteDraft() {
+        val replyView = binding.chatControl.replyView
+        val quoteMessageId = replyView.messageItem?.takeIf { replyView.isVisible }?.messageId
+        if (quoteMessageId == null) {
+            quoteDraftPreferences.remove(quoteDraftKey)
+        } else {
+            quoteDraftPreferences.putString(quoteDraftKey, quoteMessageId)
+        }
+    }
+
+    private suspend fun restoreQuoteDraft(replyVersion: Int) {
+        val quoteMessageId = quoteDraftPreferences.getString(quoteDraftKey, null) ?: return
+        val messageItem =
+            withContext(Dispatchers.IO) {
+                chatViewModel.findMessageItemById(conversationId, quoteMessageId)
+            }
+        if (viewDestroyed()) return
+        if (messageItem == null || messageItem.isRecall()) {
+            quoteDraftPreferences.remove(quoteDraftKey)
+            return
+        }
+        val replyView = binding.chatControl.replyView
+        // Skip if the user picked, closed or sent a quote while the draft was loading
+        if (replyView.messageItemVersion != replyVersion) return
+        replyView.bind(messageItem)
+        if (!replyView.isVisible) replyView.animateHeight(0, 53.dp)
     }
 
     private fun displayReplyView() {

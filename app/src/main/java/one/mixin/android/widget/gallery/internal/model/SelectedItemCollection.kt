@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.widget.gallery.internal.model
 
 import android.content.Context

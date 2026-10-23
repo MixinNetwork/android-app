@@ -2,8 +2,8 @@ package one.mixin.android.db.web3.vo
 
 import android.os.Parcelable
 import androidx.recyclerview.widget.DiffUtil
-import androidx.room.ColumnInfo
-import androidx.room.TypeConverters
+import androidx.room3.ColumnInfo
+import androidx.room3.ColumnTypeConverters
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants
 import one.mixin.android.db.converter.AssetChangeListConverter
@@ -32,16 +32,22 @@ data class Web3TransactionItem(
     
     @ColumnInfo(name = "fee")
     val fee: String,
+
+    @ColumnInfo(name = "sponsor_fee_asset_id")
+    val sponsorFeeAssetId: String? = null,
+
+    @ColumnInfo(name = "sponsor_fee_amount")
+    val sponsorFeeAmount: String? = null,
     
-    @TypeConverters(AssetChangeListConverter::class)
+    @ColumnTypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "senders")
     val senders: List<AssetChange>,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @ColumnTypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "receivers")
     val receivers: List<AssetChange>,
 
-    @TypeConverters(AssetChangeListConverter::class)
+    @ColumnTypeConverters(AssetChangeListConverter::class)
     @ColumnInfo(name = "approvals")
     val approvals: List<AssetChange>? = null,
     
@@ -75,6 +81,9 @@ data class Web3TransactionItem(
     @ColumnInfo(name = "receive_asset_symbol")
     val receiveAssetSymbol: String? = null,
 
+    @ColumnInfo(name = "sponsor_fee_asset_symbol")
+    val sponsorFeeAssetSymbol: String? = null,
+
     @ColumnInfo(name = "level")
     val level: Int,
 ) : Parcelable {
@@ -97,6 +106,12 @@ data class Web3TransactionItem(
     }
 
     fun isNotVerified() = level < Constants.AssetLevel.VERIFIED
+
+    fun displayFeeAmount(): String = if (hasSponsorFee()) sponsorFeeAmount.orEmpty() else fee
+
+    fun displayFeeSymbol(): String? = if (hasSponsorFee()) sponsorFeeAssetSymbol ?: chainSymbol else chainSymbol
+
+    fun hasSponsorFee(): Boolean = !sponsorFeeAssetId.isNullOrBlank()
 
     fun getMainAmount(): String {
         return when (transactionType) {

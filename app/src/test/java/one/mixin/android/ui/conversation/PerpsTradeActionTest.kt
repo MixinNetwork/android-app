@@ -1,6 +1,8 @@
 package one.mixin.android.ui.conversation
 
 import one.mixin.android.extension.PerpsTradeAction
+import one.mixin.android.extension.PerpsAddMarginAction
+import one.mixin.android.extension.PerpsOpenPositionAction
 import one.mixin.android.extension.SpotTradeAction
 import one.mixin.android.extension.toPerpsTradeAction
 import one.mixin.android.extension.toSpotTradeAction
@@ -49,6 +51,159 @@ class PerpsTradeActionTest {
         val action = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119"
 
         assertEquals("e015f42e-b0ff-38e7-87b1-7e8d46fea119", action.toPerpsTradeAction()?.marketId)
+    }
+
+    @Test
+    fun parsesAddMarginWithOptionalAmount() {
+        val marketId = "5db61a77-6efc-3b1c-ac56-8d57b07332a5"
+        for (scheme in listOf("https", "mixin")) {
+            for ((parameters, amount) in listOf("" to null, "&margin=10" to "10", "&margin=10.5000" to "10.5")) {
+                val link = "$scheme://mixin.one/trade?type=perps&market=$marketId&action=add_margin$parameters"
+                assertEquals(
+                    PerpsTradeAction(marketId, null, addMargin = PerpsAddMarginAction(amount)),
+                    link.toPerpsTradeAction(),
+                )
+            }
+        }
+        assertEquals(
+            PerpsAddMarginAction(null),
+            "https://mixin.one/trade?type=perpetual&market=$marketId&action=ADD_MARGIN".toPerpsTradeAction()?.addMargin,
+        )
+    }
+
+    @Test
+    fun rejectsInvalidAddMarginParameters() {
+        val base = "https://mixin.one/trade?type=perps&action=add_margin"
+        assertNull(base.toPerpsTradeAction())
+        assertNull("$base&market=".toPerpsTradeAction())
+        assertNull("$base&market=invalid".toPerpsTradeAction())
+        for (amount in listOf("", "0", "-1", "abc", "1e2", "0.000000001", "1".repeat(65))) {
+            assertNull("$base&market=5db61a77-6efc-3b1c-ac56-8d57b07332a5&margin=$amount".toPerpsTradeAction())
+        }
+    }
+
+    @Test
+    fun classicBannerKeepsAddMarginActionAndOptionalAmount() {
+        val marketId = "5db61a77-6efc-3b1c-ac56-8d57b07332a5"
+        for ((parameters, amount) in listOf("" to null, "&margin=10" to "10")) {
+            assertEquals(
+                WalletHomeBannerActionTarget.PerpsAddMargin(marketId, amount),
+                "https://mixin.one/trade?type=perps&market=$marketId&action=add_margin$parameters".toClassicWalletHomeBannerActionTarget(),
+            )
+        }
+    }
+
+    @Test
+    fun parsesPerpsLeaderPositionId() {
+        val action = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&leader_position=45d4c134-5682-4b1a-baf5-7c73b1590cc1"
+
+        assertEquals(
+            PerpsTradeAction(
+                marketId = "e015f42e-b0ff-38e7-87b1-7e8d46fea119",
+                leaderPositionId = "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
+            ),
+            action.toPerpsTradeAction(),
+        )
+    }
+
+    @Test
+    fun rejectsInvalidPerpsLeaderPositionId() {
+        val action = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&leader_position=invalid"
+
+        assertNull(action.toPerpsTradeAction())
+    }
+
+    @Test
+    fun rejectsMalformedEncodedPerpsLeaderPositionId() {
+        val action = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&leader_position=%ZZ"
+
+        assertNull(action.toPerpsTradeAction())
+    }
+
+    @Test
+    fun rejectsPerpsLeaderPositionIdWithoutMarket() {
+        val action = "https://mixin.one/trade?type=perps&leader_position=45d4c134-5682-4b1a-baf5-7c73b1590cc1"
+
+        assertNull(action.toPerpsTradeAction())
+    }
+
+    @Test
+    fun parsesDirectPerpsOpenAction() {
+        val action = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&action=open&side=short&leverage=10&margin=10&leader_position=45d4c134-5682-4b1a-baf5-7c73b1590cc1"
+
+        assertEquals(
+            PerpsTradeAction(
+                marketId = "e015f42e-b0ff-38e7-87b1-7e8d46fea119",
+                leaderPositionId = "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
+                openPosition = PerpsOpenPositionAction(
+                    isLong = false,
+                    leverage = 10,
+                    margin = "10",
+                ),
+            ),
+            action.toPerpsTradeAction(),
+        )
+    }
+
+    @Test
+    fun directPerpsOpenRequiresOpenActionAndRejectsInvalidSide() {
+        val base = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&leader_position=45d4c134-5682-4b1a-baf5-7c73b1590cc1"
+
+        assertNull("$base&side=long".toPerpsTradeAction()?.openPosition)
+        assertEquals(
+            PerpsOpenPositionAction(
+                isLong = null,
+                leverage = null,
+                margin = null,
+            ),
+            "$base&action=open".toPerpsTradeAction()?.openPosition,
+        )
+        assertNull("$base&action=close&side=long".toPerpsTradeAction()?.openPosition)
+        assertNull("$base&action=open&side=invalid".toPerpsTradeAction())
+        assertEquals(
+            "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
+            "$base&action=open".toPerpsTradeAction()?.leaderPositionId,
+        )
+    }
+
+    @Test
+    fun directPerpsOpenAcceptsOptionalValues() {
+        val action = "mixin://mixin.one/trade?type=perpetual&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&action=OPEN&side=LONG"
+
+        assertEquals(
+            PerpsOpenPositionAction(
+                isLong = true,
+                leverage = null,
+                margin = null,
+            ),
+            action.toPerpsTradeAction()?.openPosition,
+        )
+    }
+
+    @Test
+    fun rejectsInvalidDirectPerpsOpenDefaults() {
+        val base = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&action=open&side=long"
+
+        assertNull("$base&leverage=0".toPerpsTradeAction())
+        assertNull("$base&leverage=1.5".toPerpsTradeAction())
+        assertNull("$base&margin=0".toPerpsTradeAction())
+        assertNull("$base&margin=-1".toPerpsTradeAction())
+        assertNull("$base&margin=0.000000001".toPerpsTradeAction())
+        assertNull("$base&margin=1e2".toPerpsTradeAction())
+        assertNull("$base&margin=${"1".repeat(65)}".toPerpsTradeAction())
+    }
+
+    @Test
+    fun detailPerpsActionKeepsLeaderAndIgnoresOpenDefaults() {
+        val action = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&leverage=invalid&margin=invalid&leader_position=45d4c134-5682-4b1a-baf5-7c73b1590cc1"
+
+        assertEquals(
+            PerpsTradeAction(
+                marketId = "e015f42e-b0ff-38e7-87b1-7e8d46fea119",
+                leaderPositionId = "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
+            ),
+            action.toPerpsTradeAction(),
+        )
     }
 
     @Test
@@ -121,6 +276,45 @@ class PerpsTradeActionTest {
         assertEquals(
             WalletHomeBannerActionTarget.Buy,
             "https://mixin.one/buy".toClassicWalletHomeBannerActionTarget(),
+        )
+    }
+
+    @Test
+    fun classicBannerActionKeepsPerpsLeaderPositionId() {
+        assertEquals(
+            WalletHomeBannerActionTarget.PerpsMarket(
+                marketId = "e015f42e-b0ff-38e7-87b1-7e8d46fea119",
+                leaderPositionId = "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
+            ),
+            "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&leader_position=45d4c134-5682-4b1a-baf5-7c73b1590cc1".toClassicWalletHomeBannerActionTarget(),
+        )
+    }
+
+    @Test
+    fun classicBannerActionParsesDirectPerpsOpenTarget() {
+        assertEquals(
+            WalletHomeBannerActionTarget.PerpsOpen(
+                marketId = "e015f42e-b0ff-38e7-87b1-7e8d46fea119",
+                isLong = true,
+                leverage = 10,
+                margin = "25.5",
+                leaderPositionId = "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
+            ),
+            "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&action=open&side=long&leverage=10&margin=25.5&leader_position=45d4c134-5682-4b1a-baf5-7c73b1590cc1".toClassicWalletHomeBannerActionTarget(),
+        )
+    }
+
+    @Test
+    fun classicBannerActionParsesIncompletePerpsOpenTarget() {
+        assertEquals(
+            WalletHomeBannerActionTarget.PerpsOpen(
+                marketId = "e015f42e-b0ff-38e7-87b1-7e8d46fea119",
+                isLong = null,
+                leverage = null,
+                margin = null,
+                leaderPositionId = "45d4c134-5682-4b1a-baf5-7c73b1590cc1",
+            ),
+            "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&action=open&leader_position=45d4c134-5682-4b1a-baf5-7c73b1590cc1".toClassicWalletHomeBannerActionTarget(),
         )
     }
 

@@ -1,9 +1,9 @@
 pluginManagement {
-    val androidGradlePluginVersion = "9.2.1"
-    val kotlinVersion = "2.4.10"
+    val androidGradlePluginVersion = "9.4.1"
+    val kotlinVersion = "2.4.21"
     val downloadPluginVersion = "5.5.0"
     val secretsGradlePluginVersion = "2.0.1"
-    val kspVersion = "2.3.10"
+    val kspVersion = "2.3.12"
     val firebasePerfPluginVersion = "2.0.2"
     val foojayResolverVersion = "1.0.0"
 
@@ -21,6 +21,7 @@ pluginManagement {
         id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion
         id("com.google.devtools.ksp") version kspVersion
         id("org.jetbrains.kotlin.plugin.compose") version kotlinVersion
+        id("org.jetbrains.kotlin.jvm") version kotlinVersion
         id("com.google.firebase.firebase-perf") version firebasePerfPluginVersion
         id("org.gradle.toolchains.foojay-resolver-convention") version foojayResolverVersion
     }
@@ -30,3 +31,4 @@ plugins {
 }
 
 include(":app")
+include(":query-codegen")

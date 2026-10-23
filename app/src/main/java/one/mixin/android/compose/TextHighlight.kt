@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.compose
 
 import androidx.compose.foundation.layout.Column

@@ -1,3 +1,5 @@
+@file:Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
+
 package one.mixin.android.ui.sticker
 
 import android.annotation.SuppressLint

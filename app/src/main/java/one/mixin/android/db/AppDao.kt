@@ -1,9 +1,9 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
 import one.mixin.android.db.BaseDao.Companion.ESCAPE_SUFFIX
 import one.mixin.android.vo.App
 import one.mixin.android.vo.AppItem
@@ -23,7 +23,7 @@ interface AppDao : BaseDao<App> {
             """
     }
 
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """ 
             $PREFIX_APP_ITEM

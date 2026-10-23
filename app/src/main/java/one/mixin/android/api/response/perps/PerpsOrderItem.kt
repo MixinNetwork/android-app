@@ -2,7 +2,7 @@ package one.mixin.android.api.response.perps
 
 import android.os.Parcelable
 import androidx.compose.runtime.Immutable
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
@@ -36,6 +36,12 @@ data class PerpsOrderItem(
     @SerializedName("pay_amount")
     @ColumnInfo(name = "pay_amount")
     val payAmount: String,
+    @SerializedName("margin_amount")
+    @ColumnInfo(name = "margin_amount")
+    val marginAmount: String,
+    @SerializedName("fee_amount")
+    @ColumnInfo(name = "fee_amount")
+    val feeAmount: String = "0",
     @SerializedName("entry_price")
     @ColumnInfo(name = "entry_price")
     val entryPrice: String,
@@ -48,6 +54,15 @@ data class PerpsOrderItem(
     @SerializedName("roe")
     @ColumnInfo(name = "roe")
     val roe: String,
+    @SerializedName("net_realized_pnl")
+    @ColumnInfo(name = "net_realized_pnl")
+    val netRealizedPnl: String = "",
+    @SerializedName("net_roe")
+    @ColumnInfo(name = "net_roe")
+    val netRoe: String = "",
+    @SerializedName("profit_share_amount")
+    @ColumnInfo(name = "profit_share_amount")
+    val profitShareAmount: String = "",
     @SerializedName("close_reason")
     @ColumnInfo(name = "close_reason")
     val closeReason: String?,

@@ -18,7 +18,6 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.Constants.MIXIN_FREE_FEE
-import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponse
@@ -50,11 +49,11 @@ import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.getTransactionResult
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.signature.SignatureAction
-import one.mixin.android.api.response.web3.ParsedTx
 import one.mixin.android.api.service.UtxoService
 import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.PinCipher
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.decodeBase64
@@ -950,7 +949,7 @@ class BottomSheetViewModel
                     ghostKeyResponse.data!!
                 } else {
                     throw IllegalArgumentException("Transfer has no recipient")
-                } ?: throw IllegalArgumentException("Transfer has no recipient")
+                }
                 Timber.e("Kernel Invoice Transaction UtxoWrapper: $amount $assetId $asset")
                 val utxoWrapper = UtxoWrapper(packUtxo(asset, amount, null))
                 val input = utxoWrapper.input
@@ -1215,7 +1214,7 @@ class BottomSheetViewModel
 
         suspend fun simpleAssetItem(id: String) = tokenRepository.simpleAssetItem(id)
 
-        fun findUserById(id: String): LiveData<User> = userRepository.findUserById(id)
+        fun findUserById(id: String): LiveData<User?> = userRepository.findUserById(id)
 
         suspend fun suspendFindUserById(id: String) = userRepository.suspendFindUserById(id)
 
@@ -1291,6 +1290,8 @@ class BottomSheetViewModel
 
         suspend fun findAppById(id: String) = userRepository.findAppById(id)
 
+        suspend fun findUserByAppId(appId: String) = userRepository.findUserByAppId(appId)
+
         suspend fun getAppAndCheckUser(
             userId: String,
             updatedAt: String?,
@@ -1330,6 +1331,11 @@ class BottomSheetViewModel
                 ),
             )
         }
+
+        suspend fun updateGroupIcon(
+            conversationId: String,
+            iconBase64: String,
+        ) = conversationRepo.updateGroupIcon(conversationId, iconBase64)
 
         fun updateGroup(
             conversationId: String,
@@ -1696,6 +1702,9 @@ class BottomSheetViewModel
                 tokenRepository.fuzzySearchAssetIgnoreAmount(escapedQuery)
             }
 
+        suspend fun getWeb3Address(walletId: String, chainId: String) =
+            web3Repository.getAddressesByChainId(walletId, chainId)
+
         suspend fun queryAsset(walletId: String?, query: String, web3: Boolean = false): List<TokenItem> =
             tokenRepository.queryAsset(walletId, query, web3)
 
@@ -1857,31 +1866,6 @@ class BottomSheetViewModel
                 val err = resp.error!!
                 // simulate RpcException
                 throw RpcException(err.code, err.description, err.toString())
-            }
-        }
-
-        suspend fun simulateWeb3Tx(tx: String, chainId: String, from: String?, to: String?): ParsedTx? {
-            var meet401 = false
-            var parsedTx: ParsedTx? = null
-            handleMixinResponse(
-                invokeNetwork = { tokenRepository.simulateWeb3Tx(Web3RawTransactionRequest(chainId, tx, from, to)) },
-                successBlock = { parsedTx = it.data },
-                failureBlock = {
-                    if (it.errorCode == ErrorHandler.SIMULATE_TRANSACTION_FAILED) {
-                        parsedTx = ParsedTx(code = ErrorHandler.SIMULATE_TRANSACTION_FAILED)
-                        return@handleMixinResponse true
-                    } else if (it.errorCode == 401) {
-                        meet401 = true
-                        return@handleMixinResponse true
-                    }
-                    return@handleMixinResponse false
-                }
-            )
-            if (parsedTx == null && meet401) {
-                userRepository.getBotPublicKey(ROUTE_BOT_USER_ID, true)
-                return simulateWeb3Tx(tx, chainId, from, to)
-            } else {
-                return parsedTx
             }
         }
 

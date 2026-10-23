@@ -12,6 +12,7 @@
         android:paddingBottom="24dp">
 
         <ImageView
+            android:id="@+id/intro_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:src="@drawable/bg_missing_btc" />
@@ -24,10 +25,10 @@
             android:orientation="vertical">
 
             <TextView
+                android:id="@+id/intro_title"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:text="@string/classic_wallet_btc_intro_title"
                 android:textColor="?attr/text_primary"
                 android:textFontWeight="700"
                 android:textSize="22sp" />

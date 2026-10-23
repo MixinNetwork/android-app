@@ -11,9 +11,9 @@ import android.os.VibrationEffect
 import android.os.Vibrator
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
-import com.twilio.audioswitch.AudioDevice
-import com.twilio.audioswitch.AudioSwitch
 import one.mixin.android.R
+import one.mixin.android.extension.AudioDevice
+import one.mixin.android.extension.AudioSwitch
 import one.mixin.android.extension.isBluetoothHeadsetOrWiredHeadset
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.safeActivate
@@ -62,7 +62,7 @@ class CallAudioManager(
             audioSwitch.start { audioDevices, selectedAudioDevice ->
                 Timber.d("$TAG_AUDIO audioDevices: $audioDevices, selectedAudioDevice: $selectedAudioDevice")
                 val bluetoothHeadset = audioDevices.find { it is AudioDevice.BluetoothHeadset }
-                if (bluetoothHeadset != null && audioSwitch.bluetoothHeadsetManager?.hasActivationError() == false) {
+                if (bluetoothHeadset != null && !audioSwitch.hasBluetoothActivationError()) {
                     audioSwitch.selectDevice(bluetoothHeadset)
                     callback.customAudioDeviceAvailable(true)
                     return@start

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="backup_dialog_list">
+        <item>Nunca</item>
+        <item>Diariamente</item>
+        <item>Semanalmente</item>
+        <item>Mensualmente</item>
+    </string-array>
+
+    <string-array name="setting_night_array">
+        <item>Claro</item>
+        <item>Oscuro</item>
+    </string-array>
+
+    <string-array name="setting_night_array_oreo">
+        <item>Claro</item>
+        <item>Oscuro</item>
+        <item>Seguir el sistema</item>
+    </string-array>
+
+    <plurals name="time_interval_unit_second">
+        <item quantity="one">segundo</item>
+        <item quantity="other">segundos</item>
+    </plurals>
+    <plurals name="time_interval_unit_minute">
+        <item quantity="one">minuto</item>
+        <item quantity="other">minutos</item>
+    </plurals>
+    <plurals name="time_interval_unit_hour">
+        <item quantity="one">hora</item>
+        <item quantity="other">horas</item>
+    </plurals>
+    <plurals name="time_interval_unit_day">
+        <item quantity="one">día</item>
+        <item quantity="other">días</item>
+    </plurals>
+    <plurals name="time_interval_unit_week">
+        <item quantity="one">semana</item>
+        <item quantity="other">semanas</item>
+    </plurals>
+
+    <array name="database">
+        <item>Base de datos de Mixin</item>
+        <item>Base de datos pendiente</item>
+        <item>Base de datos de la billetera</item>
+    </array>
+</resources>

@@ -248,14 +248,13 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
             bottomViewModel.insertSnapshot(data)
         }
 
-        t.traceId?.let { traceId ->
-            lifecycleScope.launch {
-                val trace = bottomViewModel.suspendFindTraceById(traceId)
-                if (trace != null) {
-                    if (data is SafeSnapshot) {
-                        trace.snapshotId = data.snapshotId
-                        bottomViewModel.insertTrace(trace)
-                    }
+        val traceId = t.traceId
+        lifecycleScope.launch {
+            val trace = bottomViewModel.suspendFindTraceById(traceId)
+            if (trace != null) {
+                if (data is SafeSnapshot) {
+                    trace.snapshotId = data.snapshotId
+                    bottomViewModel.insertTrace(trace)
                 }
             }
         }
@@ -278,9 +277,7 @@ class OutputBottomSheetDialogFragment : ValuableBiometricBottomSheetDialogFragme
                 BLOCKCHAIN_ERROR,
             )
         ) {
-            t.traceId?.let { traceId ->
-                bottomViewModel.suspendDeleteTraceById(traceId)
-            }
+            bottomViewModel.suspendDeleteTraceById(t.traceId)
 
             if (errorCode == INSUFFICIENT_TRANSACTION_FEE && t is WithdrawBiometricItem) {
                 val item = t as WithdrawBiometricItem

@@ -37,7 +37,6 @@ class TranscriptDeleteJob(private val messageIds: List<String>) : BaseJob(Params
         }
         cIds.forEach { id ->
             conversationDao.refreshLastMessageId(id)
-            conversationExtDao.refreshCountByConversationId(id)
             MessageFlow.delete(id, messageIds)
         }
     }

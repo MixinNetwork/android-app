@@ -1,15 +1,76 @@
 package one.mixin.android.util.analytics
 
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import org.junit.Test
 
 class AnalyticsRulesTest {
     @Test
-    fun marketShareEventUsesShareMarketNameAndTypeParam() {
-        val event = AnalyticsRules.marketShareEvent(AnalyticsTracker.MarketShareType.MIXIN_CONTACT)
+    fun perpsAdjustmentsPreserveLinkSourcesAndUseTheActionEntryForOtherSources() {
+        val entry = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADJUST
+        assertEquals("perps_market_detail_adjust", entry)
+        assertEquals("app_card", AnalyticsRules.perpsAdjustmentSource("app_card", entry))
+        assertEquals("url", AnalyticsRules.perpsAdjustmentSource("schema", entry))
+        assertEquals("url", AnalyticsRules.perpsAdjustmentSource("scheme", entry))
+        assertEquals("url", AnalyticsRules.perpsAdjustmentSource("url", entry))
+        assertEquals(entry, AnalyticsRules.perpsAdjustmentSource(entry, entry))
+        assertEquals(entry, AnalyticsRules.perpsAdjustmentSource("perps_market_detail", entry))
+        assertEquals(entry, AnalyticsRules.perpsAdjustmentSource("", entry))
+    }
 
-        assertEquals("share_market", event.name)
-        assertEquals(mapOf("type" to "mixin_contact"), event.params)
+    @Test
+    fun marketShareEventUsesMarketShareNameAndParams() {
+        val event =
+            AnalyticsRules.marketShareEvent(
+                type = AnalyticsTracker.MarketType.SPOT,
+                target = AnalyticsTracker.MarketShareType.MIXIN_CONTACT,
+            )
+
+        assertEquals("market_share", event.name)
+        assertEquals(
+            mapOf(
+                "type" to "spot",
+                "target" to "mixin_contact",
+            ),
+            event.params,
+        )
+    }
+
+    @Test
+    fun marketDetailEventUsesTypeAndSource() {
+        val event =
+            AnalyticsRules.marketDetailEvent(
+                type = AnalyticsTracker.MarketType.PERPS,
+                source = AnalyticsTracker.MarketDetailSource.MARKETS_LIST,
+            )
+
+        assertEquals("market_detail", event.name)
+        assertEquals(
+            mapOf(
+                "type" to "perps",
+                "source" to "markets_list",
+            ),
+            event.params,
+        )
+    }
+
+    @Test
+    fun marketWatchlistEventUsesActionTypeAndSource() {
+        val event =
+            AnalyticsRules.marketWatchlistEvent(
+                adding = false,
+                type = AnalyticsTracker.MarketType.SPOT,
+                source = AnalyticsTracker.MarketWatchlistSource.MARKET_DETAIL,
+            )
+
+        assertEquals("market_watchlist_remove", event.name)
+        assertEquals(
+            mapOf(
+                "type" to "spot",
+                "source" to "market_detail",
+            ),
+            event.params,
+        )
     }
 
     @Test
@@ -43,10 +104,10 @@ class AnalyticsRulesTest {
     }
 
     @Test
-    fun marketAndAssetVisibilityEventsSyncToAppsFlyer() {
-        assertEquals("share_market", AnalyticsRules.appsFlyerEventName("share_market"))
-        assertEquals("hide_asset", AnalyticsRules.appsFlyerEventName("hide_asset"))
-        assertEquals("show_asset", AnalyticsRules.appsFlyerEventName("show_asset"))
+    fun marketAndAssetVisibilityEventsDoNotSyncToAppsFlyer() {
+        assertNull(AnalyticsRules.appsFlyerEventName("market_share"))
+        assertNull(AnalyticsRules.appsFlyerEventName("hide_asset"))
+        assertNull(AnalyticsRules.appsFlyerEventName("show_asset"))
     }
 
     @Test
@@ -56,6 +117,24 @@ class AnalyticsRulesTest {
         assertEquals("trade_perps_open_end", AnalyticsRules.appsFlyerEventName("trade_perps_open_end"))
         assertEquals("trade_perps_close_start", AnalyticsRules.appsFlyerEventName("trade_perps_close_start"))
         assertEquals("trade_perps_close_end", AnalyticsRules.appsFlyerEventName("trade_perps_close_end"))
+    }
+
+    @Test
+    fun nonOrganicConversionMapsSourceAndCampaign() {
+        assertEquals(
+            mapOf(
+                "af_source" to "Non-organic",
+                "af_media_source" to "example_media",
+                "af_campaign" to "example_campaign",
+            ),
+            AnalyticsRules.conversionUserProperties(
+                mapOf(
+                    "af_status" to "Non-organic",
+                    "media_source" to "example_media",
+                    "campaign" to "example_campaign",
+                ),
+            ),
+        )
     }
 
     @Test

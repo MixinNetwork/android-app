@@ -1,14 +1,16 @@
 package one.mixin.android.vo
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.Index
+import androidx.room3.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Entity(
     tableName = "expired_messages",
+    indices = [Index(value = ["expire_at"])],
 )
 @Serializable
 class ExpiredMessage(

@@ -2,7 +2,7 @@ package one.mixin.android.api.response.perps
 
 import android.os.Parcelable
 import androidx.compose.runtime.Immutable
-import androidx.room.ColumnInfo
+import androidx.room3.ColumnInfo
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
@@ -84,4 +84,7 @@ data class PerpsPositionItem(
     @ColumnInfo(name = "price_scale")
     @SerializedName("priceScale")
     val priceScale: Int = 2,
+    @SerializedName("estimated_close_fee")
+    @ColumnInfo(name = "estimated_close_fee", defaultValue = "''")
+    val estimatedCloseFee: String? = "",
 ) : Parcelable

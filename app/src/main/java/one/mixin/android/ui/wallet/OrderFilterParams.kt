@@ -1,9 +1,33 @@
 package one.mixin.android.ui.wallet
 
-import androidx.sqlite.db.SimpleSQLiteQuery
+import androidx.room3.RoomRawQuery
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.tip.wc.SortOrder
 import org.threeten.bp.Instant
+
+internal data class OrderQueryParts(
+    val whereSql: String,
+    val orderSql: String,
+) {
+    val whereOrderSql: String
+        get() = "$whereSql $orderSql".trim()
+
+    val whereClauseSql: String
+        get() =
+            whereSql
+                .removePrefix("WHERE")
+                .trim()
+                .takeIf { it.isNotEmpty() }
+                ?.let { "AND $it" }
+                .orEmpty()
+
+    val orderBySql: String
+        get() =
+            orderSql
+                .removePrefix("ORDER BY")
+                .trim()
+                .ifEmpty { "o.created_at DESC" }
+}
 
 class OrderFilterParams(
     var order: SortOrder = SortOrder.Recent,
@@ -19,7 +43,12 @@ class OrderFilterParams(
         return "order:${order.name} tokens:${tokenItems?.map { it.symbol }} statuses:${statuses} fundStatuses:${fundStatuses} startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""}"
     }
 
-    fun buildQuery(): SimpleSQLiteQuery {
+    fun buildQuery(): RoomRawQuery {
+        val parts = buildQueryParts()
+        return WalletFilterQueryGenerated.orders(parts.whereSql, parts.orderSql)
+    }
+
+    internal fun buildQueryParts(): OrderQueryParts {
         val filters = mutableListOf<String>()
         tokenItems?.let {
             if (it.isNotEmpty()) {
@@ -63,7 +92,6 @@ class OrderFilterParams(
             SortOrder.Oldest -> "ORDER BY o.created_at ASC"
             else -> "ORDER BY o.created_at DESC"
         }
-        val sql = "SELECT * FROM orders o $whereSql $orderSql"
-        return SimpleSQLiteQuery(sql)
+        return OrderQueryParts(whereSql, orderSql)
     }
 }

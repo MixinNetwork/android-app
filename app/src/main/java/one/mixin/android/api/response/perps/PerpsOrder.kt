@@ -1,9 +1,9 @@
 package one.mixin.android.api.response.perps
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
@@ -37,7 +37,13 @@ data class PerpsOrder(
     val quantity: String,
     @SerializedName("pay_amount")
     @ColumnInfo(name = "pay_amount")
-    val payAmount: String = "0",
+    val payAmount: String,
+    @SerializedName("margin_amount")
+    @ColumnInfo(name = "margin_amount")
+    val marginAmount: String,
+    @SerializedName("fee_amount")
+    @ColumnInfo(name = "fee_amount", defaultValue = "'0'")
+    val feeAmount: String = "0",
     @SerializedName("entry_price")
     @ColumnInfo(name = "entry_price")
     val entryPrice: String,
@@ -50,6 +56,15 @@ data class PerpsOrder(
     @SerializedName("roe")
     @ColumnInfo(name = "roe")
     val roe: String,
+    @SerializedName("net_realized_pnl")
+    @ColumnInfo(name = "net_realized_pnl", defaultValue = "''")
+    val netRealizedPnl: String = "",
+    @SerializedName("net_roe")
+    @ColumnInfo(name = "net_roe", defaultValue = "''")
+    val netRoe: String = "",
+    @SerializedName("profit_share_amount")
+    @ColumnInfo(name = "profit_share_amount", defaultValue = "''")
+    val profitShareAmount: String = "",
     @SerializedName("close_reason")
     @ColumnInfo(name = "close_reason")
     val closeReason: String?,
@@ -66,6 +81,8 @@ data class PerpsOrder(
     companion object {
         const val TYPE_OPEN = "open"
         const val TYPE_INCREASE = "increase_position"
+        const val TYPE_INCREASE_MARGIN = "increase_margin"
+        const val TYPE_DECREASE_MARGIN = "decrease_margin"
         const val TYPE_CLOSE = "close"
 
         const val STATUS_PROCESSING = "processing"

@@ -1,15 +1,15 @@
 package one.mixin.android.api.response.perps
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
-import androidx.room.TypeConverters
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.PrimaryKey
+import androidx.room3.ColumnTypeConverters
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.db.converter.DescriptionsConverter
 import one.mixin.android.db.converter.ListConverter
 
 @Entity(tableName = "markets")
-@TypeConverters(ListConverter::class, DescriptionsConverter::class)
+@ColumnTypeConverters(ListConverter::class, DescriptionsConverter::class)
 data class PerpsMarket(
     @PrimaryKey @SerializedName("market_id")
     @ColumnInfo(name = "market_id")
@@ -35,6 +35,10 @@ data class PerpsMarket(
     @ColumnInfo(name = "price_scale", defaultValue = "2")
     val priceScale: Int = 2,
 
+    @SerializedName("quantity_scale")
+    @ColumnInfo(name = "quantity_scale", defaultValue = "0")
+    val quantityScale: Int = 0,
+
     @SerializedName("leverage")
     @ColumnInfo(name = "leverage")
     val leverage: Int,
@@ -55,9 +59,25 @@ data class PerpsMarket(
     @ColumnInfo(name = "funding_rate")
     val fundingRate: String,
 
+    @SerializedName("funding_interval_hours")
+    @ColumnInfo(name = "funding_interval_hours", defaultValue = "0")
+    val fundingIntervalHours: Int = 0,
+
+    @SerializedName("next_funding_at")
+    @ColumnInfo(name = "next_funding_at", defaultValue = "''")
+    val nextFundingAt: String = "",
+
+    @SerializedName("open_interest")
+    @ColumnInfo(name = "open_interest", defaultValue = "'0'")
+    val openInterest: String = "0",
+
     @SerializedName("min_amount")
     @ColumnInfo(name = "min_amount")
     val minAmount: String,
+
+    @SerializedName("min_order_value")
+    @ColumnInfo(name = "min_order_value", defaultValue = "'0'")
+    val minOrderValue: String = "0",
 
     @SerializedName("max_amount")
     @ColumnInfo(name = "max_amount")
@@ -70,6 +90,10 @@ data class PerpsMarket(
     @SerializedName("volume")
     @ColumnInfo(name = "volume")
     val volume: String,
+
+    @SerializedName("trade_volume_score_1d")
+    @ColumnInfo(name = "trade_volume_score_1d", defaultValue = "0")
+    val tradeVolumeScore1D: Int = 0,
 
     @SerializedName("high")
     @ColumnInfo(name = "high")
@@ -113,4 +137,8 @@ fun PerpsMarket.withDefaults(): PerpsMarket =
         category = (category as String?) ?: "",
         tags = (tags as? List<*>)?.mapNotNull { it as? String }.orEmpty(),
         priceScale = priceScale.coerceAtLeast(0),
+        fundingIntervalHours = fundingIntervalHours.coerceAtLeast(0),
+        nextFundingAt = (nextFundingAt as String?) ?: "",
+        openInterest = (openInterest as String?) ?: "0",
+        minOrderValue = (minOrderValue as String?) ?: "0",
     )

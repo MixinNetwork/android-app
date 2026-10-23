@@ -9,7 +9,7 @@ private val urlPatter: Pattern by lazy { Pattern.compile("[a-zA-z]+://[^\\s]*") 
 fun String.endAt(): String? {
     val matcher = endAtPatter.matcher(this)
     return when {
-        matcher.find() -> matcher.group(matcher.groupCount() - 1).substring(1)
+        matcher.find() -> matcher.group(matcher.groupCount() - 1)?.substring(1)
         endsWith("@") -> ""
         else -> null
     }

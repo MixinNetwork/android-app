@@ -153,6 +153,16 @@ class NameTextView : LinearLayoutCompat {
         this.textView.setCompoundDrawables(null, null, null, null)
     }
 
+    fun setVerifiedName(text: String, isVerified: Boolean) {
+        setTextOnly(text)
+        if (!isVerified) return
+
+        val icon = AppCompatResources.getDrawable(context, R.drawable.ic_user_verified)?.apply {
+            setBounds(0, 0, badgeSize, badgeSize)
+        }
+        textView.setCompoundDrawables(null, null, icon, null)
+    }
+
     fun setName(user: User) {
         this.textView.text = user.fullName
         if (user.isProsperity()) {
@@ -927,7 +937,9 @@ class NameTextView : LinearLayoutCompat {
     }
 
     private fun getBadge(item: ConversationItem): Drawable? {
-        val resources = if (item.isMembership()) {
+        val resources = if (item.isGroupConversation()) {
+            R.drawable.ic_group_badge
+        } else if (item.isMembership()) {
             item.membership.membershipIcon()
         } else if (item.isVerified()) {
             R.drawable.ic_user_verified

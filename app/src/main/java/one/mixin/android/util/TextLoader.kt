@@ -52,7 +52,7 @@ class TextLoader(context: Context) {
                 val request = Request.Builder().url(url).build()
                 val response = okHttpClient.newCall(request).execute()
                 if (response.isSuccessful) {
-                    response.body?.string()?.stripInvisibleCharacters()
+                    response.body.string().stripInvisibleCharacters()
                 } else {
                     null
                 }

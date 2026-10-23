@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.DialogInterface
 import android.net.Uri
+import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -49,14 +50,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withResumed
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.api.DataErrorException
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
@@ -96,6 +103,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
     companion object {
         const val TAG = "PerpsConfirmBottomSheetDialogFragment"
+        const val FAILURE_TAG = "PerpsOrderFailureBottomSheet"
         private const val ARGS_MARKET_SYMBOL = "args_market_symbol"
         private const val ARGS_MARKET_ICON = "args_market_icon"
         private const val ARGS_IS_LONG = "args_is_long"
@@ -110,6 +118,46 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         private const val ARGS_PRICE_SCALE = "args_price_scale"
         private const val ARGS_PAY_URL = "args_pay_url"
         private const val ARGS_IS_ADD_POSITION = "args_is_add_position"
+        private const val ARGS_IS_ADD_MARGIN = "args_is_add_margin"
+        private const val ARGS_MARGIN_BEFORE = "args_margin_before"
+        private const val ARGS_ORDER_ERROR = "args_order_error"
+        private const val ARGS_MARKET_ID = "args_market_id"
+        private const val ARGS_ADD_POSITION_ID = "args_add_position_id"
+        private const val ARGS_SOURCE = "args_source"
+        const val RESULT_ORDER_CREATED = "perps_failure_order_created"
+        const val RESULT_LEADER_POSITION_ID = "leader_position_id"
+
+        fun newFailureInstance(
+            market: PerpsMarket,
+            isLong: Boolean,
+            leverage: Int?,
+            margin: String?,
+            error: String,
+            source: String,
+            tokenSymbol: String = market.quoteSymbol,
+            isAddPosition: Boolean = false,
+            position: PerpsPositionItem? = null,
+            leaderPositionId: String? = null,
+            liquidationPrice: String? = null,
+        ) = PerpsConfirmBottomSheetDialogFragment().withArgs {
+            putString(ARGS_MARKET_SYMBOL, market.displaySymbol)
+            putString(ARGS_MARKET_ICON, market.iconUrl)
+            putBoolean(ARGS_IS_LONG, isLong)
+            putInt(ARGS_LEVERAGE, leverage ?: 0)
+            putString(ARGS_AMOUNT, margin.orEmpty())
+            putString(ARGS_ENTRY_PRICE, market.last)
+            putInt(ARGS_PRICE_SCALE, market.priceScale)
+            putString(ARGS_TOKEN_SYMBOL, tokenSymbol)
+            putBoolean(ARGS_IS_ADD_POSITION, isAddPosition)
+            putString(ARGS_ORDER_ERROR, error)
+            putString(ARGS_SOURCE, source)
+            putString(ARGS_MARKET_ID, market.marketId)
+            putString(ARGS_LIQUIDATION_PRICE, liquidationPrice)
+            putString(RESULT_LEADER_POSITION_ID, leaderPositionId)
+            if (canAddPerpsLeaderPosition(position, isLong, leverage)) {
+                putString(ARGS_ADD_POSITION_ID, position?.positionId)
+            }
+        }
 
         fun newInstance(
             marketSymbol: String,
@@ -126,6 +174,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             priceScale: Int = 2,
             payUrl: String?,
             isAddPosition: Boolean = false,
+            isAddMargin: Boolean = false,
+            marginBefore: String? = null,
         ): PerpsConfirmBottomSheetDialogFragment {
             return PerpsConfirmBottomSheetDialogFragment().withArgs {
                 putString(ARGS_MARKET_SYMBOL, marketSymbol)
@@ -142,6 +192,8 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 putInt(ARGS_PRICE_SCALE, priceScale)
                 putString(ARGS_PAY_URL, payUrl)
                 putBoolean(ARGS_IS_ADD_POSITION, isAddPosition)
+                putBoolean(ARGS_IS_ADD_MARGIN, isAddMargin)
+                putString(ARGS_MARGIN_BEFORE, marginBefore)
             }
         }
     }
@@ -193,6 +245,9 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private val rawLiquidationPrice by lazy { requireArguments().getString(ARGS_LIQUIDATION_PRICE) }
     private val priceScale by lazy { requireArguments().getInt(ARGS_PRICE_SCALE, 2) }
     private val isAddPosition by lazy { requireArguments().getBoolean(ARGS_IS_ADD_POSITION) }
+    private val isAddMargin by lazy { requireArguments().getBoolean(ARGS_IS_ADD_MARGIN) }
+    private val marginBefore by lazy { requireArguments().getString(ARGS_MARGIN_BEFORE) }
+    private val marginAfter by lazy { marginAfterAdjustment(marginBefore, amount, increase = true) }
 
     private val payUrl by lazy { requireArguments().getString(ARGS_PAY_URL) }
     private val entryFiatPrice by lazy {
@@ -209,6 +264,18 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     private var step by mutableStateOf(Step.Pending)
     private var errorInfo: String? by mutableStateOf(null)
     private var receiver: User? by mutableStateOf(null)
+    private val orderError by lazy { requireArguments().getString(ARGS_ORDER_ERROR) }
+    private val perpsViewModel by activityViewModels<PerpetualViewModel>()
+    private val addPositionId by lazy { requireArguments().getString(ARGS_ADD_POSITION_ID) }
+    private var addingPosition = false
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        orderError?.let {
+            step = Step.Error
+            errorInfo = it
+        }
+    }
 
     @Composable
     override fun ComposeContent() {
@@ -226,7 +293,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
             }
         }
 
-        MixinAppTheme {
+        PerpsConfirmationTheme {
             Column(
                 modifier = Modifier
                     .clip(shape = RoundedCornerShape(topStart = 8.composeDp, topEnd = 8.composeDp))
@@ -282,15 +349,25 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     Text(
                         text = stringResource(
                             id = when (step) {
-                                Step.Pending -> if (isAddPosition) R.string.confirm_adding_position else R.string.confirm_opening_position
-                                Step.Done -> if (isAddPosition) R.string.Position_Add_Submitted else R.string.Position_Submitted
+                                Step.Pending -> when {
+                                    isAddMargin -> R.string.perps_confirm_add_margin
+                                    isAddPosition -> R.string.confirm_adding_position
+                                    else -> R.string.confirm_opening_position
+                                }
+                                Step.Done -> when {
+                                    isAddMargin -> R.string.perps_margin_submitted
+                                    isAddPosition -> R.string.Position_Add_Submitted
+                                    else -> R.string.Position_Submitted
+                                }
                                 Step.Error -> when {
+                                    isAddMargin -> R.string.perps_adding_margin_failed
                                     isAddPosition && isLong -> R.string.Added_Long_Failed
                                     isAddPosition -> R.string.Added_Short_Failed
+                                    orderError != null -> R.string.position_opening_failed
                                     isLong -> R.string.Opened_Long_Failed
                                     else -> R.string.Opened_Short_Failed
                                 }
-                                Step.Sending -> R.string.Sending
+                                Step.Sending -> if (isAddMargin) R.string.perps_adding_margin else R.string.Sending
                             }
                         ),
                         style = TextStyle(
@@ -329,136 +406,35 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                     )
                     Box(modifier = Modifier.height(20.dp))
 
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 20.dp),
-                    ) {
-                        Text(
-                            text = stringResource(R.string.perps_market).uppercase(),
-                            color = MixinAppTheme.colors.textRemarks,
-                            fontSize = 14.sp,
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            CoilImage(
-                                model = marketIcon,
-                                placeholder = R.drawable.ic_avatar_place_holder,
-                                modifier = Modifier
-                                    .size(20.dp)
-                                    .clip(CircleShape)
-                            )
-                            Spacer(modifier = Modifier.width(4.dp))
-                            Text(
-                                text = marketSymbol,
-                                color = MixinAppTheme.colors.textPrimary,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.W400
-                            )
-                        }
-                    }
-                    Box(modifier = Modifier.height(20.dp))
-
-                    PerpsInfoItem(
-                        title = stringResource(R.string.Direction).uppercase(),
-                        value = "${if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)} ${leverage}x"
-                    )
-                    Box(modifier = Modifier.height(6.dp))
-                    ProfitLossInfo(
-                        amount = amount,
+                    PerpsConfirmDetails(
+                        marketIcon = marketIcon,
+                        marketSymbol = marketSymbol,
                         leverage = leverage,
-                        isLong = isLong
+                        isLong = isLong,
+                        isAddMargin = isAddMargin,
+                        amount = amount,
+                        tokenSymbol = tokenSymbol,
+                        entryPrice = entryPrice,
+                        entryFiatPrice = entryFiatPrice,
+                        takeProfitPrice = takeProfitPrice,
+                        takeProfitFiatPrice = takeProfitFiatPrice,
+                        stopLossPrice = stopLossPrice,
+                        stopLossFiatPrice = stopLossFiatPrice,
+                        rawLiquidationPrice = rawLiquidationPrice,
+                        liquidationPrice = liquidationPrice,
+                        marginBefore = marginBefore,
+                        marginAfter = marginAfter,
+                        hasOrderError = orderError != null,
+                        onGuide = { tab ->
+                            PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
+                                .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                        },
                     )
-                    Box(modifier = Modifier.height(20.dp))
 
-                    PerpsInfoItem(
-                        title = stringResource(R.string.Amount).uppercase(),
-                        value = "$amount $tokenSymbol"
-                    )
-                    Box(modifier = Modifier.height(20.dp))
-
-                    PerpsInfoItem(
-                        title = stringResource(R.string.Entry_Price).uppercase(),
-                        value = entryFiatPrice
-                    )
-                    Box(modifier = Modifier.height(20.dp))
-
-                    takeProfitFiatPrice?.let { takeProfit ->
-                        val tpSubValue = calculateTpSlSubValue(
-                            targetPrice = takeProfitPrice,
-                            entryPrice = entryPrice,
-                            leverage = leverage,
-                            amount = amount,
-                            isLong = isLong,
-                            isTakeProfit = true,
-                        )
-                        PerpsInfoItem(
-                            title = stringResource(R.string.Take_Profit).uppercase(),
-                            value = takeProfit,
-                            subValueAnnotated = tpSubValue,
-                            info = true,
-                            guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL,
-                        )
+                    if (orderError == null) {
+                        ItemUserContent(title = stringResource(id = R.string.Receiver).uppercase(), receiver, null)
                         Box(modifier = Modifier.height(20.dp))
                     }
-
-                    stopLossFiatPrice?.let { stopLoss ->
-                        val slSubValue = calculateTpSlSubValue(
-                            targetPrice = stopLossPrice,
-                            entryPrice = entryPrice,
-                            leverage = leverage,
-                            amount = amount,
-                            isLong = isLong,
-                            isTakeProfit = false,
-                        )
-                        PerpsInfoItem(
-                            title = stringResource(R.string.Stop_Loss).uppercase(),
-                            value = stopLoss,
-                            subValueAnnotated = slSubValue,
-                            info = true,
-                            guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL,
-                        )
-                        Box(modifier = Modifier.height(20.dp))
-                    }
-
-                    val lossPercent = remember(leverage) {
-                        val percent = String.format("%.2f", 100.0 / leverage)
-                        Timber.d("LossPercent - leverage: $leverage, lossPercent: $percent")
-                        percent
-                    }
-
-                    val lossSubValue = if (isLong) {
-                        val text = stringResource(
-                            R.string.Price_Down_Loss,
-                            lossPercent,
-                            amount,
-                            tokenSymbol
-                        )
-                        Timber.d("LossSubValue (Long) - lossPercent: $lossPercent, amount: $amount, tokenSymbol: $tokenSymbol, text: $text")
-                        text
-                    } else {
-                        val text = stringResource(
-                            R.string.Price_Up_Loss,
-                            lossPercent,
-                            amount,
-                            tokenSymbol
-                        )
-                        Timber.d("LossSubValue (Short) - lossPercent: $lossPercent, amount: $amount, tokenSymbol: $tokenSymbol, text: $text")
-                        text
-                    }
-
-                    PerpsInfoItem(
-                        title = stringResource(R.string.Estimated_Liquidation_Price).uppercase(),
-                        value = liquidationPrice,
-                        subValue = lossSubValue,
-                        info = true,
-                        guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION,
-                    )
-
-                    Box(modifier = Modifier.height(20.dp))
-
-                    ItemUserContent(title = stringResource(id = R.string.Receiver).uppercase(), receiver, null)
-                    Box(modifier = Modifier.height(20.dp))
 
                     ItemWalletContent(title = stringResource(id = R.string.Sender).uppercase(), fontSize = 16.sp)
                     Box(modifier = Modifier.height(16.dp))
@@ -489,19 +465,44 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                         }
 
                         Step.Error -> {
-                            ActionBottom(
-                                modifier = Modifier.align(Alignment.BottomCenter),
-                                cancelTitle = stringResource(R.string.Cancel),
-                                confirmTitle = stringResource(id = R.string.Retry),
-                                cancelAction = {
-                                    trackPreviewCancel()
-                                    dismiss()
-                                },
-                                confirmAction = {
-                                    trackPreviewConfirm()
-                                    showPin()
-                                },
-                            )
+                            if (orderError != null) {
+                                if (addPositionId == null) {
+                                    Row(
+                                        modifier = Modifier.fillMaxWidth().padding(20.dp),
+                                        horizontalArrangement = Arrangement.Center,
+                                    ) {
+                                        MixinButton(
+                                            onClick = { dismiss() },
+                                            shape = RoundedCornerShape(30.dp),
+                                            contentPadding = PaddingValues(horizontal = 35.dp, vertical = 10.dp),
+                                        ) {
+                                            Text(stringResource(R.string.Cancel), fontSize = 16.sp)
+                                        }
+                                    }
+                                } else {
+                                    ActionBottom(
+                                        modifier = Modifier.align(Alignment.BottomCenter),
+                                        cancelTitle = stringResource(R.string.Cancel),
+                                        confirmTitle = stringResource(R.string.add_position),
+                                        cancelAction = { dismiss() },
+                                        confirmAction = ::addPosition,
+                                    )
+                                }
+                            } else {
+                                ActionBottom(
+                                    modifier = Modifier.align(Alignment.BottomCenter),
+                                    cancelTitle = stringResource(R.string.Cancel),
+                                    confirmTitle = stringResource(id = R.string.Retry),
+                                    cancelAction = {
+                                        trackPreviewCancel()
+                                        dismiss()
+                                    },
+                                    confirmAction = {
+                                        trackPreviewConfirm()
+                                        showPin()
+                                    },
+                                )
+                            }
                         }
 
                         Step.Pending -> {
@@ -528,100 +529,44 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         }
     }
 
-    @Composable
-    private fun PerpsInfoItem(
-        title: String,
-        value: String,
-        subValue: String? = null,
-        subValueAnnotated: AnnotatedString? = null,
-        info: Boolean = false,
-        guideTab: Int = PerpetualGuideBottomSheetDialogFragment.TAB_POSITION,
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = title,
-                    color = MixinAppTheme.colors.textRemarks,
-                    fontSize = 14.sp,
-                    maxLines = 1,
-                )
-                if (info) {
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_tip),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clickable {
-                                PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                    guideTab
-                                ).show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                            },
-                        tint = MixinAppTheme.colors.textAssist
-                    )
+    private fun addPosition() {
+        if (addingPosition) return
+        addingPosition = true
+        lifecycleScope.launch {
+            try {
+                val accountId = Session.getAccountId() ?: throw DataErrorException()
+                val marketId = requireNotNull(requireArguments().getString(ARGS_MARKET_ID))
+                val currentPosition = perpsViewModel.getOpenPerpsPosition(accountId, marketId)
+                if (currentPosition?.positionId != addPositionId || !canAddPerpsLeaderPosition(currentPosition, isLong, leverage.takeIf { it > 0 })) {
+                    showError(getString(R.string.error_waiting_other_orders))
+                    return@launch
                 }
-            }
-            Box(modifier = Modifier.height(4.dp))
-            Text(
-                text = value,
-                color = MixinAppTheme.colors.textPrimary,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W400
-            )
-            if (subValueAnnotated != null) {
-                Box(modifier = Modifier.height(4.dp))
-                Text(
-                    text = subValueAnnotated,
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 14.sp,
-                )
-            } else {
-                subValue?.let {
-                    Box(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = it,
-                        color = MixinAppTheme.colors.textAssist,
-                        fontSize = 14.sp,
+                val market = perpsViewModel.getMarketById(marketId) ?: throw DataErrorException()
+                val manager = parentFragmentManager
+                val leaderId = requireArguments().getString(RESULT_LEADER_POSITION_ID)
+                lifecycle.withResumed {
+                    requireActivity().showPerpsAddPosition(
+                        viewModel = perpsViewModel,
+                        position = requireNotNull(currentPosition),
+                        market = market,
+                        initialMargin = amount.takeIf { it.isNotBlank() },
+                        source = requireArguments().getString(ARGS_SOURCE).orEmpty(),
+                        leaderPositionId = leaderId,
+                        onOrderCreated = {
+                            manager.setFragmentResult(RESULT_ORDER_CREATED, Bundle().apply { putString(RESULT_LEADER_POSITION_ID, leaderId) })
+                        },
                     )
+                    dismiss()
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                showError(ErrorHandler.getErrorMessage(e))
+            } finally {
+                addingPosition = false
             }
         }
     }
-
-    @Composable
-    private fun ProfitLossInfo(
-        amount: String,
-        leverage: Int,
-        isLong: Boolean,
-    ) {
-        val context = LocalContext.current
-        val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        val profitPercent = 1.0 * leverage
-        val profitAmount = amountValue * BigDecimal(profitPercent / 100)
-        val formattedProfitAmount = formatPerpsUsdDecimal(profitAmount)
-
-        Timber.d("ProfitLossInfo - amount: $amount, amountValue: $amountValue, leverage: $leverage, isLong: $isLong, profitPercent: $profitPercent, profitAmount: $profitAmount")
-
-        Text(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 20.dp),
-            text = context.formatPerpsProfitPreview(
-                isLong = isLong,
-                priceChangeText = "1",
-                profitPercentText = String.format("%.1f", profitPercent),
-                profitAmountText = formattedProfitAmount,
-            ),
-            color = MixinAppTheme.colors.textAssist,
-            fontSize = 14.sp,
-        )
-    }
-
 
     override fun getBottomSheetHeight(view: View): Int {
         return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
@@ -646,6 +591,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     }
 
     private fun showPin() {
+        if (orderError != null) return
         PinInputBottomSheetDialogFragment.newInstance(biometricInfo = getBiometricInfo(), from = 1)
             .setOnPinComplete { pin ->
                 lifecycleScope.launch(
@@ -760,24 +706,30 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     }
 
     private fun trackPreviewConfirm() {
-        if (isAddPosition) {
-            AnalyticsTracker.trackPerpsAddPreviewConfirm()
+        if (isAddMargin) {
+            AnalyticsTracker.trackPerpsAddMarginPreviewConfirm()
+        } else if (isAddPosition) {
+            AnalyticsTracker.trackPerpsAddPositionPreviewConfirm()
         } else {
             AnalyticsTracker.trackPerpsOpenPreviewConfirm()
         }
     }
 
     private fun trackPreviewCancel() {
-        if (isAddPosition) {
-            AnalyticsTracker.trackPerpsAddPreviewCancel()
+        if (isAddMargin) {
+            AnalyticsTracker.trackPerpsAddMarginPreviewCancel()
+        } else if (isAddPosition) {
+            AnalyticsTracker.trackPerpsAddPositionPreviewCancel()
         } else {
             AnalyticsTracker.trackPerpsOpenPreviewCancel()
         }
     }
 
     private fun trackPositionSuccess() {
-        if (isAddPosition) {
-            AnalyticsTracker.trackPerpsAddEnd()
+        if (isAddMargin) {
+            AnalyticsTracker.trackPerpsAddMarginEnd()
+        } else if (isAddPosition) {
+            AnalyticsTracker.trackPerpsAddPositionEnd()
         } else {
             AnalyticsTracker.trackPerpsOpenEnd(
                 leverage = leverage,
@@ -859,5 +811,289 @@ private fun calculateTpSlSubValue(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun PerpsConfirmDetails(
+    marketIcon: String,
+    marketSymbol: String,
+    leverage: Int,
+    isLong: Boolean,
+    isAddMargin: Boolean,
+    amount: String,
+    tokenSymbol: String,
+    entryPrice: String,
+    entryFiatPrice: String,
+    takeProfitPrice: String,
+    takeProfitFiatPrice: String?,
+    stopLossPrice: String,
+    stopLossFiatPrice: String?,
+    rawLiquidationPrice: String?,
+    liquidationPrice: String,
+    marginBefore: String?,
+    marginAfter: BigDecimal?,
+    hasOrderError: Boolean,
+    onGuide: (Int) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+    ) {
+        Text(
+            text = stringResource(R.string.perps_market).uppercase(),
+            color = MixinAppTheme.colors.textRemarks,
+            fontSize = 14.sp,
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        PerpsConfirmationMarket(
+            iconUrl = marketIcon,
+            symbol = marketSymbol,
+            leverage = leverage,
+            isLong = isLong,
+        )
+    }
+    Box(modifier = Modifier.height(20.dp))
+
+    if (!isAddMargin) {
+        PerpsInfoItem(
+            onGuide = onGuide,
+            title = stringResource(R.string.Direction).uppercase(),
+            value = (if (isLong) stringResource(R.string.Long) else stringResource(R.string.Short)) +
+                if (leverage > 0) " ${leverage}x" else ""
+        )
+        if (leverage > 0 && amount.isNotBlank()) {
+            Box(modifier = Modifier.height(6.dp))
+            ProfitLossInfo(
+                amount = amount,
+                leverage = leverage,
+                isLong = isLong
+            )
+        }
+        Box(modifier = Modifier.height(20.dp))
+    }
+
+    if (amount.isNotBlank()) {
+        PerpsInfoItem(
+            onGuide = onGuide,
+            title = stringResource(R.string.Amount).uppercase(),
+            value = "$amount $tokenSymbol",
+            subValue = if (isAddMargin && marginAfter != null) {
+                "${stringResource(R.string.perps_total_margin)} ${formatPerpsMarginAmount(marginBefore?.toBigDecimalOrNull())} → ${formatPerpsMarginAmount(marginAfter)}"
+            } else null,
+        )
+        Box(modifier = Modifier.height(20.dp))
+    }
+
+    if (!isAddMargin) {
+        PerpsInfoItem(
+            onGuide = onGuide,
+            title = stringResource(R.string.Entry_Price).uppercase(),
+            value = entryFiatPrice
+        )
+        Box(modifier = Modifier.height(20.dp))
+
+        takeProfitFiatPrice?.let { takeProfit ->
+            val tpSubValue = calculateTpSlSubValue(
+                targetPrice = takeProfitPrice,
+                entryPrice = entryPrice,
+                leverage = leverage,
+                amount = amount,
+                isLong = isLong,
+                isTakeProfit = true,
+            )
+            PerpsInfoItem(
+                onGuide = onGuide,
+                title = stringResource(R.string.Take_Profit).uppercase(),
+                value = takeProfit,
+                subValueAnnotated = tpSubValue,
+                info = true,
+                guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL,
+            )
+            Box(modifier = Modifier.height(20.dp))
+        }
+
+        stopLossFiatPrice?.let { stopLoss ->
+            val slSubValue = calculateTpSlSubValue(
+                targetPrice = stopLossPrice,
+                entryPrice = entryPrice,
+                leverage = leverage,
+                amount = amount,
+                isLong = isLong,
+                isTakeProfit = false,
+            )
+            PerpsInfoItem(
+                onGuide = onGuide,
+                title = stringResource(R.string.Stop_Loss).uppercase(),
+                value = stopLoss,
+                subValueAnnotated = slSubValue,
+                info = true,
+                guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_TP_SL,
+            )
+            Box(modifier = Modifier.height(20.dp))
+        }
+    }
+
+    if (!hasOrderError || rawLiquidationPrice != null) {
+        val lossPercent = if (isAddMargin) {
+            marginLiquidationLossPercent(entryPrice, rawLiquidationPrice)?.let { formatPerpsQuantity(it) }
+        } else {
+            String.format("%.2f", 100.0 / leverage)
+        }
+        val lossSubValue = lossPercent?.let {
+            stringResource(
+                if (isLong) R.string.Price_Down_Loss else R.string.Price_Up_Loss,
+                it,
+                if (isAddMargin) formatPerpsMarginAmount(marginAfter) else amount,
+                if (isAddMargin) "" else tokenSymbol,
+            ).trimEnd()
+        }
+
+        PerpsInfoItem(
+            onGuide = onGuide,
+            title = stringResource(R.string.Estimated_Liquidation_Price).uppercase(),
+            value = liquidationPrice,
+            subValue = lossSubValue,
+            info = true,
+            guideTab = PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION,
+        )
+
+        Box(modifier = Modifier.height(20.dp))
+    }
+
+}
+
+@Composable
+private fun PerpsInfoItem(
+    title: String,
+    value: String,
+    subValue: String? = null,
+    subValueAnnotated: AnnotatedString? = null,
+    info: Boolean = false,
+    guideTab: Int = PerpetualGuideBottomSheetDialogFragment.TAB_POSITION,
+    onGuide: (Int) -> Unit,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = title,
+                color = MixinAppTheme.colors.textRemarks,
+                fontSize = 14.sp,
+                maxLines = 1,
+            )
+            if (info) {
+                Spacer(modifier = Modifier.width(4.dp))
+
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_tip),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clickable {
+                            onGuide(guideTab)
+                        },
+                    tint = MixinAppTheme.colors.textAssist
+                )
+            }
+        }
+        Box(modifier = Modifier.height(4.dp))
+        Text(
+            text = value,
+            color = MixinAppTheme.colors.textPrimary,
+            fontSize = 16.sp,
+            fontWeight = FontWeight.W400
+        )
+        if (subValueAnnotated != null) {
+            Box(modifier = Modifier.height(4.dp))
+            Text(
+                text = subValueAnnotated,
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 14.sp,
+            )
+        } else {
+            subValue?.let {
+                Box(modifier = Modifier.height(4.dp))
+                Text(
+                    text = it,
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 14.sp,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfitLossInfo(
+    amount: String,
+    leverage: Int,
+    isLong: Boolean,
+) {
+    val context = LocalContext.current
+    val amountValue = amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
+    val profitPercent = 1.0 * leverage
+    val profitAmount = amountValue * BigDecimal(profitPercent / 100)
+    val formattedProfitAmount = formatPerpsUsdDecimal(profitAmount)
+
+    Timber.d("ProfitLossInfo - amount: $amount, amountValue: $amountValue, leverage: $leverage, isLong: $isLong, profitPercent: $profitPercent, profitAmount: $profitAmount")
+
+    Text(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp),
+        text = context.formatPerpsProfitPreview(
+            isLong = isLong,
+            priceChangeText = "1",
+            profitPercentText = String.format("%.1f", profitPercent),
+            profitAmountText = formattedProfitAmount,
+        ),
+        color = MixinAppTheme.colors.textAssist,
+        fontSize = 14.sp,
+    )
+}
+
+
+
+@PerpsSheetPreview
+@Composable
+private fun OpenPositionConfirmationPreview() {
+    PerpsConfirmDetailsPreview(isAddMargin = false)
+}
+
+@PerpsSheetPreview
+@Composable
+private fun AddMarginConfirmationPreview() {
+    PerpsConfirmDetailsPreview(isAddMargin = true)
+}
+
+@Composable
+private fun PerpsConfirmDetailsPreview(isAddMargin: Boolean) {
+    PerpsPreviewContent(if (isAddMargin) R.string.perps_confirm_add_margin else R.string.confirm_opening_position) {
+        PerpsConfirmDetails(
+            marketIcon = "",
+            marketSymbol = "BTC-USDC",
+            leverage = 10,
+            isLong = true,
+            isAddMargin = isAddMargin,
+            amount = "25.00",
+            tokenSymbol = "USDC",
+            entryPrice = "65000",
+            entryFiatPrice = "$65,000.00",
+            takeProfitPrice = if (isAddMargin) "" else "70000",
+            takeProfitFiatPrice = if (isAddMargin) null else "$70,000.00",
+            stopLossPrice = if (isAddMargin) "" else "62000",
+            stopLossFiatPrice = if (isAddMargin) null else "$62,000.00",
+            rawLiquidationPrice = "58500",
+            liquidationPrice = "$58,500.00",
+            marginBefore = "80.126855",
+            marginAfter = BigDecimal("105.126855"),
+            hasOrderError = false,
+            onGuide = {},
+        )
     }
 }

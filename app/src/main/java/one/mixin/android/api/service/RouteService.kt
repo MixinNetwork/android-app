@@ -10,6 +10,7 @@ import one.mixin.android.api.request.RouteInstrumentRequest
 import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.api.request.RouteTokenRequest
+import one.mixin.android.api.request.perps.AdjustMarginRequest
 import one.mixin.android.api.request.perps.CloseOrderRequest
 import one.mixin.android.api.request.perps.CloseOrderResponse
 import one.mixin.android.api.request.perps.IncreaseOrderRequest
@@ -260,6 +261,11 @@ interface RouteService {
     @GET("markets/globals")
     suspend fun globalMarket():MixinResponse<GlobalMarket>
 
+    @POST("markets/favorites")
+    suspend fun updateMarketFavorites(
+        @Body coinIds: List<String>,
+    ): MixinResponse<Unit>
+
     @POST("markets/{id}/favorite")
     suspend fun favorite(@Path("id") coinId: String): MixinResponse<Unit>
 
@@ -384,12 +390,29 @@ interface RouteService {
 
     // Perps API
     @GET("perps/markets")
-    suspend fun getPerpsMarkets(): MixinResponse<List<PerpsMarket>>
+    suspend fun getPerpsMarkets(
+        @Query("category") category: String? = null,
+    ): MixinResponse<List<PerpsMarket>>
 
     @GET("perps/markets/{market_id}")
     suspend fun getPerpsMarket(
         @Path("market_id") marketId: String
     ): MixinResponse<PerpsMarket>
+
+    @POST("perps/markets/favorites")
+    suspend fun updatePerpsMarketFavorites(
+        @Body marketIds: List<String>,
+    ): MixinResponse<Unit>
+
+    @POST("perps/markets/{market_id}/favorite")
+    suspend fun favoritePerpsMarket(
+        @Path("market_id") marketId: String,
+    ): MixinResponse<Unit>
+
+    @POST("perps/markets/{market_id}/unfavorite")
+    suspend fun unfavoritePerpsMarket(
+        @Path("market_id") marketId: String,
+    ): MixinResponse<Unit>
 
     @GET("perps/markets/candles")
     suspend fun getPerpsCandles(
@@ -404,6 +427,7 @@ interface RouteService {
         @Query("side") side: String? = null,
         @Query("leverage") leverage: Int? = null,
         @Query("position_id") positionId: String? = null,
+        @Query("action") action: String? = null,
     ): MixinResponse<MarketLiquidationPriceView>
 
     @GET("perps/orders/accepted-assets")
@@ -438,6 +462,12 @@ interface RouteService {
     suspend fun increasePerpsPosition(
         @Path("id") positionId: String,
         @Body request: IncreaseOrderRequest,
+    ): MixinResponse<OpenOrderResponse>
+
+    @POST("perps/positions/{id}/margin")
+    suspend fun adjustPerpsMargin(
+        @Path("id") positionId: String,
+        @Body request: AdjustMarginRequest,
     ): MixinResponse<OpenOrderResponse>
 
     @GET("perps/orders")

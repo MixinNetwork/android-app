@@ -538,7 +538,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         .start(requireContext())
                 }
                 else -> {
-                    e.stackTraceToString()
+                    ErrorHandler.getErrorMessage(e)
                 }
             }
         reportException("$TAG handleException", e)
@@ -547,7 +547,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     private fun handleException(e: Throwable) {
-        errorInfo = e.message
+        errorInfo = ErrorHandler.getErrorMessage(e)
         reportException("$TAG handleException", e)
         step = Step.Error
     }
@@ -658,7 +658,7 @@ fun showWalletConnectBottomSheetDialogFragment(
                 return@setOnPinComplete if (e is TipNetworkException) {
                     "code: ${e.error.code}, message: ${e.error.description}"
                 } else {
-                    errorInfo
+                    e?.let { ErrorHandler.getErrorMessage(it) }
                 }
             }
         }

@@ -35,6 +35,7 @@ import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.device.ConfirmBottomFragment
 import one.mixin.android.ui.forward.ForwardActivity
 import one.mixin.android.ui.home.web3.trade.SwapActivity
+import one.mixin.android.ui.home.web3.trade.TRADE_INPUT_MAX_DECIMAL_PLACES
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.TAB_PERPETUAL
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
@@ -56,6 +57,7 @@ import one.mixin.android.vo.getShareCategory
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.widget.gallery.MimeType
 import timber.log.Timber
+import java.math.BigDecimal
 import java.net.URI
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
@@ -272,31 +274,48 @@ fun String.checkUserOrApp(
     val userDao = db.userDao()
     val appDao = db.appDao()
     scope.launch {
+        val isOpenApp = uri.shouldOpenAppHome()
+        if (isOpenApp) {
+            val localApp = appDao.findAppById(userId)
+            if (localApp != null) {
+                openSchemeApp(context, uri, localApp)
+                return@launch
+            }
+        }
         val user = userDao.suspendFindUserById(userId)
         if (user == null) {
             val bottomSheet = LinkBottomSheetDialogFragment.newInstance(uri.toString())
             bottomSheet.showNow(supportFragmentManager, LinkBottomSheetDialogFragment.TAG)
         } else {
-            val isOpenApp = isAppScheme && uri.getQueryParameter("action") == "open"
             if (isOpenApp && user.appId != null) {
                 val app = appDao.findAppById(user.appId!!)
                 if (app != null) {
-                    val url =
-                        try {
-                            app.homeUri.appendQueryParamsFromOtherUri(uri)
-                        } catch (e: Exception) {
-                            app.homeUri
-                        }
-                    AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
-                    WebActivity.show(context, url, null, app)
-                    if (context is UrlInterpreterActivity) {
-                        context.finish()
-                    }
+                    openSchemeApp(context, uri, app)
                     return@launch
                 }
             }
             showUserBottom(supportFragmentManager, user, botEntrySource = AnalyticsTracker.BotSource.SCHEME)
         }
+    }
+}
+
+internal fun Uri.shouldOpenAppHome(): Boolean =
+    toString().isAppScheme() && (getQueryParameter("action") == "open" || !getQueryParameter("page").isNullOrBlank())
+
+internal fun App.homeUriWithSchemeParameters(uri: Uri): String =
+    runCatching {
+        homeUri.appendQueryParamsFromOtherUri(uri)
+    }.getOrDefault(homeUri)
+
+private fun openSchemeApp(
+    context: Context,
+    uri: Uri,
+    app: App,
+) {
+    AnalyticsTracker.trackOpenBotHomePage(AnalyticsTracker.BotSource.SCHEME, app.appNumber)
+    WebActivity.show(context, app.homeUriWithSchemeParameters(uri), null, app)
+    if (context is UrlInterpreterActivity) {
+        context.finish()
     }
 }
 
@@ -378,6 +397,17 @@ fun String.checkTradeUrl(
 
 internal data class PerpsTradeAction(
     val marketId: String?,
+    val leaderPositionId: String?,
+    val openPosition: PerpsOpenPositionAction? = null,
+    val addMargin: PerpsAddMarginAction? = null,
+)
+
+internal data class PerpsAddMarginAction(val margin: String?)
+
+internal data class PerpsOpenPositionAction(
+    val isLong: Boolean?,
+    val leverage: Int?,
+    val margin: String?,
 )
 
 internal data class SpotTradeAction(
@@ -399,9 +429,46 @@ internal fun String.toPerpsTradeAction(): PerpsTradeAction? {
         return null
     }
 
-    val marketId = query.queryParameter("market")?.takeIf(String::isNotBlank) ?: return PerpsTradeAction(null)
+    val hasLeaderPositionId = query.hasQueryParameter("leader_position")
+    val leaderPositionId = query.queryParameter("leader_position")
+    if (hasLeaderPositionId && (leaderPositionId == null || !leaderPositionId.isUUID())) return null
+    val isAddMarginAction = query.queryParameter("action").equals("add_margin", true)
+    val marketId = query.queryParameter("market")?.takeIf(String::isNotBlank)
+        ?: return if (!hasLeaderPositionId && !isAddMarginAction) PerpsTradeAction(null, null) else null
     if (!marketId.isUUID()) return null
-    return PerpsTradeAction(marketId)
+
+    if (isAddMarginAction) {
+        val margin = query.queryParameter("margin")?.toPerpsMarginOrNull()
+        if (query.hasQueryParameter("margin") && margin == null) return null
+        return PerpsTradeAction(marketId, leaderPositionId, addMargin = PerpsAddMarginAction(margin))
+    }
+
+    val isOpenAction = query.queryParameter("action").equals("open", true)
+    val openPosition = if (isOpenAction) {
+        val hasSide = query.hasQueryParameter("side")
+        val isLong = when {
+            !hasSide -> null
+            query.queryParameter("side").equals("long", true) -> true
+            query.queryParameter("side").equals("short", true) -> false
+            else -> return null
+        }
+        val hasLeverage = query.hasQueryParameter("leverage")
+        val leverage = query.queryParameter("leverage")?.toIntOrNull()?.takeIf { value -> value > 0 }
+        if (hasLeverage && leverage == null) return null
+
+        val hasMargin = query.hasQueryParameter("margin")
+        val margin = query.queryParameter("margin")?.toPerpsMarginOrNull()
+        if (hasMargin && margin == null) return null
+
+        PerpsOpenPositionAction(
+            isLong = isLong,
+            leverage = leverage,
+            margin = margin,
+        )
+    } else {
+        null
+    }
+    return PerpsTradeAction(marketId, leaderPositionId, openPosition)
 }
 
 internal fun String.toSpotTradeAction(): SpotTradeAction? {
@@ -431,7 +498,7 @@ internal fun String.toSpotTradeAction(): SpotTradeAction? {
     )
 }
 
-private suspend fun String.openLocalMixinTradeAction(context: Context): Boolean {
+internal suspend fun String.openLocalMixinTradeAction(context: Context): Boolean {
     val perpsTradeAction = toPerpsTradeAction()
     if (perpsTradeAction != null) {
         return openLocalPerpsTradeAction(context, perpsTradeAction)
@@ -467,6 +534,8 @@ private suspend fun openLocalPerpsTradeAction(
     context: Context,
     action: PerpsTradeAction,
 ): Boolean {
+    if (action.openPosition != null || action.addMargin != null) return false
+
     val marketId = action.marketId
     if (marketId == null) {
         context.defaultSharedPreferences.putInt(
@@ -493,7 +562,8 @@ private suspend fun openLocalPerpsTradeAction(
         market.displaySymbol,
         market.displaySymbol,
         market.tokenSymbol,
-        AnalyticsTracker.PerpsSource.APP_CARD,
+        tradeSource(context),
+        leaderPositionId = action.leaderPositionId,
     )
     closeSourceWebActivityIfNeeded(context)
     return true
@@ -539,8 +609,30 @@ private fun String.queryParameter(name: String): String? =
         }
         .firstOrNull()
 
+private fun String.hasQueryParameter(name: String): Boolean =
+    split("&").any { parameter ->
+        parameter.substringBefore("=").urlDecode() == name
+    }
+
 private fun String.urlDecode(): String? =
     runCatching { URLDecoder.decode(this, StandardCharsets.UTF_8.name()) }.getOrNull()
+
+private fun String.toPerpsMarginOrNull(): String? {
+    if (isEmpty() || length > 64) return null
+    var hasDigit = false
+    var hasDecimalPoint = false
+    for (character in this) {
+        when {
+            character.isDigit() -> hasDigit = true
+            character == '.' && !hasDecimalPoint -> hasDecimalPoint = true
+            else -> return null
+        }
+    }
+    if (!hasDigit) return null
+    val amount = toBigDecimalOrNull()?.stripTrailingZeros() ?: return null
+    if (amount <= BigDecimal.ZERO || amount.scale() > TRADE_INPUT_MAX_DECIMAL_PLACES) return null
+    return amount.toPlainString()
+}
 
 private fun getUserOrAppNotFoundTip(isApp: Boolean) =
     if (isApp) R.string.Bot_not_found else R.string.User_not_found

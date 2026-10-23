@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -22,12 +23,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
@@ -50,6 +50,10 @@ import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.Web3TokenRecycler
 import one.mixin.android.ui.wallet.home.Web3TransactionRecycler
 
+private val CashAccountTextStyle = TextStyle(
+    platformStyle = PlatformTextStyle(includeFontPadding = false),
+)
+
 @Composable
 internal fun WalletHomeCard(
     card: WalletHomeCardType,
@@ -67,6 +71,7 @@ internal fun WalletHomeCard(
     val contentPadding = when {
         card.hasSelfPaddedItems() -> Modifier
         card == WalletHomeCardType.BALANCE -> Modifier.padding(top = 20.dp, bottom = 12.dp)
+        card == WalletHomeCardType.CASH -> Modifier.padding(start = 16.dp, top = 20.dp, end = 20.dp, bottom = 20.dp)
         else -> Modifier.padding(20.dp)
     }
     Column(
@@ -94,8 +99,9 @@ internal fun WalletHomeCard(
             WalletHomeCardType.BANNER -> Unit
             WalletHomeCardType.CASH -> CashAccountCard(
                 cashAccount = state.cashAccount,
-                callbacks = callbacks,
+                quoteColorReversed = state.quoteColorReversed,
             )
+            WalletHomeCardType.ACCOUNTS -> Unit
             WalletHomeCardType.POSITIONS -> SectionCard(
                 title = stringResource(R.string.positions_count, state.totalPositionCount),
                 showViewAll = WalletHomeSection.hasMore(state.totalPositionCount),
@@ -149,6 +155,7 @@ internal fun WalletHomeCard(
                         if (state.walletType == WalletHomeType.PRIVACY) {
                             PrivacyTokenRecycler(
                                 tokens = privacyTokens.take(PREVIEW_LIMIT),
+                                earnAssetIds = state.earnAssetIds,
                                 onClick = callbacks::onTokenClicked,
                                 modifier = Modifier.fillMaxWidth(),
                             )
@@ -194,7 +201,7 @@ internal fun WalletHomeCard(
 @Composable
 private fun CashAccountCard(
     cashAccount: WalletHomeCashAccount?,
-    callbacks: WalletHomeCallbacks,
+    quoteColorReversed: Boolean,
 ) {
     if (cashAccount == null) return
 
@@ -208,54 +215,34 @@ private fun CashAccountCard(
             contentDescription = null,
             modifier = Modifier.size(42.dp),
         )
-        Spacer(modifier = Modifier.width(14.dp))
+        Spacer(modifier = Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.heightIn(min = 18.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     text = stringResource(R.string.cash_balance),
-                    color = MixinAppTheme.colors.textPrimary,
-                    fontSize = 14.sp,
-                    lineHeight = 17.sp,
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 12.sp,
+                    lineHeight = 14.sp,
                     fontWeight = FontWeight.W400,
+                    style = CashAccountTextStyle,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
                 Spacer(modifier = Modifier.width(10.dp))
-                Icon(
-                    painter = painterResource(R.drawable.ic_arrow_gray_right),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                    modifier = Modifier.size(16.dp).offset(x = 4.dp),
-                )
+                AccountArrow()
             }
             Spacer(modifier = Modifier.height(6.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = buildAnnotatedString {
-                        withStyle(SpanStyle(fontSize = 18.sp, fontWeight = FontWeight.W600)) {
-                            append(cashAccount.balanceAmountText)
-                        }
-                        append(" ")
-                        withStyle(SpanStyle(fontSize = 12.sp, fontWeight = FontWeight.W500)) {
-                            append("USD")
-                        }
-                    },
-                    color = MixinAppTheme.colors.textPrimary,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                WalletHomeAccountBalance(
+                    balanceAmountText = cashAccount.balanceAmountText,
                     modifier = Modifier.weight(1f),
                 )
                 cashAccount.apyText?.let { apyText ->
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(
+                    AccountApy(
                         text = stringResource(R.string.cash_account_apy, apyText),
-                        color = Color(0xFF5ECF72),
-                        fontSize = 14.sp,
-                        lineHeight = 16.sp,
-                        fontWeight = FontWeight.W400,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
+                        quoteColorReversed = quoteColorReversed,
                     )
                 }
             }

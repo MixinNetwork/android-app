@@ -24,6 +24,7 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -86,6 +87,7 @@ fun TradePage(
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
+    autoFocusAmount: Boolean,
     initialTabIndex: Int,
     source: String,
     entrySource: String,
@@ -113,8 +115,8 @@ fun TradePage(
     onRecommendedMarketViewAllClick: (SwapRecommendedMarketType, Boolean) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
     onShowAllMarkets: (String?, MarketSort?) -> Unit,
-    onShowAllOpenPositions: () -> Unit,
-    onShowAllClosedPositions: () -> Unit,
+    onShowAllOpenPositions: (String) -> Unit,
+    onShowAllClosedPositions: (String) -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
     onMarketItemClick: (PerpsMarket) -> Unit,
     onClosedPositionClick: (PerpsOrderItem) -> Unit,
@@ -175,6 +177,7 @@ fun TradePage(
             initialAmount = initialAmount,
             lastOrderTime = lastOrderTime,
             reviewing = reviewing,
+            autoFocus = autoFocusAmount && initialTabIndex == TradeFragment.TAB_SIMPLE,
             source = source,
             stockMarkets = stockMarkets,
             trendingMarkets = trendingMarkets,
@@ -204,6 +207,7 @@ fun TradePage(
             initialAmount,
             lastOrderTime,
             reviewing,
+            autoFocusAmount && initialTabIndex == TradeFragment.TAB_ADVANCED,
             { isReverse, type -> onSelectToken(isReverse, type, true) },
             onLimitReview,
             onDeposit,
@@ -217,7 +221,7 @@ fun TradePage(
         perpetualTabIndex = tabs.size
         tabs += TabItem(title = stringResource(R.string.Perpetual)) {
             PerpetualContent(
-                onShowTradingGuide = { onShowTradingGuide(perpetualTabIndex ?: 0) },
+                onShowTradingGuide = { onShowTradingGuide(perpetualTabIndex) },
                 onShowMarketList = onShowMarketList,
                 onShowAllMarkets = onShowAllMarkets,
                 onShowAllOpenPositions = onShowAllOpenPositions,
@@ -248,15 +252,13 @@ fun TradePage(
         }
     }
 
-    LaunchedEffect(initialTabIndex, tradeWallet, entrySource) {
-        if (perpetualTabIndex == null || initialTabIndex != perpetualTabIndex) {
-            AnalyticsTracker.trackSpotStart(
-                wallet = tradeWallet,
-                type = spotTypeForPage(initialTabIndex),
-                source = entrySource,
-            )
-        }
-    }
+    TrackSpotStartEvent(
+        initialTabIndex = initialTabIndex,
+        perpetualTabIndex = perpetualTabIndex,
+        tradeWallet = tradeWallet,
+        spotType = spotTypeForPage(initialTabIndex),
+        entrySource = entrySource,
+    )
 
     LaunchedEffect(Unit) {
         onShowTradingGuideIfNeeded(pagerState.currentPage)
@@ -311,7 +313,7 @@ fun TradePage(
                         if (!isPerpetualOrderBadgeDismissed) {
                             onDismissPerpetualOrderBadge()
                         }
-                        onShowAllOpenPositions()
+                        onShowAllOpenPositions(AnalyticsTracker.PerpsSource.PERPS_HOME_MENU)
                     } else {
                         onOrderList(currentWalletId, false, spotTypeForPage(pagerState.currentPage))
                     }
@@ -383,7 +385,7 @@ fun TradePage(
                     {
                         val source = when {
                             perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex ->
-                                AnalyticsTracker.CustomerServiceSource.TRADE_PERPS_HOME_MENU
+                                AnalyticsTracker.CustomerServiceSource.PERPS_HOME_MENU
                             pagerState.currentPage == 1 ->
                                 AnalyticsTracker.CustomerServiceSource.TRADE_ADVANCED_HOME_MENU
                             else ->
@@ -451,6 +453,29 @@ fun TradePage(
             userScrollEnabled = false,
         ) { page ->
             tabs[page].screen()
+        }
+    }
+}
+
+@Composable
+private fun TrackSpotStartEvent(
+    initialTabIndex: Int,
+    perpetualTabIndex: Int?,
+    tradeWallet: String,
+    spotType: String,
+    entrySource: String,
+) {
+    SideEffect(
+        key1 = initialTabIndex,
+        key2 = tradeWallet,
+        key3 = entrySource,
+    ) {
+        if (perpetualTabIndex == null || initialTabIndex != perpetualTabIndex) {
+            AnalyticsTracker.trackSpotStart(
+                wallet = tradeWallet,
+                type = spotType,
+                source = entrySource,
+            )
         }
     }
 }

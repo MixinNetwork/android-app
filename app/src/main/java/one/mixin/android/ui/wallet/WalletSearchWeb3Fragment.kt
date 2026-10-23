@@ -217,8 +217,12 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             }
 
             if (remoteTokens.isNotEmpty() && isSearchingRemote) {
+                val hasLitecoinAddress = walletId?.let {
+                    viewModel.getAddressesByChainId(it, Constants.ChainId.Litecoin)
+                } != null
                 val filteredTokens = remoteTokens.filter {
-                    it.chainId in Constants.Web3EvmChainIds || it.chainId == Constants.ChainId.SOLANA_CHAIN_ID || it.chainId == Constants.ChainId.BITCOIN_CHAIN_ID
+                    (it.chainId in Constants.Web3EvmChainIds || it.chainId == Constants.ChainId.SOLANA_CHAIN_ID || it.chainId in Constants.Web3UtxoChainIds) &&
+                        (it.chainId != Constants.ChainId.Litecoin || hasLitecoinAddress)
                 }
                 val remoteWeb3Tokens = filteredTokens.map { tokenItem ->
                     val t = viewModel.web3TokenItemById(walletId!!, tokenItem.assetId)

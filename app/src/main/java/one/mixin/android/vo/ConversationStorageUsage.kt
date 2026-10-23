@@ -1,7 +1,7 @@
 package one.mixin.android.vo
 
-import androidx.room.ColumnInfo
-import androidx.room.Ignore
+import androidx.room3.ColumnInfo
+import androidx.room3.Ignore
 
 class ConversationStorageUsage(
     @ColumnInfo(name = "conversation_id")

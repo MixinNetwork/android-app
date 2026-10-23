@@ -79,6 +79,25 @@ fun formatPerpsSignedRawUsdDecimal(value: BigDecimal?): String {
     }
 }
 
+fun formatPerpsExactUsdDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    val absValue = safeValue.abs()
+    if (absValue.compareTo(BigDecimal.ZERO) == 0) {
+        return "${PERPS_USD_SYMBOL}0.00"
+    }
+    val scaledValue = absValue.setScale(8, RoundingMode.HALF_UP)
+    return "$PERPS_USD_SYMBOL${DecimalFormat(",##0.00######").format(scaledValue)}"
+}
+
+fun formatPerpsSignedExactUsdDecimal(value: BigDecimal?): String {
+    val safeValue = value ?: BigDecimal.ZERO
+    return when {
+        safeValue > BigDecimal.ZERO -> "+${formatPerpsExactUsdDecimal(safeValue)}"
+        safeValue < BigDecimal.ZERO -> "-${formatPerpsExactUsdDecimal(safeValue.abs())}"
+        else -> formatPerpsExactUsdDecimal(BigDecimal.ZERO)
+    }
+}
+
 fun Context.formatPerpsProfitPreview(
     isLong: Boolean,
     priceChangeText: String,
@@ -124,6 +143,27 @@ fun calculateClosedRoe(
         .multiply(direction)
 }
 
+internal fun calculateTotalPnlPercent(
+    positionCount: Int,
+    singlePositionRoe: String?,
+    totalPnl: BigDecimal,
+    totalMargin: BigDecimal,
+): BigDecimal {
+    return when {
+        positionCount <= 0 -> BigDecimal.ZERO
+        positionCount == 1 ->
+            singlePositionRoe
+                ?.toBigDecimalOrNull()
+                ?.multiply(BigDecimal(100))
+                ?: BigDecimal.ZERO
+        totalMargin <= BigDecimal.ZERO -> BigDecimal.ZERO
+        else ->
+            totalPnl
+                .divide(totalMargin, 8, RoundingMode.HALF_UP)
+                .multiply(BigDecimal(100))
+    }
+}
+
 fun formatPerpsSignedPercent(value: BigDecimal, withSign: Boolean = true): String {
     val percentText = "${formatPerpsPercentDecimal(value)}%"
     if (!withSign) {
@@ -154,4 +194,23 @@ private fun formatPerpsPercentDecimal(value: BigDecimal): String {
     val scaled = safeValue.setScale(2, RoundingMode.FLOOR)
     if (scaled.compareTo(BigDecimal.ZERO) == 0) return "0.0"
     return scaled.stripTrailingZeros().toPlainString()
+}
+
+internal fun formatPerpsReductionSize(
+    currentQuantity: BigDecimal,
+    reductionQuantity: BigDecimal?,
+    markPrice: BigDecimal?,
+    tokenSymbol: String,
+): String {
+    val current = currentQuantity.abs()
+    val currentText = "${formatPerpsQuantity(current)} $tokenSymbol".trim()
+    if (reductionQuantity == null || reductionQuantity <= BigDecimal.ZERO || reductionQuantity > current) return currentText
+    val remaining = current.subtract(reductionQuantity)
+    val remainingText = "${formatPerpsQuantity(remaining)} $tokenSymbol".trim()
+    val value = when {
+        remaining.signum() == 0 -> "${PERPS_USD_SYMBOL}0"
+        markPrice != null && markPrice > BigDecimal.ZERO -> formatPerpsUsdDecimal(remaining.multiply(markPrice))
+        else -> "--"
+    }
+    return "$currentText → $remainingText ($value)"
 }

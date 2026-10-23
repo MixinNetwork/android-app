@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.wallet.fiatmoney
 
 import android.os.Parcelable
@@ -60,6 +62,8 @@ class FiatMoneyViewModel
         suspend fun findAssetsByIds(ids: List<String>) = tokenRepository.findAssetsByIds(ids)
 
         suspend fun findAssetsById(id: String) = tokenRepository.findAssetItemById(id)
+
+        suspend fun findOrSyncApp(id: String) = userRepository.findOrSyncApp(id)
 
         suspend fun fetchSessionsSuspend(ids: List<String>) = userRepository.fetchSessionsSuspend(ids)
 

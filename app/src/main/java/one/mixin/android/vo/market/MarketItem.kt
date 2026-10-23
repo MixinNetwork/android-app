@@ -1,14 +1,14 @@
 package one.mixin.android.vo.market
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
-import androidx.room.TypeConverters
+import androidx.room3.ColumnInfo
+import androidx.room3.ColumnTypeConverters
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.db.converter.DescriptionsConverter
 import one.mixin.android.db.converter.OptionalListConverter
 
 @Parcelize
-@TypeConverters(OptionalListConverter::class, DescriptionsConverter::class)
+@ColumnTypeConverters(OptionalListConverter::class, DescriptionsConverter::class)
 data class MarketItem(
     @ColumnInfo(name = "coin_id")
     val coinId: String,
@@ -74,6 +74,8 @@ data class MarketItem(
     val descriptions: Map<String, String>? = null,
     @ColumnInfo(name = "perps_market_id")
     val perpsMarketId: String? = null,
+    @ColumnInfo(name = "updated_at")
+    val updatedAt: String = "",
 ) : Parcelable {
     companion object {
         fun fromMarket(market: Market): MarketItem {
@@ -110,6 +112,7 @@ data class MarketItem(
                 isFavored = null,
                 descriptions = market.descriptions,
                 perpsMarketId = market.perpsMarketId,
+                updatedAt = market.updatedAt,
             )
         }
     }

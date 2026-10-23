@@ -1,57 +1,45 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
-import android.annotation.SuppressLint
-import android.app.Dialog
-import android.text.Editable
-import android.view.ViewGroup
-import android.widget.ImageView
-import androidx.core.view.doOnPreDraw
-import androidx.core.view.isVisible
-import androidx.core.view.updateLayoutParams
+import android.os.Bundle
+import android.view.View
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.SimpleItemAnimator
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
-import one.mixin.android.databinding.FragmentMarketListBottomSheetBinding
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.perps.PerpsPositionDao
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.extension.scrollToCenterCheckedRadio
+import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
-import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
+import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.widget.MarketSort
-import one.mixin.android.util.viewBinding
-import one.mixin.android.widget.BottomSheet
-import one.mixin.android.widget.SearchView
+import one.mixin.android.util.analytics.AnalyticsTracker
 import javax.inject.Inject
 
 private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
 
 @AndroidEntryPoint
-class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
-
-    private enum class MarketCategory(val apiValues: Set<String>) {
-        ALL(emptySet()),
-        CRYPTO(setOf("crypto")),
-        STOCKS(setOf("stock", "stocks")),
-        INDICES(setOf("index", "indices")),
-        COMMODITIES(setOf("commodity", "commodities")),
-        FOREX(setOf("forex", "fx")),
-    }
+class PerpsMarketListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
 
     companion object {
         const val TAG = "PerpsMarketListBottomSheetDialogFragment"
@@ -74,13 +62,6 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         }
     }
 
-    private val binding by viewBinding(FragmentMarketListBottomSheetBinding::inflate)
-    private val isQuoteColorReversed by lazy {
-        requireContext().defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    }
-    private val adapter by lazy {
-        PerpsMarketListAdapter(isQuoteColorReversed) { market -> onMarketClick(market) }
-    }
     private val viewModel by viewModels<PerpetualViewModel>()
 
     @Inject
@@ -96,111 +77,91 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         arguments
             ?.takeIf { it.containsKey(ARGS_INITIAL_SORT) }
             ?.getInt(ARGS_INITIAL_SORT)
-            ?.let { MarketSort.fromValueOrNull(it) }
+            ?.let(MarketSort::fromValueOrNull)
     }
-    private var allMarkets = listOf<PerpsMarket>()
-    private var currentQuery = ""
-    private var currentCategory = MarketCategory.ALL
-    private var currentSort: MarketSort? = null
+    private val mutableUiState by lazy {
+        MutableStateFlow(
+            PerpsMarketListUiState.initial(
+                initialCategory = initialCategory,
+                initialSort = initialSort,
+                quoteColorReversed =
+                    requireContext()
+                        .defaultSharedPreferences
+                        .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false),
+            ),
+        )
+    }
+    private val uiState: StateFlow<PerpsMarketListUiState> by lazy {
+        mutableUiState.asStateFlow()
+    }
 
-    @SuppressLint("RestrictedApi")
-    override fun setupDialog(dialog: Dialog, style: Int) {
-        super.setupDialog(dialog, style)
-        contentView = binding.root
+    override fun getTheme() = R.style.AppTheme_Dialog
 
-        binding.ph.doOnPreDraw {
-            binding.ph.updateLayoutParams<ViewGroup.LayoutParams> {
-                height = binding.ph.getSafeAreaInsetsTop() + requireContext().appCompatActionBarHeight()
-            }
-        }
-
-        (dialog as BottomSheet).apply {
-            setCustomView(contentView)
-        }
-
-        binding.apply {
-            priceTitle.text = getString(R.string.change_24h, 24)
-            closeIb.setOnClickListener {
-                dismiss()
-            }
-
-            marketRv.layoutManager = LinearLayoutManager(requireContext())
-            marketRv.adapter = adapter
-            (marketRv.itemAnimator as? SimpleItemAnimator)?.supportsChangeAnimations = false
-            applyInitialCategory()
-            currentSort = initialSort
-            categoryScroll.scrollToCenterCheckedRadio(categoryGroup)
-
-            searchEt.listener = object : SearchView.OnSearchViewListener {
-                override fun afterTextChanged(s: Editable?) {
-                    currentQuery = s?.toString().orEmpty()
-                    filterAndSortMarkets()
-                }
-
-                override fun onSearch() {}
-            }
-
-            categoryGroup.setOnCheckedChangeListener { group, checkedId ->
-                currentCategory = when (checkedId) {
-                    R.id.radio_crypto -> MarketCategory.CRYPTO
-                    R.id.radio_stocks -> MarketCategory.STOCKS
-                    R.id.radio_indices -> MarketCategory.INDICES
-                    R.id.radio_commodities -> MarketCategory.COMMODITIES
-                    R.id.radio_forex -> MarketCategory.FOREX
-                    else -> MarketCategory.ALL
-                }
-                currentSort = null
-                renderSortState()
-                categoryScroll.scrollToCenterCheckedRadio(group)
-                filterAndSortMarkets(scrollToTop = true)
-            }
-
-            volumeSort.setOnClickListener {
-                updateSort(nextSort(currentSort, MarketSort.RANK_DESCENDING, MarketSort.RANK_ASCENDING))
-            }
-            changeSort.setOnClickListener {
-                updateSort(nextSort(currentSort, MarketSort.PRICE_DESCENDING, MarketSort.PRICE_ASCENDING))
-            }
-            priceSort.setOnClickListener {
-                updateSort(
-                    nextSort(
-                        currentSort,
-                        MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING,
-                        MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING,
-                    )
-                )
-            }
-        }
-
-        renderSortState()
+    override fun onViewCreated(
+        view: View,
+        savedInstanceState: Bundle?,
+    ) {
+        super.onViewCreated(view, savedInstanceState)
         observeMarkets()
     }
 
-    private fun applyInitialCategory() {
-        when (initialCategory) {
-            CATEGORY_STOCKS -> {
-                currentCategory = MarketCategory.STOCKS
-                binding.radioStocks.isChecked = true
-            }
-            CATEGORY_COMMODITIES -> {
-                currentCategory = MarketCategory.COMMODITIES
-                binding.radioCommodities.isChecked = true
-            }
+    @Composable
+    override fun ComposeContent() {
+        MixinAppTheme {
+            val state by uiState.collectAsStateWithLifecycle()
+            PerpsMarketListBottomSheetPage(
+                state = state,
+                onQueryChanged = { query ->
+                    mutableUiState.update { it.updateQuery(query) }
+                },
+                onCancel = ::dismiss,
+                onCategorySelected = { category ->
+                    mutableUiState.update { it.selectCategory(category) }
+                },
+                onSort = { column ->
+                    mutableUiState.update { it.selectSort(column) }
+                },
+                onFavorite = ::updateFavorite,
+                onMarketClick = ::onMarketClick,
+                onRecommendationSelected = { market ->
+                    mutableUiState.update { it.toggleRecommendation(market.marketId) }
+                },
+                onAddRecommendations = ::addRecommendations,
+            )
         }
     }
 
+    override fun getBottomSheetHeight(view: View): Int {
+        return requireContext().screenHeight() -
+            view.getSafeAreaInsetsTop() -
+            requireContext().appCompatActionBarHeight()
+    }
+
+    override fun showError(error: String) = Unit
+
     private fun observeMarkets() {
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.RESUMED) {
                 launch {
                     viewModel.observeMarkets().collect { markets ->
-                        allMarkets = markets
-                        filterAndSortMarkets()
+                        mutableUiState.update { it.updateMarkets(markets) }
+                    }
+                }
+                launch {
+                    viewModel.favoriteMarketIds.collect { marketIds ->
+                        mutableUiState.update { it.updateFavoriteMarketIds(marketIds) }
+                    }
+                }
+                launch {
+                    viewModel.observeFeaturedMarkets().collect { markets ->
+                        mutableUiState.update { it.updateFeaturedMarkets(markets) }
                     }
                 }
                 launch {
                     while (isActive) {
                         viewModel.refreshMarkets()
+                        viewModel.refreshFavoriteMarkets()
+                        viewModel.refreshFeaturedMarkets()
                         delay(MARKET_REFRESH_INTERVAL_MS)
                     }
                 }
@@ -208,110 +169,72 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
         }
     }
 
-    private fun nextSort(current: MarketSort?, primary: MarketSort, secondary: MarketSort): MarketSort? {
-        return when (current) {
-            primary -> secondary
-            secondary -> null
-            else -> primary
+    private fun updateFavorite(
+        market: PerpsMarket,
+        isFavored: Boolean,
+        onResult: (Boolean) -> Unit,
+    ) {
+        if (uiState.value.isFavoriteUpdatePending(market.marketId)) {
+            onResult(false)
+            return
         }
-    }
-
-    private fun updateSort(sort: MarketSort?) {
-        currentSort = sort
-        renderSortState()
-        filterAndSortMarkets(scrollToTop = true)
-    }
-
-    private fun renderSortState() {
-        binding.apply {
-            resetSortIcon(volumeIcon)
-            resetSortIcon(priceIcon)
-            resetSortIcon(changeIcon)
-
-            when (currentSort) {
-                MarketSort.RANK_ASCENDING, MarketSort.RANK_DESCENDING -> {
-                    volumeIcon.setImageResource(
-                        if (currentSort == MarketSort.RANK_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
-                    )
-                }
-
-                MarketSort.PRICE_ASCENDING, MarketSort.PRICE_DESCENDING -> {
-                    changeIcon.setImageResource(
-                        if (currentSort == MarketSort.PRICE_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
-                    )
-                }
-
-                MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING, MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING -> {
-                    priceIcon.setImageResource(
-                        if (currentSort == MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING) R.drawable.ic_perps_sort_asc else R.drawable.ic_perps_sort_desc
-                    )
-                }
-
-                else -> Unit
+        mutableUiState.update { it.startFavoriteUpdate(market.marketId) }
+        viewModel.updateMarketFavorite(market.marketId, isFavored) { success ->
+            mutableUiState.update { it.finishFavoriteUpdate(market.marketId, success) }
+            onResult(success)
+            if (success) {
+                AnalyticsTracker.trackMarketWatchlist(
+                    adding = !isFavored,
+                    type = AnalyticsTracker.MarketType.PERPS,
+                    source = AnalyticsTracker.MarketWatchlistSource.PERPS_MARKETS_DIALOG,
+                )
+                toast(
+                    getString(
+                        if (isFavored) {
+                            R.string.watchlist_remove_desc
+                        } else {
+                            R.string.watchlist_add_desc
+                        },
+                        market.tokenSymbol,
+                    ),
+                )
             }
         }
     }
 
-    private fun resetSortIcon(icon: ImageView) {
-        icon.setImageResource(R.drawable.ic_perps_sort_default)
-        icon.isVisible = true
-    }
-
-    private fun filterAndSortMarkets(scrollToTop: Boolean = false) {
-        val query = currentQuery.trim()
-        val sourceOrder = allMarkets.withIndex().associate { it.value.marketId to it.index }
-        val filtered = allMarkets
-            .asSequence()
-            .filter { market ->
-                currentCategory.apiValues.isEmpty() ||
-                    currentCategory.apiValues.any { category -> market.category.equals(category, ignoreCase = true) }
+    private fun addRecommendations() {
+        val selectedMarkets = uiState.value.selectedRecommendations
+        val selectedIds = selectedMarkets.mapTo(mutableSetOf(), PerpsMarket::marketId)
+        if (selectedIds.isEmpty() || uiState.value.isAddingRecommendations) return
+        mutableUiState.update { it.startRecommendationSubmission() }
+        viewModel.addFavoriteMarkets(selectedIds) { addedIds ->
+            if (addedIds.isNotEmpty()) {
+                AnalyticsTracker.trackMarketWatchlist(
+                    adding = true,
+                    type = AnalyticsTracker.MarketType.PERPS,
+                    source = AnalyticsTracker.MarketWatchlistSource.PERPS_MARKETS_DIALOG,
+                )
+                val symbols =
+                    selectedMarkets
+                        .filter { it.marketId in addedIds }
+                        .joinToString(", ") { it.tokenSymbol }
+                toast(getString(R.string.watchlist_add_desc, symbols))
             }
-            .filter { market ->
-                query.isEmpty() || market.matchesSearchQuery(query)
-            }
-            .toList()
-            .let { markets ->
-                currentComparator()?.let { comparator ->
-                    markets.sortedWith(comparator)
-                } ?: markets.sortedBy { market ->
-                    sourceOrder[market.marketId] ?: Int.MAX_VALUE
-                }
-            }
-
-        updateList(filtered, scrollToTop)
-    }
-
-    private fun updateList(markets: List<PerpsMarket>, scrollToTop: Boolean = false) {
-        binding.rvVa.displayedChild = if (markets.isEmpty()) 1 else 0
-        adapter.submitList(markets) {
-            if (scrollToTop && markets.isNotEmpty()) {
-                binding.marketRv.scrollToPosition(0)
-            }
+            mutableUiState.update { it.completeRecommendationSubmission(addedIds) }
         }
-    }
-
-    private fun currentComparator(): Comparator<PerpsMarket>? {
-        return when (currentSort) {
-            MarketSort.RANK_ASCENDING -> compareBy { it.volumeDecimal() }
-            MarketSort.RANK_DESCENDING -> compareByDescending { it.volumeDecimal() }
-            MarketSort.PRICE_ASCENDING -> compareBy { it.lastDecimal() }
-            MarketSort.PRICE_DESCENDING -> compareByDescending { it.lastDecimal() }
-            MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_ASCENDING -> compareBy { it.changePercent() }
-            MarketSort.TWENTY_FOUR_HOURS_PERCENTAGE_DESCENDING -> compareByDescending<PerpsMarket> { it.changePercent() }
-            else -> null
-        }?.thenBy { it.tokenSymbol }
     }
 
     private fun onMarketClick(market: PerpsMarket) {
         lifecycleScope.launch {
             val walletId = Session.getAccountId()
-            val hasOpenPosition = if (walletId.isNullOrEmpty()) {
-                false
-            } else {
-                withContext(Dispatchers.IO) {
-                    perpsPositionDao.getOpenPositions(walletId).any { it.marketId == market.marketId }
+            val hasOpenPosition =
+                if (walletId.isNullOrEmpty()) {
+                    false
+                } else {
+                    withContext(Dispatchers.IO) {
+                        perpsPositionDao.getOpenPositions(walletId).any { it.marketId == market.marketId }
+                    }
                 }
-            }
 
             if (hasOpenPosition || isLong == null) {
                 PerpsActivity.showDetail(
@@ -319,7 +242,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
                     marketId = market.marketId,
                     marketSymbol = market.displaySymbol,
                     marketDisplaySymbol = market.displaySymbol,
-                    marketTokenSymbol = market.tokenSymbol
+                    marketTokenSymbol = market.tokenSymbol,
                 )
             } else {
                 PerpsActivity.showOpenPosition(
@@ -335,13 +258,4 @@ class PerpsMarketListBottomSheetDialogFragment : MixinBottomSheetDialogFragment(
             dismiss()
         }
     }
-
-    private fun PerpsMarket.matchesSearchQuery(query: String): Boolean {
-        return tokenSymbol.contains(query, ignoreCase = true) ||
-            tags.orEmpty().any { it.contains(query, ignoreCase = true) }
-    }
-
-    private fun PerpsMarket.volumeDecimal() = volume.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
-
-    private fun PerpsMarket.lastDecimal() = last.toBigDecimalOrNull() ?: java.math.BigDecimal.ZERO
 }

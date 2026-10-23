@@ -7,6 +7,8 @@ import timber.log.Timber
 
 private const val FIS_AUTH_ERROR = "FIS_AUTH_ERROR"
 
+// Switching from legacy FCM tokens to installation IDs requires server coordination.
+@Suppress("DEPRECATION")
 suspend fun retrieveFirebaseMessagingToken(): String =
     try {
         FirebaseMessaging.getInstance().token.await()

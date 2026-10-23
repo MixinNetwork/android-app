@@ -74,6 +74,7 @@ import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.toMixAddress
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
+import one.mixin.android.web3.send.BtcTransactionBuilder
 import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
 import java.math.BigDecimal
@@ -161,7 +162,8 @@ class Web3ViewModel @Inject constructor(
         }
     }
 
-    suspend fun estimateBtcFeeRate(rawTransactionHex: String? = null, currentRate: String?): EstimateFeeResponse? {
+    suspend fun estimateUtxoFeeRate(chainId: String, rawTransactionHex: String? = null, currentRate: String?): EstimateFeeResponse? {
+        require(chainId in Constants.Web3UtxoChainIds) { "Unsupported UTXO chain: $chainId" }
         val cleanedRawHex: String? = rawTransactionHex
             ?.removePrefix("0x")
             ?.trim()
@@ -170,7 +172,7 @@ class Web3ViewModel @Inject constructor(
             runCatching {
                 web3Repository.estimateFee(
                     EstimateFeeRequest(
-                        chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+                        chainId = chainId,
                         rawTransaction = cleanedRawHex,
                         data = null,
                         rate = currentRate,
@@ -180,6 +182,10 @@ class Web3ViewModel @Inject constructor(
         }
         if (response?.isSuccess != true || response.data == null) return null
         return response.data!!
+    }
+
+    suspend fun estimateBtcFeeRate(rawTransactionHex: String? = null, currentRate: String?): EstimateFeeResponse? {
+        return estimateUtxoFeeRate(Constants.ChainId.BITCOIN_CHAIN_ID, rawTransactionHex, currentRate)
     }
 
     fun disconnect(
@@ -220,9 +226,14 @@ class Web3ViewModel @Inject constructor(
         botId: String,
     ) = userRepository.findBotPublicKey(conversationId, botId)
 
+    suspend fun findDepositEntry(chainId: String) =
+        withContext(Dispatchers.IO) {
+            tokenRepository.findDepositEntry(chainId)
+        }
+
     suspend fun findAndSyncDepositEntry(token: Web3TokenItem) =
         withContext(Dispatchers.IO) {
-            tokenRepository.findAndCheckDepositEntry(token.chainId, token.assetId).first
+            tokenRepository.findAndSyncDepositEntry(token.chainId, token.assetId)
         }
 
     suspend fun getFees(
@@ -307,28 +318,54 @@ class Web3ViewModel @Inject constructor(
         account: String,
         assetId: String,
         amount: String,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         to: String,
         nonce: String,
         createdAt: String,
         updatedAt: String,
     ) = withContext(Dispatchers.IO) {
-        tokenRepository.insertGaslessPendingTransaction(sponsorTxId, chainId, account, assetId, amount, fee, to, nonce, createdAt, updatedAt)
+        tokenRepository.insertGaslessPendingTransaction(
+            sponsorTxId = sponsorTxId,
+            chainId = chainId,
+            account = account,
+            assetId = assetId,
+            amount = amount,
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
+            to = to,
+            nonce = nonce,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
     }
 
-    suspend fun insertSignedPendingTransaction(
+    suspend fun insertGaslessSignedPendingTransaction(
         hash: String,
         chainId: String,
         account: String,
         assetId: String,
         amount: String,
-        fee: String,
+        feeAssetId: String,
+        feeAmount: String,
         to: String,
         raw: String,
         createdAt: String,
         updatedAt: String,
     ) = withContext(Dispatchers.IO) {
-        tokenRepository.insertSignedPendingTransaction(hash, chainId, account, assetId, amount, fee, to, raw, createdAt, updatedAt)
+        tokenRepository.insertGaslessSignedPendingTransaction(
+            hash = hash,
+            chainId = chainId,
+            account = account,
+            assetId = assetId,
+            amount = amount,
+            feeAssetId = feeAssetId,
+            feeAmount = feeAmount,
+            to = to,
+            raw = raw,
+            createdAt = createdAt,
+            updatedAt = updatedAt,
+        )
     }
 
     suspend fun ticker(assetId: String, offset: String?) = tokenRepository.ticker(assetId, offset)
@@ -398,28 +435,33 @@ class Web3ViewModel @Inject constructor(
         web3Repository.deleteOutputsByAddress(address, assetId)
     }
 
-    suspend fun deleteBitcoinUnspentChangeOutputs(walletId: String, fromAddress: String, rawTransactionHex: String): Int {
+    suspend fun deleteUtxoUnspentChangeOutputs(
+        walletId: String,
+        fromAddress: String,
+        rawTransactionHex: String,
+        assetId: String,
+    ): Int {
         return withContext(Dispatchers.IO) {
-            val deletedCount: Int = web3Repository.deleteBitcoinUnspentChangeOutputs(fromAddress, rawTransactionHex)
+            val deletedCount: Int = web3Repository.deleteUtxoUnspentChangeOutputs(fromAddress, rawTransactionHex, assetId)
             if (deletedCount > 0) {
-                web3Repository.refreshBitcoinTokenAmount(walletId, fromAddress)
+                web3Repository.refreshUtxoTokenAmount(walletId, fromAddress, assetId)
             }
             deletedCount
         }
     }
 
-    suspend fun hasBitcoinSignedOutputsByTransactionHash(transactionHash: String): Boolean {
+    suspend fun hasUtxoSignedOutputsByTransactionHash(transactionHash: String, assetId: String): Boolean {
         return withContext(Dispatchers.IO) {
-            web3Repository.hasBitcoinSignedOutputsByTransactionHash(transactionHash)
+            web3Repository.hasUtxoSignedOutputsByTransactionHash(transactionHash, assetId)
         }
     }
 
-    suspend fun markOutputsToSigned(walletId: String, fromAddress: String, signedHex: String, outputIds: List<String>) {
+    suspend fun markOutputsToSigned(walletId: String, fromAddress: String, signedHex: String, outputIds: List<String>, assetId: String) {
         if (outputIds.isEmpty()) return
         withContext(Dispatchers.IO) {
             web3Repository.walletOutputDao.updateOutputsToSigned(outputIds)
-            web3Repository.insertBitcoinChangeOutputs(fromAddress, signedHex)
-            web3Repository.refreshBitcoinTokenAmount(walletId, fromAddress)
+            web3Repository.insertUtxoChangeOutputs(fromAddress, signedHex, assetId)
+            web3Repository.refreshUtxoTokenAmount(walletId, fromAddress, assetId)
         }
     }
 
@@ -434,9 +476,13 @@ class Web3ViewModel @Inject constructor(
         transaction: JsSignMessage,
         fromAddress: String,
     ): FeeEstimateResult {
-        if (token.chainId == Constants.ChainId.BITCOIN_CHAIN_ID) {
-            val localUtxos = withContext(Dispatchers.IO) { outputsByAddress(fromAddress, token.assetId) }
-            val jsMsg = token.buildTransaction(rpc, fromAddress, fromAddress, "0.00000001", localUtxos)
+        if (token.chainId in Constants.Web3UtxoChainIds) {
+            val localUtxos = withContext(Dispatchers.IO) { outputsByAddress(fromAddress, token.chainId) }
+            // Use the chain minimum so the probe amount passes the builder floor.
+            val dummyAmount: String = BtcTransactionBuilder.minimumTransferAmount(token.chainId).toPlainString()
+            val jsMsg = runCatching {
+                token.buildTransaction(rpc, fromAddress, fromAddress, dummyAmount, localUtxos)
+            }.getOrNull() ?: return FeeEstimateResult(null, null, null)
             val virtualSize: Int? = jsMsg.virtualSize
             val response = withContext(Dispatchers.IO) {
                 runCatching {
@@ -639,7 +685,7 @@ class Web3ViewModel @Inject constructor(
         hash: String,
         chainId: String,
         status: String,
-        btcRawTransactionHexToDeleteOutputs: String?,
+        utxoRawTransactionHexToDeleteOutputs: String?,
     ) {
         withContext(Dispatchers.IO) {
             tokenRepository.insertRawTransactionAndUpdateTransactionStatus(
@@ -647,7 +693,7 @@ class Web3ViewModel @Inject constructor(
                 hash = hash,
                 status = status,
                 chainId = chainId,
-                btcRawTransactionHexToDeleteOutputs = btcRawTransactionHexToDeleteOutputs,
+                utxoRawTransactionHexToDeleteOutputs = utxoRawTransactionHexToDeleteOutputs,
             )
         }
     }

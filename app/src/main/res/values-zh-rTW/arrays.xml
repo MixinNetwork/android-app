@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="backup_dialog_list">
+        <item>不自動備份</item>
+        <item>每天</item>
+        <item>每週</item>
+        <item>每月</item>
+    </string-array>
+
+    <string-array name="setting_night_array">
+        <item>淺色</item>
+        <item>深色</item>
+    </string-array>
+
+    <string-array name="setting_night_array_oreo">
+        <item>淺色</item>
+        <item>深色</item>
+        <item>跟隨系統</item>
+    </string-array>
+
+    <plurals name="time_interval_unit_second">
+        <item quantity="other">秒</item>
+    </plurals>
+    <plurals name="time_interval_unit_minute">
+        <item quantity="other">分</item>
+    </plurals>
+    <plurals name="time_interval_unit_hour">
+        <item quantity="other">小時</item>
+    </plurals>
+    <plurals name="time_interval_unit_day">
+        <item quantity="other">天</item>
+    </plurals>
+    <plurals name="time_interval_unit_week">
+        <item quantity="other">週</item>
+    </plurals>
+
+    <array name="database">
+        <item>Mixin 資料庫</item>
+        <item>待處理資料庫</item>
+        <item>錢包資料庫</item>
+    </array>
+</resources>

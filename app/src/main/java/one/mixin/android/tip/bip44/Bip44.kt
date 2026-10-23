@@ -4,6 +4,9 @@ import org.web3j.crypto.Bip32ECKeyPair
 import org.web3j.crypto.Bip32ECKeyPair.HARDENED_BIT
 
 object Bip44Path {
+    const val LITECOIN_COIN_TYPE = 2
+    const val PEARL_COIN_TYPE = 808276
+
     /**
      * Generate Bitcoin derivation path with variable index
      * Bitcoin path: m/44'/0'/0'/0/{index}
@@ -26,10 +29,28 @@ object Bip44Path {
             index,
         )
 
+    fun litecoinSegwit(index: Int = 0): IntArray =
+        intArrayOf(
+            84 or HARDENED_BIT,
+            LITECOIN_COIN_TYPE or HARDENED_BIT,
+            0 or HARDENED_BIT,
+            0,
+            index,
+        )
+
     fun bitcoinTaproot(index: Int = 0): IntArray =
         intArrayOf(
             86 or HARDENED_BIT,
             0 or HARDENED_BIT,
+            0 or HARDENED_BIT,
+            0,
+            index,
+        )
+
+    fun pearl(index: Int = 0): IntArray =
+        intArrayOf(
+            86 or HARDENED_BIT,
+            PEARL_COIN_TYPE or HARDENED_BIT,
             0 or HARDENED_BIT,
             0,
             index,
@@ -72,8 +93,16 @@ object Bip44Path {
         return "m/84'/0'/0'/0/$index"
     }
 
+    fun litecoinSegwitPathString(index: Int = 0): String {
+        return "m/84'/$LITECOIN_COIN_TYPE'/0'/0/$index"
+    }
+
     fun bitcoinTaprootPathString(index: Int = 0): String {
         return "m/86'/0'/0'/0/$index"
+    }
+
+    fun pearlPathString(index: Int = 0): String {
+        return "m/86'/$PEARL_COIN_TYPE'/0'/0/$index"
     }
 }
 

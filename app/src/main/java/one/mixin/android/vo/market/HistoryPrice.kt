@@ -1,7 +1,7 @@
 package one.mixin.android.vo.market
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
 import com.google.gson.annotations.SerializedName
 
 @Entity(tableName = "history_prices", primaryKeys = ["coin_id", "type"])

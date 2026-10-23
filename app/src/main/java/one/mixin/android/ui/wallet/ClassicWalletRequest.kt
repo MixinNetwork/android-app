@@ -1,10 +1,16 @@
 package one.mixin.android.ui.wallet
 
+import timber.log.Timber
+import kotlinx.coroutines.CancellationException
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
+import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.UtxoKeyGenerator
+import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.extension.decodeBase64
 import one.mixin.android.extension.toHex
 import one.mixin.android.repository.Web3Repository
@@ -16,6 +22,8 @@ import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import org.bitcoinj.base.ScriptType
+import org.bitcoinj.base.Sha256Hash
+import org.bitcoinj.base.VarInt
 import org.bitcoinj.crypto.ECKey
 import org.web3j.utils.Numeric
 import java.math.BigInteger
@@ -54,34 +62,87 @@ suspend fun buildClassicWalletRequest(
     val name = nextCommonWalletName(names)
     val evmAddress = privateKeyToAddress(spendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex)
     val solAddress = privateKeyToAddress(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex)
-    val btcAddress = privateKeyToAddress(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex)
     return WalletRequest(
         name = name,
         category = WalletCategory.CLASSIC.value,
-        addresses = listOf(
-            createSignedWeb3AddressRequest(
-                destination = btcAddress,
-                chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
-                path = Bip44Path.bitcoinSegwitPathString(classicIndex),
-                privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex),
-                category = WalletCategory.CLASSIC.value,
-            ),
-            createSignedWeb3AddressRequest(
+        addresses = buildList {
+            addAll(buildClassicUtxoAddressRequests(spendKey, classicIndex))
+            add(createSignedWeb3AddressRequest(
                 destination = evmAddress,
                 chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
                 path = Bip44Path.ethereumPathString(classicIndex),
                 privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.ETHEREUM_CHAIN_ID, classicIndex),
                 category = WalletCategory.CLASSIC.value,
-            ),
-            createSignedWeb3AddressRequest(
+            ))
+            add(createSignedWeb3AddressRequest(
                 destination = solAddress,
                 chainId = Constants.ChainId.SOLANA_CHAIN_ID,
                 path = Bip44Path.solanaPathString(classicIndex),
                 privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.SOLANA_CHAIN_ID, classicIndex),
                 category = WalletCategory.CLASSIC.value,
-            ),
+            ))
+        }
+    )
+}
+
+fun buildClassicUtxoAddressRequests(
+    spendKey: ByteArray,
+    classicIndex: Int,
+): List<Web3AddressRequest> = buildList {
+    add(
+        createSignedWeb3AddressRequest(
+            destination = privateKeyToAddress(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex),
+            chainId = Constants.ChainId.BITCOIN_CHAIN_ID,
+            path = Bip44Path.bitcoinSegwitPathString(classicIndex),
+            privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.BITCOIN_CHAIN_ID, classicIndex),
+            category = WalletCategory.CLASSIC.value,
         )
     )
+    add(
+        createSignedWeb3AddressRequest(
+            destination = privateKeyToAddress(spendKey, Constants.ChainId.PEARL_CHAIN_ID, classicIndex),
+            chainId = Constants.ChainId.PEARL_CHAIN_ID,
+            path = Bip44Path.pearlPathString(classicIndex),
+            privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.PEARL_CHAIN_ID, classicIndex),
+            category = WalletCategory.CLASSIC.value,
+        )
+    )
+    add(
+        createSignedWeb3AddressRequest(
+            destination = privateKeyToAddress(spendKey, Constants.ChainId.Litecoin, classicIndex),
+            chainId = Constants.ChainId.Litecoin,
+            path = Bip44Path.litecoinSegwitPathString(classicIndex),
+            privateKey = tipPrivToPrivateKey(spendKey, Constants.ChainId.Litecoin, classicIndex),
+            category = WalletCategory.CLASSIC.value,
+        )
+    )
+}
+
+internal fun validateWalletAddressUpdateResponse(
+    walletId: String,
+    requestedAddresses: List<Web3AddressRequest>,
+    updatedWallet: Web3Wallet,
+): List<Web3Address>? {
+    if (updatedWallet.id != walletId) return null
+    if (requestedAddresses.isEmpty()) return emptyList()
+
+    val requestedChainIds = requestedAddresses.mapTo(linkedSetOf(), Web3AddressRequest::chainId)
+    if (requestedChainIds.size != requestedAddresses.size) return null
+
+    val returnedAddresses =
+        updatedWallet.addresses
+            .orEmpty()
+            .filter { address -> address.chainId in requestedChainIds }
+    if (returnedAddresses.size != requestedAddresses.size) return null
+
+    return requestedAddresses.map { request ->
+        returnedAddresses.singleOrNull { address ->
+            address.walletId == walletId &&
+                address.chainId == request.chainId &&
+                address.destination == request.destination &&
+                address.path == request.path
+        } ?: return null
+    }
 }
 
 fun nextWalletNameIndex(
@@ -146,9 +207,8 @@ fun createSignedWeb3AddressRequest(
             chainId in Constants.Web3EvmChainIds -> {
                 Web3Signer.signEthMessage(privateKey, message.toByteArray().toHex(), JsSignMessage.TYPE_PERSONAL_MESSAGE)
             }
-            chainId == Constants.ChainId.BITCOIN_CHAIN_ID -> {
-                val ecKey = ECKey.fromPrivate(BigInteger(1, privateKey), true)
-                Numeric.toHexString(ecKey.signMessage(message, ScriptType.P2WPKH).decodeBase64())
+            chainId in Constants.Web3UtxoChainIds -> {
+                signUtxoAddressMessage(privateKey, message, chainId)
             }
             else -> null
         }
@@ -163,4 +223,68 @@ fun createSignedWeb3AddressRequest(
         signature = signature,
         timestamp = now.toString(),
     )
+}
+
+fun signUtxoAddressMessage(
+    privateKey: ByteArray,
+    message: String,
+    chainId: String,
+): String {
+    if (chainId == Constants.ChainId.Litecoin) {
+        val prefix = "Litecoin Signed Message:\n".toByteArray(Charsets.UTF_8)
+        val messageBytes = message.toByteArray(Charsets.UTF_8)
+        val hash = Sha256Hash.twiceOf(
+            VarInt.of(prefix.size.toLong()).serialize() + prefix +
+                VarInt.of(messageBytes.size.toLong()).serialize() + messageBytes,
+        )
+        val key = ECKey.fromPrivate(privateKey, true)
+        val signature = key.sign(hash)
+        val recoveryId = key.findRecoveryId(hash, signature)
+        return Numeric.toHexString(
+            byteArrayOf((39 + recoveryId).toByte()) +
+                Numeric.toBytesPadded(signature.r, 32) + Numeric.toBytesPadded(signature.s, 32),
+        )
+    }
+    val scriptType = when (chainId) {
+        Constants.ChainId.BITCOIN_CHAIN_ID -> ScriptType.P2WPKH
+        Constants.ChainId.PEARL_CHAIN_ID -> ScriptType.P2PKH
+        else -> throw IllegalArgumentException("Unsupported UTXO chainId: $chainId")
+    }
+    val ecKey = ECKey.fromPrivate(BigInteger(1, privateKey), true)
+    return Numeric.toHexString(ecKey.signMessage(message, scriptType).decodeBase64())
+}
+
+suspend fun Web3Repository.backfillLitecoinAddress(
+    walletId: String,
+    derivePrivateKey: suspend (Int) -> ByteArray,
+): Boolean {
+    return try {
+        val addresses = getAddresses(walletId)
+        if (addresses.any { it.chainId == Constants.ChainId.Litecoin }) return true
+        val index = addresses.mapNotNull { it.path?.let(CryptoWalletHelper::extractIndexFromPath) }
+            .distinct().singleOrNull() ?: return false
+        val privateKey = derivePrivateKey(index)
+        val request = try {
+            createSignedWeb3AddressRequest(
+                destination = UtxoKeyGenerator.privateKeyToAddress(privateKey, Constants.ChainId.Litecoin),
+                chainId = Constants.ChainId.Litecoin,
+                path = Bip44Path.litecoinSegwitPathString(index),
+                privateKey = privateKey,
+                category = WalletCategory.IMPORTED_MNEMONIC.value,
+            )
+        } finally {
+            privateKey.fill(0)
+        }
+        val response = updateWallet(walletId, WalletRequest(name = null, category = null, addresses = listOf(request)))
+        val validatedAddresses = response.data?.takeIf { response.isSuccess }?.let {
+            validateWalletAddressUpdateResponse(walletId, listOf(request), it)
+        } ?: return false
+        insertAddressList(validatedAddresses)
+        true
+    } catch (e: CancellationException) {
+        throw e
+    } catch (e: Exception) {
+        Timber.e(e, "Failed to backfill Litecoin address")
+        false
+    }
 }

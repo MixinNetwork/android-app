@@ -1,8 +1,8 @@
 package one.mixin.android.db.web3.vo
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
-import androidx.room.Entity
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 import one.mixin.android.Constants

@@ -28,6 +28,7 @@ import one.mixin.android.api.request.ParticipantRequest
 import one.mixin.android.api.request.RelationshipRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.fetcher.MessageFetcher
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createAudioTemp
 import one.mixin.android.extension.deserialize
@@ -57,6 +58,7 @@ import one.mixin.android.util.Attachment
 import one.mixin.android.util.ControlledRunner
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SINGLE_DB_THREAD
+import one.mixin.android.util.cancelConversationNotifications
 import one.mixin.android.vo.AppCap
 import one.mixin.android.vo.AppItem
 import one.mixin.android.vo.ConversationCategory
@@ -118,10 +120,11 @@ class ConversationViewModel
         private val userRepository: UserRepository,
         private val jobManager: MixinJobManager,
         private val tokenRepository: TokenRepository,
-        private val accountRepository: AccountRepository,
-        private val messenger: SendMessageHelper,
-        private val cleanMessageHelper: CleanMessageHelper,
-    ) : ViewModel() {
+    private val accountRepository: AccountRepository,
+    private val messenger: SendMessageHelper,
+    private val cleanMessageHelper: CleanMessageHelper,
+    private val messageFetcher: MessageFetcher,
+) : ViewModel() {
         suspend fun indexUnread(conversationId: String) =
             conversationRepository.indexUnread(conversationId) ?: 0
 
@@ -132,6 +135,11 @@ class ConversationViewModel
             conversationRepository.findFirstUnreadMessageId(conversationId, offset)
 
         suspend fun getConversationDraftById(id: String): String? = conversationRepository.getConversationDraftById(id)
+
+        suspend fun findMessageItemById(
+            conversationId: String,
+            messageId: String,
+        ): MessageItem? = conversationRepository.findMessageItemById(conversationId, messageId)
 
         fun getConversationInfoById(
             id: String,
@@ -144,7 +152,7 @@ class ConversationViewModel
                 conversationRepository.getConversation(id)
             }
 
-        fun findUserById(conversationId: String): LiveData<User> =
+        fun findUserById(conversationId: String): LiveData<User?> =
             userRepository.findUserById(conversationId)
 
         fun sendTextMessage(
@@ -499,7 +507,7 @@ class ConversationViewModel
             isBubbled: Boolean,
         ) {
             if (isBubbled.not()) {
-                notificationManager.cancel(conversationId.hashCode())
+                notificationManager.cancelConversationNotifications(conversationId)
             }
         }
 
@@ -614,13 +622,28 @@ class ConversationViewModel
             jobManager.addJobInBackground(RefreshStickerAlbumJob())
         }
 
-        suspend fun findMessageIndex(
-            conversationId: String,
-            messageId: String,
-        ) =
-            conversationRepository.findMessageIndex(conversationId, messageId)
+    suspend fun findMessageIndex(
+        conversationId: String,
+        messageId: String,
+    ) =
+        conversationRepository.findMessageIndex(conversationId, messageId)
 
-        private fun createReadSessionMessage(
+    suspend fun initMessagesAtDate(
+        conversationId: String,
+        createdAt: String,
+    ) = messageFetcher.initMessagesAtDate(conversationId, createdAt)
+
+    suspend fun initMessagesAtPosition(
+        conversationId: String,
+        index: Int,
+    ) = messageFetcher.initMessagesAtPosition(conversationId, index)
+
+    suspend fun initMessagesAtPercent(
+        conversationId: String,
+        percent: Float,
+    ) = messageFetcher.initMessagesAtPercent(conversationId, percent)
+
+    private fun createReadSessionMessage(
             list: List<MessageMinimal>,
             conversationId: String,
         ) {

@@ -1,3 +1,5 @@
+@file:Suppress("OVERRIDE_DEPRECATION", "DEPRECATION")
+
 package one.mixin.android.ui.web
 
 import android.app.Activity
@@ -90,9 +92,9 @@ class WebActivity : BaseActivity() {
             overridePendingTransition(R.anim.fade_in, R.anim.stay)
         }
         super.onCreate(savedInstanceState)
-        SystemUIManager.setSafePaddingOnce(window = window, color = colorFromAttribute(R.attr.bg_white), R.id.container)
         binding = ActivityWebBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        SystemUIManager.setSafeContainerPadding(window, binding.container, colorFromAttribute(R.attr.bg_white))
         getScreenshot()?.let {
             supportsS({
                 binding.background.background = it.toDrawable(resources)

@@ -1,16 +1,16 @@
 package one.mixin.android.db
 
 import androidx.lifecycle.LiveData
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
 import one.mixin.android.vo.TopAsset
 import one.mixin.android.vo.TopAssetItem
 
 @Dao
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface TopAssetDao : BaseDao<TopAsset> {
-    @SuppressWarnings(RoomWarnings.CURSOR_MISMATCH)
+    @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
     @Query(
         """
         SELECT ta.asset_id as asset_id, ta.symbol as symbol, ta.name as name, ta.icon_url as icon_url, ta.chain_id as chain_id, a.icon_url as chain_icon_url,

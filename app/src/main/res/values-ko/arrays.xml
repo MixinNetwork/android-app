@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="backup_dialog_list">
+        <item>사용 안 함</item>
+        <item>매일</item>
+        <item>매주</item>
+        <item>매월</item>
+    </string-array>
+
+    <string-array name="setting_night_array">
+        <item>라이트</item>
+        <item>다크</item>
+    </string-array>
+
+    <string-array name="setting_night_array_oreo">
+        <item>라이트</item>
+        <item>다크</item>
+        <item>시스템 설정에 따르기</item>
+    </string-array>
+
+    <plurals name="time_interval_unit_second">
+        <item quantity="other">초</item>
+    </plurals>
+    <plurals name="time_interval_unit_minute">
+        <item quantity="other">분</item>
+    </plurals>
+    <plurals name="time_interval_unit_hour">
+        <item quantity="other">시간</item>
+    </plurals>
+    <plurals name="time_interval_unit_day">
+        <item quantity="other">일</item>
+    </plurals>
+    <plurals name="time_interval_unit_week">
+        <item quantity="other">주</item>
+    </plurals>
+
+    <array name="database">
+        <item>Mixin 데이터베이스</item>
+        <item>대기 중인 데이터베이스</item>
+        <item>지갑 데이터베이스</item>
+    </array>
+</resources>

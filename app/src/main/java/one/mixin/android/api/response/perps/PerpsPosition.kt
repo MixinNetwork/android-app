@@ -1,9 +1,9 @@
 package one.mixin.android.api.response.perps
 
 import android.os.Parcelable
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room3.ColumnInfo
+import androidx.room3.Entity
+import androidx.room3.PrimaryKey
 import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parcelize
 
@@ -74,6 +74,9 @@ data class PerpsPosition(
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String,
+    @SerializedName("estimated_close_fee")
+    @ColumnInfo(name = "estimated_close_fee", defaultValue = "''")
+    val estimatedCloseFee: String? = "",
 ) : Parcelable {
     companion object {
         const val STATE_OPEN = "open"

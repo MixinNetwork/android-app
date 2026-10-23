@@ -168,7 +168,7 @@ class SettingStorageViewModel
                 return
             }
             conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
-                ?.let { list ->
+                .let { list ->
                     viewModelScope.launch(SINGLE_DB_THREAD) {
                         cleanMessageHelper.deleteMessageMinimals(conversationId, list)
                     }

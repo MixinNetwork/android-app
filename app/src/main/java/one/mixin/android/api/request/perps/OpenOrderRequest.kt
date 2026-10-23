@@ -20,7 +20,9 @@ data class OpenOrderRequest(
     @SerializedName("stop_loss_price")
     val stopLossPrice: String? = null,
     @SerializedName("destination")
-    val destination: String? = null
+    val destination: String? = null,
+    @SerializedName("leader_position_id")
+    val leaderPositionId: String? = null,
 )
 
 data class OpenOrderResponse(
@@ -38,7 +40,9 @@ data class OpenOrderResponse(
 
 data class CloseOrderRequest(
     @SerializedName("position_id")
-    val positionId: String
+    val positionId: String,
+    @SerializedName("quantity")
+    val quantity: String,
 )
 
 data class CloseOrderResponse(
@@ -68,4 +72,17 @@ data class IncreaseOrderRequest(
     val takeProfitPrice: String? = null,
     @SerializedName("stop_loss_price")
     val stopLossPrice: String? = null,
+    @SerializedName("leader_position_id")
+    val leaderPositionId: String? = null,
+)
+
+data class AdjustMarginRequest(
+    @SerializedName("type")
+    val type: String,
+    @SerializedName("amount")
+    val amount: String,
+    @SerializedName("asset_id")
+    val assetId: String? = null,
+    @SerializedName("destination")
+    val destination: String? = null,
 )

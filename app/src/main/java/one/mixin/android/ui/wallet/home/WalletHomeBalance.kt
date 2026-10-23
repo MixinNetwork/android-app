@@ -3,13 +3,15 @@ package one.mixin.android.ui.wallet.home
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import java.math.BigDecimal
 import java.math.RoundingMode
+import java.text.DecimalFormat
 
 internal fun calculateWalletHomeTotalFiat(
     tokenFiat: BigDecimal,
     positionUsd: BigDecimal,
     fiatRate: BigDecimal,
     cashUsd: BigDecimal = BigDecimal.ZERO,
-): BigDecimal = tokenFiat + positionUsd.add(cashUsd).multiply(fiatRate)
+    earnUsd: BigDecimal = BigDecimal.ZERO,
+): BigDecimal = tokenFiat + positionUsd.add(cashUsd).add(earnUsd).multiply(fiatRate)
 
 internal fun calculateWalletHomeTokenFiat(
     totalUsd: BigDecimal,
@@ -40,3 +42,19 @@ internal fun List<PerpsPositionItem>.positionMarginUsdTotal(): BigDecimal =
     calculateWalletHomePositionMarginUsd(
         margins = map { it.margin },
     )
+
+internal fun usdBalanceAmountText(amount: BigDecimal): String =
+    usdDecimalFormat(maxFractionDigits = 2).format(amount)
+
+internal fun usdCurrencyAmountText(amount: BigDecimal): String =
+    "$${usdDecimalFormat(maxFractionDigits = 8).format(amount)}"
+
+internal fun tokenAmountText(amount: BigDecimal): String =
+    usdDecimalFormat(maxFractionDigits = 8).format(amount)
+
+private fun usdDecimalFormat(maxFractionDigits: Int): DecimalFormat =
+    DecimalFormat(",##0.${"#".repeat(maxFractionDigits)}").apply {
+        roundingMode = RoundingMode.DOWN
+        this.maximumFractionDigits = maxFractionDigits
+        minimumFractionDigits = 0
+    }

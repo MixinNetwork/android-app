@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet.fiatmoney
 
 import android.annotation.SuppressLint
+import android.net.Uri
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.View
@@ -14,13 +15,13 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_ROUTE_BOT_PK
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.MixinResponseException
 import one.mixin.android.api.request.RouteTickerRequest
 import one.mixin.android.databinding.FragmentCalculateBinding
+import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.extension.clickVibrate
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
@@ -45,11 +46,11 @@ import one.mixin.android.ui.wallet.AssetListFixedBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.FiatListBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.LoadingProgressDialogFragment
 import one.mixin.android.ui.wallet.WalletActivity
+import one.mixin.android.ui.wallet.WalletBuyOptionsBottomSheetDialogFragment
+import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
-import one.mixin.android.vo.ParticipantSession
-import one.mixin.android.vo.generateConversationId
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.widget.Keyboard
 import timber.log.Timber
@@ -399,10 +400,7 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                 } else {
                                     value
                                 }
-                            if (amount == null) {
-                                toast(R.string.error_invalid_number)
-                            } else {
-                                viewLifecycleScope.launch inner@{
+                            viewLifecycleScope.launch inner@{
                                     if (viewDestroyed()) throw IllegalStateException("View has been destroyed")
                                     try {
                                         val asset = fiatMoneyViewModel.asset ?: throw IllegalStateException("Asset is null")
@@ -439,10 +437,24 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                                         ErrorHandler.handleError(e)
                                     }
                                 }
-                            }
                         }
                     }
-                    proceedToBuy()
+                    if (isWeb3) {
+                        proceedToBuy()
+                    } else {
+                        viewLifecycleScope.launch {
+                            val cashRewardApy = PropertyHelper.findCashAccount()?.rewardApy
+                            if (parentFragmentManager.findFragmentByTag(WalletBuyOptionsBottomSheetDialogFragment.TAG) != null) return@launch
+                            WalletBuyOptionsBottomSheetDialogFragment.newInstance(
+                                walletName = getString(R.string.Privacy_Wallet),
+                                walletIconRes = R.drawable.ic_wallet_privacy,
+                                cashRewardApy = cashRewardApy,
+                            )
+                                .setOnGooglePayOrCard(proceedToBuy)
+                                .setOnBankTransfer { openBankTransfer() }
+                                .showNow(parentFragmentManager, WalletBuyOptionsBottomSheetDialogFragment.TAG)
+                        }
+                    }
                 }
                 switchIv.setOnClickListener {
                     fiatMoneyViewModel.isReverse = !fiatMoneyViewModel.isReverse
@@ -456,6 +468,18 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
                 binding.primaryTv.text = v
                 updateUI()
             }
+        }
+    }
+
+    private fun openBankTransfer() {
+        viewLifecycleOwner.lifecycleScope.launch {
+            val app = fiatMoneyViewModel.findOrSyncApp(Constants.MIXIN_CASH_USER_ID)
+            val homeUri = app?.homeUri.takeUnless { it.isNullOrBlank() } ?: Constants.API.CASH_HOME_URL
+            val url = Uri.parse(homeUri).buildUpon()
+                .appendQueryParameter("page", "add-cash-bank")
+                .build()
+                .toString()
+            WebActivity.show(requireActivity(), url = url, app = app, conversationId = null)
         }
     }
 
@@ -617,44 +641,6 @@ class CalculateFragment : BaseFragment(R.layout.fragment_calculate) {
             setLoading(true)
             flow {
                 emit(ROUTE_BOT_USER_ID)
-            }.map { botId ->
-                val key =
-                    fiatMoneyViewModel.findBotPublicKey(
-                        generateConversationId(
-                            botId,
-                            Session.getAccountId()!!,
-                        ),
-                        botId,
-                    )
-                if (!key.isNullOrEmpty()) {
-                    MixinApplication.appContext.defaultSharedPreferences.putString(
-                        PREF_ROUTE_BOT_PK,
-                        key
-                    )
-                } else {
-                    val sessionResponse = fiatMoneyViewModel.fetchSessionsSuspend(listOf(botId))
-                    if (sessionResponse.isSuccess) {
-                        val sessionData = requireNotNull(sessionResponse.data)[0]
-                        fiatMoneyViewModel.saveSession(
-                            ParticipantSession(
-                                generateConversationId(
-                                    sessionData.userId,
-                                    Session.getAccountId()!!,
-                                ),
-                                sessionData.userId,
-                                sessionData.sessionId,
-                                publicKey = sessionData.publicKey,
-                            ),
-                        )
-                        MixinApplication.appContext.defaultSharedPreferences.putString(PREF_ROUTE_BOT_PK, sessionData.publicKey)
-                    } else {
-                        throw MixinResponseException(
-                            sessionResponse.errorCode,
-                            sessionResponse.errorDescription,
-                        )
-                    }
-                }
-                botId
             }.map { _ ->
                 val profileResponse =
                     requestRouteAPI(

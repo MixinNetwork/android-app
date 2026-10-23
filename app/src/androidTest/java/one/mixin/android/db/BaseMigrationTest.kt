@@ -1,7 +1,7 @@
 package one.mixin.android.db
 
-import androidx.room.testing.MigrationTestHelper
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import androidx.room3.testing.MigrationTestHelper
+import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.platform.app.InstrumentationRegistry
 import one.mixin.android.Constants
 import org.junit.After
@@ -10,13 +10,16 @@ import org.junit.Rule
 
 open class BaseMigrationTest {
     @Suppress("DEPRECATION")
-    @get:Rule
     val migrationTestHelper =
         MigrationTestHelper(
             InstrumentationRegistry.getInstrumentation(),
-            MixinDatabase::class.java.canonicalName,
-            FrameworkSQLiteOpenHelperFactory(),
+            freshMigrationTestDatabase(Constants.DataBase.DB_NAME),
+            AndroidSQLiteDriver(),
+            MixinDatabase::class,
         )
+
+    @get:Rule
+    val migrationTestDatabaseRule = migrationTestHelper.withMigrationTestDatabaseCleanup(Constants.DataBase.DB_NAME)
 
     @Before
     fun setUp() {

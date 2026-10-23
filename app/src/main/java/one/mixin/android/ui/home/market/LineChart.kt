@@ -41,6 +41,9 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+internal fun lineChartGradientColors(color: Color): List<Color> =
+    listOf(color.copy(alpha = 0.7f), color.copy(alpha = 0f))
+
 @Composable
 fun normalizeValues(values: List<Float>, minRange: Float = 0.2f, normalizedMaxRange: Float? = null): Triple<List<Float>, Int, Int> {
     if (values.isEmpty()) return Triple(emptyList(), -1, -1)
@@ -89,19 +92,9 @@ fun LineChart(
         val context = LocalContext.current
         val quoteColorPref = context.defaultSharedPreferences
             .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-        val color = if (dataPointsData.last() >= dataPointsData.first()) {
-            if (quoteColorPref) {
-                MixinAppTheme.colors.marketRed
-            } else {
-                MixinAppTheme.colors.marketGreen
-            }
-        } else {
-            if (quoteColorPref) {
-                MixinAppTheme.colors.marketGreen
-            } else {
-                MixinAppTheme.colors.marketRed
-            }
-        }
+        val isRising = dataPointsData.last() >= dataPointsData.first()
+        val color = if (isRising != quoteColorPref) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
+        val textColor = if (isRising != quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
         val circleColor = MixinAppTheme.colors.background
         val lineWidth = Dp(1.5f)
 
@@ -180,7 +173,7 @@ fun LineChart(
 
                 drawPath(
                     path = gradientPath, brush = Brush.verticalGradient(
-                        colors = listOf(color.copy(alpha = 0.7f), Color.Transparent), endY = size.height
+                        colors = lineChartGradientColors(color), endY = size.height
                     )
                 )
 
@@ -263,7 +256,7 @@ fun LineChart(
                                 fontSize = 12.sp,
                                 lineHeight = 12.sp,
                             ),
-                            color = color,
+                            color = textColor,
                         )
                     }.map { it.measure(constraints) }
 
@@ -276,7 +269,7 @@ fun LineChart(
                                 fontSize = 12.sp,
                                 lineHeight = 12.sp,
                             ),
-                            color = color,
+                            color = textColor,
                         )
                     }.map { it.measure(constraints) }
 

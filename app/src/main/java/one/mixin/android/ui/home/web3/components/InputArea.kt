@@ -24,6 +24,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
@@ -53,6 +54,7 @@ fun InputArea(
     text: String,
     title: String,
     readOnly: Boolean,
+    autoFocus: Boolean = false,
     selectClick: (() -> Unit)?,
     onInputChanged: ((String) -> Unit)? = null,
     onDeposit: ((SwapToken) -> Unit)? = null,
@@ -100,6 +102,7 @@ fun InputArea(
             selectClick = selectClick,
             onInputChanged = onInputChanged,
             readOnly = readOnly,
+            autoFocus = autoFocus,
             inlineEndCompose = inlineEndCompose,
             maxDecimalPlaces = maxDecimalPlaces,
             onFocusChanged = onFocusChanged,
@@ -138,13 +141,16 @@ fun InputArea(
                     )
                 }
                 if (bottomCompose == null) {
-                    Spacer(modifier = Modifier.weight(1f))
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
                         text = token.name,
+                        modifier = Modifier.weight(1f),
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                         style = TextStyle(
                             fontSize = 12.sp,
                             color = MixinAppTheme.colors.textAssist,
-                            textAlign = TextAlign.Start,
+                            textAlign = TextAlign.End,
                         )
                     )
                 }

@@ -1,11 +1,11 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.repository
 
 import android.os.CancellationSignal
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.map
-import androidx.paging.DataSource
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
+import androidx.paging.PagingSource
 import io.reactivex.Observable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -29,15 +29,19 @@ import one.mixin.android.db.ConversationExtDao
 import one.mixin.android.db.JobDao
 import one.mixin.android.db.MessageDao
 import one.mixin.android.db.MessageMentionDao
+import one.mixin.android.db.deleteMessageByIds
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.db.ParticipantDao
 import one.mixin.android.db.ParticipantSessionDao
 import one.mixin.android.db.PinMessageDao
 import one.mixin.android.db.RemoteMessageStatusDao
 import one.mixin.android.db.TranscriptMessageDao
+import one.mixin.android.db.datasource.RoomDatabaseCompat
+import one.mixin.android.db.fetcher.MessageDataSource
 import one.mixin.android.db.flow.MessageFlow
 import one.mixin.android.db.insertMessage
 import one.mixin.android.db.provider.DataProvider
+import one.mixin.android.db.runInTransaction
 import one.mixin.android.event.GroupEvent
 import one.mixin.android.extension.joinStar
 import one.mixin.android.extension.putBoolean
@@ -49,7 +53,6 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.session.Session
-import one.mixin.android.ui.media.pager.MediaPagerActivity
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.CircleConversation
@@ -98,6 +101,8 @@ class ConversationRepository
         private val jobManager: MixinJobManager,
         private val ftsDbHelper: FtsDatabase,
     ) {
+        private val messageDataSource = MessageDataSource(appDatabase)
+
         private fun identityNumber(): String =
             requireNotNull(Session.getAccount()) { "Account is required for database access." }.identityNumber
 
@@ -105,9 +110,12 @@ class ConversationRepository
             conversationId: String,
             offset: Int,
             limit: Int,
-        ): List<MessageItem> = messageDao.getChatMessages(conversationId, offset, limit)
+        ): List<MessageItem> =
+            withContext(RoomDatabaseCompat.queryContext(appDatabase)) {
+                messageDataSource.loadChatMessagesByOffset(conversationId, offset, limit)
+            }
 
-        fun observeConversations(circleId: String?): DataSource.Factory<Int, ConversationItem> =
+        fun observeConversations(circleId: String?): PagingSource<Int, ConversationItem> =
             if (circleId.isNullOrBlank()) {
                 DataProvider.observeConversations(MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()))
             } else {
@@ -144,7 +152,7 @@ class ConversationRepository
         ): LiveData<GroupInfo?> =
             conversationDao.getConversationInfoById(conversationId, userId)
 
-        fun getConversationById(conversationId: String): LiveData<Conversation> =
+        fun getConversationById(conversationId: String): LiveData<Conversation?> =
             conversationDao.getConversationById(conversationId)
 
         fun findConversationById(conversationId: String): Observable<Conversation> =
@@ -158,6 +166,11 @@ class ConversationRepository
         fun findMessageById(messageId: String) = messageDao.findMessageById(messageId)
 
         suspend fun suspendFindMessageById(messageId: String) = messageDao.suspendFindMessageById(messageId)
+
+        suspend fun findMessageItemById(
+            conversationId: String,
+            messageId: String,
+        ): MessageItem? = messageDao.suspendFindMessageItemById(conversationId, messageId)
 
         fun getConversation(conversationId: String) =
             conversationDao.findConversationById(conversationId)
@@ -178,7 +191,7 @@ class ConversationRepository
             query: String,
             conversationId: String,
             cancellationSignal: CancellationSignal,
-        ): DataSource.Factory<Int, SearchMessageDetailItem> {
+        ): PagingSource<Int, SearchMessageDetailItem> {
             val queryString = query.joinStar().replaceQuotationMark()
             return DataProvider.fuzzySearchMessageDetail(ftsDbHelper, queryString, conversationId, appDatabase, cancellationSignal)
         }
@@ -213,37 +226,15 @@ class ConversationRepository
                 messageDao.countIndexMediaMessages(conversationId)
             }
 
-        fun getMediaMessagesDataSource(
+        fun getMediaMessagesPagingSource(
             conversationId: String,
             excludeLive: Boolean,
-        ): DataSource.Factory<Int, MessageItem> {
+        ): PagingSource<Int, MessageItem> {
             return if (excludeLive) {
                 messageDao.getMediaMessagesExcludeLive(conversationId)
             } else {
                 messageDao.getMediaMessages(conversationId)
             }
-        }
-
-        fun getMediaMessages(
-            conversationId: String,
-            index: Int,
-            excludeLive: Boolean,
-        ): LiveData<PagedList<MessageItem>> {
-            val dataSource =
-                if (excludeLive) {
-                    messageDao.getMediaMessagesExcludeLive(conversationId)
-                } else {
-                    messageDao.getMediaMessages(conversationId)
-                }
-            val config =
-                PagedList.Config.Builder()
-                    .setPrefetchDistance(MediaPagerActivity.PAGE_SIZE)
-                    .setPageSize(MediaPagerActivity.PAGE_SIZE)
-                    .setEnablePlaceholders(true)
-                    .build()
-            return LivePagedListBuilder(dataSource, config)
-                .setInitialLoadKey(index)
-                .build()
         }
 
         suspend fun getMediaMessage(
@@ -434,6 +425,7 @@ class ConversationRepository
                     ownerId,
                     data.category,
                     data.name,
+                    data.iconUrl,
                     data.announcement,
                     data.muteUntil,
                     data.createdAt,
@@ -452,6 +444,9 @@ class ConversationRepository
             offset: Int,
         ): String? =
             messageDao.findFirstUnreadMessageId(conversationId, offset)
+
+        suspend fun firstUnreadMessageId(conversationId: String): String? =
+            remoteMessageStatusDao.firstUnreadMessageId(conversationId)
 
         suspend fun findLastMessage(conversationId: String) = messageDao.findLastMessage(conversationId)
 
@@ -512,6 +507,20 @@ class ConversationRepository
 
         fun observeAllConversationUnread() = conversationDao.observeAllConversationUnread()
 
+        suspend fun updateGroupIcon(
+            conversationId: String,
+            iconBase64: String,
+        ): MixinResponse<ConversationResponse> = withContext(Dispatchers.IO) {
+            val response = conversationService.updateSuspend(
+                conversationId,
+                ConversationRequest(conversationId, iconBase64 = iconBase64),
+            )
+            if (response.isSuccess) {
+                response.data?.let { insertOrUpdateConversation(it) }
+            }
+            response
+        }
+
         suspend fun muteSuspend(
             id: String,
             request: ConversationRequest,
@@ -543,7 +552,7 @@ class ConversationRepository
             val count = messageDao.countDeleteMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
             repeat((count / DB_DELETE_LIMIT) + 1) {
                 val ids = messageDao.findMediaMessageByConversationAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory, DB_DELETE_LIMIT)
-                messageDao.deleteMessageById(ids)
+                appDatabase.deleteMessageByIds(ids)
                 MessageFlow.delete(conversationId, ids)
             }
         }
@@ -743,7 +752,7 @@ class ConversationRepository
 
         suspend fun exists(messageId: String) = messageDao.exists(messageId)
 
-        fun findAudiosByConversationId(conversationId: String): DataSource.Factory<Int, MessageItem> =
+        fun findAudiosByConversationId(conversationId: String): PagingSource<Int, MessageItem> =
             messageDao.findAudiosByConversationId(conversationId)
 
         suspend fun indexAudioByConversationId(

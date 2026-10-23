@@ -332,9 +332,9 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
         MultiSelectRecipientsListBottomSheetDialogFragment.newInstance(userItem)
             .setDateProvider(this@AllTransactionsFragment)
             .setOnMultiSelectUserListener(object : MultiSelectRecipientsListBottomSheetDialogFragment.OnMultiSelectRecipientListener {
-                override fun onRecipientSelect(recipients: List<Recipient>?) {
+                override fun onRecipientSelect(users: List<Recipient>?) {
                     binding.filterUser.close()
-                    filterParams.recipients = recipients
+                    filterParams.recipients = users
                     loadFilter()
                 }
 

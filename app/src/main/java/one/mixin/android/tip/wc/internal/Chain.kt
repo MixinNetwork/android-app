@@ -18,7 +18,7 @@ sealed class Chain(
     private val rpcServers: List<String>,
     private val walletConnectChainIdAliases: List<String> = emptyList(),
 ) {
-    object Ethereum : Chain(ETHEREUM_CHAIN_ID, "eip155", "1", "0x1", "Ethereum", "ETH", listOf("https://0xrpc.io/eth"))
+    object Ethereum : Chain(ETHEREUM_CHAIN_ID, "eip155", "1", "0x1", "Ethereum", "ETH", listOf("https://ethereum-rpc.publicnode.com"))
 
     object Arbitrum : Chain(Constants.ChainId.Arbitrum, "eip155", "42161", "0xa4b1", "Arbitrum One", "ETH", listOf("https://arb1.arbitrum.io/rpc"))
 
@@ -26,13 +26,19 @@ sealed class Chain(
 
     object Base : Chain(Constants.ChainId.Base, "eip155", "8453", "0x2105", "Base", "ETH", listOf("https://mainnet.base.org"))
 
-    object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", "56", "0x38", "BNB Smart Chain", "BNB", listOf("https://bsc-dataseed4.ninicoin.io"))
+    object BinanceSmartChain : Chain(Constants.ChainId.BinanceSmartChain, "eip155", "56", "0x38", "BNB Smart Chain", "BNB", listOf("https://bsc-dataseed.bnbchain.org"))
 
-    object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "137", "0x89", "Polygon", "MATIC", listOf("https://polygon-rpc.com"))
+    object Polygon : Chain(Constants.ChainId.Polygon, "eip155", "137", "0x89", "Polygon", "MATIC", listOf("https://polygon.drpc.org"))
 
     object Avalanche : Chain(Constants.ChainId.Avalanche, "eip155", "43114", "0xa86a", "Avalanche C-Chain", "AVAX", listOf("https://api.avax.network/ext/bc/C/rpc"))
 
     object HyperEVM : Chain(Constants.ChainId.HyperEVM, "eip155", "999", "0x3e7", "HyperEVM", "HYPE", listOf("https://rpc.hyperliquid.xyz/evm"))
+
+    object XLayer : Chain(Constants.ChainId.XLayer, "eip155", "196", "0xc4", "X Layer", "OKB", listOf("https://rpc.xlayer.tech"))
+
+    object Robinhood : Chain(Constants.ChainId.Robinhood, "eip155", "4663", "0x1237", "Robinhood", "ETH", listOf("https://rpc.mainnet.chain.robinhood.com"))
+
+    object Arc : Chain(Constants.ChainId.Arc, "eip155", "5042", "0x13b2", "ARC Mainnet", "USDC", listOf("https://rpc.mainnet.arc.io"))
 
     object Solana : Chain(
         SOLANA_CHAIN_ID,
@@ -63,7 +69,6 @@ sealed class Chain(
     fun supportsWalletConnectChainId(chainId: String): Boolean = chainId in walletConnectChainIds
 
     fun getWeb3ChainId(): String =
-        // Blast ->  Constants.ChainId.
         when (this) {
             Ethereum -> ETHEREUM_CHAIN_ID
             BinanceSmartChain -> Constants.ChainId.BinanceSmartChain
@@ -73,13 +78,15 @@ sealed class Chain(
             Base ->  Constants.ChainId.Base
             Avalanche -> Constants.ChainId.Avalanche
             HyperEVM -> Constants.ChainId.HyperEVM
+            XLayer -> Constants.ChainId.XLayer
+            Robinhood -> Constants.ChainId.Robinhood
+            Arc -> Constants.ChainId.Arc
             Solana -> Constants.ChainId.Solana
             Bitcoin -> BITCOIN_CHAIN_ID
         }
 }
-// Chain.Blast
-internal val supportChainList = listOf(Chain.Solana, Chain.Bitcoin, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM)
-internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM)
+internal val supportChainList = listOf(Chain.Solana, Chain.Bitcoin, Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM, Chain.XLayer, Chain.Robinhood, Chain.Arc)
+internal val evmChainList = listOf(Chain.Ethereum, Chain.Base, Chain.BinanceSmartChain, Chain.Polygon, Chain.Optimism, Chain.Arbitrum, Chain.Avalanche, Chain.HyperEVM, Chain.XLayer, Chain.Robinhood, Chain.Arc)
 
 data class WalletConnectAddresses(
     val evm: String,
@@ -103,7 +110,7 @@ internal fun buildUpdatedNamespaces(
     namespaces: Map<String, Wallet.Model.Namespace.Session>,
     addresses: WalletConnectAddresses,
 ): Map<String, Wallet.Model.Namespace.Session>? =
-    namespaces.mapValues { (_, namespace) ->
+    namespaces.takeIf { it.isNotEmpty() }?.mapValues { (_, namespace) ->
         val chains = namespace.chains
         if (chains.isNullOrEmpty()) return@mapValues namespace
 

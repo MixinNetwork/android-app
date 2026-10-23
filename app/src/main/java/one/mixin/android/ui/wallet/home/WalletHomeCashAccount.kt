@@ -3,7 +3,6 @@ package one.mixin.android.ui.wallet.home
 import com.google.gson.annotations.SerializedName
 import one.mixin.android.api.response.CashAccount
 import one.mixin.android.api.response.WalletHomeBanner
-import one.mixin.android.extension.numberFormat2
 import java.math.BigDecimal
 
 data class WalletHomeCashAccount(
@@ -13,7 +12,7 @@ data class WalletHomeCashAccount(
     val rewardApy: String? = null,
 ) {
     val balanceAmountText: String
-        get() = balanceUsd.numberFormat2()
+        get() = usdBalanceAmountText(balanceUsd)
 
     val apyText: String?
         get() = cashAccountApyText(rewardApy)
@@ -62,11 +61,12 @@ internal fun WalletHomeState.withCashAccount(
     } else {
         cards.withCashCard()
     }
-    return copy(
+    val state = copy(
         cashAccount = cashAccount,
         cards = cashCards,
         isLoading = false,
     )
+    return state.withEarnAccounts(state.earnAccounts)
 }
 
 private fun List<WalletHomeCardType>.withCashCard(): List<WalletHomeCardType> {
@@ -90,22 +90,25 @@ internal fun WalletHomeState.withDynamicBanners(
             showReferral = false,
             hasPositions = false,
             hasCashAccount = cashAccount != null,
+            hasEarnAccount = earnAccounts.isNotEmpty(),
             hasTopMovers = false,
             hasTransactions = false,
             hasImportKeyAction = importKeyAction != null,
             hasPendingIndicator = pendingIndicator != null,
+            isWatchWallet = isWatchWallet,
             isLoading = false,
         )
         WalletHomeCardType.BANNER in cards -> cards
         else -> cards.withBannerCard()
     }
-    return copy(
+    val state = copy(
         cards = bannerCards,
         isLoading = if (showBanner) false else isLoading,
         showAddWalletBanner = showAddWalletBanner,
         dynamicBanners = dynamicBanners,
         isDynamicBannerLoaded = true,
     )
+    return state.withEarnAccounts(state.earnAccounts)
 }
 
 private fun List<WalletHomeCardType>.withBannerCard(): List<WalletHomeCardType> {

@@ -1,7 +1,7 @@
 package one.mixin.android.db
 
-import androidx.room.Dao
-import androidx.room.Query
+import androidx.room3.Dao
+import androidx.room3.Query
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.vo.ConversationExt
 
@@ -28,7 +28,7 @@ interface ConversationExtDao : BaseDao<ConversationExt> {
     @Query("UPDATE conversation_ext SET count = count - 1 WHERE conversation_id = :conversationId")
     fun decrement(conversationId: String)
 
-    @Query("UPDATE conversation_ext SET count = count + :increment WHERE conversation_id = :conversationId")
+    @Query("UPDATE conversation_ext SET count = MAX(0, count + :increment) WHERE conversation_id = :conversationId")
     fun increment(
         conversationId: String,
         increment: Int,

@@ -1,7 +1,6 @@
 package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
-import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -23,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -39,7 +39,6 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.response.WalletHomeBanner
 import one.mixin.android.api.response.WalletHomeBannerAction
-import one.mixin.android.api.response.syncedWalletHomeClosedBannerIds
 import one.mixin.android.api.response.visibleWalletHomeBanners
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
@@ -54,8 +53,8 @@ import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.openAsUrlOrWeb
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.toast
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshPerpsPositionsJob
@@ -66,7 +65,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.NonMessengerUserBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
-import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
@@ -86,6 +84,7 @@ import one.mixin.android.ui.wallet.home.WalletHomeBalanceHandoff
 import one.mixin.android.ui.wallet.home.WalletHomeBalanceSnapshot
 import one.mixin.android.ui.wallet.home.WalletHomeCashAccount
 import one.mixin.android.ui.wallet.home.WalletHomeType
+import one.mixin.android.ui.wallet.home.WalletHomeEarnAccount
 import one.mixin.android.ui.wallet.home.calculateWalletHomeBtcTotal
 import one.mixin.android.ui.wallet.home.calculateWalletHomeTokenFiat
 import one.mixin.android.ui.wallet.home.calculateWalletHomeTotalFiat
@@ -104,6 +103,8 @@ import one.mixin.android.ui.wallet.home.walletHomeCashBalanceUsd
 import one.mixin.android.ui.wallet.home.walletHomeCacheKey
 import one.mixin.android.ui.wallet.home.withCashAccount
 import one.mixin.android.ui.wallet.home.withDynamicBanners
+import one.mixin.android.ui.wallet.home.withEarnAccounts
+import one.mixin.android.ui.wallet.home.toWalletHomeEarnAccounts
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
 import one.mixin.android.ui.wallet.TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_SEND
 import one.mixin.android.ui.wallet.adapter.WalletAssetAdapter
@@ -157,10 +158,13 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private var isDynamicBannerLoaded = false
     private var closedDynamicBannerIds: Set<String> = emptySet()
     private var walletHomeBannerRefreshJob: Job? = null
+    private var walletHomeCacheJob: Job? = null
     private var perpsPositionsRefreshJob: Job? = null
     private var cachedCashAccountLoaded = false
     private var cachedCashAccountJob: Job? = null
     private var cashAccount: WalletHomeCashAccount? = null
+    private var earnAccounts: List<WalletHomeEarnAccount> = emptyList()
+    private var earnAssetIds: Set<String> = emptySet()
     private val assetsAdapter by lazy { WalletAssetAdapter(false) }
     private val perpetualViewModel by viewModels<PerpetualViewModel>()
     private var walletHomeDataState = WalletHomeDataState.EMPTY
@@ -198,6 +202,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         val cacheKey = privacyWalletHomeCacheKey()
         defaultSharedPreferences.getWalletHomeCacheState(cacheKey)?.let {
             _homeState.value = it
+            earnAccounts = it.earnAccounts
             walletHomeDataState = WalletHomeDataState.CACHE
             isLoading = false
         }
@@ -231,7 +236,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
                     sendReceiveView.isVisible = true
                     sendReceiveView.enableBuy()
                     sendReceiveView.buy.setOnClickListener {
-                        showBuyOptionsBottomSheet()
+                        showBuy()
                     }
                     sendReceiveView.send.setOnClickListener {
                         if (
@@ -387,13 +392,13 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
 
     private fun renderHome() {
         if (_binding == null) return
-        if (walletHomeDataState != WalletHomeDataState.DATABASE) return
         if (assets.isNotEmpty() || recentSnapshots.isNotEmpty() || topMovers.isNotEmpty() || positions.isNotEmpty()) {
             isLoading = false
         }
         val state = buildHomeState()
-        _homeState.value = state
-        renderHeaderTotals(state)
+        val renderedState = if (state.cards.isEmpty()) state.copy(isLoading = true) else state
+        _homeState.value = renderedState
+        renderHeaderTotals(renderedState)
     }
 
     private var isLoading = true
@@ -404,12 +409,21 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             totalUsd = BigDecimal.valueOf(tokenSummary.totalUsd),
             fiatRate = fiatRate,
         )
-        val currentCashAccount = cashAccount
+        val currentCashAccount = cashAccount.takeIf {
+            defaultSharedPreferences.getBoolean(Constants.Debug.SHOW_CASH_ACCOUNT, true)
+        }
+        val currentEarnAccounts = earnAccounts.takeIf {
+            defaultSharedPreferences.getBoolean(Constants.Debug.SHOW_EARN_ACCOUNT, true)
+        }.orEmpty()
+        val earnUsd = earnAccounts.fold(BigDecimal.ZERO) { total, account ->
+            total + account.balanceUsd
+        }
         val totalFiat = calculateWalletHomeTotalFiat(
             tokenFiat = tokenFiat,
             positionUsd = positions.positionMarginUsdTotal(),
             fiatRate = fiatRate,
-            cashUsd = walletHomeCashBalanceUsd(currentCashAccount),
+            cashUsd = walletHomeCashBalanceUsd(cashAccount),
+            earnUsd = earnUsd,
         )
         val tokenBtc = calculateWalletHomeBtcTotal(
             tokenFiat = tokenFiat,
@@ -438,6 +452,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             showReferral = showReferral,
             hasPositions = positions.isNotEmpty(),
             hasCashAccount = currentCashAccount != null,
+            hasEarnAccount = currentEarnAccounts.isNotEmpty(),
             hasTopMovers = topMovers.isNotEmpty(),
             hasTransactions = recentSnapshots.isNotEmpty(),
             hasPendingIndicator = pendingDisplays.isNotEmpty(),
@@ -455,6 +470,8 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             positions = positions.take(WalletHomeSection.PREVIEW_LIMIT),
             positionSummary = positions.toWalletHomePositionSummary(),
             cashAccount = currentCashAccount,
+            earnAccounts = currentEarnAccounts,
+            earnAssetIds = earnAssetIds,
             totalTokenCount = tokenSummary.tokenCount,
             totalTransactionCount = recentSnapshots.size,
             totalPositionCount = positions.size,
@@ -470,8 +487,20 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             showBuyBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_BUY, true),
             showSwapBadge = defaultSharedPreferences.getBoolean(PREF_HAS_USED_SWAP, true),
             showImportSafetyFooter = !isLoading,
-        )
-        defaultSharedPreferences.putWalletHomeCache(privacyWalletHomeCacheKey(), state)
+        ).withEarnAccounts(currentEarnAccounts)
+        if (walletHomeDataState == WalletHomeDataState.DATABASE) {
+            val cacheState = state.copy(
+                cashAccount = cashAccount,
+                earnAccounts = earnAccounts,
+            )
+            walletHomeCacheJob?.cancel()
+            walletHomeCacheJob = viewLifecycleOwner.lifecycleScope.launch(Dispatchers.IO) {
+                defaultSharedPreferences.putWalletHomeCache(
+                    privacyWalletHomeCacheKey(),
+                    cacheState,
+                )
+            }
+        }
         return state
     }
 
@@ -511,6 +540,35 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
     }
 
+    private fun refreshEarnAccounts() {
+        lifecycleScope.launch {
+            runCatching {
+                walletViewModel.earnAccounts()
+            }.onSuccess { response ->
+                if (response.isSuccess) {
+                    earnAssetIds = response.data.orEmpty().map { it.assetId }.toSet()
+                    val products = response.data.orEmpty()
+                    val assetItems = products
+                        .map { it.assetId }
+                        .distinct()
+                        .mapNotNull { assetId ->
+                            walletViewModel.findOrSyncAsset(assetId)?.let { assetId to it }
+                        }
+                        .toMap()
+                    applyEarnAccounts(products.toWalletHomeEarnAccounts(assetItems))
+                } else {
+                    Timber.w(
+                        "Fetch earn accounts failed code=%s message=%s",
+                        response.errorCode,
+                        response.errorDescription,
+                    )
+                }
+            }.onFailure {
+                Timber.w(it, "Fetch earn accounts failed")
+            }
+        }
+    }
+
     private fun loadCachedCashAccount() {
         if (cachedCashAccountLoaded || cachedCashAccountJob?.isActive == true) return
         cachedCashAccountJob = lifecycleScope.launch {
@@ -544,6 +602,12 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         renderHome()
     }
 
+    private fun applyEarnAccounts(accounts: List<WalletHomeEarnAccount>) {
+        earnAccounts = accounts
+        _homeState.value = _homeState.value.withEarnAccounts(accounts)
+        renderHome()
+    }
+
     private fun homeBitcoinPriceUsd(): BigDecimal? =
         tokenSummary.bitcoinPriceUsd
             ?.toBigDecimalOrNull()
@@ -565,7 +629,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             } ?: return@launch
             defaultSharedPreferences.putWalletHomeBannerCache(privacyWalletHomeCacheKey(), remoteBanners)
             runCatching {
-                syncClosedDynamicBannerIds(remoteBanners)
+                syncClosedDynamicBannerIds()
             }.onFailure {
                 Timber.w(it, "Sync wallet home banner closed ids failed")
             }
@@ -577,7 +641,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         val cachedBanners = defaultSharedPreferences.getWalletHomeBannerCache(cacheKey) ?: return
         updateDynamicBanners(cachedBanners)
         runCatching {
-            syncClosedDynamicBannerIds(cachedBanners)
+            syncClosedDynamicBannerIds()
         }.onFailure {
             Timber.w(it, "Sync cached wallet home banner closed ids failed")
         }
@@ -597,13 +661,9 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         renderHome()
     }
 
-    private suspend fun syncClosedDynamicBannerIds(remoteBanners: List<WalletHomeBanner>) {
-        val closedBannerIds = findWalletHomeDynamicBannerClosedIds()
-        val syncedClosedBannerIds = closedBannerIds.syncedWalletHomeClosedBannerIds(remoteBanners)
-        if (syncedClosedBannerIds != closedBannerIds) {
-            updateWalletHomeDynamicBannerClosedIds(syncedClosedBannerIds)
-        }
-        closedDynamicBannerIds = syncedClosedBannerIds
+    private suspend fun syncClosedDynamicBannerIds() {
+        val savedIds = findWalletHomeDynamicBannerClosedIds()
+        closedDynamicBannerIds = closedDynamicBannerIds + savedIds
     }
 
     private fun privacyWalletHomeCacheKey(): String =
@@ -643,31 +703,38 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
 
         override fun onDynamicBannerClicked(banner: WalletHomeBanner) {
-            AnalyticsTracker.trackWalletHomeAdBanner(
+            AnalyticsTracker.trackAdBanner(
                 banner.trackingKey,
-                AnalyticsTracker.WalletHomeAdBannerSource.BACKGROUND,
+                banner.placement,
+                AnalyticsTracker.AdBannerSource.BACKGROUND,
             )
             banner.actionUrl
                 ?.takeIf { it.isNotBlank() }
-                ?.openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
+                ?.let { openWalletHomeBannerAction(it, TradeSource.WALLET_HOME, AnalyticsTracker.PerpsSource.WALLET_HOME, ::showBuy) }
         }
 
         override fun onDynamicBannerActionClicked(banner: WalletHomeBanner, action: WalletHomeBannerAction) {
-            AnalyticsTracker.trackWalletHomeAdBanner(
+            AnalyticsTracker.trackAdBanner(
                 banner.trackingKey,
-                AnalyticsTracker.WalletHomeAdBannerSource.BUTTON,
+                banner.placement,
+                AnalyticsTracker.AdBannerSource.BUTTON,
             )
             action.action
                 .takeIf { it.isNotBlank() }
-                ?.openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
+                ?.let { openWalletHomeBannerAction(it, TradeSource.WALLET_HOME, AnalyticsTracker.PerpsSource.WALLET_HOME, ::showBuy) }
         }
 
         override fun onDynamicBannerClosed(banner: WalletHomeBanner) {
-            lifecycleScope.launch {
-                val closedIds = closedDynamicBannerIds.toMutableSet().apply { add(banner.key) }
-                updateWalletHomeDynamicBannerClosedIds(closedIds)
-                closedDynamicBannerIds = closedIds
-                renderHome()
+            closedDynamicBannerIds = closedDynamicBannerIds + banner.key
+            updateDynamicBanners(dynamicBanners)
+            lifecycleScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                try {
+                    updateWalletHomeDynamicBannerClosedIds(setOf(banner.key))
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.w(e, "Save closed wallet banner failed")
+                }
             }
         }
 
@@ -688,15 +755,12 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             openCashHome()
         }
 
+        override fun onEarnAccountClicked() {
+            openEarnHome()
+        }
+
         override fun onSupportClicked() {
-            lifecycleScope.launch {
-                val user = walletViewModel.refreshUser(Constants.TEAM_MIXIN_USER_ID)
-                if (user == null) {
-                    toast(R.string.Data_error)
-                } else {
-                    ConversationActivity.show(requireContext(), recipientId = Constants.TEAM_MIXIN_USER_ID)
-                }
-            }
+            openCustomerService()
         }
 
         override fun onHelpCenterClicked() {
@@ -704,8 +768,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
 
         override fun onBuyClicked() {
-            showBuyOptionsBottomSheet()
-            renderHome()
+            showBuy()
         }
 
         override fun onReceiveClicked() {
@@ -849,51 +912,27 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         AddWalletBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, AddWalletBottomSheetDialogFragment.TAG)
     }
 
-    private fun showBuyOptionsBottomSheet() {
-        WalletBuyOptionsBottomSheetDialogFragment.newInstance(
-            walletName = getString(R.string.Privacy_Wallet),
-            walletIconRes = R.drawable.ic_wallet_privacy,
-            cashRewardApy = cashAccount?.rewardApy,
-        )
-            .setOnGooglePayOrCard {
-                WalletActivity.showBuy(requireActivity(), false, null, null)
-                defaultSharedPreferences.putBoolean(PREF_HAS_USED_BUY, false)
-                RxBus.publish(BadgeEvent(PREF_HAS_USED_BUY))
-                _headBinding?.sendReceiveView?.buyBadge?.isVisible = false
-            }
-            .setOnBankTransfer { openCashHome(addBank = true) }
-            .showNow(parentFragmentManager, WalletBuyOptionsBottomSheetDialogFragment.TAG)
+    private fun showBuy() {
+        defaultSharedPreferences.putBoolean(PREF_HAS_USED_BUY, false)
+        RxBus.publish(BadgeEvent(PREF_HAS_USED_BUY))
+        _headBinding?.sendReceiveView?.buyBadge?.isVisible = false
+        renderHome()
+        WalletActivity.showBuy(requireActivity(), false, null, null)
     }
 
-    private fun openCashHome(addBank: Boolean = false) {
-        lifecycleScope.launch {
-            val app = walletViewModel.findOrSyncApp(Constants.MIXIN_CASH_USER_ID)
-            val url = cashHomeUrl(app?.homeUri, addBank)
-            if (app == null) {
-                WebActivity.show(requireActivity(), url = url, app = null, conversationId = null)
-            } else {
-                WebActivity.show(requireActivity(), url = url, app = app, conversationId = null)
-            }
-        }
+    private fun openCashHome() {
+        "${Constants.Scheme.APPS}/${Constants.MIXIN_CASH_USER_ID}?page=add-cash-ban"
+            .openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
     }
 
-    private fun cashHomeUrl(
-        homeUri: String?,
-        addBank: Boolean,
-    ): String {
-        val url = homeUri.takeUnless { it.isNullOrBlank() } ?: Constants.API.CASH_HOME_URL
-        return if (addBank) {
-            Uri.parse(url).buildUpon()
-                .appendQueryParameter("action", "add-cash-bank")
-                .build()
-                .toString()
-        } else {
-            url
-        }
+    private fun openEarnHome() {
+        "${Constants.Scheme.APPS}/${Constants.MIXIN_EARN_USER_ID}?action=open"
+            .openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
     }
 
     override fun onResume() {
         super.onResume()
+        renderHome()
         _walletId.value = Session.getAccountId().orEmpty()
         startPerpsPositionsRefresh()
         jobManager.addJobInBackground(RefreshTokensJob())
@@ -906,6 +945,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         refreshAllPendingDeposit()
         if (!isHidden) {
             refreshCashAccount()
+            refreshEarnAccounts()
         }
     }
 
@@ -920,6 +960,7 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             refreshAllPendingDeposit()
             refreshWalletHomeBanners()
             refreshCashAccount()
+            refreshEarnAccounts()
         } else {
             stopPerpsPositionsRefresh()
         }

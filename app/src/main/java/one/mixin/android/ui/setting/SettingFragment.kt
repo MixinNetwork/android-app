@@ -4,25 +4,22 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import androidx.core.view.isVisible
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants.TEAM_MIXIN_USER_ID
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentSettingBinding
 import one.mixin.android.event.MembershipEvent
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.toast
+import one.mixin.android.extension.openCustomerService
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshAccountJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.device.DeviceFragment
 import one.mixin.android.ui.setting.member.MixinMemberInvoicesFragment
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
@@ -40,7 +37,6 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
         fun newInstance() = SettingFragment()
     }
 
-    private val viewModel by viewModels<SettingViewModel>()
     private val binding by viewBinding(FragmentSettingBinding::bind)
 
     @Inject
@@ -112,14 +108,7 @@ class SettingFragment : BaseFragment(R.layout.fragment_setting) {
                 )
             }
             feedbackRl.setOnClickListener {
-                lifecycleScope.launch {
-                    val userTeamMixin = viewModel.refreshUser(TEAM_MIXIN_USER_ID)
-                    if (userTeamMixin == null) {
-                        toast(R.string.Data_error)
-                    } else {
-                        ConversationActivity.show(requireContext(), recipientId = TEAM_MIXIN_USER_ID)
-                    }
-                }
+                openCustomerService()
             }
         }
         RxBus.listen(MembershipEvent::class.java)

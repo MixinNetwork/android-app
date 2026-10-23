@@ -107,7 +107,9 @@ private const val APP_CARD_DESCRIPTION_MIN_LENGTH = 1
 private const val APP_CARD_DESCRIPTION_MAX_LENGTH = 1024
 
 private fun String.isValidShareUrl(): Boolean {
-    return isValidSendUrl() || ((startsWith("HTTPS://", true) || startsWith("HTTP://", true)) && !startsWith(HTTPS_SEND, true))
+    return !startsWith(SEND, true) &&
+        !startsWith(MIXIN_SEND, true) &&
+        !startsWith(HTTPS_SEND, true)
 }
 
 fun String.isValidSendUrl(): Boolean {

@@ -40,7 +40,7 @@ class WalletViewModel
             snapshotId: String,
         ) = assetRepository.snapshotLocal(assetId, snapshotId)
 
-        fun assetItem(id: String): LiveData<AssetItem> = assetRepository.assetItem(id)
+        fun assetItem(id: String): LiveData<AssetItem?> = assetRepository.assetItem(id)
 
         suspend fun simpleAssetItem(id: String) = assetRepository.simpleAssetItem(id)
 
@@ -77,7 +77,7 @@ class WalletViewModel
 
         fun observeAddress(addressId: String) = assetRepository.observeAddress(addressId)
 
-        fun findUserById(conversationId: String): LiveData<User> = userRepository.findUserById(conversationId)
+        fun findUserById(conversationId: String): LiveData<User?> = userRepository.findUserById(conversationId)
 
         fun assetItemsWithBalance(): LiveData<List<AssetItem>> = assetRepository.assetItemsWithBalance()
 

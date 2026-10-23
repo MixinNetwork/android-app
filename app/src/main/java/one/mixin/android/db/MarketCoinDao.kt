@@ -1,8 +1,8 @@
 package one.mixin.android.db
 
-import androidx.room.Dao
-import androidx.room.Query
-import androidx.room.RoomWarnings
+import androidx.room3.Dao
+import androidx.room3.Query
+import androidx.room3.RoomWarnings
 import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
 import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.safe.TokenItem
@@ -15,6 +15,9 @@ interface MarketCoinDao : BaseDao<MarketCoin> {
 
     @Query("SELECT asset_id FROM market_coins WHERE coin_id = :coinId")
     suspend fun findTokenIdsByCoinId(coinId: String): List<String>
+
+    @Query("DELETE FROM market_coins WHERE coin_id IN (:coinIds)")
+    suspend fun deleteByCoinIds(coinIds: List<String>)
 
     @Query("DELETE FROM market_coins WHERE coin_id = :coinId AND asset_id IN (:assetIds)")
     suspend fun deleteByCoinIdAndAssetIds(coinId: String, assetIds: List<String>)

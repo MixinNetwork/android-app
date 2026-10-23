@@ -75,6 +75,7 @@ import java.math.BigDecimal
 @Composable
 fun PrivacyTokenRecycler(
     tokens: List<TokenItem>,
+    earnAssetIds: Set<String> = emptySet(),
     onClick: (Int) -> Unit,
     modifier: Modifier = Modifier,
     itemSpacing: Dp = 20.dp,
@@ -86,6 +87,7 @@ fun PrivacyTokenRecycler(
     ) { index ->
         PrivacyWalletTokenItem(
             token = tokens[index],
+            isEarn = tokens[index].assetId in earnAssetIds,
             onClick = { onClick(index) },
         )
     }
@@ -292,6 +294,7 @@ private fun WalletHomeItemColumn(
 @Composable
 fun PrivacyWalletTokenItem(
     token: TokenItem,
+    isEarn: Boolean = false,
     onClick: () -> Unit,
 ) {
     WalletTokenItemLayout(
@@ -303,6 +306,7 @@ fun PrivacyWalletTokenItem(
         amountFontSize = 22.sp,
         symbol = token.symbol,
         fiatValue = "≈ ${Fiats.getSymbol()}${token.fiat().numberFormat2()}",
+        showEarn = isEarn,
         price = tokenPriceText(token.priceUsd, token.priceFiat()),
         change = token.changeUsd.toBigDecimalOrNull()
             ?.multiply(BigDecimal(100))
@@ -326,6 +330,7 @@ fun Web3WalletTokenItem(
         amountFontSize = 22.sp,
         symbol = token.symbol,
         fiatValue = "≈ ${Fiats.getSymbol()}${token.fiat().numberFormat2()}",
+        showEarn = false,
         price = tokenPriceText(token.priceUsd, token.priceFiat()),
         change = token.changeUsd.toBigDecimalOrNull()?.let { "${it.numberFormat2()}%" },
         isRising = token.changeUsd.toBigDecimalOrNull()?.let { it >= BigDecimal.ZERO },
@@ -343,6 +348,7 @@ private fun WalletTokenItemLayout(
     amountFontSize: TextUnit,
     symbol: String,
     fiatValue: String,
+    showEarn: Boolean,
     price: String?,
     change: String?,
     isRising: Boolean?,
@@ -356,7 +362,7 @@ private fun WalletTokenItemLayout(
             .padding(horizontal = 20.dp, vertical = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        TokenIcon(
+        WalletAssetIcon(
             iconUrl = iconUrl,
             chainIconUrl = chainIconUrl,
             collectionHash = collectionHash,
@@ -401,16 +407,36 @@ private fun WalletTokenItemLayout(
                 )
             }
             Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = fiatValue,
-                color = MixinAppTheme.colors.textAssist,
-                fontSize = 12.sp,
-                lineHeight = 12.sp,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = noFontPaddingTextStyle(),
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.offset(y = (-2).dp),
-            )
+            ) {
+                Text(
+                    text = fiatValue,
+                    color = MixinAppTheme.colors.textAssist,
+                    fontSize = 12.sp,
+                    lineHeight = 12.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = noFontPaddingTextStyle(),
+                )
+                if (showEarn) {
+                    Text(
+                        text = " · ",
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 12.sp,
+                        lineHeight = 12.sp,
+                        style = noFontPaddingTextStyle(),
+                    )
+                    Text(
+                        text = stringResource(R.string.Earn),
+                        color = MixinAppTheme.colors.accent,
+                        fontSize = 12.sp,
+                        lineHeight = 12.sp,
+                        style = noFontPaddingTextStyle(),
+                    )
+                }
+            }
         }
         Spacer(modifier = Modifier.width(12.dp))
         TokenPriceColumn(
@@ -634,17 +660,19 @@ private fun WalletTransactionRow(
 }
 
 @Composable
-private fun TokenIcon(
+internal fun WalletAssetIcon(
     iconUrl: String?,
     chainIconUrl: String?,
     collectionHash: String?,
+    size: Dp = 42.dp,
+    chainBadgeSize: Dp = 14.dp,
 ) {
-    Box(modifier = Modifier.size(42.dp)) {
+    Box(modifier = Modifier.size(size)) {
         CoilImage(
             model = iconUrl,
             placeholder = R.drawable.ic_avatar_place_holder,
             modifier = Modifier
-                .size(42.dp)
+                .size(size)
                 .clip(CircleShape),
             contentScale = ContentScale.Crop,
         )
@@ -653,7 +681,7 @@ private fun TokenIcon(
                 model = chainIconUrl,
                 placeholder = R.drawable.ic_avatar_place_holder,
                 modifier = Modifier
-                    .size(14.dp)
+                    .size(chainBadgeSize)
                     .align(Alignment.BottomStart)
                     .offset(x = (-1).dp, y = 1.dp)
                     .clip(CircleShape)

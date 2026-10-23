@@ -1,6 +1,13 @@
 package one.mixin.android.crypto
 
+import blockchain.Blockchain
+import one.mixin.android.extension.hexString
+import one.mixin.android.tip.bip44.Bip44Path
+import one.mixin.android.tip.bip44.generateBip44Key
 import org.bitcoinj.crypto.MnemonicCode
+import org.sol4k.Keypair
+import org.web3j.crypto.Bip32ECKeyPair
+import org.web3j.utils.Numeric
 import java.nio.ByteBuffer
 import java.nio.charset.StandardCharsets
 import javax.crypto.Mac
@@ -51,6 +58,19 @@ object SolanaKeyGenerator {
         }
 
         return currentKey
+    }
+
+    internal fun deriveFromTipSeed(seed: ByteArray, index: Int): TipDerivedKey {
+        val masterKeyPair = Bip32ECKeyPair.generateKeyPair(seed)
+        val keyPair = generateBip44Key(masterKeyPair, Bip44Path.solana(index))
+        val privateKeySeed = Numeric.toBytesPadded(keyPair.privateKey, 32)
+        val signer = Keypair.fromSecretKey(privateKeySeed)
+        val address = signer.publicKey.toBase58()
+        val expectedAddress = Blockchain.generateSolanaAddress(seed.hexString(), Bip44Path.solanaPathString(index))
+        if (address != expectedAddress) {
+            throw IllegalArgumentException("Generate illegal Solana Address")
+        }
+        return TipDerivedKey(signer.secret, address)
     }
 
     /**

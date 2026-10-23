@@ -8,7 +8,7 @@ internal data class AnalyticsEvent(
 )
 
 internal object AnalyticsRules {
-    private const val NON_ORGANIC = "Non-Organic"
+    private const val NON_ORGANIC = "Non-organic"
 
     private val directAppsFlyerEvents = setOf(
         "sign_up_start",
@@ -26,9 +26,6 @@ internal object AnalyticsRules {
         "trade_perps_close_end",
         "asset_send_start",
         "asset_send_end",
-        "share_market",
-        "hide_asset",
-        "show_asset",
     )
 
     fun appsFlyerEventName(eventName: String): String? =
@@ -53,14 +50,45 @@ internal object AnalyticsRules {
         return properties
     }
 
-    fun marketShareEvent(type: String) =
-        AnalyticsEvent("share_market", mapOf("type" to type))
+    fun marketShareEvent(type: String, target: String) =
+        AnalyticsEvent(
+            "market_share",
+            mapOf(
+                "type" to type,
+                "target" to target,
+            ),
+        )
+
+    fun marketDetailEvent(type: String, source: String) =
+        AnalyticsEvent(
+            "market_detail",
+            mapOf(
+                "type" to type,
+                "source" to source,
+            ),
+        )
+
+    fun marketWatchlistEvent(adding: Boolean, type: String, source: String) =
+        AnalyticsEvent(
+            if (adding) "market_watchlist_add" else "market_watchlist_remove",
+            mapOf(
+                "type" to type,
+                "source" to source,
+            ),
+        )
 
     fun spotOrdersEvent(type: String) =
         AnalyticsEvent("trade_spot_orders", mapOf("type" to type))
 
     fun spotOrderDetailEvent(type: String) =
         AnalyticsEvent("trade_spot_order_detail", mapOf("type" to type))
+
+    fun perpsAdjustmentSource(source: String, defaultSource: String): String =
+        when (source) {
+            AnalyticsTracker.PerpsSource.APP_CARD -> AnalyticsTracker.PerpsSource.APP_CARD
+            AnalyticsTracker.MarketDetailSource.SCHEMA, AnalyticsTracker.TradeSource.SCHEMA, AnalyticsTracker.PerpsSource.URL -> AnalyticsTracker.PerpsSource.URL
+            else -> defaultSource
+        }
 
     fun assetVisibilityEvent(
         hidden: Boolean,

@@ -63,6 +63,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
+import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -72,7 +73,6 @@ import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
-import java.math.RoundingMode
 
 private const val POSITION_REFRESH_INTERVAL_MS = 3_000L
 private const val CLOSED_POSITION_REFRESH_LIMIT = 100
@@ -167,7 +167,12 @@ fun AllPositionsPage(
         total + (position.margin?.toBigDecimalOrNull() ?: BigDecimal.ZERO)
     }
     val totalPnlAmount = BigDecimal.valueOf(totalUnrealizedPnl)
-    val totalPnlPercent = calculatePnlPercent(totalPnlAmount, totalMargin)
+    val totalPnlPercent = calculateTotalPnlPercent(
+        positionCount = openPositionsSnapshot.size,
+        singlePositionRoe = openPositionsSnapshot.singleOrNull()?.roe,
+        totalPnl = totalPnlAmount,
+        totalMargin = totalMargin,
+    )
     val titleRes = if (positionType == AllPositionsType.OPEN) {
         R.string.perps_positions
     } else {
@@ -253,6 +258,7 @@ private fun OpenPositionsContent(
 ) {
     val refreshState = positions.loadState.refresh
     val isEmpty = refreshState is LoadState.NotLoading && positions.itemCount == 0
+    val closeablePositionCount = openPositions.count { it.state == PerpsPosition.STATE_OPEN }
 
     Box(modifier = Modifier.fillMaxSize()) {
         if (!isEmpty) {
@@ -298,7 +304,7 @@ private fun OpenPositionsContent(
             }
         }
 
-        if (openPositions.isNotEmpty()) {
+        if (closeablePositionCount > 0) {
             MixinButton(
                 onClick = onCloseAllPositions,
                 enabled = !isCloseAllLoading,
@@ -317,7 +323,7 @@ private fun OpenPositionsContent(
                     )
                 } else {
                     Text(
-                        text = stringResource(R.string.Close_All_Positions, openPositions.size),
+                        text = stringResource(R.string.Close_All_Positions, closeablePositionCount),
                         fontSize = 16.sp,
                     )
                 }
@@ -666,18 +672,6 @@ private fun EmptyPositionsState(
             )
         }
     }
-}
-
-private fun calculatePnlPercent(
-    pnl: BigDecimal,
-    margin: BigDecimal,
-): BigDecimal {
-    if (margin <= BigDecimal.ZERO) {
-        return BigDecimal.ZERO
-    }
-    return pnl
-        .divide(margin, 8, RoundingMode.HALF_UP)
-        .multiply(BigDecimal(100))
 }
 
 @Preview(showBackground = true)

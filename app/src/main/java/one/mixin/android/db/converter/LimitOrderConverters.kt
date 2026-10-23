@@ -1,19 +1,19 @@
 package one.mixin.android.db.converter
 
-import androidx.room.TypeConverter
+import androidx.room3.ColumnTypeConverter
 import one.mixin.android.vo.route.LimitOrderFundStatus
 import one.mixin.android.vo.route.LimitOrderStatus
 
 class LimitOrderConverters {
-    @TypeConverter
+    @ColumnTypeConverter
     fun fromStatus(value: String?): LimitOrderStatus? = value?.let { LimitOrderStatus.fromString(it) }
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun toStatus(value: LimitOrderStatus?): String? = value?.value
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun fromFundStatus(value: String?): LimitOrderFundStatus? = value?.let { LimitOrderFundStatus.fromString(it) }
 
-    @TypeConverter
+    @ColumnTypeConverter
     fun toFundStatus(value: LimitOrderFundStatus?): String? = value?.value
 }

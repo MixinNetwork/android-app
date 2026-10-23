@@ -1,10 +1,10 @@
 package one.mixin.android.db
 
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
-import androidx.room.Update
-import androidx.room.Upsert
+import androidx.room3.Delete
+import androidx.room3.Insert
+import androidx.room3.OnConflictStrategy
+import androidx.room3.Update
+import androidx.room3.Upsert
 
 interface BaseDao<T> {
     @Insert(onConflict = OnConflictStrategy.REPLACE)

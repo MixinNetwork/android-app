@@ -20,9 +20,18 @@ enum class SolanaRecipientAccountState {
 data class SolanaTransferAmountRange(
     val minAmount: BigDecimal,
     val maxAmount: BigDecimal,
+    val nativeSolBalanceAfterFee: BigDecimal? = null,
 ) {
     fun canTransfer(amount: BigDecimal): Boolean {
-        return maxAmount >= minAmount && amount >= minAmount && amount <= maxAmount
+        if (maxAmount < minAmount || amount < minAmount || amount > maxAmount) return false
+        val remaining = nativeSolBalanceAfterFee?.subtract(amount) ?: return true
+        return remaining.compareTo(BigDecimal.ZERO) == 0 || remaining >= SOLANA_RENT_EXEMPTION
+    }
+
+    fun hasNativeSolRentIssue(amount: BigDecimal): Boolean {
+        if (amount <= BigDecimal.ZERO || amount < minAmount || amount > maxAmount) return false
+        val remaining = nativeSolBalanceAfterFee?.subtract(amount) ?: return false
+        return remaining > BigDecimal.ZERO && remaining < SOLANA_RENT_EXEMPTION
     }
 }
 
@@ -99,6 +108,12 @@ fun solanaTransferAmountRange(
     } else {
         BigDecimal.ZERO
     }
+    val nativeSolBalanceAfterFee = if (token.isNativeSolAsset()) {
+        val solFee = if (feeToken?.assetId == token.assetId) feeAmount else BigDecimal.ZERO
+        tokenBalance.subtract(solFee)
+    } else {
+        null
+    }
     val maxAmount = when {
         token.isNativeSolAsset() -> {
             val feeTokenEnough = when {
@@ -151,6 +166,7 @@ fun solanaTransferAmountRange(
     return SolanaTransferAmountRange(
         minAmount = minAmount,
         maxAmount = maxAmount.max(BigDecimal.ZERO),
+        nativeSolBalanceAfterFee = nativeSolBalanceAfterFee,
     )
 }
 

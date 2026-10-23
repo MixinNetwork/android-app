@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.ui.setting.ui.page
 
 import android.os.Build
@@ -208,6 +210,8 @@ private fun LanguageItem() {
                         AppearanceFragment.POS_RUSSIAN,
                         AppearanceFragment.POS_INDONESIA,
                         AppearanceFragment.POS_Malay,
+                        AppearanceFragment.POS_Spanish,
+                        AppearanceFragment.POS_KOREAN,
                     ).forEach { index ->
                         LanguageRadioItem(
                             name = languageNames[index],
@@ -238,6 +242,8 @@ private fun LanguageItem() {
                                 AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Language
                                 AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Language
                                 AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Language
+                                AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Language
+                                AppearanceFragment.POS_KOREAN -> Constants.Locale.Korean.Language
                                 else -> Locale.US.language
                             }
                         val selectedCountry =
@@ -248,6 +254,8 @@ private fun LanguageItem() {
                                 AppearanceFragment.POS_RUSSIAN -> Constants.Locale.Russian.Country
                                 AppearanceFragment.POS_INDONESIA -> Constants.Locale.Indonesian.Country
                                 AppearanceFragment.POS_Malay -> Constants.Locale.Malay.Country
+                                AppearanceFragment.POS_Spanish -> Constants.Locale.Spanish.Country
+                                AppearanceFragment.POS_KOREAN -> Constants.Locale.Korean.Country
                                 else -> Locale.US.country
                             }
                         val newLocale = Locale(selectedLang, selectedCountry)

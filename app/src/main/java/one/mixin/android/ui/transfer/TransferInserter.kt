@@ -7,6 +7,7 @@ import one.mixin.android.db.converter.ListConverter
 import one.mixin.android.db.converter.SafeDepositConverter
 import one.mixin.android.db.converter.SafeWithdrawalConverter
 import one.mixin.android.db.converter.WithdrawalMemoPossibilityConverter
+import one.mixin.android.db.datasource.RoomDatabaseCompat
 import one.mixin.android.vo.App
 import one.mixin.android.vo.Asset
 import one.mixin.android.vo.Conversation
@@ -35,10 +36,10 @@ class TransferInserter(val db: MixinDatabase) {
                 Timber.e("Insert assistanceId $value")
             }
             field = value
-        }
+    }
 
     private val writableDatabase by lazy {
-        db.openHelper.writableDatabase
+        RoomDatabaseCompat.statementDatabase(db)
     }
 
     fun insertMessages(messages: List<Message>) {
@@ -546,7 +547,7 @@ class TransferInserter(val db: MixinDatabase) {
             if (depositEntries == null) {
                 stmt.bindNull(16)
             } else {
-                stmt.bindString(16, depositEntryListConverter.converterDate(depositEntries))
+                stmt.bindString(16, depositEntryListConverter.converterDate(depositEntries).orEmpty())
             }
             val withdrawalMemoPossibility = asset.withdrawalMemoPossibility
             if (depositEntries == null) {
@@ -571,7 +572,7 @@ class TransferInserter(val db: MixinDatabase) {
 
     fun insertIgnore(token: Token) {
         val stmt =
-            writableDatabase.compileStatement("INSERT OR IGNORE INTO `tokens` (`asset_id`,`kernel_asset_id`,`symbol`,`name`,`icon_url`,`price_btc`,`price_usd`,`chain_id`,`change_usd`,`change_btc`,`confirmations`,`asset_key`,`dust`,`collection_hash`,`precision`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
+            writableDatabase.compileStatement("INSERT OR IGNORE INTO `tokens` (`asset_id`,`kernel_asset_id`,`symbol`,`name`,`icon_url`,`price_btc`,`price_usd`,`chain_id`,`change_usd`,`change_btc`,`confirmations`,`asset_key`,`dust`,`collection_hash`,`precision`,`primitive_asset_id`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")
         try {
             stmt.bindString(1, token.assetId)
             stmt.bindString(2, token.asset)
@@ -592,6 +593,7 @@ class TransferInserter(val db: MixinDatabase) {
                 stmt.bindString(14, token.collectionHash)
             }
             stmt.bindLong(15, token.precision.toLong())
+            if (token.primitiveAssetId == null) stmt.bindNull(16) else stmt.bindString(16, token.primitiveAssetId)
             stmt.executeInsert()
             primaryId = token.assetId
             assistanceId = null
@@ -696,7 +698,7 @@ class TransferInserter(val db: MixinDatabase) {
             if (safeSnapshot.confirmations == null) {
                 stmt.bindNull(11)
             } else {
-                stmt.bindLong(11, safeSnapshot.confirmations.toLong())
+                stmt.bindLong(11, safeSnapshot.confirmations)
             }
             if (safeSnapshot.openingBalance == null) {
                 stmt.bindNull(12)

@@ -1,22 +1,27 @@
 package one.mixin.android.db
 
 import android.content.Context
-import androidx.room.Database
-import androidx.room.Room
-import androidx.room.RoomDatabase
-import androidx.room.migration.Migration
-import androidx.sqlite.db.SupportSQLiteDatabase
-import androidx.sqlite.db.framework.FrameworkSQLiteOpenHelperFactory
+import androidx.room3.Database
+import androidx.room3.DaoReturnTypeConverters
+import androidx.room3.Room
+import androidx.room3.RoomDatabase
+import androidx.room3.migration.Migration
+import androidx.room3.paging.PagingSourceDaoReturnTypeConverter
+import androidx.sqlite.SQLiteConnection
 import one.mixin.android.Constants
+import one.mixin.android.api.response.perps.PerpsFavorite
 import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.api.response.perps.PerpsMarketCategoryRelation
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsPosition
+import one.mixin.android.db.datasource.execSQL
+import one.mixin.android.db.perps.PerpsFavoriteDao
 import one.mixin.android.db.perps.PerpsMarketDao
+import one.mixin.android.db.perps.PerpsMarketCategoryDao
 import one.mixin.android.db.perps.PerpsOrderDao
 import one.mixin.android.db.perps.PerpsPositionDao
-import one.mixin.android.util.SINGLE_DB_EXECUTOR
 import one.mixin.android.util.database.dbDir
-import one.mixin.android.util.reportException
+import kotlinx.coroutines.asCoroutineDispatcher
 import java.io.File
 import java.util.concurrent.Executors
 import kotlin.math.max
@@ -27,9 +32,12 @@ import kotlin.math.min
         PerpsPosition::class,
         PerpsOrder::class,
         PerpsMarket::class,
+        PerpsFavorite::class,
+        PerpsMarketCategoryRelation::class,
     ],
-    version = 6,
+    version = 11,
 )
+@DaoReturnTypeConverters(PagingSourceDaoReturnTypeConverter::class)
 abstract class PerpsDatabase : RoomDatabase() {
     companion object {
         private var INSTANCE: PerpsDatabase? = null
@@ -37,25 +45,25 @@ abstract class PerpsDatabase : RoomDatabase() {
         private var currentIdentityNumber: String? = null
         val MIGRATION_1_2 =
             object : Migration(1, 2) {
-                override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL("ALTER TABLE markets ADD COLUMN category TEXT NOT NULL DEFAULT ''")
-                    db.execSQL("ALTER TABLE markets ADD COLUMN tags TEXT NOT NULL DEFAULT '[]'")
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE markets ADD COLUMN category TEXT NOT NULL DEFAULT ''")
+                    connection.execSQL("ALTER TABLE markets ADD COLUMN tags TEXT NOT NULL DEFAULT '[]'")
                 }
             }
         val MIGRATION_2_3 =
             object : Migration(2, 3) {
-                override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL("ALTER TABLE positions ADD COLUMN take_profit_price TEXT")
-                    db.execSQL("ALTER TABLE positions ADD COLUMN stop_loss_price TEXT")
-                    db.execSQL("ALTER TABLE positions ADD COLUMN liquidation_price TEXT")
-                    db.execSQL("ALTER TABLE markets ADD COLUMN price_scale INTEGER NOT NULL DEFAULT 2")
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE positions ADD COLUMN take_profit_price TEXT")
+                    connection.execSQL("ALTER TABLE positions ADD COLUMN stop_loss_price TEXT")
+                    connection.execSQL("ALTER TABLE positions ADD COLUMN liquidation_price TEXT")
+                    connection.execSQL("ALTER TABLE markets ADD COLUMN price_scale INTEGER NOT NULL DEFAULT 2")
                 }
             }
         val MIGRATION_3_4 =
             object : Migration(3, 4) {
-                override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL("DROP TABLE IF EXISTS position_histories")
-                    db.execSQL(
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("DROP TABLE IF EXISTS position_histories")
+                    connection.execSQL(
                         """
                         CREATE TABLE IF NOT EXISTS perps_orders (
                             order_id TEXT NOT NULL PRIMARY KEY,
@@ -81,18 +89,62 @@ abstract class PerpsDatabase : RoomDatabase() {
             }
         val MIGRATION_4_5 =
             object : Migration(4, 5) {
-                override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL("ALTER TABLE perps_orders ADD COLUMN pay_amount TEXT NOT NULL DEFAULT '0'")
-                    db.execSQL("DELETE FROM perps_orders")
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE perps_orders ADD COLUMN pay_amount TEXT NOT NULL DEFAULT '0'")
+                    connection.execSQL("DELETE FROM perps_orders")
                 }
             }
         val MIGRATION_5_6 =
             object : Migration(5, 6) {
-                override fun migrate(db: SupportSQLiteDatabase) {
-                    db.execSQL("ALTER TABLE `markets` ADD COLUMN `descriptions` TEXT")
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `descriptions` TEXT")
+                }
+            }
+        val MIGRATION_6_7 =
+            object : Migration(6, 7) {
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("CREATE TABLE IF NOT EXISTS `favorites` (`market_id` TEXT NOT NULL, `is_favored` INTEGER NOT NULL, `created_at` TEXT NOT NULL, PRIMARY KEY(`market_id`))")
+                    connection.execSQL("CREATE TABLE IF NOT EXISTS `market_categories` (`market_id` TEXT NOT NULL, `category` INTEGER NOT NULL, PRIMARY KEY(`market_id`, `category`))")
+                    connection.execSQL("CREATE INDEX IF NOT EXISTS `index_market_categories_category` ON `market_categories` (`category`)")
+                }
+            }
+        val MIGRATION_7_8 =
+            object : Migration(7, 8) {
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("DELETE FROM perps_orders")
+                    connection.execSQL("ALTER TABLE `perps_orders` ADD COLUMN `fee_amount` TEXT NOT NULL DEFAULT '0'")
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `funding_interval_hours` INTEGER NOT NULL DEFAULT 0")
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `next_funding_at` TEXT NOT NULL DEFAULT ''")
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `open_interest` TEXT NOT NULL DEFAULT '0'")
+                }
+            }
+        val MIGRATION_8_9 =
+            object : Migration(8, 9) {
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `trade_volume_score_1d` INTEGER NOT NULL DEFAULT 0")
+                }
+            }
+        val MIGRATION_9_10 =
+            object : Migration(9, 10) {
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE `perps_orders` ADD COLUMN `net_realized_pnl` TEXT NOT NULL DEFAULT ''")
+                    connection.execSQL("ALTER TABLE `perps_orders` ADD COLUMN `net_roe` TEXT NOT NULL DEFAULT ''")
+                    connection.execSQL("ALTER TABLE `perps_orders` ADD COLUMN `profit_share_amount` TEXT NOT NULL DEFAULT ''")
                 }
             }
 
+        val MIGRATION_10_11 =
+            object : Migration(10, 11) {
+                override suspend fun migrate(connection: SQLiteConnection) {
+                    connection.execSQL("ALTER TABLE `positions` ADD COLUMN `estimated_close_fee` TEXT DEFAULT ''")
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `quantity_scale` INTEGER NOT NULL DEFAULT 0")
+                    connection.execSQL("ALTER TABLE `markets` ADD COLUMN `min_order_value` TEXT NOT NULL DEFAULT '0'")
+                    connection.execSQL("DROP TABLE IF EXISTS `perps_orders`")
+                    connection.execSQL("CREATE TABLE IF NOT EXISTS `perps_orders` (`order_id` TEXT NOT NULL, `position_id` TEXT NOT NULL, `market_id` TEXT NOT NULL, `side` TEXT NOT NULL, `order_type` TEXT NOT NULL, `status` TEXT NOT NULL, `leverage` INTEGER NOT NULL, `quantity` TEXT NOT NULL, `pay_amount` TEXT NOT NULL, `margin_amount` TEXT NOT NULL, `fee_amount` TEXT NOT NULL DEFAULT '0', `entry_price` TEXT NOT NULL, `close_price` TEXT NOT NULL, `realized_pnl` TEXT NOT NULL, `roe` TEXT NOT NULL, `net_realized_pnl` TEXT NOT NULL DEFAULT '', `net_roe` TEXT NOT NULL DEFAULT '', `profit_share_amount` TEXT NOT NULL DEFAULT '', `close_reason` TEXT, `trigger_price` TEXT, `created_at` TEXT NOT NULL, `updated_at` TEXT NOT NULL, PRIMARY KEY(`order_id`))")
+                }
+            }
+
+        @Suppress("DEPRECATION")
         fun getDatabase(
             context: Context,
             identityNumber: String,
@@ -110,34 +162,22 @@ abstract class PerpsDatabase : RoomDatabase() {
                         context,
                         PerpsDatabase::class.java,
                         File(dir, Constants.DataBase.PERPS_DB_NAME).absolutePath,
-                    ).openHelperFactory(
-                        MixinOpenHelperFactory(
-                            FrameworkSQLiteOpenHelperFactory(),
-                            listOf(
-                                object : MixinCorruptionCallback {
-                                    override fun onCorruption(database: SupportSQLiteDatabase) {
-                                        val e = IllegalStateException("Perps database is corrupted, current DB version: 6")
-                                        reportException(e)
-                                    }
-                                },
-                            ),
-                        ),
-                    ).addCallback(
+                    ).setDriver(ReportingAndroidSQLiteDriver("Perps", 11))
+                        .addCallback(
                         object : Callback() {
-                            override fun onOpen(db: SupportSQLiteDatabase) {
-                                super.onOpen(db)
-                                db.execSQL("PRAGMA synchronous = NORMAL")
+                            override suspend fun onOpen(connection: SQLiteConnection) {
+                                super.onOpen(connection)
+                                connection.execSQL("PRAGMA synchronous = NORMAL")
                             }
                         },
-                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                    ).addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10, MIGRATION_10_11)
                         .fallbackToDestructiveMigration()
                         .enableMultiInstanceInvalidation()
-                        .setQueryExecutor(
+                        .setQueryCoroutineContext(
                             Executors.newFixedThreadPool(
                                 max(2, min(Runtime.getRuntime().availableProcessors() - 1, 4)),
-                            ),
+                            ).asCoroutineDispatcher(),
                         )
-                        .setTransactionExecutor(SINGLE_DB_EXECUTOR)
                     INSTANCE = builder.build()
                     currentIdentityNumber = scopedIdentity
                 }
@@ -149,6 +189,8 @@ abstract class PerpsDatabase : RoomDatabase() {
     abstract fun perpsPositionDao(): PerpsPositionDao
     abstract fun perpsOrderDao(): PerpsOrderDao
     abstract fun perpsMarketDao(): PerpsMarketDao
+    abstract fun perpsFavoriteDao(): PerpsFavoriteDao
+    abstract fun perpsMarketCategoryDao(): PerpsMarketCategoryDao
 
     override fun close() {
         super.close()

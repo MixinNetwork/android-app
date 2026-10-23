@@ -11,7 +11,6 @@ import androidx.core.app.ServiceCompat
 import androidx.lifecycle.LifecycleService
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
-import com.twilio.audioswitch.AudioSwitch
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
@@ -25,6 +24,7 @@ import one.mixin.android.extension.heavyClickVibrate
 import one.mixin.android.extension.isServiceRunning
 import one.mixin.android.extension.notificationManager
 import one.mixin.android.extension.supportsOreo
+import one.mixin.android.extension.AudioSwitch
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.repository.ConversationRepository
 import one.mixin.android.session.CurrentUserScopeManager

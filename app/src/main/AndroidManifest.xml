@@ -14,7 +14,6 @@
         tools:ignore="PermissionImpliesUnsupportedChromeOsHardware" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
-        tools:replace="android:maxSdkVersion"
         android:maxSdkVersion="32"/>
     <uses-permission
         android:name="android.permission.WRITE_EXTERNAL_STORAGE"
@@ -60,6 +59,7 @@
         tools:replace="android:dataExtractionRules,android:fullBackupContent,android:allowBackup">
         <activity
             android:name=".ui.home.MainActivity"
+            android:colorMode="wideColorGamut"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:exported="true"
             android:launchMode="singleTop"
@@ -168,6 +168,7 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
             android:name=".ui.home.web3.trade.perps.PerpsActivity"
+            android:colorMode="wideColorGamut"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
@@ -243,6 +244,7 @@
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
         <activity
             android:name=".ui.wallet.WalletActivity"
+            android:colorMode="wideColorGamut"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />

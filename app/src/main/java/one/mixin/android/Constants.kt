@@ -6,6 +6,7 @@ import com.checkout.base.model.Environment
 import com.checkout.risk.RiskEnvironment
 import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
+import one.mixin.android.Constants.ChainId.Arc
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
 import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
@@ -15,6 +16,8 @@ import one.mixin.android.Constants.ChainId.ETHEREUM_CHAIN_ID
 import one.mixin.android.Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID
 import one.mixin.android.Constants.ChainId.Optimism
 import one.mixin.android.Constants.ChainId.Polygon
+import one.mixin.android.Constants.ChainId.Robinhood
+import one.mixin.android.Constants.ChainId.XLayer
 import one.mixin.android.Constants.RouteConfig.ROUTE_BOT_USER_ID
 import one.mixin.android.net.CustomDns
 import one.mixin.android.net.SequentialDns
@@ -29,6 +32,7 @@ object Constants {
         const val Mixin_URL = "https://mixin-api.zeromesh.net/"
         const val Mixin_WS_URL = "wss://mixin-blaze.zeromesh.net"
         const val CASH_URL = "https://api.cash.mixin.one/"
+        const val EARN_URL = "https://api.earn.mixin.one/"
         const val CASH_HOME_URL = "https://cash.mixin.one"
 
         const val GIPHY_URL = "https://api.giphy.com/v1/"
@@ -42,7 +46,7 @@ object Constants {
         const val INSCRIPTION = "https://mixin.one/inscriptions/"
         const val MARKETPLACE = "https://rune.fan/items/"
         const val SPACE = "https://mixin.space/tx/"
-        const val CUSTOMER_SERVICE = "https://go.crisp.chat/chat/embed/?website_id=52662bba-be49-4b06-9edc-7baa9a78f714"
+        const val CUSTOMER_SERVICE = "https://mixin.one/support"
     }
 
     object Tip {
@@ -73,6 +77,7 @@ object Constants {
         const val PREF_HAS_WITHDRAWAL_ADDRESS_SET = "pref_has_withdrawal_address_set"
         const val PREF_RECENT_USED_BOTS = "pref_recent_used_bots"
         const val PREF_RECENT_SEARCH = "pref_recent_search"
+        const val PREF_MARKET_RECENT_SEARCH = "pref_market_recent_search"
         const val PREF_DELETE_MOBILE_CONTACTS = "pref_delete_mobile_contacts"
         const val PREF_FIAT_MAP = "pref_fiat_map"
         const val PREF_BATTERY_OPTIMIZE = "pref_battery_optimize"
@@ -110,6 +115,7 @@ object Constants {
         const val PREF_INSCRIPTION_ORDER = "pref_inscription_order"
         const val PREF_ROUTE_BOT_PK = "pref_route_bot_pk"
         const val PREF_CASH_BOT_PK = "pref_cash_bot_pk"
+        const val PREF_EARN_BOT_PK = "pref_earn_bot_pk"
         const val PREF_CASH_ACCOUNT = "pref_cash_account"
 
         const val PREF_REFERRAL_BOT_PK = "pref_referral_bot_pk"
@@ -221,7 +227,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 71
+        const val CURRENT_VERSION = 73
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -270,12 +276,14 @@ object Constants {
     }
 
 
-    val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM)
-    val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM)
+    val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM, XLayer, Robinhood, Arc)
+    val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM, XLayer, Robinhood, Arc)
+    val Web3UtxoChainIds = listOf(BITCOIN_CHAIN_ID, ChainId.PEARL_CHAIN_ID, ChainId.Litecoin)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"
         const val BITCOIN_CHAIN_ID = "c6d0c728-2624-429b-8e0d-d9d19b6592fa"
+        const val PEARL_CHAIN_ID = "e1bf305c-0d49-397d-85bd-55b9eaadafba"
         const val ETHEREUM_CHAIN_ID = "43d61dcd-e413-450d-80b8-101d5e903357"
         const val EOS_CHAIN_ID = "6cfe566e-4aad-470b-8c9a-2fd35b49c68d"
         const val TRON_CHAIN_ID = "25dabac5-056a-48ff-b9f9-f67395dc407c"
@@ -301,10 +309,18 @@ object Constants {
 
         const val HyperEVM = "36d23d9e-bf4e-3ede-a12d-26f1f1f9fd2f"
 
+        const val XLayer = "37f5a4d1-905f-3b34-8291-c37438c7dcfc"
+
+        const val Robinhood = "b304e03d-d004-3102-875b-8266f8407a1a"
+
+        const val Arc = "3f42cb95-274e-366b-9ab7-e1528d929a06"
+
         const val TON_CHAIN_ID = "ef660437-d915-4e27-ad3f-632bfb6ba0ee"
     }
 
     object AssetId {
+        const val PEARL_ASSET_ID = ChainId.PEARL_CHAIN_ID
+        const val PEARL_KERNEL_ASSET_ID = "d71e09b4943441003ed011be0cbfbe3692e796fe22c612388c27f7e6432806f2"
         const val MGD_ASSET_ID = "b207bce9-c248-4b8e-b6e3-e357146f3f4c"
         const val BYTOM_CLASSIC_ASSET_ID = "443e1ef5-bc9b-47d3-be77-07f328876c50"
         const val OMNI_USDT_ASSET_ID = "815b0b1a-2764-3736-8faa-42d694fa620a"
@@ -346,12 +362,17 @@ object Constants {
             ETHEREUM_CHAIN_ID to "Ethereum",
             Base to "Base",
             Optimism to "Optimism",
-            Arbitrum to "Arbitrum"
+            Arbitrum to "Arbitrum",
+            Robinhood to "Robinhood",
         )
 
         val btcAssets = mapOf(
             BITCOIN_CHAIN_ID to "Bitcoin",
             LIGHTNING_NETWORK_CHAIN_ID to "Lightning",
+        )
+
+        val pearlAssets = mapOf(
+            PEARL_ASSET_ID to "Pearl",
         )
 
     }
@@ -401,6 +422,11 @@ object Constants {
             const val Language = "es"
             const val Country = ""
         }
+
+        object Korean {
+            const val Language = "ko"
+            const val Country = ""
+        }
     }
 
     object Debug {
@@ -410,6 +436,11 @@ object Constants {
         const val DB_DEBUG_WARNING = "db_debug_warning"
         const val LOG_AND_DEBUG = "log_and_debug"
         const val WALLET_CONNECT_DEBUG = "wallet_connect_debug"
+        const val SHOW_CASH_ACCOUNT = "debug_show_cash_account"
+        const val SHOW_EARN_ACCOUNT = "debug_show_earn_account"
+        const val BOT_SIGN_DEBUG_APP_PREFIX = "bot_sign_debug_app_"
+
+        fun botSignDebugAppKey(appId: String) = "$BOT_SIGN_DEBUG_APP_PREFIX$appId"
     }
 
     object Colors {
@@ -482,6 +513,8 @@ object Constants {
     const val MIXIN_BOND_USER_ID = "84c9dfb1-bfcf-4cb4-8404-cc5a1354005b"
 
     const val MIXIN_CASH_USER_ID = "41d16c28-0c3a-493d-a2b4-b57875371abf"
+
+    const val MIXIN_EARN_USER_ID = "bdf06719-2c0c-440f-a2cc-2a92de997dfa"
 
     const val MIXIN_FEE_USER_ID = "674d6776-d600-4346-af46-58e77d8df185"
 
@@ -557,9 +590,5 @@ object Constants {
         val RISK_ENVIRONMENT = RiskEnvironment.PRODUCTION
 
         val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
-
-        const val WEB3_URL = "https://web3-api.mixin.one"
-
-        const val WEB3_BOT_USER_ID = "57eff6cd-038b-4ad6-abab-5792f95e05d7"
     }
 }

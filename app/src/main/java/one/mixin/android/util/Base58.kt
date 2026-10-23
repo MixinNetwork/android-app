@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 package one.mixin.android.util
 
 import one.mixin.android.extension.sha256
