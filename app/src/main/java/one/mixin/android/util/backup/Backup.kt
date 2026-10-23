@@ -272,27 +272,25 @@ suspend fun restore(
     val file = resolveRestoreDatabaseFile(context)
     try {
         file.parentFile?.mkdirs()
-        if (file.exists()) {
-            file.delete()
-        }
-        File("${file.absolutePath}-wal").delete()
-        File("${file.absolutePath}-shm").delete()
-        File("${file.absolutePath}-journal").delete()
+        deleteDatabaseFiles(file)
+        deleteFtsDatabaseFiles(context)
         target.copyTo(file)
+        PropertyHelper.deleteKeyValue(MigratedFts4Job.FTS_NEED_MIGRATED_LAST_ROW_ID)
 
         // Reset BACKUP_LAST_TIME so that the user who restores the backup does not need to backup after login
         PropertyHelper.updateKeyValue(
             Constants.BackUp.BACKUP_LAST_TIME,
             System.currentTimeMillis(),
         )
-        resetFtsIndex(context)
 
         withContext(Dispatchers.Main) {
             callback(Result.SUCCESS)
         }
     } catch (e: Exception) {
         Timber.e(e)
-        callback(Result.FAILURE)
+        withContext(Dispatchers.Main) {
+            callback(Result.FAILURE)
+        }
     }
 }
 
@@ -332,15 +330,12 @@ suspend fun restoreApi29(
             return@withContext
         }
         file.parentFile?.mkdirs()
-        if (file.exists()) {
-            file.delete()
-        }
-        File("${file.absolutePath}-wal").delete()
-        File("${file.absolutePath}-shm").delete()
-        File("${file.absolutePath}-journal").delete()
+        deleteDatabaseFiles(file)
+        deleteFtsDatabaseFiles(context)
         file.outputStream().use { output ->
             inputStream.copyTo(output)
         }
+        PropertyHelper.deleteKeyValue(MigratedFts4Job.FTS_NEED_MIGRATED_LAST_ROW_ID)
         val backupMediaDirectory = backupDirectory.findFile("Media")
         val mediaPath = context.getMediaPath()
         if (mediaPath != null && backupMediaDirectory != null && backupMediaDirectory.exists() && backupMediaDirectory.isDirectory) {
@@ -354,7 +349,6 @@ suspend fun restoreApi29(
             Constants.BackUp.BACKUP_LAST_TIME,
             System.currentTimeMillis(),
         )
-        resetFtsIndex(context)
 
         withContext(Dispatchers.Main) {
             callback(Result.SUCCESS)
@@ -538,13 +532,12 @@ private fun resolveRestoreDatabaseFile(context: Context): File =
         databaseFile(context, identityNumber)
     } ?: legacyDatabaseFile(context)
 
-// The backup does not include fts.db, so drop any stale index and rebuild it from the restored messages
-private suspend fun resetFtsIndex(context: Context) {
+// Backups do not include fts.db, so the index is rebuilt from the restored messages
+private fun deleteFtsDatabaseFiles(context: Context) {
     Session.getAccount()?.identityNumber?.let { identityNumber ->
         deleteDatabaseFiles(ftsDatabaseFile(context, identityNumber))
     }
     deleteDatabaseFiles(legacyFtsDatabaseFile(context))
-    PropertyHelper.deleteKeyValue(MigratedFts4Job.FTS_NEED_MIGRATED_LAST_ROW_ID)
 }
 
 private fun deleteDatabaseFiles(file: File) {
