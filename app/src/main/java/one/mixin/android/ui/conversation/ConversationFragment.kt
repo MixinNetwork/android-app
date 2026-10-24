@@ -165,6 +165,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment
 import one.mixin.android.ui.call.GroupUsersBottomSheetDialogFragment.Companion.GROUP_VOICE_MAX_COUNT
+import one.mixin.android.ui.common.DisappearingFragment
 import one.mixin.android.ui.common.GroupBottomSheetDialogFragment
 import one.mixin.android.ui.common.LinkFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -402,7 +403,7 @@ class ConversationFragment() :
             lifecycleScope.launch {
                 val (_, data) = messageFetcher.initMessages(conversationId, null, true)
                 messageAdapter.refreshData(data)
-                messageLayoutManager.scrollWithOffset(messageAdapter.itemCount - 1, messageRvOffset)
+                messageLayoutManager.scrollToPositionWithOffset(messageAdapter.itemCount - 1, messageRvOffset)
             }
         }
     }
@@ -711,6 +712,14 @@ class ConversationFragment() :
 
             override fun onUrlClick(url: String) {
                 url.openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
+            }
+
+            override fun onDisappearingMessagesClick() {
+                activity?.addFragment(
+                    this@ConversationFragment,
+                    DisappearingFragment.newInstance(conversationId, recipient?.userId),
+                    DisappearingFragment.TAG,
+                )
             }
 
             override fun onInscriptionClick(
@@ -1453,7 +1462,7 @@ class ConversationFragment() :
             }
 
             fun scroll() {
-                val targetPosition = messageAdapter.itemCount
+                val targetPosition = messageAdapter.itemCount - 1
                 findFirstVisibleItemPosition().let { firstPosition ->
                     if (abs(targetPosition - firstPosition) > MessageFetcher.PAGE_SIZE) {
                         scrollToPositionWithOffset(targetPosition - MessageFetcher.PAGE_SIZE / 2, 0)
@@ -2009,6 +2018,11 @@ class ConversationFragment() :
                     keyword = keyword,
                 )
             binding.messageRv.adapter = messageAdapter
+            chatViewModel.observeConversation(conversationId).observe(viewLifecycleOwner) { conversation ->
+                val expireIn = conversation?.expireIn ?: 0L
+                binding.actionBar.setExpireIconVisible(expireIn > 0L)
+                messageAdapter.expireIn = expireIn
+            }
             binding.messageRv.addItemDecoration(decoration)
             binding.messageRv.itemAnimator = null
             binding.messageRv.layoutManager = messageLayoutManager

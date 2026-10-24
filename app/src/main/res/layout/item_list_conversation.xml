@@ -25,6 +25,7 @@
         android:layout_height="wrap_content"
         android:layout_toEndOf="@id/avatar_iv"
         android:orientation="horizontal"
+        android:gravity="center_vertical"
         android:layout_above="@id/center">
 
         <one.mixin.android.widget.NameTextView
