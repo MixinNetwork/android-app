@@ -78,6 +78,7 @@ import one.mixin.android.ui.wallet.transfer.data.TransferType
 import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.util.analytics.AnalyticsTracker.AssetSendDestination
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.msg
 import one.mixin.android.util.viewBinding
@@ -734,7 +735,18 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                             }
                         }
                         is TransferBiometricItem, is AddressTransferBiometricItem, is WithdrawBiometricItem -> {
-                            AnalyticsTracker.trackAssetSendEnd()
+                            val destination = when (t) {
+                                is TransferBiometricItem -> if (t.users.size == 1) AssetSendDestination.USER else AssetSendDestination.MULTISIG
+                                is WithdrawBiometricItem -> AssetSendDestination.WITHDRAWAL
+                                else -> AssetSendDestination.MAINNET
+                            }
+                            AnalyticsTracker.trackAssetSendEnd(
+                                wallet = AnalyticsTracker.TradeWallet.MAIN,
+                                destination = destination,
+                                assetSymbol = asset.symbol,
+                                amountValue = t.amount.toBigDecimalOrNull(),
+                                price = asset.priceUsd,
+                            )
                         }
                     }
 
