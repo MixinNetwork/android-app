@@ -1488,6 +1488,7 @@ fun Context.shareMedia(
                 putExtra(Intent.EXTRA_STREAM, uri)
             }
             type = if (isVideo) "video/*" else "image/*"
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
         }
     val name = getString(if (isVideo) R.string.Video else R.string.Photo)
     val chooser = Intent.createChooser(sendIntent, getString(R.string.share_to, name))
@@ -1497,7 +1498,7 @@ fun Context.shareMedia(
         grantUriPermission(
             packageName,
             uri,
-            Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
+            Intent.FLAG_GRANT_READ_URI_PERMISSION,
         )
     }
     startActivity(chooser)
