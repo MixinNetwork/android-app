@@ -38,7 +38,6 @@ import coil3.imageLoader
 import coil3.request.ImageRequest
 import coil3.request.SuccessResult
 import coil3.request.allowHardware
-import com.uber.autodispose.autoDispose
 import com.yalantis.ucrop.UCrop
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
@@ -51,7 +50,7 @@ import one.mixin.android.Constants.HelpLink.MARKETPLACE
 import one.mixin.android.Constants.HelpLink.SPACE
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.ActivityInscriptionBinding
 import one.mixin.android.databinding.ViewInscriptionMenuBinding
@@ -66,6 +65,7 @@ import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getPublicDownloadPath
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.toBytes
 import one.mixin.android.extension.toast
 import one.mixin.android.job.MixinJobManager
@@ -80,10 +80,8 @@ import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.InscriptionState
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.image.withDiskCacheFile
-import one.mixin.android.vo.Account
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.BottomSheet
@@ -430,15 +428,11 @@ class InscriptionActivity : BaseActivity() {
         content: String,
     ) {
         val accountUpdateRequest = AccountUpdateRequest(null, content)
-        web3ViewModel.update(accountUpdateRequest)
-            .autoDispose(stopScope).subscribe(
-                { r: MixinResponse<Account> ->
-                    if (!r.isSuccess) {
-                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                        return@subscribe
-                    } else {
-                        toast(R.string.Success)
-                    }
+        launchUntilStop {
+            handleMixinResponse(
+                invokeNetwork = { web3ViewModel.update(accountUpdateRequest) },
+                successBlock = { r ->
+                    toast(R.string.Success)
                     r.data?.let { data ->
                         Session.storeAccount(data)
                         val u = data.toUser()
@@ -446,10 +440,8 @@ class InscriptionActivity : BaseActivity() {
                         web3ViewModel.insertUser(u)
                     }
                 },
-                { t: Throwable ->
-                    ErrorHandler.handleError(t)
-                },
             )
+        }
     }
 
     private fun saveBitmapToFile(file: File, bitmap: Bitmap) {

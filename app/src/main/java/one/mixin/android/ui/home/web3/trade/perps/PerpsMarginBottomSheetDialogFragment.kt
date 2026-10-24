@@ -377,6 +377,12 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
                         .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                 },
+                onMarginTipClick = {
+                    PerpsInfoBottomSheetDialogFragment.newInstance(
+                        R.string.Margin,
+                        R.string.perps_margin_description,
+                    ).show(parentFragmentManager, PerpsInfoBottomSheetDialogFragment.TAG)
+                },
             ) {
                 if (increase) {
                     Column(
@@ -498,6 +504,7 @@ private fun PerpsMarginContent(
     onCancel: () -> Unit,
     onSubmit: () -> Unit,
     onGuide: (Int) -> Unit,
+    onMarginTipClick: () -> Unit = {},
     inputContent: @Composable () -> Unit,
 ) {
     val actionTitle = stringResource(if (increase) R.string.Add else R.string.perps_reduce_action)
@@ -568,6 +575,7 @@ private fun PerpsMarginContent(
                     title = stringResource(R.string.Margin),
                     valueColor = MixinAppTheme.colors.textPrimary,
                     value = if (totalMargin != null) "$currentMarginText → ${formatPerpsMarginAmount(totalMargin)}" else currentMarginText,
+                    onTipClick = onMarginTipClick,
                 )
                 Spacer(Modifier.height(16.dp))
                 PerpsAddInfoRow(
@@ -676,7 +684,7 @@ internal fun PerpsReductionInput(
     val inactiveMarkerColor = MixinAppTheme.colors.textRemarks
     val maximum = if (isPercentage) BigDecimal(100) else margin ?: BigDecimal.ZERO
     val inputColor = when {
-        errorText != null -> MixinAppTheme.colors.marketRed
+        errorText != null -> MixinAppTheme.colors.walletRed
         inputValue <= BigDecimal.ZERO -> MixinAppTheme.colors.textRemarks
         else -> MixinAppTheme.colors.textPrimary
     }

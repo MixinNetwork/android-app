@@ -2323,8 +2323,7 @@
     <string name="Price_Up_Loss">가격 상승 %1$s%% → 손실 -%2$s %3$s</string>
     <string name="Max_Profit">최대 이익 %1$s</string>
     <string name="Max_Loss">최대 손실 %1$s</string>
-    <string name="price_change_take_profit">가격 %1$s → 최대 이익 %2$s</string>
-    <string name="price_change_stop_loss">가격 %1$s → 최대 손실 %2$s</string>
+    <string name="price_change_tpsl">가격 %1$s → 예상 수익 %2$s</string>
     <string name="example_amount">금액</string>
     <string name="example_scene1_decreasing">시나리오 1: 가격 하락</string>
     <string name="example_scene1_increasing">시나리오 1: 가격 상승</string>
@@ -2724,4 +2723,14 @@
     <string name="group_disappearing_message_disabled_hint">이 그룹에서는 사라지는 메시지가 활성화되어 있지 않습니다. 눌러서 설정하거나 자세히 알아보세요.</string>
     <string name="chat_disappearing_message_enabled_hint">이 채팅의 사라지는 메시지 시간이 %1$s로 설정되었습니다. 눌러서 변경하거나 자세히 알아보세요.</string>
     <string name="chat_disappearing_message_disabled_hint">이 채팅에서는 사라지는 메시지가 활성화되어 있지 않습니다. 눌러서 설정하거나 자세히 알아보세요.</string>
+    <string name="perps_funding_payments">펀딩 수수료</string>
+    <string name="perps_funding_payments_description">이 포지션을 개설한 이후 받거나 지급한 펀딩 수수료의 누적 합계입니다. 녹색(양수)은 펀딩 수수료를 받았음을, 빨간색(음수)은 펀딩 수수료를 지급했음을 의미합니다.</string>
+    <string name="perps_margin_description">증거금은 포지션에 배정하는 담보입니다. 해당 거래에서 손실을 볼 수 있는 최대 금액을 나타냅니다.</string>
+    <string name="perps_liquidation_price_down_description">%1$s 하락하면 청산이 발생합니다.</string>
+    <string name="perps_liquidation_price_up_description">%1$s 상승하면 청산이 발생합니다.</string>
+    <string name="Details">세부정보</string>
+    <string name="perps_tpsl_requires_amount_leverage">이익 실현 및 손절매를 설정하기 전에 금액과 레버리지를 먼저 설정해 주세요.</string>
+    <string name="perps_estimated_profit">예상 수익 %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 최대 레버리지: %1$dx</string>
+    <string name="perps_share_card_volume">💰 24시간 거래량: %1$s</string>
 </resources>

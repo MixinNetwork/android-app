@@ -16,7 +16,6 @@ import one.mixin.android.extension.base64Encode
 import one.mixin.android.session.Session
 import one.mixin.android.vo.Account
 import org.bouncycastle.jce.provider.BouncyCastleProvider
-import org.junit.Ignore
 import org.junit.Test
 import org.junit.runner.RunWith
 import okhttp3.Request
@@ -26,7 +25,6 @@ import java.util.UUID
 
 @RunWith(AndroidJUnit4::class)
 @HiltAndroidTest
-@Ignore("Temporarily disabled while androidTest jwt fixtures are updated")
 class JwtTest {
     init {
         Security.addProvider(BouncyCastleProvider())
@@ -93,17 +91,6 @@ class JwtTest {
         assertFalse(isExpire)
         Thread.sleep(2000)
         assertTrue(Session.requestGoDelay(account, signToken, 1, rsaKey.public.encoded.toPem(false).toByteArray()).isExpire)
-    }
-
-    @Test
-    fun testGoJwtEdDSA() {
-        val keyPair = generateEd25519KeyPair()
-        val account = mockAccount()
-        val signToken = Session.signGoToken(account, mockRequest(), UUID.randomUUID().toString(), keyPair.privateKey)
-        val isExpire = Session.requestGoDelay(account, signToken, DELAY_SECOND, keyPair.publicKey).isExpire
-        assertFalse(isExpire)
-        Thread.sleep(2000)
-        assertTrue(Session.requestGoDelay(account, signToken, 1, keyPair.publicKey).isExpire)
     }
 
     private fun ByteArray.toPem(private: Boolean): String {

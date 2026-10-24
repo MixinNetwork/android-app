@@ -168,6 +168,8 @@
     <string name="Change_Amount">修改金额</string>
     <string name="ASSET_CHANGES">资产变动</string>
     <string name="Change_emergency_contact">修改恢复联系人</string>
+    <string name="Change_Group_Photo_with_Camera">更换群头像（相机）</string>
+    <string name="Change_Group_Photo_with_Library">更换群头像（相册）</string>
     <string name="Change_Number_Instead">仅修改手机号码</string>
     <string name="Change_Phone_Number">修改手机号</string>
     <string name="Change_PIN">修改 PIN</string>
@@ -225,8 +227,7 @@
     <string name="Price_Up_Loss">价格上涨 %1$s%% → 亏损 -%2$s %3$s</string>
     <string name="Max_Profit">最多盈利 %1$s</string>
     <string name="Max_Loss">最多亏损 %1$s</string>
-    <string name="price_change_take_profit">价格 %1$s → 最多盈利 %2$s</string>
-    <string name="price_change_stop_loss">价格 %1$s → 最多亏损 %2$s</string>
+    <string name="price_change_tpsl">价格 %1$s → 预估收益 %2$s</string>
     <string name="Choose_Network">选择网络</string>
     <string name="Wallet_Name">钱包名称</string>
     <string name="Choose_network_tip">请选择 Mixin 支持的网络进行充值，否则您的充值将不会到账。</string>
@@ -2460,6 +2461,8 @@
     <string name="perps_market">合约</string>
     <string name="perps_share_card_title">🚀 合约 %1$s</string>
     <string name="perps_share_card_market">- 📈 市场：%1$s</string>
+    <string name="perps_share_card_max_leverage">📈 最大杠杆：%1$dx</string>
+    <string name="perps_share_card_volume">💰 24小时成交量：%1$s</string>
     <string name="perps_share_card_side">- ↕️ 方向：%1$s（%2$d倍）</string>
     <string name="perps_share_card_trade_now">💰 立即交易</string>
     <string name="market_share_card_title">交易 %1$s</string>
@@ -2674,4 +2677,12 @@
     <string name="group_disappearing_message_disabled_hint">本群尚未启用限时消息。点击设置或了解更多。</string>
     <string name="chat_disappearing_message_enabled_hint">本会话已将限时消息时长设置为 %1$s。点击修改设置或了解详情。</string>
     <string name="chat_disappearing_message_disabled_hint">本会话尚未启用限时消息。点击设置或了解更多。</string>
+    <string name="perps_funding_payments">资金费用</string>
+    <string name="perps_funding_payments_description">自该合约开仓以来，您累计收到或支付的资金费用。绿色（正数）表示您收到资金费用，红色（负数）表示您支付资金费用。</string>
+    <string name="perps_margin_description">保证金是您为合约仓位提供的抵押资金，也是您在该笔交易中可能损失的最大金额。</string>
+    <string name="perps_liquidation_price_down_description">下跌 %1$s 将触发强平。</string>
+    <string name="perps_liquidation_price_up_description">上涨 %1$s 将触发强平。</string>
+    <string name="Details">详情</string>
+    <string name="perps_tpsl_requires_amount_leverage">在设置止盈止损之前，请先设置好金额和杠杆倍数。</string>
+    <string name="perps_estimated_profit">预估收益 %1$s</string>
 </resources>

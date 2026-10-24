@@ -140,34 +140,38 @@ class CircleManagerFragment : BaseFragment() {
                     setCancelable(false)
                 }
             val requests = listOf(ConversationCircleRequest(item.circleId, CircleConversationAction.ADD.name))
-            handleMixinResponse(
-                invokeNetwork = {
-                    bottomViewModel.updateCircles(conversationId, userId, requests)
-                },
-                successBlock = {
-                    it.data?.forEach { circleConversation ->
-                        bottomViewModel.insertCircleConversation(
-                            CircleConversation(
-                                circleConversation.conversationId,
-                                circleConversation.circleId,
-                                userId,
-                                circleConversation.createdAt,
-                                null,
-                            ),
-                        )
-                    }
-                    dialog.dismiss()
-                    loadData()
-                },
-                exceptionBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-                failureBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-            )
+            try {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        bottomViewModel.updateCircles(conversationId, userId, requests)
+                    },
+                    successBlock = {
+                        it.data?.forEach { circleConversation ->
+                            bottomViewModel.insertCircleConversation(
+                                CircleConversation(
+                                    circleConversation.conversationId,
+                                    circleConversation.circleId,
+                                    userId,
+                                    circleConversation.createdAt,
+                                    null,
+                                ),
+                            )
+                        }
+                        dialog.dismiss()
+                        loadData()
+                    },
+                    exceptionBlock = {
+                        dialog.dismiss()
+                        return@handleMixinResponse false
+                    },
+                    failureBlock = {
+                        dialog.dismiss()
+                        return@handleMixinResponse false
+                    },
+                )
+            } finally {
+                dialog.dismiss()
+            }
         }
     }
 
@@ -178,30 +182,34 @@ class CircleManagerFragment : BaseFragment() {
                     setCancelable(false)
                 }
             val requests = listOf(ConversationCircleRequest(item.circleId, CircleConversationAction.REMOVE.name))
-            handleMixinResponse(
-                invokeNetwork = {
-                    bottomViewModel.updateCircles(conversationId, userId, requests)
-                },
-                successBlock = {
-                    bottomViewModel.deleteCircleConversation(
-                        conversationId ?: generateConversationId(
-                            Session.getAccountId()!!,
-                            userId!!,
-                        ),
-                        item.circleId,
-                    )
-                    loadData()
-                    dialog.dismiss()
-                },
-                exceptionBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-                failureBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-            )
+            try {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        bottomViewModel.updateCircles(conversationId, userId, requests)
+                    },
+                    successBlock = {
+                        bottomViewModel.deleteCircleConversation(
+                            conversationId ?: generateConversationId(
+                                Session.getAccountId()!!,
+                                userId!!,
+                            ),
+                            item.circleId,
+                        )
+                        loadData()
+                        dialog.dismiss()
+                    },
+                    exceptionBlock = {
+                        dialog.dismiss()
+                        return@handleMixinResponse false
+                    },
+                    failureBlock = {
+                        dialog.dismiss()
+                        return@handleMixinResponse false
+                    },
+                )
+            } finally {
+                dialog.dismiss()
+            }
         }
     }
 

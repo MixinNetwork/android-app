@@ -24,6 +24,7 @@ import one.mixin.android.R
 import one.mixin.android.extension.CodeType
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getColorCode
+import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
@@ -42,6 +43,7 @@ class GenerateAvatarWorker
 
         override suspend fun onRun(): Result {
             val groupId = inputData.getString(GROUP_ID) ?: return Result.failure()
+            if (conversationDao.getGroupIconUrl(groupId)?.isWebUrl() == true) return Result.success()
             val triple = checkGroupAvatar(groupId)
             if (triple.first) {
                 return Result.success()
@@ -65,7 +67,7 @@ class GenerateAvatarWorker
                 } catch (e: Exception) {
                 }
             }
-            conversationDao.updateGroupIconUrl(groupId, f.absolutePath)
+            conversationDao.updateGeneratedGroupIconUrl(groupId, f.absolutePath)
             return Result.success()
         }
 

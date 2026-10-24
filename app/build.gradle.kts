@@ -17,8 +17,8 @@ apply(plugin = "com.google.firebase.crashlytics")
 
 val versionMajor = 6
 val versionMinor = 3
-val versionPatch = 4
-val versionBuild = 0
+val versionPatch = 5
+val versionBuild = 1
 
 val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
 val jetifierVersion = rootProject.extra["jetifierVersion"] as String
@@ -233,7 +233,8 @@ android {
         }
     }
 
-    testBuildType = "debug"
+    // Instrumented tests install one.mixin.messenger.test, leaving the debug and release package in place.
+    testBuildType = "staging"
 
     signingConfigs {
         getByName("debug") {
@@ -321,6 +322,11 @@ android {
             }
         }
         exclude(group = "org.bouncycastle", module = "bcprov-jdk18on")
+        if ((name.endsWith("RuntimeClasspath") || name.endsWith("CompileClasspath")) && !name.contains("Test")) {
+            // spongycastle leaks junit into the app, which pins androidTest to hamcrest 1.3
+            exclude(group = "junit", module = "junit")
+            exclude(group = "org.hamcrest")
+        }
     }
 }
 

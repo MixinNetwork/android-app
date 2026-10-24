@@ -1066,6 +1066,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                                     ownerId,
                                     data.category,
                                     data.name,
+                                    data.iconUrl,
                                     data.announcement,
                                     data.muteUntil,
                                     data.createdAt,
@@ -1325,6 +1326,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             return@withContext when {
                 MissingUtxoAddress.PEARL in missingUtxoAddresses -> MissingUtxoAddress.PEARL
                 MissingUtxoAddress.BITCOIN in missingUtxoAddresses -> MissingUtxoAddress.BITCOIN
+                MissingUtxoAddress.LITECOIN in missingUtxoAddresses -> MissingUtxoAddress.LITECOIN
                 else -> null
             }
         }
@@ -1334,7 +1336,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         val fragment = supportFragmentManager.findFragmentByTag(WalletMissingBtcAddressFragment.TAG)
         if (fragment != null) return
         val newFragment = WalletMissingBtcAddressFragment
-            .newInstance(showPearlTitle = missingUtxoAddress == MissingUtxoAddress.PEARL)
+            .newInstance(
+                showPearlTitle = missingUtxoAddress == MissingUtxoAddress.PEARL,
+                showLitecoinTitle = missingUtxoAddress == MissingUtxoAddress.LITECOIN,
+            )
         supportFragmentManager
             .beginTransaction()
             .setReorderingAllowed(true)

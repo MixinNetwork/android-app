@@ -59,6 +59,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.networkConnected
 import one.mixin.android.extension.notEmptyWithElse
 import one.mixin.android.extension.notNullWithElse
@@ -556,26 +557,29 @@ class ConversationListFragment : LinkFragment() {
                 indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                     setCancelable(false)
                 }
-            handleMixinResponse(
-                invokeNetwork = {
-                    conversationListViewModel.createCircle(name)
-                },
-                successBlock = { response ->
-                    response.data?.let { circle ->
-                        conversationListViewModel.insertCircle(circle)
-                        openCircleEdit(circle.circleId)
-                    }
-                },
-                exceptionBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-                failureBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-            )
-            dialog.dismiss()
+            try {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        conversationListViewModel.createCircle(name)
+                    },
+                    successBlock = { response ->
+                        response.data?.let { circle ->
+                            conversationListViewModel.insertCircle(circle)
+                            openCircleEdit(circle.circleId)
+                        }
+                    },
+                    exceptionBlock = {
+                        dialog.dismiss()
+                        return@handleMixinResponse false
+                    },
+                    failureBlock = {
+                        dialog.dismiss()
+                        return@handleMixinResponse false
+                    },
+                )
+            } finally {
+                dialog.dismiss()
+            }
         }
     }
 
@@ -654,12 +658,9 @@ class ConversationListFragment : LinkFragment() {
     private fun enqueueMissingAvatars(items: List<ConversationItem>) {
         items
             .filter { item ->
-                item.isGroupConversation() && (
-                    item.iconUrl() == null ||
-                        !File(
-                            item.iconUrl() ?: "",
-                        ).exists()
-                )
+                val iconUrl = item.iconUrl()
+                item.isGroupConversation() && iconUrl?.isWebUrl() != true &&
+                    (iconUrl.isNullOrEmpty() || !File(iconUrl).exists())
             }.forEach {
                 jobManager.addJobInBackground(GenerateAvatarJob(it.conversationId))
             }

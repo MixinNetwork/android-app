@@ -175,6 +175,8 @@
     <string name="Change">Change</string>
     <string name="Change_Amount">Change Amount</string>
     <string name="Change_emergency_contact">Change recovery contact</string>
+    <string name="Change_Group_Photo_with_Camera">Change Group Photo with Camera</string>
+    <string name="Change_Group_Photo_with_Library">Change Group Photo with Library</string>
     <string name="Change_Number_Instead">Change Number Instead</string>
     <string name="Change_Phone_Number">Change Phone Number</string>
     <string name="Change_PIN">Change PIN</string>
@@ -1584,6 +1586,7 @@
     <string name="continue_with_pin">Continue with PIN</string>
     <string name="Bitcoin" translatable="false">Bitcoin</string>
     <string name="Pearl" translatable="false">Pearl</string>
+    <string name="Litecoin" translatable="false">Litecoin</string>
     <string name="Ethereum" translatable="false">Ethereum</string>
     <string name="Polygon" translatable="false">Polygon</string>
     <string name="BSC" translatable="false">BSC</string>
@@ -2382,8 +2385,7 @@
     <string name="Price_Up_Loss">Price rise %1$s%% → Loss -%2$s %3$s</string>
     <string name="Max_Profit">Max Profit %1$s</string>
     <string name="Max_Loss">Max Loss %1$s</string>
-    <string name="price_change_take_profit">Price %1$s → Max Profit %2$s</string>
-    <string name="price_change_stop_loss">Price %1$s → Max Loss %2$s</string>
+    <string name="price_change_tpsl">Price %1$s → Estimate Profit %2$s</string>
     <string name="example_amount">Amount</string>
     <string name="example_scene1_decreasing">Scenario 1: Price Falls</string>
     <string name="example_scene1_increasing">Scenario 1: Price Rises</string>
@@ -2549,6 +2551,8 @@
     <string name="perps_badge" translatable="false">Perp</string>
     <string name="perps_share_card_title">🚀 Perps %1$s</string>
     <string name="perps_share_card_market">- 📈 Market: %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 Max Leverage: %1$dx</string>
+    <string name="perps_share_card_volume">💰 24h Volume: %1$s</string>
     <string name="perps_share_card_side">- ↕️ Side: %1$s (%2$dx)</string>
     <string name="perps_share_card_trade_now">💰 Trade Now</string>
     <string name="market_share_card_title">Trade %1$s</string>
@@ -2756,4 +2760,12 @@
     <string name="group_disappearing_message_disabled_hint">Disappearing messages haven’t been enabled for this group. Click to set them up or learn more.</string>
     <string name="chat_disappearing_message_enabled_hint">Disappearing messages are set to %1$s for this chat. Click to change it or get more information.</string>
     <string name="chat_disappearing_message_disabled_hint">Disappearing messages haven’t been enabled for this chat. Click to set them up or learn more.</string>
+    <string name="perps_funding_payments">Funding payments</string>
+    <string name="perps_funding_payments_description">The total funding you’ve received or paid since opening this position. Green (positive) means you received funding, while red (negative) means you paid funding.</string>
+    <string name="perps_margin_description">Margin is the collateral you allocate to a position. It represents the maximum amount you can lose on that trade.</string>
+    <string name="perps_liquidation_price_down_description">Going down %1$s will trigger liquidation.</string>
+    <string name="perps_liquidation_price_up_description">Going up %1$s will trigger liquidation.</string>
+    <string name="Details">Details</string>
+    <string name="perps_tpsl_requires_amount_leverage">Please set the amount and leverage before configuring Take Profit and Stop Loss.</string>
+    <string name="perps_estimated_profit">Estimate Profit %1$s</string>
 </resources>

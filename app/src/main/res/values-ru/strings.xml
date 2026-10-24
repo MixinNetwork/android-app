@@ -1188,4 +1188,15 @@
     <string name="group_disappearing_message_disabled_hint">В этой группе исчезающие сообщения не включены. Нажмите, чтобы настроить их или узнать больше.</string>
     <string name="chat_disappearing_message_enabled_hint">В этом чате время исчезновения сообщений установлено на %1$s. Нажмите, чтобы изменить его или узнать больше.</string>
     <string name="chat_disappearing_message_disabled_hint">В этом чате исчезающие сообщения не включены. Нажмите, чтобы настроить их или узнать больше.</string>
+    <string name="perps_funding_payments">Платежи по финансированию</string>
+    <string name="perps_funding_payments_description">Общая сумма финансирования, которую вы получили или уплатили с момента открытия этой позиции. Зелёный цвет (положительное значение) означает, что вы получили финансирование, а красный (отрицательное значение) — что вы его уплатили.</string>
+    <string name="perps_margin_description">Маржа — это залог, который вы выделяете на позицию. Она представляет максимальную сумму, которую вы можете потерять в этой сделке.</string>
+    <string name="perps_liquidation_price_down_description">Снижение на %1$s приведёт к ликвидации.</string>
+    <string name="perps_liquidation_price_up_description">Рост на %1$s приведёт к ликвидации.</string>
+    <string name="Details">Детали</string>
+    <string name="perps_tpsl_requires_amount_leverage">Прежде чем настраивать тейк-профит и стоп-лосс, укажите сумму и кредитное плечо.</string>
+    <string name="perps_estimated_profit">Ожидаемая прибыль %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 Максимальное плечо: %1$dx</string>
+    <string name="perps_share_card_volume">💰 Объём за 24 ч: %1$s</string>
+    <string name="price_change_tpsl">Цена %1$s → Ожидаемая прибыль %2$s</string>
 </resources>

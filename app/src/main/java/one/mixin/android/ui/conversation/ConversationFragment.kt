@@ -2462,6 +2462,7 @@ class ConversationFragment() :
                     info.count,
                 ),
             )
+            binding.actionBar.titleTv.setGroupName(info.name)
             binding.actionBar.avatarIv.setGroup(info.iconUrl)
             inGroup = info.isExist
             if (inGroup) {

@@ -70,9 +70,6 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     suspend fun successConversationList(): List<ConversationMinimal>
 
-    @Query("SELECT DISTINCT c.conversation_id FROM conversations c WHERE c.owner_id = :recipientId and c.category = 'CONTACT'")
-    suspend fun getConversationIdIfExistsSync(recipientId: String): String?
-
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversationById(conversationId: String): LiveData<Conversation?>
 
@@ -168,9 +165,6 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     fun hasUnreadMessage(circleId: String): LiveData<Int?>
 
-    @Query("SELECT * FROM conversations WHERE owner_id =:ownerId AND category = 'CONTACT'")
-    fun findContactConversationByOwnerId(ownerId: String): Conversation?
-
     // Update SQL
     @Query("UPDATE conversations SET code_url = :codeUrl WHERE conversation_id = :conversationId")
     suspend fun updateCodeUrl(
@@ -198,6 +192,7 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query(
         "UPDATE conversations SET owner_id = :ownerId, category = :category, name = :name, announcement = :announcement, " +
+            "icon_url = CASE WHEN :iconUrl != '' THEN :iconUrl WHEN icon_url LIKE 'http://%' OR icon_url LIKE 'https://%' THEN NULL ELSE icon_url END, " +
             "mute_until = :muteUntil, created_at = :createdAt, expire_in = :expireIn, status = :status WHERE conversation_id = :conversationId",
     )
     fun updateConversation(
@@ -205,6 +200,7 @@ interface ConversationDao : BaseDao<Conversation> {
         ownerId: String,
         category: String,
         name: String,
+        iconUrl: String?,
         announcement: String?,
         muteUntil: String?,
         createdAt: String,
@@ -236,8 +232,8 @@ interface ConversationDao : BaseDao<Conversation> {
         muteUntil: String,
     )
 
-    @Query("UPDATE conversations SET icon_url = :iconUrl WHERE conversation_id = :conversationId")
-    fun updateGroupIconUrl(
+    @Query("UPDATE conversations SET icon_url = :iconUrl WHERE conversation_id = :conversationId AND (icon_url IS NULL OR (icon_url NOT LIKE 'http://%' AND icon_url NOT LIKE 'https://%'))")
+    fun updateGeneratedGroupIconUrl(
         conversationId: String,
         iconUrl: String,
     )

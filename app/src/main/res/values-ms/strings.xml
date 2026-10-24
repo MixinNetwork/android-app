@@ -869,4 +869,15 @@
     <string name="group_disappearing_message_disabled_hint">Mesej menghilang belum didayakan untuk kumpulan ini. Ketik untuk menetapkannya atau mengetahui maklumat lanjut.</string>
     <string name="chat_disappearing_message_enabled_hint">Tempoh mesej menghilang untuk sembang ini telah ditetapkan kepada %1$s. Ketik untuk menukarnya atau mengetahui maklumat lanjut.</string>
     <string name="chat_disappearing_message_disabled_hint">Mesej menghilang belum didayakan untuk sembang ini. Ketik untuk menetapkannya atau mengetahui maklumat lanjut.</string>
+    <string name="perps_funding_payments">Bayaran pembiayaan</string>
+    <string name="perps_funding_payments_description">Jumlah bayaran pembiayaan yang anda terima atau bayar sejak membuka posisi ini. Hijau (positif) bermaksud anda menerima bayaran pembiayaan, manakala merah (negatif) bermaksud anda membayar bayaran pembiayaan.</string>
+    <string name="perps_margin_description">Margin ialah cagaran yang anda peruntukkan kepada suatu posisi. Ia mewakili jumlah maksimum yang boleh anda kehilangan dalam dagangan tersebut.</string>
+    <string name="perps_liquidation_price_down_description">Penurunan sebanyak %1$s akan mencetuskan pencairan.</string>
+    <string name="perps_liquidation_price_up_description">Kenaikan sebanyak %1$s akan mencetuskan pencairan.</string>
+    <string name="Details">Butiran</string>
+    <string name="perps_tpsl_requires_amount_leverage">Sila tetapkan amaun dan leveraj sebelum menetapkan Ambil Untung dan Henti Kehilangan.</string>
+    <string name="perps_estimated_profit">Anggaran Keuntungan %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 Leveraj Maksimum: %1$dx</string>
+    <string name="perps_share_card_volume">💰 Volum 24 Jam: %1$s</string>
+    <string name="price_change_tpsl">Harga %1$s → Anggaran Keuntungan %2$s</string>
 </resources>

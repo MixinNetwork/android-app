@@ -245,9 +245,6 @@ class ConversationRepository
             return if (item.isAppCard() && !item.isAppCardWithMediaCover()) null else item
         }
 
-        suspend fun getConversationIdIfExistsSync(recipientId: String) =
-            conversationDao.getConversationIdIfExistsSync(recipientId)
-
         fun getUnreadMessage(
             conversationId: String,
             accountId: String,
@@ -366,10 +363,6 @@ class ConversationRepository
         ) =
             messageDao.findUnreadMessagesSync(conversationId, accountId)
 
-        fun findContactConversationByOwnerId(ownerId: String): Conversation? {
-            return conversationDao.findContactConversationByOwnerId(ownerId)
-        }
-
         fun insertList(it: List<Job>) {
             jobDao.insertList(it)
         }
@@ -425,6 +418,7 @@ class ConversationRepository
                     ownerId,
                     data.category,
                     data.name,
+                    data.iconUrl,
                     data.announcement,
                     data.muteUntil,
                     data.createdAt,
@@ -505,6 +499,20 @@ class ConversationRepository
         }
 
         fun observeAllConversationUnread() = conversationDao.observeAllConversationUnread()
+
+        suspend fun updateGroupIcon(
+            conversationId: String,
+            iconBase64: String,
+        ): MixinResponse<ConversationResponse> = withContext(Dispatchers.IO) {
+            val response = conversationService.updateSuspend(
+                conversationId,
+                ConversationRequest(conversationId, iconBase64 = iconBase64),
+            )
+            if (response.isSuccess) {
+                response.data?.let { insertOrUpdateConversation(it) }
+            }
+            response
+        }
 
         suspend fun muteSuspend(
             id: String,
