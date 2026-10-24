@@ -264,8 +264,9 @@ class WebFragment : BaseFragment() {
     private var currentUrl: String? = null
     private var currentTitle: String? = null
     private var isFinished: Boolean = false
+    private var reusingWebDocument: Boolean = false
     private val processor = QRCodeProcessor()
-    private var webAppInterface: WebAppInterface? = null
+    private var bridgeOwnerToken: WebViewBridgeBinding.OwnerToken? = null
     private var index: Int = -1
 
     fun resetIndex(index: Int) {
@@ -405,9 +406,16 @@ class WebFragment : BaseFragment() {
             applySafeTopPadding(view)
         }
         contentView = binding.containerView
-        webView =
+        val restoredClip =
             if (index >= 0 && index < clips.size) {
-                clips[index].let { clip ->
+                clips[index]
+            } else {
+                null
+            }
+        reusingWebDocument = restoredClip?.webView != null
+        webView =
+            if (restoredClip != null) {
+                restoredClip.let { clip ->
                     binding.titleTv.text = clip.name
                     clip.icon?.let { icon ->
                         this.icon = icon
@@ -420,6 +428,8 @@ class WebFragment : BaseFragment() {
             } else {
                 MixinWebView(MixinApplication.get().contextWrapper)
             }
+        currentUrl = webView.url ?: restoredClip?.url ?: url
+        currentTitle = webView.title ?: restoredClip?.name
         if (webView.parent != null) {
             (webView.parent as? ViewGroup)?.removeView(webView)
         }
@@ -569,6 +579,10 @@ class WebFragment : BaseFragment() {
         webView.webViewClient =
             WebViewClientImpl(
                 object : WebViewClientImpl.OnPageFinishedListener {
+                    override fun onPageStarted() {
+                        isFinished = false
+                    }
+
                     override fun onPageFinished() {
                         reloadTheme()
                     }
@@ -948,111 +962,12 @@ class WebFragment : BaseFragment() {
             }
             binding.titleVa.isGone = immersive
 
-            webAppInterface =
-                WebAppInterface(
-                    MixinApplication.appContext,
-                    conversationId,
-                    immersive,
-                    reloadThemeAction = { reloadTheme() },
-                    playlistAction = { showPlaylist(it) },
-                    closeAction = {
-                        lifecycleScope.launch {
-                            closeSelf()
-                        }
-                    },
-                    getTipAddressAction = { chainId, callback ->
-                        getTipAddress(chainId, callback)
-                    },
-                    tipSignAction = { chainId, message, callback ->
-                        tipSign(chainId, message, callback)
-                    },
-                    getAssetAction = { ids, callback ->
-                        getAssets(ids, callback)
-                    },
-                    signBotSignature = { appId, reloadPublicKey, metho, path, body, callbackFunction ->
-                        botSign(appId, reloadPublicKey, metho, path, body, callbackFunction)
-                    },
-                    openInBrowserAction = { url ->
-                        openInBrowser(url)
-                    },
-                    verifyPinAction = { callback ->
-                        verifyPin(callback)
-                    },
-                )
-            webAppInterface?.let { webView.addJavascriptInterface(it, "MixinContext") }
-            webView.addJavascriptInterface(
-                Web3Interface(
-                    onWalletActionSuccessful = { e ->
-                        lifecycleScope.launch {
-                            webView.evaluateJavascript(e, Timber::d)
-                        }
-                    },
-                    onWalletActionError = { id, code, message ->
-                        lifecycleScope.launch {
-                            webView.evaluateJavascript(walletErrorScript(id, code, message)) {}
-                        }
-                    },
-                    onBrowserSign = { message ->
-                        lifecycleScope.launch {
-                            if (viewDestroyed()) return@launch
-
-                            showGasCheckAndBrowserBottomSheetDialogFragment(
-                                requireActivity(),
-                                message,
-                                currentUrl = currentUrl,
-                                currentTitle = currentTitle,
-                                onReject = {
-                                    lifecycleScope.launch {
-                                        webView.evaluateJavascript(
-                                            walletErrorScript(
-                                                message.callbackId,
-                                                WalletErrorCode.USER_REJECTED_REQUEST,
-                                                "User rejected the request",
-                                            ),
-                                        ) {}
-                                    }
-                                },
-                                onDone = { callback ->
-                                    lifecycleScope.launch {
-                                        if (callback != null) webView.evaluateJavascript(callback) {}
-                                    }
-                                },
-                            )
-                        }
-                    },
-                    onEmptyAddress = { network ->
-                        lifecycleScope.launch {
-                            if (viewDestroyed()) return@launch
-                            if (network.equals("solana", true)) {
-                                if (Web3Signer.solanaAddress.isEmpty()) {
-                                    toast(getString(R.string.not_support_network, network))
-                                }
-                            } else if (network.equals("ethereum", true)) {
-                                if (Web3Signer.evmAddress.isEmpty()) {
-                                    toast(getString(R.string.not_support_network, network))
-                                }
-                            } else {
-                                return@launch
-                            }
-                        }
-                    },
-                ),
-                "_mw_",
-            )
+            bindWebViewBridges(immersive)
             val extraHeaders = HashMap<String, String>()
             conversationId?.let {
                 extraHeaders[Mixin_Conversation_ID_HEADER] = it
             }
-            if (isFinished) {
-                if (index >= 0) {
-                    refreshByLuminance(requireContext().isNightMode(), clips[index].titleColor)
-                }
-                return
-            } else if (webView.url != null) {
-                webView.reload()
-                return
-            }
-            webView.loadUrl(url, extraHeaders)
+            if (!loadWebDocument(extraHeaders)) return
             if (WebViewFeature.isFeatureSupported(WebViewFeature.WEB_AUTHENTICATION)) {
                 WebSettingsCompat.setWebAuthenticationSupport(
                     webView.settings,
@@ -1070,12 +985,112 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun openInBrowser(url: String): Boolean {
+    private fun loadWebDocument(extraHeaders: Map<String, String>): Boolean {
+        if (reusingWebDocument && isFinished) {
+            if (index >= 0) {
+                refreshByLuminance(requireContext().isNightMode(), clips[index].titleColor)
+            }
+            return false
+        }
+        if (webView.url != null) {
+            webView.reload()
+            return false
+        }
+        webView.loadUrl(url, extraHeaders)
+        return true
+    }
+
+    private fun bindWebViewBridges(immersive: Boolean) {
+        val binding = webView.bridgeBinding
+        if (bridgeOwnerToken?.let(binding::isCurrent) == true) return
+        val ownerToken =
+            binding.bind(WebViewBridgeBinding.Metadata(conversationId, immersive)) { ownerToken ->
+                WebViewBridgeBinding.Host(
+                    mixin =
+                        WebViewBridgeBinding.MixinHost(
+                            reloadThemeAction = { reloadTheme(ownerToken) },
+                            playlistAction = { showPlaylist(ownerToken, it) },
+                            closeAction = { closeSelf() },
+                            getTipAddressAction = { chainId, callback -> getTipAddress(ownerToken, chainId, callback) },
+                            tipSignAction = { chainId, message, callback -> tipSign(ownerToken, chainId, message, callback) },
+                            getAssetAction = { ids, callback -> getAssets(ownerToken, ids, callback) },
+                            signBotSignature = { appId, reloadPublicKey, method, path, body, callback ->
+                                botSign(ownerToken, appId, reloadPublicKey, method, path, body, callback)
+                            },
+                            openInBrowserAction = { url -> openInBrowser(ownerToken, url) },
+                            verifyPinAction = { callback -> verifyPin(ownerToken, callback) },
+                        ),
+                    wallet =
+                        WebViewBridgeBinding.WalletHost(
+                            onWalletActionSuccessful = { _, _, script -> webView.evaluateJavascript(script, Timber::d) },
+                            onWalletActionError = { id, network, code, message ->
+                                webView.evaluateJavascript(walletErrorScript(id, network, code, message), null)
+                            },
+                            onBrowserSign = { message ->
+                                val network = message.network ?: Web3Signer.currentNetwork
+                                val response = binding.request(
+                                    ownerToken,
+                                    walletErrorScript(
+                                        message.callbackId,
+                                        network,
+                                        WalletErrorCode.UNAUTHORIZED,
+                                        "Wallet UI is not available",
+                                    ),
+                                )
+                                if (viewDestroyed() || !response.isActive) {
+                                    response.reject()
+                                } else {
+                                    showGasCheckAndBrowserBottomSheetDialogFragment(
+                                        requireActivity(),
+                                        message,
+                                        currentUrl = currentUrl,
+                                        currentTitle = currentTitle,
+                                        onReject = {
+                                            response.complete(
+                                                walletErrorScript(
+                                                    message.callbackId,
+                                                    network,
+                                                    WalletErrorCode.USER_REJECTED_REQUEST,
+                                                    "User rejected the request",
+                                                ),
+                                            )
+                                        },
+                                        onDone = { callback ->
+                                            if (callback != null) response.complete(callback) else response.reject()
+                                        },
+                                    )
+                                }
+                            },
+                            onEmptyAddress = { network ->
+                                if (!viewDestroyed()) {
+                                    when {
+                                        network.equals("solana", true) && Web3Signer.solanaAddress.isEmpty() ->
+                                            toast(getString(R.string.not_support_network, network))
+                                        network.equals("ethereum", true) && Web3Signer.evmAddress.isEmpty() ->
+                                            toast(getString(R.string.not_support_network, network))
+                                    }
+                                }
+                            },
+                        ),
+                )
+            }
+        bridgeOwnerToken = ownerToken
+    }
+
+    private fun detachWebViewBridges() {
+        bridgeOwnerToken?.let(webView.bridgeBinding::detach)
+        bridgeOwnerToken = null
+    }
+
+    private fun openInBrowser(
+        ownerToken: WebViewBridgeBinding.OwnerToken,
+        url: String,
+    ): Boolean {
         if (viewDestroyed()) return false
         val browserUrl = url.toOpenInBrowserUrlOrNull() ?: return false
         val context = context ?: return false
         lifecycleScope.launch {
-            if (viewDestroyed()) return@launch
+            if (viewDestroyed() || !webView.bridgeBinding.isCurrent(ownerToken)) return@launch
             context.openInBrowser(
                 browserUrl,
                 Bundle().apply {
@@ -1091,9 +1106,12 @@ class WebFragment : BaseFragment() {
         requireActivity().finish()
     }
 
-    private fun showPlaylist(playlist: Array<String>) {
+    private fun showPlaylist(
+        ownerToken: WebViewBridgeBinding.OwnerToken,
+        playlist: Array<String>,
+    ) {
         lifecycleScope.launch {
-            if (viewDestroyed()) return@launch
+            if (viewDestroyed() || !webView.bridgeBinding.isCurrent(ownerToken)) return@launch
 
             if (!checkFloatingPermission()) return@launch
 
@@ -1110,28 +1128,52 @@ class WebFragment : BaseFragment() {
     }
 
     private fun reloadTheme() {
-        if (viewDestroyed()) return
+        val ownerToken = bridgeOwnerToken ?: return
+        reloadTheme(ownerToken)
+    }
 
+    private fun reloadTheme(ownerToken: WebViewBridgeBinding.OwnerToken) {
+        if (viewDestroyed() || !webView.bridgeBinding.isCurrent(ownerToken)) return
         lifecycleScope.launch {
-            webView.evaluateJavascript(themeColorScript) {
-                setStatusBarColor(it)
+            evaluateBridgeJavascript(ownerToken, themeColorScript, ::setStatusBarColor)
+        }
+    }
+
+    private fun evaluateBridgeJavascript(
+        ownerToken: WebViewBridgeBinding.OwnerToken,
+        script: String,
+        onResult: ((String) -> Unit)? = null,
+    ) {
+        webView.bridgeBinding.postIfCurrent(ownerToken) {
+            webView.evaluateJavascript(script) { result ->
+                if (onResult != null && webView.bridgeBinding.isCurrent(ownerToken)) {
+                    onResult(result)
+                }
             }
         }
     }
 
     private fun getTipAddress(
+        ownerToken: WebViewBridgeBinding.OwnerToken,
         chainId: String,
         callbackFunction: String,
     ) {
-        if (viewDestroyed()) return
-        if (!WalletConnect.isEnabled()) return
+        val response = webView.bridgeBinding.request(ownerToken, "$callbackFunction('')")
+        if (viewDestroyed() || !response.isActive) {
+            response.reject()
+            return
+        }
+        if (!WalletConnect.isEnabled()) {
+            response.reject()
+            return
+        }
         val isValid = chainId.isUUID()
         if (!isValid) {
-            lifecycleScope.launch {
-                webView.evaluateJavascript("$callbackFunction('')") {}
-            }
+            response.complete("$callbackFunction('')")
+            return
         }
         lifecycleScope.launch {
+            if (!response.isActive) return@launch
             WalletConnectTIP.peer = getPeerUI(Web3Signer.evmAddress)
             showWalletConnectBottomSheetDialogFragment(
                 tip,
@@ -1140,9 +1182,7 @@ class WebFragment : BaseFragment() {
                 WalletConnect.Version.TIP,
                 null,
                 onReject = {
-                    lifecycleScope.launch {
-                        webView.evaluateJavascript("$callbackFunction('')") {}
-                    }
+                    response.complete("$callbackFunction('')")
                 },
                 callback = {
                     val address =
@@ -1152,23 +1192,27 @@ class WebFragment : BaseFragment() {
                             Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
                             ""
                         }
-                    lifecycleScope.launch {
-                        webView.evaluateJavascript("$callbackFunction('$address')") {}
-                    }
+                    response.complete("$callbackFunction('$address')")
                 },
             )
         }
     }
 
     private fun getAssets(
+        ownerToken: WebViewBridgeBinding.OwnerToken,
         ids: Array<String>,
         callbackFunction: String,
     ) {
-        if (viewDestroyed()) return
+        val response = webView.bridgeBinding.request(ownerToken, "$callbackFunction('[]')")
+        if (viewDestroyed() || !response.isActive) {
+            response.reject()
+            return
+        }
 
         lifecycleScope.launch {
+            if (!response.isActive) return@launch
             if (app == null) {
-                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                response.complete("$callbackFunction('[]')")
                 return@launch
             }
 
@@ -1179,12 +1223,12 @@ class WebFragment : BaseFragment() {
                     false
                 }
             if (!sameHost) {
-                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                response.complete("$callbackFunction('[]')")
                 return@launch
             }
             val isValid = ids.isEmpty() || ids.all { it.isUUID() }
             if (!isValid) {
-                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                response.complete("$callbackFunction('[]')")
                 return@launch
             }
             val appId = app!!.appId
@@ -1202,58 +1246,78 @@ class WebFragment : BaseFragment() {
                 } else {
                     "[]"
                 }
-            webView.evaluateJavascript("$callbackFunction('$result')") {}
+            response.complete("$callbackFunction('$result')")
         }
     }
 
-    private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
-        if (viewDestroyed()) return
+    private fun botSign(
+        ownerToken: WebViewBridgeBinding.OwnerToken,
+        appId: String,
+        reloadPublicKey: Boolean,
+        method: String,
+        path: String,
+        body: String,
+        callbackFunction: String,
+    ) {
+        val response = webView.bridgeBinding.request(ownerToken, "$callbackFunction('[]')")
+        if (viewDestroyed() || !response.isActive) {
+            response.reject()
+            return
+        }
 
         if (appId != app?.appId) {
-            webView.evaluateJavascript("$callbackFunction('[]')") {}
+            response.complete("$callbackFunction('[]')")
             return
         }
         lifecycleScope.launch {
+            if (!response.isActive) return@launch
             val app = bottomViewModel.findAndSync(appId)
             if (app == null) {
-                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                response.complete("$callbackFunction('[]')")
                 return@launch
             }
             if (!isVerifiedBot(appId)) {
-                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                response.complete("$callbackFunction('[]')")
                 return@launch
             }
             if (webView.url?.matchResourcePattern(app.resourcePatterns) != true) {
-                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                response.complete("$callbackFunction('[]')")
                 bottomViewModel.refreshUser(appId, true)
                 return@launch
             }
             val publicKey = bottomViewModel.getBotPublicKey(appId, defaultSharedPreferences, reloadPublicKey)
             if (publicKey.isNullOrBlank()) {
-                webView.evaluateJavascript("$callbackFunction('[]')") {}
+                response.complete("$callbackFunction('[]')")
                 return@launch
             }
+            if (!response.isActive) return@launch
             val (ts, signature) = getBotSignature(publicKey, method, path, body)
-            webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
+            response.complete("$callbackFunction('$ts', '$signature')")
         }
     }
 
-    private fun verifyPin(callbackFunction: String) {
-        if (viewDestroyed()) return
+    private fun verifyPin(
+        ownerToken: WebViewBridgeBinding.OwnerToken,
+        callbackFunction: String,
+    ) {
+        val response = webView.bridgeBinding.request(ownerToken, "$callbackFunction(false)")
+        if (viewDestroyed() || !response.isActive) {
+            response.reject()
+            return
+        }
 
         lifecycleScope.launch {
-            if (viewDestroyed()) return@launch
+            if (!response.isActive) return@launch
             val currentAppId = app?.appId
             if (currentAppId.isNullOrBlank() || !isVerifiedBot(currentAppId)) {
-                webView.evaluateJavascript("$callbackFunction(false)") {}
+                response.complete("$callbackFunction(false)")
                 return@launch
             }
 
+            if (!response.isActive) return@launch
             VerifyBottomSheetDialogFragment.newInstance().apply {
                 setOnResult { success ->
-                    lifecycleScope.launch {
-                        webView.evaluateJavascript("$callbackFunction($success)") {}
-                    }
+                    response.complete("$callbackFunction($success)")
                 }
             }.showNow(parentFragmentManager, VerifyBottomSheetDialogFragment.TAG)
         }
@@ -1265,14 +1329,23 @@ class WebFragment : BaseFragment() {
     }
 
     private fun tipSign(
+        ownerToken: WebViewBridgeBinding.OwnerToken,
         chainId: String,
         message: String,
         callbackFunction: String,
     ) {
-        if (viewDestroyed()) return
-        if (!WalletConnect.isEnabled()) return
+        val response = webView.bridgeBinding.request(ownerToken, "$callbackFunction('')")
+        if (viewDestroyed() || !response.isActive) {
+            response.reject()
+            return
+        }
+        if (!WalletConnect.isEnabled()) {
+            response.reject()
+            return
+        }
 
         lifecycleScope.launch {
+            if (!response.isActive) return@launch
             WalletConnectTIP.signData = WalletConnect.WCSignData.TIPSignData(message)
             showWalletConnectBottomSheetDialogFragment(
                 tip,
@@ -1281,17 +1354,13 @@ class WebFragment : BaseFragment() {
                 WalletConnect.Version.TIP,
                 null,
                 onReject = {
-                    lifecycleScope.launch {
-                        webView.evaluateJavascript("$callbackFunction('')") {}
-                    }
+                    response.complete("$callbackFunction('')")
                 },
                 callback = {
-                    if (isAdded) {
+                    if (response.isActive) {
                         val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), it, chainId))
                         val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
-                        lifecycleScope.launch {
-                            webView.evaluateJavascript("$callbackFunction('$sig')") {}
-                        }
+                        response.complete("$callbackFunction('$sig')")
                     }
                 },
             )
@@ -1334,19 +1403,19 @@ class WebFragment : BaseFragment() {
     private var icon: Bitmap? = null
 
     private fun generateWebClip(): WebClip? {
+        detachWebViewBridges()
         val currentUrl = webView.url ?: url
         val v = webView
-        if (v.height <= 0) return null
-        val screenshot = createBitmap(v.width, v.height, Bitmap.Config.RGB_565)
-        val c = Canvas(screenshot)
-        c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
-        v.draw(c)
+        val screenshot = if (v.width > 0 && v.height > 0) {
+            createBitmap(v.width, v.height, Bitmap.Config.RGB_565).also {
+                val c = Canvas(it)
+                c.translate((-v.scrollX).toFloat(), (-v.scrollY).toFloat())
+                v.draw(c)
+            }
+        } else {
+            null
+        }
 
-        webAppInterface?.reloadThemeAction = null
-        webAppInterface?.playlistAction = null
-        webAppInterface = null
-        webView.removeJavascriptInterface("MixinContext")
-        webView.removeJavascriptInterface("mixin")
         webView.webChromeClient = null
         webView.webViewClient = object : WebViewClient() {}
 
@@ -1368,6 +1437,7 @@ class WebFragment : BaseFragment() {
 
     @SuppressLint("SourceLockedOrientationActivity")
     override fun onDestroyView() {
+        detachWebViewBridges()
         webView.stopLoading()
         when {
             hold -> {
@@ -1856,6 +1926,7 @@ class WebFragment : BaseFragment() {
         ) {
             super.onPageStarted(view, url, favicon)
             view ?: return
+            onPageFinishedListener.onPageStarted()
             view.clearCache(true)
             Timber.e("onPageStarted ${Web3Signer.currentChain.name}")
             // Inject on every page start, including pages reached through
@@ -2019,31 +2090,49 @@ class WebFragment : BaseFragment() {
         }
 
         interface OnPageFinishedListener {
+            fun onPageStarted()
+
             fun onPageFinished()
         }
     }
 
     private fun walletErrorScript(
         id: Long,
+        network: String,
         code: Int,
         message: String,
     ): String =
-        "mixinwallet.${Web3Signer.currentNetwork}.sendError($id, {code: $code, message: ${JSONObject.quote(message)}});"
+        "mixinwallet[${JSONObject.quote(network)}].sendError($id, {code: $code, message: ${JSONObject.quote(message)}});"
 
     class Web3Interface(
-        val onWalletActionSuccessful: (String) -> Unit,
-        val onWalletActionError: (Long, Int, String) -> Unit,
+        val onWalletActionSuccessful: (Long, String, String) -> Unit,
+        val onWalletActionError: (Long, String, Int, String) -> Unit,
         val onBrowserSign: (JsSignMessage) -> Unit,
         val onEmptyAddress: (String) -> Unit,
+        private val isHostAttached: () -> Boolean = { true },
+        private val onDetachedRequest: (Long, String) -> Unit = { id, network ->
+            onWalletActionError(id, network, WalletErrorCode.UNAUTHORIZED, "Wallet UI is not available")
+        },
+        private val onRequestFinished: () -> Unit = {},
     ) {
         @JavascriptInterface
         fun postMessage(json: String) {
             if (BuildConfig.DEBUG) Timber.d("postMessage $json")
             val obj = JSONObject(json)
             val id = obj.getLong("id")
+            val attached = isHostAttached()
+            var network = Web3Signer.JsSignerNetwork.Ethereum.name
             try {
+                network = obj.getString("network")
+                network = normalizeNetwork(network) ?: run {
+                    onWalletActionError(id, network, WalletErrorCode.INVALID_PARAMS, "Unsupported wallet network")
+                    return
+                }
+                if (!attached) {
+                    onDetachedRequest(id, network)
+                    return
+                }
                 val method = DAppMethod.fromValue(obj.getString("name"))
-                val network = obj.getString("network")
                 if (network == Web3Signer.JsSignerNetwork.Solana.name) {
                     Web3Signer.useSolana()
                 } else {
@@ -2054,35 +2143,38 @@ class WebFragment : BaseFragment() {
                 }
                 when (method) {
                 DAppMethod.REQUESTACCOUNTS -> {
-                    if (network == Web3Signer.JsSignerNetwork.Ethereum.name) {
-                        onWalletActionSuccessful("mixinwallet.$network.setAddress(\"${Web3Signer.address}\");")
-                    }
-                    onWalletActionSuccessful("mixinwallet.$network.sendResponse($id, [\"${Web3Signer.address}\"]);")
+                    val setAddress =
+                        if (network == Web3Signer.JsSignerNetwork.Ethereum.name) {
+                            "mixinwallet.$network.setAddress(\"${Web3Signer.address}\");"
+                        } else {
+                            ""
+                        }
+                    onWalletActionSuccessful(id, network, "$setAddress mixinwallet.$network.sendResponse($id, [\"${Web3Signer.address}\"]);")
                 }
 
                 DAppMethod.REQUESTPERMISSIONS -> {
-                    onWalletActionError(id, WalletErrorCode.UNSUPPORTED_METHOD, "wallet_requestPermissions is not supported")
+                    onWalletActionError(id, network, WalletErrorCode.UNSUPPORTED_METHOD, "wallet_requestPermissions is not supported")
                 }
 
                 DAppMethod.SWITCHETHEREUMCHAIN -> {
-                    walletSwitchEthereumChain(id, obj.getJSONObject("object").toString())
+                    walletSwitchEthereumChain(id, network, obj.getJSONObject("object").toString())
                 }
 
                 DAppMethod.SIGNMESSAGE -> {
                     val o = obj.getJSONObject("object")
                     if (network == Web3Signer.JsSignerNetwork.Solana.name) {
-                        signMessage(id, o.getString("data"))
+                        signMessage(id, network, o.getString("data"))
                     } else {
-                        signEvmMessage(id, o)
+                        signEvmMessage(id, network, o)
                     }
                 }
 
                 DAppMethod.SIGNPERSONALMESSAGE -> {
-                    signPersonalMessage(id, obj.getJSONObject("object"))
+                    signPersonalMessage(id, network, obj.getJSONObject("object"))
                 }
 
                 DAppMethod.SIGNTYPEDMESSAGE -> {
-                    signTypedMessage(id, obj.getJSONObject("object"))
+                    signTypedMessage(id, network, obj.getJSONObject("object"))
                 }
 
                 DAppMethod.SIGNTRANSACTION -> {
@@ -2121,32 +2213,34 @@ class WebFragment : BaseFragment() {
                         }
 
                     if (!from.equals(Web3Signer.evmAddress, ignoreCase = true)) {
-                        onWalletActionError(id, WalletErrorCode.INVALID_PARAMS, "Transaction sender does not match the selected account")
+                        onWalletActionError(id, network, WalletErrorCode.INVALID_PARAMS, "Transaction sender does not match the selected account")
                         return
                     }
-                    signTransaction(id, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
+                    signTransaction(id, network, WCEthereumTransaction(from, to, null, null, maxFeePerGas, maxPriorityFeePerGas, gas, null, value, data))
                 }
 
                 DAppMethod.SIGNRAWTRANSACTION -> {
                     val o = obj.getJSONObject("object")
                     val raw = o.getString("raw")
-                    signRawTransaction(id, raw, o.optBoolean("broadcast", false))
+                    signRawTransaction(id, network, raw, o.optBoolean("broadcast", false))
                 }
 
                 DAppMethod.SINGIN -> {
                     val o = obj.getJSONObject("object")
                     val data = o.getJSONObject("data")
-                    onBrowserSign(JsSignMessage(id, JsSignMessage.TYPE_SIGN_IN, data = data.toString()))
+                    onBrowserSign(JsSignMessage(id, JsSignMessage.TYPE_SIGN_IN, data = data.toString(), network = network))
                 }
 
                     else -> {
                         Timber.e("json $json")
-                        onWalletActionError(id, WalletErrorCode.UNSUPPORTED_METHOD, "Unsupported wallet method: ${obj.getString("name")}")
+                        onWalletActionError(id, network, WalletErrorCode.UNSUPPORTED_METHOD, "Unsupported wallet method: ${obj.getString("name")}")
                     }
                 }
             } catch (e: Exception) {
                 Timber.e(e, "Invalid wallet request: $json")
-                onWalletActionError(id, WalletErrorCode.INVALID_PARAMS, e.message ?: "Invalid request")
+                onWalletActionError(id, network, WalletErrorCode.INVALID_PARAMS, e.message ?: "Invalid request")
+            } finally {
+                onRequestFinished()
             }
         }
 
@@ -2156,7 +2250,7 @@ class WebFragment : BaseFragment() {
         ): Boolean {
             if (Web3Signer.address.isBlank()) {
                 onEmptyAddress(network)
-                onWalletActionError(callbackId, WalletErrorCode.UNAUTHORIZED, "No account is available for $network")
+                onWalletActionError(callbackId, network, WalletErrorCode.UNAUTHORIZED, "No account is available for $network")
                 return true
             }
             return false
@@ -2164,28 +2258,32 @@ class WebFragment : BaseFragment() {
 
         private fun signTransaction(
             callbackId: Long,
+            network: String,
             wcEthereumTransaction: WCEthereumTransaction,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = wcEthereumTransaction))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = wcEthereumTransaction, network = network))
         }
 
         private fun signRawTransaction(
             callbackId: Long,
+            network: String,
             raw: String,
             broadcast: Boolean,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web, broadcast = broadcast))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web, network = network, broadcast = broadcast))
         }
 
         private fun signMessage(
             callbackId: Long,
+            network: String,
             data: String,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data, network = network))
         }
 
         private fun signEvmMessage(
             callbackId: Long,
+            network: String,
             data: JSONObject,
         ) {
             try {
@@ -2193,14 +2291,15 @@ class WebFragment : BaseFragment() {
                 if (address.isNotBlank() && !address.equals(Web3Signer.address, true)) {
                     throw IllegalArgumentException("Address unequal")
                 }
-                signMessage(callbackId, data.getString("data"))
+                signMessage(callbackId, network, data.getString("data"))
             } catch (e: Exception) {
-                onWalletActionError(callbackId, WalletErrorCode.INVALID_PARAMS, "Invalid signing request")
+                onWalletActionError(callbackId, network, WalletErrorCode.INVALID_PARAMS, "Invalid signing request")
             }
         }
 
         private fun signPersonalMessage(
             callbackId: Long,
+            network: String,
             data: JSONObject,
         ) {
             try {
@@ -2208,14 +2307,15 @@ class WebFragment : BaseFragment() {
                 if (!address.equals(Web3Signer.address, true)) {
                     throw IllegalArgumentException("Address unequal")
                 }
-                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data.getString("data")))
+                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data.getString("data"), network = network))
             } catch (e: Exception) {
-                onWalletActionError(callbackId, WalletErrorCode.INVALID_PARAMS, "Invalid personal signing request")
+                onWalletActionError(callbackId, network, WalletErrorCode.INVALID_PARAMS, "Invalid personal signing request")
             }
         }
 
         private fun signTypedMessage(
             callbackId: Long,
+            network: String,
             data: JSONObject,
         ) {
             try {
@@ -2223,9 +2323,9 @@ class WebFragment : BaseFragment() {
                 if (!address.equals(Web3Signer.address, true)) {
                     throw IllegalArgumentException("Address unequal")
                 }
-                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data.getString("raw")))
+                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data.getString("raw"), network = network))
             } catch (e: Exception) {
-                onWalletActionError(callbackId, WalletErrorCode.INVALID_PARAMS, "Invalid typed-data signing request")
+                onWalletActionError(callbackId, network, WalletErrorCode.INVALID_PARAMS, "Invalid typed-data signing request")
             }
         }
 
@@ -2246,12 +2346,15 @@ class WebFragment : BaseFragment() {
 
         private fun walletSwitchEthereumChain(
             callbackId: Long,
+            network: String,
             msgParams: String,
         ) {
             val switchChain = GsonHelper.customGson.fromJson(msgParams, SwitchChain::class.java)
             val result = Web3Signer.switchChain(switchChain)
             if (result.isSuccess) {
                 onWalletActionSuccessful(
+                    callbackId,
+                    network,
                     """
                     var config = {
                     ethereum: {
@@ -2260,21 +2363,27 @@ class WebFragment : BaseFragment() {
                         rpcUrl: "${Web3Signer.currentChain.rpcUrl}"
                     }
                 };
-                mixinwallet.${Web3Signer.currentNetwork}.setConfig(config);
+                mixinwallet.$network.setConfig(config);
+                mixinwallet.$network.emitChainChanged('${Web3Signer.currentChain.hexReference}');
+                mixinwallet.$network.sendResponse($callbackId, null);
                 """,
                 )
-                onWalletActionSuccessful("mixinwallet.${Web3Signer.currentNetwork}.emitChainChanged('${Web3Signer.currentChain.hexReference}');")
-                onWalletActionSuccessful("mixinwallet.${Web3Signer.currentNetwork}.sendResponse($callbackId, null);")
             } else {
-                onWalletActionError(callbackId, WalletErrorCode.UNRECOGNIZED_CHAIN, result.exceptionOrNull()?.message ?: "Unrecognized chain")
+                onWalletActionError(callbackId, network, WalletErrorCode.UNRECOGNIZED_CHAIN, result.exceptionOrNull()?.message ?: "Unrecognized chain")
             }
         }
+
+        private fun normalizeNetwork(network: String): String? =
+            when {
+                network.equals(Web3Signer.JsSignerNetwork.Ethereum.name, ignoreCase = true) -> Web3Signer.JsSignerNetwork.Ethereum.name
+                network.equals(Web3Signer.JsSignerNetwork.Solana.name, ignoreCase = true) -> Web3Signer.JsSignerNetwork.Solana.name
+                else -> null
+            }
     }
 
     class WebAppInterface(
         val context: Context,
-        val conversationId: String?,
-        val immersive: Boolean,
+        val metadataProvider: () -> WebViewBridgeBinding.Metadata = { WebViewBridgeBinding.Metadata(null, false) },
         var reloadThemeAction: (() -> Unit)? = null,
         var playlistAction: ((Array<String>) -> Unit)? = null,
         var closeAction: (() -> Unit)? = null,
@@ -2291,11 +2400,12 @@ class WebFragment : BaseFragment() {
         }
 
         @JavascriptInterface
-        fun getContext(): String? =
-            Gson().toJson(
+        fun getContext(): String? {
+            val metadata = metadataProvider()
+            return Gson().toJson(
                 MixinContext(
-                    conversationId,
-                    immersive,
+                    metadata.conversationId,
+                    metadata.immersive,
                     appearance =
                         if (context.isNightMode()) {
                             "dark"
@@ -2304,6 +2414,7 @@ class WebFragment : BaseFragment() {
                         },
                 ),
             )
+        }
 
         @JavascriptInterface
         fun reloadTheme() {
