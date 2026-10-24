@@ -153,6 +153,14 @@ class NameTextView : LinearLayoutCompat {
         this.textView.setCompoundDrawables(null, null, null, null)
     }
 
+    fun setGroupName(text: String?) {
+        setTextOnly(text)
+        val icon = AppCompatResources.getDrawable(context, R.drawable.ic_group_badge)?.apply {
+            setBounds(0, 0, badgeSize, badgeSize)
+        }
+        textView.setCompoundDrawablesRelative(null, null, icon, null)
+    }
+
     fun setVerifiedName(text: String, isVerified: Boolean) {
         setTextOnly(text)
         if (!isVerified) return
@@ -391,10 +399,7 @@ class NameTextView : LinearLayoutCompat {
 
     fun setName(item: ConversationMinimal) {
         if (item.isGroupConversation()) {
-            this.textView.text = item.groupName
-            iconView.isVisible = false
-            iconView.stopAnimation()
-            this.textView.setCompoundDrawables(null, null, null, null)
+            setGroupName(item.groupName)
         } else {
             this.textView.text = item.name
             if (item.isProsperity()) {
