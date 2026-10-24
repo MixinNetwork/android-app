@@ -56,10 +56,7 @@ class ContactViewModel
             duration: Long,
         ) {
             viewModelScope.launch(SINGLE_DB_THREAD) {
-                var conversationId = conversationRepository.getConversationIdIfExistsSync(recipientId)
-                if (conversationId == null) {
-                    conversationId = generateConversationId(senderId, recipientId)
-                }
+                val conversationId = generateConversationId(senderId, recipientId)
                 val participantRequest = ParticipantRequest(recipientId, "")
                 jobManager.addJobInBackground(
                     ConversationJob(

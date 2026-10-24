@@ -1254,10 +1254,7 @@ class BottomSheetViewModel
                 val request = ConversationRequest(conversationId, ConversationCategory.GROUP.name, duration = duration)
                 conversationRepo.muteSuspend(conversationId, request)
             } else {
-                var cid = conversationRepo.getConversationIdIfExistsSync(recipientId!!)
-                if (cid == null) {
-                    cid = generateConversationId(senderId!!, recipientId)
-                }
+                val cid = generateConversationId(senderId!!, recipientId!!)
                 val participantRequest = ParticipantRequest(recipientId, "")
                 val request =
                     ConversationRequest(

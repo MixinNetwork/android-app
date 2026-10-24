@@ -862,10 +862,10 @@ class ConversationViewModel
                     }
                 } else if (selectItem.userId != null) {
                     userRepository.findForwardUserById(selectItem.userId)?.let { user ->
-                        val conversation = conversationRepository.findContactConversationByOwnerId(user.userId)
+                        val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
+                        val conversation = conversationRepository.getConversation(conversationId)
                         if (conversation == null) {
                             val createdAt = nowInUtc()
-                            val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
                             val participants =
                                 arrayListOf(
                                     Participant(conversationId, Session.getAccountId()!!, "", createdAt),
