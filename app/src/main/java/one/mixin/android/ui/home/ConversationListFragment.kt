@@ -557,26 +557,29 @@ class ConversationListFragment : LinkFragment() {
                 indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
                     setCancelable(false)
                 }
-            handleMixinResponse(
-                invokeNetwork = {
-                    conversationListViewModel.createCircle(name)
-                },
-                successBlock = { response ->
-                    response.data?.let { circle ->
-                        conversationListViewModel.insertCircle(circle)
-                        openCircleEdit(circle.circleId)
-                    }
-                },
-                exceptionBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-                failureBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-            )
-            dialog.dismiss()
+            try {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        conversationListViewModel.createCircle(name)
+                    },
+                    successBlock = { response ->
+                        response.data?.let { circle ->
+                            conversationListViewModel.insertCircle(circle)
+                            openCircleEdit(circle.circleId)
+                        }
+                    },
+                    exceptionBlock = {
+                        dialog.dismiss()
+                        return@handleMixinResponse false
+                    },
+                    failureBlock = {
+                        dialog.dismiss()
+                        return@handleMixinResponse false
+                    },
+                )
+            } finally {
+                dialog.dismiss()
+            }
         }
     }
 

@@ -2,8 +2,6 @@ package one.mixin.android.ui.setting
 
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
@@ -39,11 +37,9 @@ class SettingViewModel
         fun countBlockingUsers() =
             accountRepository.findUsersByType(UserRelationship.BLOCKING.name)
 
-        fun authorizations() =
-            authorizationService.authorizations().subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())!!
+        suspend fun authorizations() = authorizationService.authorizations()
 
-        fun deauthApp(appId: String) =
-            accountRepository.deAuthorize(DeauthorRequest(appId)).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())!!
+        suspend fun deauthApp(appId: String) = accountRepository.deAuthorize(DeauthorRequest(appId))
 
         suspend fun findUserById(userId: String) = userRepository.suspendFindUserById(userId)
 

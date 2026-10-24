@@ -11,12 +11,13 @@ import android.widget.TextView
 import androidx.core.view.updateLayoutParams
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentGiphySearchBottomSheetBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.toast
@@ -37,7 +38,7 @@ import timber.log.Timber
 class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     companion object {
         const val TAG = "GiphyBottomSheetFragment"
-        const val LIMIT = 51
+        const val LIMIT = 50
         const val INTERVAL = 4000
 
         const val POS_RV = 0
@@ -130,7 +131,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
     private fun update(list: List<Gif>) {
         offset += LIMIT
         totalGifs.addAll(list)
-        adapter.submitList(totalGifs)
+        adapter.submitList(totalGifs.toList())
     }
 
     @SuppressLint("NotifyDataSetChanged")
@@ -139,38 +140,43 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
         if (offset == 0) {
             binding.stickerVa.displayedChild = POS_PB
         }
-        if (searching) {
-            val query = binding.searchEt.et.text.toString()
-            bottomViewModel.searchGifs(query, LIMIT, offset)
-        } else {
-            bottomViewModel.trendingGifs(LIMIT, offset)
-        }.autoDispose(stopScope)
-            .subscribe(
-                { list ->
-                    if (!isAdded) return@subscribe
-                    if (offset == 0) {
-                        adapter.notifyDataSetChanged()
-                    }
-                    if (list.isEmpty()) {
-                        binding.stickerVa.displayedChild = POS_EMPTY
+        val query = binding.searchEt.et.text.toString()
+        launchUntilStop {
+            val list =
+                try {
+                    if (searching) {
+                        bottomViewModel.searchGifs(query, LIMIT, offset)
                     } else {
-                        binding.stickerVa.displayedChild = POS_RV
-                        update(list)
+                        bottomViewModel.trendingGifs(LIMIT, offset)
                     }
-                    if (list.size < LIMIT) {
-                        noMore = true
-                    }
+                } catch (e: CancellationException) {
                     fetching = false
-                },
-                { t ->
+                    binding.stickerVa.displayedChild = if (totalGifs.isEmpty()) POS_EMPTY else POS_RV
+                    throw e
+                } catch (t: Exception) {
                     fetching = false
                     binding.stickerVa.displayedChild = POS_EMPTY
                     Timber.d("Search gifs failed, t: ${t.printStackTrace()}")
                     if (t is HttpException && t.code() == 429) {
                         toast(R.string.giphy_api_rate_limit_exceeded)
                     }
-                },
-            )
+                    return@launchUntilStop
+                }
+            if (!isAdded) return@launchUntilStop
+            if (offset == 0) {
+                adapter.notifyDataSetChanged()
+            }
+            if (list.isEmpty()) {
+                binding.stickerVa.displayedChild = if (totalGifs.isEmpty()) POS_EMPTY else POS_RV
+            } else {
+                binding.stickerVa.displayedChild = POS_RV
+                update(list)
+            }
+            if (list.size < LIMIT) {
+                noMore = true
+            }
+            fetching = false
+        }
     }
 
     private val onScrollListener =

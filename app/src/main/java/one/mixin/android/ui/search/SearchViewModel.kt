@@ -238,9 +238,7 @@ internal constructor(
         ).flow.cachedIn(viewModelScope).asLiveData()
     }
 
-    fun search(query: String): Observable<MixinResponse<User>> =
-        accountRepository.search(query).subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+    suspend fun search(query: String): MixinResponse<User> = userRepository.searchSuspend(query)
 
     fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {

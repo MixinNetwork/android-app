@@ -4,9 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -60,8 +57,7 @@ class BottomSheetViewModel
                 accountRepository.searchCode(code)
             }
 
-        fun join(code: String): Observable<MixinResponse<ConversationResponse>> =
-            accountRepository.join(code).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        suspend fun join(code: String): MixinResponse<ConversationResponse> = accountRepository.join(code)
 
         fun refreshConversation(conversationId: String) {
             jobManager.addJobInBackground(RefreshConversationJob(conversationId))
@@ -443,8 +439,7 @@ class BottomSheetViewModel
                 assetRepository.insertSnapshot(snapshot)
             }
 
-        fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
-            accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        suspend fun update(request: AccountUpdateRequest): MixinResponse<Account> = accountRepository.update(request)
 
         fun insertUser(user: User) =
             viewModelScope.launch(Dispatchers.IO) {
