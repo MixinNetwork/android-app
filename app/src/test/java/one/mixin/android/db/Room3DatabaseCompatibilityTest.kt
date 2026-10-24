@@ -86,7 +86,7 @@ class Room3DatabaseCompatibilityTest {
             "SELECT COUNT(*) FROM perps_orders",
             "0",
             schemaVersion = 9,
-            migrations = arrayOf(PerpsDatabase.MIGRATION_9_10, PerpsDatabase.MIGRATION_10_11),
+            migrations = arrayOf(PerpsDatabase.MIGRATION_9_10, PerpsDatabase.MIGRATION_10_11, PerpsDatabase.MIGRATION_11_12),
         )
     }
 
@@ -108,7 +108,7 @@ class Room3DatabaseCompatibilityTest {
             "SELECT margin || ':' || unrealized_pnl || ':' || estimated_close_fee FROM positions",
             "10:2:",
             schemaVersion = 10,
-            migrations = arrayOf(PerpsDatabase.MIGRATION_10_11),
+            migrations = arrayOf(PerpsDatabase.MIGRATION_10_11, PerpsDatabase.MIGRATION_11_12),
         )
     }
 

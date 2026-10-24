@@ -2384,8 +2384,7 @@
     <string name="Price_Up_Loss">Price rise %1$s%% → Loss -%2$s %3$s</string>
     <string name="Max_Profit">Max Profit %1$s</string>
     <string name="Max_Loss">Max Loss %1$s</string>
-    <string name="price_change_take_profit">Price %1$s → Max Profit %2$s</string>
-    <string name="price_change_stop_loss">Price %1$s → Max Loss %2$s</string>
+    <string name="price_change_tpsl">Price %1$s → Estimate Profit %2$s</string>
     <string name="example_amount">Amount</string>
     <string name="example_scene1_decreasing">Scenario 1: Price Falls</string>
     <string name="example_scene1_increasing">Scenario 1: Price Rises</string>
@@ -2753,4 +2752,12 @@
     <string name="perps_include_pnl">Include PnL</string>
     <string name="perps_position_amount">Position Amount</string>
     <string name="perps_margin_amount">Margin Amount</string>
+    <string name="perps_funding_payments">Funding payments</string>
+    <string name="perps_funding_payments_description">The total funding you’ve received or paid since opening this position. Green (positive) means you received funding, while red (negative) means you paid funding.</string>
+    <string name="perps_margin_description">Margin is the collateral you allocate to a position. It represents the maximum amount you can lose on that trade.</string>
+    <string name="perps_liquidation_price_down_description">Going down %1$s will trigger liquidation.</string>
+    <string name="perps_liquidation_price_up_description">Going up %1$s will trigger liquidation.</string>
+    <string name="Details">Details</string>
+    <string name="perps_tpsl_requires_amount_leverage">Please set the amount and leverage before configuring Take Profit and Stop Loss.</string>
+    <string name="perps_estimated_profit">Estimate Profit %1$s</string>
 </resources>
