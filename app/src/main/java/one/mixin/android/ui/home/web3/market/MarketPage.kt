@@ -699,15 +699,12 @@ private fun MarketOverviewCard(
         shape = RoundedCornerShape(8.dp),
         color = MixinAppTheme.colors.background,
         border = androidx.compose.foundation.BorderStroke(1.dp, MixinAppTheme.colors.borderPrimary),
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(126.dp),
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
             modifier =
                 Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 20.dp),
         ) {
             IndicatorMetric(
@@ -784,15 +781,12 @@ private fun BitcoinDominanceCard(indicator: GlobalMarket) {
         shape = RoundedCornerShape(8.dp),
         color = MixinAppTheme.colors.background,
         border = androidx.compose.foundation.BorderStroke(1.dp, MixinAppTheme.colors.borderPrimary),
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(150.dp),
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
             modifier =
                 Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 20.dp),
         ) {
             Text(
