@@ -2725,4 +2725,5 @@
     <string name="perps_estimated_profit">예상 수익 %1$s</string>
     <string name="perps_share_card_max_leverage">📈 최대 레버리지: %1$dx</string>
     <string name="perps_share_card_volume">💰 24시간 거래량: %1$s</string>
+    <string name="invalid_gasless_solana_transaction">대납 거래가 요청한 전송과 일치하지 않습니다.</string>
 </resources>

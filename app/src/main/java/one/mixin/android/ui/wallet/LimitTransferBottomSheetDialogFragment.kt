@@ -121,6 +121,7 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.validateGaslessTransfer
 import one.mixin.android.widget.components.MixinButton
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
@@ -918,7 +919,16 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     ) {
         val rawPayload = payload.takeIf { it.isJsonPrimitive }?.asString
             ?: throw IllegalStateException("Gasless payload is not a Solana base64 transaction")
-        val tx = VersionedTransactionCompat.from(rawPayload)
+        val tx = try {
+            val feeToken = if (feeAssetId == token.assetId) token else {
+                requireNotNull(web3ViewModel.web3TokenItemById(token.walletId, feeAssetId))
+            }
+            VersionedTransactionCompat.from(rawPayload).also {
+                it.validateGaslessTransfer(token, amount, fromAddress, toAddress, feeToken, feeAmount)
+            }
+        } catch (e: IllegalArgumentException) {
+            throw IllegalArgumentException(getString(R.string.invalid_gasless_solana_transaction), e)
+        }
         val signedTx = Web3Signer.signSolanaTransaction(privateKey, tx) {
             rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
         }
