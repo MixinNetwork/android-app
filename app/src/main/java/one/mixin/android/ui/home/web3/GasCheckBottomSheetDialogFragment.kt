@@ -120,7 +120,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
             showError(getString(R.string.Data_error))
             return
         }
-        val requiredFee: BigDecimal = tx.calcFee(Web3Signer.address)
+        val requiredFee: BigDecimal = tx.calcFee(Web3Signer.solanaAddress)
         val solAsset = viewModel.web3TokenItemById(Web3Signer.currentWalletId, Chain.Solana.assetId)
         val solBalance: BigDecimal = solAsset?.balance?.toBigDecimalOrNull() ?: BigDecimal.ZERO
         if (solBalance >= requiredFee) {
@@ -252,7 +252,7 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
     }
     private val toAddress: String? by lazy { requireArguments().getString(ARGS_TO_ADDRESS) }
     private val currentChain by lazy {
-        token?.getChainFromName() ?: Web3Signer.currentChain
+        token?.getChainFromName() ?: signMessage.chain ?: Web3Signer.currentChain
     }
 
     private val viewModel by viewModels<BrowserWalletBottomSheetViewModel>()
