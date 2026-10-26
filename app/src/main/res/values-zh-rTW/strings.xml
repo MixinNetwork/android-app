@@ -2728,4 +2728,5 @@
     <string name="perps_estimated_profit">預估收益 %1$s</string>
     <string name="perps_share_card_max_leverage">📈 最大槓桿：%1$dx</string>
     <string name="perps_share_card_volume">💰 24小時成交量：%1$s</string>
+    <string name="bitcoin_fee_confirmation_required">無法確認比特幣手續費，或手續費已上漲。請重新發起轉帳並確認新的手續費。</string>
 </resources>

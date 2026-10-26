@@ -2760,4 +2760,5 @@
     <string name="Details">Details</string>
     <string name="perps_tpsl_requires_amount_leverage">Please set the amount and leverage before configuring Take Profit and Stop Loss.</string>
     <string name="perps_estimated_profit">Estimate Profit %1$s</string>
+    <string name="bitcoin_fee_confirmation_required">Bitcoin fee could not be confirmed or has increased. Please request the transfer again and confirm the updated fee.</string>
 </resources>

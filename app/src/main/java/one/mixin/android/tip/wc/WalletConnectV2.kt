@@ -63,7 +63,6 @@ import org.web3j.crypto.RawTransaction
 import org.web3j.crypto.TransactionEncoder
 import org.web3j.utils.Numeric
 import timber.log.Timber
-import java.math.BigDecimal
 import java.math.BigInteger
 import java.nio.ByteBuffer
 import java.util.Base64
@@ -425,7 +424,6 @@ object WalletConnectV2 : WalletConnect() {
         getBlockhash: suspend () -> String,
         getNonce: suspend (String) -> BigInteger,
         getBitcoinOutputs: suspend (String) -> List<WalletOutput> = { emptyList() },
-        estimateBitcoinFee: suspend (String) -> WcBitcoinFeeEstimate? = { null },
     ): Any? {
         val sessionRequest = getSessionRequest(topic)
         if (sessionRequest == null) {
@@ -469,7 +467,7 @@ object WalletConnectV2 : WalletConnect() {
         } else if (signMessage is WcBitcoinGetAccountAddresses) {
             approveBitcoinAddresses(signMessage, sessionRequest)
         } else if (signMessage is WcBitcoinSendTransfer) {
-            return buildSignedBitcoinTransfer(priv, signMessage, getBitcoinOutputs, estimateBitcoinFee)
+            return buildSignedBitcoinTransfer(priv, signMessage, getBitcoinOutputs, signData.bitcoinFee)
         } else if (signMessage is WcBitcoinSignMessage) {
             approveBitcoinMessage(priv, signMessage, sessionRequest)
         }
@@ -693,7 +691,7 @@ object WalletConnectV2 : WalletConnect() {
         priv: ByteArray,
         request: WcBitcoinSendTransfer,
         getBitcoinOutputs: suspend (String) -> List<WalletOutput>,
-        estimateBitcoinFee: suspend (String) -> WcBitcoinFeeEstimate?,
+        confirmedFee: WcBitcoinFeeEstimate?,
     ): WcBitcoinSignedTransfer {
         val key = ECKey.fromPrivate(priv, true)
         val fromAddress = key.toAddress(ScriptType.P2WPKH, BitcoinNetwork.MAINNET).toString()
@@ -708,16 +706,10 @@ object WalletConnectV2 : WalletConnect() {
             throw IllegalArgumentException("Empty Bitcoin UTXO")
         }
         val amountBtc = request.amountBtc()
-        val initial =
-            BtcTransactionBuilder.buildSendTransaction(
-                fromAddress = fromAddress,
-                toAddress = request.recipientAddress,
-                amountBtc = amountBtc,
-                localUtxos = localUtxos,
-                feeRate = BigDecimal.ONE,
-            )
-        val estimate = estimateBitcoinFee(initial.rawHex)
-        val feeRate = estimate?.feeRate ?: BigDecimal.ONE
+        val feeError = MixinApplication.appContext.getString(R.string.bitcoin_fee_confirmation_required)
+        requireNotNull(confirmedFee) { feeError }
+        require(confirmedFee.permitsFee(confirmedFee.feeBtc)) { feeError }
+        val feeRate = confirmedFee.feeRate
         val built =
             BtcTransactionBuilder.buildSendTransaction(
                 fromAddress = fromAddress,
@@ -725,8 +717,8 @@ object WalletConnectV2 : WalletConnect() {
                 amountBtc = amountBtc,
                 localUtxos = localUtxos,
                 feeRate = feeRate,
-                minFeeBtc = estimate?.minFee?.toBigDecimalOrNull(),
             )
+        require(confirmedFee.permitsFee(built.feeBtc)) { feeError }
         val signed = signBitcoinTransaction(built.rawHex, key, localUtxos)
         return WcBitcoinSignedTransfer(
             rawTx = signed.rawTx,

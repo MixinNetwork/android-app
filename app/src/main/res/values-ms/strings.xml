@@ -873,4 +873,5 @@
     <string name="perps_share_card_max_leverage">📈 Leveraj Maksimum: %1$dx</string>
     <string name="perps_share_card_volume">💰 Volum 24 Jam: %1$s</string>
     <string name="price_change_tpsl">Harga %1$s → Anggaran Keuntungan %2$s</string>
+    <string name="bitcoin_fee_confirmation_required">Yuran Bitcoin tidak dapat disahkan atau telah meningkat. Sila minta pemindahan semula dan sahkan yuran yang dikemas kini.</string>
 </resources>

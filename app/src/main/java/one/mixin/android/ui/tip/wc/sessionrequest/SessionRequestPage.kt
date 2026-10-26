@@ -56,6 +56,7 @@ import one.mixin.android.extension.numberFormat12
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
+import one.mixin.android.tip.wc.internal.WcBitcoinSendTransfer
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WCEthereumTransaction
@@ -156,7 +157,9 @@ fun SessionRequestPage(
         } else {
             null
         }
-    ) ?: signData?.solanaFee?.stripTrailingZeros() ?: BigDecimal.ZERO
+    ) ?: signData?.solanaFee?.stripTrailingZeros() ?: signData?.bitcoinFee?.feeBtc?.stripTrailingZeros() ?: BigDecimal.ZERO
+
+    val bitcoinFeePending = signData?.signMessage is WcBitcoinSendTransfer && signData.bitcoinFee == null
 
     MixinAppTheme {
         Column(
@@ -327,6 +330,7 @@ fun SessionRequestPage(
                         amount = "$fee",
                         fee = fee.multiply(asset.priceUSD()),
                         isFree = isFeeWaived,
+                        isLoading = bitcoinFeePending,
                         onFreeClick = onFreeClick,
                     )
                 } else {
@@ -386,7 +390,7 @@ fun SessionRequestPage(
                         }
                     }
                 } else if (step == WalletConnectBottomSheetDialogFragment.Step.Sign) {
-                    if (signData?.sessionRequest?.request?.method == Method.ETHSignTransaction.name || signData?.sessionRequest?.request?.method == Method.ETHSendTransaction.name && tipGas == null) {
+                    if (bitcoinFeePending || signData?.sessionRequest?.request?.method == Method.ETHSignTransaction.name || signData?.sessionRequest?.request?.method == Method.ETHSendTransaction.name && tipGas == null) {
                         Column(modifier = Modifier.align(Alignment.BottomCenter)) {
                             Box(modifier = Modifier.height(20.dp))
                             CircularProgressIndicator(
