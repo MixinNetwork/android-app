@@ -1250,4 +1250,5 @@
     <string name="perps_share_card_max_leverage">📈 Apalancamiento máximo: %1$dx</string>
     <string name="perps_share_card_volume">💰 Volumen de 24 h: %1$s</string>
     <string name="price_change_tpsl">Precio %1$s → Beneficio estimado %2$s</string>
+    <string name="invalid_gasless_transaction">Transacción sin gas no válida. Inténtalo de nuevo.</string>
 </resources>
