@@ -1196,4 +1196,5 @@
     <string name="perps_share_card_max_leverage">📈 最大レバレッジ: %1$dx</string>
     <string name="perps_share_card_volume">💰 24時間取引高: %1$s</string>
     <string name="price_change_tpsl">価格 %1$s → 予想利益 %2$s</string>
+    <string name="eip712_invalid_chain_id">型付きメッセージのチェーン ID が無効か、署名ネットワークと一致しません。</string>
 </resources>

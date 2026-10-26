@@ -2728,4 +2728,5 @@
     <string name="perps_estimated_profit">預估收益 %1$s</string>
     <string name="perps_share_card_max_leverage">📈 最大槓桿：%1$dx</string>
     <string name="perps_share_card_volume">💰 24小時成交量：%1$s</string>
+    <string name="eip712_invalid_chain_id">結構化訊息的鏈 ID 無效，或與簽名網路不一致。</string>
 </resources>

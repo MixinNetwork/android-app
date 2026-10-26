@@ -808,4 +808,5 @@
     <string name="perps_share_card_max_leverage">📈 Leverage Maksimum: %1$dx</string>
     <string name="perps_share_card_volume">💰 Volume 24 Jam: %1$s</string>
     <string name="price_change_tpsl">Harga %1$s → Estimasi Keuntungan %2$s</string>
+    <string name="eip712_invalid_chain_id">ID chain pesan bertipe tidak valid atau tidak cocok dengan jaringan penandatanganan.</string>
 </resources>
