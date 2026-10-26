@@ -1196,4 +1196,6 @@
     <string name="perps_share_card_max_leverage">📈 最大レバレッジ: %1$dx</string>
     <string name="perps_share_card_volume">💰 24時間取引高: %1$s</string>
     <string name="price_change_tpsl">価格 %1$s → 予想利益 %2$s</string>
+    <string name="malicious_instruction_token_approve">この取引により、他のアカウントがあなたの許可なく SPL トークンを送金できるようになります。</string>
+    <string name="malicious_instruction_system_assign">この取引はあなたの Solana アカウントを別のプログラムに割り当てます。アカウントを制御できなくなる可能性があります。</string>
 </resources>

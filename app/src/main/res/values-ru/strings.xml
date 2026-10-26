@@ -1191,4 +1191,6 @@
     <string name="perps_share_card_max_leverage">📈 Максимальное плечо: %1$dx</string>
     <string name="perps_share_card_volume">💰 Объём за 24 ч: %1$s</string>
     <string name="price_change_tpsl">Цена %1$s → Ожидаемая прибыль %2$s</string>
+    <string name="malicious_instruction_token_approve">Эта транзакция позволяет другому аккаунту переводить ваши токены SPL без вашего разрешения.</string>
+    <string name="malicious_instruction_system_assign">Эта транзакция передаёт ваш аккаунт Solana другой программе. Вы можете потерять контроль над аккаунтом.</string>
 </resources>

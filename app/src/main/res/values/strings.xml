@@ -1733,6 +1733,8 @@
     <string name="View_on_Marketplace">View on Marketplace</string>
     <string name="View_on_Explorer">View on Explorer</string>
     <string name="malicious_instruction_token_set_authority">This transaction changes the owner of your SPL tokens. This allows the new owner to transfer the tokens without your permission.</string>
+    <string name="malicious_instruction_token_approve">This transaction allows another account to transfer your SPL tokens without your permission.</string>
+    <string name="malicious_instruction_system_assign">This transaction assigns your Solana account to another program. This may cause you to lose control of the account.</string>
     <string name="Assets">Assets</string>
     <string name="ASSET">ASSET</string>
     <string name="Recipients">Recipients</string>

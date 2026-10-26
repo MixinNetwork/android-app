@@ -581,19 +581,34 @@ object Web3Signer {
 
 }
 
-fun VersionedTransactionCompat.throwIfAnyMaliciousInstruction() {
+fun VersionedTransactionCompat.throwIfAnyMaliciousInstruction(userAddress: String) {
+    val error = maliciousInstructionError(userAddress) ?: return
+    throw MaliciousInstructionException(MixinApplication.get().getString(error))
+}
+
+internal fun VersionedTransactionCompat.maliciousInstructionError(userAddress: String): Int? {
     val accounts = message.accounts
     for (i in message.instructions) {
-        val program = accounts[i.programIdIndex]
-        if (program != ConstantsSolana.TOKEN_PROGRAM_ID) {
-            continue
+        val (accountIndex, error) = when (accounts.getOrNull(i.programIdIndex)) {
+            ConstantsSolana.TOKEN_PROGRAM_ID, ConstantsSolana.TOKEN_2022_PROGRAM_ID -> when (i.data.firstOrNull()?.toInt()) {
+                6 -> 1 to R.string.malicious_instruction_token_set_authority
+                4 -> 2 to R.string.malicious_instruction_token_approve
+                13 -> 3 to R.string.malicious_instruction_token_approve
+                else -> continue
+            }
+            ConstantsSolana.SYSTEM_PROGRAM -> {
+                if (i.data.size < 4) continue
+                when (Buffer().write(i.data).readIntLe()) {
+                    1, 10 -> 0 to R.string.malicious_instruction_system_assign
+                    else -> continue
+                }
+            }
+            else -> continue
         }
-        val d = Buffer()
-        d.write(i.data)
-        val instruction = d.readByte().toInt()
-        // instructionSetAuthority
-        if (instruction == 6) {
-            throw MaliciousInstructionException(MixinApplication.get().getString(R.string.malicious_instruction_token_set_authority))
+        val index = i.accounts.getOrNull(accountIndex) ?: continue
+        if (accounts.getOrNull(index)?.toBase58() == userAddress) {
+            return error
         }
     }
+    return null
 }

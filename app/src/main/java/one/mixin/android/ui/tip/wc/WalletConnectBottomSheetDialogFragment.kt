@@ -330,7 +330,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             } else if (m is VersionedTransactionCompat) {
                 asset = viewModel.refreshAsset(Chain.Solana.assetId)
                 try {
-                    m.throwIfAnyMaliciousInstruction()
+                    m.throwIfAnyMaliciousInstruction(account)
                 } catch (e: Exception) {
                     handleException(e)
                 }

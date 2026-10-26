@@ -873,4 +873,6 @@
     <string name="perps_share_card_max_leverage">📈 Leveraj Maksimum: %1$dx</string>
     <string name="perps_share_card_volume">💰 Volum 24 Jam: %1$s</string>
     <string name="price_change_tpsl">Harga %1$s → Anggaran Keuntungan %2$s</string>
+    <string name="malicious_instruction_token_approve">Transaksi ini membenarkan akaun lain memindahkan token SPL anda tanpa kebenaran anda.</string>
+    <string name="malicious_instruction_system_assign">Transaksi ini menetapkan akaun Solana anda kepada program lain. Anda mungkin kehilangan kawalan ke atas akaun tersebut.</string>
 </resources>

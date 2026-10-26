@@ -2728,4 +2728,6 @@
     <string name="perps_estimated_profit">預估收益 %1$s</string>
     <string name="perps_share_card_max_leverage">📈 最大槓桿：%1$dx</string>
     <string name="perps_share_card_volume">💰 24小時成交量：%1$s</string>
+    <string name="malicious_instruction_token_approve">此交易會允許其他帳戶在未經您許可的情況下轉讓您的 SPL 代幣。</string>
+    <string name="malicious_instruction_system_assign">此交易會將您的 Solana 帳戶指派給其他程式，可能導致您失去對該帳戶的控制。</string>
 </resources>

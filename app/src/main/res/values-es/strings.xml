@@ -1250,4 +1250,6 @@
     <string name="perps_share_card_max_leverage">📈 Apalancamiento máximo: %1$dx</string>
     <string name="perps_share_card_volume">💰 Volumen de 24 h: %1$s</string>
     <string name="price_change_tpsl">Precio %1$s → Beneficio estimado %2$s</string>
+    <string name="malicious_instruction_token_approve">Esta transacción permite que otra cuenta transfiera tus tokens SPL sin tu permiso.</string>
+    <string name="malicious_instruction_system_assign">Esta transacción asigna tu cuenta de Solana a otro programa. Podrías perder el control de la cuenta.</string>
 </resources>
