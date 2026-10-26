@@ -17,15 +17,30 @@ internal suspend fun Fragment.openWeb3AssetTransactions(
     knownToken: Web3TokenItem? = null,
 ) {
     if (!isAdded || assetId.isBlank()) return
-    val token = if (knownToken?.assetId == assetId) {
-        knownToken
+    val walletToken = if (knownToken?.assetId == assetId && knownToken.walletId == walletId) {
+        null
     } else {
         web3ViewModel.web3TokenItemById(walletId, assetId)
-    } ?: return
+    }
+    val token = tokenForTransactionWallet(walletId, assetId, knownToken, walletToken) ?: return
     if (!isAdded) return
     val address = web3ViewModel.getAddressesByChainId(walletId, token.chainId)?.destination
     if (!isAdded) return
     showWeb3AssetTransactions(token, address)
+}
+
+internal fun tokenForTransactionWallet(
+    walletId: String,
+    assetId: String,
+    knownToken: Web3TokenItem?,
+    walletToken: Web3TokenItem?,
+): Web3TokenItem? {
+    if (assetId.isBlank()) return null
+    if (knownToken?.assetId == assetId && knownToken.walletId == walletId) return knownToken
+    walletToken?.let { return it }
+    return knownToken
+        ?.takeIf { it.assetId == assetId }
+        ?.copy(walletId = walletId, balance = "0", hidden = null)
 }
 
 internal fun Fragment.showWeb3AssetTransactions(
