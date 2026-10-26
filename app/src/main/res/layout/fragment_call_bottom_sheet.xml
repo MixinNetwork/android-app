@@ -216,6 +216,7 @@
             android:textColor="?attr/text_primary"
             android:gravity="center_horizontal"
             android:layout_marginTop="16dp"
+            app:badgeSize="20dp"
             app:lines="1"
             app:ellipsize="end"
             app:textSize="18sp"/>
