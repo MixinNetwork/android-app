@@ -13,6 +13,8 @@ import one.mixin.android.api.response.web3.EthGaslessTxPayload
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.isNativeEvmAsset
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.putString
@@ -552,15 +554,39 @@ object Web3Signer {
         priv: ByteArray,
         payload: EthGaslessTxPayload,
         fromAddress: String,
-        tokenChainId: String,
+        token: Web3TokenItem,
+        amount: String,
+        recipient: String,
+        feeToken: Web3TokenItem?,
+        feeAmount: String,
     ): Pair<String, String?> {
-        val authorizationDigest = try {
-            val chain = requireNotNull(evmChainList.firstOrNull { it.assetId == tokenChainId })
-            GaslessEvmValidator.validate(payload, fromAddress, chain.chainReference.toBigInteger())
+        val (userOperationDigest, authorizationDigest) = try {
+            val chain = requireNotNull(evmChainList.firstOrNull { it.assetId == token.chainId })
+            requireNotNull(feeToken)
+            require(feeToken.chainId == token.chainId)
+            fun units(value: String, asset: Web3TokenItem): BigInteger {
+                val precision = if (asset.isNativeEvmAsset()) 18 else asset.precision
+                require(precision in 0..255)
+                val units = value.toBigDecimal().movePointRight(precision).stripTrailingZeros()
+                require(units.scale() <= 0)
+                return units.toBigIntegerExact()
+            }
+            GaslessEvmValidator.validate(
+                payload,
+                fromAddress,
+                chain.chainReference.toBigInteger(),
+                token.assetKey.takeUnless { token.isNativeEvmAsset() },
+                units(amount, token),
+                recipient,
+                feeToken.assetKey.takeUnless { feeToken.isNativeEvmAsset() },
+                units(feeAmount, feeToken),
+            )
         } catch (e: IllegalArgumentException) {
             throw IllegalArgumentException(MixinApplication.appContext.getString(R.string.invalid_gasless_transaction), e)
+        } catch (e: ArithmeticException) {
+            throw IllegalArgumentException(MixinApplication.appContext.getString(R.string.invalid_gasless_transaction), e)
         }
-        val userOpSignature = signEthMessage(priv, payload.signing.userOperation.message, JsSignMessage.TYPE_GASLESS_TRANSFER)
+        val userOpSignature = signEthMessage(priv, userOperationDigest, JsSignMessage.TYPE_GASLESS_TRANSFER)
         val authorizationSignature = authorizationDigest?.let {
             signEthMessage(priv, it, JsSignMessage.TYPE_GASLESS_TRANSFER)
         }

@@ -975,7 +975,11 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             priv = privateKey,
             payload = ethPayload,
             fromAddress = fromAddress,
-            tokenChainId = token.chainId,
+            token = token,
+            amount = amount,
+            recipient = toAddress,
+            feeToken = if (feeAssetId == token.assetId) token else web3ViewModel.web3TokenItemById(token.walletId, feeAssetId),
+            feeAmount = feeAmount,
         )
         val response = web3ViewModel.submitGaslessTx(
             SubmitGaslessTxRequest(
