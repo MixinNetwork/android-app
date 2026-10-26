@@ -70,6 +70,7 @@ import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import one.mixin.android.web3.send.UtxoTransactionSigner
 import org.json.JSONObject
 import org.sol4k.exception.RpcException
+import org.sol4kt.SignInException
 import org.sol4kt.SignInInput
 import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Hash
@@ -87,6 +88,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
 
         const val ARGS_MESSAGE = "args_message"
         const val ARGS_URL = "args_url"
+        private const val ARGS_PAGE_URL = "args_page_url"
         const val ARGS_TITLE = "args_title"
         const val ARGS_AMOUNT = "args_amount"
         const val ARGS_TOKEN = "args_token"
@@ -121,6 +123,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     Uri.parse(this).host
                 },
             )
+            putString(ARGS_PAGE_URL, url)
             putString(ARGS_TITLE, title)
             amount?.let { putString(ARGS_AMOUNT, it) }
             token?.let { putParcelable(ARGS_TOKEN, it) }
@@ -404,7 +407,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         }
                         tx.throwIfAnyMaliciousInstruction()
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
-                        solanaSignInInput = SignInInput.from(signMessage.data ?: "", Web3Signer.address)
+                        solanaSignInInput = SignInInput.from(signMessage.data ?: "", Web3Signer.solanaAddress, requireArguments().getString(ARGS_PAGE_URL))
                     }
                 } catch (e: Exception) {
                     handleException(e)
@@ -544,7 +547,9 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private fun handleException(e: Throwable) {
         Timber.e(e)
         val msg =
-            if (e is RpcException) {
+            if (e is SignInException) {
+                getString(R.string.invalid_solana_sign_in)
+            } else if (e is RpcException) {
                 solanaErrorHandler.reset()
                     .addHandler(JupiterErrorHandler(e.rawResponse))
                     .addHandler(RaydiumErrorHandler(e.rawResponse))
