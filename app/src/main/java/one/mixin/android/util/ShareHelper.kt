@@ -2,9 +2,11 @@ package one.mixin.android.util
 
 import android.content.Intent
 import android.net.Uri
+import one.mixin.android.MixinApplication
 import one.mixin.android.extension.getFileName
 import one.mixin.android.extension.getParcelableArrayListCompat
 import one.mixin.android.extension.getParcelableExtraCompat
+import one.mixin.android.extension.isSafeShareUri
 import one.mixin.android.vo.ForwardCategory
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
@@ -31,21 +33,24 @@ class ShareHelper {
         }
         val result = arrayListOf<ForwardMessage>()
         if (Intent.ACTION_SEND == action) {
+            val stream =
+                intent.getParcelableExtraCompat(Intent.EXTRA_STREAM, Uri::class.java)
+                    ?.takeIf { MixinApplication.appContext.isSafeShareUri(it) }
             if ("text/plain" == type) {
                 val text = intent.getStringExtra(Intent.EXTRA_TEXT)
                 if (text.isNullOrEmpty()) {
-                    intent.getParcelableExtraCompat(Intent.EXTRA_STREAM, Uri::class.java)?.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
+                    stream?.systemMediaToMessage(ForwardCategory.Data)?.addTo(result)
                 } else {
                     ForwardMessage(ShareCategory.Text, text).addTo(result)
                 }
             } else if (type.startsWith("image/")) {
-                val imageUri = intent.getParcelableExtraCompat(Intent.EXTRA_STREAM, Uri::class.java)
+                val imageUri = stream ?: return result
                 ForwardMessage(ShareCategory.Image, GsonHelper.customGson.toJson(ShareImageData(imageUri.toString()))).addTo(result)
             } else if (type.startsWith("video/")) {
-                val videoUri = intent.getParcelableExtraCompat(Intent.EXTRA_STREAM, Uri::class.java)
+                val videoUri = stream
                 videoUri?.systemMediaToMessage(ForwardCategory.Video)?.addTo(result)
             } else if (type.startsWith("application/") || type.startsWith("audio/")) {
-                intent.getParcelableExtraCompat(Intent.EXTRA_STREAM, Uri::class.java)?.let {
+                stream?.let {
                     val fileName = it.getFileName()
                     it.systemMediaToMessage(
                         ForwardCategory.Data,
@@ -54,23 +59,26 @@ class ShareHelper {
                     ).addTo(result)
                 }
             } else {
-                val dataUri = intent.getParcelableExtraCompat(Intent.EXTRA_STREAM, Uri::class.java)
+                val dataUri = stream
                 dataUri?.systemMediaToMessage(ForwardCategory.Data, dataUri.getFileName())?.addTo(result)
             }
         } else if (Intent.ACTION_SEND_MULTIPLE == action) {
+            val streams =
+                intent.getParcelableArrayListCompat(Intent.EXTRA_STREAM, Uri::class.java)
+                    ?.filter { MixinApplication.appContext.isSafeShareUri(it) }
             when {
                 type.startsWith("image/") -> {
-                    intent.getParcelableArrayListCompat(Intent.EXTRA_STREAM, Uri::class.java)?.forEach { item ->
+                    streams?.forEach { item ->
                         item.systemMediaToMessage(ShareCategory.Image).addTo(result)
                     }
                 }
                 type.startsWith("video/") -> {
-                    intent.getParcelableArrayListCompat(Intent.EXTRA_STREAM, Uri::class.java)?.forEach { item ->
+                    streams?.forEach { item ->
                         item.systemMediaToMessage(ForwardCategory.Video).addTo(result)
                     }
                 }
                 else -> {
-                    intent.getParcelableArrayListCompat(Intent.EXTRA_STREAM, Uri::class.java)?.let { list ->
+                    streams?.let { list ->
                         list.forEach { item ->
                             item.systemMediaToMessage(ForwardCategory.Data, item.getFileName()).addTo(result)
                         }

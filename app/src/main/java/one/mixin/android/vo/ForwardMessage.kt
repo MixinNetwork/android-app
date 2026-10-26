@@ -162,7 +162,7 @@ inline fun <reified T : ForwardCategory> Uri.systemMediaToMessage(
                 ShareCategory.Image -> ShareImageData(this.toString())
                 ForwardCategory.Video -> VideoMessagePayload(this.toString())
                 ForwardCategory.Data -> {
-                    val attachment = MixinApplication.get().getAttachment(this, mimeType)
+                    val attachment = MixinApplication.get().getAttachment(this, mimeType, fromShare = true)
                     attachment?.toDataMessagePayload(name)
                 }
                 else -> null

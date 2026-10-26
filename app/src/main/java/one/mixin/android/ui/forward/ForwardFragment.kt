@@ -25,17 +25,14 @@ import com.bumptech.glide.Glide
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
-import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.RxBus
 import one.mixin.android.crypto.Base64
 import one.mixin.android.databinding.FragmentForwardBinding
-import one.mixin.android.event.AppAuthEvent
 import one.mixin.android.extension.base64Encode
 import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.getExtensionName
@@ -215,17 +212,10 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
     ) {
         super.onViewCreated(view, savedInstanceState)
         val cid = action.conversationId
-        if (cid != null) {
-            when (action) {
-                is ForwardAction.System -> {
-                    sendDirectMessages(cid)
-                }
-                else -> {
-                    sendMessage(listOf(SelectItem(cid, null)))
-                    requireActivity().finish()
-                    return
-                }
-            }
+        if (cid != null && action !is ForwardAction.System) {
+            sendMessage(listOf(SelectItem(cid, null)))
+            requireActivity().finish()
+            return
         }
 
         if (action is ForwardAction.Bot) {
@@ -301,19 +291,6 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         binding.searchEt.addTextChangedListener(mWatcher)
 
         loadData()
-
-        RxBus.listen(AppAuthEvent::class.java)
-            .observeOn(AndroidSchedulers.mainThread())
-            .autoDispose(destroyScope)
-            .subscribe {
-                if (action is ForwardAction.System && !needOpenEditor()) {
-                    action.conversationId?.let { cid ->
-                        lifecycleScope.launch {
-                            sendAndGo2Chat(cid)
-                        }
-                    }
-                }
-            }
     }
 
     private fun loadData() =
@@ -341,6 +318,14 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
             adapter.sourceFriends = friends
             adapter.sourceBots = bots
 
+            if (action is ForwardAction.System) {
+                conversations.find { it.conversationId == action.conversationId }?.let {
+                    if (!adapter.selectItem.contains(it)) {
+                        adapter.selectItem.add(it)
+                    }
+                }
+                setForwardText()
+            }
             adapter.changeData()
         }
 
@@ -756,29 +741,6 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
         }
     }
 
-    private fun sendDirectMessages(cid: String) =
-        lifecycleScope.launch {
-            if (needOpenEditor()) {
-                editorPreserver = EditorPreserver(messages[0], listOf(SelectItem(cid, null)))
-                editAndSend(requireNotNull(editorPreserver?.forwardMessage))
-                return@launch
-            }
-
-            if (!MixinApplication.get().checkAndShowAppAuth(requireActivity())) {
-                sendAndGo2Chat(cid)
-            }
-        }
-
-    private suspend fun sendAndGo2Chat(cid: String) {
-        val err = sendMessageInternal(SelectItem(cid, null))
-        if (err.isNullOrEmpty()) {
-            toast(R.string.Message_sent)
-        }
-        MainActivity.reopen(requireContext())
-        activity?.finish()
-        ConversationActivity.show(requireContext(), cid)
-    }
-
     private fun updateDynamicShortcuts(selectItems: ArrayList<Any>) =
         lifecycleScope.launch {
             val shortcuts = mutableListOf<ShortcutInfoCompat>()
@@ -853,10 +815,6 @@ class ForwardFragment : BaseFragment(R.layout.fragment_forward) {
                 shareImageData.url.toUri()
             }
         getEditorResult.launch(Pair(uri, getString(R.string.Share)))
-
-        if (action is ForwardAction.System && action.conversationId != null) {
-            MixinApplication.get().checkAndShowAppAuth(requireActivity())
-        }
     }
 
     private suspend fun sendImageByUri(uri: Uri) {
