@@ -2760,4 +2760,5 @@
     <string name="Details">Details</string>
     <string name="perps_tpsl_requires_amount_leverage">Please set the amount and leverage before configuring Take Profit and Stop Loss.</string>
     <string name="perps_estimated_profit">Estimate Profit %1$s</string>
+    <string name="eip712_invalid_chain_id">The typed message chain ID is invalid or does not match the signing network.</string>
 </resources>

@@ -68,6 +68,7 @@ import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.js.WalletErrorCode
 import one.mixin.android.web3.js.throwIfAnyMaliciousInstruction
 import one.mixin.android.web3.send.UtxoTransactionSigner
+import one.mixin.android.web3.validateEip712ChainId
 import org.json.JSONObject
 import org.sol4k.exception.RpcException
 import org.sol4kt.SignInInput
@@ -203,6 +204,17 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
             toast(message)
             dismiss()
             return
+        }
+        if (signMessage.type == JsSignMessage.TYPE_TYPED_MESSAGE) {
+            try {
+                validateEip712ChainId(requireNotNull(signMessage.data), Web3Signer.currentChain.chainReference, getString(R.string.eip712_invalid_chain_id))
+            } catch (e: Exception) {
+                val message = getString(R.string.eip712_invalid_chain_id)
+                settleError(WalletErrorCode.INTERNAL_ERROR, message)
+                toast(message)
+                dismiss()
+                return
+            }
         }
         if (address.isBlank()) {
             lifecycleScope.launch {
