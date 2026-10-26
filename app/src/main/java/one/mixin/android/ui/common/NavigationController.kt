@@ -5,7 +5,9 @@ import android.animation.AnimatorListenerAdapter
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
 import one.mixin.android.R
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.ui.home.ConversationListFragment
 import one.mixin.android.ui.home.ExploreFragment
 import one.mixin.android.ui.home.web3.MarketFragment
@@ -38,21 +40,26 @@ class NavigationController() {
             val tx = fragmentManager.beginTransaction()
             val tag = destination.tag
             val f = fragmentManager.findFragmentByTag(tag)
-            if (destinationFragment.isAdded) {
+            val target = if (destinationFragment.isAdded) {
                 if (fragmentManager != destinationFragment.parentFragmentManager) {
                     destinationFragment.parentFragmentManager.beginTransaction().remove(destinationFragment).commitNowAllowingStateLoss()
                     tx.add(R.id.root_view, destinationFragment, tag)
                 } else {
                     tx.show(destinationFragment)
                 }
+                destinationFragment
             } else if (f == null || !f.isAdded) {
                 tx.add(R.id.root_view, destinationFragment, tag)
+                destinationFragment
             } else {
                 tx.show(f)
+                f
             }
             fragmentManager.fragments.filter { it.tag in destinations && it.tag != destination.tag }.forEach { fragment ->
                 tx.hide(fragment)
+                tx.setMaxLifecycle(fragment, if (fragment.requireContext().isCompactWindow()) Lifecycle.State.RESUMED else Lifecycle.State.STARTED)
             }
+            tx.setMaxLifecycle(target, Lifecycle.State.RESUMED)
             tx.commitNowAllowingStateLoss()
         } catch (e: Exception) {
             Timber.e(e)

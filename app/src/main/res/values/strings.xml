@@ -150,6 +150,9 @@
     <string name="Bot_not_found">Bot not found</string>
     <string name="BOTS">BOTS</string>
     <string name="bots_title">Bots</string>
+    <string name="All_chats">All chats</string>
+    <string name="Groups">Groups</string>
+    <string name="Strangers">Strangers</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s is not on your contact list. Make sure the recipient you chose is correct. If you transfer to the wrong person, your assets will be lost!</string>
     <string name="Call">Call</string>
     <string name="Call_declined">Call declined</string>
@@ -2764,4 +2767,8 @@
     <string name="Details">Details</string>
     <string name="perps_tpsl_requires_amount_leverage">Please set the amount and leverage before configuring Take Profit and Stop Loss.</string>
     <string name="perps_estimated_profit">Estimate Profit %1$s</string>
+    <string name="Select_conversation">Select a conversation to start chatting</string>
+    <string name="Select_asset">Select an asset to view</string>
+    <string name="Select_market_item">Select a market to view</string>
+    <string name="Select_explore_item">Select an item to open</string>
 </resources>

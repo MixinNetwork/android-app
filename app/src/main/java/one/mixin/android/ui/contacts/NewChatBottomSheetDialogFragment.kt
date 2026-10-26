@@ -10,13 +10,15 @@ import one.mixin.android.R
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.navTo
-import one.mixin.android.extension.screenHeight
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.group.GroupActivity
 
 @AndroidEntryPoint
 class NewChatBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "NewChatBottomSheetDialogFragment"
     }
@@ -47,7 +49,7 @@ class NewChatBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment()
         )
     }
 
-    override fun getBottomSheetHeight(view: View) = requireContext().screenHeight() - view.getSafeAreaInsetsTop() - 64.dp
+    override fun getBottomSheetHeight(view: View) = requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop() - 64.dp
 
     override fun showError(error: String) = Unit
 }

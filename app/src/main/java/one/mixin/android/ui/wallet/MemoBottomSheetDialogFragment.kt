@@ -20,6 +20,8 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class MemoBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "ShareMessageBottomSheetDialogFragment"
         private const val MEMO = "memo"

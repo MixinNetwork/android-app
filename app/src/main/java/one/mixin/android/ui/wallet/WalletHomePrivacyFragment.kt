@@ -48,6 +48,7 @@ import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.numberFormat2
@@ -973,15 +974,17 @@ class WalletHomePrivacyFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
         if (!hidden) {
-            _walletId.value = Session.getAccountId().orEmpty()
-            startPerpsPositionsRefresh()
-            jobManager.addJobInBackground(RefreshTokensJob())
-            jobManager.addJobInBackground(RefreshSnapshotsJob())
-            jobManager.addJobInBackground(SyncOutputJob())
-            refreshAllPendingDeposit()
+            if (requireContext().isCompactWindow()) {
+                _walletId.value = Session.getAccountId().orEmpty()
+                startPerpsPositionsRefresh()
+                jobManager.addJobInBackground(RefreshTokensJob())
+                jobManager.addJobInBackground(RefreshSnapshotsJob())
+                jobManager.addJobInBackground(SyncOutputJob())
+                refreshAllPendingDeposit()
+                refreshCashAccount()
+                refreshEarnAccounts()
+            }
             refreshWalletHomeBanners()
-            refreshCashAccount()
-            refreshEarnAccounts()
         } else {
             stopPerpsPositionsRefresh()
         }

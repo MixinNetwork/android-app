@@ -251,6 +251,7 @@ object Constants {
     object CIRCLE {
         const val CIRCLE_ID = "circle_id"
         const val CIRCLE_NAME = "circle_name"
+        const val CONVERSATION_FILTER = "conversation_filter"
     }
 
     object Download {

@@ -24,12 +24,13 @@ import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.openAsUrlOrWeb
-import one.mixin.android.extension.screenHeight
+import one.mixin.android.widget.isExpandedSheetScreen
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.resolveBottomSheetPeekHeight
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.widget.MixinBottomSheetDialog
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.linktext.AutoLinkMode
 import one.mixin.android.widget.linktext.AutoLinkTextView
 import timber.log.Timber
@@ -72,11 +73,19 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
         val bottomSheetBehavior = params?.behavior as? BottomSheetBehavior<*>
         behavior = bottomSheetBehavior
         if (bottomSheetBehavior != null) {
+            if (requireContext().isExpandedSheetScreen()) {
+                bottomSheetBehavior.maxWidth = resources.getDimensionPixelSize(R.dimen.adaptive_sheet_max_width)
+            }
             bottomSheetBehavior.addBottomSheetCallback(bottomSheetBehaviorCallback)
             schedulePeekHeightUpdate()
             dialog.window?.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             dialog.window?.setGravity(Gravity.BOTTOM)
         }
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (requireContext().isExpandedSheetScreen()) schedulePeekHeightUpdate()
     }
 
     override fun onStart() {
@@ -188,7 +197,7 @@ abstract class MixinScrollableBottomSheetDialogFragment : BottomSheetDialogFragm
                         contentHeight,
                         includeBottomInset = shouldIncludeBottomInsetInPeekHeight(),
                     ) + navigationBarAwareExtraPeekOffset()
-                ).coerceAtMost(requireContext().screenHeight())
+                ).coerceAtMost(requireContext().bottomSheetHeight())
             if (bottomSheetBehavior.peekHeight != peekHeight) {
                 bottomSheetBehavior.peekHeight = peekHeight
             }

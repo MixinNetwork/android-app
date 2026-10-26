@@ -142,6 +142,9 @@
     <string name="Bot_not_found">找不到这个机器人</string>
     <string name="BOTS">机器人</string>
     <string name="bots_title">机器人</string>
+    <string name="All_chats">全部聊天</string>
+    <string name="Groups">群组</string>
+    <string name="Strangers">陌生人</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s 不是您的联系人，请确认收款人是否正确。如果您转错了人资产将无法追回！</string>
     <string name="Call">语音</string>
     <string name="Call_declined">对方已拒绝</string>
@@ -2681,4 +2684,8 @@
     <string name="Details">详情</string>
     <string name="perps_tpsl_requires_amount_leverage">在设置止盈止损之前，请先设置好金额和杠杆倍数。</string>
     <string name="perps_estimated_profit">预估收益 %1$s</string>
+    <string name="Select_conversation">选择一个会话开始聊天</string>
+    <string name="Select_asset">选择一个资产查看</string>
+    <string name="Select_market_item">选择一个行情查看</string>
+    <string name="Select_explore_item">选择一项打开</string>
 </resources>

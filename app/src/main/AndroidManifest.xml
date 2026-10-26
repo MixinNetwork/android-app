@@ -57,6 +57,14 @@
         android:fullBackupContent="false"
         tools:ignore="LockedOrientationActivity,UnusedAttribute"
         tools:replace="android:dataExtractionRules,android:fullBackupContent,android:allowBackup">
+        <property
+            android:name="android.window.PROPERTY_ACTIVITY_EMBEDDING_SPLITS_ENABLED"
+            android:value="true" />
+        <activity
+            android:name=".ui.conversation.ConversationPlaceholderActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:exported="false"
+            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".ui.home.MainActivity"
             android:colorMode="wideColorGamut"
@@ -243,6 +251,11 @@
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
             android:theme="@style/AppTheme.NoActionBar"
             android:windowSoftInputMode="adjustResize|stateAlwaysHidden" />
+        <activity
+            android:name=".ui.common.TaskDialogActivity"
+            android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"
+            android:exported="false"
+            android:theme="@style/AppTheme.Transparent" />
         <activity
             android:name=".ui.wallet.WalletSecurityActivity"
             android:configChanges="screenSize|smallestScreenSize|screenLayout|orientation"

@@ -124,6 +124,9 @@
     <string name="Bot_not_found">找不到這個機器人</string>
     <string name="BOTS">機器人</string>
     <string name="bots_title">機器人</string>
+    <string name="All_chats">所有聊天</string>
+    <string name="Groups">群組</string>
+    <string name="Strangers">陌生人</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s 不是您的聯絡人，請確認收款人是否正確。如果您轉錯了人資產將無法追回！</string>
     <string name="Call">語音</string>
     <string name="Call_declined">對方已拒絕</string>
@@ -2732,4 +2735,8 @@
     <string name="perps_estimated_profit">預估收益 %1$s</string>
     <string name="perps_share_card_max_leverage">📈 最大槓桿：%1$dx</string>
     <string name="perps_share_card_volume">💰 24小時成交量：%1$s</string>
+    <string name="Select_conversation">選擇一個會話開始聊天</string>
+    <string name="Select_asset">選擇一個資產查看</string>
+    <string name="Select_market_item">選擇一個行情查看</string>
+    <string name="Select_explore_item">選擇一項打開</string>
 </resources>

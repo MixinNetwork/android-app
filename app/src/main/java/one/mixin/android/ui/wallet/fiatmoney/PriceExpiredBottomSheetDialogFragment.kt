@@ -27,6 +27,8 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class PriceExpiredBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "PriceExpiredBottomSheetDialogFragment"
         private const val ARGS_AMOUNT = "args_amount"

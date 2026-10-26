@@ -22,6 +22,8 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class TransactionBottomSheetDialogFragment : MixinBottomSheetDialogFragment(), TransactionInterface {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "TransactionFragment"
         const val ARGS_SNAPSHOT = "args_snapshot"
