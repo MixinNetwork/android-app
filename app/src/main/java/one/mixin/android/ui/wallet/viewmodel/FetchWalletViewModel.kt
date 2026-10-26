@@ -616,8 +616,14 @@ class FetchWalletViewModel @Inject constructor(
                             updatedAt = wallet.updatedAt,
                         )
                     )
-                    if (privateKey.isNullOrEmpty().not()) {
-                        saveWeb3ImportedPrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, privateKey)
+                    if (privateKey.isNullOrEmpty().not() &&
+                        !saveWeb3ImportedPrivateKey(MixinApplication.appContext, currentSpendKey, wallet.id, privateKey)
+                    ) {
+                        Timber.e("LoginFlow wallet_import_save_failed reason=private_key wallet_id=${wallet.id}")
+                        _errorCode.value = null
+                        _errorMessage.value = MixinApplication.appContext.getString(R.string.Save_failure)
+                        _state.value = FetchWalletState.IMPORT_ERROR
+                        return@let
                     }
                     wallet.addresses?.takeIf { it.isNotEmpty() }?.let { addresses ->
                         web3Repository.insertAddressList(addresses)
@@ -649,17 +655,17 @@ class FetchWalletViewModel @Inject constructor(
         return CryptoWalletHelper.savePrivateKeyWithSpendKey(context, spendKey, walletId, privateKey)
     }
 
-    fun savePrivateKey(walletId: String, chainId: String, privateKey: String) {
+    fun savePrivateKey(walletId: String, chainId: String, privateKey: String): Boolean {
         val currentSpendKey = spendKey
         if (currentSpendKey == null) {
             Timber.e("Spend key is null, cannot save wallets.")
-            return
+            return false
         }
         val normalizedPrivateKey: String = normalizeImportedPrivateKey(chainId, privateKey) ?: run {
             Timber.e("Invalid private key format for chainId: %s", chainId)
-            return
+            return false
         }
-        saveWeb3ImportedPrivateKey(MixinApplication.appContext, currentSpendKey, walletId, normalizedPrivateKey)
+        return saveWeb3ImportedPrivateKey(MixinApplication.appContext, currentSpendKey, walletId, normalizedPrivateKey)
     }
 
     private fun normalizeImportedPrivateKey(chainId: String, privateKey: String): String? {
