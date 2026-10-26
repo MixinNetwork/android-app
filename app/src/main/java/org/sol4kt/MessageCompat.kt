@@ -11,6 +11,7 @@ fun requireNotTransactionMessage(
     message: ByteArray,
     signer: org.sol4k.PublicKey,
 ) {
+    if (message.size > MessageV1Codec.MAX_TRANSACTION_SIZE) return
     val parsed = runCatching { MessageCompat.deserialize(message) }.getOrNull() ?: return
     if (signer in parsed.accounts.take(parsed.header.numRequireSignatures)) {
         throw MaliciousInstructionException("Refusing to sign a Solana transaction as a message")

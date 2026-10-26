@@ -378,7 +378,7 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                         Web3Signer.evmAddress,
                         transaction,
                         currentTipGas,
-                        chain = token?.getChainFromName()
+                        chain = currentChain
                     ) { _ ->
                         val nonce = rpc.nonceAt(currentChain.assetId, Web3Signer.evmAddress) ?: throw IllegalArgumentException("failed to get nonce")
                         return@ethPreviewTransaction nonce

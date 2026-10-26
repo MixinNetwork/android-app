@@ -36,4 +36,11 @@ class TransactionMessageGuardTest {
         requireNotTransactionMessage("Sign in to example.com\nNonce: 12345".toByteArray(), payer)
         requireNotTransactionMessage(ByteArray(0), payer)
     }
+
+    @Test
+    fun skipsInputLargerThanAnyTransaction() {
+        val message = ByteArray(MessageV1Codec.MAX_TRANSACTION_SIZE + 1) { 0x7f }
+        message[0] = 1
+        requireNotTransactionMessage(message, payer)
+    }
 }
