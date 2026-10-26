@@ -91,6 +91,7 @@ interface WalletHomeCallbacks {
     fun onViewMorePositionsClicked()
     fun onTokenClicked(index: Int)
     fun onTransactionClicked(index: Int)
+    fun onTransactionTokenClicked(index: Int) = Unit
     fun onTransactionUserClicked(userId: String)
     fun onPositionClicked(index: Int)
     fun onTopMoverClicked(index: Int)

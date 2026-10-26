@@ -187,6 +187,7 @@ internal fun WalletHomeCard(
                     Web3TransactionRecycler(
                         transactions = state.web3Transactions.take(PREVIEW_LIMIT),
                         onClick = callbacks::onTransactionClicked,
+                        onTokenClick = callbacks::onTransactionTokenClicked,
                         contentHorizontalPadding = 20.dp,
                         modifier = Modifier.fillMaxWidth(),
                     )
