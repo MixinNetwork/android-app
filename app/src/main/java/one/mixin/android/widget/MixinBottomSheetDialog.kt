@@ -14,6 +14,7 @@ import androidx.core.view.updateLayoutParams
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import one.mixin.android.extension.backgroundDrawable
+import one.mixin.android.extension.enableWideColorGamutIfSupported
 import one.mixin.android.extension.displayMetrics
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.isWideScreen
@@ -40,6 +41,7 @@ class MixinBottomSheetDialog(
 
     override fun setContentView(view: View) {
         super.setContentView(view)
+        window?.enableWideColorGamutIfSupported()
         container = window!!.findViewById(com.google.android.material.R.id.container)
         container.backgroundDrawable = backDrawable
         backDrawable.alpha = 0

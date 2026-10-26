@@ -48,6 +48,7 @@ import one.mixin.android.crypto.db.SignalDatabase
 import one.mixin.android.crypto.removeValueFromEncryptedPreferences
 import one.mixin.android.db.MixinDatabase
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.enableWideColorGamutIfSupported
 import one.mixin.android.extension.getStackTraceInfo
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notificationManager
@@ -429,6 +430,10 @@ open class MixinApplication :
     var topActivity: Activity? = null
     val contextWrapper by lazy {
         MutableContextWrapper(this@MixinApplication)
+    }
+
+    override fun onActivityPreCreated(activity: Activity, savedInstanceState: Bundle?) {
+        activity.window.enableWideColorGamutIfSupported()
     }
 
     override fun onActivityCreated(

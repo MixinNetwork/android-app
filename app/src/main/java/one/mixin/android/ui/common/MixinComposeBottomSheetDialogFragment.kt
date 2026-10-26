@@ -15,6 +15,7 @@ import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import one.mixin.android.R
 import one.mixin.android.extension.booleanFromAttribute
+import one.mixin.android.extension.enableWideColorGamutIfSupported
 import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
@@ -52,6 +53,11 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
         object : BottomSheetDialog(requireContext(), theme) {
+            override fun onCreate(savedInstanceState: Bundle?) {
+                super.onCreate(savedInstanceState)
+                window?.enableWideColorGamutIfSupported()
+            }
+
             override fun onAttachedToWindow() {
                 super.onAttachedToWindow()
                 applyBottomSheetContainerInsets()
