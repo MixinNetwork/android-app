@@ -1,273 +1,138 @@
 package one.mixin.android.ui.wallet
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.view.isVisible
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
-import com.jakewharton.rxbinding3.widget.textChanges
-import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
-import com.uber.autodispose.autoDispose
+import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.databinding.FragmentWalletSearchBinding
-import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.api.response.perps.PerpsMarket
+import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
-import one.mixin.android.extension.navigate
-import one.mixin.android.extension.viewDestroyed
+import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
-import one.mixin.android.ui.wallet.adapter.SearchAdapter
-import one.mixin.android.ui.wallet.adapter.SearchDefaultAdapter
-import one.mixin.android.ui.wallet.adapter.WalletSearchCallback
+import one.mixin.android.ui.home.inscription.InscriptionActivity
+import one.mixin.android.ui.home.web3.market.MarketSearchFragment
+import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
-import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class WalletSearchFragment : BaseFragment() {
-    companion object {
-        const val POS_DEFAULT = 0
-        const val POS_SEARCH = 1
-        const val POS_EMPTY = 2
-    }
+    private val viewModel by viewModels<WalletSearchViewModel>()
 
-    private var _binding: FragmentWalletSearchBinding? = null
-    private val binding get() = requireNotNull(_binding)
-
-    private val viewModel by viewModels<WalletViewModel>()
-
-    private val searchDefaultAdapter by lazy {
-        SearchDefaultAdapter()
-    }
-    private val searchAdapter by lazy {
-        SearchAdapter()
-    }
-
-    private var disposable: Disposable? = null
-    private var currentSearch: Job? = null
-
-    private var currentQuery: String = ""
-
-    private var hasInitializedRootView = false
-    private var rootView: View? = null
-
-    override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?,
-    ): View =
-        getPersistentView(inflater, container, R.layout.fragment_wallet_search)
-
-    override fun onViewCreated(
-        view: View,
-        savedInstanceState: Bundle?,
-    ) {
-        super.onViewCreated(view, savedInstanceState)
-        if (!hasInitializedRootView) {
-            hasInitializedRootView = true
-            initViews()
-        }
-    }
-
-    private fun initViews() {
-        binding.apply {
-            backIb.setOnClickListener {
-                searchEt.hideKeyboard()
-                activity?.onBackPressedDispatcher?.onBackPressed()
-            }
-            searchEt.setHint(getString(R.string.search_placeholder_asset))
-            lifecycleScope.launch {
-                delay(200)
-                if (isAdded) {
-                    searchEt.showKeyboard()
-                }
-            }
-            @SuppressLint("AutoDispose")
-            disposable =
-                searchEt.et.textChanges().debounce(500L, TimeUnit.MILLISECONDS)
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .autoDispose(destroyScope)
-                    .subscribe(
-                        {
-                            if (it.isNullOrBlank()) {
-                                rvVa.displayedChild = POS_DEFAULT
-                                currentQuery = ""
-                            } else {
-                                rvVa.displayedChild = POS_SEARCH
-                                if (it.toString() != currentQuery) {
-                                    currentQuery = it.toString()
-                                    search(it.toString())
-                                }
-                            }
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View =
+        ComposeView(inflater.context).apply {
+            setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnViewTreeLifecycleDestroyed)
+            setContent {
+                MixinAppTheme(darkTheme = context.isNightMode()) {
+                    val state by viewModel.uiState.collectAsStateWithLifecycle()
+                    val recentSearches by viewModel.recentSearches.collectAsStateWithLifecycle()
+                    WalletSearchPage(
+                        state = state,
+                        recentSearches = recentSearches,
+                        onQueryChanged = viewModel::updateQuery,
+                        onCancel = {
+                            view?.hideKeyboard()
+                            requireActivity().onBackPressedDispatcher.onBackPressed()
                         },
-                        {},
+                        onSelectTab = viewModel::selectTab,
+                        onSelectTrending = viewModel::selectTrending,
+                        onClearRecent = viewModel::clearRecentSearches,
+                        onResultClick = ::openResult,
+                        onSpotClick = ::openSpotMarket,
+                        onPerpetualClick = ::openPerpetualMarket,
+                        onSearchMarkets = {
+                            view?.hideKeyboard()
+                            findNavController().navigate(
+                                R.id.action_wallet_search_to_market_search,
+                                bundleOf(
+                                    MarketSearchFragment.ARGS_QUERY to state.query.trim(),
+                                    MarketSearchFragment.ARGS_MARKET_SOURCE to AnalyticsTracker.MarketSource.WALLET_SEARCH,
+                                    MarketSearchFragment.ARGS_PERPS_SOURCE to AnalyticsTracker.PerpsSource.WALLET_SEARCH,
+                                ),
+                            )
+                        },
                     )
-
-            defaultRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-            val decoration by lazy { StickyRecyclerHeadersDecoration(searchDefaultAdapter) }
-            defaultRv.addItemDecoration(decoration)
-            defaultRv.adapter = searchDefaultAdapter
-
-            searchRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-            searchRv.adapter = searchAdapter
-        }
-
-        searchDefaultAdapter.callback = callback
-        searchAdapter.callback = callback
-
-        loadDefaultRvData()
-
-        viewModel.refreshHotAssets()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        currentSearch?.cancel()
-        binding.pb.isVisible = false
-    }
-
-    override fun onDestroyView() {
-        super.onDestroyView()
-        _binding = null
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        disposable?.dispose()
-    }
-
-    private fun loadDefaultRvData() =
-        lifecycleScope.launch {
-            if (viewDestroyed()) return@launch
-
-            viewModel.observeTopAssets().observe(
-                viewLifecycleOwner,
-            ) {
-                searchDefaultAdapter.topAssets = it
-                if (binding.searchEt.et.text.isNullOrBlank() && binding.rvVa.displayedChild == POS_SEARCH) {
-                    binding.rvVa.displayedChild = POS_DEFAULT
-                }
-
-                checkRecent()
-            }
-            searchDefaultAdapter.recentAssets = loadRecentSearchAssets()
-        }
-
-    private suspend fun loadRecentSearchAssets(): List<TokenItem>? {
-        return withContext(Dispatchers.IO) {
-            val assetList =
-                defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
-                    ?: return@withContext null
-            if (assetList.isEmpty()) return@withContext null
-            val result = viewModel.findAssetsByIds(assetList)
-            if (result.isEmpty()) return@withContext null
-            result.sortedBy {
-                assetList.indexOf(it.assetId)
-            }.take(2)
-        }
-    }
-
-    private fun checkRecent() =
-        lifecycleScope.launch {
-            if (viewDestroyed()) return@launch
-
-            val recentAssets = searchDefaultAdapter.recentAssets
-            if (recentAssets.isNullOrEmpty()) return@launch
-
-            val newRecentList = loadRecentSearchAssets().orEmpty()
-            if (newRecentList != recentAssets) {
-                searchDefaultAdapter.recentAssets = newRecentList
-            }
-        }
-
-    private fun search(query: String) {
-        currentSearch?.cancel()
-        currentSearch =
-            lifecycleScope.launch {
-                if (viewDestroyed()) return@launch
-
-                searchAdapter.submitList(null)
-                binding.pb.isVisible = true
-
-                val localAssets = withContext(Dispatchers.IO) { viewModel.fuzzySearchAssets(query) }
-                searchAdapter.submitList(localAssets)
-
-                val remoteAssets = withContext(Dispatchers.IO) { viewModel.queryAsset(null, query) }
-                val result = sortQueryAsset(query, localAssets, remoteAssets)
-
-                searchAdapter.submitList(result)
-                binding.pb.isVisible = false
-
-                if (result.isEmpty()) {
-                    binding.rvVa.displayedChild = POS_EMPTY
                 }
             }
+        }
+
+    override fun onStart() {
+        super.onStart()
+        viewModel.loadRecentSearches()
     }
 
-    private val callback =
-        object : WalletSearchCallback {
-            override fun onAssetClick(
-                assetId: String,
-                tokenItem: TokenItem?,
-            ) {
-                AnalyticsTracker.trackSearchItemSelect(AnalyticsTracker.SearchItemType.ASSET, AnalyticsTracker.SearchSource.WALLET)
-                binding.searchEt.hideKeyboard()
-                if (tokenItem != null) {
-                    view?.navigate(
-                        R.id.action_wallet_search_to_transactions,
-                        Bundle().apply { putParcelable(ARGS_ASSET, tokenItem) },
+    private fun openResult(result: WalletSearchResult) {
+        view?.hideKeyboard()
+        when (result) {
+            is WalletSearchResult.Asset -> openAsset(result.token.assetId, result.token)
+            is WalletSearchResult.Position -> {
+                viewModel.saveRecentSearch(result)
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val position = result.position
+                    val market = viewModel.findPerpetualMarket(position.marketId)
+                    PerpsActivity.showDetail(
+                        requireContext(),
+                        position.marketId,
+                        market?.displaySymbol ?: position.displaySymbol.orEmpty(),
+                        market?.displaySymbol ?: position.displaySymbol.orEmpty(),
+                        market?.tokenSymbol ?: position.tokenSymbol.orEmpty(),
+                        AnalyticsTracker.PerpsSource.WALLET_SEARCH,
                     )
-                    viewModel.updateRecentSearchAssets(defaultSharedPreferences, assetId)
-                } else {
-                    lifecycleScope.launch {
-                        val dialog =
-                            indeterminateProgressDialog(
-                                message = R.string.Please_wait_a_bit,
-                            ).apply {
-                                setCancelable(false)
-                            }
-                        dialog.show()
-                        val asset = viewModel.findOrSyncAsset(assetId)
-                        dialog.dismiss()
-
-                        if (asset == null) return@launch
-
-                        view?.navigate(
-                            R.id.action_wallet_search_to_transactions,
-                            Bundle().apply { putParcelable(ARGS_ASSET, asset) },
-                        )
-                        viewModel.updateRecentSearchAssets(defaultSharedPreferences, assetId)
-                    }
                 }
             }
+            is WalletSearchResult.Earn -> "${Constants.Scheme.APPS}/${Constants.MIXIN_EARN_USER_ID}?action=open"
+                .openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, viewLifecycleOwner.lifecycleScope)
+            is WalletSearchResult.Collectible -> InscriptionActivity.show(requireContext(), result.collectible.inscriptionHash)
         }
+    }
 
-    private fun getPersistentView(
-        inflater: LayoutInflater?,
-        container: ViewGroup?,
-        @Suppress("SameParameterValue") layout: Int,
-    ): View {
-        if (rootView == null) {
-            rootView = inflater?.inflate(layout, container, false)
-        } else {
-            (rootView?.parent as? ViewGroup)?.removeView(rootView)
+    private fun openAsset(assetId: String, token: TokenItem?) {
+        AnalyticsTracker.trackSearchItemSelect(AnalyticsTracker.SearchItemType.ASSET, AnalyticsTracker.SearchSource.WALLET)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val asset = token ?: run {
+                val dialog = indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply {
+                    setCancelable(false)
+                    show()
+                }
+                try {
+                    viewModel.findOrSyncAsset(assetId)
+                } finally {
+                    dialog.dismiss()
+                }
+            } ?: return@launch
+            viewModel.saveRecentSearch(WalletSearchResult.Asset(asset))
+            findNavController().navigate(
+                R.id.action_wallet_search_to_transactions,
+                bundleOf(TransactionsFragment.ARGS_ASSET to asset),
+            )
         }
-        rootView?.let { _binding = FragmentWalletSearchBinding.bind(it) }
-        return binding.root
+    }
+
+    private fun openSpotMarket(market: MarketItem) {
+        view?.hideKeyboard()
+        WalletActivity.showWithMarket(requireActivity(), market, WalletActivity.Destination.Market, AnalyticsTracker.MarketSource.WALLET_SEARCH)
+    }
+
+    private fun openPerpetualMarket(market: PerpsMarket) {
+        view?.hideKeyboard()
+        PerpsActivity.showDetail(
+            requireContext(), market.marketId, market.displaySymbol, market.displaySymbol, market.tokenSymbol,
+            AnalyticsTracker.PerpsSource.WALLET_SEARCH,
+        )
     }
 }

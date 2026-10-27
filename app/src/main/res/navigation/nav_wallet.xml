@@ -430,6 +430,42 @@
             app:destination="@id/transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_wallet_search_to_market_search"
+            app:destination="@id/market_search_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right">
+            <argument
+                android:name="args_market_source"
+                android:defaultValue="wallet_search"
+                app:argType="string" />
+            <argument
+                android:name="args_perps_source"
+                android:defaultValue="wallet_search"
+                app:argType="string" />
+        </action>
+    </fragment>
+
+    <fragment
+        android:id="@+id/market_search_fragment"
+        android:name="one.mixin.android.ui.home.web3.market.MarketSearchFragment">
+
+        <argument
+            android:name="args_market_source"
+            android:defaultValue="markets_search"
+            app:argType="string" />
+
+        <argument
+            android:name="args_perps_source"
+            android:defaultValue="more_explore"
+            app:argType="string" />
+
+        <argument
+            android:name="args_query"
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
     </fragment>
 
     <fragment
