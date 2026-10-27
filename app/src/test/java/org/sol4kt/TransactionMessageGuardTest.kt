@@ -20,9 +20,11 @@ class TransactionMessageGuardTest {
 
     @Test
     fun rejectsTransactionMessageForSigner() {
-        val message = transferMessage()
-        assertThrows(MaliciousInstructionException::class.java) {
-            requireNotTransactionMessage(message, payer)
+        val message = MessageCompat.deserialize(transferMessage())
+        for (version in MessageCompat.MessageVersion.entries) {
+            assertThrows(MaliciousInstructionException::class.java) {
+                requireNotTransactionMessage(message.copy(version = version).serialize(), payer)
+            }
         }
     }
 
