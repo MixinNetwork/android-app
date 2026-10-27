@@ -517,6 +517,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                             fetchDisplayToken(assetId)
                         },
                         approvals = transaction.approvals,
+                        onTokenClick = ::openChangedToken,
                     )
                 }
             } else if ((transaction.transactionType == TransactionType.UNKNOWN.value && transaction.hasDisplayAssetChanges()) || transaction.transactionType == TransactionType.SWAP.value || (transaction.transactionType == TransactionType.TRANSFER_OUT.value && transaction.senders.size > 1) || (transaction.transactionType == TransactionType.TRANSFER_IN.value && transaction.receivers.size > 1)) {
@@ -529,6 +530,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                         fetchToken = { assetId ->
                             fetchDisplayToken(assetId)
                         },
+                        onTokenClick = ::openChangedToken,
                     )
                 }
             } else {
@@ -642,7 +644,27 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         binding.status.layoutParams = layoutParams
     }
 
+    private fun openChangedToken(clicked: Web3TokenItem) {
+        lifecycleScope.launch {
+            openWeb3AssetTransactions(
+                web3ViewModel = web3ViewModel,
+                walletId = wallet.id,
+                assetId = clicked.assetId,
+                knownToken = clicked,
+            )
+        }
+    }
+
     private fun tokenClick(transaction: Web3TransactionItem) {
+        val target = transaction.tokenNavigationTarget() ?: return
+        lifecycleScope.launch {
+            openWeb3AssetTransactions(
+                web3ViewModel = web3ViewModel,
+                walletId = wallet.id,
+                assetId = target.assetId,
+                knownToken = token.takeIf { it.assetId == target.assetId },
+            )
+        }
     }
 
     @SuppressLint("InflateParams")
