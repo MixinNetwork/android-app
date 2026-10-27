@@ -124,6 +124,9 @@
     <string name="Bot_not_found">找不到這個機器人</string>
     <string name="BOTS">機器人</string>
     <string name="bots_title">機器人</string>
+    <string name="All_chats">所有聊天</string>
+    <string name="Groups">群組</string>
+    <string name="Strangers">陌生人</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s 不是您的聯絡人，請確認收款人是否正確。如果您轉錯了人資產將無法追回！</string>
     <string name="Call">語音</string>
     <string name="Call_declined">對方已拒絕</string>
@@ -1169,6 +1172,7 @@
     <string name="wallet_home_earn_account">理財賬戶</string>
     <string name="Cash_Account">現金賬戶</string>
     <string name="send_to_cash_account_description">輕鬆出售加密貨幣，賬戶餘額自動賺取年化收益。</string>
+    <string name="Reset_More_Badges">重置 More 小紅點</string>
     <string name="Reset_Wallet_Home_Banners">重置錢包首頁 Banner</string>
     <string name="cash_balance">現金餘額</string>
     <string name="earn_balance">理財餘額</string>
@@ -2667,6 +2671,9 @@
     <string name="earn_total_earnings">總收益</string>
     <string name="earn_yesterday_earnings">昨日收益</string>
     <string name="earn_reward_rate">收益率</string>
+    <string name="new_chat">發起聊天</string>
+    <string name="contacts_title">聯絡人</string>
+    <string name="contacts_search_hint">Mixin ID、姓名、手機號碼</string>
     <string name="perps_adjust">調整</string>
     <string name="perps_adjust_title">調整保證金或倉位</string>
     <string name="perps_add_margin">新增保證金</string>
@@ -2728,4 +2735,8 @@
     <string name="perps_estimated_profit">預估收益 %1$s</string>
     <string name="perps_share_card_max_leverage">📈 最大槓桿：%1$dx</string>
     <string name="perps_share_card_volume">💰 24小時成交量：%1$s</string>
+    <string name="Select_conversation">選擇一個會話開始聊天</string>
+    <string name="Select_asset">選擇一個資產查看</string>
+    <string name="Select_market_item">選擇一個行情查看</string>
+    <string name="Select_explore_item">選擇一項打開</string>
 </resources>

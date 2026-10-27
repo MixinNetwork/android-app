@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/placeholder_text"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?attr/bg_white"
+    android:gravity="center"
+    android:padding="24dp"
+    android:text="@string/Select_conversation"
+    android:textColor="?attr/text_assist"
+    android:textSize="16sp" />

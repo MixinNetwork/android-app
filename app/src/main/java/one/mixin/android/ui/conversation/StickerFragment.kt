@@ -18,10 +18,12 @@ import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentStickerBinding
 import one.mixin.android.event.DragReleaseEvent
 import one.mixin.android.extension.clear
+import one.mixin.android.extension.contentWidth
 import one.mixin.android.extension.dp
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.isWideScreen
+import one.mixin.android.extension.messageAreaWidth
 import one.mixin.android.extension.loadSticker
-import one.mixin.android.extension.realSize
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.conversation.adapter.StickerAlbumAdapter
@@ -89,12 +91,12 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        COLUMN =
-            if (requireContext().isWideScreen()) {
-                5
-            } else {
-                3
-            }
+        val wideColumns = if (requireContext().isCompactWindow()) {
+            requireContext().isWideScreen()
+        } else {
+            requireContext().contentWidth() >= 600.dp
+        }
+        COLUMN = if (wideColumns) 5 else 3
         if (type == TYPE_NORMAL && albumId != null) {
             stickerViewModel.observeStickers(albumId!!).observe(
                 viewLifecycleOwner,
@@ -135,7 +137,7 @@ class StickerFragment : BaseFragment(R.layout.fragment_sticker) {
         binding.apply {
             stickerRv.layoutManager = GridLayoutManager(context, COLUMN)
             stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-            stickerAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
+            stickerAdapter.size = (requireContext().messageAreaWidth() - (COLUMN + 1) * padding) / COLUMN
             stickerRv.adapter = stickerAdapter
             stickerAdapter.setOnStickerListener(
                 object : StickerListener {

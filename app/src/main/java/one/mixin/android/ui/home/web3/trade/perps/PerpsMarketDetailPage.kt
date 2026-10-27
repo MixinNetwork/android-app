@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -113,6 +114,7 @@ import org.threeten.bp.Instant
 import java.math.BigDecimal
 import java.util.Locale
 import kotlin.math.roundToInt
+import one.mixin.android.widget.isExpandedSheetScreen
 
 private const val DEFAULT_TIME_FRAME_INDEX = 2
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
@@ -1150,6 +1152,13 @@ private fun TimeFrameSelector(
     val density = LocalDensity.current
     val scrollState = rememberScrollState()
     var viewportWidth by remember { mutableIntStateOf(0) }
+    // Large screens share the track evenly; phones keep content-sized options.
+    val expanded = LocalContext.current.isExpandedSheetScreen()
+    val itemMinWidth = if (expanded && viewportWidth > 0 && labels.isNotEmpty()) {
+        with(density) { ((viewportWidth - 6.dp.toPx() - (labels.size - 1) * 1.dp.toPx()) / labels.size).coerceAtLeast(0f).toDp() }
+    } else {
+        0.dp
+    }
     val itemBounds = remember(labels.size) { mutableStateListOf<Rect?>().apply { repeat(labels.size) { add(null) } } }
     val indicatorX = remember { Animatable(0f) }
     val indicatorWidth = remember { Animatable(0f) }
@@ -1207,6 +1216,7 @@ private fun TimeFrameSelector(
                     Box(
                         modifier = Modifier
                             .onPlaced { itemBounds[index] = it.boundsInParent() }
+                            .widthIn(min = itemMinWidth)
                             .height(36.dp)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },

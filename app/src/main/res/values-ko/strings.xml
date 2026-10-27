@@ -149,6 +149,9 @@
     <string name="Bot_not_found">봇을 찾을 수 없음</string>
     <string name="BOTS">봇</string>
     <string name="bots_title">봇</string>
+    <string name="All_chats">모든 채팅</string>
+    <string name="Groups">그룹</string>
+    <string name="Strangers">모르는 사람</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s은(는) 연락처 목록에 없습니다. 선택한 수신자가 올바른지 확인하세요. 잘못된 사람에게 양도하면 자산이 손실됩니다!</string>
     <string name="Call">전화 걸기</string>
     <string name="Call_declined">통화가 거부되었습니다.</string>
@@ -2725,4 +2728,8 @@
     <string name="perps_estimated_profit">예상 수익 %1$s</string>
     <string name="perps_share_card_max_leverage">📈 최대 레버리지: %1$dx</string>
     <string name="perps_share_card_volume">💰 24시간 거래량: %1$s</string>
+    <string name="Select_conversation">대화를 선택해 채팅을 시작하세요</string>
+    <string name="Select_asset">자산을 선택해 확인하세요</string>
+    <string name="Select_market_item">시장을 선택해 확인하세요</string>
+    <string name="Select_explore_item">항목을 선택해 여세요</string>
 </resources>
