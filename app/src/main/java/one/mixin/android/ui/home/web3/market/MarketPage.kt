@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.market
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
@@ -111,21 +112,23 @@ fun MarketPage(
             onFavorite = onFavorite,
             onAddRecommendations = onAddRecommendations,
             onEntryClick = onEntryClick,
-        ) {
-            Spacer(modifier = Modifier.height(16.dp))
-            if (state.banners.isNotEmpty()) {
-                key(state.selectedTopTab) {
-                    BannerPager(
-                        banners = state.banners,
-                        onBannerClick = onBannerClick,
-                        onActionClick = onBannerActionClick,
-                        onBannerClose = onBannerClose,
-                        bordered = true,
-                        horizontalPadding = 12.dp,
-                    )
-                }
+            header = {
                 Spacer(modifier = Modifier.height(16.dp))
-            }
+                if (state.banners.isNotEmpty()) {
+                    key(state.selectedTopTab) {
+                        BannerPager(
+                            banners = state.banners,
+                            onBannerClick = onBannerClick,
+                            onActionClick = onBannerActionClick,
+                            onBannerClose = onBannerClose,
+                            bordered = true,
+                            horizontalPadding = 12.dp,
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+            },
+        ) {
             if (state.selectedTopTab != MarketTopTab.INDICATOR) {
                 SubTabs(
                     topTab = state.selectedTopTab,
@@ -373,6 +376,7 @@ private fun MarketListHeader(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 private fun MarketContent(
     state: MarketPageUiState,
@@ -380,6 +384,7 @@ private fun MarketContent(
     onAddRecommendations: (List<MarketListEntry>) -> Unit,
     onEntryClick: (MarketListEntry) -> Unit,
     header: @Composable () -> Unit,
+    filters: @Composable () -> Unit,
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(state.selectedTopTab, state.selectedSubTab, state.sortState) {
@@ -391,6 +396,13 @@ private fun MarketContent(
     ) {
         item(key = "header") {
             Column { header() }
+        }
+        if (state.selectedTopTab != MarketTopTab.INDICATOR) {
+            stickyHeader(key = "filters") {
+                Column(modifier = Modifier.fillMaxWidth().background(MixinAppTheme.colors.background)) {
+                    filters()
+                }
+            }
         }
         when {
             state.selectedTopTab == MarketTopTab.INDICATOR -> {
