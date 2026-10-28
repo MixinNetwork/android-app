@@ -113,7 +113,9 @@ fun MarketPage(
             onAddRecommendations = onAddRecommendations,
             onEntryClick = onEntryClick,
             header = {
-                Spacer(modifier = Modifier.height(16.dp))
+                if (state.banners.isNotEmpty() || state.selectedTopTab == MarketTopTab.INDICATOR) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
                 if (state.banners.isNotEmpty()) {
                     key(state.selectedTopTab) {
                         BannerPager(
@@ -125,7 +127,9 @@ fun MarketPage(
                             horizontalPadding = 12.dp,
                         )
                     }
-                    Spacer(modifier = Modifier.height(16.dp))
+                    if (state.selectedTopTab == MarketTopTab.INDICATOR) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
                 }
             },
         ) {
@@ -399,7 +403,7 @@ private fun MarketContent(
         }
         if (state.selectedTopTab != MarketTopTab.INDICATOR) {
             stickyHeader(key = "filters") {
-                Column(modifier = Modifier.fillMaxWidth().background(MixinAppTheme.colors.background)) {
+                Column(modifier = Modifier.fillMaxWidth().background(MixinAppTheme.colors.background).padding(top = 16.dp)) {
                     filters()
                 }
             }
