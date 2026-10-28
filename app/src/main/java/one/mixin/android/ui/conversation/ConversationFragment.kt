@@ -2,6 +2,7 @@
 
 package one.mixin.android.ui.conversation
 
+import one.mixin.android.extension.refreshHoldersOnWidthChange
 import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
@@ -315,8 +316,8 @@ class ConversationFragment() :
         const val INITIAL_UNREAD_MESSAGE_ID = "initial_unread_message_id"
         const val INITIAL_UNREAD_COUNT = "initial_unread_count"
         const val TRANSCRIPT_DATA = "transcript_data"
-        private const val KEY_WORD = "key_word"
-        private const val START_PARAM = "start_param"
+        internal const val KEY_WORD = "key_word"
+        internal const val START_PARAM = "start_param"
         private const val PREF_QUOTE_DRAFT = "quote_draft"
 
         fun putBundle(
@@ -1128,6 +1129,9 @@ class ConversationFragment() :
         savedInstanceState: Bundle?,
     ): View = inflater.inflate(R.layout.fragment_conversation, container, false)
 
+    override val showConnectionStatus: Boolean
+        get() = activity?.let { !androidx.window.embedding.ActivityEmbeddingController.getInstance(it).isActivityEmbedded(it) } ?: true
+
     override fun getContentView(): View = binding.root
 
     override fun onViewCreated(
@@ -1135,6 +1139,7 @@ class ConversationFragment() :
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        binding.messageRv.refreshHoldersOnWidthChange()
         initView()
         AudioPlayer.setStatusListener(this)
         RxBus.listen(ExitEvent::class.java)

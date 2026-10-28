@@ -28,6 +28,8 @@ import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class AssetListFixedBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "AssetListFixedBottomSheetDialogFragment"
         const val ARGS_ASSETS = "args_assets"

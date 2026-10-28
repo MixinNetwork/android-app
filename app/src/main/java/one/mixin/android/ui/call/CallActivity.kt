@@ -10,6 +10,7 @@ import android.view.WindowManager
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.ui.common.BaseActivity
+import one.mixin.android.widget.isExpandedSheetScreen
 
 @AndroidEntryPoint
 class CallActivity : BaseActivity() {
@@ -25,8 +26,10 @@ class CallActivity : BaseActivity() {
         skipSystemUi = true
         showWhenLockedAndTurnScreenOn()
         super.onCreate(savedInstanceState)
-        CallBottomSheetDialogFragment.newInstance(intent.getBooleanExtra(EXTRA_JOIN, false))
-            .show(supportFragmentManager, CallBottomSheetDialogFragment.TAG)
+        if (!isExpandedSheetScreen() || savedInstanceState == null) {
+            CallBottomSheetDialogFragment.newInstance(intent.getBooleanExtra(EXTRA_JOIN, false))
+                .show(supportFragmentManager, CallBottomSheetDialogFragment.TAG)
+        }
     }
 
     override fun onPause() {

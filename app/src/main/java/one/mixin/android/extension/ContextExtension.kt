@@ -495,12 +495,18 @@ fun Context.getUriForFile(file: File): Uri {
     return FileProvider.getUriForFile(this, authority, file)
 }
 
+fun Context.isCompactMessageWindow(): Boolean = isCompactWindow() && !isActivityEmbedded()
+
+fun Context.messageAreaWidth(): Int = if (isCompactMessageWindow()) realSize().x else contentWidth()
+
 fun Context.maxItemWidth(): Int {
-    return realSize().x * 4 / 5
+    if (isCompactMessageWindow()) return realSize().x * 4 / 5
+    return min(contentWidth() * 4 / 5, 600.dp)
 }
 
 fun Context.maxCardWidth(): Int {
-    return min(340.dp ,max(240.dp, realSize().x * 3 / 4))
+    if (isCompactMessageWindow()) return min(340.dp, max(240.dp, realSize().x * 3 / 4))
+    return min(contentWidth() * 4 / 5, min(340.dp, max(240.dp, contentWidth() * 3 / 4)))
 }
 
 // fragment

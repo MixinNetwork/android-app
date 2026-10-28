@@ -95,6 +95,7 @@ import timber.log.Timber
 import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import kotlin.system.exitProcess
+import one.mixin.android.ui.conversation.ConversationEmbedding
 
 open class MixinApplication :
     Application(),
@@ -163,6 +164,7 @@ open class MixinApplication :
 
     override fun onCreate() {
         super.onCreate()
+        ConversationEmbedding.initialize(this)
         initMnemonicCode()
         applicationScope = getAppScope()
         init()
@@ -459,7 +461,10 @@ open class MixinApplication :
         }
     }
 
+    private val resumedActivities = linkedSetOf<Activity>()
+
     override fun onActivityResumed(activity: Activity) {
+        resumedActivities.add(activity)
         contextWrapper.baseContext = activity
         topActivity = activity
         activityInForeground = true
@@ -467,7 +472,12 @@ open class MixinApplication :
     }
 
     override fun onActivityPaused(activity: Activity) {
-        activityInForeground = false
+        resumedActivities.remove(activity)
+        activityInForeground = resumedActivities.isNotEmpty()
+        resumedActivities.lastOrNull()?.let {
+            topActivity = it
+            contextWrapper.baseContext = it
+        }
         applicationScope.launch {
             delay(200)
             if (!activityInForeground) {

@@ -7,6 +7,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.supportsPie
 
 @SuppressLint("InlinedApi")
@@ -46,13 +47,14 @@ object SystemUIManager {
         imePadding: Boolean = false
     ) {
         ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
-            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val compact = window.context.isCompactWindow()
+            val statusBarInsets = insets.getInsets(statusBarInsetType(compact))
             val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
             val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
             view.setPadding(
-                0,
+                if (compact) 0 else maxOf(statusBarInsets.left, navBarInsets.left),
                 if (onlyNav) 0 else statusBarInsets.top,
-                0,
+                if (compact) 0 else maxOf(statusBarInsets.right, navBarInsets.right),
                 if (onlyStatus) 0 else navBarInsets.bottom + if (imePadding) imeBottom else 0,
             )
             view.setBackgroundColor(color)
@@ -67,12 +69,25 @@ object SystemUIManager {
     ) {
         container.setBackgroundColor(color)
         ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
-            val statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val compact = window.context.isCompactWindow()
+            val statusBarInsets = insets.getInsets(statusBarInsetType(compact))
             val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
-            container.setPadding(0, statusBarInsets.top, 0, navBarInsets.bottom)
+            container.setPadding(
+                if (compact) 0 else maxOf(statusBarInsets.left, navBarInsets.left),
+                statusBarInsets.top,
+                if (compact) 0 else maxOf(statusBarInsets.right, navBarInsets.right),
+                navBarInsets.bottom,
+            )
             insets
         }
     }
+
+    private fun statusBarInsetType(compact: Boolean): Int =
+        if (compact) {
+            WindowInsetsCompat.Type.statusBars()
+        } else {
+            WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.displayCutout()
+        }
 
     fun fullScreen(window: Window) {
         ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->

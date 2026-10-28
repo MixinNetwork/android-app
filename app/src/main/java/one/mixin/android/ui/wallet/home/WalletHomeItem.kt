@@ -20,6 +20,7 @@ enum class WalletHomeCardType {
     POSITIONS,
     TOP_MOVERS,
     TOKENS,
+    COLLECTIBLES,
     TRANSACTIONS,
     REFERRAL,
     SUPPORT,

@@ -20,11 +20,15 @@ import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.SyncOutputJob
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.AdaptiveBottomSheetDialog
 import one.mixin.android.widget.applyBottomSheetContainerInsets
+import one.mixin.android.widget.isExpandedSheetScreen
 import javax.inject.Inject
 import one.mixin.android.extension.dp as dip
 
 abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
+
+    protected open val centerOnExpandedScreen = false
 
     @Inject
     lateinit var jobManager: MixinJobManager
@@ -52,15 +56,19 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
-        object : BottomSheetDialog(requireContext(), theme) {
-            override fun onCreate(savedInstanceState: Bundle?) {
-                super.onCreate(savedInstanceState)
-                window?.enableWideColorGamutIfSupported()
-            }
+        if (requireContext().isExpandedSheetScreen()) {
+            AdaptiveBottomSheetDialog(requireContext(), theme, centerOnExpandedScreen)
+        } else {
+            object : BottomSheetDialog(requireContext(), theme) {
+                override fun onCreate(savedInstanceState: Bundle?) {
+                    super.onCreate(savedInstanceState)
+                    window?.enableWideColorGamutIfSupported()
+                }
 
-            override fun onAttachedToWindow() {
-                super.onAttachedToWindow()
-                applyBottomSheetContainerInsets()
+                override fun onAttachedToWindow() {
+                    super.onAttachedToWindow()
+                    applyBottomSheetContainerInsets()
+                }
             }
         }
 
@@ -84,11 +92,35 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
         view.doOnPreDraw {
             val params = (view.parent as? View)?.layoutParams as? CoordinatorLayout.LayoutParams
             behavior = params?.behavior as? BottomSheetBehavior<*>
+            if (requireContext().isExpandedSheetScreen()) {
+                behavior?.maxWidth = resources.getDimensionPixelSize(R.dimen.adaptive_sheet_max_width)
+            }
             behavior?.peekHeight = requireContext().resolveBottomSheetPeekHeight(view, getBottomSheetHeight(view))
             behavior?.isGestureInsetBottomIgnored = true
             behavior?.isDraggable = false
             behavior?.addBottomSheetCallback(internalBottomSheetBehaviorCallback)
+            (dialog as? AdaptiveBottomSheetDialog)?.updatePosition()
         }
+    }
+
+    override fun onConfigurationChanged(newConfig: android.content.res.Configuration) {
+        super.onConfigurationChanged(newConfig)
+        if (!requireContext().isExpandedSheetScreen()) return
+        view?.doOnPreDraw { content ->
+            (dialog as? AdaptiveBottomSheetDialog)?.updatePosition()
+            if (!centerOnExpandedScreen || !requireContext().isExpandedSheetScreen()) {
+                behavior?.peekHeight = requireContext().resolveBottomSheetPeekHeight(content, getBottomSheetHeight(content))
+            }
+            behavior?.isDraggable = false
+        }
+    }
+
+    override fun onDestroyView() {
+        if (requireContext().isExpandedSheetScreen()) {
+            behavior?.removeBottomSheetCallback(internalBottomSheetBehaviorCallback)
+            behavior = null
+        }
+        super.onDestroyView()
     }
 
     override fun onStart() {
@@ -108,6 +140,15 @@ abstract class MixinComposeBottomSheetDialogFragment : SchemeBottomSheet() {
 
     override fun dismiss() {
         dismissAllowingStateLoss()
+    }
+
+    override fun dismissAllowingStateLoss() {
+        val adaptiveDialog = dialog as? AdaptiveBottomSheetDialog
+        if (adaptiveDialog?.isCentered == true) {
+            adaptiveDialog.dismiss()
+        } else {
+            super.dismissAllowingStateLoss()
+        }
     }
 
     override fun syncUtxo() {

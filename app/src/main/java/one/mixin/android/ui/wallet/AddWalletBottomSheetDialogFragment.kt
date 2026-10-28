@@ -16,6 +16,8 @@ import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragm
 import one.mixin.android.widget.BottomSheet
 
 class AddWalletBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     enum class Action {
         IMPORT_MNEMONIC,
         IMPORT_PRIVATE_KEY,

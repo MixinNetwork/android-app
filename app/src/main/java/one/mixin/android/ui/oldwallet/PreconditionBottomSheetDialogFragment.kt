@@ -43,6 +43,8 @@ import java.math.BigDecimal
 
 @AndroidEntryPoint
 class PreconditionBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "PreconditionBottomSheetDialogFragment"
         const val ARGS_FROM = "args_from"

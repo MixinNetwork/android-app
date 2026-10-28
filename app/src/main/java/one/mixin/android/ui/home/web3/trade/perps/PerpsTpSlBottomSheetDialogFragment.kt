@@ -84,11 +84,11 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -99,6 +99,8 @@ private const val PREF_TPSL_INPUT_TYPE = "pref_perps_tpsl_input_type"
 
 @AndroidEntryPoint
 class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     enum class Mode { TAKE_PROFIT, STOP_LOSS }
 
@@ -216,7 +218,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     @Composable
