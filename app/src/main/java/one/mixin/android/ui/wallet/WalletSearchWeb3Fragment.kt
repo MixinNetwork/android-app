@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.ConcatAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.jakewharton.rxbinding3.widget.textChanges
@@ -21,10 +22,18 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.Constants.Account.PREF_WALLET_RECEIVE
+import one.mixin.android.Constants.Account.PREF_WALLET_SEND
+import one.mixin.android.Constants.Account.PREF_WEB3_WALLET_SEARCH_RECENT
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentWalletSearchBinding
+import one.mixin.android.databinding.ItemWalletSearchRecentHeaderBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.extension.addToList
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.getStringList
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.putStringList
 import one.mixin.android.extension.navigate
 import one.mixin.android.extension.viewDestroyed
 import one.mixin.android.ui.common.BaseFragment
@@ -51,9 +60,9 @@ class WalletSearchWeb3Fragment : BaseFragment() {
 
     private val walletId by lazy { requireArguments().getString(ARGS_WALLET_ID) }
 
-    private val searchAdapter by lazy {
-        SearchWeb3Adapter()
-    }
+    private val recentHeaderAdapter by lazy { WalletSearchRecentHeaderAdapter { clearRecent() } }
+    private val recentAdapter by lazy { SearchWeb3Adapter() }
+    private val tokenAdapter by lazy { SearchWeb3Adapter() }
 
     private var disposable: Disposable? = null
     private var currentSearch: Job? = null
@@ -116,12 +125,14 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                     )
 
             searchRv.layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-            searchRv.adapter = searchAdapter
-            
+            searchRv.adapter = ConcatAdapter(recentHeaderAdapter, recentAdapter, tokenAdapter)
+
             rvVa.displayedChild = POS_DEFAULT
         }
 
-        searchAdapter.callback = callback
+        val tokenClick = callback
+        recentAdapter.callback = tokenClick
+        tokenAdapter.callback = tokenClick
         
         loadAllTokens()
     }
@@ -144,15 +155,47 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             }
             
 
+            if (currentQuery.isNotBlank()) return@launch
             if (tokens.isEmpty()) {
                 binding.rvVa.displayedChild = POS_EMPTY
             } else {
                 binding.rvVa.displayedChild = POS_SEARCH
             }
-            
-            searchAdapter.submitList(tokens)
+
+            val recent = recentTokens(tokens)
+            val recentIds = recent.map { it.assetId }.toSet()
+            recentHeaderAdapter.visible = recent.isNotEmpty()
+            recentAdapter.submitList(recent)
+            tokenAdapter.submitList(tokens.filter { it.assetId !in recentIds })
             binding.pb.isVisible = false
         }
+    }
+
+    private fun recentTokens(tokens: List<Web3TokenItem>): List<Web3TokenItem> {
+        val walletId = walletId ?: return emptyList()
+        val preferences = defaultSharedPreferences
+        val key = "$PREF_WEB3_WALLET_SEARCH_RECENT:$walletId"
+        val stored = if (preferences.contains(key)) preferences.getStringList(key) else null
+        val ids = web3WalletSearchRecentIds(
+            storedIds = stored,
+            sendIds = preferences.getStringList(PREF_WALLET_SEND).orEmpty(),
+            receiveIds = preferences.getStringList(PREF_WALLET_RECEIVE).orEmpty(),
+            availableIds = tokens.map { it.assetId }.toSet(),
+        )
+        if (stored == null && ids.isNotEmpty()) preferences.putStringList(key, ids)
+        val tokensById = tokens.associateBy { it.assetId }
+        return ids.mapNotNull { tokensById[it] }
+    }
+
+    private fun clearRecent() {
+        val walletId = walletId ?: return
+        defaultSharedPreferences.putStringList("$PREF_WEB3_WALLET_SEARCH_RECENT:$walletId", emptyList())
+        if (currentQuery.isBlank()) loadAllTokens()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (hasInitializedRootView && currentQuery.isBlank() && _binding != null) loadAllTokens()
     }
 
     override fun onStop() {
@@ -193,7 +236,9 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                 } ?: emptyList()
             }
 
-            searchAdapter.submitList(localTokens)
+            recentHeaderAdapter.visible = false
+            recentAdapter.submitList(emptyList())
+            tokenAdapter.submitList(localTokens)
             
             if (localTokens.isEmpty()) {
                 isSearchingRemote = true
@@ -247,13 +292,13 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         level = tokenItem.level ?: Constants.AssetLevel.UNKNOWN
                     )
                 }
-                val currentList = searchAdapter.currentList
+                val currentList = tokenAdapter.currentList
 
                 val combinedList = currentList + remoteWeb3Tokens.filter { remote ->
                     currentList.none { it.assetId == remote.assetId }
                 }
 
-                searchAdapter.submitList(combinedList)
+                tokenAdapter.submitList(combinedList)
                 binding.rvVa.displayedChild = POS_SEARCH
             } else if (isSearchingRemote) {
                 binding.rvVa.displayedChild = POS_EMPTY
@@ -274,6 +319,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
     private val callback =
         object : Web3SearchCallback {
             override fun onTokenClick(token: Web3TokenItem) {
+                walletId?.let { defaultSharedPreferences.addToList("$PREF_WEB3_WALLET_SEARCH_RECENT:$it", token.assetId) }
                 binding.searchEt.hideKeyboard()
                 lifecycleScope.launch {
                     val address = walletId?.let {
@@ -302,5 +348,32 @@ class WalletSearchWeb3Fragment : BaseFragment() {
         }
         rootView?.let { _binding = FragmentWalletSearchBinding.bind(it) }
         return binding.root
+    }
+}
+
+private class WalletSearchRecentHeaderAdapter(
+    private val onClear: () -> Unit,
+) : RecyclerView.Adapter<WalletSearchRecentHeaderAdapter.Holder>() {
+    var visible: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            if (value) notifyItemInserted(0) else notifyItemRemoved(0)
+        }
+
+    override fun getItemCount(): Int = if (visible) 1 else 0
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Holder =
+        Holder(ItemWalletSearchRecentHeaderBinding.inflate(LayoutInflater.from(parent.context), parent, false), onClear)
+
+    override fun onBindViewHolder(holder: Holder, position: Int) = Unit
+
+    class Holder(
+        binding: ItemWalletSearchRecentHeaderBinding,
+        onClear: () -> Unit,
+    ) : RecyclerView.ViewHolder(binding.root) {
+        init {
+            binding.recentClear.setOnClickListener { onClear() }
+        }
     }
 }

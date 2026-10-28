@@ -92,6 +92,28 @@ class WalletSearchModelsTest {
     }
 
     @Test
+    fun web3SearchRecentUsesSendAndReceiveUntilTheWalletHasItsOwnList() {
+        val ids = web3WalletSearchRecentIds(
+            storedIds = null,
+            sendIds = listOf("missing", "eth", "eth"),
+            receiveIds = listOf("eth", "sol"),
+            availableIds = setOf("eth", "sol", "btc"),
+        )
+        assertEquals(listOf("eth", "sol"), ids)
+    }
+
+    @Test
+    fun web3SearchRecentPrefersTheStoredWalletList() {
+        val ids = web3WalletSearchRecentIds(
+            storedIds = listOf("btc", "", "missing"),
+            sendIds = listOf("eth"),
+            receiveIds = listOf("sol"),
+            availableIds = setOf("btc", "eth", "sol"),
+        )
+        assertEquals(listOf("btc"), ids)
+    }
+
+    @Test
     fun wideRecentChipsShareHalfTheRow() {
         val rows = walletRecentChipRows(listOf(800, 900), contentWidth = 1000, gap = 40)
         assertEquals(listOf(480, 480), rows.single().map { it.width })
