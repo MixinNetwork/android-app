@@ -374,6 +374,9 @@ fun Context.getMixinErrorStringByCode(
         ErrorHandler.PERPS_INVALID_LEADER_POSITION -> {
             getString(R.string.error_perps_invalid_leader_position)
         }
+        ErrorHandler.PERPS_ORDER_CONFLICT -> {
+            getString(R.string.error_perps_order_conflict)
+        }
         ErrorHandler.UNSUPPORTED_WATCH_ADDRESS -> {
             getString(R.string.error_watch_address_not_supported)
         }
