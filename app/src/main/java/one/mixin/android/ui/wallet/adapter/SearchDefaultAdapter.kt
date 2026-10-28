@@ -34,6 +34,7 @@ abstract class ItemViewHolder(val binding: ItemWalletSearchBinding) : RecyclerVi
     ) {
         binding.badgeCircleIv.loadToken(iconUrl, chainIconUrl, collectionHash)
         binding.nameTv.text = name
+        binding.balanceTv.maxWidth = binding.root.resources.displayMetrics.widthPixels / 2
         binding.balanceTv.text = "$balance $symbol"
         val chainNetwork = getChainNetwork(assetId, chainId, assetKey)
         binding.networkTv.isVisible = chainNetwork != null && collectionHash.isNullOrEmpty()

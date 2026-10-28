@@ -11,7 +11,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -30,14 +29,12 @@ import one.mixin.android.extension.remove
 import one.mixin.android.repository.PerpsMarketRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.session.Session
-import one.mixin.android.ui.home.web3.market.sortedForTrendingSearch
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.getWalletHomeCacheState
 import one.mixin.android.ui.wallet.home.walletHomeCacheKey
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
-import one.mixin.android.vo.market.MarketCategory
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -55,18 +52,6 @@ internal class WalletSearchViewModel @Inject constructor(
     val recentSearches = _recentSearches.asStateFlow()
     private var searchJob: Job? = null
     private var recentJob: Job? = null
-
-    init {
-        viewModelScope.launch {
-            combine(
-                tokenRepository.observeMarketsByCategory(MarketCategory.TRENDING),
-                perpsMarketRepository.observeAllMarkets(),
-            ) { spot, perpetual -> spot to perpetual.sortedForTrendingSearch() }
-                .collect { (spot, perpetual) ->
-                    _uiState.update { it.copy(spotTrending = spot, perpetualTrending = perpetual) }
-                }
-        }
-    }
 
     fun updateQuery(query: String) {
         searchJob?.cancel()
@@ -104,10 +89,6 @@ internal class WalletSearchViewModel @Inject constructor(
 
     fun selectTab(tab: WalletSearchTab) {
         _uiState.update { it.copy(selectedTab = selectedWalletSearchTab(tab, walletSearchTabs(it.results.map { result -> result.tab }))) }
-    }
-
-    fun selectTrending(perpetual: Boolean) {
-        _uiState.update { it.copy(perpetualSelected = perpetual) }
     }
 
     fun loadRecentSearches() {

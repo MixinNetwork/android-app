@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -11,12 +12,12 @@ import androidx.core.os.bundleOf
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavOptions
 import androidx.navigation.fragment.findNavController
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -27,7 +28,6 @@ import one.mixin.android.ui.home.inscription.InscriptionActivity
 import one.mixin.android.ui.home.web3.market.MarketSearchFragment
 import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
-import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
 
 @AndroidEntryPoint
@@ -50,11 +50,8 @@ class WalletSearchFragment : BaseFragment() {
                             requireActivity().onBackPressedDispatcher.onBackPressed()
                         },
                         onSelectTab = viewModel::selectTab,
-                        onSelectTrending = viewModel::selectTrending,
                         onClearRecent = viewModel::clearRecentSearches,
                         onResultClick = ::openResult,
-                        onSpotClick = ::openSpotMarket,
-                        onPerpetualClick = ::openPerpetualMarket,
                         onSearchMarkets = {
                             view?.hideKeyboard()
                             findNavController().navigate(
@@ -64,6 +61,11 @@ class WalletSearchFragment : BaseFragment() {
                                     MarketSearchFragment.ARGS_MARKET_SOURCE to AnalyticsTracker.MarketSource.WALLET_SEARCH,
                                     MarketSearchFragment.ARGS_PERPS_SOURCE to AnalyticsTracker.PerpsSource.WALLET_SEARCH,
                                 ),
+                                NavOptions.Builder()
+                                    .setPopUpTo(R.id.wallet_search_fragment, true)
+                                    .setEnterAnim(R.anim.slide_in_right)
+                                    .setPopExitAnim(R.anim.slide_out_right)
+                                    .build(),
                             )
                         },
                     )
@@ -95,8 +97,13 @@ class WalletSearchFragment : BaseFragment() {
                     )
                 }
             }
-            is WalletSearchResult.Earn -> "${Constants.Scheme.APPS}/${Constants.MIXIN_EARN_USER_ID}?action=open"
-                .openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, viewLifecycleOwner.lifecycleScope)
+            is WalletSearchResult.Earn -> {
+                val earn = Uri.parse("${Constants.Scheme.APPS}/${Constants.MIXIN_EARN_USER_ID}")
+                    .buildUpon()
+                    .appendQueryParameter("action", "open")
+                result.account.productionId?.takeIf { it.isNotBlank() }?.let { earn.appendQueryParameter("production", it) }
+                earn.build().toString().openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, viewLifecycleOwner.lifecycleScope)
+            }
             is WalletSearchResult.Collectible -> InscriptionActivity.show(requireContext(), result.collectible.inscriptionHash)
         }
     }
@@ -123,16 +130,4 @@ class WalletSearchFragment : BaseFragment() {
         }
     }
 
-    private fun openSpotMarket(market: MarketItem) {
-        view?.hideKeyboard()
-        WalletActivity.showWithMarket(requireActivity(), market, WalletActivity.Destination.Market, AnalyticsTracker.MarketSource.WALLET_SEARCH)
-    }
-
-    private fun openPerpetualMarket(market: PerpsMarket) {
-        view?.hideKeyboard()
-        PerpsActivity.showDetail(
-            requireContext(), market.marketId, market.displaySymbol, market.displaySymbol, market.tokenSymbol,
-            AnalyticsTracker.PerpsSource.WALLET_SEARCH,
-        )
-    }
 }

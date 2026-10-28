@@ -19,11 +19,11 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -36,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,7 +46,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.Constants
 import one.mixin.android.R
-import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
@@ -53,12 +53,11 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.home.web3.market.MarketChip
 import one.mixin.android.ui.home.web3.market.MarketIcon
 import one.mixin.android.ui.home.web3.market.MarketSearchBar
-import one.mixin.android.ui.home.web3.market.PerpetualMarketSearchRow
 import one.mixin.android.ui.home.web3.market.SearchEmptyResult
 import one.mixin.android.ui.home.web3.market.SearchResultSection
-import one.mixin.android.ui.home.web3.market.SpotMarketSearchRow
+import one.mixin.android.ui.home.web3.trade.perps.PerpsLeverageBadge
 import one.mixin.android.ui.wallet.home.WalletAssetIcon
-import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.ui.wallet.home.components.AccountApy
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -68,18 +67,15 @@ internal fun WalletSearchPage(
     onQueryChanged: (String) -> Unit,
     onCancel: () -> Unit,
     onSelectTab: (WalletSearchTab) -> Unit,
-    onSelectTrending: (Boolean) -> Unit,
     onClearRecent: () -> Unit,
     onResultClick: (WalletSearchResult) -> Unit,
-    onSpotClick: (MarketItem) -> Unit,
-    onPerpetualClick: (PerpsMarket) -> Unit,
     onSearchMarkets: () -> Unit,
 ) {
     val hasQuery = state.query.isNotBlank()
     val tabs = walletSearchTabs(state.results.map { it.tab })
     val quoteColorReversed = LocalContext.current.defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
     val listState = rememberLazyListState()
-    LaunchedEffect(state.query, state.selectedTab, state.perpetualSelected) { listState.scrollToItem(0) }
+    LaunchedEffect(state.query, state.selectedTab) { listState.scrollToItem(0) }
     Column(Modifier.fillMaxSize().background(MixinAppTheme.colors.background)) {
         MarketSearchBar(state.query, onQueryChanged, onCancel, placeholder = stringResource(R.string.search_placeholder_asset))
         if (hasQuery) {
@@ -111,31 +107,17 @@ internal fun WalletSearchPage(
                         }
                     }
                     item {
-                        FlowRow(
-                            Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                            horizontalArrangement = Arrangement.spacedBy(11.dp),
-                            verticalArrangement = Arrangement.spacedBy(11.dp),
-                        ) {
-                            recentSearches.forEach { result -> WalletRecentSearchChip(result) { onResultClick(result) } }
+                        Column {
+                            FlowRow(
+                                Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                maxLines = 3,
+                            ) {
+                                recentSearches.forEach { result -> WalletRecentSearchChip(result) { onResultClick(result) } }
+                            }
+                            Spacer(Modifier.height(16.dp))
                         }
-                    }
-                }
-                item {
-                    Row(
-                        Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 20.dp, bottom = 6.dp),
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                    ) {
-                        MarketChip(stringResource(R.string.Crypto), !state.perpetualSelected, { onSelectTrending(false) })
-                        MarketChip(stringResource(R.string.Perpetual), state.perpetualSelected, { onSelectTrending(true) })
-                    }
-                }
-                if (state.perpetualSelected) {
-                    items(state.perpetualTrending, key = { it.marketId }) { market ->
-                        PerpetualMarketSearchRow(market, quoteColorReversed, { onPerpetualClick(market) })
-                    }
-                } else {
-                    items(state.spotTrending, key = { it.coinId }) { market ->
-                        SpotMarketSearchRow(market, quoteColorReversed, { onSpotClick(market) })
                     }
                 }
             } else {
@@ -154,14 +136,14 @@ internal fun WalletSearchPage(
                             val results = state.results.filter { it.tab == tab }
                             SearchResultSection(walletSearchTabLabel(tab), walletSearchHasMore(results.size), { onSelectTab(tab) }) {
                                 walletSearchPreview(results, all = true).forEach { result ->
-                                    WalletSearchRow(result) { onResultClick(result) }
+                                    WalletSearchRow(result, quoteColorReversed) { onResultClick(result) }
                                 }
                             }
                         }
                     }
                 } else {
                     items(state.results.filter { it.tab == state.selectedTab }) { result ->
-                        WalletSearchRow(result) { onResultClick(result) }
+                        WalletSearchRow(result, quoteColorReversed) { onResultClick(result) }
                     }
                 }
                 item {
@@ -199,10 +181,18 @@ private fun walletSearchTabLabel(tab: WalletSearchTab): String = stringResource(
 
 @Composable
 private fun WalletRecentSearchChip(result: WalletSearchResult, onClick: () -> Unit) {
+    val maxChipWidth = ((LocalConfiguration.current.screenWidthDp - 40 - 16) / 2).dp
     Row(
-        Modifier.border(BorderStroke(1.dp, MixinAppTheme.colors.textPrimary.copy(alpha = 0.06f)), CircleShape)
-            .clip(CircleShape).background(MixinAppTheme.colors.background).clickable(onClick = onClick)
-            .padding(start = 6.dp, end = 10.dp, top = 5.dp, bottom = 5.dp),
+        Modifier
+            .widthIn(max = maxChipWidth)
+            .border(
+                BorderStroke(1.dp, MixinAppTheme.colors.textPrimary.copy(alpha = 0.06f)),
+                RoundedCornerShape(32.dp),
+            )
+            .clip(RoundedCornerShape(21.dp))
+            .background(MixinAppTheme.colors.background)
+            .clickable(onClick = onClick)
+            .padding(start = 6.dp, top = 5.dp, bottom = 5.dp, end = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         WalletSearchIcon(result, 32.dp)
@@ -217,22 +207,30 @@ private fun WalletRecentSearchChip(result: WalletSearchResult, onClick: () -> Un
                     },
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 14.sp,
+                    lineHeight = 14.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false),
                 )
                 if (result is WalletSearchResult.Position) {
                     Spacer(Modifier.width(3.dp))
-                    WalletSearchBadge("${result.position.leverage}x", MixinAppTheme.colors.textAssist, MixinAppTheme.colors.marketBadgeBackground)
+                    PerpsLeverageBadge(result.position.leverage)
                 }
             }
-            Text(walletSearchSubtitle(result, recent = true), color = MixinAppTheme.colors.textAssist, fontSize = 13.sp, maxLines = 1)
+            Text(
+                walletSearchSubtitle(result, recent = true),
+                color = MixinAppTheme.colors.textAssist,
+                fontSize = 12.sp,
+                lineHeight = 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
 
 @Composable
-private fun WalletSearchRow(result: WalletSearchResult, onClick: () -> Unit) {
+private fun WalletSearchRow(result: WalletSearchResult, quoteColorReversed: Boolean, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().background(MixinAppTheme.colors.background).clickable(onClick = onClick)
             .heightIn(min = 64.dp).padding(horizontal = 20.dp, vertical = 10.dp),
@@ -257,13 +255,12 @@ private fun WalletSearchRow(result: WalletSearchResult, onClick: () -> Unit) {
                 )
                 when (result) {
                     is WalletSearchResult.Position -> {
-                        val color = if (result.position.side.equals("long", true)) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
                         Spacer(Modifier.width(4.dp))
-                        WalletSearchBadge("${result.position.leverage}x", color, color.copy(alpha = 0.1f))
+                        PerpsLeverageBadge(result.position.leverage)
                     }
                     is WalletSearchResult.Earn -> result.account.maxApyText?.let {
                         Spacer(Modifier.width(4.dp))
-                        WalletSearchBadge(stringResource(R.string.cash_account_apy, it), MixinAppTheme.colors.marketGreen, MixinAppTheme.colors.marketGreen.copy(alpha = 0.1f))
+                        AccountApy(stringResource(R.string.cash_account_apy, it), quoteColorReversed)
                     }
                     else -> Unit
                 }
@@ -293,9 +290,4 @@ private fun WalletSearchIcon(result: WalletSearchResult, size: Dp) {
             contentScale = ContentScale.Crop,
         )
     }
-}
-
-@Composable
-private fun WalletSearchBadge(text: String, color: Color, background: Color) {
-    Text(text, color = color, fontSize = 11.sp, maxLines = 1, modifier = Modifier.background(background, RoundedCornerShape(3.dp)).padding(horizontal = 3.dp, vertical = 1.dp))
 }

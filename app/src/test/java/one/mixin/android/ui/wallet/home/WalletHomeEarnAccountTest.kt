@@ -105,6 +105,16 @@ class WalletHomeEarnAccountTest {
         )
 
         assertEquals("production-2", details.productionId)
+        assertEquals(
+            "production-2",
+            listOf(
+                product,
+                product.copy(
+                    productionId = "production-2",
+                    annualRates = listOf("0.0500"),
+                ),
+            ).toWalletHomeEarnAccounts().single().productionId,
+        )
     }
 
     @Test

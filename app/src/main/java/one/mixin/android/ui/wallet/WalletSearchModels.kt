@@ -1,11 +1,9 @@
 package one.mixin.android.ui.wallet
 
-import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.ui.wallet.home.WalletHomeEarnAccount
 import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
-import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.SafeCollectible
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
@@ -41,9 +39,6 @@ internal data class WalletSearchUiState(
     val selectedTab: WalletSearchTab = WalletSearchTab.ALL,
     val results: List<WalletSearchResult> = emptyList(),
     val isSearching: Boolean = false,
-    val perpetualSelected: Boolean = false,
-    val spotTrending: List<MarketItem> = emptyList(),
-    val perpetualTrending: List<PerpsMarket> = emptyList(),
 )
 
 internal fun walletSearchTabs(groups: Collection<WalletSearchTab>): List<WalletSearchTab> =
