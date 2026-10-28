@@ -39,6 +39,7 @@ import one.mixin.android.api.response.visibleWalletHomeBanners
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
@@ -48,6 +49,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -96,13 +98,14 @@ import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
-import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.WalletHomeTokenSummary
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.details.Web3TransactionFragment
 import one.mixin.android.web3.details.Web3TransactionsFragment
+import one.mixin.android.web3.details.openWeb3AssetTransactions
+import one.mixin.android.web3.details.tokenNavigationTarget
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
@@ -895,6 +898,11 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             }
         }
 
+        override fun onTransactionTokenClicked(index: Int) {
+            val transaction = recentTransactions.getOrNull(index) ?: return
+            openTransactionToken(transaction)
+        }
+
         override fun onTransactionUserClicked(userId: String) = Unit
 
         override fun onPositionClicked(index: Int) = Unit
@@ -909,6 +917,17 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     private fun showPendingTransactions() {
         if (walletId.isNotEmpty()) {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(walletId = walletId), pendingType = true)
+        }
+    }
+
+    private fun openTransactionToken(transaction: Web3TransactionItem) {
+        val target = transaction.tokenNavigationTarget() ?: return
+        lifecycleScope.launch {
+            openWeb3AssetTransactions(
+                web3ViewModel = web3ViewModel,
+                walletId = walletId,
+                assetId = target.assetId,
+            )
         }
     }
 
@@ -962,7 +981,8 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
-        if (!hidden) {
+        super.onHiddenChanged(hidden)
+        if (requireContext().isCompactWindow() && !hidden) {
             jobManager.addJobInBackground(RefreshSingleWalletJob(Web3Signer.currentWalletId))
             refreshWalletHomeBanners()
         }

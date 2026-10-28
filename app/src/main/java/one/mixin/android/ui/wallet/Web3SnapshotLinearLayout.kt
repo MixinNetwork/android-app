@@ -29,6 +29,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
         }
 
     var listener: OnSnapshotListener? = null
+    var onTokenClick: ((Web3TransactionItem) -> Unit)? = null
 
     init {
         orientation = VERTICAL
@@ -50,6 +51,7 @@ class Web3SnapshotLinearLayout @JvmOverloads constructor(
 
             val itemBinding = ItemWeb3TransactionsBinding.inflate(LayoutInflater.from(context), this, false)
             val holder = Web3TransactionHolder(itemBinding)
+            holder.onTokenClick = onTokenClick
             holder.bind(item)
             holder.itemView.setOnClickListener {
                 listener?.onNormalItemClick(item)
