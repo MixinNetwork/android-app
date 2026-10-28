@@ -91,6 +91,38 @@ class WalletSearchModelsTest {
         assertEquals(null, walletSearchEarnAmount(BigDecimal.TEN, BigDecimal("-1")))
     }
 
+    @Test
+    fun wideRecentChipsShareHalfTheRow() {
+        val rows = walletRecentChipRows(listOf(800, 900), contentWidth = 1000, gap = 40)
+        assertEquals(listOf(480, 480), rows.single().map { it.width })
+    }
+
+    @Test
+    fun wideRecentChipGrowsPastHalfBesideAShortChip() {
+        val rows = walletRecentChipRows(listOf(200, 1000), contentWidth = 1000, gap = 40)
+        assertEquals(listOf(200, 760), rows.single().map { it.width })
+    }
+
+    @Test
+    fun wideRecentChipUsesTheRemainingRowWhenShortChipsLeaveLessThanHalf() {
+        val rows = walletRecentChipRows(listOf(300, 300, 1000), contentWidth = 1000, gap = 40)
+        assertEquals(listOf(300, 300), rows[0].map { it.width })
+        assertEquals(listOf(1000), rows[1].map { it.width })
+    }
+
+    @Test
+    fun shortRecentChipsKeepTheirOwnWidth() {
+        val rows = walletRecentChipRows(listOf(100, 120, 140), contentWidth = 1000, gap = 40)
+        assertEquals(listOf(100, 120, 140), rows.single().map { it.width })
+    }
+
+    @Test
+    fun recentChipRowsStopAtThreeLines() {
+        val rows = walletRecentChipRows(List(7) { 800 }, contentWidth = 1000, gap = 40)
+        assertEquals(3, rows.size)
+        assertEquals(listOf(0, 1, 2, 3, 4, 5), rows.flatten().map { it.index })
+    }
+
     private fun asset(id: String) = RecentSearch(RecentSearchType.ASSET, primaryKey = id)
     private fun position(id: String) = RecentSearch(RecentSearchType.POSITION, primaryKey = id)
 }

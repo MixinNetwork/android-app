@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,7 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -59,7 +60,6 @@ import one.mixin.android.ui.home.web3.trade.perps.PerpsLeverageBadge
 import one.mixin.android.ui.wallet.home.WalletAssetIcon
 import one.mixin.android.ui.wallet.home.components.AccountApy
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun WalletSearchPage(
     state: WalletSearchUiState,
@@ -108,14 +108,7 @@ internal fun WalletSearchPage(
                     }
                     item {
                         Column {
-                            FlowRow(
-                                Modifier.fillMaxWidth().padding(horizontal = 20.dp),
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp),
-                                maxLines = 3,
-                            ) {
-                                recentSearches.forEach { result -> WalletRecentSearchChip(result) { onResultClick(result) } }
-                            }
+                            WalletRecentSearchFlow(recentSearches, onResultClick)
                             Spacer(Modifier.height(16.dp))
                         }
                     }
@@ -179,12 +172,54 @@ private fun walletSearchTabLabel(tab: WalletSearchTab): String = stringResource(
     },
 )
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun WalletRecentSearchChip(result: WalletSearchResult, onClick: () -> Unit) {
-    val maxChipWidth = ((LocalConfiguration.current.screenWidthDp - 40 - 16) / 2).dp
+private fun WalletRecentSearchFlow(
+    results: List<WalletSearchResult>,
+    onResultClick: (WalletSearchResult) -> Unit,
+) {
+    SubcomposeLayout(Modifier.fillMaxWidth().padding(horizontal = 20.dp)) { constraints ->
+        val contentWidth = constraints.maxWidth
+        val loose = constraints.copy(minWidth = 0, maxWidth = contentWidth)
+        val preferred = subcompose("preferred") {
+            results.forEach { result ->
+                Box(Modifier.width(IntrinsicSize.Max)) {
+                    WalletRecentSearchChip(result) { onResultClick(result) }
+                }
+            }
+        }.map { it.measure(loose).width }
+        val rows = walletRecentChipRows(preferred, contentWidth, 16.dp.roundToPx())
+        val visible = rows.flatten()
+        val maxWidths = IntArray(results.size) { contentWidth }
+        visible.forEach { maxWidths[it.index] = it.width }
+        val maxWidthDp = maxWidths.map { it.toDp() }
+        val flow = subcompose("flow") {
+            FlowRow(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                maxLines = 3,
+            ) {
+                visible.forEach { placement ->
+                    WalletRecentSearchChip(results[placement.index], maxWidthDp[placement.index]) {
+                        onResultClick(results[placement.index])
+                    }
+                }
+            }
+        }.single().measure(constraints)
+        layout(flow.width, flow.height) { flow.placeRelative(0, 0) }
+    }
+}
+
+@Composable
+private fun WalletRecentSearchChip(
+    result: WalletSearchResult,
+    maxWidth: Dp? = null,
+    onClick: () -> Unit,
+) {
     Row(
         Modifier
-            .widthIn(max = maxChipWidth)
+            .then(if (maxWidth != null) Modifier.widthIn(max = maxWidth) else Modifier)
             .border(
                 BorderStroke(1.dp, MixinAppTheme.colors.textPrimary.copy(alpha = 0.06f)),
                 RoundedCornerShape(32.dp),

@@ -71,3 +71,48 @@ internal fun List<RecentSearch>.mergeWalletRecentSearches(
         .distinctBy { it.type to it.primaryKey }
         .filter(available)
         .take(MAX_WALLET_RECENT_SEARCHES)
+
+internal data class WalletRecentChipPlacement(val index: Int, val width: Int)
+
+internal fun walletRecentChipRows(
+    preferredWidths: List<Int>,
+    contentWidth: Int,
+    gap: Int,
+    maxLines: Int = 3,
+): List<List<WalletRecentChipPlacement>> {
+    if (contentWidth <= 0 || maxLines <= 0 || preferredWidths.isEmpty()) return emptyList()
+    val rows = mutableListOf<List<Int>>()
+    var current = mutableListOf<Int>()
+    for (index in preferredWidths.indices) {
+        if (recentChipRowWidths((current + index).map { preferredWidths[it] }, contentWidth, gap) != null) {
+            current.add(index)
+            continue
+        }
+        if (current.isNotEmpty()) rows += current.toList()
+        if (rows.size >= maxLines) break
+        current = mutableListOf(index)
+    }
+    if (current.isNotEmpty() && rows.size < maxLines) rows += current.toList()
+    return rows.map { indexes ->
+        val widths = recentChipRowWidths(indexes.map { preferredWidths[it] }, contentWidth, gap)
+            ?: indexes.map { preferredWidths[it].coerceIn(0, contentWidth) }
+        indexes.mapIndexed { position, index -> WalletRecentChipPlacement(index, widths[position]) }
+    }
+}
+
+private fun recentChipRowWidths(preferred: List<Int>, contentWidth: Int, gap: Int): List<Int>? {
+    if (preferred.isEmpty()) return emptyList()
+    val widths = preferred.map { it.coerceAtLeast(0) }
+    if (widths.size == 1) return listOf(widths[0].coerceAtMost(contentWidth))
+    val available = contentWidth - gap * (widths.size - 1)
+    if (available <= 0) return null
+    if (widths.sum() <= available) return widths
+    val half = (contentWidth - gap).coerceAtLeast(0) / 2
+    val wide = widths.map { it > half }
+    val wideCount = wide.count { it }
+    if (wideCount == 0 || (wideCount >= 2 && widths.size != 2)) return null
+    if (wideCount >= 2) return List(widths.size) { half }
+    val wideWidth = available - widths.filterIndexed { index, _ -> !wide[index] }.sum()
+    if (wideWidth < half) return null
+    return widths.mapIndexed { index, width -> if (wide[index]) width.coerceAtMost(wideWidth) else width }
+}
