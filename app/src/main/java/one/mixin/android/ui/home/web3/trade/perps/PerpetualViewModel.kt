@@ -58,9 +58,6 @@ import one.mixin.android.vo.safe.TokenItem
 import retrofit2.HttpException
 import timber.log.Timber
 import java.math.BigDecimal
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import javax.inject.Inject
 
 @HiltViewModel
@@ -477,7 +474,6 @@ class PerpetualViewModel @Inject constructor(
         stopLossPrice: String? = null,
         destination: String? = null,
         leaderPositionId: String? = null,
-        entryPrice: String,
         onSuccess: (OpenOrderResponse) -> Unit,
         onError: (Int, String) -> Unit
     ) {
@@ -496,7 +492,7 @@ class PerpetualViewModel @Inject constructor(
                     leaderPositionId = leaderPositionId,
                 )
                 
-                onSuccess(openPerpsOrder(request, entryPrice))
+                onSuccess(openPerpsOrder(request))
             } catch (e: CancellationException) {
                 throw e
             } catch (e: MixinResponseException) {
@@ -599,7 +595,6 @@ class PerpetualViewModel @Inject constructor(
                     walletId = accountId,
                     leaderPositionId = leaderPositionId,
                 ),
-                entryPrice = market.last,
             )
             if (response.paymentUrl.isNullOrBlank()) throw DataErrorException()
             val payAmount = response.payAmount.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: throw DataErrorException()
@@ -616,57 +611,12 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
-    internal suspend fun openPerpsOrder(request: OpenOrderRequest, entryPrice: String): OpenOrderResponse {
+    internal suspend fun openPerpsOrder(request: OpenOrderRequest): OpenOrderResponse {
         val response = withContext(Dispatchers.IO) {
             routeService.openPerpsOrder(request)
         }
         if (!response.isSuccess) throw MixinResponseException(response.errorCode, response.errorDescription)
-        val data = response.data ?: throw DataErrorException()
-        val entryPriceDecimal = entryPrice.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        val amountDecimal = request.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO
-        val quantityValue = if (entryPriceDecimal > BigDecimal.ZERO) {
-            amountDecimal
-                .multiply(BigDecimal(request.leverage))
-                .divide(entryPriceDecimal, 8, java.math.RoundingMode.HALF_UP)
-                .stripTrailingZeros()
-                .toPlainString()
-        } else {
-            "0"
-        }
-
-        val position = PerpsPosition(
-            positionId = data.orderId,
-            marketId = request.marketId,
-            side = request.side,
-            quantity = quantityValue,
-            settleAssetId = request.assetId,
-            botId = "",
-            entryPrice = entryPrice,
-            margin = data.payAmount,
-            openPayAmount = data.payAmount,
-            openPayAssetId = request.assetId,
-            takeProfitPrice = request.takeProfitPrice,
-            stopLossPrice = request.stopLossPrice,
-            liquidationPrice = null,
-            leverage = request.leverage,
-            state = PerpsPosition.STATE_OPENING,
-            markPrice = entryPrice,
-            unrealizedPnl = "0",
-            roe = "0",
-            walletId = request.walletId,
-            createdAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(
-                Date()
-            ),
-            updatedAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US).format(
-                Date()
-            )
-        )
-
-        withContext(Dispatchers.IO) {
-            perpsPositionDao.upsertSuspend(position)
-        }
-
-        return data
+        return response.data ?: throw DataErrorException()
     }
 
     internal suspend fun getOpenPerpsPosition(walletId: String, marketId: String): PerpsPositionItem? = withContext(Dispatchers.IO) {
