@@ -36,13 +36,15 @@ import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.widget.bottomSheetHeight
 
 @AndroidEntryPoint
 class PerpsAdjustBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "PerpsAdjustBottomSheetDialogFragment"
         const val RESULT_ACTION = "action"
@@ -61,7 +63,7 @@ class PerpsAdjustBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
     override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun getBottomSheetHeight(view: View): Int =
-        requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
 
     @Composable
     override fun ComposeContent() {

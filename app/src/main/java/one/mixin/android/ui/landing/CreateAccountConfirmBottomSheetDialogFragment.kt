@@ -46,6 +46,8 @@ import one.mixin.android.widget.components.MixinButton
 
 @AndroidEntryPoint
 class CreateAccountConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG: String = "CreateAccountConfirmBottomSheetDialogFragment"
 

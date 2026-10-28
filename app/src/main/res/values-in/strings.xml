@@ -84,6 +84,9 @@
     <string name="Bot_not_found">Bot tidak ditemukan</string>
     <string name="BOTS">BOT</string>
     <string name="bots_title">Bot</string>
+    <string name="All_chats">Semua obrolan</string>
+    <string name="Groups">Grup</string>
+    <string name="Strangers">Orang asing</string>
     <string name="Call_declined">Panggilan ditolak</string>
     <string name="Call_failed">Panggilan gagal</string>
     <string name="call_pip_permission">Anda tidak dapat menciutkan panggilan suara karena Mixin tidak diizinkan menggunakan jendela mengambang</string>
@@ -809,4 +812,8 @@
     <string name="perps_share_card_volume">💰 Volume 24 Jam: %1$s</string>
     <string name="price_change_tpsl">Harga %1$s → Estimasi Keuntungan %2$s</string>
     <string name="bitcoin_fee_confirmation_required">Biaya Bitcoin tidak dapat dikonfirmasi atau telah naik. Silakan ajukan transfer lagi dan konfirmasi biaya terbaru.</string>
+    <string name="Select_conversation">Pilih percakapan untuk mulai mengobrol</string>
+    <string name="Select_asset">Pilih aset untuk dilihat</string>
+    <string name="Select_market_item">Pilih pasar untuk dilihat</string>
+    <string name="Select_explore_item">Pilih item untuk dibuka</string>
 </resources>

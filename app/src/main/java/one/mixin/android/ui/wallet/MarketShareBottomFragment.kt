@@ -53,7 +53,6 @@ import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.setQuoteTextWithBackgroud
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
@@ -81,6 +80,7 @@ import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.market.MarketItem
+import one.mixin.android.widget.bottomSheetHeight
 import java.io.File
 import java.io.FileOutputStream
 import java.math.BigDecimal
@@ -88,6 +88,8 @@ import javax.inject.Inject
 
 @AndroidEntryPoint
 class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "MarketShareBottomFragment"
         private const val ARGS_MARKET = "market"
@@ -231,7 +233,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     override fun showError(error: String) {

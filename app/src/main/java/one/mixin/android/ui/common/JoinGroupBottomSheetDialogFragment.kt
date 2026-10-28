@@ -28,11 +28,11 @@ import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.navigationBarHeight
 import one.mixin.android.extension.openAsUrlOrWeb
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.info.MixinScrollableBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.ConversationActivity
 import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment.Companion.CODE
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.linktext.AutoLinkMode
 
 @Parcelize
@@ -115,7 +115,7 @@ class JoinGroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragm
             dismiss()
         }
         contentView.post {
-            binding.detailTv.maxHeight = requireContext().screenHeight() / 3
+            binding.detailTv.maxHeight = requireContext().bottomSheetHeight() / 3
         }
 
         RxBus.listen(AvatarEvent::class.java)

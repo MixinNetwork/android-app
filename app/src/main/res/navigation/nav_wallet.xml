@@ -162,6 +162,14 @@
             app:destination="@id/web3_transaction_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right" />
+
+        <action
+            android:id="@+id/action_all_web3_transactions_fragment_to_web3_transactions"
+            app:destination="@id/web3_transactions_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
     </fragment>
 
     <fragment
@@ -591,7 +599,9 @@
 
         <argument
             android:name="args_address"
-            app:argType="string" />
+            app:argType="string"
+            app:nullable="true"
+            android:defaultValue="@null" />
 
         <action
             android:id="@+id/action_web3_transactions_to_all_web3_transactions"
@@ -636,6 +646,14 @@
         <action
             android:id="@+id/action_web3_transactions_to_web3_transaction"
             app:destination="@id/web3_transaction_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay"/>
+
+        <action
+            android:id="@+id/action_web3_transactions_to_web3_transactions_token"
+            app:destination="@id/web3_transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"
             app:exitAnim="@anim/stay"
@@ -690,6 +708,14 @@
         <action
             android:id="@+id/action_web3_transaction_to_web3_btc_outputs"
             app:destination="@id/web3_btc_outputs_fragment"
+            app:enterAnim="@anim/slide_in_right"
+            app:popExitAnim="@anim/slide_out_right"
+            app:exitAnim="@anim/stay"
+            app:popEnterAnim="@anim/stay" />
+
+        <action
+            android:id="@+id/action_web3_transaction_to_web3_transactions"
+            app:destination="@id/web3_transactions_fragment"
             app:enterAnim="@anim/slide_in_right"
             app:popExitAnim="@anim/slide_out_right"
             app:exitAnim="@anim/stay"
