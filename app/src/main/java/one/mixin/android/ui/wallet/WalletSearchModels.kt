@@ -19,7 +19,7 @@ internal fun web3WalletSearchRecentIds(
     availableIds: Set<String>,
     limit: Int = MAX_WALLET_RECENT_SEARCHES,
 ): List<String> {
-    val source = storedIds ?: (sendIds + receiveIds)
+    val source = storedIds.orEmpty() + sendIds + receiveIds
     return source.map { it.trim() }.filter { it.isNotEmpty() && it in availableIds }.distinct().take(limit)
 }
 

@@ -92,7 +92,7 @@ class WalletSearchModelsTest {
     }
 
     @Test
-    fun web3SearchRecentUsesSendAndReceiveUntilTheWalletHasItsOwnList() {
+    fun web3SearchRecentUsesSendAndReceive() {
         val ids = web3WalletSearchRecentIds(
             storedIds = null,
             sendIds = listOf("missing", "eth", "eth"),
@@ -103,14 +103,28 @@ class WalletSearchModelsTest {
     }
 
     @Test
-    fun web3SearchRecentPrefersTheStoredWalletList() {
+    fun web3SearchRecentMergesStoredSendAndReceive() {
         val ids = web3WalletSearchRecentIds(
             storedIds = listOf("btc", "", "missing"),
             sendIds = listOf("eth"),
             receiveIds = listOf("sol"),
             availableIds = setOf("btc", "eth", "sol"),
         )
-        assertEquals(listOf("btc"), ids)
+        assertEquals(listOf("btc", "eth", "sol"), ids)
+    }
+
+    @Test
+    fun web3SearchRecentIncludesNewSendRecordsAndCapsTheMergedList() {
+        assertEquals(
+            listOf("btc", "eth", "sol"),
+            web3WalletSearchRecentIds(
+                storedIds = listOf("btc"),
+                sendIds = listOf("eth", "btc"),
+                receiveIds = listOf("sol", "usdt"),
+                availableIds = setOf("btc", "eth", "sol", "usdt"),
+                limit = 3,
+            ),
+        )
     }
 
     @Test

@@ -100,11 +100,8 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private var currentChain: String? = null
 
     private val key by lazy {
-        when (type) {
-            TYPE_FROM_SEND -> PREF_WALLET_SEND
-            TYPE_FROM_RECEIVE -> PREF_WALLET_RECEIVE
-            else -> PREF_WALLET_SEND
-        }
+        val prefix = if (type == TYPE_FROM_RECEIVE) PREF_WALLET_RECEIVE else PREF_WALLET_SEND
+        "$prefix:${walletId.orEmpty()}"
     }
 
     private fun initRadio() {
@@ -215,10 +212,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
             assetRv.adapter = adapter
             adapter.setOnClickListener { tokenItem ->
                 searchEt.hideKeyboard()
+                requireContext().defaultSharedPreferences.addToList(key, tokenItem.assetId)
                 if (asyncOnAsset != null) {
                     asyncClick(tokenItem)
                 } else {
-                    requireContext().defaultSharedPreferences.addToList(key, tokenItem.assetId)
                     onAsset?.invoke(tokenItem)
                 }
                 dismiss()
@@ -250,7 +247,7 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         }
 
         walletId?.let {
-            bottomViewModel.web3TokenItemsExcludeHidden(it, PREF_WALLET_SEND == this.key).observe(this) { items ->
+            bottomViewModel.web3TokenItemsExcludeHidden(it, type == TYPE_FROM_SEND).observe(this) { items ->
                 defaultAssets = if (type == TYPE_FROM_SEND)
                     items.filter { t ->
                         t.isTransferSupported() && t.balance.toBigDecimalOrNull().run {
