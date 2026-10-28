@@ -134,6 +134,9 @@
     <string name="Bot_not_found">Bot no encontrado</string>
     <string name="BOTS">BOTS</string>
     <string name="bots_title">Bots</string>
+    <string name="All_chats">Todos los chats</string>
+    <string name="Groups">Grupos</string>
+    <string name="Strangers">Desconocidos</string>
     <string name="bottom_transfer_stranger_tip">El ID de Mixin %1$s no está en tu lista de contactos. Asegúrate de que el destinatario elegido sea correcto. Si transfieres a la persona equivocada, ¡perderás tus activos!</string>
     <string name="Call">Llamar</string>
     <string name="Call_declined">Llamada rechazada</string>
@@ -1251,4 +1254,8 @@
     <string name="perps_share_card_volume">💰 Volumen de 24 h: %1$s</string>
     <string name="price_change_tpsl">Precio %1$s → Beneficio estimado %2$s</string>
     <string name="invalid_gasless_solana_transaction">La transacción patrocinada no coincide con la transferencia solicitada.</string>
+    <string name="Select_conversation">Seleccione una conversación para empezar a chatear</string>
+    <string name="Select_asset">Seleccione un activo para verlo</string>
+    <string name="Select_market_item">Seleccione un mercado para verlo</string>
+    <string name="Select_explore_item">Seleccione un elemento para abrirlo</string>
 </resources>

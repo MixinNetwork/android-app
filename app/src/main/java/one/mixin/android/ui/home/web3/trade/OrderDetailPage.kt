@@ -75,6 +75,7 @@ fun OrderDetailPage(
     orderId: String,
     onShare: (String, String, String) -> Unit,
     onTryAgain: (String?, String, String, String) -> Unit,
+    onTokenClick: (String?, String) -> Unit,
     pop: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -398,7 +399,8 @@ fun DetailItem(
                             "-${order.payAmount} ${order.assetSymbol}",
                             MixinAppTheme.colors.walletRed,
                             order.assetIconUrl,
-                            order.payChainName ?: ""
+                            order.payChainName ?: "",
+                            onIconClick = { onTokenClick(currentWalletId, order.payAssetId) },
                         )
 
                         DetailItem(
@@ -406,7 +408,8 @@ fun DetailItem(
                             "+${if (uiState.isDone()) (order.filledReceiveAmount ?: order.receiveAmount ?: "0") else (order.expectedReceiveAmount ?: order.receiveAmount ?: "0")} ${order.receiveAssetSymbol}",
                             if (uiState.isCancel() || uiState.isPending()) MixinAppTheme.colors.textAssist else MixinAppTheme.colors.walletGreen,
                             order.receiveAssetIconUrl,
-                            order.receiveChainName ?: ""
+                            order.receiveChainName ?: "",
+                            onIconClick = { onTokenClick(currentWalletId, order.receiveAssetId) },
                         )
 
                         if (order.type == "limit") {
@@ -668,6 +671,7 @@ private fun DetailItem(
     color: Color,
     icon: String?,
     chain: String,
+    onIconClick: (() -> Unit)? = null,
 ) {
     Column(
         modifier = Modifier
@@ -686,7 +690,8 @@ private fun DetailItem(
                 modifier =
                     Modifier
                         .size(18.dp)
-                        .clip(CircleShape),
+                        .clip(CircleShape)
+                        .then(if (onIconClick == null) Modifier else Modifier.clickable(onClick = onIconClick)),
                 placeholder = R.drawable.ic_avatar_place_holder,
             )
             Spacer(modifier = Modifier.width(4.dp))

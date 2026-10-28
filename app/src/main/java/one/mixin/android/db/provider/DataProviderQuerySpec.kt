@@ -226,6 +226,18 @@ interface DataProviderQuerySpec {
     fun observeConversations(database: MixinDatabase): PagingSource<Int, ConversationItem>
 
     @GeneratedLimitOffsetPagingSourceQuery(
+        countSql = "SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE {{predicate}}",
+        offsetSql = "SELECT c.rowid FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE {{predicate}} ORDER BY c.pin_time DESC, c.last_message_created_at DESC LIMIT ? OFFSET ?",
+        querySql = OBSERVE_CONVERSATIONS_QUERY_SQL,
+        tables = ["message_mentions", "conversations", "users"],
+        converter = "convertToConversationItems",
+    )
+    fun observeConversationsByCategory(
+        predicate: String,
+        database: MixinDatabase,
+    ): PagingSource<Int, ConversationItem>
+
+    @GeneratedLimitOffsetPagingSourceQuery(
         countSql = OBSERVE_CONVERSATIONS_BY_CIRCLE_COUNT_SQL,
         offsetSql = OBSERVE_CONVERSATIONS_BY_CIRCLE_OFFSET_SQL,
         querySql = OBSERVE_CONVERSATIONS_BY_CIRCLE_QUERY_SQL,
