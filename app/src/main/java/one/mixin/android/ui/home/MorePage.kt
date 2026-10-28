@@ -139,6 +139,16 @@ internal fun MorePage(
                                 }
                             }
                         }
+                        if (contacts.size > 3) {
+                            Text(
+                                stringResource(R.string.view_all),
+                                color = MixinAppTheme.colors.accent,
+                                fontSize = 14.sp,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    .clickable(onClick = onContacts)
+                                    .padding(top = 18.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
+                            )
+                        }
                     }
                 }
             }
@@ -152,6 +162,16 @@ internal fun MorePage(
                             BotRow(app, external = true, avatarSize = 42.dp, showLink = isFavorite) {
                                 if (isFavorite) onBot(app) else onBotProfile(app)
                             }
+                        }
+                        if (bots.size > 5) {
+                            Text(
+                                stringResource(R.string.view_all),
+                                color = MixinAppTheme.colors.accent,
+                                fontSize = 14.sp,
+                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                    .clickable(onClick = onBots)
+                                    .padding(top = 18.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
+                            )
                         }
                     }
                 }
