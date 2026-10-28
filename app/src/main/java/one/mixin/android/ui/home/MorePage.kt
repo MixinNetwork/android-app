@@ -73,7 +73,7 @@ internal fun MorePage(
     user: User?,
     contacts: List<User>,
     favorites: List<ExploreApp>,
-    botCount: Int,
+    apps: List<ExploreApp>,
     isDesktopLogin: Boolean,
     clickedBotIds: Set<String>,
     onProfile: () -> Unit,
@@ -82,7 +82,10 @@ internal fun MorePage(
     onContact: (User) -> Unit,
     onBots: () -> Unit,
     onBot: (BotInterface) -> Unit,
+    onBotProfile: (ExploreApp) -> Unit,
 ) {
+    val bots = (favorites + apps).distinctBy { it.appId }
+    val favoriteIds = favorites.map { it.appId }.toSet()
     MixinAppTheme {
         val profileNameColor = MixinAppTheme.colors.textMinor.toArgb()
         LazyColumn(
@@ -139,12 +142,17 @@ internal fun MorePage(
                     }
                 }
             }
-            if (botCount > 0) {
+            if (bots.isNotEmpty()) {
                 item {
                     Spacer(Modifier.height(12.dp))
                     Column(Modifier.moreCard()) {
-                        MoreSectionHeader(stringResource(R.string.bots_title), botCount, onBots)
-                        favorites.forEach { app -> BotRow(app, true, 42.dp) { onBot(app) } }
+                        MoreSectionHeader(stringResource(R.string.bots_title), bots.size, onBots)
+                        bots.take(5).forEach { app ->
+                            val isFavorite = app.appId in favoriteIds
+                            BotRow(app, external = true, avatarSize = 42.dp, showLink = isFavorite) {
+                                if (isFavorite) onBot(app) else onBotProfile(app)
+                            }
+                        }
                     }
                 }
             }
@@ -221,7 +229,7 @@ private fun MoreArrow() {
 }
 
 @Composable
-private fun BotRow(app: ExploreApp, external: Boolean = false, avatarSize: Dp = 50.dp, onClick: () -> Unit) {
+private fun BotRow(app: ExploreApp, external: Boolean = false, avatarSize: Dp = 50.dp, showLink: Boolean = external, onClick: () -> Unit) {
     Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable(onClick = onClick).padding(vertical = 8.dp).height(50.dp).padding(start = if (external) 16.dp else 20.dp, end = if (external) 8.dp else 40.dp), verticalAlignment = Alignment.CenterVertically) {
         CoilImage(app.iconUrl, R.drawable.ic_avatar_place_holder, Modifier.size(avatarSize).clip(CircleShape))
         Spacer(Modifier.width(if (external) 14.dp else 16.dp))
@@ -230,7 +238,7 @@ private fun BotRow(app: ExploreApp, external: Boolean = false, avatarSize: Dp = 
             Spacer(Modifier.height(4.dp))
             Text(app.appNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
-        if (external) Icon(painterResource(R.drawable.ic_more_link), null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
+        if (showLink) Icon(painterResource(R.drawable.ic_more_link), null, tint = Color.Unspecified, modifier = Modifier.size(24.dp))
     }
 }
 
