@@ -1323,6 +1323,7 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_add">錯誤 10655：開倉金額超出最大限額 %1$s，請減少金額。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">錯誤 10655：無法加倉。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">錯誤 10655：開倉金額超出最大限額 %1$s，請減少金額或降低槓桿。</string>
+    <string name="error_perps_order_conflict">錯誤 10657：訂單資訊衝突或訂單已無法支付，請檢查訂單狀態。</string>
     <string name="error_watch_address_not_supported">錯誤 10633：地址不可用</string>
     <string name="error_invalid_referral_code">錯誤 10730：無效的邀請碼</string>
     <string name="error_already_bonded_referral_code">錯誤 10731：當前賬號已繫結邀請碼，無法修改繫結。</string>

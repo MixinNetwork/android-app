@@ -7,6 +7,22 @@ import kotlin.test.assertFalse
 
 class OpenOrderRequestTest {
     @Test
+    fun serializesClientOrderId() {
+        val orderId = "019ba6bb-5c00-7b20-8eab-b1e7ab19aa2e"
+        val json = Gson().toJsonTree(openOrderRequest().copy(orderId = orderId)).asJsonObject
+
+        assertEquals(orderId, json.get("order_id").asString)
+        assertFalse(json.has("orderId"))
+    }
+
+    @Test
+    fun omitsOrderIdWhenNotProvided() {
+        val json = Gson().toJsonTree(openOrderRequest()).asJsonObject
+
+        assertFalse(json.has("order_id"))
+    }
+
+    @Test
     fun serializesLeaderPositionId() {
         val leaderPositionId = "45d4c134-5682-4b1a-baf5-7c73b1590cc1"
 
