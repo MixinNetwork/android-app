@@ -14,13 +14,10 @@ internal const val MAX_WALLET_RECENT_SEARCHES = 6
 
 internal fun web3WalletSearchRecentIds(
     storedIds: List<String>?,
-    sendIds: List<String>,
-    receiveIds: List<String>,
     availableIds: Set<String>,
     limit: Int = MAX_WALLET_RECENT_SEARCHES,
 ): List<String> {
-    val source = storedIds.orEmpty() + sendIds + receiveIds
-    return source.map { it.trim() }.filter { it.isNotEmpty() && it in availableIds }.distinct().take(limit)
+    return storedIds.orEmpty().map { it.trim() }.filter { it.isNotEmpty() && it in availableIds }.distinct().take(limit)
 }
 
 internal enum class WalletSearchTab { ALL, ASSETS, POSITIONS, EARN, COLLECTIBLES }

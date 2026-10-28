@@ -92,35 +92,16 @@ class WalletSearchModelsTest {
     }
 
     @Test
-    fun web3SearchRecentUsesSendAndReceive() {
-        val ids = web3WalletSearchRecentIds(
-            storedIds = null,
-            sendIds = listOf("missing", "eth", "eth"),
-            receiveIds = listOf("eth", "sol"),
-            availableIds = setOf("eth", "sol", "btc"),
-        )
-        assertEquals(listOf("eth", "sol"), ids)
+    fun web3SearchRecentStartsEmptyWithoutSharedHistory() {
+        assertEquals(emptyList<String>(), web3WalletSearchRecentIds(null, setOf("btc", "eth")))
     }
 
     @Test
-    fun web3SearchRecentMergesStoredSendAndReceive() {
-        val ids = web3WalletSearchRecentIds(
-            storedIds = listOf("btc", "", "missing"),
-            sendIds = listOf("eth"),
-            receiveIds = listOf("sol"),
-            availableIds = setOf("btc", "eth", "sol"),
-        )
-        assertEquals(listOf("btc", "eth", "sol"), ids)
-    }
-
-    @Test
-    fun web3SearchRecentIncludesNewSendRecordsAndCapsTheMergedList() {
+    fun web3SearchRecentPreservesSharedOrderAndFiltersUnavailableTokens() {
         assertEquals(
             listOf("btc", "eth", "sol"),
             web3WalletSearchRecentIds(
-                storedIds = listOf("btc"),
-                sendIds = listOf("eth", "btc"),
-                receiveIds = listOf("sol", "usdt"),
+                storedIds = listOf("btc", "", "missing", "eth", "btc", "sol", "usdt"),
                 availableIds = setOf("btc", "eth", "sol", "usdt"),
                 limit = 3,
             ),

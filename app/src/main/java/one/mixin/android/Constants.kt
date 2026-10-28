@@ -154,7 +154,7 @@ object Constants {
         const val PREF_TO_WEB3_LIMIT_SWAP = "pref_to_web3_limit_swap"
         const val PREF_FROM_WEB3_LIMIT_SWAP = "pref_from_web3_limit_swap"
         const val PREF_WALLET_SEARCH_RECENT = "pref_wallet_search_recent"
-        const val PREF_WEB3_WALLET_SEARCH_RECENT = "pref_web3_wallet_search_recent"
+        const val PREF_WEB3_WALLET_RECENT = "pref_web3_wallet_recent"
         const val PREF_WALLET_SEND = "pref_wallet_send"
         const val PREF_WALLET_RECEIVE = "pref_wallet_receive"
 

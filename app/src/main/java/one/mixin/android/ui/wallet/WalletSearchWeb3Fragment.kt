@@ -22,9 +22,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_WALLET_RECEIVE
-import one.mixin.android.Constants.Account.PREF_WALLET_SEND
-import one.mixin.android.Constants.Account.PREF_WEB3_WALLET_SEARCH_RECENT
+import one.mixin.android.Constants.Account.PREF_WEB3_WALLET_RECENT
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -73,7 +71,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         onSelectTab = { state = state.copy(selectedTab = it) },
                         onClearRecent = {
                             recentJob?.cancel()
-                            defaultSharedPreferences.remove("$PREF_WEB3_WALLET_SEARCH_RECENT:$walletId")
+                            defaultSharedPreferences.remove("$PREF_WEB3_WALLET_RECENT:$walletId")
                             recentSearches = emptyList()
                         },
                         onResultClick = ::openResult,
@@ -103,16 +101,14 @@ class WalletSearchWeb3Fragment : BaseFragment() {
         recentJob?.cancel()
         recentJob = viewLifecycleOwner.lifecycleScope.launch {
             val preferences = defaultSharedPreferences
-            val stored = preferences.getStringList("$PREF_WEB3_WALLET_SEARCH_RECENT:$walletId")
-            val send = preferences.getStringList("$PREF_WALLET_SEND:$walletId").orEmpty()
-            val receive = preferences.getStringList("$PREF_WALLET_RECEIVE:$walletId").orEmpty()
+            val stored = preferences.getStringList("$PREF_WEB3_WALLET_RECENT:$walletId")
             val tokens = viewModel.web3TokensExcludeHiddenRaw(walletId).associateBy { it.assetId }.toMutableMap()
-            val missingIds = (stored.orEmpty() + send + receive).distinct().filter { it !in tokens }
+            val missingIds = stored.orEmpty().distinct().filter { it !in tokens }
             val assets = withContext(Dispatchers.IO) { walletViewModel.findAssetsByIds(missingIds) }
             assets.forEach { asset ->
                 tokens[asset.assetId] = asset.toWeb3TokenItem(walletId).copy(balance = "0", precision = asset.precision, level = asset.level ?: Constants.AssetLevel.UNKNOWN)
             }
-            val ids = web3WalletSearchRecentIds(stored, send, receive, tokens.keys)
+            val ids = web3WalletSearchRecentIds(stored, tokens.keys)
             recentTokens = ids.mapNotNull { tokens[it] }
             recentSearches = recentTokens.map { WalletSearchResult.Asset(it.toTokenItem()) }
         }
@@ -189,8 +185,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
     private fun openResult(result: WalletSearchResult) {
         val assetId = (result as WalletSearchResult.Asset).token.assetId
         val token = (if (state.query.isBlank()) recentTokens else resultTokens).first { it.assetId == assetId }
-        defaultSharedPreferences.addToList("$PREF_WEB3_WALLET_SEARCH_RECENT:$walletId", token.assetId)
-        defaultSharedPreferences.addToList("$PREF_WALLET_SEND:$walletId", token.assetId)
+        defaultSharedPreferences.addToList("$PREF_WEB3_WALLET_RECENT:$walletId", token.assetId)
         view?.hideKeyboard()
         viewLifecycleOwner.lifecycleScope.launch {
             val address = viewModel.getAddressesByChainId(walletId, token.chainId) ?: return@launch
