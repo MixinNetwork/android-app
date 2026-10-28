@@ -18,6 +18,8 @@ import one.mixin.android.widget.CheckedFlowLayout
 import javax.inject.Inject
 
 abstract class BaseTransactionsBottomSheetFragment<C> : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     @Inject
     lateinit var jobManager: MixinJobManager
 
@@ -40,7 +42,7 @@ abstract class BaseTransactionsBottomSheetFragment<C> : MixinBottomSheetDialogFr
     }
 
     protected val filtersSheet: BottomSheet by lazy {
-        val builder = BottomSheet.Builder(requireActivity())
+        val builder = BottomSheet.Builder(requireActivity(), needFocus = false, softInputResize = true, centerOnExpandedScreen = true)
         val bottomSheet = builder.create()
         builder.setCustomView(filterBinding.root)
         bottomSheet

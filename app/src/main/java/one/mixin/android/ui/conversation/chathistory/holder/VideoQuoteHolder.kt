@@ -8,7 +8,7 @@ import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.fileSize
 import one.mixin.android.extension.formatMillis
 import one.mixin.android.extension.loadVideo
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.messageAreaWidth
 import one.mixin.android.extension.round
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
@@ -22,7 +22,7 @@ import one.mixin.android.vo.absolutePath
 
 class VideoQuoteHolder constructor(val binding: ItemChatVideoQuoteBinding) : BaseViewHolder(binding.root) {
     private val minWidth by lazy {
-        (itemView.context.realSize().x * 0.5).toInt()
+        (itemView.context.messageAreaWidth() * 0.5).toInt()
     }
 
     init {

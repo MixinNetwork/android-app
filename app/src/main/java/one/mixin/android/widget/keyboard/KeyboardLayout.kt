@@ -25,8 +25,10 @@ import one.mixin.android.extension.ANIMATION_DURATION_SHORTEST
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.showKeyboard
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView.Companion.FLING_DOWN
@@ -261,7 +263,7 @@ class KeyboardLayout : LinearLayout {
         if (status == STATUS.KEYBOARD_OPENED) return
         val params = _inputArea.layoutParams
         val targetH = params.height - dis.toInt()
-        val total = context.screenHeight() * 2 / 3
+        val total = (if (context.isCompactWindow()) context.screenHeight() else context.windowHeight()) * 2 / 3
         if (targetH <= 0 || targetH >= total) return
 
         params.height = targetH
@@ -274,7 +276,7 @@ class KeyboardLayout : LinearLayout {
     ) {
         if (status == STATUS.KEYBOARD_OPENED) return
         val curH = _inputArea.height
-        val max = (context.screenHeight() * 2) / 3
+        val max = ((if (context.isCompactWindow()) context.screenHeight() else context.windowHeight()) * 2) / 3
         val maxMid = keyboardHeight + (max - keyboardHeight) / 2
         val minMid = keyboardHeight / 2
         val targetH =

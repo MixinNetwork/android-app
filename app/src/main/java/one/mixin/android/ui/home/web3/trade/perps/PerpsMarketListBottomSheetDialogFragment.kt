@@ -27,19 +27,21 @@ import one.mixin.android.db.perps.PerpsPositionDao
 import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.widget.bottomSheetHeight
 import javax.inject.Inject
 
 private const val MARKET_REFRESH_INTERVAL_MS = 3_000L
 
 @AndroidEntryPoint
 class PerpsMarketListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     companion object {
         const val TAG = "PerpsMarketListBottomSheetDialogFragment"
@@ -132,7 +134,7 @@ class PerpsMarketListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFr
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() -
+        return requireContext().bottomSheetHeight() -
             view.getSafeAreaInsetsTop() -
             requireContext().appCompatActionBarHeight()
     }

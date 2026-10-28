@@ -31,7 +31,9 @@ import one.mixin.android.job.RefreshOrdersJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
+import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.TradeFragment.Companion.PREF_TRADE_SELECTED_TAB_PREFIX
+import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -45,6 +47,7 @@ import one.mixin.android.vo.ShareCategory
 import one.mixin.android.vo.route.isCancelling
 import one.mixin.android.vo.route.isPending
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.web3.details.openWeb3AssetTransactions
 import java.math.BigDecimal
 import javax.inject.Inject
 
@@ -77,6 +80,7 @@ class OrderDetailFragment : BaseFragment() {
     lateinit var walletDatabase: WalletDatabase
 
     private val swapViewModel by viewModels<SwapViewModel>()
+    private val web3ViewModel by viewModels<Web3ViewModel>()
 
     private val dialog by lazy { indeterminateProgressDialog(message = R.string.Please_wait_a_bit).apply { setCancelable(false) } }
 
@@ -145,6 +149,9 @@ class OrderDetailFragment : BaseFragment() {
                                 )
                             }
                         },
+                        onTokenClick = { walletId, assetId ->
+                            viewLifecycleOwner.lifecycleScope.launch(ErrorHandler.errorHandler) { openToken(walletId, assetId) }
+                        },
                         pop = {
                             activity?.onBackPressedDispatcher?.onBackPressed()
                         }
@@ -191,6 +198,20 @@ class OrderDetailFragment : BaseFragment() {
     private fun stopOrderPolling() {
         refreshJob?.cancel()
         refreshJob = null
+    }
+
+    private suspend fun openToken(walletId: String?, assetId: String) {
+        if (walletId == null || walletId == Session.getAccountId()) {
+            val token = swapViewModel.findToken(assetId) ?: swapViewModel.syncAsset(assetId) ?: return
+            val host = activity ?: return
+            WalletActivity.showWithToken(host, token, WalletActivity.Destination.Transactions)
+        } else {
+            openWeb3AssetTransactions(
+                web3ViewModel = web3ViewModel,
+                walletId = walletId,
+                assetId = assetId,
+            )
+        }
     }
 
     private suspend fun shareOrder(payAssetId: String, receiveAssetId: String, type: String) {

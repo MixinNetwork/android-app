@@ -30,6 +30,8 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class TransferBalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     private val binding by viewBinding(FragmentTransferBalanceErrorBottomSheetBinding::inflate)
 
     companion object {

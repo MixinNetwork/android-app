@@ -122,6 +122,9 @@
     <string name="Bot_not_found">ミニアプリが見つかりません</string>
     <string name="BOTS">ミニアプリ</string>
     <string name="bots_title">Myミニアプリ一覧</string>
+    <string name="All_chats">すべてのチャット</string>
+    <string name="Groups">グループ</string>
+    <string name="Strangers">知らない人</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$sはあなたの友達ではありません。選択した受取人が正しいかどうか確認してください。</string>
     <string name="Call">電話</string>
     <string name="Call_declined">応答拒否</string>
@@ -1198,4 +1201,8 @@
     <string name="price_change_tpsl">価格 %1$s → 予想利益 %2$s</string>
     <string name="malicious_instruction_token_approve">この取引により、他のアカウントがあなたの許可なく SPL トークンを送金できるようになります。</string>
     <string name="malicious_instruction_system_assign">この取引はあなたの Solana アカウントを別のプログラムに割り当てます。アカウントを制御できなくなる可能性があります。</string>
+    <string name="Select_conversation">会話を選んでチャットを始めましょう</string>
+    <string name="Select_asset">表示する資産を選択してください</string>
+    <string name="Select_market_item">表示するマーケットを選択してください</string>
+    <string name="Select_explore_item">開く項目を選択してください</string>
 </resources>
