@@ -2,6 +2,7 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.os.Bundle
 import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +19,8 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.withArgs
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.AdaptiveBottomSheetDialog
+import one.mixin.android.widget.isExpandedSheetScreen
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -33,6 +36,23 @@ class ErrorFragment : BottomSheetDialogFragment() {
     }
 
     override fun getTheme() = R.style.AppTheme_Dialog
+
+    override fun dismiss() {
+        val adaptiveDialog = dialog as? AdaptiveBottomSheetDialog
+        if (adaptiveDialog?.isCentered == true) adaptiveDialog.dismiss() else super.dismiss()
+    }
+
+    override fun dismissAllowingStateLoss() {
+        val adaptiveDialog = dialog as? AdaptiveBottomSheetDialog
+        if (adaptiveDialog?.isCentered == true) adaptiveDialog.dismiss() else super.dismissAllowingStateLoss()
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        if (requireContext().isExpandedSheetScreen()) {
+            AdaptiveBottomSheetDialog(requireContext(), theme, centerOnExpandedScreen = true)
+        } else {
+            super.onCreateDialog(savedInstanceState)
+        }
 
     private val binding by viewBinding(FragmentErrorBinding::inflate)
 

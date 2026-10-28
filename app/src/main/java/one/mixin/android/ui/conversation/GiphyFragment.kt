@@ -22,7 +22,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.notNullWithElse
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.messageAreaWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.FooterAdapter
@@ -79,7 +79,7 @@ class GiphyFragment : BaseFragment(R.layout.fragment_sticker) {
             val foot = layoutInflater.inflate(R.layout.view_giphy_foot, stickerRv, false)
             giphyAdapter.footerView = foot
             stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
-            giphyAdapter.size = (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
+            giphyAdapter.size = (requireContext().messageAreaWidth() - (COLUMN + 1) * padding) / COLUMN
             stickerRv.adapter = giphyAdapter
             giphyAdapter.setOnGiphyListener(
                 object : GiphyListener {

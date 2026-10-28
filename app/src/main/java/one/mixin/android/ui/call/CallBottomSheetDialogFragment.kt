@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.graphics.Rect
 import android.os.Bundle
 import android.provider.Settings
 import android.view.Gravity
@@ -16,6 +17,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
+import android.widget.RelativeLayout
 import androidx.coordinatorlayout.widget.CoordinatorLayout
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
@@ -53,6 +55,8 @@ import one.mixin.android.extension.toast
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.web.WebActivity
+import one.mixin.android.extension.windowHeight
+import one.mixin.android.util.observeTabletopFold
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.reportException
 import one.mixin.android.util.rxpermission.RxPermissions
@@ -72,6 +76,7 @@ import one.mixin.android.webrtc.speakerPhone
 import one.mixin.android.widget.CallButton
 import one.mixin.android.widget.MixinBottomSheetDialog
 import one.mixin.android.widget.PipCallView
+import one.mixin.android.widget.isExpandedSheetScreen
 import timber.log.Timber
 import java.util.Timer
 import java.util.TimerTask
@@ -126,14 +131,51 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
     override fun getTheme() = R.style.MixinBottomSheet
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        return MixinBottomSheetDialog(requireContext(), theme, true).apply {
+        return MixinBottomSheetDialog(requireContext(), theme, true, allowTabletop = true).apply {
             dismissWithAnimation = true
             window?.clearFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND)
         }
     }
 
-    private val peekHeight by lazy {
-        480.dp
+    private val phonePeekHeight by lazy { 480.dp }
+
+    private val peekHeight: Int
+        get() = if (requireContext().isExpandedSheetScreen()) minOf(480.dp, requireContext().windowHeight()) else phonePeekHeight
+
+    private var tabletopFold: Rect? = null
+
+    private fun applyFoldLayout() {
+        if (!requireContext().isExpandedSheetScreen()) return
+        val binding = _binding ?: return
+        val location = IntArray(2)
+        binding.root.getLocationInWindow(location)
+        val foldTop = tabletopFold?.top?.minus(location[1])
+        val foldBottom = tabletopFold?.bottom?.minus(location[1])
+        val controlsHeight = binding.bottomLayout.height + if (binding.participants.isVisible) binding.participants.height else 0
+        val folded = foldTop != null && foldBottom != null &&
+            foldTop >= binding.titleLayout.height + binding.avatarLl.height &&
+            binding.root.height - foldBottom >= controlsHeight + binding.root.paddingBottom
+        val listParams = binding.usersRv.layoutParams as RelativeLayout.LayoutParams
+        val height = if (folded) (foldTop - binding.titleLayout.bottom).coerceAtLeast(0) else ViewGroup.LayoutParams.MATCH_PARENT
+        if (listParams.height != height) {
+            listParams.height = height
+            if (folded) listParams.removeRule(RelativeLayout.ABOVE) else listParams.addRule(RelativeLayout.ABOVE, R.id.participants)
+            binding.usersRv.layoutParams = listParams
+        }
+        val avatarParams = binding.avatarLl.layoutParams as RelativeLayout.LayoutParams
+        val avatarTop = if (folded) maxOf(binding.titleLayout.bottom, (foldTop - binding.avatarLl.height) / 2) else 132.dp
+        if (avatarParams.topMargin != avatarTop) {
+            avatarParams.topMargin = avatarTop
+            binding.avatarLl.layoutParams = avatarParams
+        }
+        if (tabletopFold != null) {
+            val topPadding = rootPaddingTop + safeAreaTopInset
+            if (binding.root.paddingTop != topPadding) {
+                binding.root.setPadding(0, topPadding, 0, rootPaddingBottom)
+            }
+            binding.bottomLayout.translationY = 0f
+            binding.participants.translationY = 0f
+        }
     }
 
     private var translationOffset by Delegates.notNull<Float>()
@@ -179,6 +221,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                 0,
                 bottomLayoutPaddingBottom + safeAreaBottomInset,
             )
+            applyFoldLayout()
         }
         (binding.avatarLl.layoutParams as ViewGroup.MarginLayoutParams).topMargin = 132.dp
         behavior.addBottomSheetCallback(
@@ -187,6 +230,7 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     bottomSheet: View,
                     newState: Int,
                 ) {
+                    applyFoldLayout()
                     if (newState == BottomSheetBehavior.STATE_HIDDEN) {
                         safeDismiss()
                     }
@@ -196,6 +240,10 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
                     bottomSheet: View,
                     slideOffset: Float,
                 ) {
+                    if (tabletopFold != null) {
+                        applyFoldLayout()
+                        return
+                    }
                     val normalizedSlideOffset = slideOffset.coerceIn(0f, 1f)
                     val topPadding = (safeAreaTopInset * normalizedSlideOffset).roundToInt()
                     val expectedRootTop = rootPaddingTop + topPadding
@@ -218,6 +266,23 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             ViewGroup.LayoutParams.MATCH_PARENT,
         )
         dialog.window?.setGravity(Gravity.BOTTOM)
+        if (requireContext().isExpandedSheetScreen()) {
+            binding.root.addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
+                if (bottom - top != oldBottom - oldTop) {
+                    behavior.peekHeight = peekHeight
+                    translationOffset = (peekHeight - binding.root.height).toFloat()
+                }
+                applyFoldLayout()
+            }
+            dialog.window?.decorView?.let { decor ->
+                observeTabletopFold(requireActivity(), decor, 160.dp) { fold ->
+                    tabletopFold = fold
+                    behavior.isDraggable = fold == null
+                    if (fold != null) behavior.state = BottomSheetBehavior.STATE_EXPANDED
+                    applyFoldLayout()
+                }
+            }
+        }
         join = requireArguments().getBoolean(EXTRA_JOIN, false)
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.CREATED) {

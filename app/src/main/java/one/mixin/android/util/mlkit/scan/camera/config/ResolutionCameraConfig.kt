@@ -3,20 +3,29 @@
 package one.mixin.android.util.mlkit.scan.camera.config
 
 import android.content.Context
-import android.util.DisplayMetrics
 import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.Preview
+import one.mixin.android.extension.isCompactWindow
+import one.mixin.android.extension.windowHeight
+import one.mixin.android.extension.windowWidth
 import timber.log.Timber
 
 class ResolutionCameraConfig(context: Context) : CameraConfig() {
     private var targetSize: Size
 
     init {
-        val displayMetrics: DisplayMetrics = context.resources.displayMetrics
-        val width: Int = displayMetrics.widthPixels
-        val height: Int = displayMetrics.heightPixels
+        val width: Int
+        val height: Int
+        if (context.isCompactWindow()) {
+            val displayMetrics = context.resources.displayMetrics
+            width = displayMetrics.widthPixels
+            height = displayMetrics.heightPixels
+        } else {
+            width = context.windowWidth()
+            height = context.windowHeight()
+        }
         Timber.d(String.format("displayMetrics:%d x %d", width, height))
         targetSize =
             if (width < height) {
