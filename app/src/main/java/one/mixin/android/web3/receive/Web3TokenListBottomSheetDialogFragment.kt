@@ -18,7 +18,8 @@ import io.reactivex.disposables.Disposable
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
-import one.mixin.android.Constants.Account.PREF_WEB3_WALLET_RECENT
+import one.mixin.android.Constants.Account.PREF_WALLET_RECEIVE
+import one.mixin.android.Constants.Account.PREF_WALLET_SEND
 import one.mixin.android.Constants.ChainId.Arc
 import one.mixin.android.Constants.ChainId.Arbitrum
 import one.mixin.android.Constants.ChainId.Avalanche
@@ -98,7 +99,9 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private var type: Int = TYPE_FROM_SEND
     private var currentChain: String? = null
 
-    private val key by lazy { "$PREF_WEB3_WALLET_RECENT:${walletId.orEmpty()}" }
+    private val key by lazy {
+        if (type == TYPE_FROM_RECEIVE) PREF_WALLET_RECEIVE else PREF_WALLET_SEND
+    }
 
     private fun initRadio() {
         binding.apply {

@@ -71,7 +71,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         onSelectTab = { state = state.copy(selectedTab = it) },
                         onClearRecent = {
                             recentJob?.cancel()
-                            defaultSharedPreferences.remove("$PREF_WEB3_WALLET_RECENT:$walletId")
+                            defaultSharedPreferences.remove("$PREF_WEB3_WALLET_RECENT:$walletId:search")
                             recentSearches = emptyList()
                         },
                         onResultClick = ::openResult,
@@ -101,7 +101,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
         recentJob?.cancel()
         recentJob = viewLifecycleOwner.lifecycleScope.launch {
             val preferences = defaultSharedPreferences
-            val stored = preferences.getStringList("$PREF_WEB3_WALLET_RECENT:$walletId")
+            val stored = preferences.getStringList("$PREF_WEB3_WALLET_RECENT:$walletId:search")
             val tokens = viewModel.web3TokensExcludeHiddenRaw(walletId).associateBy { it.assetId }.toMutableMap()
             val missingIds = stored.orEmpty().distinct().filter { it !in tokens }
             val assets = withContext(Dispatchers.IO) { walletViewModel.findAssetsByIds(missingIds) }
@@ -185,7 +185,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
     private fun openResult(result: WalletSearchResult) {
         val assetId = (result as WalletSearchResult.Asset).token.assetId
         val token = (if (state.query.isBlank()) recentTokens else resultTokens).first { it.assetId == assetId }
-        defaultSharedPreferences.addToList("$PREF_WEB3_WALLET_RECENT:$walletId", token.assetId)
+        defaultSharedPreferences.addToList("$PREF_WEB3_WALLET_RECENT:$walletId:search", token.assetId)
         view?.hideKeyboard()
         viewLifecycleOwner.lifecycleScope.launch {
             val address = viewModel.getAddressesByChainId(walletId, token.chainId) ?: return@launch
