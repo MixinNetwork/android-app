@@ -34,19 +34,17 @@ class LandingFeatureAdapter(
         private val binding: ItemLandingFeatureBinding,
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        private var hasSetFeatureHeight: Boolean = false
+        init {
+            binding.root.addOnLayoutChangeListener { _, _, top, _, bottom, _, _, _, _ ->
+                val height = (bottom - top - 156.dp).coerceAtLeast(0)
+                if (binding.featureFl.layoutParams.height != height) {
+                    binding.featureFl.updateLayoutParams<ViewGroup.MarginLayoutParams> { this.height = height }
+                }
+            }
+        }
 
         fun bindItem(item: LandingFeatureItem, isFirstPage: Boolean) {
-            if (!hasSetFeatureHeight) {
-                val screenHeightPx: Int = binding.root.resources.displayMetrics.heightPixels
-                val screenHeightDp = binding.root.resources.configuration.screenHeightDp
-                val featureHeightPercent = if (screenHeightDp <= 700) 0.33f else 0.45f
-                binding.featureFl.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-                    height = (screenHeightPx * featureHeightPercent).toInt()
-                }
-                binding.featureFl.setPadding(0, if (isFirstPage) 40.dp else 70.dp, 0, 0)
-                hasSetFeatureHeight = true
-            }
+            binding.featureFl.setPadding(0, if (isFirstPage) 40.dp else 70.dp, 0, 0)
             binding.featureImage.setImageResource(item.imageResId)
             val layoutParams: FrameLayout.LayoutParams = binding.featureImage.layoutParams as FrameLayout.LayoutParams
             layoutParams.gravity = if (isFirstPage) {

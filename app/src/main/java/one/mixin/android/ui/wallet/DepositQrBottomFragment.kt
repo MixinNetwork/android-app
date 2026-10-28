@@ -34,6 +34,8 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class DepositQrBottomFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "DepositQrBottomFragment"
         const val ARGS_TYPE = "args_type"

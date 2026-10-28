@@ -86,6 +86,9 @@
     <string name="Bot_not_found">Bot tidak ditemui</string>
     <string name="BOTS">BOT</string>
     <string name="bots_title">Bot</string>
+    <string name="All_chats">Semua sembang</string>
+    <string name="Groups">Kumpulan</string>
+    <string name="Strangers">Orang tidak dikenali</string>
     <string name="bottom_transfer_stranger_tip">ID Mixin %1$s tidak ada dalam senarai kenalan anda. Pastikan penerima yang anda pilih betul. Sekiranya anda pindah ke orang yang salah, aset anda akan hilang!</string>
     <string name="Call_declined">Panggilan ditolak</string>
     <string name="Call_failed">Panggilan gagal</string>
@@ -874,4 +877,8 @@
     <string name="perps_share_card_volume">💰 Volum 24 Jam: %1$s</string>
     <string name="price_change_tpsl">Harga %1$s → Anggaran Keuntungan %2$s</string>
     <string name="eip712_invalid_chain_id">ID rantaian mesej bertaip tidak sah atau tidak sepadan dengan rangkaian tandatangan.</string>
+    <string name="Select_conversation">Pilih perbualan untuk mula bersembang</string>
+    <string name="Select_asset">Pilih aset untuk dilihat</string>
+    <string name="Select_market_item">Pilih pasaran untuk dilihat</string>
+    <string name="Select_explore_item">Pilih item untuk dibuka</string>
 </resources>

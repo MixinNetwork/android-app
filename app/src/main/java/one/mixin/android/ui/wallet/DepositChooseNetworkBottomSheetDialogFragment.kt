@@ -23,6 +23,8 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class DepositChooseNetworkBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "DepositChooseNetworkBottomSheetDialogFragment"
         private const val ASSET = "asset"

@@ -70,10 +70,13 @@ import kotlin.math.floor
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
+import androidx.compose.runtime.SideEffect
+import one.mixin.android.widget.isExpandedSheetScreen
 
 private const val DEFAULT_VISIBLE_CANDLES = 30f
 private const val MIN_VISIBLE_CANDLES = 10f
 private const val MAX_VISIBLE_CANDLES = 200f
+private val LARGE_SCREEN_CANDLE_SPACING = 10.dp
 
 // Empty slots kept to the right of the latest candle, in candle widths.
 private const val RIGHT_PADDING_CANDLES = 0.3f
@@ -119,6 +122,7 @@ internal class CandleChartState {
     private var followLatest = true
     private var flingJob: Job? = null
     internal var plotWidthPx = 1f
+    private var spacingApplied = false
 
     private val maxEnd get() = candles.size + RIGHT_PADDING_CANDLES
     private val minEnd get() = min(visibleCount, maxEnd)
@@ -142,6 +146,16 @@ internal class CandleChartState {
         selectedIndex = selectedTimestamp?.let { timestamp ->
             newCandles.indexOfFirst { it.timestamp == timestamp }.takeIf { it >= 0 }
         }
+    }
+
+    /** Large screens keep the phone's candle spacing instead of stretching the default count across a wide plot. */
+    fun applyDefaultSpacing(spacingPx: Float) {
+        if (spacingApplied || plotWidthPx <= 1f) return
+        spacingApplied = true
+        val count = max(DEFAULT_VISIBLE_CANDLES, plotWidthPx / spacingPx).coerceIn(MIN_VISIBLE_CANDLES, maxVisibleCount)
+        if (count == visibleCount) return
+        visibleCount = count
+        end = end.coerceIn(minEnd, maxEnd)
     }
 
     fun xOf(position: Float): Float = plotWidthPx - (end - position) * step
@@ -271,6 +285,7 @@ internal fun ViewportCandleChart(
     val decay = rememberSplineBasedDecay<Float>()
     val textMeasurer = rememberTextMeasurer()
     val state = remember { CandleChartState() }
+    val expandedScreen = context.isExpandedSheetScreen()
 
     LaunchedEffect(items, marketPriceText, timeFrame) {
         val livePrice = marketPriceText?.toDoubleOrNull()
@@ -330,6 +345,9 @@ internal fun ViewportCandleChart(
             max(widest + 16.dp.toPx(), 48.dp.toPx())
         }
         state.plotWidthPx = (constraints.maxWidth - axisWidthPx).coerceAtLeast(1f)
+        if (expandedScreen) {
+            SideEffect { state.applyDefaultSpacing(with(density) { LARGE_SCREEN_CANDLE_SPACING.toPx() }) }
+        }
 
         Canvas(
             modifier = Modifier

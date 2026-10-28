@@ -122,6 +122,9 @@
     <string name="Bot_not_found">Бот не найден</string>
     <string name="BOTS">БОТЫ</string>
     <string name="bots_title">Боты</string>
+    <string name="All_chats">Все чаты</string>
+    <string name="Groups">Группы</string>
+    <string name="Strangers">Незнакомцы</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s отсутствует в вашем списке контактов. Убедитесь, что вы выбрали правильного получателя. Если вы передадите не тому человеку, ваши активы будут потеряны!</string>
     <string name="Call">Вызов</string>
     <string name="Call_declined">Вызов отклонен</string>
@@ -1192,4 +1195,8 @@
     <string name="perps_share_card_volume">💰 Объём за 24 ч: %1$s</string>
     <string name="price_change_tpsl">Цена %1$s → Ожидаемая прибыль %2$s</string>
     <string name="eip712_invalid_chain_id">Идентификатор сети в типизированном сообщении недействителен или не совпадает с сетью подписи.</string>
+    <string name="Select_conversation">Выберите беседу, чтобы начать чат</string>
+    <string name="Select_asset">Выберите актив для просмотра</string>
+    <string name="Select_market_item">Выберите рынок для просмотра</string>
+    <string name="Select_explore_item">Выберите элемент, чтобы открыть его</string>
 </resources>

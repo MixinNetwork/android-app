@@ -70,7 +70,6 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -89,6 +88,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 import timber.log.Timber
 import java.math.BigDecimal
@@ -97,6 +97,8 @@ import java.util.UUID
 
 @AndroidEntryPoint
 class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     companion object {
         const val TAG = "PerpsConfirmBottomSheetDialogFragment"
@@ -572,7 +574,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     private var onDoneAction: (() -> Unit)? = null
