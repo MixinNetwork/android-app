@@ -58,7 +58,10 @@ import one.mixin.android.vo.safe.TokenItem
 import retrofit2.HttpException
 import timber.log.Timber
 import java.math.BigDecimal
+import java.util.concurrent.ConcurrentHashMap
 import javax.inject.Inject
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @HiltViewModel
 class PerpetualViewModel @Inject constructor(
@@ -71,6 +74,11 @@ class PerpetualViewModel @Inject constructor(
     private val perpsMarketRepository: PerpsMarketRepository,
     private val jobManager: MixinJobManager
 ) : ViewModel() {
+    private companion object {
+        // shortcut: retry IDs survive screens but not process death; persist them when restart recovery is required.
+        val pendingOpenOrderIds = ConcurrentHashMap<OpenOrderRequest, String>()
+    }
+
     private val _favoriteMarketIds = MutableStateFlow<List<String>>(emptyList())
     val favoriteMarketIds: StateFlow<List<String>> = _favoriteMarketIds.asStateFlow()
 
@@ -611,12 +619,28 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    @OptIn(ExperimentalUuidApi::class)
     internal suspend fun openPerpsOrder(request: OpenOrderRequest): OpenOrderResponse {
+        val key = request.copy(orderId = null)
+        val orderId = request.orderId ?: pendingOpenOrderIds.getOrPut(key) { Uuid.generateV7().toString() }
         val response = withContext(Dispatchers.IO) {
-            routeService.openPerpsOrder(request)
+            routeService.openPerpsOrder(request.copy(orderId = orderId))
         }
-        if (!response.isSuccess) throw MixinResponseException(response.errorCode, response.errorDescription)
-        return response.data ?: throw DataErrorException()
+        if (!response.isSuccess) {
+            when (response.errorCode) {
+                ErrorHandler.BAD_DATA,
+                ErrorHandler.PERPS_MARGIN_TOO_SMALL,
+                ErrorHandler.PERPS_MARKET_ALREADY_HAS_ACTIVE_POSITION,
+                ErrorHandler.PERPS_POSITION_SIZE_TOO_SMALL,
+                ErrorHandler.PERPS_POSITION_SIZE_EXCEEDS_LEVERAGE_LIMIT,
+                ErrorHandler.PERPS_INVALID_LEADER_POSITION,
+                ErrorHandler.PERPS_ORDER_CONFLICT -> pendingOpenOrderIds.remove(key, orderId)
+            }
+            throw MixinResponseException(response.errorCode, response.errorDescription)
+        }
+        val data = response.data ?: throw DataErrorException()
+        pendingOpenOrderIds.remove(key, orderId)
+        return data
     }
 
     internal suspend fun getOpenPerpsPosition(walletId: String, marketId: String): PerpsPositionItem? = withContext(Dispatchers.IO) {

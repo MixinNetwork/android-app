@@ -6,6 +6,7 @@ import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import com.birbit.android.jobqueue.config.Configuration
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
@@ -29,13 +30,19 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import okhttp3.ResponseBody.Companion.toResponseBody
+import retrofit2.HttpException
+import retrofit2.Response
 import java.io.IOException
 import java.lang.reflect.Proxy
+import java.util.UUID
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.intrinsics.COROUTINE_SUSPENDED
 import kotlin.coroutines.startCoroutine
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertNotEquals
+import kotlin.test.assertNotNull
 import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
@@ -56,7 +63,9 @@ class PerpsOpenOrderTest {
         side = "long",
         amount = "10",
         leverage = 5,
-        walletId = "wallet",
+        walletId = UUID.randomUUID().toString(),
+        takeProfitPrice = "120",
+        stopLossPrice = "80",
         leaderPositionId = "leader-position",
     )
     private val payment = OpenOrderResponse(
@@ -67,7 +76,7 @@ class PerpsOpenOrderTest {
         appId = "bot",
     )
     private var response: suspend () -> MixinResponse<OpenOrderResponse> = {
-        MixinResponse<OpenOrderResponse>().apply { data = payment }
+        successfulResponse()
     }
 
     @Before
@@ -79,6 +88,7 @@ class PerpsOpenOrderTest {
             .setDriver(AndroidSQLiteDriver()).allowMainThreadQueries().build()
         perps = Room.inMemoryDatabaseBuilder(context, PerpsDatabase::class.java)
             .setDriver(AndroidSQLiteDriver()).allowMainThreadQueries().build()
+        runBlocking { perps.perpsPositionDao().getOpenPositions(request.walletId) }
         jobs = MixinJobManager(Configuration.Builder(context).inTestMode()
             .minConsumerCount(0).maxConsumerCount(1).networkUtil { 0 }.build())
         routeService = Proxy.newProxyInstance(RouteService::class.java.classLoader, arrayOf(RouteService::class.java)) { _, method, args ->
@@ -150,14 +160,19 @@ class PerpsOpenOrderTest {
     @Test
     fun unpaidOrderDoesNotBecomeAPositionOrBlockANewPreview() = runBlocking {
         val firstPreview = viewModel()
-        assertEquals(payment, firstPreview.openPerpsOrder(request))
-        assertNull(perps.perpsPositionDao().getPosition(payment.orderId))
+        val firstPayment = firstPreview.openPerpsOrder(request)
+        val orderId = assertNotNull(requests.single().orderId)
+        assertEquals(payment.copy(orderId = orderId), firstPayment)
+        assertTrue(orderId.matches(Regex("[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}")))
+        assertNull(perps.perpsPositionDao().getPosition(orderId))
         firstPreview.viewModelScope.cancel()
 
         val nextPreview = viewModel()
         assertNull(nextPreview.getOpenPerpsPosition(request.walletId, request.marketId))
-        assertEquals(payment, nextPreview.openPerpsOrder(request))
-        assertEquals(listOf(request, request), requests)
+        val nextPayment = nextPreview.openPerpsOrder(request)
+        assertEquals(payment.copy(orderId = requests.last().orderId!!), nextPayment)
+        assertNotEquals(orderId, nextPayment.orderId)
+        assertEquals(listOf(request, request), requests.map { it.copy(orderId = null) })
         assertTrue(perps.perpsPositionDao().getOpenPositions(request.walletId).isEmpty())
     }
 
@@ -168,28 +183,135 @@ class PerpsOpenOrderTest {
         val error = assertFailsWith<MixinResponseException> { viewModel().openPerpsOrder(request) }
 
         assertEquals(10656, error.errorCode)
-        assertEquals(listOf(request), requests)
+        assertEquals(listOf(request), requests.map { it.copy(orderId = null) })
         assertTrue(perps.perpsPositionDao().getOpenPositions(request.walletId).isEmpty())
     }
 
     @Test
-    fun lostResponseDoesNotWriteAPosition() = runBlocking {
+    fun lostResponsePreservesTheRequestAcrossViewModelsWithoutWritingAPosition() = runBlocking {
         response = { throw IOException("Connection closed before the response") }
+        val firstPreview = viewModel()
 
-        assertFailsWith<IOException> { viewModel().openPerpsOrder(request) }
+        assertFailsWith<IOException> { firstPreview.openPerpsOrder(request) }
+        val original = requests.single()
+        assertNotNull(original.orderId)
+        firstPreview.viewModelScope.cancel()
+        response = { successfulResponse() }
 
-        assertEquals(listOf(request), requests)
+        viewModel().openPerpsOrder(request)
+
+        assertEquals(listOf(original, original), requests)
+        assertEquals(request, original.copy(orderId = null))
         assertTrue(perps.perpsPositionDao().getOpenPositions(request.walletId).isEmpty())
     }
 
     @Test
-    fun missingPaymentResponseDoesNotWriteAPosition() = runBlocking {
+    fun missingPaymentResponsePreservesTheRequestWithoutWritingAPosition() = runBlocking {
         response = { MixinResponse() }
 
         assertFailsWith<DataErrorException> { viewModel().openPerpsOrder(request) }
+        assertFailsWith<DataErrorException> { viewModel().openPerpsOrder(request) }
 
-        assertEquals(listOf(request), requests)
+        assertEquals(2, requests.size)
+        assertEquals(requests.first(), requests.last())
+        assertNotNull(requests.first().orderId)
+        assertEquals(request, requests.first().copy(orderId = null))
         assertTrue(perps.perpsPositionDao().getOpenPositions(request.walletId).isEmpty())
+    }
+
+    @Test
+    fun cancelledRequestKeepsItsOrderIdForANewViewModel() = runBlocking<Unit> {
+        response = { throw CancellationException("Preview dismissed") }
+        val firstPreview = viewModel()
+
+        assertFailsWith<CancellationException> { firstPreview.openPerpsOrder(request) }
+        firstPreview.viewModelScope.cancel()
+        response = { successfulResponse() }
+
+        viewModel().openPerpsOrder(request)
+
+        assertEquals(2, requests.size)
+        assertEquals(requests.first(), requests.last())
+        assertNotNull(requests.first().orderId)
+    }
+
+    @Test
+    fun serverErrorsKeepTheOrderIdAcrossViewModels() = runBlocking {
+        for (error in listOf(ResponseError(500, 500, "Internal error"), ResponseError(503, 10000, "Unavailable"))) {
+            response = { MixinResponse(error) }
+            assertFailsWith<MixinResponseException> { viewModel().openPerpsOrder(request) }
+        }
+        response = { throw HttpException(Response.error<Any>(503, "Unavailable".toResponseBody())) }
+        assertFailsWith<HttpException> { viewModel().openPerpsOrder(request) }
+        response = { successfulResponse() }
+
+        viewModel().openPerpsOrder(request)
+
+        assertEquals(4, requests.size)
+        assertNotNull(requests.first().orderId)
+        assertTrue(requests.all { it == requests.first() })
+    }
+
+    @Test
+    fun changedOrderParametersUseNewIdsWithoutReplacingTheUnresolvedRequest() = runBlocking {
+        response = { throw IOException("Response lost") }
+        val variants = listOf(
+            request,
+            request.copy(assetId = "other-asset"),
+            request.copy(marketId = "other-market"),
+            request.copy(side = "short"),
+            request.copy(amount = "11"),
+            request.copy(leverage = 6),
+            request.copy(walletId = UUID.randomUUID().toString()),
+            request.copy(takeProfitPrice = "130"),
+            request.copy(stopLossPrice = "70"),
+            request.copy(leaderPositionId = "other-leader"),
+            request.copy(destination = "wallet-address"),
+        )
+
+        for (variant in variants) {
+            assertFailsWith<IOException> { viewModel().openPerpsOrder(variant) }
+        }
+
+        assertEquals(variants, requests.map { it.copy(orderId = null) })
+        assertEquals(variants.size, requests.map { assertNotNull(it.orderId) }.toSet().size)
+        assertFailsWith<IOException> { viewModel().openPerpsOrder(request) }
+        assertEquals(requests.first(), requests.last())
+    }
+
+    @Test
+    fun nonPayableOrderReportsTheReasonWithoutAutomaticallyCreatingAnotherOrder() = runBlocking {
+        response = { throw IOException("Response lost") }
+        assertFailsWith<IOException> { viewModel().openPerpsOrder(request) }
+        val reason = "Order has already been paid"
+        response = { MixinResponse(ResponseError(400, 10657, reason)) }
+
+        val error = assertFailsWith<MixinResponseException> { viewModel().openPerpsOrder(request) }
+
+        assertEquals(10657, error.errorCode)
+        assertEquals(reason, error.errorDescription)
+        assertEquals(2, requests.size)
+        assertEquals(requests.first(), requests.last())
+        response = { successfulResponse() }
+
+        viewModel().openPerpsOrder(request)
+
+        assertEquals(3, requests.size)
+        assertNotEquals(requests.first().orderId, requests.last().orderId)
+    }
+
+    @Test
+    fun explicitOrderIdIsPassedThrough() = runBlocking {
+        val explicitRequest = request.copy(orderId = "019ba6bb-5c00-7b20-8eab-b1e7ab19aa2e")
+
+        val result = viewModel().openPerpsOrder(explicitRequest)
+
+        assertEquals(listOf(explicitRequest), requests)
+        assertEquals(explicitRequest.orderId, result.orderId)
+    }
+
+    private fun successfulResponse() = MixinResponse<OpenOrderResponse>().apply {
+        data = payment.copy(orderId = requireNotNull(requests.last().orderId))
     }
 
     private fun viewModel() = PerpetualViewModel(
