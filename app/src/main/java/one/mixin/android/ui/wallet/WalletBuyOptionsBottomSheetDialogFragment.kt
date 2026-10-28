@@ -40,6 +40,8 @@ import one.mixin.android.ui.wallet.home.cashAccountApyText
 
 @AndroidEntryPoint
 class WalletBuyOptionsBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "WalletBuyOptionsBottomSheetDialogFragment"
         private const val ARGS_WALLET_NAME = "args_wallet_name"

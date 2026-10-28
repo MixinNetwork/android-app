@@ -98,7 +98,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -112,10 +111,13 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 
 @AndroidEntryPoint
 class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "PerpsMarginBottomSheetDialogFragment"
         private const val ARGS_POSITION = "args_position"
@@ -139,7 +141,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
     override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun getBottomSheetHeight(view: View): Int =
-        requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
 
     @Suppress("DEPRECATION")
     override fun onStart() {

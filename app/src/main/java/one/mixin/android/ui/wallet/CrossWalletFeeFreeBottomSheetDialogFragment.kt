@@ -39,6 +39,8 @@ import one.mixin.android.extension.roundTopOrBottom
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.landing.components.NumberedText
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.AdaptiveBottomSheetDialog
+import one.mixin.android.widget.isExpandedSheetScreen
 import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.extension.dp as dip
 
@@ -51,6 +53,23 @@ class CrossWalletFeeFreeBottomSheetDialogFragment : BottomSheetDialogFragment() 
     private var behavior: BottomSheetBehavior<*>? = null
 
     override fun getTheme(): Int = R.style.AppTheme_Dialog
+
+    override fun dismiss() {
+        val adaptiveDialog = dialog as? AdaptiveBottomSheetDialog
+        if (adaptiveDialog?.isCentered == true) adaptiveDialog.dismiss() else super.dismiss()
+    }
+
+    override fun dismissAllowingStateLoss() {
+        val adaptiveDialog = dialog as? AdaptiveBottomSheetDialog
+        if (adaptiveDialog?.isCentered == true) adaptiveDialog.dismiss() else super.dismissAllowingStateLoss()
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        if (requireContext().isExpandedSheetScreen()) {
+            AdaptiveBottomSheetDialog(requireContext(), theme, centerOnExpandedScreen = true)
+        } else {
+            super.onCreateDialog(savedInstanceState)
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,

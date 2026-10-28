@@ -49,6 +49,7 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
@@ -980,7 +981,8 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
-        if (!hidden) {
+        super.onHiddenChanged(hidden)
+        if (requireContext().isCompactWindow() && !hidden) {
             jobManager.addJobInBackground(RefreshSingleWalletJob(Web3Signer.currentWalletId))
             refreshWalletHomeBanners()
         }

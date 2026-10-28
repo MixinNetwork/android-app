@@ -29,15 +29,19 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.common.showOnTask
+import one.mixin.android.ui.common.taskActivity
 import one.mixin.android.ui.landing.components.HighlightedTextWithClick
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.bottomSheetHeight
 
 @AndroidEntryPoint
 class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     companion object {
         const val TAG: String = "RecoveryReminderBottomSheetDialogFragment"
@@ -152,7 +156,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
                     false
                 } else {
                     isShowing = true
-                    fragment.show(fragmentManager, TAG)
+                    fragment.showOnTask(fragmentManager, TAG)
                     true
                 }
             } catch (e: Exception) {
@@ -299,7 +303,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     override fun showError(error: String) {
@@ -308,7 +312,7 @@ class RecoveryReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogF
     private fun openRecoveryKit() {
         pendingContinueAction = null
         dismissAllowingStateLoss()
-        SettingActivity.showRecoveryKit(requireContext())
+        SettingActivity.showRecoveryKit(taskActivity() ?: requireContext())
     }
 
     private fun handleDismiss(dialogArgs: ReminderDialogArgs) {

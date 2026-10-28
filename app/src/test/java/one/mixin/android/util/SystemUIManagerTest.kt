@@ -16,8 +16,35 @@ import org.robolectric.annotation.Config
 import kotlin.test.assertEquals
 
 @RunWith(RobolectricTestRunner::class)
-@Config(application = Application::class, manifest = Config.NONE, sdk = [35])
+@Config(application = Application::class, manifest = Config.NONE, sdk = [35], qualifiers = "w800dp-h1000dp")
 class SystemUIManagerTest {
+    @Test
+    @Config(sdk = [26, 27, 28, 29])
+    fun safePaddingUsesTheActivityContextOnPreAndroidR() {
+        val controller = Robolectric.buildActivity(Activity::class.java).create()
+        try {
+            val activity = controller.get()
+            val container = FrameLayout(activity)
+            activity.setContentView(container)
+            val insets = WindowInsetsCompat.Builder()
+                .setInsets(WindowInsetsCompat.Type.statusBars(), Insets.of(0, 24, 0, 0))
+                .setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.of(0, 0, 0, 48))
+                .build()
+
+            SystemUIManager.setSafePadding(activity.window, Color.WHITE)
+            ViewCompat.dispatchApplyWindowInsets(activity.window.decorView, insets)
+            assertEquals(24, activity.window.decorView.paddingTop)
+            assertEquals(48, activity.window.decorView.paddingBottom)
+
+            SystemUIManager.setSafeContainerPadding(activity.window, container, Color.WHITE)
+            ViewCompat.dispatchApplyWindowInsets(activity.window.decorView, insets)
+            assertEquals(24, container.paddingTop)
+            assertEquals(48, container.paddingBottom)
+        } finally {
+            controller.destroy()
+        }
+    }
+
     @Test
     fun containerUpdatesPaddingWhenStatusBarBecomesVisible() {
         val controller = Robolectric.buildActivity(Activity::class.java).create()
@@ -29,7 +56,7 @@ class SystemUIManagerTest {
 
             val hiddenInsets = WindowInsetsCompat.Builder()
                 .setInsets(WindowInsetsCompat.Type.statusBars(), Insets.NONE)
-                .setInsetsIgnoringVisibility(WindowInsetsCompat.Type.statusBars(), Insets.of(0, 100, 0, 0))
+                .setInsetsIgnoringVisibility(WindowInsetsCompat.Type.statusBars(), Insets.of(30, 100, 0, 0))
                 .setVisible(WindowInsetsCompat.Type.statusBars(), false)
                 .setInsets(WindowInsetsCompat.Type.navigationBars(), Insets.of(0, 0, 0, 45))
                 .build()
@@ -38,11 +65,12 @@ class SystemUIManagerTest {
             container.setBackgroundColor(Color.BLUE)
 
             val visibleInsets = WindowInsetsCompat.Builder(hiddenInsets)
-                .setInsets(WindowInsetsCompat.Type.statusBars(), Insets.of(0, 100, 0, 0))
+                .setInsets(WindowInsetsCompat.Type.statusBars(), Insets.of(30, 100, 0, 0))
                 .setVisible(WindowInsetsCompat.Type.statusBars(), true)
                 .build()
             ViewCompat.dispatchApplyWindowInsets(activity.window.decorView, visibleInsets)
             assertEquals(100, container.paddingTop)
+            assertEquals(30, container.paddingLeft)
             assertEquals(45, container.paddingBottom)
             assertEquals(Color.BLUE, (container.background as ColorDrawable).color)
         } finally {

@@ -48,7 +48,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.home.web3.components.ActionButton
@@ -59,6 +58,7 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.viewmodel.MemberViewModel
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.extension.dp as dip
 
 @AndroidEntryPoint
@@ -215,7 +215,7 @@ class ReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight()
+        return requireContext().bottomSheetHeight()
     }
 
     override fun onStart() {

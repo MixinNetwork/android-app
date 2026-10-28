@@ -57,6 +57,8 @@ import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
 class TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "TokenListBottomSheetDialogFragment"
         const val ARGS_FOR_TYPE = "args_for_type"
