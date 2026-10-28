@@ -123,56 +123,52 @@ internal fun MorePage(
                 }
                 Spacer(Modifier.height(12.dp))
             }
-            if (contacts.isNotEmpty()) {
-                item {
-                    Spacer(Modifier.height(8.dp))
-                    Column(Modifier.moreCard()) {
-                        MoreSectionHeader(stringResource(R.string.contacts_title), contacts.size, onContacts)
-                        contacts.take(3).forEach { contact ->
-                            Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable { onContact(contact) }.padding(horizontal = 16.dp, vertical = 8.dp).height(50.dp), verticalAlignment = Alignment.CenterVertically) {
-                                UserAvatarImage(contact, 42.dp)
-                                Spacer(Modifier.width(14.dp))
-                                Column(Modifier.weight(1f)) {
-                                    AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(contact) })
-                                    Spacer(Modifier.height(4.dp))
-                                    Text(contact.identityNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp)
-                                }
+            item {
+                Spacer(Modifier.height(8.dp))
+                Column(Modifier.moreCard()) {
+                    MoreSectionHeader(stringResource(R.string.contacts_title), contacts.size, onContacts)
+                    contacts.take(3).forEach { contact ->
+                        Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable { onContact(contact) }.padding(horizontal = 16.dp, vertical = 8.dp).height(50.dp), verticalAlignment = Alignment.CenterVertically) {
+                            UserAvatarImage(contact, 42.dp)
+                            Spacer(Modifier.width(14.dp))
+                            Column(Modifier.weight(1f)) {
+                                AndroidView(factory = { NameTextView(it).apply { textView.textSize = 16f } }, update = { it.setName(contact) })
+                                Spacer(Modifier.height(4.dp))
+                                Text(contact.identityNumber, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp, letterSpacing = 0.sp)
                             }
                         }
-                        if (contacts.size > 3) {
-                            Text(
-                                stringResource(R.string.view_all),
-                                color = MixinAppTheme.colors.accent,
-                                fontSize = 14.sp,
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    .clickable(onClick = onContacts)
-                                    .padding(top = 18.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
-                            )
-                        }
+                    }
+                    if (contacts.size > 3) {
+                        Text(
+                            stringResource(R.string.view_all),
+                            color = MixinAppTheme.colors.accent,
+                            fontSize = 14.sp,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                                .clickable(onClick = onContacts)
+                                .padding(top = 18.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
+                        )
                     }
                 }
             }
-            if (bots.isNotEmpty()) {
-                item {
-                    Spacer(Modifier.height(12.dp))
-                    Column(Modifier.moreCard()) {
-                        MoreSectionHeader(stringResource(R.string.bots_title), bots.size, onBots)
-                        bots.take(5).forEach { app ->
-                            val isFavorite = app.appId in favoriteIds
-                            BotRow(app, external = true, avatarSize = 42.dp, showLink = isFavorite) {
-                                if (isFavorite) onBot(app) else onBotProfile(app)
-                            }
+            item {
+                Spacer(Modifier.height(12.dp))
+                Column(Modifier.moreCard()) {
+                    MoreSectionHeader(stringResource(R.string.bots_title), bots.size, onBots)
+                    bots.take(5).forEach { app ->
+                        val isFavorite = app.appId in favoriteIds
+                        BotRow(app, external = true, avatarSize = 42.dp, showLink = isFavorite) {
+                            if (isFavorite) onBot(app) else onBotProfile(app)
                         }
-                        if (bots.size > 5) {
-                            Text(
-                                stringResource(R.string.view_all),
-                                color = MixinAppTheme.colors.accent,
-                                fontSize = 14.sp,
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                                    .clickable(onClick = onBots)
-                                    .padding(top = 18.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
-                            )
-                        }
+                    }
+                    if (bots.size > 5) {
+                        Text(
+                            stringResource(R.string.view_all),
+                            color = MixinAppTheme.colors.accent,
+                            fontSize = 14.sp,
+                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                                .clickable(onClick = onBots)
+                                .padding(top = 18.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
+                        )
                     }
                 }
             }
