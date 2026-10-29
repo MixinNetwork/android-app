@@ -1171,6 +1171,7 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_add">エラー 10655：新規建玉の金額が上限の%1$sを超えています。金額を下げてください。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">エラー 10655：建玉を追加できません。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">エラー 10655：新規建玉の金額が上限の%1$sを超えています。金額またはレバレッジを下げてください。</string>
+    <string name="error_perps_order_conflict">エラー 10657：注文内容が一致しないか、この注文は支払いできない状態です。注文の状態を確認してください。</string>
     <string name="single_transaction_should_be_less_than">最大金額 %1$s %2$s</string>
     <string name="Candle_Open">始値</string>
     <string name="Candle_Close">終値</string>
@@ -1199,6 +1200,12 @@
     <string name="perps_share_card_max_leverage">📈 最大レバレッジ: %1$dx</string>
     <string name="perps_share_card_volume">💰 24時間取引高: %1$s</string>
     <string name="price_change_tpsl">価格 %1$s → 予想利益 %2$s</string>
+    <string name="invalid_gasless_transaction">無効なガスレス取引です。もう一度お試しください。</string>
+    <string name="eip712_invalid_chain_id">型付きメッセージのチェーン ID が無効か、署名ネットワークと一致しません。</string>
+    <string name="invalid_solana_sign_in">無効な Solana サインインリクエストです。</string>
+    <string name="malicious_instruction_token_approve">この取引により、他のアカウントがあなたの許可なく SPL トークンを送金できるようになります。</string>
+    <string name="malicious_instruction_system_assign">この取引はあなたの Solana アカウントを別のプログラムに割り当てます。アカウントを制御できなくなる可能性があります。</string>
+    <string name="bitcoin_fee_confirmation_required">ビットコインの手数料を確認できないか、手数料が上昇しました。もう一度送金をリクエストし、更新された手数料を確認してください。</string>
     <string name="invalid_gasless_solana_transaction">スポンサー取引が要求された送金と一致しません。</string>
     <string name="Select_conversation">会話を選んでチャットを始めましょう</string>
     <string name="Select_asset">表示する資産を選択してください</string>

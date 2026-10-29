@@ -1225,6 +1225,7 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_add">ERROR 10655: El importe de apertura supera el límite máximo de %1$s. Reduzca el importe.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">ERROR 10655: No se puede ampliar la posición.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">ERROR 10655: El importe de apertura supera el límite máximo de %1$s. Reduzca el importe o el apalancamiento.</string>
+    <string name="error_perps_order_conflict">ERROR 10657: Los datos de la orden no coinciden o la orden ya no se puede pagar. Compruebe su estado.</string>
     <string name="single_transaction_should_be_less_than">Cantidad máxima %1$s %2$s</string>
     <string name="Candle_Open">Apertura</string>
     <string name="Candle_Close">Cierre</string>
@@ -1253,6 +1254,12 @@
     <string name="perps_share_card_max_leverage">📈 Apalancamiento máximo: %1$dx</string>
     <string name="perps_share_card_volume">💰 Volumen de 24 h: %1$s</string>
     <string name="price_change_tpsl">Precio %1$s → Beneficio estimado %2$s</string>
+    <string name="invalid_gasless_transaction">Transacción sin gas no válida. Inténtalo de nuevo.</string>
+    <string name="eip712_invalid_chain_id">El ID de cadena del mensaje tipado no es válido o no coincide con la red de firma.</string>
+    <string name="invalid_solana_sign_in">Solicitud de inicio de sesión de Solana no válida.</string>
+    <string name="malicious_instruction_token_approve">Esta transacción permite que otra cuenta transfiera tus tokens SPL sin tu permiso.</string>
+    <string name="malicious_instruction_system_assign">Esta transacción asigna tu cuenta de Solana a otro programa. Podrías perder el control de la cuenta.</string>
+    <string name="bitcoin_fee_confirmation_required">No se pudo confirmar la comisión de Bitcoin o ha aumentado. Vuelve a solicitar la transferencia y confirma la nueva comisión.</string>
     <string name="invalid_gasless_solana_transaction">La transacción patrocinada no coincide con la transferencia solicitada.</string>
     <string name="Select_conversation">Seleccione una conversación para empezar a chatear</string>
     <string name="Select_asset">Seleccione un activo para verlo</string>
