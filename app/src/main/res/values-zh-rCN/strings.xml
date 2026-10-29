@@ -495,6 +495,7 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">错误 10655：无法加仓。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">错误 10655：开仓金额超出最大限额 %1$s，请减少金额或降低杠杆。</string>
     <string name="error_perps_invalid_leader_position">错误 10656：跟单目标仓位无效，请重新选择跟单仓位。</string>
+    <string name="error_perps_order_conflict">错误 10657：订单信息冲突或订单已不可支付，请检查订单状态。</string>
     <string name="error_phone_verification_code_expired">错误 20114：验证码已过期</string>
     <string name="error_phone_verification_code_invalid">错误 20113：验证码错误</string>
     <string name="error_pin_check_too_many_request">你已经尝试了超过 5 次，请等待 24 小时后再次尝试。</string>
@@ -2684,9 +2685,16 @@
     <string name="Details">详情</string>
     <string name="perps_tpsl_requires_amount_leverage">在设置止盈止损之前，请先设置好金额和杠杆倍数。</string>
     <string name="perps_estimated_profit">预估收益 %1$s</string>
-    <string name="search_query_in_markets">在行情中搜索“%1$s”</string>
+    <string name="invalid_gasless_transaction">免 Gas 交易无效，请重试。</string>
+    <string name="eip712_invalid_chain_id">结构化消息的链 ID 无效，或与签名网络不一致。</string>
+    <string name="invalid_solana_sign_in">Solana 登录请求无效。</string>
+    <string name="malicious_instruction_token_approve">此交易将允许其他账户在未经您允许的情况下转让您的 SPL 代币。</string>
+    <string name="malicious_instruction_system_assign">此交易会将您的 Solana 账户分配给其他程序，可能导致您失去对该账户的控制。</string>
+    <string name="bitcoin_fee_confirmation_required">无法确认比特币手续费，或手续费已上涨。请重新发起转账并确认新的手续费。</string>
+    <string name="invalid_gasless_solana_transaction">代付交易与请求的转账不一致。</string>
     <string name="Select_conversation">选择一个会话开始聊天</string>
     <string name="Select_asset">选择一个资产查看</string>
     <string name="Select_market_item">选择一个行情查看</string>
     <string name="Select_explore_item">选择一项打开</string>
+    <string name="search_query_in_markets">在行情中搜索“%1$s”</string>
 </resources>
