@@ -71,8 +71,8 @@ fun PerpetualContent(
     onShowTradingGuide: () -> Unit,
     onShowMarketList: (isLong: Boolean) -> Unit,
     onShowAllMarkets: (String?, MarketSort?) -> Unit,
-    onShowAllOpenPositions: () -> Unit,
-    onShowAllClosedPositions: () -> Unit,
+    onShowAllOpenPositions: (String) -> Unit,
+    onShowAllClosedPositions: (String) -> Unit,
     onOpenPositionClick: (PerpsPositionItem) -> Unit,
     onMarketItemClick: (PerpsMarket) -> Unit,
     onClosedPositionClick: (PerpsOrderItem) -> Unit,
@@ -81,8 +81,8 @@ fun PerpetualContent(
     val walletId = Session.getAccountId()!!
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.marketGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
     val viewModel = hiltViewModel<PerpetualViewModel>()
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -278,7 +278,7 @@ fun PerpetualContent(
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable(onClick = onShowAllOpenPositions)
+                            .clickable { onShowAllOpenPositions(AnalyticsTracker.PerpsSource.PERPS_HOME_CARD_ARROW) }
                             .padding(horizontal = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -315,7 +315,7 @@ fun PerpetualContent(
 
                     if (openPositionsCount > openPositionsPreview.size) {
                         Spacer(modifier = Modifier.height(12.dp))
-                        ViewAllAction(onClick = onShowAllOpenPositions)
+                        ViewAllAction(onClick = { onShowAllOpenPositions(AnalyticsTracker.PerpsSource.PERPS_HOME_CARD_MORE) })
                     }
                 }
             }
@@ -463,7 +463,7 @@ fun PerpetualContent(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable(onClick = onShowAllClosedPositions)
+                        .clickable { onShowAllClosedPositions(AnalyticsTracker.PerpsSource.PERPS_HOME_CARD_ARROW) }
                         .padding(horizontal = 16.dp),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
@@ -528,7 +528,7 @@ fun PerpetualContent(
                     }
 
                     if (closedPositions.size > closedPositionsPreview.size) {
-                        ViewAllAction(onClick = onShowAllClosedPositions)
+                        ViewAllAction(onClick = { onShowAllClosedPositions(AnalyticsTracker.PerpsSource.PERPS_HOME_CARD_MORE) })
                     }
                 }
             }

@@ -38,6 +38,21 @@ class TradeInputTest {
     }
 
     @Test
+    fun tradeAmountInputAllowsTypingLeadingDecimalPoint() {
+        listOf("", ".", ".5", ".", "").forEach {
+            assertTrue(isTradeInputDecimalAllowed(it))
+        }
+        assertTrue(isTradeInputDecimalAllowed(".12345678"))
+        assertTrue(isTradeInputDecimalAllowed(".", maxDecimalPlaces = null))
+        assertFalse(isTradeInputDecimalAllowed(".", maxDecimalPlaces = 0))
+        assertFalse(isTradeInputDecimalAllowed(".123456789"))
+        listOf("..", ".x", "1.2.3").forEach {
+            assertFalse(isTradeInputDecimalAllowed(it))
+            assertFalse(isTradeInputDecimalAllowed(it, maxDecimalPlaces = null))
+        }
+    }
+
+    @Test
     fun tradeAmountInputLimitsProgrammaticValuesToEightDecimalPlaces() {
         assertEquals("", limitTradeInputDecimalPlaces(""))
         assertEquals("12", limitTradeInputDecimalPlaces("12"))

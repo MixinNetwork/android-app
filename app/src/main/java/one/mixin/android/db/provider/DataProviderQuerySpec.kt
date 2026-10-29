@@ -6,6 +6,7 @@ import one.mixin.android.codegen.annotation.GeneratedLimitOffsetPagingSourceQuer
 import one.mixin.android.codegen.annotation.GeneratedNoCountPagingSourceQuery
 import one.mixin.android.db.ConversationDao
 import one.mixin.android.db.MixinDatabase
+import one.mixin.android.db.TokenDao.Companion.NOT_PRIMITIVE_ASSET
 import one.mixin.android.db.TokenDao.Companion.PREFIX_ASSET_ITEM
 import one.mixin.android.codegen.annotation.GeneratedQuery
 import one.mixin.android.codegen.annotation.GeneratedQueryProvider
@@ -23,7 +24,7 @@ import one.mixin.android.vo.safe.TokenItem
 private const val FUZZY_SEARCH_TOKEN_SQL =
     PREFIX_ASSET_ITEM +
         """
-        WHERE ae.balance > 0
+        WHERE ae.balance > 0 AND $NOT_PRIMITIVE_ASSET
         AND (a1.symbol LIKE '%' || ? || '%'  ESCAPE '\' OR a1.name LIKE '%' || ? || '%'  ESCAPE '\')
         ORDER BY
         a1.symbol = ? COLLATE NOCASE OR a1.name = ? COLLATE NOCASE DESC,
@@ -223,6 +224,18 @@ interface DataProviderQuerySpec {
         converter = "convertToConversationItems",
     )
     fun observeConversations(database: MixinDatabase): PagingSource<Int, ConversationItem>
+
+    @GeneratedLimitOffsetPagingSourceQuery(
+        countSql = "SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE {{predicate}}",
+        offsetSql = "SELECT c.rowid FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE {{predicate}} ORDER BY c.pin_time DESC, c.last_message_created_at DESC LIMIT ? OFFSET ?",
+        querySql = OBSERVE_CONVERSATIONS_QUERY_SQL,
+        tables = ["message_mentions", "conversations", "users"],
+        converter = "convertToConversationItems",
+    )
+    fun observeConversationsByCategory(
+        predicate: String,
+        database: MixinDatabase,
+    ): PagingSource<Int, ConversationItem>
 
     @GeneratedLimitOffsetPagingSourceQuery(
         countSql = OBSERVE_CONVERSATIONS_BY_CIRCLE_COUNT_SQL,

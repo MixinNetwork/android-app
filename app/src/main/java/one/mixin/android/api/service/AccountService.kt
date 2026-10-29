@@ -1,7 +1,6 @@
 package one.mixin.android.api.service
 
 import com.google.gson.JsonObject
-import io.reactivex.Observable
 import kotlinx.coroutines.Deferred
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AccountRequest
@@ -19,7 +18,6 @@ import one.mixin.android.api.request.SessionSecretRequest
 import one.mixin.android.api.request.StickerAddRequest
 import one.mixin.android.api.request.VerificationRequest
 import one.mixin.android.api.response.AddressResponse
-import one.mixin.android.api.response.DeviceCheckResponse
 import one.mixin.android.api.response.ExportRequest
 import one.mixin.android.api.response.SchemeResponse
 import one.mixin.android.api.response.SessionSecretResponse
@@ -40,11 +38,6 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface AccountService {
-    @POST("verifications")
-    fun verificationObserver(
-        @Body request: VerificationRequest,
-    ): Observable<MixinResponse<VerificationResponse>>
-
     @POST("verifications")
     suspend fun verification(
         @Body request: VerificationRequest,
@@ -68,18 +61,15 @@ interface AccountService {
     ): MixinResponse<Account>
 
     @POST("verifications/{id}")
-    fun deactiveVerification(
+    suspend fun deactiveVerification(
         @Path("id") id: String,
         @Body request: DeactivateVerificationRequest,
-    ): Observable<MixinResponse<VerificationResponse>>
+    ): MixinResponse<VerificationResponse>
 
     @POST("me")
-    fun update(
+    suspend fun update(
         @Body request: AccountUpdateRequest,
-    ): Observable<MixinResponse<Account>>
-
-    @POST("devices")
-    fun deviceCheck(): Observable<MixinResponse<DeviceCheckResponse>>
+    ): MixinResponse<Account>
 
     @POST("me/preferences")
     suspend fun preferences(

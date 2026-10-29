@@ -39,6 +39,8 @@ import one.mixin.android.ui.wallet.transfer.TransferWeb3BalanceErrorBottomSheetD
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.AdaptiveBottomSheetDialog
+import one.mixin.android.widget.isExpandedSheetScreen
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.SOLANA_RENT_EXEMPTION
 import one.mixin.android.web3.SOLANA_TOKEN_ACCOUNT_RENT_EXEMPTION
@@ -132,6 +134,23 @@ class GasCheckBottomSheetDialogFragment : BottomSheetDialogFragment() {
     private val binding by viewBinding(FragmentBottomSheetBinding::inflate)
 
     private lateinit var contentView: View
+
+    override fun dismiss() {
+        val adaptiveDialog = dialog as? AdaptiveBottomSheetDialog
+        if (adaptiveDialog?.isCentered == true) adaptiveDialog.dismiss() else super.dismiss()
+    }
+
+    override fun dismissAllowingStateLoss() {
+        val adaptiveDialog = dialog as? AdaptiveBottomSheetDialog
+        if (adaptiveDialog?.isCentered == true) adaptiveDialog.dismiss() else super.dismissAllowingStateLoss()
+    }
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        if (requireContext().isExpandedSheetScreen()) {
+            AdaptiveBottomSheetDialog(requireContext(), theme, centerOnExpandedScreen = true)
+        } else {
+            super.onCreateDialog(savedInstanceState)
+        }
 
     @Inject
     lateinit var rpc: Rpc

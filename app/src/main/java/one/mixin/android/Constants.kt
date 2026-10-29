@@ -103,7 +103,6 @@ object Constants {
         const val PREF_LOGIN_OR_SIGN_UP = "pref_login_or_sign_up"
         const val PREF_NOTIFY_ENABLE_BIOMETRIC = "pref_notify_enable_biometric"
         const val PREF_SNAPSHOT_OFFSET = "pref_snapshot_offset"
-        const val PREF_EXPLORE_SELECT = "pref_explore_select"
         const val PREF_SWAP_SLIPPAGE = "pref_swap_slippage"
         const val PREF_SWAP_LAST_PAIR = "pref_swap_last_pair"
         const val PREF_LIMIT_SWAP_LAST_PAIR = "pref_limit_swap_last_pair"
@@ -227,7 +226,7 @@ object Constants {
     object DataBase {
         const val DB_NAME = "mixin.db"
         const val MINI_VERSION = 15
-        const val CURRENT_VERSION = 72
+        const val CURRENT_VERSION = 73
 
         const val FTS_DB_NAME = "fts.db"
         const val PENDING_DB_NAME = "pending.db"
@@ -252,6 +251,7 @@ object Constants {
     object CIRCLE {
         const val CIRCLE_ID = "circle_id"
         const val CIRCLE_NAME = "circle_name"
+        const val CONVERSATION_FILTER = "conversation_filter"
     }
 
     object Download {
@@ -278,7 +278,7 @@ object Constants {
 
     val Web3EvmChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM, XLayer, Robinhood, Arc)
     val Web3ChainIds = listOf(ETHEREUM_CHAIN_ID, Polygon, BinanceSmartChain, Base, Arbitrum, Optimism, Avalanche, ChainId.HyperEVM, XLayer, Robinhood, Arc)
-    val Web3UtxoChainIds = listOf(BITCOIN_CHAIN_ID, ChainId.PEARL_CHAIN_ID)
+    val Web3UtxoChainIds = listOf(BITCOIN_CHAIN_ID, ChainId.PEARL_CHAIN_ID, ChainId.Litecoin)
 
     object ChainId {
         const val RIPPLE_CHAIN_ID = "23dfb5a5-5d7b-48b6-905f-3970e3176e27"

@@ -197,16 +197,17 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackWalletHomeAdBanner(trackingKey: String?, source: String) {
+    fun trackAdBanner(trackingKey: String?, placement: String, source: String) {
         val key = trackingKey?.takeIf { it.isNotBlank() } ?: return
         logEvent(key) {
+            putString("placement", placement)
             putString("source", source)
         }
     }
 
-    object WalletHomeAdBannerSource {
-        const val BACKGROUND = "wallet_home_ad_banner_background"
-        const val BUTTON = "wallet_home_ad_banner_button"
+    object AdBannerSource {
+        const val BACKGROUND = "ad_banner_background"
+        const val BUTTON = "ad_banner_button"
     }
 
     object AssetSource {
@@ -414,6 +415,7 @@ object AnalyticsTracker {
     }
 
     object TradeSource {
+        const val MARKET_BANNER = "market_banner"
         const val WALLET_HOME = "wallet_home"
         const val MARKET_DETAIL = "market_detail"
         const val APP_CARD = "app_card"
@@ -501,7 +503,7 @@ object AnalyticsTracker {
         const val PERPS_MARKET_DETAIL = "perps_market_detail"
         const val PERPS_ALL_POSITIONS = "perps_all_positions"
         const val PERPS_ACTIVITY_DETAIL = "perps_activity_detail"
-        const val TRADE_PERPS_HOME_MENU = "trade_perps_home_menu"
+        const val PERPS_HOME_MENU = "perps_home_menu"
         const val TRADE_SIMPLE_HOME_MENU = "trade_simple_home_menu"
         const val TRADE_ADVANCED_HOME_MENU = "trade_advanced_home_menu"
         const val ADD_PHONE_NOTICE = "add_phone_notice"
@@ -625,16 +627,21 @@ object AnalyticsTracker {
     }
 
     object PerpsSource {
+        const val MARKET_BANNER = TradeSource.MARKET_BANNER
         const val WALLET_HOME = TradeSource.WALLET_HOME
         const val MORE_EXPLORE = "more_explore"
         const val APP_CARD = TradeSource.APP_CARD
         const val FIRST_GUIDE = SpotGuideSource.FIRST_GUIDE
         const val PERPS_HOME_MENU = "perps_home_menu"
         const val PERPS_HOME_CARD = "perps_home_card"
+        const val PERPS_HOME_CARD_MORE = "perps_home_card_more"
+        const val PERPS_HOME_CARD_ARROW = "perps_home_card_arrow"
         const val PERPS_DETAIL_CARD = "perps_detail_card"
         const val PERPS_OPEN_POSITION_SIZE = "perps_open_position_size"
         const val SPOT_MARKET_DETAIL = "spot_market_detail"
         const val PERPS_MARKET_DETAIL = "perps_market_detail"
+        const val PERPS_MARKET_DETAIL_ADJUST = "perps_market_detail_adjust"
+        const val URL = "url"
         const val PERPS_ALL_POSITIONS = "perps_all_positions"
         const val PERPS_ACTIVITY_DETAIL = "perps_activity_detail"
         const val PERPS_HOME_LIST = "perps_home_list"
@@ -707,8 +714,8 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackPerpsOpenMarginSelect(chain: String?, assetSymbol: String?) {
-        logEvent("trade_perps_open_margin_select") {
+    fun trackPerpsOpenTokenSelect(chain: String?, assetSymbol: String?) {
+        logEvent("trade_perps_open_token_select") {
             putString("chain", chain)
             putString("asset_symbol", assetSymbol)
         }
@@ -749,42 +756,96 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackPerpsAddStart(type: String) {
-        logEvent("trade_perps_add_start") {
-            putString("type", type)
+    fun trackPerpsAddPositionStart(source: String) {
+        logEvent("trade_perps_add_position_start") {
+            putString("source", AnalyticsRules.perpsAdjustmentSource(source, PerpsSource.PERPS_MARKET_DETAIL_ADJUST))
         }
     }
 
-    fun trackPerpsAddMarginSelect(chain: String?, assetSymbol: String?) {
-        logEvent("trade_perps_add_margin_select") {
+    fun trackPerpsAddPositionTokenSelect(chain: String?, assetSymbol: String?) {
+        logEvent("trade_perps_add_position_token_select") {
             putString("chain", chain)
             putString("asset_symbol", assetSymbol)
         }
     }
 
-    fun trackPerpsAddPreview() {
-        logEvent("trade_perps_add_preview")
+    fun trackPerpsAddPositionPreview() {
+        logEvent("trade_perps_add_position_preview")
     }
 
-    fun trackPerpsAddPreviewConfirm() {
-        logEvent("trade_perps_add_preview_confirm")
+    fun trackPerpsAddPositionPreviewConfirm() {
+        logEvent("trade_perps_add_position_preview_confirm")
     }
 
-    fun trackPerpsAddPreviewCancel() {
-        logEvent("trade_perps_add_preview_cancel")
+    fun trackPerpsAddPositionPreviewCancel() {
+        logEvent("trade_perps_add_position_preview_cancel")
     }
 
-    fun trackPerpsAddEnd() {
-        logEvent("trade_perps_add_end")
+    fun trackPerpsAddPositionEnd() {
+        logEvent("trade_perps_add_position_end")
     }
 
-    fun trackPerpsAddCancel() {
-        logEvent("trade_perps_add_cancel")
+    fun trackPerpsAddPositionCancel() {
+        logEvent("trade_perps_add_position_cancel")
     }
 
-    object PerpsAddType {
-        const val ADD_POSITION = "add_position"
-        const val ADD_MARGIN = "add_margin"
+    fun trackPerpsAddMarginStart(source: String) {
+        logEvent("trade_perps_add_margin_start") {
+            putString("source", AnalyticsRules.perpsAdjustmentSource(source, PerpsSource.PERPS_MARKET_DETAIL_ADJUST))
+        }
+    }
+
+    fun trackPerpsAddMarginTokenSelect(chain: String?, assetSymbol: String?) {
+        logEvent("trade_perps_add_margin_token_select") {
+            putString("chain", chain)
+            putString("asset_symbol", assetSymbol)
+        }
+    }
+
+    fun trackPerpsAddMarginPreview() {
+        logEvent("trade_perps_add_margin_preview")
+    }
+
+    fun trackPerpsAddMarginPreviewConfirm() {
+        logEvent("trade_perps_add_margin_preview_confirm")
+    }
+
+    fun trackPerpsAddMarginPreviewCancel() {
+        logEvent("trade_perps_add_margin_preview_cancel")
+    }
+
+    fun trackPerpsAddMarginEnd() {
+        logEvent("trade_perps_add_margin_end")
+    }
+
+    fun trackPerpsAddMarginCancel() {
+        logEvent("trade_perps_add_margin_cancel")
+    }
+
+    fun trackPerpsReduceMarginStart(source: String) {
+        logEvent("trade_perps_reduce_margin_start") {
+            putString("source", AnalyticsRules.perpsAdjustmentSource(source, PerpsSource.PERPS_MARKET_DETAIL_ADJUST))
+        }
+    }
+
+    fun trackPerpsReduceMarginPreview() {
+        logEvent("trade_perps_reduce_margin_preview")
+    }
+
+    fun trackPerpsReduceMarginPreviewConfirm() {
+        logEvent("trade_perps_reduce_margin_preview_confirm")
+    }
+
+    fun trackPerpsReduceMarginPreviewCancel() {
+        logEvent("trade_perps_reduce_margin_preview_cancel")
+    }
+
+    fun trackPerpsReduceMarginCancel() {
+        logEvent("trade_perps_reduce_margin_cancel")
+    }
+
+    fun trackPerpsReduceMarginEnd() {
+        logEvent("trade_perps_reduce_margin_end")
     }
 
     fun trackPerpsCloseStart(type: String) {
@@ -806,6 +867,7 @@ object AnalyticsTracker {
     }
 
     object PerpsCloseType {
+        const val REDUCTION = "reduction"
         const val SINGLE = "single"
         const val MULTIPLE = "multiple"
     }

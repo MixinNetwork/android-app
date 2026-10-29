@@ -94,6 +94,8 @@ import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
 class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "WalletConnectBottomSheetDialogFragment"
 

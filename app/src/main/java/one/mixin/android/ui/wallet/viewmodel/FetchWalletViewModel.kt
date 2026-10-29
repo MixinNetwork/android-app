@@ -14,6 +14,8 @@ import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.UtxoChainConfig
+import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.job.MixinJobManager
@@ -21,6 +23,7 @@ import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.Tip
+import one.mixin.android.ui.wallet.backfillLitecoinAddress
 import one.mixin.android.ui.wallet.buildClassicWalletRequest
 import one.mixin.android.ui.wallet.classicWalletIndexForCreation
 import one.mixin.android.ui.wallet.commonWalletName
@@ -189,6 +192,7 @@ class FetchWalletViewModel @Inject constructor(
                         CryptoWalletHelper.mnemonicToSolanaWallet(mnemonic, index = index)
                     val btcWallet = CryptoWalletHelper.mnemonicToBitcoinSegwitWallet(mnemonic, index = index)
                     val pearlWallet = CryptoWalletHelper.mnemonicToPearlWallet(mnemonic, index = index)
+                    val litecoinWallet = CryptoWalletHelper.mnemonicToLitecoinWallet(mnemonic, index = index)
 
                     val name = commonWalletName(requireNotNull(nextWalletNameIndex))
                     IndexedWallet(
@@ -197,8 +201,9 @@ class FetchWalletViewModel @Inject constructor(
                         solanaWallet = solanaWallet,
                         btcWallet = btcWallet,
                         pearlWallet = pearlWallet,
+                        litecoinWallet = litecoinWallet,
                         exists = web3Repository.anyAddressExists(
-                            listOf(ethereumWallet.address, solanaWallet.address, btcWallet.address, pearlWallet.address)
+                            listOf(ethereumWallet.address, solanaWallet.address, btcWallet.address, pearlWallet.address, litecoinWallet.address)
                         ),
                     )
                 }
@@ -209,6 +214,7 @@ class FetchWalletViewModel @Inject constructor(
                         it.solanaWallet.address,
                         it.btcWallet.address,
                         it.pearlWallet?.address,
+                        it.litecoinWallet?.address,
                     )
                 }
                 val response = web3Repository.searchAssetsByAddresses(addresses)
@@ -232,7 +238,8 @@ class FetchWalletViewModel @Inject constructor(
                             val btcTokens =
                                 tokensMap[wallet.btcWallet.address] ?: emptyList()
                             val pearlTokens = wallet.pearlWallet?.let { tokensMap[it.address] } ?: emptyList()
-                            val allTokens = (evmTokens + solanaTokens + btcTokens + pearlTokens).sortedByDescending {
+                            val litecoinTokens = wallet.litecoinWallet?.let { tokensMap[it.address] } ?: emptyList()
+                            val allTokens = (evmTokens + solanaTokens + btcTokens + pearlTokens + litecoinTokens).sortedByDescending {
                                 (it.priceUSD.toBigDecimalOrNull() ?: BigDecimal.ZERO) * (it.amount.toBigDecimalOrNull() ?: BigDecimal.ZERO)
                             }
                             wallet.copy(assets = allTokens)
@@ -313,6 +320,9 @@ class FetchWalletViewModel @Inject constructor(
                 _state.value = FetchWalletState.IMPORT_ERROR
                 return true
             }
+            web3Repository.backfillLitecoinAddress(wallet.id) { index ->
+                UtxoKeyGenerator.getPrivateKeyFromMnemonic(mnemonic, Constants.ChainId.Litecoin, index = index)
+            }
             jobManager.addJobInBackground(RefreshSingleWalletJob(wallet.id))
         }
 
@@ -344,6 +354,13 @@ class FetchWalletViewModel @Inject constructor(
                             chainId = Constants.ChainId.PEARL_CHAIN_ID,
                             path = requireNotNull(it.pearlWallet).path,
                             privateKey = requireNotNull(it.pearlWallet).privateKey,
+                            category = category
+                        ),
+                        createSignedWeb3AddressRequest(
+                            destination = requireNotNull(it.litecoinWallet).address,
+                            chainId = Constants.ChainId.Litecoin,
+                            path = requireNotNull(it.litecoinWallet).path,
+                            privateKey = requireNotNull(it.litecoinWallet).privateKey,
                             category = category
                         ),
                         createSignedWeb3AddressRequest(
@@ -496,6 +513,7 @@ class FetchWalletViewModel @Inject constructor(
                     val ecKey: ECKey = ECKey.fromPrivate(it, true)
                     ecKey.getPrivateKeyEncoded(BitcoinNetwork.MAINNET).toBase58()
                 }
+                Constants.ChainId.Litecoin -> UtxoChainConfig.forChain(chainId).wif.encode(it)
                 in Constants.Web3EvmChainIds -> {
                     Numeric.toHexString(it)
                 }
@@ -544,12 +562,14 @@ class FetchWalletViewModel @Inject constructor(
                     destination = address,
                     chainId = chainId,
                     path = null,
-                    privateKey = key.let {
+                    privateKey = if (category == WalletCategory.WATCH_ADDRESS) null else key.let {
                         if (chainId == Constants.ChainId.SOLANA_CHAIN_ID) {
                             // Solana private keys are provided as Base58; EVM private keys are provided as hex.
                             Base58.decode(key)
                         } else if (chainId == Constants.ChainId.BITCOIN_CHAIN_ID || chainId == Constants.ChainId.PEARL_CHAIN_ID) {
                             getBitcoinPrivateKeyBytes(key)
+                        } else if (chainId == Constants.ChainId.Litecoin) {
+                            UtxoKeyGenerator.parseLitecoinPrivateKey(key)
                         } else {
                             Numeric.hexStringToByteArray(key)
                         }
@@ -646,6 +666,9 @@ class FetchWalletViewModel @Inject constructor(
         return when (chainId) {
             Constants.ChainId.BITCOIN_CHAIN_ID,
             Constants.ChainId.PEARL_CHAIN_ID -> normalizeBitcoinPrivateKeyToWif(privateKey)
+            Constants.ChainId.Litecoin -> runCatching {
+                UtxoChainConfig.forChain(chainId).wif.encode(UtxoKeyGenerator.parseLitecoinPrivateKey(privateKey))
+            }.getOrNull()
             else -> privateKey
         }
     }

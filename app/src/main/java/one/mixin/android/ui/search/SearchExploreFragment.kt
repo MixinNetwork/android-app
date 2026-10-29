@@ -79,7 +79,16 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
     }
 
     private val searchAdapter: SearchExploreAdapter by lazy {
-        SearchExploreAdapter(marketLimit = !hideRecent)
+        SearchExploreAdapter(marketLimit = !hideRecent).apply {
+            // Header bounds are cached by position, stale ones would swallow taps on items
+            registerAdapterDataObserver(
+                object : RecyclerView.AdapterDataObserver() {
+                    override fun onChanged() {
+                        decoration.invalidateHeaders()
+                    }
+                },
+            )
+        }
     }
 
     private var keyword: String? = null
@@ -97,7 +106,9 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
         }
     }
 
-    private val decoration by lazy { StickyRecyclerHeadersDecoration(searchAdapter) }
+    private val decoration by lazy {
+        StickyRecyclerHeadersDecoration(searchAdapter) { binding.searchRv.isStickyHeaderDrawn(searchAdapter, it) }
+    }
 
     private val binding by viewBinding(FragmentSearchExploreBinding::bind)
 
@@ -353,8 +364,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
             }
             mutableItems
         }
-        searchAdapter.setAssets(mergedItems)
-        decoration.invalidateHeaders()
+        searchAdapter.setAssets(mergedItems.filter { it.primitiveAssetId.isNullOrEmpty() })
     }
 
     private fun fuzzySearch(keyword: String?) =

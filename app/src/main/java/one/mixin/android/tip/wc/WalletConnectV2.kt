@@ -90,21 +90,19 @@ object WalletConnectV2 : WalletConnect() {
             .create()
 
     init {
-        val projectId = BuildConfig.WC_PROJECT_ID
-        val serverUrl = "wss://relay.walletconnect.com?projectId=$projectId"
         val appMetaData =
             Core.Model.AppMetaData(
                 name = "Mixin",
                 url = "https://messenger.mixin.one",
                 description = "An open source cryptocurrency wallet with Signal messaging.",
-                icons = emptyList(),
+                icons = listOf("https://messenger.mixin.one/img/favicon.svg"),
                 redirect = null,
             )
         CoreClient.initialize(
-            relayServerUrl = serverUrl,
-            connectionType = ConnectionType.AUTOMATIC,
             application = MixinApplication.get(),
+            projectId = BuildConfig.WC_PROJECT_ID,
             metaData = appMetaData,
+            connectionType = ConnectionType.AUTOMATIC,
             onError = { error ->
                 Timber.d("$TAG CoreClient init error: $error")
                 val err = error.throwable
@@ -454,9 +452,12 @@ object WalletConnectV2 : WalletConnect() {
                 }
             }
         } else if (signMessage is VersionedTransactionCompat) {
+            require(signData.sessionRequest.request.method == Method.SolanaSignTransaction.name) {
+                "Unsupported Solana transaction method"
+            }
             val holder = Keypair.fromSecretKey(priv)
             // use latest blockhash should not break other signatures
-            if (signMessage.signatures.size <= 1) {
+            if (!signMessage.isV1 && signMessage.signatures.size <= 1) {
                 signMessage.message.recentBlockhash = getBlockhash()
             }
             signMessage.sign(holder)

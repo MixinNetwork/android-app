@@ -5,6 +5,7 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.cancelAndJoin
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import one.mixin.android.Constants
 import org.junit.Test
 import java.io.IOException
 import java.math.BigDecimal
@@ -26,6 +27,7 @@ class Web3FeeRefreshTest {
         val refreshes = mutableListOf<Pair<Int, Int>>()
 
         refreshWeb3TransferFees(
+            chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
             retryDelayMillis = 1,
             refreshNativeFee = {
                 nativeAttempts++
@@ -52,6 +54,7 @@ class Web3FeeRefreshTest {
         var gaslessAttempts = 0
         assertFailsWith<CancellationException> {
             refreshWeb3TransferFees(
+                chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
                 retryDelayMillis = 1,
                 refreshNativeFee = {
                     nativeAttempts++
@@ -70,6 +73,7 @@ class Web3FeeRefreshTest {
         var attempts = 0
         val refresh = launch(start = CoroutineStart.UNDISPATCHED) {
             refreshWeb3TransferFees(
+                chainId = Constants.ChainId.ETHEREUM_CHAIN_ID,
                 retryDelayMillis = 10_000,
                 refreshNativeFee = { attempts++; false },
                 refreshGaslessFee = { attempts++; false },
@@ -81,4 +85,20 @@ class Web3FeeRefreshTest {
         refresh.cancelAndJoin()
         assertEquals(2, attempts)
     }
+
+    @Test
+    fun utxoChainsRetryNativeFeesWithoutRequestingGaslessFees() = runBlocking {
+        for (chainId in listOf(Constants.ChainId.BITCOIN_CHAIN_ID, Constants.ChainId.Litecoin)) {
+            var nativeAttempts = 0
+            refreshWeb3TransferFees(
+                chainId = chainId,
+                retryDelayMillis = 1,
+                refreshNativeFee = { ++nativeAttempts == 2 },
+                refreshGaslessFee = { error("UTXO chains must not request gasless fees") },
+                onRefresh = {},
+            )
+            assertEquals(2, nativeAttempts)
+        }
+    }
+
 }

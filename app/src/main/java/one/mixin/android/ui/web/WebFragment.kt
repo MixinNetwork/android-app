@@ -1123,6 +1123,7 @@ class WebFragment : BaseFragment() {
         chainId: String,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
         if (!WalletConnect.isEnabled()) return
         val isValid = chainId.isUUID()
@@ -1153,7 +1154,7 @@ class WebFragment : BaseFragment() {
                             ""
                         }
                     lifecycleScope.launch {
-                        webView.evaluateJavascript("$callbackFunction('$address')") {}
+                        webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(address)})") {}
                     }
                 },
             )
@@ -1164,6 +1165,7 @@ class WebFragment : BaseFragment() {
         ids: Array<String>,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
@@ -1202,11 +1204,12 @@ class WebFragment : BaseFragment() {
                 } else {
                     "[]"
                 }
-            webView.evaluateJavascript("$callbackFunction('$result')") {}
+            webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(result)})") {}
         }
     }
 
     private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
 
         if (appId != app?.appId) {
@@ -1234,11 +1237,12 @@ class WebFragment : BaseFragment() {
                 return@launch
             }
             val (ts, signature) = getBotSignature(publicKey, method, path, body)
-            webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
+            webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(ts.toString())}, ${JSONObject.quote(signature)})") {}
         }
     }
 
     private fun verifyPin(callbackFunction: String) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
@@ -1269,6 +1273,7 @@ class WebFragment : BaseFragment() {
         message: String,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
         if (!WalletConnect.isEnabled()) return
 
@@ -1290,7 +1295,7 @@ class WebFragment : BaseFragment() {
                         val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), it, chainId))
                         val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
                         lifecycleScope.launch {
-                            webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                            webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(sig)})") {}
                         }
                     }
                 },
@@ -1858,7 +1863,10 @@ class WebFragment : BaseFragment() {
             view ?: return
             view.clearCache(true)
             Timber.e("onPageStarted ${Web3Signer.currentChain.name}")
-            if (!redirect && inject) {
+            // Inject on every page start, including pages reached through
+            // shouldOverrideUrlLoading (which sets `redirect`), e.g. a link
+            // tapped in the page; each navigation starts a fresh JS context.
+            if (inject) {
                 view.evaluateJavascript(jsInjectorClient.loadProviderJs(view.context), null)
                 view.evaluateJavascript(jsInjectorClient.initJs(view.context), null)
             }
@@ -2041,6 +2049,7 @@ class WebFragment : BaseFragment() {
             try {
                 val method = DAppMethod.fromValue(obj.getString("name"))
                 val network = obj.getString("network")
+                if (!isValidJavaScriptCallback(network)) return
                 if (network == Web3Signer.JsSignerNetwork.Solana.name) {
                     Web3Signer.useSolana()
                 } else {
@@ -2127,7 +2136,7 @@ class WebFragment : BaseFragment() {
                 DAppMethod.SIGNRAWTRANSACTION -> {
                     val o = obj.getJSONObject("object")
                     val raw = o.getString("raw")
-                    signRawTransaction(id, raw)
+                    signRawTransaction(id, raw, o.optBoolean("broadcast", false))
                 }
 
                 DAppMethod.SINGIN -> {
@@ -2169,8 +2178,9 @@ class WebFragment : BaseFragment() {
         private fun signRawTransaction(
             callbackId: Long,
             raw: String,
+            broadcast: Boolean,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web))
+            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web, broadcast = broadcast))
         }
 
         private fun signMessage(

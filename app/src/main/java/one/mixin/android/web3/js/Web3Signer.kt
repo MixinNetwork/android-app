@@ -80,6 +80,7 @@ object Web3Signer {
         data object Solana : JsSignerNetwork("solana")
 
         data object Pearl : JsSignerNetwork("pearl")
+        data object Litecoin : JsSignerNetwork("litecoin")
     }
 
     private const val TAG = "Web3Signer"
@@ -96,6 +97,7 @@ object Web3Signer {
         const val SOLANA_ADDRESS = "signer_solana_address"
         const val BTC_ADDRESS = "signer_btc_address"
         const val PEARL_ADDRESS = "signer_pearl_address"
+        const val LITECOIN_ADDRESS = "signer_litecoin_address"
         const val PATH = "signer_path"
         const val CURRENT_WALLET_CATEGORY = "signer_current_wallet_category"
         const val CLASSIC_WALLET_ID = "signer_classic_wallet_id"
@@ -112,6 +114,8 @@ object Web3Signer {
     var btcAddress: String = ""
         private set
     var pearlAddress: String = ""
+        private set
+    var litecoinAddress: String = ""
         private set
     var path: String = ""
         private set
@@ -138,6 +142,7 @@ object Web3Signer {
         solanaAddress = sp.getString(Keys.SOLANA_ADDRESS, "") ?: ""
         btcAddress = sp.getString(Keys.BTC_ADDRESS, "") ?: ""
         pearlAddress = sp.getString(Keys.PEARL_ADDRESS, "") ?: ""
+        litecoinAddress = sp.getString(Keys.LITECOIN_ADDRESS, "") ?: ""
         path = sp.getString(Keys.PATH, "") ?: ""
         currentWalletId = sp.getString(Keys.SELECTED_WEB3_WALLET_ID, "") ?: ""
         currentWalletCategory = sp.getString(Keys.CURRENT_WALLET_CATEGORY, WalletCategory.CLASSIC.value)
@@ -154,6 +159,7 @@ object Web3Signer {
         sp.putString(Keys.SOLANA_ADDRESS, solanaAddress)
         sp.putString(Keys.BTC_ADDRESS, btcAddress)
         sp.putString(Keys.PEARL_ADDRESS, pearlAddress)
+        sp.putString(Keys.LITECOIN_ADDRESS, litecoinAddress)
         sp.putString(Keys.PATH, path)
         sp.putString(Keys.SELECTED_WEB3_WALLET_ID, currentWalletId)
         sp.putString(Keys.CURRENT_WALLET_CATEGORY, currentWalletCategory)
@@ -168,10 +174,21 @@ object Web3Signer {
         when (network) {
             JsSignerNetwork.Solana.name -> solanaAddress = address
             JsSignerNetwork.Pearl.name -> pearlAddress = address
+            JsSignerNetwork.Litecoin.name -> litecoinAddress = address
             else -> evmAddress = address
         }
         persist()
     }
+
+    fun addressByChainId(chainId: String?): String? =
+        when (chainId) {
+            SOLANA_CHAIN_ID -> solanaAddress
+            BITCOIN_CHAIN_ID -> btcAddress
+            Constants.ChainId.PEARL_CHAIN_ID -> pearlAddress
+            Constants.ChainId.Litecoin -> litecoinAddress
+            in Constants.Web3EvmChainIds -> evmAddress
+            else -> null
+        }
 
     fun useEvm() {
         address = evmAddress
@@ -255,12 +272,14 @@ object Web3Signer {
                     ?: ""
             btcAddress = addresses.firstOrNull {it.chainId == BITCOIN_CHAIN_ID}?.destination ?:""
             pearlAddress = addresses.firstOrNull { it.chainId == Constants.ChainId.PEARL_CHAIN_ID }?.destination ?: ""
+            litecoinAddress = addresses.firstOrNull { it.chainId == Constants.ChainId.Litecoin }?.destination ?: ""
             address = evmAddress
         } else {
             evmAddress = ""
             solanaAddress = ""
             btcAddress = ""
             pearlAddress = ""
+            litecoinAddress = ""
             address = ""
             path = ""
         }
@@ -506,7 +525,7 @@ object Web3Signer {
     ): VersionedTransactionCompat {
         val holder = Keypair.fromSecretKey(priv)
         // use latest blockhash should not break other signatures
-        if (tx.onlyOneSigner() &&
+        if (!tx.isV1 && tx.onlyOneSigner() &&
             (tx.message.recentBlockhash.isBlank() ||
                     tx.message.recentBlockhash == holder.publicKey.toBase58())) { // inner transfer use address as temp blockhash
             tx.message.recentBlockhash = getBlockhash()

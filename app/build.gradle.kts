@@ -16,8 +16,8 @@ apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
 val versionMajor = 6
-val versionMinor = 2
-val versionPatch = 7
+val versionMinor = 3
+val versionPatch = 6
 val versionBuild = 1
 
 val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
@@ -233,7 +233,8 @@ android {
         }
     }
 
-    testBuildType = "debug"
+    // Instrumented tests install one.mixin.messenger.test, leaving the debug and release package in place.
+    testBuildType = "staging"
 
     signingConfigs {
         getByName("debug") {
@@ -296,7 +297,7 @@ android {
 
     testOptions {
         unitTests {
-            isIncludeAndroidResources = false
+            isIncludeAndroidResources = true
             isReturnDefaultValues = true
         }
     }
@@ -321,10 +322,22 @@ android {
             }
         }
         exclude(group = "org.bouncycastle", module = "bcprov-jdk18on")
+        if ((name.endsWith("RuntimeClasspath") || name.endsWith("CompileClasspath")) && !name.contains("Test")) {
+            // spongycastle leaks junit into the app, which pins androidTest to hamcrest 1.3
+            exclude(group = "junit", module = "junit")
+            exclude(group = "org.hamcrest")
+        }
     }
 }
 
 androidComponents {
+    onVariants { variant ->
+        variant.hostTests.values.forEach { test ->
+            test.manifestPlaceholders.putAll(
+                mapOf("GOOGLE_MAP_KEY" to "unit-test", "BUGSNAG_KEY" to "unit-test"),
+            )
+        }
+    }
     onVariants(selector().withBuildType("release")) { variant ->
         val variantName = variant.name.replaceFirstChar { it.uppercaseChar() }
         tasks.matching { it.name == "assemble$variantName" || it.name == "bundle$variantName" }.configureEach {
@@ -348,6 +361,7 @@ dependencies {
     implementation(fileTree(mapOf("include" to listOf("*.aar"), "dir" to "libs")))
     implementation("androidx.fragment:fragment-ktx:$fragmentVersion")
     implementation("androidx.activity:activity-ktx:$activityVersion")
+    implementation("androidx.window:window:1.5.0")
     implementation("androidx.appcompat:appcompat:$appcompatVersion")
     implementation("androidx.legacy:legacy-support-v4:$supportLibVersion")
     implementation("com.google.android.material:material:$mdcVersion")

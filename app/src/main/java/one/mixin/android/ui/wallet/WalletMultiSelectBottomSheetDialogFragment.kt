@@ -40,16 +40,18 @@ import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isMixinSafe
 import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.components.ActionBottom
 import one.mixin.android.ui.wallet.components.PREF_NAME
 import one.mixin.android.ui.wallet.components.WalletCard
 import one.mixin.android.ui.wallet.components.WalletDestination
+import one.mixin.android.widget.bottomSheetHeight
 
 @AndroidEntryPoint
 class WalletMultiSelectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     private val viewModel by viewModels<WalletViewModel>()
     private var onConfirmListener: ((List<WalletItem?>) -> Unit)? = null
@@ -94,7 +96,7 @@ class WalletMultiSelectBottomSheetDialogFragment : MixinComposeBottomSheetDialog
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     fun setOnConfirmListener(listener: (List<WalletItem?>) -> Unit): WalletMultiSelectBottomSheetDialogFragment {

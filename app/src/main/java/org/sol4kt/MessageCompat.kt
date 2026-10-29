@@ -11,13 +11,16 @@ data class MessageCompat(
     var recentBlockhash: String,
     var instructions: List<CompiledInstruction>,
     val addressLookupTables: List<CompiledAddressLookupTable>,
+    var transactionConfig: TransactionConfig = TransactionConfig(),
 ) {
 
     enum class MessageVersion {
-        Legacy, V0
+        Legacy, V0, V1
     }
 
     fun serialize(): ByteArray {
+        if (version == MessageVersion.V1) return MessageV1Codec.serialize(this)
+
         val b = Buffer()
         if (version != MessageVersion.Legacy) {
             val v = version.name.substring(1).toIntOrNull()
@@ -70,6 +73,7 @@ data class MessageCompat(
     }
 
     fun setPriorityFee(unitPrice: Long, unitLimit: Int) {
+        require(version != MessageVersion.V1) { "V1 uses inline transaction config" }
         val leftInstructions = instructions.filter { i ->
             accounts[i.programIdIndex] != org.sol4k.Constants.COMPUTE_BUDGET_PROGRAM_ID || notComputeInstruction(
                 i.data
@@ -94,9 +98,12 @@ data class MessageCompat(
 
     companion object {
         fun deserialize(d: ByteArray): MessageCompat {
+            require(d.isNotEmpty()) { "Empty Solana message" }
+            if (d[0].toUByte().toInt() == MessageV1Codec.PREFIX) return MessageV1Codec.deserialize(d)
             var data = d
             val v = data.first().toUByte()
             val version = if (v > 127.toUByte()) {
+                require(v.toInt() == 0x80) { "Unsupported Solana message version: $v" }
                 data = data.drop(1).toByteArray()
                 MessageVersion.V0
             } else {

@@ -83,7 +83,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
@@ -121,6 +120,7 @@ import one.mixin.android.vo.toUser
 import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
@@ -152,6 +152,8 @@ internal fun resolveLimitSenderAddressRoute(chainId: String): LimitSenderAddress
 
 @AndroidEntryPoint
 class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     companion object {
         const val TAG = "LimitTransferBottomSheetDialogFragment"
@@ -529,7 +531,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     private var onDoneAction: (() -> Unit)? = null
@@ -572,7 +574,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                             val sig = tx.signatures.first()
                             val rawTx = tx.serialize().base64Encode()
                             val request = Web3RawTransactionRequest(Constants.ChainId.Solana, rawTx, tx.message.accounts[0].toBase58(), null)
-                            val response = bottomViewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), inAsset.assetId)
+                            val response = bottomViewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), to = requireNotNull(depositDestination), assetId = inAsset.assetId)
                             defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                             context?.updatePinCheck()
                             step = Step.Done
@@ -586,7 +588,7 @@ class LimitTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                 val nonce = rpc.nonceAt(inAsset.chain.chainId, address) ?: throw IllegalArgumentException("failed to get nonce")
                                 return@ethSignTransaction nonce
                             }
-                            val result = bottomViewModel.postRawTx(pair.first, inAsset.chain.chainId, pair.second, inAsset.assetId)
+                            val result = bottomViewModel.postRawTx(pair.first, inAsset.chain.chainId, pair.second, to = requireNotNull(depositDestination), assetId = inAsset.assetId)
                             defaultSharedPreferences.putLong(Constants.BIOMETRIC_PIN_CHECK, System.currentTimeMillis())
                             context?.updatePinCheck()
                             step = Step.Done

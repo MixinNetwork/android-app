@@ -88,29 +88,33 @@ class CurrencyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 }
             pb.show()
 
-            handleMixinResponse(
-                invokeNetwork = {
-                    bottomViewModel.preferences(
-                        AccountUpdateRequest(fiatCurrency = currency.name),
-                    )
-                },
-                successBlock = {
-                    it.data?.let { account ->
-                        Session.storeAccount(account)
-                        RxBus.publish(WalletRefreshedEvent("", WalletOperationType.OTHER))
-                        callback?.onCurrencyClick(currency)
-                        toast(R.string.Save_success)
-                        dismiss()
-                    }
-                },
-                doAfterNetworkSuccess = {
-                    pb.dismiss()
-                },
-                exceptionBlock = {
-                    pb.dismiss()
-                    return@handleMixinResponse false
-                },
-            )
+            try {
+                handleMixinResponse(
+                    invokeNetwork = {
+                        bottomViewModel.preferences(
+                            AccountUpdateRequest(fiatCurrency = currency.name),
+                        )
+                    },
+                    successBlock = {
+                        it.data?.let { account ->
+                            Session.storeAccount(account)
+                            RxBus.publish(WalletRefreshedEvent("", WalletOperationType.OTHER))
+                            callback?.onCurrencyClick(currency)
+                            toast(R.string.Save_success)
+                            dismiss()
+                        }
+                    },
+                    doAfterNetworkSuccess = {
+                        pb.dismiss()
+                    },
+                    exceptionBlock = {
+                        pb.dismiss()
+                        return@handleMixinResponse false
+                    },
+                )
+            } finally {
+                pb.dismiss()
+            }
         }
 
     private fun filter(s: String) {

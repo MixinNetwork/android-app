@@ -150,6 +150,9 @@
     <string name="Bot_not_found">Bot not found</string>
     <string name="BOTS">BOTS</string>
     <string name="bots_title">Bots</string>
+    <string name="All_chats">All chats</string>
+    <string name="Groups">Groups</string>
+    <string name="Strangers">Strangers</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s is not on your contact list. Make sure the recipient you chose is correct. If you transfer to the wrong person, your assets will be lost!</string>
     <string name="Call">Call</string>
     <string name="Call_declined">Call declined</string>
@@ -175,6 +178,8 @@
     <string name="Change">Change</string>
     <string name="Change_Amount">Change Amount</string>
     <string name="Change_emergency_contact">Change recovery contact</string>
+    <string name="Change_Group_Photo_with_Camera">Change Group Photo with Camera</string>
+    <string name="Change_Group_Photo_with_Library">Change Group Photo with Library</string>
     <string name="Change_Number_Instead">Change Number Instead</string>
     <string name="Change_Phone_Number">Change Phone Number</string>
     <string name="Change_PIN">Change PIN</string>
@@ -492,12 +497,18 @@
     <string name="error_invalid_quote_amount">ERROR 10614: The input amount is either too small or too large, please adjust the amount.</string>
     <string name="error_invalid_quote_amount_detailed">ERROR 10614: The amount exceeds the maximum allowable value of %1$s. Please adjust the amount. Try placing a limit order? No restrictions on amount or token.</string>
     <string name="error_no_available_quote">ERROR 10615: This trading pair is currently not supported, please try switching to a different token.</string>
-    <string name="error_perps_order_value_too_small">ERROR %1$d: Position size is too small.</string>
-    <string name="error_perps_order_value_minimum">ERROR %1$d: Order value must be at least %2$s USD.</string>
+    <string name="error_perps_margin_too_small">ERROR 10650: Margin is too small</string>
+    <string name="error_perps_margin_too_small_value">ERROR 10650: Margin must have minimum value of %1$s</string>
+    <string name="error_perps_position_size_too_small">ERROR 10654: Position size is too small</string>
+    <string name="error_perps_position_size_too_small_value">ERROR 10654: Position must have minimum size of %1$s</string>
     <string name="error_already_had_open_position">ERROR 10651: You already had a open position</string>
     <string name="error_waiting_other_orders">ERROR 10652: The current market is still processing other orders, please try again later.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit">ERROR 10655: Position size exceeds the limit for the selected leverage. Reduce the amount or leverage.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_add">ERROR 10655: Amount exceeds the %1$s limit. Reduce the amount.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">ERROR 10655: Cannot add to the position.</string>
+    <string name="error_perps_position_size_exceeds_leverage_limit_value">ERROR 10655: Amount exceeds the %1$s limit. Reduce the amount or leverage.</string>
     <string name="error_perps_invalid_leader_position">ERROR 10656: The leader position is invalid. Please select another position to copy.</string>
+    <string name="error_perps_order_conflict">ERROR 10657: The order details conflict or the order is no longer payable. Please check its status.</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>
@@ -1199,7 +1210,7 @@
     <string name="Update">Update</string>
     <string name="update_downloaded">An update has just been downloaded.</string>
     <string name="Update_Mixin">Update Mixin</string>
-    <string name="update_mixin_description">The current version (%1$s) is no longer available!\nPlease click \"Update\" below to update to the latest version from the Google Play.</string>
+    <string name="mixin_version_expired_description">This version has expired. Tap \"Update\" below to get the latest version from the app store. Please update directly without uninstalling the app.</string>
     <string name="Upgrade">Upgrade</string>
     <string name="Upgrade_Database">Upgrade Database</string>
     <string name="Upgrade_need_verify_your_PIN">The upgrade requires verifying your PIN.</string>
@@ -1578,6 +1589,7 @@
     <string name="continue_with_pin">Continue with PIN</string>
     <string name="Bitcoin" translatable="false">Bitcoin</string>
     <string name="Pearl" translatable="false">Pearl</string>
+    <string name="Litecoin" translatable="false">Litecoin</string>
     <string name="Ethereum" translatable="false">Ethereum</string>
     <string name="Polygon" translatable="false">Polygon</string>
     <string name="BSC" translatable="false">BSC</string>
@@ -1682,8 +1694,6 @@
     <string name="single_transaction_should_be_less_than">Maximum amount %1$s %2$s</string>
     <string name="single_transaction_should_be_between">Amount must be between %1$s %2$s and %3$s %4$s</string>
     <string name="perps_minimum_margin">The minimum amount is %1$s %2$s</string>
-    <string name="perps_maximum_margin">The maximum amount is %1$s %2$s</string>
-    <string name="perps_maximum_leverage">The maximum leverage for this amount is %1$dx</string>
     <!-- Web3 -->
     <string name="web3_approve">Approve</string>
     <string name="web3_borrow">Borrow</string>
@@ -1727,6 +1737,8 @@
     <string name="View_on_Marketplace">View on Marketplace</string>
     <string name="View_on_Explorer">View on Explorer</string>
     <string name="malicious_instruction_token_set_authority">This transaction changes the owner of your SPL tokens. This allows the new owner to transfer the tokens without your permission.</string>
+    <string name="malicious_instruction_token_approve">This transaction allows another account to transfer your SPL tokens without your permission.</string>
+    <string name="malicious_instruction_system_assign">This transaction assigns your Solana account to another program. This may cause you to lose control of the account.</string>
     <string name="Assets">Assets</string>
     <string name="ASSET">ASSET</string>
     <string name="Recipients">Recipients</string>
@@ -2084,6 +2096,7 @@
     <string name="Total_Balance">Total Balance</string>
     <string name="total_balance_tip">Hidden assets are not included in the statistics.</string>
     <string name="Reset_TpSl_Guide">Reset hidden preferences</string>
+    <string name="Reset_More_Badges">Reset More badges</string>
     <string name="Reset_Wallet_Home_Banners">Reset wallet home banners</string>
     <string name="Delete_Web3_Transactions">Delete Web3 Transaction Data</string>
     <string name="Delete_Web3_Transactions_Confirmation">Are you sure you want to delete all Web3 transaction data? This action cannot be undone. The data will be re-synchronized after deletion.</string>
@@ -2256,6 +2269,7 @@
     <string name="Invalid_Address">Invalid Address</string>
     <string name="Private_Key_Notice">Your private key will only be stored locally on your device.</string>
     <string name="Imported">Imported</string>
+    <string name="wallet_already_imported">This wallet has already been imported.</string>
     <string name="NoKey">NoKey</string>
     <string name="Watching">Watching</string>
     <string name="error_too_many_wallets">ERROR 10632: Maximum wallet limit reached</string>
@@ -2377,8 +2391,7 @@
     <string name="Price_Up_Loss">Price rise %1$s%% → Loss -%2$s %3$s</string>
     <string name="Max_Profit">Max Profit %1$s</string>
     <string name="Max_Loss">Max Loss %1$s</string>
-    <string name="price_change_take_profit">Price %1$s → Max Profit %2$s</string>
-    <string name="price_change_stop_loss">Price %1$s → Max Loss %2$s</string>
+    <string name="price_change_tpsl">Price %1$s → Estimate Profit %2$s</string>
     <string name="example_amount">Amount</string>
     <string name="example_scene1_decreasing">Scenario 1: Price Falls</string>
     <string name="example_scene1_increasing">Scenario 1: Price Rises</string>
@@ -2395,7 +2408,7 @@
     <string name="impact_on_pnl_2">Lower leverage, smaller and slower PnL</string>
     <string name="perps_leverage_risk_notice_1">Higher leverage increases liquidation risk</string>
     <string name="perps_leverage_risk_notice_2">Under high leverage, small price movements can lead to large losses</string>
-    <string name="perps_position_size_overview">Size represents the total value of your position, calculated as margin × leverage.</string>
+    <string name="perps_position_size_overview">Size represents the current value of your position, calculated as position quantity × mark price.</string>
     <string name="perps_position_size_pnl_1">Larger size, larger PnL</string>
     <string name="perps_position_size_pnl_2">Smaller size, smaller PnL</string>
     <string name="perps_tpsl_overview">Take-profit and stop-loss are conditional orders that execute automatically when the trigger price is reached.</string>
@@ -2544,6 +2557,8 @@
     <string name="perps_badge" translatable="false">Perp</string>
     <string name="perps_share_card_title">🚀 Perps %1$s</string>
     <string name="perps_share_card_market">- 📈 Market: %1$s</string>
+    <string name="perps_share_card_max_leverage">📈 Max Leverage: %1$dx</string>
+    <string name="perps_share_card_volume">💰 24h Volume: %1$s</string>
     <string name="perps_share_card_side">- ↕️ Side: %1$s (%2$dx)</string>
     <string name="perps_share_card_trade_now">💰 Trade Now</string>
     <string name="market_share_card_title">Trade %1$s</string>
@@ -2693,4 +2708,75 @@
     <string name="wallet_home_privacy_wallet_reason_2">Avoid transfer errors caused by complex wallet addresses.</string>
     <string name="wallet_home_privacy_wallet_reason_3">Block malicious apps from gaining unsafe permissions.</string>
     <string name="no_tokens">No Tokens</string>
+    <string name="new_chat">New Chat</string>
+    <string name="contacts_title">Contacts</string>
+    <string name="contacts_search_hint">Mixin ID, Name, Phone number</string>
+    <string name="perps_adjust">Adjust</string>
+    <string name="perps_adjust_title">Adjust Margin or Position</string>
+    <string name="perps_add_margin">Add Margin</string>
+    <string name="perps_reduce_margin">Reduce Margin</string>
+    <string name="perps_add_to_position">Add to Position</string>
+    <string name="perps_reduce_position">Reduce Position</string>
+    <string name="perps_add_margin_description">Add margin to lower liquidation risk and keep your position safer</string>
+    <string name="perps_reduce_margin_description">Withdraw excess margin to free up funds while maintaining your position</string>
+    <string name="perps_add_position_description">Increase your position for greater potential gains and losses</string>
+    <string name="perps_reduce_position_description">Partially close to lock in profits or limit losses</string>
+    <string name="perps_margin_or_position">Add Margin or Increase Position?</string>
+    <string name="perps_margin_tip">Add margin to lower liquidation risk</string>
+    <string name="perps_position_tip">Increase position for more gains and losses</string>
+    <string name="perps_low_margin_tip">If margin is low, add margin first</string>
+    <string name="perps_total_margin">Total Margin</string>
+    <string name="perps_margin_submitted">Margin adjustment submitted</string>
+    <string name="perps_confirm_add_margin">Confirm Adding Margin</string>
+    <string name="perps_adding_margin">Adding Margin</string>
+    <string name="perps_adding_margin_failed">Failed to Add Margin</string>
+    <string name="perps_confirm_reduce_margin">Confirm Reducing Margin</string>
+    <string name="perps_reducing_margin">Reducing Margin</string>
+    <string name="perps_reducing_margin_failed">Failed to Reduce Margin</string>
+    <string name="perps_add_margin_title">Add Margin to %1$s %2$s</string>
+    <string name="perps_reduce_margin_title">Reduce Margin for %1$s %2$s</string>
+    <string name="perps_reduce_action">Reduce</string>
+    <string name="perps_percentage">Percentage</string>
+    <string name="perps_confirm_reduce_margin_title">Confirm Reducing Margin</string>
+    <string name="up_to_apy">Up to %1$s APY</string>
+    <string name="perps_add_position_title">Add Position to %1$s %2$s</string>
+    <string name="max_removable">Max removable %1$s</string>
+    <string name="perps_added_position">Added Position</string>
+    <string name="perps_added_margin">Added Margin</string>
+    <string name="perps_reduced_margin">Reduced Margin</string>
+    <string name="perps_realized_pnl">Realized PnL</string>
+    <string name="perps_unrealized_pnl">Unrealized PnL</string>
+    <string name="Candle_Open">Open</string>
+    <string name="Candle_Close">Close</string>
+    <string name="Candle_High">High</string>
+    <string name="Candle_Low">Low</string>
+    <string name="perps_close_submitted">Close order submitted</string>
+    <string name="perps_reduce_quantity_changed">The position has changed. Please return and check the quantity before trying again.</string>
+    <string name="perps_reduce_invalid_quantity">Enter a positive amount within the current position size.</string>
+    <string name="perps_minimum_order_size">Minimum order size is %1$s</string>
+    <string name="Estimated_Fee">Estimated Fee</string>
+    <string name="perps_estimated_realized_pnl">Estimated Realized PnL</string>
+    <string name="perps_last_price">Last Price</string>
+    <string name="perps_mark_price">Mark Price</string>
+    <string name="perps_close_position_title">Close Position to %1$s %2$s</string>
+    <string name="perps_include_pnl">Include PnL</string>
+    <string name="perps_position_amount">Position Amount</string>
+    <string name="perps_margin_amount">Margin Amount</string>
+    <string name="perps_funding_payments">Funding payments</string>
+    <string name="perps_funding_payments_description">The total funding you’ve received or paid since opening this position. Green (positive) means you received funding, while red (negative) means you paid funding.</string>
+    <string name="perps_margin_description">Margin is the collateral you allocate to a position. It represents the maximum amount you can lose on that trade.</string>
+    <string name="perps_liquidation_price_down_description">Going down %1$s will trigger liquidation.</string>
+    <string name="perps_liquidation_price_up_description">Going up %1$s will trigger liquidation.</string>
+    <string name="Details">Details</string>
+    <string name="perps_tpsl_requires_amount_leverage">Please set the amount and leverage before configuring Take Profit and Stop Loss.</string>
+    <string name="perps_estimated_profit">Estimate Profit %1$s</string>
+    <string name="invalid_gasless_transaction">Invalid gasless transaction. Please try again.</string>
+    <string name="eip712_invalid_chain_id">The typed message chain ID is invalid or does not match the signing network.</string>
+    <string name="invalid_solana_sign_in">Invalid Solana sign-in request.</string>
+    <string name="bitcoin_fee_confirmation_required">Bitcoin fee could not be confirmed or has increased. Please request the transfer again and confirm the updated fee.</string>
+    <string name="invalid_gasless_solana_transaction">The sponsored transaction does not match the requested transfer.</string>
+    <string name="Select_conversation">Select a conversation to start chatting</string>
+    <string name="Select_asset">Select an asset to view</string>
+    <string name="Select_market_item">Select a market to view</string>
+    <string name="Select_explore_item">Select an item to open</string>
 </resources>

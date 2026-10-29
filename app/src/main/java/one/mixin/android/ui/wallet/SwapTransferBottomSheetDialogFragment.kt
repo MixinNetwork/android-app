@@ -94,7 +94,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
@@ -139,6 +138,7 @@ import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.send.UtxoTransactionSigner
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
@@ -154,6 +154,8 @@ import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
 class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     companion object {
         const val TAG = "SwapTransferBottomSheetDialogFragment"
@@ -593,7 +595,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
 
@@ -656,7 +658,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 val sig = tx.signatures.first()
                                 val rawTx = tx.serialize().base64Encode()
                                 val request = Web3RawTransactionRequest(Constants.ChainId.Solana, rawTx, tx.message.accounts[0].toBase58(), null)
-                                val response = bottomViewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), inAsset.assetId)
+                                val response = bottomViewModel.postRawTx(rawTx, Constants.ChainId.Solana, tx.message.accounts[0].toBase58(), to = requireNotNull(depositDestination), assetId = inAsset.assetId)
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,
                                     System.currentTimeMillis(),
@@ -673,7 +675,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                     val nonce = rpc.nonceAt(inAsset.chain.chainId, address) ?: throw IllegalArgumentException("failed to get nonce")
                                     return@ethSignTransaction nonce
                                 }
-                                val result = bottomViewModel.postRawTx(pair.first, inAsset.chain.chainId, pair.second, inAsset.assetId)
+                                val result = bottomViewModel.postRawTx(pair.first, inAsset.chain.chainId, pair.second, to = requireNotNull(depositDestination), assetId = inAsset.assetId)
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,
                                     System.currentTimeMillis(),
@@ -691,7 +693,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                                 val fromAddress = UtxoTransactionSigner.address(priv, chainId)
                                 val localUtxos = web3ViewModel.outputsByAddress(fromAddress, chainId)
                                 val signedResult = UtxoTransactionSigner.sign(rawHex, priv, chainId, localUtxos)
-                                bottomViewModel.postRawTx(signedResult.signedHex, chainId, signedResult.fromAddress, inAsset.assetId, rate = signMessage.rate)
+                                bottomViewModel.postRawTx(signedResult.signedHex, chainId, signedResult.fromAddress, to = requireNotNull(depositDestination), assetId = inAsset.assetId, rate = signMessage.rate)
                                 web3ViewModel.markOutputsToSigned(Web3Signer.currentWalletId, signedResult.fromAddress, signedResult.signedHex, signedResult.consumedOutputIds, chainId)
                                 defaultSharedPreferences.putLong(
                                     Constants.BIOMETRIC_PIN_CHECK,
@@ -944,7 +946,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         if (chain == Chain.Bitcoin) {
             tickerFlow(15.seconds)
                 .onEach {
-                    asset = bottomViewModel.refreshAsset(chain.assetId)
+                    asset = bottomViewModel.refreshAsset(token?.chainId ?: chain.assetId)
                 }
                 .launchIn(lifecycleScope)
             return

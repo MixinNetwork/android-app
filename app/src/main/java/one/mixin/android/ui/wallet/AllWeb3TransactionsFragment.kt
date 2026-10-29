@@ -46,6 +46,8 @@ import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_MASK
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionFragment
+import one.mixin.android.web3.details.openWeb3AssetTransactions
+import one.mixin.android.web3.details.tokenNavigationTarget
 import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
@@ -77,6 +79,16 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment(R.layout.fragment_a
                 }
             }
         })
+        setOnTokenClickListener { transaction ->
+            val target = transaction.tokenNavigationTarget() ?: return@setOnTokenClickListener
+            lifecycleScope.launch {
+                openWeb3AssetTransactions(
+                    web3ViewModel = web3ViewModel,
+                    walletId = filterParams.walletId,
+                    assetId = target.assetId,
+                )
+            }
+        }
     }
 
     private val filterParams by lazy {

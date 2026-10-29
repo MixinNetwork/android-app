@@ -2,11 +2,13 @@ package one.mixin.android.util.mlkit.scan
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.hardware.display.DisplayManager
 import android.content.pm.PackageManager
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.OnScaleGestureListener
 import android.view.ScaleGestureDetector.SimpleOnScaleGestureListener
+import android.view.Surface
 import android.view.View
 import androidx.annotation.FloatRange
 import androidx.camera.core.Camera
@@ -41,6 +43,23 @@ class BaseCameraScan<T> : CameraScan<T> {
     private var context: Context
     private var lifecycleOwner: LifecycleOwner
     private var previewView: PreviewView
+
+    private var cameraGeneration = 0
+    private var previewUseCase: Preview? = null
+    private var analysisUseCase: ImageAnalysis? = null
+    private val displayListener = object : DisplayManager.DisplayListener {
+        override fun onDisplayAdded(displayId: Int) {}
+        override fun onDisplayRemoved(displayId: Int) {}
+        override fun onDisplayChanged(displayId: Int) {
+            if (previewView.display?.displayId == displayId) updateTargetRotation()
+        }
+    }
+
+    private fun updateTargetRotation() {
+        val rotation = previewView.display?.rotation ?: Surface.ROTATION_0
+        previewUseCase?.targetRotation = rotation
+        analysisUseCase?.targetRotation = rotation
+    }
 
     private var mCameraConfig: CameraConfig? = null
 
@@ -205,15 +224,18 @@ class BaseCameraScan<T> : CameraScan<T> {
     }
 
     override fun startCamera() {
+        val generation = ++cameraGeneration
         initConfig()
         val cameraConfig = mCameraConfig ?: return
         mCameraProviderFuture = ProcessCameraProvider.getInstance(context)
         mCameraProviderFuture!!.addListener({
+            if (generation != cameraGeneration) return@addListener
             try {
                 val preview = cameraConfig.options(Preview.Builder())
 
                 val cameraSelector = cameraConfig.options(CameraSelector.Builder())
                 preview.setSurfaceProvider(previewView.surfaceProvider)
+                previewUseCase = preview
 
                 val imageAnalysis =
                     cameraConfig.options(
@@ -221,6 +243,12 @@ class BaseCameraScan<T> : CameraScan<T> {
                             .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_YUV_420_888)
                             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST),
                     )
+                analysisUseCase = imageAnalysis
+                updateTargetRotation()
+                (context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).apply {
+                    unregisterDisplayListener(displayListener)
+                    registerDisplayListener(displayListener, android.os.Handler(android.os.Looper.getMainLooper()))
+                }
                 imageAnalysis.setAnalyzer(Executors.newSingleThreadExecutor()) { image: ImageProxy ->
                     if (isAnalyze && !isAnalyzeResult && mAnalyzer != null) {
                         isAnalyzeResult = true
@@ -251,6 +279,10 @@ class BaseCameraScan<T> : CameraScan<T> {
     }
 
     override fun stopCamera() {
+        cameraGeneration++
+        (context.getSystemService(Context.DISPLAY_SERVICE) as DisplayManager).unregisterDisplayListener(displayListener)
+        previewUseCase = null
+        analysisUseCase = null
         if (mCameraProviderFuture != null) {
             try {
                 mCameraProviderFuture!!.get().unbindAll()

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -24,7 +25,10 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -36,11 +40,13 @@ import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.api.response.AssetView
 import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.MixinAlertDialog
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.crypto.CryptoWallet
 import one.mixin.android.extension.priceFormat
@@ -76,6 +82,7 @@ data class IndexedWallet(
     val solanaWallet: CryptoWallet,
     val btcWallet: CryptoWallet,
     val pearlWallet: CryptoWallet? = null,
+    val litecoinWallet: CryptoWallet? = null,
     val assets: List<AssetView> = emptyList(),
     val exists: Boolean
 ) {
@@ -453,6 +460,15 @@ fun WalletItem(
     isSelected: Boolean,
     onToggle: () -> Unit
 ) {
+    var showImportedAlert by remember(wallet) { mutableStateOf(false) }
+    if (showImportedAlert) {
+        MixinAlertDialog(
+            onDismissRequest = { showImportedAlert = false },
+            onConfirmClick = { showImportedAlert = false },
+            confirmText = stringResource(R.string.got_it),
+            text = { Text(stringResource(R.string.wallet_already_imported)) }
+        )
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -464,7 +480,7 @@ fun WalletItem(
                 interactionSource = remember { MutableInteractionSource() },
                 indication = null,
                 onClick = if (wallet.exists) {
-                    {}
+                    { showImportedAlert = true }
                 } else {
                     onToggle
                 }
@@ -472,13 +488,34 @@ fun WalletItem(
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = wallet.name,
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = MixinAppTheme.colors.textPrimary
-            )
-            Spacer(modifier = Modifier.weight(1f))
+            Row(
+                modifier = Modifier.weight(1f),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = wallet.name,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = MixinAppTheme.colors.textPrimary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                if (wallet.exists) {
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        text = stringResource(R.string.Imported),
+                        color = MixinAppTheme.colors.textRemarks,
+                        fontSize = 12.sp,
+                        modifier = Modifier
+                            .background(
+                                color = MixinAppTheme.colors.backgroundGrayLight,
+                                shape = RoundedCornerShape(4.dp)
+                            )
+                            .padding(horizontal = 4.dp)
+                    )
+                }
+            }
 
             val iconRes = when {
                 wallet.exists -> R.drawable.ic_wallet_disabled

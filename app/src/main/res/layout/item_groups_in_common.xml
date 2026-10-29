@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="72dp"
     android:background="?attr/bg_white"
@@ -18,7 +19,7 @@
         android:layout_height="wrap_content"
         android:layout_centerVertical="true"/>
 
-    <TextView
+    <one.mixin.android.widget.NameTextView
         android:id="@+id/name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -28,9 +29,9 @@
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="2dp"
         android:layout_marginStart="@dimen/activity_horizontal_margin"
-        android:textSize="16sp"
+        app:textSize="16sp"
         android:ellipsize="end"
-        android:singleLine="true"
+        app:lines="1"
         android:textColor="?attr/text_primary" />
 
     <TextView

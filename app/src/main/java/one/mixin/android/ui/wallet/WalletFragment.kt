@@ -14,7 +14,9 @@ import android.view.ViewAnimationUtils
 import android.view.ViewGroup
 import androidx.appcompat.view.ContextThemeWrapper
 import androidx.core.view.isVisible
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.GsonBuilder
 import com.uber.autodispose.autoDispose
@@ -39,6 +41,7 @@ import one.mixin.android.event.WalletOperationType
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.putBoolean
@@ -53,6 +56,7 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.editDialog
+import one.mixin.android.ui.common.showOnTask
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.components.AssetDashboardScreen
@@ -140,8 +144,41 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         return binding.root
     }
 
-    private val classicWalletFragment by lazy { WalletHomeClassicFragment.newInstance() }
-    private val privacyWalletFragment by lazy { WalletHomePrivacyFragment.newInstance() }
+    private val classicWalletFragment by lazy {
+        childFragmentManager.findFragmentByTag(WalletHomeClassicFragment.TAG) as? WalletHomeClassicFragment
+            ?: WalletHomeClassicFragment.newInstance()
+    }
+    private val privacyWalletFragment by lazy {
+        childFragmentManager.findFragmentByTag(WalletHomePrivacyFragment.TAG) as? WalletHomePrivacyFragment
+            ?: WalletHomePrivacyFragment.newInstance()
+    }
+    private val addedWalletChildren = mutableSetOf<Fragment>()
+
+    private fun isWalletChildAdded(fragment: Fragment) = fragment.isAdded || fragment in addedWalletChildren
+
+    private fun showWalletChild(
+        show: Fragment,
+        showTag: String,
+        hide: Fragment,
+    ) {
+        val tx = childFragmentManager.beginTransaction()
+        if (isWalletChildAdded(show)) {
+            tx.show(show)
+        } else {
+            tx.add(R.id.wallet_container, show, showTag)
+            addedWalletChildren.add(show)
+        }
+        tx.setMaxLifecycle(show, Lifecycle.State.RESUMED)
+        if (requireContext().isCompactWindow() && !isWalletChildAdded(hide)) {
+            tx.add(R.id.wallet_container, hide, if (hide === classicWalletFragment) WalletHomeClassicFragment.TAG else WalletHomePrivacyFragment.TAG)
+            addedWalletChildren.add(hide)
+        }
+        if (isWalletChildAdded(hide)) {
+            tx.hide(hide)
+            tx.setMaxLifecycle(hide, if (requireContext().isCompactWindow()) Lifecycle.State.RESUMED else Lifecycle.State.STARTED)
+        }
+        tx.commit()
+    }
 
     @SuppressLint("NotifyDataSetChanged")
     override fun onViewCreated(
@@ -159,18 +196,16 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             }
         }
 
-        if (!classicWalletFragment.isAdded) {
-            childFragmentManager.beginTransaction()
-                .add(R.id.wallet_container, classicWalletFragment, WalletHomeClassicFragment.TAG)
-                .hide(classicWalletFragment)
-                .commit()
-        }
-
-        if (!privacyWalletFragment.isAdded) {
-            childFragmentManager.beginTransaction()
-                .add(R.id.wallet_container, privacyWalletFragment, WalletHomePrivacyFragment.TAG)
-                .hide(privacyWalletFragment)
-                .commit()
+        if (requireContext().isCompactWindow()) {
+            val tx = childFragmentManager.beginTransaction()
+            for ((fragment, tag) in listOf(classicWalletFragment to WalletHomeClassicFragment.TAG, privacyWalletFragment to WalletHomePrivacyFragment.TAG)) {
+                if (!isWalletChildAdded(fragment)) {
+                    tx.add(R.id.wallet_container, fragment, tag).hide(fragment)
+                    addedWalletChildren.add(fragment)
+                }
+                tx.setMaxLifecycle(fragment, Lifecycle.State.RESUMED)
+            }
+            tx.commit()
         }
 
         applyWalletDestination(
@@ -329,19 +364,13 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
         Timber.e("updateUi called with destination: $destination")
         when (destination) {
             is WalletDestination.Privacy -> {
-                childFragmentManager.beginTransaction()
-                    .hide(classicWalletFragment)
-                    .show(privacyWalletFragment)
-                    .commit()
+                showWalletChild(privacyWalletFragment, WalletHomePrivacyFragment.TAG, classicWalletFragment)
                 binding.titleTv.setText(R.string.Privacy_Wallet)
                 binding.tailIcon.setImageResource(R.drawable.ic_wallet_privacy)
                 binding.tailIcon.isVisible = true
             }
             is WalletDestination.Classic -> {
-                childFragmentManager.beginTransaction()
-                .hide(privacyWalletFragment)
-                    .show(classicWalletFragment)
-                    .commit()
+                showWalletChild(classicWalletFragment, WalletHomeClassicFragment.TAG, privacyWalletFragment)
                 binding.titleTv.setText(R.string.Common_Wallet)
                 binding.tailIcon.isVisible = false
                 lifecycleScope.launch {
@@ -354,10 +383,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 }
             }
             is WalletDestination.Watch -> {
-                childFragmentManager.beginTransaction()
-                    .hide(privacyWalletFragment)
-                    .show(classicWalletFragment)
-                    .commit()
+                showWalletChild(classicWalletFragment, WalletHomeClassicFragment.TAG, privacyWalletFragment)
                 binding.titleTv.setText(R.string.Watch_Wallet)
                 binding.tailIcon.isVisible = false
                 lifecycleScope.launch {
@@ -373,10 +399,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 }
             }
             is WalletDestination.Import -> {
-                childFragmentManager.beginTransaction()
-                    .hide(privacyWalletFragment)
-                    .show(classicWalletFragment)
-                    .commit()
+                showWalletChild(classicWalletFragment, WalletHomeClassicFragment.TAG, privacyWalletFragment)
                 binding.titleTv.setText(R.string.Common_Wallet)
                 binding.tailIcon.isVisible = false
                 lifecycleScope.launch {
@@ -392,10 +415,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                 }
             }
             is WalletDestination.Safe -> {
-                childFragmentManager.beginTransaction()
-                    .hide(privacyWalletFragment)
-                    .show(classicWalletFragment)
-                    .commit()
+                showWalletChild(classicWalletFragment, WalletHomeClassicFragment.TAG, privacyWalletFragment)
                 binding.titleTv.setText(R.string.Common_Wallet)
                 binding.tailIcon.setImageResource(R.drawable.ic_wallet_safe)
                 binding.tailIcon.isVisible = true
@@ -503,10 +523,8 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
 
     override fun onHiddenChanged(hidden: Boolean) {
         super.onHiddenChanged(hidden)
-        if (hidden) {
-            privacyWalletFragment.stopUpdate()
-        } else {
-            update()
+        if (requireContext().isCompactWindow()) {
+            if (hidden) privacyWalletFragment.stopUpdate() else update()
         }
         if (shouldRefreshWalletHomeBannersAfterHiddenChanged(hidden)) {
             refreshWalletHomeBanners()
@@ -835,7 +853,7 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
                         }
                     })
                 }
-            pinCheckDialog.show(parentFragmentManager, PinCheckDialogFragment.TAG)
+            pinCheckDialog.showOnTask(parentFragmentManager, PinCheckDialogFragment.TAG)
         }
     }
 

@@ -1,5 +1,8 @@
 package one.mixin.android.compose.theme
 
+import android.content.pm.ActivityInfo
+import android.os.Build
+import android.view.WindowManager
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -19,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
+import androidx.compose.ui.platform.LocalView
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isScreenWideColorGamut
 import one.mixin.android.util.isCurrChinese
@@ -40,13 +44,13 @@ class AppColors(
     val backgroundGrayLight: Color,
     val backgroundGray: Color,
     val red: Color = Color(0xFFE55541),
-    val green: Color = Color(0xFF50BD5C),
+    val green: Color = Color(0xFF00B86B),
     val tipError: Color = Color(0xFFF67070),
-    val walletRed: Color = Color(0xFFF67070),
-    val walletGreen: Color = Color(0xFF50BD5C),
+    val walletRed: Color = Color(0xFFF55666),
+    val walletGreen: Color = Color(0xFF00B86B),
     val walletOrange: Color = Color(0xFFFFAA00),
-    val marketRed: Color = Color(0xFFE57874),
-    val marketGreen: Color = Color(0xFF50BD5C),
+    val marketRed: Color = Color(0xFFF55666),
+    val marketGreen: Color = Color(0xFF00B86B),
     val shadow: Color = Color(0x33AAAAAA),
     val unchecked: Color,
     val tipWarning: Color,
@@ -152,26 +156,26 @@ private fun marketRed(isP3Supported: Boolean) =
     if (isP3Supported) {
         Color(
             colorSpace = ColorSpaces.DisplayP3,
-            red = 0.898f,
-            green = 0.471f,
-            blue = 0.455f,
+            red = 0.961f,
+            green = 0.337f,
+            blue = 0.400f,
             alpha = 1f,
         )
     } else {
-        Color(0xFFE57874)
+        Color(0xFFF55666)
     }
 
 private fun marketGreen(isP3Supported: Boolean) =
     if (isP3Supported) {
         Color(
             colorSpace = ColorSpaces.DisplayP3,
-            red = 0.314f,
-            green = 0.741f,
-            blue = 0.361f,
+            red = 0f,
+            green = 0.722f,
+            blue = 0.420f,
             alpha = 1f,
         )
     } else {
-        Color(0xFF50BD5C)
+        Color(0xFF00B86B)
     }
 
 private val LocalColors = compositionLocalOf { lightColorPalette(false) }
@@ -185,7 +189,11 @@ fun MixinAppTheme(
     },
     content: @Composable () -> Unit,
 ) {
-    val isP3Supported = LocalContext.current.isScreenWideColorGamut()
+    // Compose only draws ColorSpace colors on Q+, and a non wide-gamut window clips P3 instead of showing it.
+    val windowParams = LocalView.current.rootView.layoutParams as? WindowManager.LayoutParams
+    val isP3Supported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+        LocalContext.current.isScreenWideColorGamut() &&
+        windowParams?.colorMode == ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT
     val colors =
         remember(darkTheme, isP3Supported) {
             if (darkTheme) {

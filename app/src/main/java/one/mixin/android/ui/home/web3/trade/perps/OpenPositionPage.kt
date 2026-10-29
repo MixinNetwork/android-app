@@ -4,7 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,14 +27,14 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,6 +60,7 @@ import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.CoilImage
+import one.mixin.android.compose.MixinAlertDialog
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.numberFormat8
@@ -141,8 +141,10 @@ fun OpenPositionPage(
     }
     var takeProfitPrice by remember { mutableStateOf("") }
     var stopLossPrice by remember { mutableStateOf("") }
+    var showTpSlRequirements by remember { mutableStateOf(false) }
     var remoteLiquidationPrice by remember { mutableStateOf<String?>(null) }
     var liquidationPriceLimit by remember { mutableStateOf<LiquidationPriceLimit?>(null) }
+    var liquidationError by remember { mutableStateOf<String?>(null) }
     var isLiquidationLoading by remember { mutableStateOf(false) }
     var errorInfo by remember { mutableStateOf<String?>(null) }
     var isProcessing by remember { mutableStateOf(false) }
@@ -205,6 +207,7 @@ fun OpenPositionPage(
 
     LaunchedEffect(selectedIsLong, usdtAmount, leverage, currentMarket.minAmount) {
         liquidationPriceLimit = null
+        liquidationError = null
         val amount = usdtAmount.toBigDecimalOrNull()
         val minimumAmount = currentMarket.minAmount.toBigDecimalOrNull() ?: BigDecimal.ZERO
         if (!shouldRequestLiquidationPrice(amount, minimumAmount)) {
@@ -224,6 +227,7 @@ fun OpenPositionPage(
                 .let { limitTradeInputDecimalPlaces(it, TRADE_INPUT_MAX_DECIMAL_PLACES) }
             remoteLiquidationPrice = requestLiquidationPrice(
                 onLimitExceeded = { liquidationPriceLimit = it },
+                onFailure = { liquidationError = it ?: context.getString(R.string.Data_error) },
             ) {
                 viewModel.estimateLiquidationPrice(
                     marketId = currentMarket.marketId,
@@ -258,33 +262,18 @@ fun OpenPositionPage(
         currentToken?.symbol.orEmpty(),
     )
     val maximumMarginError = stringResource(
-        R.string.perps_maximum_margin,
+        R.string.single_transaction_should_be_less_than,
         maximumMargin.stripTrailingZeros().toPlainString(),
         currentToken?.symbol.orEmpty(),
     )
-    val liquidationLimitMaxAmount = liquidationPriceLimit?.maxAmount
-        ?.toBigDecimalOrNull()
-        ?.takeIf { it > BigDecimal.ZERO }
-        ?.stripTrailingZeros()
-        ?.toPlainString()
-    val liquidationLimitAmountError = liquidationLimitMaxAmount?.let {
-        stringResource(R.string.perps_maximum_margin, it, currentToken?.symbol.orEmpty())
-    }
-    val liquidationLimitLeverageError = liquidationPriceLimit?.maxLeverage?.let {
-        stringResource(R.string.perps_maximum_leverage, it)
-    }
-    val liquidationLimitError = liquidationPriceLimit?.let {
-        listOfNotNull(liquidationLimitAmountError, liquidationLimitLeverageError)
-            .joinToString(". ")
-            .ifBlank { stringResource(R.string.error_perps_position_size_exceeds_leverage_limit) }
-    }
+    val liquidationLimitError = liquidationPriceLimit?.errorMessage(context, currentToken?.symbol.orEmpty())
     val displayLiquidationPrice = remoteLiquidationPrice
     val marginLimitError = when {
         belowMinimumMargin -> minimumMarginError
         aboveMaximumMargin -> maximumMarginError
         else -> null
     }
-    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError ?: liquidationLimitError
+    val displayedErrorInfo = errorInfo?.takeIf { it.isNotBlank() } ?: marginLimitError ?: liquidationLimitError ?: liquidationError
     val tokenNetworkName = currentToken?.chainName
         ?.takeIf { it.isNotBlank() }
         ?: currentToken?.chainSymbol
@@ -298,6 +287,10 @@ fun OpenPositionPage(
     }
 
     fun showTpSlBottomSheet(mode: PerpsTpSlBottomSheetDialogFragment.Mode) {
+        if (!hasInputAmount || leverage < 1f) {
+            showTpSlRequirements = true
+            return
+        }
         val activity = context as? FragmentActivity ?: return
         PerpsTpSlBottomSheetDialogFragment.newInstance(
             mode = mode,
@@ -325,6 +318,14 @@ fun OpenPositionPage(
     }
 
     MixinAppTheme {
+        if (showTpSlRequirements) {
+            MixinAlertDialog(
+                onDismissRequest = { showTpSlRequirements = false },
+                onConfirmClick = { showTpSlRequirements = false },
+                confirmText = stringResource(R.string.Got_it),
+                text = { Text(stringResource(R.string.perps_tpsl_requires_amount_leverage)) },
+            )
+        }
         PageScaffold(
             title = stringResource(R.string.Open_Position),
             verticalScrollable = false,
@@ -426,7 +427,6 @@ fun OpenPositionPage(
                         token = currentToken?.toSwapToken(),
                         text = usdtAmount,
                         selectClick = {
-                            AnalyticsTracker.trackPerpsOpenMarginSelect(currentToken?.chainName, currentToken?.symbol)
                             availableTokens?.let(onTokenSelect)
                         },
                         onInputChanged = { usdtAmount = it },
@@ -793,7 +793,6 @@ fun OpenPositionPage(
                                 takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
                                 stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
                                 leaderPositionId = leaderPositionId,
-                                entryPrice = m.last,
                                 onSuccess = { response ->
                                     onOrderCreated()
                                     PerpsConfirmBottomSheetDialogFragment.newInstance(
@@ -832,6 +831,7 @@ fun OpenPositionPage(
                                                     leverage = leverage.toInt(),
                                                     margin = normalizedAmount,
                                                     error = message,
+                                                    source = source,
                                                     tokenSymbol = token.symbol,
                                                     liquidationPrice = displayLiquidationPrice,
                                                 ).showNow(activity.supportFragmentManager, PerpsConfirmBottomSheetDialogFragment.FAILURE_TAG)
@@ -1076,26 +1076,7 @@ private fun PerpsActionRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = title,
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist,
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_tip),
-                contentDescription = null,
-                tint = MixinAppTheme.colors.textAssist,
-                modifier = Modifier
-                    .size(16.dp)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                        onClick = onTipClick,
-                    ),
-            )
-        }
+        PerpsInfoLabel(text = title, onTipClick = onTipClick, textClickable = false)
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = value ?: stringResource(R.string.Add),
@@ -1125,28 +1106,7 @@ private fun PerpsInfoRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = title,
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist,
-            )
-            if (onTipClick != null) {
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_tip),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier
-                        .size(16.dp)
-                        .clickable(
-                            interactionSource = remember { MutableInteractionSource() },
-                            indication = null,
-                            onClick = onTipClick,
-                        ),
-                )
-            }
-        }
+        PerpsInfoLabel(text = title, onTipClick = onTipClick)
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(16.dp),

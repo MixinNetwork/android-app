@@ -17,6 +17,11 @@ import one.mixin.android.vo.ParticipantSessionMinimal
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface ConversationDao : BaseDao<Conversation> {
     companion object {
+        const val FILTER_CONTACTS = "c.category = 'CONTACT' AND ou.relationship = 'FRIEND' AND ou.app_id IS NULL"
+        const val FILTER_GROUPS = "c.category = 'GROUP'"
+        const val FILTER_BOTS = "c.category = 'CONTACT' AND ou.app_id IS NOT NULL"
+        const val FILTER_STRANGERS = "c.category = 'CONTACT' AND ou.relationship = 'STRANGER' AND ou.app_id IS NULL"
+
         const val PREFIX_CONVERSATION_ITEM =
             """
             SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
@@ -69,9 +74,6 @@ interface ConversationDao : BaseDao<Conversation> {
         """,
     )
     suspend fun successConversationList(): List<ConversationMinimal>
-
-    @Query("SELECT DISTINCT c.conversation_id FROM conversations c WHERE c.owner_id = :recipientId and c.category = 'CONTACT'")
-    suspend fun getConversationIdIfExistsSync(recipientId: String): String?
 
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversationById(conversationId: String): LiveData<Conversation?>
@@ -168,8 +170,23 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     fun hasUnreadMessage(circleId: String): LiveData<Int?>
 
-    @Query("SELECT * FROM conversations WHERE owner_id =:ownerId AND category = 'CONTACT'")
-    fun findContactConversationByOwnerId(ownerId: String): Conversation?
+    @Query("SELECT count(1) FROM conversations c WHERE c.category IN ('CONTACT', 'GROUP') AND c.unseen_message_count > 0")
+    fun observeUnseenCount(): LiveData<Int>
+
+    @Query("SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE $FILTER_CONTACTS AND c.unseen_message_count > 0")
+    fun observeContactsUnseenCount(): LiveData<Int>
+
+    @Query("SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE $FILTER_GROUPS AND c.unseen_message_count > 0")
+    fun observeGroupsUnseenCount(): LiveData<Int>
+
+    @Query("SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE $FILTER_BOTS AND c.unseen_message_count > 0")
+    fun observeBotsUnseenCount(): LiveData<Int>
+
+    @Query("SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE $FILTER_STRANGERS AND c.unseen_message_count > 0")
+    fun observeStrangersUnseenCount(): LiveData<Int>
+
+    @Query("SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE c.category IS NOT NULL AND c.unseen_message_count > 0 AND c.conversation_id IN (SELECT conversation_id FROM circle_conversations WHERE circle_id = :circleId)")
+    fun observeCircleUnseenCount(circleId: String): LiveData<Int>
 
     // Update SQL
     @Query("UPDATE conversations SET code_url = :codeUrl WHERE conversation_id = :conversationId")
@@ -198,6 +215,7 @@ interface ConversationDao : BaseDao<Conversation> {
 
     @Query(
         "UPDATE conversations SET owner_id = :ownerId, category = :category, name = :name, announcement = :announcement, " +
+            "icon_url = CASE WHEN :iconUrl != '' THEN :iconUrl WHEN icon_url LIKE 'http://%' OR icon_url LIKE 'https://%' THEN NULL ELSE icon_url END, " +
             "mute_until = :muteUntil, created_at = :createdAt, expire_in = :expireIn, status = :status WHERE conversation_id = :conversationId",
     )
     fun updateConversation(
@@ -205,6 +223,7 @@ interface ConversationDao : BaseDao<Conversation> {
         ownerId: String,
         category: String,
         name: String,
+        iconUrl: String?,
         announcement: String?,
         muteUntil: String?,
         createdAt: String,
@@ -236,13 +255,13 @@ interface ConversationDao : BaseDao<Conversation> {
         muteUntil: String,
     )
 
-    @Query("UPDATE conversations SET icon_url = :iconUrl WHERE conversation_id = :conversationId")
-    fun updateGroupIconUrl(
+    @Query("UPDATE conversations SET icon_url = :iconUrl WHERE conversation_id = :conversationId AND (icon_url IS NULL OR (icon_url NOT LIKE 'http://%' AND icon_url NOT LIKE 'https://%'))")
+    fun updateGeneratedGroupIconUrl(
         conversationId: String,
         iconUrl: String,
     )
 
-    @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId AND draft != :text")
+    @Query("UPDATE conversations SET draft = :text WHERE conversation_id = :conversationId AND draft IS NOT :text")
     suspend fun saveDraft(
         conversationId: String,
         text: String,
