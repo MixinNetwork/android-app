@@ -2685,6 +2685,13 @@
     <string name="Details">详情</string>
     <string name="perps_tpsl_requires_amount_leverage">在设置止盈止损之前，请先设置好金额和杠杆倍数。</string>
     <string name="perps_estimated_profit">预估收益 %1$s</string>
+    <string name="invalid_gasless_transaction">免 Gas 交易无效，请重试。</string>
+    <string name="eip712_invalid_chain_id">结构化消息的链 ID 无效，或与签名网络不一致。</string>
+    <string name="invalid_solana_sign_in">Solana 登录请求无效。</string>
+    <string name="malicious_instruction_token_approve">此交易将允许其他账户在未经您允许的情况下转让您的 SPL 代币。</string>
+    <string name="malicious_instruction_system_assign">此交易会将您的 Solana 账户分配给其他程序，可能导致您失去对该账户的控制。</string>
+    <string name="bitcoin_fee_confirmation_required">无法确认比特币手续费，或手续费已上涨。请重新发起转账并确认新的手续费。</string>
+    <string name="invalid_gasless_solana_transaction">代付交易与请求的转账不一致。</string>
     <string name="Select_conversation">选择一个会话开始聊天</string>
     <string name="Select_asset">选择一个资产查看</string>
     <string name="Select_market_item">选择一个行情查看</string>

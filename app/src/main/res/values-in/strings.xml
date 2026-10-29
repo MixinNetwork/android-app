@@ -812,6 +812,13 @@
     <string name="perps_share_card_max_leverage">📈 Leverage Maksimum: %1$dx</string>
     <string name="perps_share_card_volume">💰 Volume 24 Jam: %1$s</string>
     <string name="price_change_tpsl">Harga %1$s → Estimasi Keuntungan %2$s</string>
+    <string name="invalid_gasless_transaction">Transaksi tanpa gas tidak valid. Silakan coba lagi.</string>
+    <string name="eip712_invalid_chain_id">ID chain pesan bertipe tidak valid atau tidak cocok dengan jaringan penandatanganan.</string>
+    <string name="invalid_solana_sign_in">Permintaan masuk Solana tidak valid.</string>
+    <string name="malicious_instruction_token_approve">Transaksi ini memungkinkan akun lain mentransfer token SPL Anda tanpa izin Anda.</string>
+    <string name="malicious_instruction_system_assign">Transaksi ini menetapkan akun Solana Anda ke program lain. Anda dapat kehilangan kendali atas akun tersebut.</string>
+    <string name="bitcoin_fee_confirmation_required">Biaya Bitcoin tidak dapat dikonfirmasi atau telah naik. Silakan ajukan transfer lagi dan konfirmasi biaya terbaru.</string>
+    <string name="invalid_gasless_solana_transaction">Transaksi yang disponsori tidak sesuai dengan transfer yang diminta.</string>
     <string name="Select_conversation">Pilih percakapan untuk mulai mengobrol</string>
     <string name="Select_asset">Pilih aset untuk dilihat</string>
     <string name="Select_market_item">Pilih pasar untuk dilihat</string>
