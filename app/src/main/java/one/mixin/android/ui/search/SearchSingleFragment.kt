@@ -118,7 +118,7 @@ class SearchSingleFragment : BaseFragment(R.layout.fragment_search_single) {
         val text =
             when (type) {
                 TypeAsset -> requireContext().getString(R.string.ASSETS)
-                TypeUser -> requireContext().getText(R.string.CONTACTS)
+                TypeUser -> requireContext().getText(R.string.Contacts)
                 TypeChat -> requireContext().getText(R.string.CHATS)
                 TypeMessage -> requireContext().getText(R.string.SEARCH_MESSAGES)
                 TypeMarket -> requireContext().getString(R.string.ASSETS)

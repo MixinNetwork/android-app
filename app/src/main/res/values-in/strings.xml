@@ -159,7 +159,7 @@
     <string name="contact_mobile">Seluler: %1$s</string>
     <string name="contact_mute_title">Matikan notifikasi selama…</string>
     <string name="contact_favorite_bots_title">Bot bersama %1$s</string>
-    <string name="CONTACTS">KONTAK</string>
+    <string name="Contacts">Kontak</string>
     <string name="content_audio">[Audio]</string>
     <string name="content_contact">[Kontak]</string>
     <string name="content_file">[File]</string>
