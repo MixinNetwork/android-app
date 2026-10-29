@@ -12,7 +12,6 @@ import android.view.WindowManager
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -36,11 +35,11 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -86,7 +85,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -110,6 +108,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -118,6 +117,8 @@ private const val PERPS_ADD_REFRESH_INTERVAL_MS = 3_000L
 
 @AndroidEntryPoint
 class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "PerpsAddBottomSheetDialogFragment"
         private const val ARGS_POSITION = "args_position"
@@ -190,7 +191,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     @Composable
@@ -328,7 +329,7 @@ private fun PerpsAddContent(
         .ifBlank { position.entryPrice }
     val priceScale = market?.priceScale ?: position.priceScale
 
-    LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin, position.updatedAt, market?.last) {
+    LaunchedEffect(amount, belowMinimumMargin, aboveMaximumMargin, position.updatedAt, position.margin, position.quantity, position.liquidationPrice, currentPrice, market?.markPrice) {
         if (!shouldRequestLiquidationPrice(amountValue, minimumMargin) || aboveMaximumMargin) {
             liquidationPriceLimit = null
             liquidationError = null
@@ -804,36 +805,13 @@ internal fun PerpsAddInfoRow(
     singleLine: Boolean = true,
     onTipClick: (() -> Unit)? = null,
 ) {
+    var isMultiline by remember(singleLine) { mutableStateOf(false) }
     Row(
         modifier = Modifier.fillMaxWidth().animateContentSize(),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.Top,
+        verticalAlignment = if (!isLoading && isMultiline) Alignment.Top else Alignment.CenterVertically,
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.clickable(
-                enabled = onTipClick != null,
-                interactionSource = remember { MutableInteractionSource() },
-                indication = null,
-            ) {
-                onTipClick?.invoke()
-            },
-        ) {
-            Text(
-                text = title,
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist,
-            )
-            if (onTipClick != null) {
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_tip),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(16.dp),
-                )
-            }
-        }
+        PerpsInfoLabel(text = title, onTipClick = onTipClick)
         if (isLoading) {
             CircularProgressIndicator(
                 modifier = Modifier.size(16.dp),
@@ -850,6 +828,7 @@ internal fun PerpsAddInfoRow(
                 ),
                 maxLines = if (singleLine) 1 else Int.MAX_VALUE,
                 softWrap = !singleLine,
+                onTextLayout = { isMultiline = it.lineCount > 1 },
                 autoSize = if (singleLine) TextAutoSize.StepBased(
                     minFontSize = 8.sp,
                     maxFontSize = 14.sp,
@@ -866,6 +845,13 @@ internal fun PerpsAddInfoRow(
 private fun PerpsAddInfoRowPreview() {
     MixinAppTheme {
         Column(Modifier.background(MixinAppTheme.colors.background).padding(32.dp)) {
+            PerpsAddInfoRow(
+                title = stringResource(R.string.position_size),
+                value = "1 SOL → 0 SOL ($0)",
+                singleLine = false,
+                onTipClick = {},
+            )
+            Spacer(Modifier.height(16.dp))
             PerpsAddInfoRow(
                 title = stringResource(R.string.position_size),
                 value = "0.000078 BTC ($5.07) → 0.00123857 BTC ($80.51)",
@@ -967,7 +953,6 @@ internal fun FragmentActivity.showPerpsAddPosition(
                 positionId = position.positionId,
                 assetId = token.assetId,
                 amount = amount,
-                position = position,
                 price = referencePrice.takeIf { it.isNotBlank() },
                 leaderPositionId = leaderPositionId,
                 onSuccess = { response ->

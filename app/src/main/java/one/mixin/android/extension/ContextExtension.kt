@@ -487,12 +487,18 @@ fun Context.getUriForFile(file: File): Uri {
     return FileProvider.getUriForFile(this, authority, file)
 }
 
+fun Context.isCompactMessageWindow(): Boolean = isCompactWindow() && !isActivityEmbedded()
+
+fun Context.messageAreaWidth(): Int = if (isCompactMessageWindow()) realSize().x else contentWidth()
+
 fun Context.maxItemWidth(): Int {
-    return realSize().x * 4 / 5
+    if (isCompactMessageWindow()) return realSize().x * 4 / 5
+    return min(contentWidth() * 4 / 5, 600.dp)
 }
 
 fun Context.maxCardWidth(): Int {
-    return min(340.dp ,max(240.dp, realSize().x * 3 / 4))
+    if (isCompactMessageWindow()) return min(340.dp, max(240.dp, realSize().x * 3 / 4))
+    return min(contentWidth() * 4 / 5, min(340.dp, max(240.dp, contentWidth() * 3 / 4)))
 }
 
 // fragment
@@ -1143,7 +1149,8 @@ fun Fragment.getTipsByAsset(asset: TokenItem) =
     when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
-        Constants.ChainId.PEARL_CHAIN_ID -> getString(R.string.deposit_tip_common, asset.symbol)
+        Constants.ChainId.PEARL_CHAIN_ID,
+        Constants.ChainId.Litecoin -> getString(R.string.deposit_tip_common, asset.symbol)
         Constants.ChainId.LIGHTNING_NETWORK_CHAIN_ID -> getString(R.string.deposit_tip_lightning)
         Constants.ChainId.EOS_CHAIN_ID,
         Constants.ChainId.SOLANA_CHAIN_ID,
@@ -1167,7 +1174,8 @@ fun Fragment.getTipsByAsset(asset: Web3TokenItem, chain: Web3Chain?) =
     when (asset.assetId) {
         Constants.ChainId.BITCOIN_CHAIN_ID -> getString(R.string.deposit_tip_btc)
         Constants.ChainId.ETHEREUM_CHAIN_ID -> getString(R.string.deposit_tip_eth)
-        Constants.ChainId.PEARL_CHAIN_ID -> getString(R.string.deposit_tip_common, asset.symbol)
+        Constants.ChainId.PEARL_CHAIN_ID,
+        Constants.ChainId.Litecoin -> getString(R.string.deposit_tip_common, asset.symbol)
         else -> getString(R.string.deposit_tip_chain, asset.symbol, chain?.name ?: getChainName(asset.chainId, asset.chainName, asset.assetKey))
     }
 

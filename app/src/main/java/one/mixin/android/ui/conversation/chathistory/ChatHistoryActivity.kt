@@ -2,6 +2,7 @@
 
 package one.mixin.android.ui.conversation.chathistory
 
+import one.mixin.android.extension.refreshHoldersOnWidthChange
 import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -47,7 +48,7 @@ import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openEmail
 import one.mixin.android.extension.openMedia
 import one.mixin.android.extension.openPermissionSetting
-import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentDownloadJob
 import one.mixin.android.job.ConvertVideoJob
@@ -183,6 +184,7 @@ class ChatHistoryActivity : BaseActivity() {
             }
         binding.recyclerView.setHasFixedSize(true)
         binding.recyclerView.adapter = chatHistoryAdapter
+        binding.recyclerView.refreshHoldersOnWidthChange()
         if (isTranscript) {
             binding.unpinTv.isVisible = false
             buildPagingData { conversationRepository.findTranscriptMessageItemById(transcriptId) }
@@ -359,7 +361,7 @@ class ChatHistoryActivity : BaseActivity() {
                                     msgId,
                                 )
                             }
-                        scrollTo(index, this@ChatHistoryActivity.screenHeight() * 3 / 4) {
+                        scrollTo(index, this@ChatHistoryActivity.windowHeight() * 3 / 4) {
                             RxBus.publish(BlinkEvent(quoteMessageId))
                         }
                     }

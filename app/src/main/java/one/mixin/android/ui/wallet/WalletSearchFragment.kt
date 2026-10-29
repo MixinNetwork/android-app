@@ -174,11 +174,11 @@ class WalletSearchFragment : BaseFragment() {
                 defaultSharedPreferences.getString(Constants.Account.PREF_RECENT_SEARCH_ASSETS, null)?.split("=")
                     ?: return@withContext null
             if (assetList.isEmpty()) return@withContext null
-            val result = viewModel.findAssetsByIds(assetList.take(2))
+            val result = viewModel.findAssetsByIds(assetList)
             if (result.isEmpty()) return@withContext null
             result.sortedBy {
                 assetList.indexOf(it.assetId)
-            }
+            }.take(2)
         }
     }
 
@@ -189,19 +189,8 @@ class WalletSearchFragment : BaseFragment() {
             val recentAssets = searchDefaultAdapter.recentAssets
             if (recentAssets.isNullOrEmpty()) return@launch
 
-            val newRecentList = viewModel.findAssetsByIds(recentAssets.take(2).map { it.assetId })
-            var needRefreshRecent = false
-            newRecentList.forEach { n ->
-                val needUpdate =
-                    recentAssets.find { r ->
-                        r.assetId == n.assetId && r.priceUsd != n.priceUsd
-                    }
-                if (needUpdate != null) {
-                    needRefreshRecent = true
-                    return@forEach
-                }
-            }
-            if (needRefreshRecent) {
+            val newRecentList = loadRecentSearchAssets().orEmpty()
+            if (newRecentList != recentAssets) {
                 searchDefaultAdapter.recentAssets = newRecentList
             }
         }
@@ -224,7 +213,7 @@ class WalletSearchFragment : BaseFragment() {
                 searchAdapter.submitList(result)
                 binding.pb.isVisible = false
 
-                if (localAssets.isNullOrEmpty() && remoteAssets.isEmpty()) {
+                if (result.isEmpty()) {
                     binding.rvVa.displayedChild = POS_EMPTY
                 }
             }

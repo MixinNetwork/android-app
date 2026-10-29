@@ -46,6 +46,8 @@ class Web3TransactionHolder(
     private val compact: Boolean = false,
     private val compactAvatarStartMargin: Int = 16.dip,
 ) : RecyclerView.ViewHolder(binding.root) {
+    var onTokenClick: ((Web3TransactionItem) -> Unit)? = null
+
     init {
         if (compact) {
             binding.root.updateLayoutParams<ViewGroup.LayoutParams> {
@@ -163,6 +165,13 @@ class Web3TransactionHolder(
                     value.text = ""
                     symbolTv.text = ""
                 }
+            }
+            val tokenTarget = transaction.tokenNavigationTarget()
+            if (tokenTarget != null && onTokenClick != null) {
+                avatar.setOnClickListener { onTokenClick?.invoke(transaction) }
+            } else {
+                avatar.setOnClickListener(null)
+                avatar.isClickable = false
             }
             when (transaction.status) {
                 TransactionStatus.SUCCESS.value -> {

@@ -84,4 +84,10 @@ data class PerpsPositionItem(
     @ColumnInfo(name = "price_scale")
     @SerializedName("priceScale")
     val priceScale: Int = 2,
+    @SerializedName("funding_amount")
+    @ColumnInfo(name = "funding_amount")
+    val fundingAmount: String? = null,
+    @SerializedName("estimated_close_fee")
+    @ColumnInfo(name = "estimated_close_fee", defaultValue = "''")
+    val estimatedCloseFee: String? = "",
 ) : Parcelable

@@ -199,6 +199,39 @@ class TokenRepositoryWalletTransactionTest {
     }
 
     @Test
+    fun statusUpdatesOnlyAffectMatchingTransactionAddress() = runBlocking<Unit> {
+        insertSigned()
+        wallet.web3AddressDao().insertSuspend(Web3Address("receiver-address", "receiver-wallet", chain, "receiver", null, createdAt))
+        val outgoing = assertNotNull(transaction("signed"))
+        val records = listOf(
+            outgoing,
+            outgoing.copy(address = "receiver", transactionType = "transfer_in"),
+            outgoing.copy(chainId = "other-chain"),
+            outgoing.copy(transactionHash = "other-hash"),
+        )
+        for (gasless in listOf(true, false)) {
+            wallet.web3TransactionDao().insert(*records.toTypedArray())
+            val status = if (gasless) "failed" else "success"
+            if (gasless) {
+                repository.updateGaslessPendingTransactionStatus("wallet", "signed", chain, status, updatedAt)
+            } else {
+                repository.insertRawTransactionAndUpdateTransactionStatus(rawRecord("signed").copy(state = status), "signed", status, chain, null)
+            }
+            assertEquals(status, assertNotNull(raw("signed")).state)
+            for (record in records) {
+                RoomDatabaseCompat.query(
+                    wallet,
+                    "SELECT status FROM transactions WHERE transaction_hash = ? AND chain_id = ? AND address = ?",
+                    arrayOf(record.transactionHash, record.chainId, record.address),
+                ).use {
+                    assertTrue(it.moveToFirst())
+                    assertEquals(if (record == outgoing) status else "pending", it.getString(0))
+                }
+            }
+        }
+    }
+
+    @Test
     fun statusUpdateWithoutTransactionStillUpdatesRawRow() = runBlocking<Unit> {
         wallet.web3RawTransactionDao().insertSuspend(rawRecord("signed"))
         repository.updateGaslessPendingTransactionStatus("wallet", "signed", chain, "failed", updatedAt)

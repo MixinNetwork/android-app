@@ -30,6 +30,8 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     private val binding by viewBinding(FragmentTransferBalanceErrorBottomSheetBinding::inflate)
 
     companion object {
@@ -94,7 +96,8 @@ class TransferWeb3BalanceErrorBottomSheetDialogFragment : MixinBottomSheetDialog
                 }
             }
             binding.header.balanceError(asset, t.amount, t.fee)
-            binding.content.renderAsset(asset, t.amount, t.fee)
+            val senderAddress = Web3Signer.addressByChainId(asset.chainId).orEmpty()
+            binding.content.renderAsset(asset, t.amount, t.fee, senderAddress)
             binding.bottom.setText("${getString(R.string.Add)} ${asset.symbol}")
             binding.bottom.setOnClickListener({
                 dismiss()

@@ -5,11 +5,14 @@ import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.response.perps.PerpsFavorite
 import one.mixin.android.api.response.perps.PerpsMarketCategoryRelation
 import one.mixin.android.crypto.Base64
+import one.mixin.android.ui.wallet.alert.vo.AlertUpdateRequest
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
 import java.io.Serializable
 import java.lang.reflect.Modifier
+import java.net.JarURLConnection
+import java.net.URL
 import java.util.jar.JarFile
 
 class ReleaseKeepRulesTest {
@@ -39,7 +42,11 @@ class ReleaseKeepRulesTest {
     fun apiFieldsHaveStableJsonNamesOrExplicitKeepRules() {
         val retained = setOf(PerpsFavorite::class.java, PerpsMarketCategoryRelation::class.java)
         val violations = appClasses
-            .filter { it.name.startsWith("one.mixin.android.api.request.") || it.name.startsWith("one.mixin.android.api.response.") }
+            .filter {
+                it.name.startsWith("one.mixin.android.api.request.") ||
+                    it.name.startsWith("one.mixin.android.api.response.") ||
+                    it == AlertUpdateRequest::class.java
+            }
             .filterNot { it in retained || Enum::class.java.isAssignableFrom(it) }
             .flatMap { it.declaredFields.toList() }
             .filter { field ->
@@ -61,9 +68,15 @@ class ReleaseKeepRulesTest {
         }
 
     companion object {
-        private val appClasses by lazy {
+        internal val appClasses by lazy {
             val names = setOf(TransferRequest::class.java, Base64::class.java)
-                .map { File(requireNotNull(it.protectionDomain?.codeSource?.location).toURI()) }
+                .map { type ->
+                    val path = type.name.replace('.', '/') + ".class"
+                    val resource = requireNotNull(type.getResource("/$path"))
+                    val source = if (resource.protocol == "jar") (resource.openConnection() as JarURLConnection).jarFileURL
+                        else URL(resource.toExternalForm().removeSuffix(path))
+                    File(source.toURI())
+                }
                 .distinct()
                 .flatMap { source ->
                     if (source.isDirectory) {

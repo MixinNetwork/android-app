@@ -17,6 +17,7 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.request.web3.WalletRequest
 import one.mixin.android.api.request.web3.Web3AddressRequest
 import one.mixin.android.crypto.CryptoWalletHelper
+import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.databinding.FragmentComposeBinding
 import one.mixin.android.db.web3.vo.Web3Address
 import one.mixin.android.event.WalletOperationType
@@ -52,6 +53,7 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
     private var solAddressInfo: Web3Address? = null
     private var btcAddressInfo: Web3Address? = null
     private var pearlAddressInfo: Web3Address? = null
+    private var litecoinAddressInfo: Web3Address? = null
 
     @Inject
     lateinit var web3Repository: Web3Repository
@@ -84,6 +86,7 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                 solAddressInfo = viewModel.getAddressesByChainId(it, Constants.ChainId.SOLANA_CHAIN_ID)
                 btcAddressInfo = viewModel.getAddressesByChainId(it, Constants.ChainId.BITCOIN_CHAIN_ID)
                 pearlAddressInfo = viewModel.getAddressesByChainId(it, Constants.ChainId.PEARL_CHAIN_ID)
+                litecoinAddressInfo = viewModel.getAddressesByChainId(it, Constants.ChainId.Litecoin)
             }
         }
 
@@ -146,16 +149,25 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                 return getString(R.string.reimport_mnemonic_phrase_error)
             }
         }
+        litecoinAddressInfo?.let {
+            val derivedAddress = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.Litecoin, "", requireNotNull(index))
+            if (!derivedAddress.equals(it.destination, ignoreCase = true)) {
+                return getString(R.string.reimport_mnemonic_phrase_error)
+            }
+        }
         return null
     }
 
     private fun resolveDerivationIndex(): Int? {
         return CryptoWalletHelper.extractIndexFromPaths(
-            listOf(evmAddressInfo?.path, solAddressInfo?.path, btcAddressInfo?.path, pearlAddressInfo?.path)
+            listOf(evmAddressInfo?.path, solAddressInfo?.path, btcAddressInfo?.path, pearlAddressInfo?.path, litecoinAddressInfo?.path)
         )
     }
 
     private suspend fun ensureUtxoAddresses(walletId: String, mnemonic: List<String>): Boolean {
+        web3Repository.backfillLitecoinAddress(walletId) { index ->
+            UtxoKeyGenerator.getPrivateKeyFromMnemonic(mnemonic.joinToString(" "), Constants.ChainId.Litecoin, index = index)
+        }
         val btcAddress: Web3Address? = viewModel.getAddressesByChainId(walletId, Constants.ChainId.BITCOIN_CHAIN_ID)
         val pearlAddress: Web3Address? = viewModel.getAddressesByChainId(walletId, Constants.ChainId.PEARL_CHAIN_ID)
         if (btcAddress != null && pearlAddress != null) {
@@ -226,6 +238,7 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                 val solAddress: Web3Address? = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.SOLANA_CHAIN_ID)
                 val btcAddress: Web3Address? = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.BITCOIN_CHAIN_ID)
                 val pearlAddress: Web3Address? = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.PEARL_CHAIN_ID)
+                val litecoinAddress: Web3Address? = viewModel.getAddressesByChainId(wallet.id, Constants.ChainId.Litecoin)
                 val isEvmMatch: Boolean = evmAddress?.let { address: Web3Address ->
                     val index: Int = requireNotNull(CryptoWalletHelper.extractIndexFromPath(address.path!!))
                     val derivedAddress: String = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.ETHEREUM_CHAIN_ID, "", index)
@@ -246,12 +259,18 @@ class ReImportMnemonicFragment : BaseFragment(R.layout.fragment_compose) {
                     val derivedAddress: String = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.PEARL_CHAIN_ID, "", index)
                     derivedAddress.equals(address.destination, ignoreCase = true)
                 } ?: false
+                val isLitecoinMatch: Boolean = litecoinAddress?.let { address: Web3Address ->
+                    val index: Int = requireNotNull(CryptoWalletHelper.extractIndexFromPath(address.path!!))
+                    val derivedAddress: String = CryptoWalletHelper.mnemonicToAddress(mnemonicPhrase, Constants.ChainId.Litecoin, "", index)
+                    derivedAddress.equals(address.destination, ignoreCase = true)
+                } ?: false
                 val isWalletMatch: Boolean =
                     (evmAddress == null || isEvmMatch) &&
                         (solAddress == null || isSolanaMatch) &&
                         (btcAddress == null || isBtcMatch) &&
                         (pearlAddress == null || isPearlMatch) &&
-                        (isEvmMatch || isSolanaMatch || isBtcMatch || isPearlMatch)
+                        (litecoinAddress == null || isLitecoinMatch) &&
+                        (isEvmMatch || isSolanaMatch || isBtcMatch || isPearlMatch || isLitecoinMatch)
                 if (!isWalletMatch) {
                     return@forEach
                 }

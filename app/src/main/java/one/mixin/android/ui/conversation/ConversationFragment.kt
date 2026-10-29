@@ -2,6 +2,7 @@
 
 package one.mixin.android.ui.conversation
 
+import one.mixin.android.extension.refreshHoldersOnWidthChange
 import android.Manifest
 import android.annotation.SuppressLint
 import android.annotation.TargetApi
@@ -139,6 +140,7 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
+import one.mixin.android.extension.remove
 import one.mixin.android.extension.replaceFragment
 import one.mixin.android.extension.safeActivate
 import one.mixin.android.extension.safeStop
@@ -253,6 +255,7 @@ import one.mixin.android.vo.isAttachment
 import one.mixin.android.vo.isAudio
 import one.mixin.android.vo.isImage
 import one.mixin.android.vo.isLive
+import one.mixin.android.vo.isRecall
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
@@ -313,8 +316,9 @@ class ConversationFragment() :
         const val INITIAL_UNREAD_MESSAGE_ID = "initial_unread_message_id"
         const val INITIAL_UNREAD_COUNT = "initial_unread_count"
         const val TRANSCRIPT_DATA = "transcript_data"
-        private const val KEY_WORD = "key_word"
-        private const val START_PARAM = "start_param"
+        internal const val KEY_WORD = "key_word"
+        internal const val START_PARAM = "start_param"
+        private const val PREF_QUOTE_DRAFT = "quote_draft"
 
         fun putBundle(
             conversationId: String?,
@@ -1047,6 +1051,9 @@ class ConversationFragment() :
         savedInstanceState: Bundle?,
     ): View = inflater.inflate(R.layout.fragment_conversation, container, false)
 
+    override val showConnectionStatus: Boolean
+        get() = activity?.let { !androidx.window.embedding.ActivityEmbeddingController.getInstance(it).isActivityEmbedded(it) } ?: true
+
     override fun getContentView(): View = binding.root
 
     override fun onViewCreated(
@@ -1054,6 +1061,7 @@ class ConversationFragment() :
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        binding.messageRv.refreshHoldersOnWidthChange()
         initView()
         AudioPlayer.setStatusListener(this)
         RxBus.listen(ExitEvent::class.java)
@@ -1243,6 +1251,7 @@ class ConversationFragment() :
         markRead()
         val draftText = binding.chatControl.chatEt.text?.toString() ?: ""
         chatRoomHelper.saveDraft(conversationId, draftText)
+        saveQuoteDraft()
 
         if (OpusAudioRecorder.state != STATE_NOT_INIT) {
             OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.PREVIEW, vibrate = false, false)
@@ -1326,10 +1335,6 @@ class ConversationFragment() :
             binding.chatControl.isRecording -> {
                 OpusAudioRecorder.get(conversationId).stopRecording(AudioEndStatus.CANCEL)
                 binding.chatControl.cancelExternal()
-                true
-            }
-            binding.chatControl.replyView.visibility == VISIBLE -> {
-                binding.chatControl.replyView.animateHeight(53.dp, 0)
                 true
             }
             else -> false
@@ -1656,6 +1661,7 @@ class ConversationFragment() :
             }
         }
         lifecycleScope.launch {
+            val replyVersion = binding.chatControl.replyView.messageItemVersion
             val conversationDraft =
                 withContext(SINGLE_DB_THREAD) {
                     chatViewModel.getConversationDraftById(conversationId)
@@ -1663,6 +1669,7 @@ class ConversationFragment() :
             if (!viewDestroyed() && conversationDraft.isNotEmpty()) {
                 binding.chatControl.chatEt.setText(conversationDraft)
             }
+            restoreQuoteDraft(replyVersion)
         }
         binding.toolView.closeIv.setOnClickListener {
             if (binding.toolView.isVisible) {
@@ -2372,6 +2379,7 @@ class ConversationFragment() :
                     info.count,
                 ),
             )
+            binding.actionBar.titleTv.setGroupName(info.name)
             binding.actionBar.avatarIv.setGroup(info.iconUrl)
             inGroup = info.isExist
             if (inGroup) {
@@ -3202,6 +3210,42 @@ class ConversationFragment() :
             val notCompress = data.getBooleanExtra(ImageEditorActivity.ARGS_NOT_COMPRESS, false)
             sendImageMessage(uri, notCompress)
         }
+    }
+
+    private val quoteDraftPreferences by lazy {
+        requireContext().sharedPreferences(PREF_QUOTE_DRAFT)
+    }
+
+    // Keyed by account because the same group conversation id can exist under multiple accounts
+    private val quoteDraftKey: String
+        get() = "${Session.getAccountId()}_$conversationId"
+
+    private fun saveQuoteDraft() {
+        val replyView = binding.chatControl.replyView
+        val quoteMessageId = replyView.messageItem?.takeIf { replyView.isVisible }?.messageId
+        if (quoteMessageId == null) {
+            quoteDraftPreferences.remove(quoteDraftKey)
+        } else {
+            quoteDraftPreferences.putString(quoteDraftKey, quoteMessageId)
+        }
+    }
+
+    private suspend fun restoreQuoteDraft(replyVersion: Int) {
+        val quoteMessageId = quoteDraftPreferences.getString(quoteDraftKey, null) ?: return
+        val messageItem =
+            withContext(Dispatchers.IO) {
+                chatViewModel.findMessageItemById(conversationId, quoteMessageId)
+            }
+        if (viewDestroyed()) return
+        if (messageItem == null || messageItem.isRecall()) {
+            quoteDraftPreferences.remove(quoteDraftKey)
+            return
+        }
+        val replyView = binding.chatControl.replyView
+        // Skip if the user picked, closed or sent a quote while the draft was loading
+        if (replyView.messageItemVersion != replyVersion) return
+        replyView.bind(messageItem)
+        if (!replyView.isVisible) replyView.animateHeight(0, 53.dp)
     }
 
     private fun displayReplyView() {

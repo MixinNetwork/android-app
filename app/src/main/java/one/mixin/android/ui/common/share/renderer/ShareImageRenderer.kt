@@ -11,7 +11,7 @@ import one.mixin.android.databinding.ItemChatImageBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.nowInUtc
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.messageAreaWidth
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.ShareImageData
 
@@ -20,7 +20,7 @@ class ShareImageRenderer(val context: Context) {
     val contentView get() = binding.root
 
     private val mediaWidth by lazy {
-        (context.realSize().x * 0.6).toInt()
+        (context.messageAreaWidth() * 0.6).toInt()
     }
 
     init {

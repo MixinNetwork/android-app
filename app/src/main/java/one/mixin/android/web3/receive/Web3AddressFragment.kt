@@ -235,13 +235,7 @@ class Web3AddressFragment : BaseFragment() {
             walletViewModel.getTokenByWalletAndAssetId(Web3Signer.currentWalletId,id)?.let {
                 web3Token = it
             }
-            address =
-                when (web3Token.chainId) {
-                    Constants.ChainId.SOLANA_CHAIN_ID -> Web3Signer.solanaAddress
-                    Constants.ChainId.BITCOIN_CHAIN_ID -> Web3Signer.btcAddress
-                    Constants.ChainId.PEARL_CHAIN_ID -> Web3Signer.pearlAddress
-                    else -> Web3Signer.evmAddress
-                }
+            address = Web3Signer.addressByChainId(web3Token.chainId) ?: Web3Signer.evmAddress
             updateUI()
             updateChips()
         }

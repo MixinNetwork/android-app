@@ -293,6 +293,7 @@ open class Injector {
                         ownerId,
                         conversationData.category,
                         conversationData.name,
+                        conversationData.iconUrl,
                         conversationData.announcement,
                         conversationData.muteUntil,
                         conversationData.createdAt,

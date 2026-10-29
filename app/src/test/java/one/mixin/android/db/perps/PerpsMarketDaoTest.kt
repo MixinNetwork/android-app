@@ -34,6 +34,16 @@ class PerpsMarketDaoTest {
     }
 
     @Test
+    fun minimumOrderValueSurvivesApiParsingAndDatabaseStorage() = runBlocking {
+        val gson = com.google.gson.Gson()
+        val json = gson.toJsonTree(market("minimum", volume = "1", score = 0)).asJsonObject
+        json.addProperty("min_order_value", "10.25")
+        val parsed = gson.fromJson(json, PerpsMarket::class.java)
+        database.perpsMarketDao().upsertSuspend(parsed)
+        assertEquals("10.25", database.perpsMarketDao().getMarket("minimum")?.minOrderValue)
+    }
+
+    @Test
     fun allMarketsRemainOrderedByVolume() =
         runBlocking {
             database.perpsMarketDao().upsertList(

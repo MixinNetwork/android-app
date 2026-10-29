@@ -14,9 +14,9 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersAdapter
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersDecoration
 import com.timehop.stickyheadersrecyclerview.StickyRecyclerHeadersTouchListener
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -24,6 +24,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants.Account.PREF_RECENT_USED_BOTS
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentSearchBinding
 import one.mixin.android.databinding.ItemSearchAppBinding
 import one.mixin.android.databinding.ItemSearchHeaderBinding
@@ -33,6 +34,7 @@ import one.mixin.android.extension.deserialize
 import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isValidMao
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -63,9 +65,24 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
     private val searchViewModel by viewModels<SearchViewModel>()
 
     private val searchAdapter: SearchAdapter by lazy {
-        SearchAdapter()
+        SearchAdapter().apply {
+            // Header bounds are cached by position, stale ones would swallow taps on items
+            registerAdapterDataObserver(
+                object : RecyclerView.AdapterDataObserver() {
+                    override fun onChanged() {
+                        decoration.invalidateHeaders()
+                    }
+
+                    override fun onItemRangeChanged(positionStart: Int, itemCount: Int) {
+                        decoration.invalidateHeaders()
+                    }
+                },
+            )
+        }
     }
-    private val decoration by lazy { StickyRecyclerHeadersDecoration(searchAdapter) }
+    private val decoration by lazy {
+        StickyRecyclerHeadersDecoration(searchAdapter) { binding.searchRv.isStickyHeaderDrawn(searchAdapter, it) }
+    }
 
     companion object {
         const val TAG = "SearchFragment"
@@ -169,11 +186,12 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 override fun onTipClick() {
                     binding.searchRv.hideKeyboard()
                     searchAdapter.searchingId = true
-                    searchViewModel.search(searchAdapter.query).autoDispose(stopScope).subscribe(
-                        { r ->
-                            searchAdapter.searchingId = false
-                            when {
-                                r.isSuccess ->
+                    val query = searchAdapter.query
+                    viewLifecycleOwner.launchUntilStop {
+                        try {
+                            handleMixinResponse(
+                                invokeNetwork = { searchViewModel.search(query) },
+                                successBlock = { r ->
                                     r.data?.let { data ->
                                         if (data.userId == Session.getAccountId()) {
                                             ProfileBottomSheetDialogFragment.newInstance().showNow(
@@ -185,15 +203,20 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                                             showUserBottom(parentFragmentManager, data, botEntrySource = AnalyticsTracker.BotSource.SEARCH_MAO_NAME)
                                         }
                                     }
-                                r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.User_not_found)
-                                else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                            }
-                        },
-                        { t: Throwable ->
+                                },
+                                failureBlock = { r ->
+                                    if (r.errorCode == ErrorHandler.NOT_FOUND) {
+                                        toast(R.string.User_not_found)
+                                        true
+                                    } else {
+                                        false
+                                    }
+                                },
+                            )
+                        } finally {
                             searchAdapter.searchingId = false
-                            ErrorHandler.handleError(t)
-                        },
-                    )
+                        }
+                    }
                 }
 
                 override fun onUrlClick(url: String) {
@@ -357,8 +380,7 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
                 }
                 m
             }
-        searchAdapter.setAssetData(t)
-        decoration.invalidateHeaders()
+        searchAdapter.setAssetData(t.filter { it.primitiveAssetId.isNullOrEmpty() })
     }
 
     @Suppress("UNCHECKED_CAST")
@@ -404,7 +426,6 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
 
             val users = searchViewModel.fuzzySearch<User>(cancellationSignal, keyword) as List<User>?
             val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, keyword) as List<ChatMinimal>?
-            decoration.invalidateHeaders()
             searchAdapter.setData(tokenItems, users, chatMinimals)
 
             messageSearchJob?.join()
@@ -422,7 +443,6 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
             val cancellationSignal = CancellationSignal()
             val chatMinimals = searchViewModel.fuzzySearch<ChatMinimal>(cancellationSignal, keyword) as List<ChatMinimal>?
             searchAdapter.setChatData(chatMinimals)
-            decoration.invalidateHeaders()
 
             (requireActivity() as MainActivity).hideSearchLoading()
         }
@@ -491,4 +511,13 @@ class SearchFragment : BaseFragment(R.layout.fragment_search) {
             anchor: View,
         ): Boolean
     }
+}
+
+// Mirrors the decoration's draw rule so cached bounds of headers not drawn in this frame can't take taps
+internal fun RecyclerView.isStickyHeaderDrawn(adapter: StickyRecyclerHeadersAdapter<*>, position: Int): Boolean {
+    val layoutManager = layoutManager as LinearLayoutManager
+    val first = layoutManager.findFirstVisibleItemPosition()
+    if (position !in first..layoutManager.findLastVisibleItemPosition()) return false
+    val headerId = adapter.getHeaderId(position)
+    return headerId >= 0 && (position == first || headerId != adapter.getHeaderId(position - 1))
 }

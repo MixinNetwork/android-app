@@ -18,7 +18,6 @@ import one.mixin.android.util.getChainNetwork
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.vo.safe.TokensExtra
-import one.mixin.android.web3.js.Web3Signer
 import java.math.BigDecimal
 
 class TransferErrorContent : LinearLayout {
@@ -143,20 +142,20 @@ class TransferErrorContent : LinearLayout {
         }
     }
 
-    fun renderAsset(asset: Web3TokenItem, amount: BigDecimal,fee: BigDecimal) {
+    fun renderAsset(asset: Web3TokenItem, amount: BigDecimal, fee: BigDecimal, senderAddress: String) {
         _binding.apply {
             balance.isVisible = true
             balance.setContent(R.string.Balance, "${asset.balance.numberFormat12()} ${asset.symbol}", amountAs(asset.balance, asset))
             networkFee.isVisible = true
             networkFee.setContent(R.string.Network_Fee, "${fee.numberFormat12()} ${asset.symbol}", amountAs(fee.toPlainString(), asset))
-            sender.isVisible = true
+            sender.isVisible = senderAddress.isNotBlank()
             if (amount != BigDecimal.ZERO) {
                 total.isVisible = true
                 total.setContent(R.string.Total, "${(amount + fee).numberFormat12()} ${asset.symbol}", amountAs((amount + fee).toPlainString(), asset))
             } else {
                 total.isVisible = false
             }
-            sender.setContent(R.string.Sender, Web3Signer.evmAddress)
+            sender.setContent(R.string.Sender, senderAddress)
             network.setContent(R.string.network, getChainNetwork(assetId = asset.assetId, asset.chainId, asset.assetKey) ?: "")
         }
     }

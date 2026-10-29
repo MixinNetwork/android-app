@@ -38,6 +38,8 @@ import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.api.response.perps.PerpsPositionItem
+import one.mixin.android.api.response.perps.realizedPnlForDisplay
+import one.mixin.android.api.response.perps.roeForDisplay
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.web3.components.PageScaffold
@@ -322,24 +324,7 @@ private fun PositionDetailItem(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = label,
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist
-            )
-            if (onTipClick != null) {
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_tip),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(12.dp)
-                        .clickable(onClick = onTipClick),
-                    tint = MixinAppTheme.colors.textAssist,
-                )
-            }
-        }
+        PerpsInfoLabel(text = label, onTipClick = onTipClick)
         Spacer(modifier = Modifier.height(4.dp))
 
         if (icon != null) {
@@ -403,11 +388,7 @@ fun PositionDetailPage(
         }
     }
 
-    val pnl = try {
-        BigDecimal(closeOrder.realizedPnl)
-    } catch (e: Exception) {
-        BigDecimal.ZERO
-    }
+    val pnl = closeOrder.realizedPnlForDisplay()
 
     val isProfit = pnl >= BigDecimal.ZERO
     val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
@@ -438,7 +419,7 @@ fun PositionDetailPage(
     val quantity = closeOrder.quantity.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val absQuantity = quantity.abs()
     val effectiveLeverage = leverage ?: closeOrder.leverage
-    val roe = (closeOrder.roe.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
+    val roe = (closeOrder.roeForDisplay() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
     val fee = closeOrder.feeAmount.toBigDecimalOrNull()?.abs() ?: BigDecimal.ZERO
 
     fun formatFiat(value: BigDecimal): String {
@@ -599,7 +580,7 @@ fun PositionDetailPage(
 
                 PositionDetailItem(
                     label = stringResource(R.string.perps_realized_pnl).uppercase(),
-                    value = "${formatSignedFiat(pnl)} (${formatSignedPercent(roe)})",
+                    value = formatSignedFiat(pnl),
                     valueColor = pnlColor,
                 )
 
@@ -608,7 +589,7 @@ fun PositionDetailPage(
 
                     PositionDetailItem(
                         label = stringResource(R.string.Fee).uppercase(),
-                        value = formatPerpsSignedExactUsdDecimal(fee.negate()),
+                        value = formatPerpsExactUsdDecimal(fee),
                         onTipClick = onFeeTipClick,
                     )
                 }
@@ -662,6 +643,7 @@ fun OpenedOrderDetailPage(
     onViewMarket: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
     onFeeTipClick: (() -> Unit)? = null,
+    onMarginTipClick: (() -> Unit)? = null,
     onSupport: (() -> Unit)? = null,
 ) {
     val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
@@ -858,7 +840,31 @@ fun OpenedOrderDetailPage(
 
                 Spacer(modifier = Modifier.height(20.dp))
 
-                if (!isFailed) {
+                if (!isFailed && openedOrder.orderType == PerpsOrder.TYPE_OPEN) {
+                    PositionDetailItem(
+                        label = stringResource(R.string.Amount).uppercase(),
+                        value = amountText ?: "--",
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    PositionDetailItem(
+                        label = stringResource(R.string.Margin).uppercase(),
+                        value = openedOrder.marginAmount.toBigDecimalOrNull()
+                            ?.let(::formatPerpsUsdDecimal) ?: "--",
+                        onTipClick = onMarginTipClick,
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    PositionDetailItem(
+                        label = stringResource(R.string.Fee).uppercase(),
+                        value = openedOrder.feeAmount.toBigDecimalOrNull()?.let { formatPerpsExactUsdDecimal(it.abs()) } ?: "--",
+                        onTipClick = onFeeTipClick,
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                    PositionDetailItem(
+                        label = stringResource(R.string.Entry_Price).uppercase(),
+                        value = formatPerpsPrice(openedOrder.entryPrice, openedOrder.priceScale),
+                    )
+                    Spacer(modifier = Modifier.height(20.dp))
+                } else if (!isFailed) {
                     if (!isMargin) {
                         PositionDetailItem(
                             label = stringResource(R.string.Entry_Price).uppercase(),
@@ -871,7 +877,7 @@ fun OpenedOrderDetailPage(
 
                             PositionDetailItem(
                                 label = stringResource(R.string.Fee).uppercase(),
-                                value = formatPerpsSignedExactUsdDecimal(fee.negate()),
+                                value = formatPerpsExactUsdDecimal(fee),
                                 onTipClick = onFeeTipClick,
                             )
                         }

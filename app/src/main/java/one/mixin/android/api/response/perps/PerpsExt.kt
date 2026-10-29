@@ -1,5 +1,13 @@
 package one.mixin.android.api.response.perps
 
+import java.math.BigDecimal
+
+fun PerpsOrderItem.realizedPnlForDisplay(): BigDecimal =
+    netRealizedPnl.toBigDecimalOrNull() ?: realizedPnl.toBigDecimalOrNull() ?: BigDecimal.ZERO
+
+fun PerpsOrderItem.roeForDisplay(): BigDecimal? =
+    netRoe.toBigDecimalOrNull() ?: roe.toBigDecimalOrNull()
+
 fun PerpsPositionItem.toPosition(): PerpsPosition {
     return PerpsPosition(
         positionId = positionId,
@@ -19,6 +27,8 @@ fun PerpsPositionItem.toPosition(): PerpsPosition {
         state = state ?: "open",
         markPrice = markPrice ?: "0",
         unrealizedPnl = unrealizedPnl ?: "0",
+        estimatedCloseFee = estimatedCloseFee,
+        fundingAmount = fundingAmount,
         roe = roe ?: "0",
         walletId = walletId ?: "",
         createdAt = createdAt ?: "",

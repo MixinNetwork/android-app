@@ -22,6 +22,7 @@ import com.google.android.material.snackbar.Snackbar
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import io.reactivex.android.schedulers.AndroidSchedulers
+import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.Dispatchers
@@ -34,11 +35,11 @@ import one.mixin.android.RxBus
 import one.mixin.android.api.response.WalletHomeBanner
 import one.mixin.android.api.response.WalletHomeBannerAction
 import one.mixin.android.api.response.filterWalletHomeBannersByChains
-import one.mixin.android.api.response.syncedWalletHomeClosedBannerIds
 import one.mixin.android.api.response.visibleWalletHomeBanners
 import one.mixin.android.databinding.FragmentPrivacyWalletBinding
 import one.mixin.android.databinding.ViewWalletFragmentHeaderBinding
 import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isWatch
@@ -48,14 +49,13 @@ import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.addFragment
+import one.mixin.android.extension.isCompactWindow
 import one.mixin.android.extension.mainThread
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCustomerService
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
-import one.mixin.android.extension.putInt
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.job.MixinJobManager
@@ -64,15 +64,12 @@ import one.mixin.android.job.RefreshWeb3TokenJob
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
-import one.mixin.android.ui.conversation.link.LinkBottomSheetDialogFragment
 import one.mixin.android.ui.common.PendingTransactionRefreshHelper
 import one.mixin.android.ui.common.recyclerview.HeaderAdapter
 import one.mixin.android.ui.home.bot.INTERNAL_REFERRAL_ID
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.trade.SwapActivity
-import one.mixin.android.ui.home.web3.trade.TradeFragment
-import one.mixin.android.ui.home.web3.trade.perps.PerpsActivity
 import one.mixin.android.ui.wallet.home.WalletHomeBuilder
 import one.mixin.android.ui.wallet.home.WalletHomeCallbacks
 import one.mixin.android.ui.wallet.home.WalletHomeDataState
@@ -101,13 +98,14 @@ import one.mixin.android.ui.wallet.adapter.WalletWeb3TokenAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
-import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.vo.Fiats
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.WalletHomeTokenSummary
 import one.mixin.android.vo.safe.TokenItem
 import one.mixin.android.web3.details.Web3TransactionFragment
 import one.mixin.android.web3.details.Web3TransactionsFragment
+import one.mixin.android.web3.details.openWeb3AssetTransactions
+import one.mixin.android.web3.details.tokenNavigationTarget
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment
 import one.mixin.android.web3.receive.Web3TokenListBottomSheetDialogFragment.Companion.TYPE_FROM_RECEIVE
@@ -648,7 +646,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             defaultSharedPreferences.putWalletHomeBannerCache(cacheKey, remoteBanners)
             if (!shouldApplyClassicWalletHomeBannerResponse(requestWalletId, walletId)) return@launch
             runCatching {
-                syncClosedDynamicBannerIds(remoteBanners)
+                syncClosedDynamicBannerIds()
             }.onFailure {
                 Timber.w(it, "Sync wallet home banner closed ids failed")
             }
@@ -665,7 +663,7 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         if (!shouldApplyClassicWalletHomeBannerResponse(requestWalletId, walletId)) return
         updateDynamicBanners(cachedBanners)
         runCatching {
-            syncClosedDynamicBannerIds(cachedBanners)
+            syncClosedDynamicBannerIds()
         }.onFailure {
             Timber.w(it, "Sync cached wallet home banner closed ids failed")
         }
@@ -697,13 +695,9 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             .filter(String::isNotBlank)
             .toSet()
 
-    private suspend fun syncClosedDynamicBannerIds(remoteBanners: List<WalletHomeBanner>) {
-        val closedBannerIds = findWalletHomeDynamicBannerClosedIds()
-        val syncedClosedBannerIds = closedBannerIds.syncedWalletHomeClosedBannerIds(remoteBanners)
-        if (syncedClosedBannerIds != closedBannerIds) {
-            updateWalletHomeDynamicBannerClosedIds(syncedClosedBannerIds)
-        }
-        closedDynamicBannerIds = syncedClosedBannerIds
+    private suspend fun syncClosedDynamicBannerIds() {
+        val savedIds = findWalletHomeDynamicBannerClosedIds()
+        closedDynamicBannerIds = closedDynamicBannerIds + savedIds
     }
 
     private fun loadWalletHomeCache() {
@@ -752,9 +746,10 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
 
         override fun onDynamicBannerClicked(banner: WalletHomeBanner) {
-            AnalyticsTracker.trackWalletHomeAdBanner(
+            AnalyticsTracker.trackAdBanner(
                 banner.trackingKey,
-                AnalyticsTracker.WalletHomeAdBannerSource.BACKGROUND,
+                banner.placement,
+                AnalyticsTracker.AdBannerSource.BACKGROUND,
             )
             banner.actionUrl
                 ?.takeIf { it.isNotBlank() }
@@ -762,9 +757,10 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
 
         override fun onDynamicBannerActionClicked(banner: WalletHomeBanner, action: WalletHomeBannerAction) {
-            AnalyticsTracker.trackWalletHomeAdBanner(
+            AnalyticsTracker.trackAdBanner(
                 banner.trackingKey,
-                AnalyticsTracker.WalletHomeAdBannerSource.BUTTON,
+                banner.placement,
+                AnalyticsTracker.AdBannerSource.BUTTON,
             )
             action.action
                 .takeIf { it.isNotBlank() }
@@ -772,11 +768,16 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
         }
 
         override fun onDynamicBannerClosed(banner: WalletHomeBanner) {
-            lifecycleScope.launch {
-                val closedIds = closedDynamicBannerIds.toMutableSet().apply { add(banner.key) }
-                updateWalletHomeDynamicBannerClosedIds(closedIds)
-                closedDynamicBannerIds = closedIds
-                renderHome()
+            closedDynamicBannerIds = closedDynamicBannerIds + banner.key
+            updateDynamicBanners(dynamicBanners)
+            lifecycleScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                try {
+                    updateWalletHomeDynamicBannerClosedIds(setOf(banner.key))
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    Timber.w(e, "Save closed wallet banner failed")
+                }
             }
         }
 
@@ -897,6 +898,11 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
             }
         }
 
+        override fun onTransactionTokenClicked(index: Int) {
+            val transaction = recentTransactions.getOrNull(index) ?: return
+            openTransactionToken(transaction)
+        }
+
         override fun onTransactionUserClicked(userId: String) = Unit
 
         override fun onPositionClicked(index: Int) = Unit
@@ -905,66 +911,23 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     private fun openClassicBannerAction(url: String) {
-        when (val target = url.toClassicWalletHomeBannerActionTarget()) {
-            is WalletHomeBannerActionTarget.SpotTrade -> {
-                val tab = if (target.action.openLimit) TradeFragment.TAB_ADVANCED else TradeFragment.TAB_SIMPLE
-                AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
-                defaultSharedPreferences.putInt("${TradeFragment.PREF_TRADE_SELECTED_TAB_PREFIX}${Session.getAccountId().orEmpty()}", tab)
-                SwapActivity.show(
-                    requireActivity(),
-                    target.action.input,
-                    target.action.output,
-                    target.action.amount,
-                    target.action.referral,
-                    entrySource = TradeSource.WALLET_HOME,
-                    entryType = if (target.action.openLimit) {
-                        AnalyticsTracker.SpotTradeType.ADVANCED
-                    } else {
-                        AnalyticsTracker.SpotTradeType.SIMPLE
-                    },
-                    initialTab = tab,
-                )
-            }
-            is WalletHomeBannerActionTarget.PerpsMarket -> {
-                PerpsActivity.showDetail(
-                    requireActivity(),
-                    target.marketId,
-                    "",
-                    "",
-                    "",
-                    AnalyticsTracker.PerpsSource.WALLET_HOME,
-                    leaderPositionId = target.leaderPositionId,
-                )
-            }
-            is WalletHomeBannerActionTarget.PerpsOpen,
-            is WalletHomeBannerActionTarget.PerpsAddMargin -> {
-                LinkBottomSheetDialogFragment.newInstance(
-                    url,
-                    tradeSource = AnalyticsTracker.PerpsSource.WALLET_HOME,
-                ).showNow(parentFragmentManager, LinkBottomSheetDialogFragment.TAG)
-            }
-            WalletHomeBannerActionTarget.PerpsTab -> {
-                AnalyticsTracker.trackTradeStart(TradeWallet.MAIN, TradeSource.WALLET_HOME)
-                defaultSharedPreferences.putInt("${TradeFragment.PREF_TRADE_SELECTED_TAB_PREFIX}${Session.getAccountId().orEmpty()}", TradeFragment.TAB_PERPETUAL)
-                SwapActivity.show(
-                    requireActivity(),
-                    entrySource = TradeSource.WALLET_HOME,
-                    entryType = AnalyticsTracker.SpotTradeType.PERPETUAL,
-                    initialTab = TradeFragment.TAB_PERPETUAL,
-                )
-            }
-            WalletHomeBannerActionTarget.Buy -> {
-                openClassicBuy()
-            }
-            is WalletHomeBannerActionTarget.Web -> {
-                target.url.openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, lifecycleScope)
-            }
-        }
+        openWalletHomeBannerAction(url, TradeSource.WALLET_HOME, AnalyticsTracker.PerpsSource.WALLET_HOME, ::openClassicBuy)
     }
 
     private fun showPendingTransactions() {
         if (walletId.isNotEmpty()) {
             WalletActivity.show(requireActivity(), WalletActivity.Destination.AllWeb3Transactions(walletId = walletId), pendingType = true)
+        }
+    }
+
+    private fun openTransactionToken(transaction: Web3TransactionItem) {
+        val target = transaction.tokenNavigationTarget() ?: return
+        lifecycleScope.launch {
+            openWeb3AssetTransactions(
+                web3ViewModel = web3ViewModel,
+                walletId = walletId,
+                assetId = target.assetId,
+            )
         }
     }
 
@@ -1018,7 +981,8 @@ class WalletHomeClassicFragment : BaseFragment(R.layout.fragment_privacy_wallet)
     }
 
     override fun onHiddenChanged(hidden: Boolean) {
-        if (!hidden) {
+        super.onHiddenChanged(hidden)
+        if (requireContext().isCompactWindow() && !hidden) {
             jobManager.addJobInBackground(RefreshSingleWalletJob(Web3Signer.currentWalletId))
             refreshWalletHomeBanners()
         }

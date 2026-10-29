@@ -527,7 +527,7 @@ private fun PerpetualMarketSearchRow(
     MarketSearchRow(
         iconUrl = market.iconUrl,
         title = market.tokenSymbol,
-        badge = stringResource(R.string.Perp),
+        badge = "${market.leverage}x",
         subtitle = stringResource(R.string.volume_label, formatSearchPerpetualVolume(market.volume)),
         price = formatPerpsMarketListPrice(market.last),
         change = market.changePercentValue(),
@@ -679,9 +679,9 @@ private fun searchChangeColor(
     when {
         change == null -> MixinAppTheme.colors.textAssist
         change >= BigDecimal.ZERO ->
-            if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+            if (quoteColorReversed) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.marketGreen
         else ->
-            if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+            if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
     }
 
 private const val SEARCH_RESULT_PREVIEW_COUNT = 3

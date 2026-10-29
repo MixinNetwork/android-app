@@ -136,6 +136,11 @@ class ConversationViewModel
 
         suspend fun getConversationDraftById(id: String): String? = conversationRepository.getConversationDraftById(id)
 
+        suspend fun findMessageItemById(
+            conversationId: String,
+            messageId: String,
+        ): MessageItem? = conversationRepository.findMessageItemById(conversationId, messageId)
+
         fun getConversationInfoById(
             id: String,
             userId: String,
@@ -655,22 +660,16 @@ class ConversationViewModel
             }
         }
 
-        fun trendingGifs(
+        suspend fun trendingGifs(
             limit: Int,
             offset: Int,
-        ): Observable<List<Gif>> =
-            accountRepository.trendingGifs(limit, offset).map { it.data }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        ): List<Gif> = accountRepository.trendingGifs(limit, offset).data
 
-        fun searchGifs(
+        suspend fun searchGifs(
             query: String,
             limit: Int,
             offset: Int,
-        ): Observable<List<Gif>> =
-            accountRepository.searchGifs(query, limit, offset).map { it.data }
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        ): List<Gif> = accountRepository.searchGifs(query, limit, offset).data
 
         fun observeAddress(addressId: String) = tokenRepository.observeAddress(addressId)
 
@@ -857,10 +856,10 @@ class ConversationViewModel
                     }
                 } else if (selectItem.userId != null) {
                     userRepository.findForwardUserById(selectItem.userId)?.let { user ->
-                        val conversation = conversationRepository.findContactConversationByOwnerId(user.userId)
+                        val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
+                        val conversation = conversationRepository.getConversation(conversationId)
                         if (conversation == null) {
                             val createdAt = nowInUtc()
-                            val conversationId = generateConversationId(Session.getAccountId()!!, user.userId)
                             val participants =
                                 arrayListOf(
                                     Participant(conversationId, Session.getAccountId()!!, "", createdAt),

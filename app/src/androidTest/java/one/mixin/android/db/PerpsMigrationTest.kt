@@ -14,14 +14,16 @@ import org.junit.Test
 
 class PerpsMigrationTest {
     @Suppress("DEPRECATION")
-    @get:Rule
     val migrationTestHelper =
         MigrationTestHelper(
             InstrumentationRegistry.getInstrumentation(),
-            InstrumentationRegistry.getInstrumentation().targetContext.getDatabasePath(Constants.DataBase.PERPS_DB_NAME),
+            freshMigrationTestDatabase(Constants.DataBase.PERPS_DB_NAME),
             AndroidSQLiteDriver(),
             PerpsDatabase::class,
         )
+
+    @get:Rule
+    val migrationTestDatabaseRule = migrationTestHelper.withMigrationTestDatabaseCleanup(Constants.DataBase.PERPS_DB_NAME)
 
     @Test
     fun migrate_1_3() {
@@ -218,6 +220,51 @@ class PerpsMigrationTest {
         assertColumn(migratedDb, "markets", "funding_interval_hours", "0")
         assertColumn(migratedDb, "markets", "next_funding_at", "''")
         assertColumn(migratedDb, "markets", "open_interest", "'0'")
+    }
+
+    @Test
+    fun migrate_10_11_rebuildsOrdersAndPreservesPositionsAndMarkets() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 10).apply {
+            insertMarket()
+            insertPositionV2()
+            insertOrderV7()
+            close()
+        }
+        val db = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME, 11, true, PerpsDatabase.MIGRATION_10_11,
+        )
+        db.query("SELECT COUNT(*) FROM perps_orders").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals(0, cursor.getInt(0))
+        }
+        for (table in listOf("positions", "markets")) {
+            db.query("SELECT COUNT(*) FROM $table").use { cursor ->
+                assertTrue(cursor.moveToFirst())
+                assertEquals(1, cursor.getInt(0))
+            }
+        }
+        db.query("PRAGMA table_info(perps_orders)").use { cursor ->
+            val names = mutableListOf<String>()
+            while (cursor.moveToNext()) names += cursor.getString(cursor.getColumnIndexOrThrow("name"))
+            assertTrue("margin_amount" in names)
+            assertTrue("pay_amount" in names)
+        }
+    }
+
+    @Test
+    fun migrate_11_12_preservesPositionsAndAddsNullableFunding() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 11).apply {
+            insertPositionV2()
+            close()
+        }
+        val db = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME, 12, true, PerpsDatabase.MIGRATION_11_12,
+        )
+        db.query("SELECT margin, funding_amount FROM positions WHERE position_id = 'position-1'").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("100", cursor.getString(0))
+            assertTrue(cursor.isNull(1))
+        }
     }
 
     private fun assertColumn(
