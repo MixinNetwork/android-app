@@ -58,6 +58,8 @@ import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.session.Session
 import one.mixin.android.ui.components.TabItem
 import one.mixin.android.ui.home.web3.components.OutlinedTab
@@ -377,6 +379,34 @@ fun TradePage(
                                 shape = CircleShape
                             )
                             .align(Alignment.TopEnd)
+                    )
+                }
+            }
+            Box {
+                val proBadgeKey = "${Constants.Account.PREF_TRADE_PRO_BADGE_DISMISSED}_$currentWalletId"
+                var isProBadgeDismissed by remember(currentWalletId) {
+                    mutableStateOf(context.defaultSharedPreferences.getBoolean(proBadgeKey, false))
+                }
+                IconButton(onClick = {
+                    if (!isProBadgeDismissed) {
+                        isProBadgeDismissed = true
+                        context.defaultSharedPreferences.putBoolean(proBadgeKey, true)
+                    }
+                    context.openUrl(Constants.HelpLink.TRADE_PRO)
+                }) {
+                    Text(
+                        text = stringResource(R.string.Trade_Pro),
+                        color = MixinAppTheme.colors.textPrimary,
+                        fontSize = 14.sp,
+                    )
+                }
+                if (!isProBadgeDismissed) {
+                    Box(
+                        modifier = Modifier
+                            .size(8.dp)
+                            .offset(x = (-12).dp, y = 12.dp)
+                            .background(MixinAppTheme.colors.badgeRed, CircleShape)
+                            .align(Alignment.TopEnd),
                     )
                 }
             }

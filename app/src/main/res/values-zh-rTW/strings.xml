@@ -2367,8 +2367,10 @@
     <string name="limit_price">價格</string>
     <string name="Order_Type">訂單類型</string>
     <string name="Forever">永遠</string>
-    <string name="Trade_Simple">簡單</string>
-    <string name="Trade_Advanced">高級</string>
+    <string name="Trade_Simple">閃兌</string>
+    <string name="Trade_Advanced">限價</string>
+    <string name="Trade_Pro">專業版</string>
+    <string name="trade_pro_entry">專業版交易</string>
     <string name="order_state_created">已創建</string>
     <string name="order_state_pricing">定價</string>
     <string name="order_state_quoting">報價中</string>
@@ -2575,7 +2577,7 @@
     <string name="forget_pin_help_url">https://support.mixin.one/en/article/what-should-i-do-if-i-forget-my-pin-g12pmo/</string>
     <string name="Switch_Account">切換帳戶</string>
     <string name="Perpetual_Futures_Guide">永續合約指南</string>
-    <string name="Spot_Trade_Guide_Overview_Desc">Mixin 交易支援簡單閃兌和專業模式，支援多鏈、多幣種交易，並聚合多個 DEX 與 CEX 的流動性。</string>
+    <string name="Spot_Trade_Guide_Overview_Desc">Mixin 交易支援閃兌和限價，支援多鏈、多幣種交易，並聚合多個 DEX 與 CEX 的流動性。</string>
     <string name="Spot_Trade_Guide_Feature_1">最優聚合：接入 Uniswap、 1inch、Jupiter、MixPay、BigONE 等 DEX 和 CEX。</string>
     <string name="Spot_Trade_Guide_Feature_2">跨鏈交易：支援 Bitcoin、Ethereum、Solana 等多鏈資產交易。</string>
     <string name="Spot_Trade_Guide_Additional_Notes">補充說明</string>
@@ -2599,7 +2601,7 @@
     <string name="Spot_Trade_Guide_Swap_Risk">市場波動較大時，實際成交價格可能與報價存在差異</string>
     <string name="Spot_Trade_Guide_Limit_Strategy_Buy_Low">低價買入</string>
     <string name="Spot_Trade_Guide_Limit_Strategy_Sell_High">高價賣出</string>
-    <string name="Spot_Trade_Guide_Limit_Desc">專業模式支援限價掛單，使用者可自行設定成交價格，達到預期價格時才會成交。</string>
+    <string name="Spot_Trade_Guide_Limit_Desc">限價支援掛單，使用者可自行設定成交價格，達到預期價格時才會成交。</string>
     <string name="Spot_Trade_Guide_Limit_Scenario_1">有明確交易策略，如低買高賣</string>
     <string name="Spot_Trade_Guide_Limit_Scenario_2">對成交價格敏感</string>
     <string name="Spot_Trade_Guide_Limit_Scenario_3">適合大額交易</string>
