@@ -848,6 +848,7 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_add">RALAT 10655: Amaun pembukaan posisi melebihi had maksimum %1$s. Kurangkan amaun.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">RALAT 10655: Posisi tidak dapat ditambah.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">RALAT 10655: Amaun pembukaan posisi melebihi had maksimum %1$s. Kurangkan amaun atau leveraj.</string>
+    <string name="error_perps_order_conflict">RALAT 10657: Butiran pesanan bercanggah atau pesanan tidak lagi boleh dibayar. Sila semak statusnya.</string>
     <string name="single_transaction_should_be_less_than">Jumlah maksimum %1$s %2$s</string>
     <string name="Candle_Open">Pembukaan</string>
     <string name="Candle_Close">Penutupan</string>
@@ -877,6 +878,12 @@
     <string name="perps_share_card_volume">💰 Volum 24 Jam: %1$s</string>
     <string name="price_change_tpsl">Harga %1$s → Anggaran Keuntungan %2$s</string>
     <string name="invalid_gasless_transaction">Transaksi tanpa gas tidak sah. Sila cuba lagi.</string>
+    <string name="eip712_invalid_chain_id">ID rantaian mesej bertaip tidak sah atau tidak sepadan dengan rangkaian tandatangan.</string>
+    <string name="invalid_solana_sign_in">Permintaan log masuk Solana tidak sah.</string>
+    <string name="malicious_instruction_token_approve">Transaksi ini membenarkan akaun lain memindahkan token SPL anda tanpa kebenaran anda.</string>
+    <string name="malicious_instruction_system_assign">Transaksi ini menetapkan akaun Solana anda kepada program lain. Anda mungkin kehilangan kawalan ke atas akaun tersebut.</string>
+    <string name="bitcoin_fee_confirmation_required">Yuran Bitcoin tidak dapat disahkan atau telah meningkat. Sila minta pemindahan semula dan sahkan yuran yang dikemas kini.</string>
+    <string name="invalid_gasless_solana_transaction">Transaksi yang ditaja tidak sepadan dengan pemindahan yang diminta.</string>
     <string name="Select_conversation">Pilih perbualan untuk mula bersembang</string>
     <string name="Select_asset">Pilih aset untuk dilihat</string>
     <string name="Select_market_item">Pilih pasaran untuk dilihat</string>

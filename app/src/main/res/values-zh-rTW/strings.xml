@@ -1323,6 +1323,7 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_add">錯誤 10655：開倉金額超出最大限額 %1$s，請減少金額。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">錯誤 10655：無法加倉。</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">錯誤 10655：開倉金額超出最大限額 %1$s，請減少金額或降低槓桿。</string>
+    <string name="error_perps_order_conflict">錯誤 10657：訂單資訊衝突或訂單已無法支付，請檢查訂單狀態。</string>
     <string name="error_watch_address_not_supported">錯誤 10633：地址不可用</string>
     <string name="error_invalid_referral_code">錯誤 10730：無效的邀請碼</string>
     <string name="error_already_bonded_referral_code">錯誤 10731：當前賬號已繫結邀請碼，無法修改繫結。</string>
@@ -2736,6 +2737,12 @@
     <string name="perps_share_card_max_leverage">📈 最大槓桿：%1$dx</string>
     <string name="perps_share_card_volume">💰 24小時成交量：%1$s</string>
     <string name="invalid_gasless_transaction">免 Gas 交易無效，請重試。</string>
+    <string name="eip712_invalid_chain_id">結構化訊息的鏈 ID 無效，或與簽名網路不一致。</string>
+    <string name="invalid_solana_sign_in">Solana 登入請求無效。</string>
+    <string name="malicious_instruction_token_approve">此交易會允許其他帳戶在未經您許可的情況下轉讓您的 SPL 代幣。</string>
+    <string name="malicious_instruction_system_assign">此交易會將您的 Solana 帳戶指派給其他程式，可能導致您失去對該帳戶的控制。</string>
+    <string name="bitcoin_fee_confirmation_required">無法確認比特幣手續費，或手續費已上漲。請重新發起轉帳並確認新的手續費。</string>
+    <string name="invalid_gasless_solana_transaction">代付交易與請求的轉帳不一致。</string>
     <string name="Select_conversation">選擇一個會話開始聊天</string>
     <string name="Select_asset">選擇一個資產查看</string>
     <string name="Select_market_item">選擇一個行情查看</string>
