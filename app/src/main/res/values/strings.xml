@@ -508,6 +508,7 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">ERROR 10655: Cannot add to the position.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">ERROR 10655: Amount exceeds the %1$s limit. Reduce the amount or leverage.</string>
     <string name="error_perps_invalid_leader_position">ERROR 10656: The leader position is invalid. Please select another position to copy.</string>
+    <string name="error_perps_order_conflict">ERROR 10657: The order details conflict or the order is no longer payable. Please check its status.</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>
@@ -1736,6 +1737,8 @@
     <string name="View_on_Marketplace">View on Marketplace</string>
     <string name="View_on_Explorer">View on Explorer</string>
     <string name="malicious_instruction_token_set_authority">This transaction changes the owner of your SPL tokens. This allows the new owner to transfer the tokens without your permission.</string>
+    <string name="malicious_instruction_token_approve">This transaction allows another account to transfer your SPL tokens without your permission.</string>
+    <string name="malicious_instruction_system_assign">This transaction assigns your Solana account to another program. This may cause you to lose control of the account.</string>
     <string name="Assets">Assets</string>
     <string name="ASSET">ASSET</string>
     <string name="Recipients">Recipients</string>
@@ -2767,7 +2770,11 @@
     <string name="Details">Details</string>
     <string name="perps_tpsl_requires_amount_leverage">Please set the amount and leverage before configuring Take Profit and Stop Loss.</string>
     <string name="perps_estimated_profit">Estimate Profit %1$s</string>
+    <string name="invalid_gasless_transaction">Invalid gasless transaction. Please try again.</string>
+    <string name="eip712_invalid_chain_id">The typed message chain ID is invalid or does not match the signing network.</string>
     <string name="invalid_solana_sign_in">Invalid Solana sign-in request.</string>
+    <string name="bitcoin_fee_confirmation_required">Bitcoin fee could not be confirmed or has increased. Please request the transfer again and confirm the updated fee.</string>
+    <string name="invalid_gasless_solana_transaction">The sponsored transaction does not match the requested transfer.</string>
     <string name="Select_conversation">Select a conversation to start chatting</string>
     <string name="Select_asset">Select an asset to view</string>
     <string name="Select_market_item">Select a market to view</string>

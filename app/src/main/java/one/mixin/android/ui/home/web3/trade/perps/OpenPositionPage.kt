@@ -793,7 +793,6 @@ fun OpenPositionPage(
                                 takeProfitPrice = takeProfitPrice.takeIf { it.isNotBlank() },
                                 stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
                                 leaderPositionId = leaderPositionId,
-                                entryPrice = m.last,
                                 onSuccess = { response ->
                                     onOrderCreated()
                                     PerpsConfirmBottomSheetDialogFragment.newInstance(
