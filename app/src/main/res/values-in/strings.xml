@@ -801,6 +801,12 @@
     <string name="perps_include_pnl">Termasuk PnL</string>
     <string name="perps_position_amount">Jumlah Posisi</string>
     <string name="perps_margin_amount">Jumlah Margin</string>
+    <string name="membership_benefit_mixin_card_platinum">Kartu kredit Visa Platinum gratis</string>
+    <string name="membership_benefit_mixin_card_signature">Kartu kredit Visa Signature gratis</string>
+    <string name="free_inheritance_service">Layanan Warisan Gratis</string>
+    <string name="membership_benefit_free_inheritance_service">Gunakan layanan warisan secara gratis.</string>
+    <string name="membership_renew_option_card_desc">Gunakan Google Pay, kartu kredit atau debit untuk memperpanjang paket Anda.</string>
+    <string name="membership_renew_option_crypto_desc">Gunakan USDT, USDC, atau kripto lainnya untuk memperpanjang paket Anda.</string>
     <string name="perps_funding_payments">Biaya pendanaan</string>
     <string name="perps_funding_payments_description">Total biaya pendanaan yang Anda terima atau bayarkan sejak membuka posisi ini. Hijau (positif) berarti Anda menerima biaya pendanaan, sedangkan merah (negatif) berarti Anda membayar biaya pendanaan.</string>
     <string name="perps_margin_description">Margin adalah jaminan yang Anda alokasikan ke suatu posisi. Ini mewakili jumlah maksimum yang dapat Anda kehilangan pada transaksi tersebut.</string>

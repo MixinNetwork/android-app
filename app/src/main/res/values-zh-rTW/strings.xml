@@ -2205,6 +2205,12 @@
     <string name="free_recovery_service">免費的資產恢復服務</string>
     <string name="paid_recovery_service">收費的資產恢復服務</string>
     <string name="membership_benefit_free_recovery_service">免費使用恢復服務</string>
+    <string name="membership_benefit_mixin_card_platinum">免費的 Visa Platinum 信用卡</string>
+    <string name="membership_benefit_mixin_card_signature">免費的 Visa Signature 信用卡</string>
+    <string name="free_inheritance_service">免費的財富傳承服務</string>
+    <string name="membership_benefit_free_inheritance_service">免費使用財富傳承服務</string>
+    <string name="membership_renew_option_card_desc">使用 Google Pay、信用卡或簽帳金融卡續費會員。</string>
+    <string name="membership_renew_option_crypto_desc">使用 USDT、USDC 或其他加密貨幣續費會員。</string>
     <string name="membership_benefit_paid_recovery_service">支付 %1$d Mixin Stars 即可使用恢復服務</string>
     <string name="membership_advance_description">在多裝置上使用多個金鑰，避免單點故障，並在金鑰丟失時獲得去中心化的恢復服務。</string>
     <string name="membership_elite_description">與家人、朋友或同事一起使用 Mixin Safe 管理大量資產，從而規避盜竊、意外和託管風險。</string>

@@ -28,14 +28,16 @@ fun MemberSection(plan: Plan) {
             stringResource(id = R.string.membership_benefit_create_safe, 5),
             stringResource(id = R.string.membership_benefit_get_stars, 5),
             stringResource(id = R.string.membership_benefit_safe_members, 5, 10),
-            stringResource(id = R.string.membership_benefit_free_recovery_service)
+            stringResource(id = R.string.membership_benefit_free_recovery_service),
+            stringResource(id = R.string.membership_benefit_free_inheritance_service)
         )
 
         Plan.PROSPERITY -> listOf(
             stringResource(id = R.string.membership_benefit_create_safe, 100),
             stringResource(id = R.string.membership_benefit_get_stars, 20),
             stringResource(id = R.string.membership_benefit_safe_members, 10, 100),
-            stringResource(id = R.string.membership_benefit_free_recovery_service)
+            stringResource(id = R.string.membership_benefit_free_recovery_service),
+            stringResource(id = R.string.membership_benefit_free_inheritance_service)
         )
 
         else -> listOf()
@@ -51,7 +53,9 @@ fun MemberSection(plan: Plan) {
             .padding(vertical = 24.dp, horizontal = 20.dp),
     ) {
         features.forEachIndexed { index, feature ->
-            val iconRes = if (index < icons.size) icons[index] else icons[0]
+            val iconRes = if (index == 3 && plan == Plan.ADVANCE) {
+                R.drawable.ic_interests_paid_recovery
+            } else if (index < icons.size) icons[index] else icons[0]
             val title = when (index) {
                 0 -> stringResource(id = R.string.member_title_mixin_safe)
                 1 -> stringResource(id = R.string.member_title_mixin_star)
@@ -61,6 +65,7 @@ fun MemberSection(plan: Plan) {
                 else
                     stringResource(id = R.string.free_recovery_service)
 
+                4 -> stringResource(id = R.string.free_inheritance_service)
                 else -> ""
             }
             MemberRow(title = title, text = feature, iconRes = iconRes)
@@ -76,5 +81,6 @@ private val icons = listOf(
     R.drawable.ic_interests_safe,
     R.drawable.ic_interests_star,
     R.drawable.ic_interests_members,
-    R.drawable.ic_interests_paid
+    R.drawable.ic_interests_paid,
+    R.drawable.ic_interests_inheritance
 )

@@ -2103,6 +2103,12 @@
     <string name="free_recovery_service">무료 복구 서비스</string>
     <string name="paid_recovery_service">유료 복구 서비스</string>
     <string name="membership_benefit_free_recovery_service">복구 서비스를 무료로 이용해보세요</string>
+    <string name="membership_benefit_mixin_card_platinum">무료 Visa Platinum 신용카드</string>
+    <string name="membership_benefit_mixin_card_signature">무료 Visa Signature 신용카드</string>
+    <string name="free_inheritance_service">무료 상속 서비스</string>
+    <string name="membership_benefit_free_inheritance_service">상속 서비스를 무료로 이용해보세요</string>
+    <string name="membership_renew_option_card_desc">Google Pay, 신용카드 또는 직불카드로 플랜을 갱신하세요.</string>
+    <string name="membership_renew_option_crypto_desc">USDT, USDC 또는 기타 암호화폐로 플랜을 갱신하세요.</string>
     <string name="membership_benefit_paid_recovery_service">복구 서비스를 이용하려면 %1$d Mixin Stars를 지불하세요.</string>
     <string name="membership_advance_description">여러 기기에서 여러 키를 사용하여 단일 실패 지점을 방지하고 키 분실 시 분산형 복구 서비스를 받으세요.</string>
     <string name="membership_elite_description">가족, 친구 또는 동료와 함께 Mixin Safe에서 큰 자산을 관리하여 도난, 사고 및 수탁 위험을 방지하세요.</string>

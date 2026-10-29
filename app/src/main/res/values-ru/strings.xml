@@ -1087,6 +1087,12 @@
     <string name="safe_members">Участники Mixin Safe</string>
     <string name="membership_benefit_safe_members">%1$d участников на один Mixin Safe, всего %2$d участников.</string>
     <string name="membership_elite_description">Управляйте крупными активами в Mixin Safe вместе с семьей, друзьями или коллегами, чтобы снизить риски кражи, ошибок и хранения.</string>
+    <string name="membership_benefit_mixin_card_platinum">Бесплатная кредитная карта Visa Platinum</string>
+    <string name="membership_benefit_mixin_card_signature">Бесплатная кредитная карта Visa Signature</string>
+    <string name="free_inheritance_service">Бесплатная служба наследования</string>
+    <string name="membership_benefit_free_inheritance_service">Воспользуйтесь службой наследования бесплатно.</string>
+    <string name="membership_renew_option_card_desc">Используйте Google Pay, кредитную или дебетовую карту, чтобы продлить план.</string>
+    <string name="membership_renew_option_crypto_desc">Используйте USDT, USDC или другую криптовалюту, чтобы продлить план.</string>
     <string name="mnemonic_login_security_title">Безопасно ли импортировать данные в Mixin?</string>
     <string name="mobile_number_description">Это номер мобильного телефона, привязанный к вашему аккаунту</string>
     <string name="hours_count_short">%1$dh</string>

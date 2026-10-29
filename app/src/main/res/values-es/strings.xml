@@ -1146,6 +1146,12 @@
     <string name="safe_members">Miembros de Mixin Safe</string>
     <string name="membership_benefit_safe_members">%1$d miembros por Mixin Safe, %2$d miembros en total.</string>
     <string name="membership_elite_description">Administra grandes patrimonios en Mixin Safe con familiares, amigos o colegas para evitar robos, accidentes y riesgos de custodia.</string>
+    <string name="membership_benefit_mixin_card_platinum">Tarjeta de crédito Visa Platinum gratuita</string>
+    <string name="membership_benefit_mixin_card_signature">Tarjeta de crédito Visa Signature gratuita</string>
+    <string name="free_inheritance_service">Servicio de herencia gratuito</string>
+    <string name="membership_benefit_free_inheritance_service">Utilice el servicio de herencia de forma gratuita.</string>
+    <string name="membership_renew_option_card_desc">Utilice Google Pay, tarjeta de crédito o débito para renovar su plan.</string>
+    <string name="membership_renew_option_crypto_desc">Utilice USDT, USDC u otras criptomonedas para renovar su plan.</string>
     <string name="mnemonic_login_security_title">¿Es seguro importar a Mixin?</string>
     <string name="mobile_number_description">Este es el número de teléfono vinculado a tu cuenta</string>
     <string name="hours_count_short">%1$dh</string>

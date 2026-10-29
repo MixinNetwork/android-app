@@ -2166,6 +2166,13 @@
     <string name="free_recovery_service">Free Recovery Service</string>
     <string name="paid_recovery_service">Paid Recovery Service</string>
     <string name="membership_benefit_free_recovery_service">Use the recovery service for free</string>
+    <string name="member_title_mixin_card" translatable="false">Mixin Card</string>
+    <string name="membership_benefit_mixin_card_platinum">Free Visa Platinum credit card</string>
+    <string name="membership_benefit_mixin_card_signature">Free Visa Signature credit card</string>
+    <string name="free_inheritance_service">Free Inheritance Service</string>
+    <string name="membership_benefit_free_inheritance_service">Use the inheritance service for free</string>
+    <string name="membership_renew_option_card_desc">Use Google Pay, credit or debit card to renew your plan.</string>
+    <string name="membership_renew_option_crypto_desc">Use USDT, USDC, or other crypto to renew your plan.</string>
     <string name="membership_benefit_paid_recovery_service">Pay %1$d Mixin Stars to use the recovery service</string>
     <string name="membership_advance_description">Use multiple keys on multiple devices to avoid single point of failure, and get decentralized recovery service in case of key loss.</string>
     <string name="membership_elite_description">Manage large fortune in Mixin Safe with family, friends or colleagues, so you can avoid thefts, accidents and custody risks.</string>
