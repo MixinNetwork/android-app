@@ -36,13 +36,15 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.mlkit.scan.BaseCameraScanFragment
 import one.mixin.android.util.mlkit.scan.analyze.AnalyzeResult
 import one.mixin.android.util.mlkit.scan.analyze.Analyzer
+import one.mixin.android.util.mlkit.scan.analyze.BarcodeScanItem
 import one.mixin.android.util.mlkit.scan.analyze.BarcodeResult
 import one.mixin.android.util.mlkit.scan.analyze.BarcodeScanningAnalyzer
+import one.mixin.android.util.mlkit.scan.analyze.ScanCoordinateMapper
+import one.mixin.android.util.mlkit.scan.analyze.ScanDecision
+import one.mixin.android.util.mlkit.scan.analyze.ScanResultSelector
 import one.mixin.android.util.mlkit.scan.camera.config.AspectRatioCameraConfig
-import one.mixin.android.util.mlkit.scan.utils.PointUtils
 import one.mixin.android.util.viewBinding
 import one.mixin.android.widget.ViewfinderView
-import timber.log.Timber
 
 @AndroidEntryPoint
 class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
@@ -61,6 +63,7 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
     private val forScanResult by lazy { requireArguments().getBoolean(ARGS_FOR_SCAN_RESULT) }
     private val fromShortcut by lazy { requireArguments().getBoolean(ARGS_SHORTCUT) }
     private lateinit var getMediaResult: ActivityResultLauncher<PickVisualMediaRequest>
+    private val scanResultSelector = ScanResultSelector()
 
     override fun getLayoutId() = R.layout.fragment_scan
 
@@ -81,6 +84,7 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
                             .setImageBitmap(null)
                         binding.viewfinderView
                             .showScanner()
+                        scanResultSelector.reset()
                         cameraScan.setAnalyzeImage(true)
                         return
                     } else {
@@ -126,49 +130,78 @@ class ScanFragment : BaseCameraScanFragment<BarcodeResult>() {
         super.initCameraScan()
         cameraScan.setPlayBeep(false)
             .setCameraConfig(AspectRatioCameraConfig(requireContext()))
-            .setVibrate(true)
+            .setVibrate(false)
     }
 
     override fun onScanResultCallback(result: AnalyzeResult<BarcodeResult>) {
-        val width = result.bitmap?.width ?: return
-        val height = result.bitmap?.height ?: return
-        if (result.result?.content != null) {
-            cameraScan.setAnalyzeImage(false)
-            handleAnalysis(result.result?.content!!)
-        } else if (result.result?.barcodes != null) {
-            cameraScan.setAnalyzeImage(false)
-            Timber.e("$width - $height ${binding.viewfinderView.width} ${binding.viewfinderView.height}")
-            result.result?.barcodes?.let { results ->
-                binding.ivResult.setImageBitmap(previewView.bitmap)
-                val points = mutableListOf<Point>()
-                for (barcode in results) {
-                    barcode.boundingBox?.let { box ->
-                        val point =
-                            PointUtils.transform(
-                                box.centerX(),
-                                box.centerY(),
-                                width,
-                                height,
-                                binding.viewfinderView.width,
-                                binding.viewfinderView.height,
-                            )
-                        points.add(point)
-                    }
-                }
-                Timber.e("$width - $height $points")
-                binding.viewfinderView.showResultPoints(points)
-                binding.viewfinderView.setOnItemClickListener(
-                    object : ViewfinderView.OnItemClickListener {
-                        override fun onItemClick(position: Int) {
-                            handleAnalysis(results[position].displayValue!!)
-                        }
-                    },
-                )
-                if (points.size == 1) {
-                    handleAnalysis(results[0].displayValue!!)
-                }
+        val items = result.result?.items.orEmpty()
+        when (val decision = scanResultSelector.select(items)) {
+            ScanDecision.Continue -> binding.viewfinderView.clearTrackedBounds()
+            is ScanDecision.Track -> trackBarcode(decision.item)
+            is ScanDecision.AutoHandle -> {
+                cameraScan.setAnalyzeImage(false)
+                binding.viewfinderView.clearTrackedBounds()
+                handleAnalysis(decision.text)
             }
+            is ScanDecision.ShowChoices -> showBarcodeChoices(decision.items)
         }
+    }
+
+    override fun onScanResultFailure() {
+        if (!binding.viewfinderView.isShowPoints) {
+            scanResultSelector.reset()
+            binding.viewfinderView.clearTrackedBounds()
+        }
+    }
+
+    private fun trackBarcode(item: BarcodeScanItem) {
+        val box = item.boundingBox
+        if (box == null) {
+            binding.viewfinderView.clearTrackedBounds()
+            return
+        }
+        binding.viewfinderView.trackResultBounds(
+            ScanCoordinateMapper.transform(
+                box,
+                item.sourceWidth,
+                item.sourceHeight,
+                binding.viewfinderView.width,
+                binding.viewfinderView.height,
+            ),
+        )
+    }
+
+    private fun showBarcodeChoices(items: List<BarcodeScanItem>) {
+        cameraScan.setAnalyzeImage(false)
+        binding.viewfinderView.clearTrackedBounds()
+        binding.ivResult.setImageBitmap(previewView.bitmap)
+        val choiceItems = mutableListOf<BarcodeScanItem>()
+        val points = mutableListOf<Point>()
+        for (item in items) {
+            val box = item.boundingBox ?: continue
+            points.add(
+                ScanCoordinateMapper.transformCenter(
+                    box,
+                    item.sourceWidth,
+                    item.sourceHeight,
+                    binding.viewfinderView.width,
+                    binding.viewfinderView.height,
+                ),
+            )
+            choiceItems.add(item)
+        }
+        if (points.isEmpty()) {
+            handleAnalysis(items.first().text)
+            return
+        }
+        binding.viewfinderView.showResultPoints(points)
+        binding.viewfinderView.setOnItemClickListener(
+            object : ViewfinderView.OnItemClickListener {
+                override fun onItemClick(position: Int) {
+                    handleAnalysis(choiceItems[position].text)
+                }
+            },
+        )
     }
 
     private fun onMediaPicked(uri: Uri?) {
