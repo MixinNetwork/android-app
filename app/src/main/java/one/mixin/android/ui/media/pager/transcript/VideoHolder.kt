@@ -13,7 +13,8 @@ import one.mixin.android.databinding.ItemPagerVideoLayoutBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.navigationBarHeight
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.windowHeight
+import one.mixin.android.extension.windowWidth
 import one.mixin.android.extension.toBitmap
 import one.mixin.android.job.MixinJobManager.Companion.getAttachmentProcess
 import one.mixin.android.session.Session
@@ -162,8 +163,8 @@ class VideoHolder(
         context: Context,
         ratio: Float,
     ) {
-        val w = context.realSize().x
-        val h = context.realSize().y
+        val w = context.windowWidth()
+        val h = context.windowHeight()
         val deviceRatio = w / h.toFloat()
         val ratioParams = binding.playerView.videoAspectRatio.layoutParams
         val previewParams = binding.previewIv.layoutParams

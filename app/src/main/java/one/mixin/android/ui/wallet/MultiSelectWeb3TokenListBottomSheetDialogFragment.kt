@@ -35,6 +35,8 @@ import java.util.concurrent.TimeUnit
 @SuppressLint("NotifyDataSetChanged")
 @AndroidEntryPoint
 class MultiSelectWeb3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "MultiSelectWeb3TokenListBottomSheetDialogFragment"
         const val POS_RV = 0

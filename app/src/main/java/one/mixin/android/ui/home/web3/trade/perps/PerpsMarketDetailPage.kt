@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -62,6 +63,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
@@ -111,6 +114,7 @@ import org.threeten.bp.Instant
 import java.math.BigDecimal
 import java.util.Locale
 import kotlin.math.roundToInt
+import one.mixin.android.widget.isExpandedSheetScreen
 
 private const val DEFAULT_TIME_FRAME_INDEX = 2
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
@@ -218,8 +222,8 @@ fun PerpsMarketDetailPage(
     }
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.marketGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
 
     LaunchedEffect(marketId) {
         viewModel.refreshFavoriteMarkets()
@@ -911,22 +915,10 @@ private fun MarketInfoCard(
         } else {
             stringResource(R.string.Funding_Rate)
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = fundingRateTitle.uppercase(),
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Icon(
-                painter = painterResource(id = R.drawable.ic_tip),
-                contentDescription = null,
-                modifier = Modifier
-                    .size(12.dp)
-                    .clickable(onClick = onFundingRateTipClick),
-                tint = MixinAppTheme.colors.textAssist
-            )
-        }
+        PerpsInfoLabel(
+            text = fundingRateTitle.uppercase(),
+            onTipClick = onFundingRateTipClick,
+        )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
             text = formatFundingRate(market.fundingRate),
@@ -1016,8 +1008,8 @@ private fun MarketDetailCard(
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.marketGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
 
     val changePercent = market.changePercent()
     val isPositive = changePercent >= BigDecimal.ZERO
@@ -1160,6 +1152,13 @@ private fun TimeFrameSelector(
     val density = LocalDensity.current
     val scrollState = rememberScrollState()
     var viewportWidth by remember { mutableIntStateOf(0) }
+    // Large screens share the track evenly; phones keep content-sized options.
+    val expanded = LocalContext.current.isExpandedSheetScreen()
+    val itemMinWidth = if (expanded && viewportWidth > 0 && labels.isNotEmpty()) {
+        with(density) { ((viewportWidth - 6.dp.toPx() - (labels.size - 1) * 1.dp.toPx()) / labels.size).coerceAtLeast(0f).toDp() }
+    } else {
+        0.dp
+    }
     val itemBounds = remember(labels.size) { mutableStateListOf<Rect?>().apply { repeat(labels.size) { add(null) } } }
     val indicatorX = remember { Animatable(0f) }
     val indicatorWidth = remember { Animatable(0f) }
@@ -1217,6 +1216,7 @@ private fun TimeFrameSelector(
                     Box(
                         modifier = Modifier
                             .onPlaced { itemBounds[index] = it.boundsInParent() }
+                            .widthIn(min = itemMinWidth)
                             .height(36.dp)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },
@@ -1249,8 +1249,8 @@ private fun OpenPositionCard(
     val context = LocalContext.current
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
-    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.marketGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
     val pnl = position.unrealizedPnl?.toBigDecimalOrNull() ?: BigDecimal.ZERO
     val roe = (position.roe?.toBigDecimalOrNull() ?: BigDecimal.ZERO).multiply(BigDecimal(100))
     val isProfit = pnl >= BigDecimal.ZERO
@@ -1444,35 +1444,26 @@ private fun OpenPositionCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.position_size).uppercase(),
-                        fontSize = 12.sp,
-                        lineHeight = 14.sp,
-                        style = compactTextStyle,
-                        color = MixinAppTheme.colors.textAssist
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_tip),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clickable {
-                                val activity = context as? FragmentActivity ?: return@clickable
-                                PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                    PerpetualGuideBottomSheetDialogFragment.TAB_POSITION
-                                ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                            },
-                        tint = MixinAppTheme.colors.textAssist
-                    )
-                }
-                Text(
+                CompactPerpsInfoLabel(
+                    text = stringResource(R.string.position_size).uppercase(),
+                    compactTextStyle = compactTextStyle,
+                    onTipClick = {
+                        val activity = context as? FragmentActivity ?: return@CompactPerpsInfoLabel
+                        PerpetualGuideBottomSheetDialogFragment.newInstance(
+                            PerpetualGuideBottomSheetDialogFragment.TAB_POSITION
+                        ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                    },
+                )
+                CompactPerpsInfoLabel(
                     text = stringResource(R.string.Margin).uppercase(),
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
-                    style = compactTextStyle,
-                    color = MixinAppTheme.colors.textAssist
+                    compactTextStyle = compactTextStyle,
+                    onTipClick = {
+                        val activity = context as? FragmentActivity ?: return@CompactPerpsInfoLabel
+                        PerpsInfoBottomSheetDialogFragment.newInstance(
+                            R.string.Margin,
+                            R.string.perps_margin_description,
+                        ).show(activity.supportFragmentManager, PerpsInfoBottomSheetDialogFragment.TAG)
+                    },
                 )
             }
             Spacer(modifier = Modifier.height(10.dp))
@@ -1506,74 +1497,12 @@ private fun OpenPositionCard(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = stringResource(R.string.Entry_Price).uppercase(),
-                    fontSize = 12.sp,
-                    lineHeight = 14.sp,
-                    style = compactTextStyle,
-                    color = MixinAppTheme.colors.textAssist
-                )
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = stringResource(R.string.Liquidation_Price).uppercase(),
-                        fontSize = 12.sp,
-                        lineHeight = 14.sp,
-                        style = compactTextStyle,
-                        color = MixinAppTheme.colors.textAssist
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_tip),
-                        contentDescription = null,
-                        modifier = Modifier
-                            .size(12.dp)
-                            .clickable {
-                                val activity = context as? FragmentActivity ?: return@clickable
-                                PerpetualGuideBottomSheetDialogFragment.newInstance(
-                                    PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION
-                                ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
-                            },
-                        tint = MixinAppTheme.colors.textAssist
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = formatPerpsPrice(entryPrice, position.priceScale),
-                    fontSize = 14.sp,
-                    lineHeight = 17.sp,
-                    style = compactTextStyle,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-                Text(
-                    text = liquidationPriceText,
-                    fontSize = 14.sp,
-                    lineHeight = 17.sp,
-                    style = compactTextStyle,
-                    color = MixinAppTheme.colors.textPrimary
-                )
-            }
-        }
-
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Column {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                TpSlLabel(
+                CompactPerpsInfoLabel(
                     text = stringResource(R.string.Take_Profit).uppercase(),
                     compactTextStyle = compactTextStyle,
                     onTipClick = ::showTpSlGuide,
                 )
-                TpSlLabel(
+                CompactPerpsInfoLabel(
                     text = stringResource(R.string.Stop_Loss).uppercase(),
                     compactTextStyle = compactTextStyle,
                     onTipClick = ::showTpSlGuide,
@@ -1640,32 +1569,114 @@ private fun OpenPositionCard(
             }
         }
     }
+
+    Spacer(modifier = Modifier.height(16.dp))
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor)
+            .padding(16.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.Details),
+            fontSize = 14.sp,
+            style = compactTextStyle,
+            color = MixinAppTheme.colors.textMinor,
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        Text(
+            text = stringResource(R.string.Entry_Price).uppercase(),
+            fontSize = 12.sp,
+            lineHeight = 14.sp,
+            style = compactTextStyle,
+            color = MixinAppTheme.colors.textAssist,
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(
+            text = formatPerpsPrice(entryPrice, position.priceScale),
+            fontSize = 14.sp,
+            lineHeight = 17.sp,
+            style = compactTextStyle,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+        Spacer(modifier = Modifier.height(20.dp))
+        CompactPerpsInfoLabel(
+            text = stringResource(R.string.Liquidation_Price).uppercase(),
+            compactTextStyle = compactTextStyle,
+            onTipClick = {
+                val activity = context as? FragmentActivity ?: return@CompactPerpsInfoLabel
+                PerpetualGuideBottomSheetDialogFragment.newInstance(
+                    PerpetualGuideBottomSheetDialogFragment.TAB_LIQUIDATION,
+                ).show(activity.supportFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+            },
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        Text(
+            text = liquidationPriceText,
+            fontSize = 14.sp,
+            lineHeight = 17.sp,
+            style = compactTextStyle,
+            color = MixinAppTheme.colors.textPrimary,
+        )
+        liquidationDistancePercent(position.liquidationPrice, position.markPrice)?.let { distance ->
+            Spacer(Modifier.height(6.dp))
+            val hint = stringResource(
+                if (isLong) R.string.perps_liquidation_price_down_description else R.string.perps_liquidation_price_up_description,
+                distance,
+            )
+            val distanceColor = MixinAppTheme.colors.textPrimary
+            Text(
+                text = buildAnnotatedString {
+                    append(hint)
+                    val start = hint.indexOf(distance)
+                    if (start >= 0) addStyle(SpanStyle(color = distanceColor), start, start + distance.length)
+                },
+                fontSize = 12.sp,
+                color = MixinAppTheme.colors.textAssist,
+            )
+        }
+        Spacer(modifier = Modifier.height(20.dp))
+        CompactPerpsInfoLabel(
+            text = stringResource(R.string.perps_funding_payments).uppercase(),
+            compactTextStyle = compactTextStyle,
+            onTipClick = {
+                val activity = context as? FragmentActivity ?: return@CompactPerpsInfoLabel
+                PerpsInfoBottomSheetDialogFragment.newInstance(
+                    R.string.perps_funding_payments,
+                    R.string.perps_funding_payments_description,
+                ).show(activity.supportFragmentManager, PerpsInfoBottomSheetDialogFragment.TAG)
+            },
+        )
+        Spacer(modifier = Modifier.height(10.dp))
+        val fundingAmount = position.fundingAmount?.toBigDecimalOrNull()
+        Text(
+            text = fundingAmount?.let(::formatPerpsSignedRawUsdDecimal) ?: "--",
+            fontSize = 14.sp,
+            lineHeight = 17.sp,
+            style = compactTextStyle,
+            color = when {
+                fundingAmount == null || fundingAmount.signum() == 0 -> MixinAppTheme.colors.textPrimary
+                fundingAmount.signum() > 0 -> risingColor
+                else -> fallingColor
+            },
+        )
+
+    }
 }
 
 @Composable
-private fun TpSlLabel(
+private fun CompactPerpsInfoLabel(
     text: String,
     compactTextStyle: TextStyle,
     onTipClick: () -> Unit,
 ) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            text = text,
-            fontSize = 12.sp,
-            lineHeight = 14.sp,
-            style = compactTextStyle,
-            color = MixinAppTheme.colors.textAssist
-        )
-        Spacer(modifier = Modifier.width(4.dp))
-        Icon(
-            painter = painterResource(id = R.drawable.ic_tip),
-            contentDescription = null,
-            modifier = Modifier
-                .size(12.dp)
-                .clickable(onClick = onTipClick),
-            tint = MixinAppTheme.colors.textAssist
-        )
-    }
+    PerpsInfoLabel(
+        text = text,
+        onTipClick = onTipClick,
+        fontSize = 12.sp,
+        style = compactTextStyle.copy(lineHeight = 14.sp),
+    )
 }
 
 @Composable

@@ -55,15 +55,17 @@ import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
 
 @AndroidEntryPoint
 class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "PerpsReduceBottomSheetDialogFragment"
         private const val ARGS_POSITION = "args_position"
@@ -87,7 +89,7 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
-    override fun getBottomSheetHeight(view: View): Int = requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+    override fun getBottomSheetHeight(view: View): Int = requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
 
     override fun onStart() {
         super.onStart()
@@ -220,6 +222,12 @@ class PerpsReduceBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         Column(horizontalAlignment = Alignment.End) {
                             PerpsAddInfoRow(
                                 title = stringResource(R.string.Margin),
+                                onTipClick = {
+                                    PerpsInfoBottomSheetDialogFragment.newInstance(
+                                        R.string.Margin,
+                                        R.string.perps_margin_description,
+                                    ).show(parentFragmentManager, PerpsInfoBottomSheetDialogFragment.TAG)
+                                },
                                 valueColor = MixinAppTheme.colors.textPrimary,
                                 value = margin?.let { if (it.signum() < 0) formatPerpsSignedRawUsdDecimal(it) else formatPerpsRawUsdDecimal(it) } ?: "--",
                             )

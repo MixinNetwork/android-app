@@ -22,11 +22,13 @@ import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.vo.TranscriptData
 import one.mixin.android.vo.User
 import javax.inject.Inject
+import kotlinx.coroutines.Job
 
 @AndroidEntryPoint
 class ConversationActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        if (ConversationEmbedding.routeRootConversation(this)) return
         setContentView(R.layout.activity_chat)
         if (savedInstanceState == null) {
             if (intent.getBooleanExtra(ARGS_FAST_SHOW, false)) {
@@ -60,9 +62,12 @@ class ConversationActivity : BlazeBaseActivity() {
     @Inject
     lateinit var userRepository: UserRepository
 
+    private var conversationJob: Job? = null
+
     private fun showConversation(intent: Intent) {
         val bundle = intent.extras ?: return
-        lifecycleScope.launch(
+        conversationJob?.cancel()
+        conversationJob = lifecycleScope.launch(
             CoroutineExceptionHandler { _, _ ->
                 replaceFragment(
                     ConversationFragment.newInstance(intent.extras!!),

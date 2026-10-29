@@ -29,6 +29,8 @@ import one.mixin.android.widget.SearchView
 
 @AndroidEntryPoint
 class FiatListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "FiatListBottomSheetDialogFragment"
         const val ARGS_CURRENCIES = "args_currencies"

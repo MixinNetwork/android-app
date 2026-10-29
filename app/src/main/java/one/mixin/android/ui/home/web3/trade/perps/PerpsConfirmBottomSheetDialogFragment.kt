@@ -9,7 +9,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -21,7 +20,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -30,11 +28,10 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -73,7 +70,6 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -92,6 +88,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.toUser
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 import timber.log.Timber
 import java.math.BigDecimal
@@ -100,6 +97,8 @@ import java.util.UUID
 
 @AndroidEntryPoint
 class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     companion object {
         const val TAG = "PerpsConfirmBottomSheetDialogFragment"
@@ -429,6 +428,12 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                             PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
                                 .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
                         },
+                        onMarginTipClick = {
+                            PerpsInfoBottomSheetDialogFragment.newInstance(
+                                R.string.Margin,
+                                R.string.perps_margin_description,
+                            ).show(parentFragmentManager, PerpsInfoBottomSheetDialogFragment.TAG)
+                        },
                     )
 
                     if (orderError == null) {
@@ -569,7 +574,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     private var onDoneAction: (() -> Unit)? = null
@@ -785,7 +790,7 @@ private fun calculateTpSlSubValue(
         val amountText = "+${formatPerpsRawUsdDecimal(pnlAmount)}"
         val pnlPercentStr = pnlPercent.setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
         val outcomeText = "$amountText ($pnlPercentStr%)"
-        val fullText = stringResource(R.string.price_change_take_profit, priceChangeText, outcomeText)
+        val fullText = stringResource(R.string.price_change_tpsl, priceChangeText, outcomeText)
         buildAnnotatedString {
             append(fullText)
             val outcomeStart = fullText.indexOf(outcomeText)
@@ -799,7 +804,7 @@ private fun calculateTpSlSubValue(
         }
     } else {
         val amountText = "-${formatPerpsRawUsdDecimal(pnlAmount)}"
-        val fullText = stringResource(R.string.price_change_stop_loss, priceChangeText, amountText)
+        val fullText = stringResource(R.string.price_change_tpsl, priceChangeText, amountText)
         buildAnnotatedString {
             append(fullText)
             val outcomeStart = fullText.indexOf(amountText)
@@ -835,6 +840,7 @@ private fun PerpsConfirmDetails(
     marginAfter: BigDecimal?,
     hasOrderError: Boolean,
     onGuide: (Int) -> Unit,
+    onMarginTipClick: () -> Unit = {},
 ) {
     Column(
         modifier = Modifier
@@ -880,8 +886,10 @@ private fun PerpsConfirmDetails(
             title = stringResource(R.string.Amount).uppercase(),
             value = "$amount $tokenSymbol",
             subValue = if (isAddMargin && marginAfter != null) {
-                "${stringResource(R.string.perps_total_margin)} ${formatPerpsMarginAmount(marginBefore?.toBigDecimalOrNull())} → ${formatPerpsMarginAmount(marginAfter)}"
+                " ${formatPerpsMarginAmount(marginBefore?.toBigDecimalOrNull())} → ${formatPerpsMarginAmount(marginAfter)}"
             } else null,
+            marginInfo = isAddMargin && marginAfter != null,
+            onMarginTipClick = onMarginTipClick,
         )
         Box(modifier = Modifier.height(20.dp))
     }
@@ -971,6 +979,8 @@ private fun PerpsInfoItem(
     subValue: String? = null,
     subValueAnnotated: AnnotatedString? = null,
     info: Boolean = false,
+    marginInfo: Boolean = false,
+    onMarginTipClick: () -> Unit = {},
     guideTab: Int = PerpetualGuideBottomSheetDialogFragment.TAB_POSITION,
     onGuide: (Int) -> Unit,
 ) {
@@ -979,28 +989,12 @@ private fun PerpsInfoItem(
             .fillMaxWidth()
             .padding(horizontal = 20.dp),
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = title,
-                color = MixinAppTheme.colors.textRemarks,
-                fontSize = 14.sp,
-                maxLines = 1,
-            )
-            if (info) {
-                Spacer(modifier = Modifier.width(4.dp))
-
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_tip),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(12.dp)
-                        .clickable {
-                            onGuide(guideTab)
-                        },
-                    tint = MixinAppTheme.colors.textAssist
-                )
-            }
-        }
+        PerpsInfoLabel(
+            text = title,
+            color = MixinAppTheme.colors.textRemarks,
+            maxLines = 1,
+            onTipClick = if (info) ({ onGuide(guideTab) }) else null,
+        )
         Box(modifier = Modifier.height(4.dp))
         Text(
             text = value,
@@ -1018,11 +1012,27 @@ private fun PerpsInfoItem(
         } else {
             subValue?.let {
                 Box(modifier = Modifier.height(4.dp))
-                Text(
-                    text = it,
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 14.sp,
-                )
+                if (marginInfo) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        PerpsInfoLabel(
+                            text = stringResource(R.string.perps_total_margin),
+                            fontSize = 14.sp,
+                            color = MixinAppTheme.colors.textAssist,
+                            onTipClick = onMarginTipClick,
+                        )
+                        Text(
+                            text = it,
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 14.sp,
+                        )
+                    }
+                } else {
+                    Text(
+                        text = it,
+                        color = MixinAppTheme.colors.textAssist,
+                        fontSize = 14.sp,
+                    )
+                }
             }
         }
     }

@@ -5,6 +5,8 @@ import androidx.room3.Room
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.runBlocking
 import one.mixin.android.api.response.perps.PerpsPosition
+import one.mixin.android.api.response.perps.toPosition
+import com.google.gson.Gson
 import one.mixin.android.db.PerpsDatabase
 import org.junit.After
 import org.junit.Assert.assertEquals
@@ -78,6 +80,23 @@ class PerpsPositionDaoTest {
         dao.upsertSuspend(initial.copy(walletId = "", quantity = "0.5", updatedAt = "2026-10-07T00:00:01Z"))
         assertEquals("0.5", dao.getOpenPositions("wallet").single().quantity)
         assertEquals("wallet", dao.getPosition(initial.positionId)?.walletId)
+    }
+
+    @Test
+    fun fundingAmountSurvivesApiDatabaseAndConversion() = runBlocking {
+        val gson = Gson()
+        val json = gson.toJsonTree(position()).asJsonObject
+        json.addProperty("funding_amount", "-0.142485")
+        val parsed = gson.fromJson(json, PerpsPosition::class.java)
+        val dao = database.perpsPositionDao()
+        dao.upsertSuspend(parsed)
+        val stored = requireNotNull(dao.getPosition(parsed.positionId))
+        assertEquals("-0.142485", stored.fundingAmount)
+        assertEquals("-0.142485", stored.toPosition().fundingAmount)
+        dao.insertAll(listOf(parsed.copy(fundingAmount = "0.25")))
+        assertEquals("0.25", dao.getOpenPositions("wallet").single().fundingAmount)
+        json.remove("funding_amount")
+        assertEquals(null, gson.fromJson(json, PerpsPosition::class.java).fundingAmount)
     }
 
     private fun position() = PerpsPosition(

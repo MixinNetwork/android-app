@@ -17,8 +17,8 @@ apply(plugin = "com.google.firebase.crashlytics")
 
 val versionMajor = 6
 val versionMinor = 3
-val versionPatch = 4
-val versionBuild = 0
+val versionPatch = 6
+val versionBuild = 1
 
 val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
 val jetifierVersion = rootProject.extra["jetifierVersion"] as String
@@ -297,7 +297,7 @@ android {
 
     testOptions {
         unitTests {
-            isIncludeAndroidResources = false
+            isIncludeAndroidResources = true
             isReturnDefaultValues = true
         }
     }
@@ -331,6 +331,13 @@ android {
 }
 
 androidComponents {
+    onVariants { variant ->
+        variant.hostTests.values.forEach { test ->
+            test.manifestPlaceholders.putAll(
+                mapOf("GOOGLE_MAP_KEY" to "unit-test", "BUGSNAG_KEY" to "unit-test"),
+            )
+        }
+    }
     onVariants(selector().withBuildType("release")) { variant ->
         val variantName = variant.name.replaceFirstChar { it.uppercaseChar() }
         tasks.matching { it.name == "assemble$variantName" || it.name == "bundle$variantName" }.configureEach {
@@ -354,6 +361,7 @@ dependencies {
     implementation(fileTree(mapOf("include" to listOf("*.aar"), "dir" to "libs")))
     implementation("androidx.fragment:fragment-ktx:$fragmentVersion")
     implementation("androidx.activity:activity-ktx:$activityVersion")
+    implementation("androidx.window:window:1.5.0")
     implementation("androidx.appcompat:appcompat:$appcompatVersion")
     implementation("androidx.legacy:legacy-support-v4:$supportLibVersion")
     implementation("com.google.android.material:material:$mdcVersion")

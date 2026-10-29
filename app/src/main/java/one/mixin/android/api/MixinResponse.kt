@@ -1,5 +1,6 @@
 package one.mixin.android.api
 
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.util.ErrorHandler
@@ -63,6 +64,8 @@ suspend fun <T, R> handleMixinResponse(
             withContext(switchContext) {
                 invokeNetwork()
             }
+        } catch (t: CancellationException) {
+            throw t
         } catch (t: Throwable) {
             if (exceptionBlock?.invoke(t) != true) {
                 defaultExceptionHandle.invoke(t)

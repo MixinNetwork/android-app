@@ -324,24 +324,7 @@ private fun PositionDetailItem(
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = label,
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist
-            )
-            if (onTipClick != null) {
-                Spacer(modifier = Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_tip),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(12.dp)
-                        .clickable(onClick = onTipClick),
-                    tint = MixinAppTheme.colors.textAssist,
-                )
-            }
-        }
+        PerpsInfoLabel(text = label, onTipClick = onTipClick)
         Spacer(modifier = Modifier.height(4.dp))
 
         if (icon != null) {
@@ -660,6 +643,7 @@ fun OpenedOrderDetailPage(
     onViewMarket: (() -> Unit)? = null,
     onShare: (() -> Unit)? = null,
     onFeeTipClick: (() -> Unit)? = null,
+    onMarginTipClick: (() -> Unit)? = null,
     onSupport: (() -> Unit)? = null,
 ) {
     val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").withZone(ZoneId.systemDefault())
@@ -866,6 +850,7 @@ fun OpenedOrderDetailPage(
                         label = stringResource(R.string.Margin).uppercase(),
                         value = openedOrder.marginAmount.toBigDecimalOrNull()
                             ?.let(::formatPerpsUsdDecimal) ?: "--",
+                        onTipClick = onMarginTipClick,
                     )
                     Spacer(modifier = Modifier.height(20.dp))
                     PositionDetailItem(

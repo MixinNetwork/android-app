@@ -8,7 +8,6 @@ import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,9 +28,9 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -50,17 +48,14 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
-import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
-import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
@@ -74,12 +69,15 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 import timber.log.Timber
 import java.math.BigDecimal
 
 @AndroidEntryPoint
 class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     companion object {
         const val TAG = "PerpsCloseBottomSheetDialogFragment"
@@ -428,6 +426,13 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                             )
                         } ?: "--",
                         displayCloseFee = displayCloseFee,
+                        marginText = reduceMarginText(latestMargin, reduceMarginAmount),
+                        onMarginTipClick = {
+                            PerpsInfoBottomSheetDialogFragment.newInstance(
+                                R.string.Margin,
+                                R.string.perps_margin_description,
+                            ).show(parentFragmentManager, PerpsInfoBottomSheetDialogFragment.TAG)
+                        },
                         onFeeTipClick = {
                             PerpetualGuideBottomSheetDialogFragment.newInstance(
                                 PerpetualGuideBottomSheetDialogFragment.TAB_TRADING_FEE,
@@ -518,7 +523,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     private var onDoneAction: (() -> Unit)? = null
@@ -633,6 +638,8 @@ private fun PerpsCloseDetails(
     displayMargin: BigDecimal?,
     sizeValue: String,
     displayCloseFee: BigDecimal?,
+    marginText: String? = null,
+    onMarginTipClick: () -> Unit = {},
     onFeeTipClick: () -> Unit,
     onSizeTipClick: () -> Unit,
 ) {
@@ -702,27 +709,29 @@ private fun PerpsCloseDetails(
                     )
                 }
             }
+            Spacer(modifier = Modifier.height(20.dp))
+            PerpsInfoLabel(
+                text = stringResource(R.string.Margin).uppercase(),
+                color = MixinAppTheme.colors.textRemarks,
+                onTipClick = onMarginTipClick,
+            )
+            Spacer(Modifier.height(4.dp))
+            Text(
+                text = marginText ?: "--",
+                color = MixinAppTheme.colors.textPrimary,
+                fontSize = 16.sp,
+            )
         }
 
         if (!isReduceMargin) {
             Spacer(modifier = Modifier.height(20.dp))
             PerpsCloseMargin(displayPnl, displayMargin)
             Spacer(modifier = Modifier.height(20.dp))
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                val sizeTitle = stringResource(R.string.position_size)
-                Text(
-                    text = sizeTitle.uppercase(),
-                    color = MixinAppTheme.colors.textRemarks,
-                    fontSize = 14.sp,
-                )
-                Spacer(Modifier.width(4.dp))
-                Icon(
-                    painter = painterResource(R.drawable.ic_tip),
-                    contentDescription = sizeTitle,
-                    tint = MixinAppTheme.colors.textAssist,
-                    modifier = Modifier.size(12.dp).clickable(role = Role.Button, onClick = onSizeTipClick),
-                )
-            }
+            PerpsInfoLabel(
+                text = stringResource(R.string.position_size).uppercase(),
+                color = MixinAppTheme.colors.textRemarks,
+                onTipClick = onSizeTipClick,
+            )
             Spacer(Modifier.height(4.dp))
             Text(
                 text = sizeValue,
@@ -739,6 +748,13 @@ private fun PerpsCloseDetails(
             )
         }
     }
+}
+
+private fun reduceMarginText(currentMargin: String, reduction: String?): String {
+    val before = currentMargin.toBigDecimalOrNull() ?: return "--"
+    val after = reduction?.toBigDecimalOrNull()?.let { before.subtract(it) }
+    val beforeText = formatPerpsMarginAmount(before)
+    return if (after != null) "$beforeText → ${formatPerpsMarginAmount(after)}" else beforeText
 }
 
 @PerpsSheetPreview
@@ -779,6 +795,12 @@ private fun PerpsCloseDetailsPreview(reduceMargin: Boolean, fullClose: Boolean) 
                 tokenSymbol = "BTC",
             ),
             displayCloseFee = BigDecimal(if (fullClose) "0.08" else "0.04"),
+            marginText = if (reduceMargin) {
+                "${formatPerpsMarginAmount(BigDecimal("80.126855"))} → ${formatPerpsMarginAmount(BigDecimal("55.126855"))}"
+            } else {
+                null
+            },
+            onMarginTipClick = {},
             onFeeTipClick = {},
             onSizeTipClick = {},
         )
