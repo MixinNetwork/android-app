@@ -16,13 +16,14 @@ import androidx.compose.runtime.Composable
 import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
 import androidx.core.view.doOnPreDraw
-import androidx.core.view.drawToBitmap
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.withResumed
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewpager2.widget.ViewPager2
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -49,12 +50,14 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
+import one.mixin.android.repository.ShareCoverRepository
 import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.common.drawShareCover
+import one.mixin.android.ui.common.drawShareBitmap
 import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
@@ -65,6 +68,7 @@ import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
+import one.mixin.android.widget.bottomSheetHeight
 import java.io.File
 import java.io.FileOutputStream
 import java.math.BigDecimal
@@ -74,13 +78,14 @@ import kotlin.math.absoluteValue
 
 @AndroidEntryPoint
 class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "PerpsPositionShareBottomFragment"
         private const val ARGS_POSITION = "args_position"
         private const val ARGS_CLOSE_ORDER = "args_close_order"
         private const val ARGS_CLOSE_LEVERAGE = "args_close_leverage"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
-        private const val SHARE_CARD_COVER_URL = "https://dl.mixinpay.com/perps-share-card.png"
 
         fun newInstance(position: PerpsPositionItem) = PerpsPositionShareBottomFragment().withArgs {
             putParcelable(ARGS_POSITION, position)
@@ -94,6 +99,9 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
 
     @Inject
     lateinit var referralRepository: ReferralRepository
+
+    @Inject
+    lateinit var shareCoverRepository: ShareCoverRepository
 
     private val binding by viewBinding(FragmentPerpsPositionShareBottomBinding::inflate)
     private val position: PerpsPositionItem? by lazy {
@@ -187,7 +195,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     override fun showError(error: String) {
@@ -438,13 +446,31 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     }
 
     private fun shareToMixinContact() {
-        val manager = parentFragmentManager
-        dismiss()
-        ShareMessageBottomSheetDialogFragment.newInstance(buildPerpsAppCardMessage(), null)
-            .show(manager, ShareMessageBottomSheetDialogFragment.TAG)
+        viewLifecycleOwner.lifecycleScope.launch {
+            val poster = currentPosterView() ?: return@launch
+            if (poster.width == 0 || poster.height == 0) return@launch
+            val bitmap = poster.drawShareCover()
+            showLoading(true)
+            try {
+                val coverUrl = shareCoverRepository.upload(bitmap)
+                val message = buildPerpsAppCardMessage(coverUrl)
+                lifecycle.withResumed {
+                    ShareMessageBottomSheetDialogFragment.newInstance(message, null)
+                        .show(parentFragmentManager, ShareMessageBottomSheetDialogFragment.TAG)
+                    dismiss()
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                toast(R.string.Retry_upload_failed)
+            } finally {
+                bitmap.recycle()
+                if (view != null) showLoading(false)
+            }
+        }
     }
 
-    private fun buildPerpsAppCardMessage(): ForwardMessage {
+    private fun buildPerpsAppCardMessage(coverUrl: String): ForwardMessage {
         val action = "${Constants.Scheme.HTTPS_TRADE}?type=perps&market=${shareData.marketId}"
         val side = if (shareData.side.equals("long", ignoreCase = true)) getString(R.string.Long) else getString(R.string.Short)
         val market = shareData.displaySymbol.ifBlank { shareData.tokenSymbol }
@@ -457,7 +483,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         val appCard = AppCardData(
             appId = Constants.RouteConfig.ROUTE_BOT_USER_ID,
             iconUrl = shareData.iconUrl,
-            coverUrl = SHARE_CARD_COVER_URL,
+            coverUrl = coverUrl,
             cover = null,
             title = title,
             description = description,
@@ -508,7 +534,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         return file
     }
 
-    private fun createShareBitmap(): Bitmap = currentPosterView()?.drawToBitmap() ?: binding.posterPager.drawToBitmap()
+    private fun createShareBitmap(): Bitmap = currentPosterView()?.drawShareBitmap() ?: binding.posterPager.drawShareBitmap()
 
     private fun currentPosterView(): View? {
         val recyclerView = binding.posterPager.getChildAt(0) as? RecyclerView ?: return null

@@ -70,14 +70,20 @@ import kotlin.math.floor
 import kotlin.math.hypot
 import kotlin.math.max
 import kotlin.math.min
+import androidx.compose.runtime.SideEffect
+import one.mixin.android.widget.isExpandedSheetScreen
 
 private const val DEFAULT_VISIBLE_CANDLES = 30f
 private const val MIN_VISIBLE_CANDLES = 10f
 private const val MAX_VISIBLE_CANDLES = 200f
+private val LARGE_SCREEN_CANDLE_SPACING = 10.dp
 
 // Empty slots kept to the right of the latest candle, in candle widths.
 private const val RIGHT_PADDING_CANDLES = 0.3f
 private const val GRID_LINE_COUNT = 4
+
+// Space above the highest high and below the lowest low, as a fraction of the price span.
+private const val PRICE_PADDING_RATIO = 0.08
 private const val BODY_WIDTH_RATIO = 0.7f
 private const val WICK_WIDTH_RATIO = 0.3f
 private const val LONG_PRESS_TIMEOUT_MS = 300L
@@ -116,6 +122,7 @@ internal class CandleChartState {
     private var followLatest = true
     private var flingJob: Job? = null
     internal var plotWidthPx = 1f
+    private var spacingApplied = false
 
     private val maxEnd get() = candles.size + RIGHT_PADDING_CANDLES
     private val minEnd get() = min(visibleCount, maxEnd)
@@ -139,6 +146,16 @@ internal class CandleChartState {
         selectedIndex = selectedTimestamp?.let { timestamp ->
             newCandles.indexOfFirst { it.timestamp == timestamp }.takeIf { it >= 0 }
         }
+    }
+
+    /** Large screens keep the phone's candle spacing instead of stretching the default count across a wide plot. */
+    fun applyDefaultSpacing(spacingPx: Float) {
+        if (spacingApplied || plotWidthPx <= 1f) return
+        spacingApplied = true
+        val count = max(DEFAULT_VISIBLE_CANDLES, plotWidthPx / spacingPx).coerceIn(MIN_VISIBLE_CANDLES, maxVisibleCount)
+        if (count == visibleCount) return
+        visibleCount = count
+        end = end.coerceIn(minEnd, maxEnd)
     }
 
     fun xOf(position: Float): Float = plotWidthPx - (end - position) * step
@@ -260,6 +277,7 @@ internal fun ViewportCandleChart(
     timeFrame: String,
     marketPriceText: String?,
     priceScale: Int?,
+    interactive: Boolean = true,
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
@@ -267,6 +285,7 @@ internal fun ViewportCandleChart(
     val decay = rememberSplineBasedDecay<Float>()
     val textMeasurer = rememberTextMeasurer()
     val state = remember { CandleChartState() }
+    val expandedScreen = context.isExpandedSheetScreen()
 
     LaunchedEffect(items, marketPriceText, timeFrame) {
         val livePrice = marketPriceText?.toDoubleOrNull()
@@ -302,6 +321,8 @@ internal fun ViewportCandleChart(
     val colors = ChartColors(
         up = if (quoteColorPref) red else green,
         down = if (quoteColorPref) green else red,
+        upText = if (quoteColorPref) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen,
+        downText = if (quoteColorPref) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed,
         grid = MixinAppTheme.colors.textAssist.copy(alpha = 0.3f),
         label = MixinAppTheme.colors.textAssist,
         crosshair = MixinAppTheme.colors.textAssist.copy(alpha = 0.7f),
@@ -324,19 +345,28 @@ internal fun ViewportCandleChart(
             max(widest + 16.dp.toPx(), 48.dp.toPx())
         }
         state.plotWidthPx = (constraints.maxWidth - axisWidthPx).coerceAtLeast(1f)
+        if (expandedScreen) {
+            SideEffect { state.applyDefaultSpacing(with(density) { LARGE_SCREEN_CANDLE_SPACING.toPx() }) }
+        }
 
         Canvas(
             modifier = Modifier
                 .fillMaxSize()
-                .pointerInput(state) {
-                    detectChartGestures(
-                        state = state,
-                        scope = scope,
-                        decay = decay,
-                        onLongPress = context::heavyClickVibrate,
-                        onSelectionMove = context::clickVibrate,
-                    )
-                },
+                .then(
+                    if (interactive) {
+                        Modifier.pointerInput(state) {
+                            detectChartGestures(
+                                state = state,
+                                scope = scope,
+                                decay = decay,
+                                onLongPress = context::heavyClickVibrate,
+                                onSelectionMove = context::clickVibrate,
+                            )
+                        }
+                    } else {
+                        Modifier
+                    },
+                ),
         ) {
             drawChart(
                 state = state,
@@ -358,6 +388,8 @@ internal fun ViewportCandleChart(
 private data class ChartColors(
     val up: Color,
     val down: Color,
+    val upText: Color,
+    val downText: Color,
     val grid: Color,
     val label: Color,
     val crosshair: Color,
@@ -392,7 +424,8 @@ private fun visiblePriceRange(candles: List<ChartCandle>, visible: IntRange, lat
         val pad = max(abs(high) * 0.001, 1e-8)
         return PriceRange(low - pad, high + pad)
     }
-    return PriceRange(low, high)
+    val pad = (high - low) * PRICE_PADDING_RATIO
+    return PriceRange(low - pad, high + pad)
 }
 
 @Composable
@@ -400,11 +433,14 @@ private fun animatedPriceRange(target: PriceRange, hold: Boolean): PriceRange {
     var from by remember { mutableStateOf(target) }
     var to by remember { mutableStateOf(target) }
     val progress = remember { Animatable(1f) }
-    // While held, keep the current range; once released, animate to the latest target.
+    // While held, only grow the range so candles scrolled into view are never clipped;
+    // once released, animate to the latest target.
     LaunchedEffect(target, hold) {
-        if (hold || (target == to && progress.value == 1f)) return@LaunchedEffect
-        from = lerp(from, to, progress.value)
-        to = target
+        val current = lerp(from, to, progress.value)
+        val next = if (hold) PriceRange(min(current.min, target.min), max(current.max, target.max)) else target
+        if (next == to || (hold && next == current)) return@LaunchedEffect
+        from = current
+        to = next
         progress.snapTo(0f)
         progress.animateTo(1f, tween(durationMillis = 220, easing = FastOutSlowInEasing))
     }
@@ -565,7 +601,8 @@ private fun DrawScope.drawChart(
     val latestColor = if (latestPrice >= candles.last().open) colors.up else colors.down
     val latestY = yOf(latestPrice)
     val showLatest = latestY in plotTop..plotBottom
-    val latestLayout = textMeasurer.measure(latestPriceText, labelStyle.copy(color = latestColor))
+    val latestTextColor = if (latestPrice >= candles.last().open) colors.upText else colors.downText
+    val latestLayout = textMeasurer.measure(latestPriceText, labelStyle.copy(color = latestTextColor))
     val tagPadH = 6.dp.toPx()
     val tagPadV = 2.dp.toPx()
     val latestTagHeight = latestLayout.size.height + tagPadV * 2
@@ -670,7 +707,7 @@ private fun DrawScope.drawSelection(
     val labelStyle = TextStyle(fontSize = 11.sp, color = colors.cardLabel)
     val valueStyle = TextStyle(fontSize = 11.sp, color = colors.cardValue)
     val change = if (selected.open != 0.0) (selected.close - selected.open) / selected.open * 100 else 0.0
-    val changeColor = if (selected.close >= selected.open) colors.up else colors.down
+    val changeColor = if (selected.close >= selected.open) colors.upText else colors.downText
     val changeText = (if (change >= 0) "\u2191" else "\u2193") +
         BigDecimal(abs(change)).setScale(2, RoundingMode.HALF_UP).toPlainString() + "%"
     val rows = listOf(

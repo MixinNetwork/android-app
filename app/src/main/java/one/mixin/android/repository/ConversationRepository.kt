@@ -53,6 +53,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshConversationJob
 import one.mixin.android.job.RefreshUserJob
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.ConversationFilter
 import one.mixin.android.util.SINGLE_DB_THREAD
 import one.mixin.android.vo.ChatMinimal
 import one.mixin.android.vo.CircleConversation
@@ -115,11 +116,23 @@ class ConversationRepository
                 messageDataSource.loadChatMessagesByOffset(conversationId, offset, limit)
             }
 
-        fun observeConversations(circleId: String?): PagingSource<Int, ConversationItem> =
-            if (circleId.isNullOrBlank()) {
-                DataProvider.observeConversations(MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()))
-            } else {
-                DataProvider.observeConversationsByCircleId(circleId, MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber()))
+        fun observeConversations(filter: ConversationFilter): PagingSource<Int, ConversationItem> {
+            val database = MixinDatabase.getDatabase(MixinApplication.appContext, identityNumber())
+            return when (filter) {
+                ConversationFilter.All -> DataProvider.observeConversations(database)
+                is ConversationFilter.Circle -> DataProvider.observeConversationsByCircleId(filter.circleId, database)
+                else -> DataProvider.observeConversationsByCategory(filter, database)
+            }
+        }
+
+        fun observeUnseenCount(filter: ConversationFilter): LiveData<Int> =
+            when (filter) {
+                ConversationFilter.All -> conversationDao.observeUnseenCount()
+                ConversationFilter.Contacts -> conversationDao.observeContactsUnseenCount()
+                ConversationFilter.Groups -> conversationDao.observeGroupsUnseenCount()
+                ConversationFilter.Bots -> conversationDao.observeBotsUnseenCount()
+                ConversationFilter.Strangers -> conversationDao.observeStrangersUnseenCount()
+                is ConversationFilter.Circle -> conversationDao.observeCircleUnseenCount(filter.circleId)
             }
 
         suspend fun successConversationList(): List<ConversationMinimal> =
@@ -245,9 +258,6 @@ class ConversationRepository
             return if (item.isAppCard() && !item.isAppCardWithMediaCover()) null else item
         }
 
-        suspend fun getConversationIdIfExistsSync(recipientId: String) =
-            conversationDao.getConversationIdIfExistsSync(recipientId)
-
         fun getUnreadMessage(
             conversationId: String,
             accountId: String,
@@ -366,10 +376,6 @@ class ConversationRepository
         ) =
             messageDao.findUnreadMessagesSync(conversationId, accountId)
 
-        fun findContactConversationByOwnerId(ownerId: String): Conversation? {
-            return conversationDao.findContactConversationByOwnerId(ownerId)
-        }
-
         fun insertList(it: List<Job>) {
             jobDao.insertList(it)
         }
@@ -425,6 +431,7 @@ class ConversationRepository
                     ownerId,
                     data.category,
                     data.name,
+                    data.iconUrl,
                     data.announcement,
                     data.muteUntil,
                     data.createdAt,
@@ -505,6 +512,20 @@ class ConversationRepository
         }
 
         fun observeAllConversationUnread() = conversationDao.observeAllConversationUnread()
+
+        suspend fun updateGroupIcon(
+            conversationId: String,
+            iconBase64: String,
+        ): MixinResponse<ConversationResponse> = withContext(Dispatchers.IO) {
+            val response = conversationService.updateSuspend(
+                conversationId,
+                ConversationRequest(conversationId, iconBase64 = iconBase64),
+            )
+            if (response.isSuccess) {
+                response.data?.let { insertOrUpdateConversation(it) }
+            }
+            response
+        }
 
         suspend fun muteSuspend(
             id: String,

@@ -1,6 +1,5 @@
 package one.mixin.android.api.service
 
-import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.AuthorizeRequest
 import one.mixin.android.api.request.DeauthorRequest
@@ -17,7 +16,7 @@ interface AuthorizationService {
     ): MixinResponse<AuthorizationResponse>
 
     @GET("authorizations")
-    fun authorizations(): Observable<MixinResponse<List<AuthorizationResponse>>>
+    suspend fun authorizations(): MixinResponse<List<AuthorizationResponse>>
 
     @GET("authorizations")
     suspend fun getAuthorizationByAppId(
@@ -25,7 +24,7 @@ interface AuthorizationService {
     ): MixinResponse<List<AuthorizationResponse>>
 
     @POST("oauth/cancel")
-    fun deAuthorize(
+    suspend fun deAuthorize(
         @Body request: DeauthorRequest,
-    ): Observable<MixinResponse<Unit>>
+    ): MixinResponse<Unit>
 }

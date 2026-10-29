@@ -1158,6 +1158,7 @@ class WebFragment : BaseFragment() {
         chainId: String,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         val response = webView.bridgeBinding.request(ownerToken, "$callbackFunction('')")
         if (viewDestroyed() || !response.isActive) {
             response.reject()
@@ -1192,7 +1193,7 @@ class WebFragment : BaseFragment() {
                             Timber.d("${WalletConnectTIP.TAG} ${e.stackTraceToString()}")
                             ""
                         }
-                    response.complete("$callbackFunction('$address')")
+                    response.complete("$callbackFunction(${JSONObject.quote(address)})")
                 },
             )
         }
@@ -1203,6 +1204,7 @@ class WebFragment : BaseFragment() {
         ids: Array<String>,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         val response = webView.bridgeBinding.request(ownerToken, "$callbackFunction('[]')")
         if (viewDestroyed() || !response.isActive) {
             response.reject()
@@ -1246,7 +1248,7 @@ class WebFragment : BaseFragment() {
                 } else {
                     "[]"
                 }
-            response.complete("$callbackFunction('$result')")
+            response.complete("$callbackFunction(${JSONObject.quote(result)})")
         }
     }
 
@@ -1259,6 +1261,7 @@ class WebFragment : BaseFragment() {
         body: String,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         val response = webView.bridgeBinding.request(ownerToken, "$callbackFunction('[]')")
         if (viewDestroyed() || !response.isActive) {
             response.reject()
@@ -1292,7 +1295,7 @@ class WebFragment : BaseFragment() {
             }
             if (!response.isActive) return@launch
             val (ts, signature) = getBotSignature(publicKey, method, path, body)
-            response.complete("$callbackFunction('$ts', '$signature')")
+            response.complete("$callbackFunction(${JSONObject.quote(ts.toString())}, ${JSONObject.quote(signature)})")
         }
     }
 
@@ -1300,6 +1303,7 @@ class WebFragment : BaseFragment() {
         ownerToken: WebViewBridgeBinding.OwnerToken,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         val response = webView.bridgeBinding.request(ownerToken, "$callbackFunction(false)")
         if (viewDestroyed() || !response.isActive) {
             response.reject()
@@ -1334,6 +1338,7 @@ class WebFragment : BaseFragment() {
         message: String,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         val response = webView.bridgeBinding.request(ownerToken, "$callbackFunction('')")
         if (viewDestroyed() || !response.isActive) {
             response.reject()
@@ -1360,7 +1365,7 @@ class WebFragment : BaseFragment() {
                     if (response.isActive) {
                         val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), it, chainId))
                         val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
-                        response.complete("$callbackFunction('$sig')")
+                        response.complete("$callbackFunction(${JSONObject.quote(sig)})")
                     }
                 },
             )
@@ -2426,6 +2431,7 @@ class WebFragment : BaseFragment() {
             list: Array<String>,
             callbackFunction: String,
         ) {
+            if (!isValidJavaScriptCallback(callbackFunction)) return
             getAssetAction?.invoke(list, callbackFunction)
         }
 
@@ -2446,6 +2452,7 @@ class WebFragment : BaseFragment() {
 
         @JavascriptInterface
         fun verifyPin(callbackFunction: String) {
+            if (!isValidJavaScriptCallback(callbackFunction)) return
             verifyPinAction?.invoke(callbackFunction)
         }
 
@@ -2454,6 +2461,7 @@ class WebFragment : BaseFragment() {
             chainId: String,
             callbackFunction: String,
         ) {
+            if (!isValidJavaScriptCallback(callbackFunction)) return
             getTipAddressAction?.invoke(chainId, callbackFunction)
         }
 
@@ -2463,6 +2471,7 @@ class WebFragment : BaseFragment() {
             message: String,
             callbackFunction: String,
         ) {
+            if (!isValidJavaScriptCallback(callbackFunction)) return
             tipSignAction?.invoke(chainId, message, callbackFunction)
         }
 
@@ -2479,6 +2488,7 @@ class WebFragment : BaseFragment() {
             val path = messageBody[3]
             val body = messageBody[4]
             val callbackFunction = messageBody[5]
+            if (!isValidJavaScriptCallback(callbackFunction)) return
             signBotSignature?.invoke(appId, reloadPublicKey.toBoolean(), method, path, body, callbackFunction)
         }
     }

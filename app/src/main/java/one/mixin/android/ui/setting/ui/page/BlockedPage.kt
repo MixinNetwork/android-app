@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
@@ -31,7 +32,6 @@ import one.mixin.android.R
 import one.mixin.android.compose.MixinBackButton
 import one.mixin.android.compose.MixinTopAppBar
 import one.mixin.android.compose.UserAvatarImage
-import one.mixin.android.compose.rememberComposeScope
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.ui.common.showUserBottom
@@ -59,7 +59,8 @@ fun BlockedPage() {
                 .fillMaxSize(),
         ) {
             val viewModel = hiltViewModel<SettingBlockedViewModel>()
-            val users by viewModel.blockingUsers(rememberComposeScope()).observeAsState()
+            LaunchedEffect(viewModel) { viewModel.refreshBlockingUsers() }
+            val users by viewModel.blockingUsers().observeAsState()
             if (users.isNullOrEmpty()) {
                 EmptyBlockedView()
             } else {

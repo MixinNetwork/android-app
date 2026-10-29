@@ -5,6 +5,7 @@ package one.mixin.android.ui.landing
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.crypto.PrivacyPreference.putIsLoaded
@@ -21,6 +22,10 @@ class InitializeActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
+        binding.configurePanel()
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() = Unit
+        })
         val setName = intent.getBooleanExtra(SET_NAME, false)
         val setPin = intent.getBooleanExtra(SET_PIN, false)
         val wrongTime = intent.getBooleanExtra(WRONG_TIME, false)

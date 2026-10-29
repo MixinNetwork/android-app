@@ -3,9 +3,6 @@ package one.mixin.android.ui.group
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.launch
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.response.ConversationResponse
@@ -23,10 +20,8 @@ class InviteViewModel
         suspend fun rotate(conversationId: String): MixinResponse<ConversationResponse> =
             conversationService.rotate(conversationId)
 
-        fun findConversation(conversationId: String): Observable<MixinResponse<ConversationResponse>> =
-            conversationService.findConversation(conversationId)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
+        suspend fun findConversation(conversationId: String): MixinResponse<ConversationResponse> =
+            conversationService.findConversationSuspend(conversationId)
 
         fun updateCodeUrl(
             conversationId: String,

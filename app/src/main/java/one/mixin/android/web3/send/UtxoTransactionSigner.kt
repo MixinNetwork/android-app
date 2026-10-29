@@ -36,7 +36,8 @@ object UtxoTransactionSigner {
         localUtxos: List<WalletOutput>,
     ): SignedUtxoTransaction =
         when (chainId) {
-            Constants.ChainId.BITCOIN_CHAIN_ID -> signBitcoin(unsignedRawHex, privateKey, localUtxos)
+            Constants.ChainId.BITCOIN_CHAIN_ID,
+            Constants.ChainId.Litecoin -> signP2wpkh(unsignedRawHex, privateKey, chainId, localUtxos)
             Constants.ChainId.PEARL_CHAIN_ID -> signPearl(unsignedRawHex, privateKey, localUtxos)
             else -> throw IllegalArgumentException("Unsupported UTXO chain: $chainId")
         }
@@ -44,15 +45,16 @@ object UtxoTransactionSigner {
     fun address(privateKey: ByteArray, chainId: String): String =
         UtxoKeyGenerator.privateKeyToAddress(privateKey, chainId)
 
-    private fun signBitcoin(
+    private fun signP2wpkh(
         unsignedRawHex: String,
         privateKey: ByteArray,
+        chainId: String,
         localUtxos: List<WalletOutput>,
     ): SignedUtxoTransaction {
         val signingKey = ECKey.fromPrivate(privateKey, true)
-        val fromAddress = address(privateKey, Constants.ChainId.BITCOIN_CHAIN_ID)
+        val fromAddress = address(privateKey, chainId)
         val transaction = readTransaction(unsignedRawHex)
-        val matchedUtxos = matchInputs(transaction, localUtxos, Constants.ChainId.BITCOIN_CHAIN_ID, fromAddress)
+        val matchedUtxos = matchInputs(transaction, localUtxos, chainId, fromAddress)
         val scriptCode: Script = ScriptBuilder.createP2PKHOutputScript(signingKey)
         transaction.inputs.toList().forEachIndexed { inputIndex, input ->
             val utxoAmount = Coin.parseCoin(matchedUtxos[inputIndex].amount)

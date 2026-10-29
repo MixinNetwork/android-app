@@ -15,6 +15,7 @@ import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.defaultThemeId
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.util.avoidSeparatingFolds
 
 @SuppressLint("Registered")
 open class BaseActivity : AppCompatActivity() {
@@ -55,6 +56,13 @@ open class BaseActivity : AppCompatActivity() {
                 }
             },
         )
+    }
+
+    override fun onPostCreate(savedInstanceState: Bundle?) {
+        super.onPostCreate(savedInstanceState)
+        findViewById<View>(android.R.id.content)?.let { content ->
+            avoidSeparatingFolds(this, content)
+        }
     }
 
     override fun setContentView(layoutResID: Int) {

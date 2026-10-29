@@ -15,6 +15,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -23,7 +24,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import com.uber.autodispose.autoDispose
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.api.response.AuthorizationResponse
 import one.mixin.android.api.response.getScopes
@@ -31,7 +33,6 @@ import one.mixin.android.compose.IndeterminateProgressDialog
 import one.mixin.android.compose.MixinAlertDialog
 import one.mixin.android.compose.SettingPageScaffold
 import one.mixin.android.compose.SettingTile
-import one.mixin.android.compose.rememberComposeScope
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.fullDate
 import one.mixin.android.ui.setting.LocalSettingNav
@@ -142,7 +143,7 @@ private fun RevokeAlertDialog(
     auth: AuthorizationResponse,
     authViewModel: AuthenticationsViewModel?,
 ) {
-    val scope = rememberComposeScope()
+    val scope = rememberCoroutineScope()
     val settingViewModel = hiltViewModel<SettingViewModel>()
 
     var showLoading by remember { mutableStateOf(false) }
@@ -157,7 +158,16 @@ private fun RevokeAlertDialog(
         confirmText = stringResource(id = android.R.string.ok),
         onConfirmClick = {
             showLoading = true
-            settingViewModel.deauthApp(auth.app.appId).autoDispose(scope).subscribe({
+            scope.launch {
+                try {
+                    settingViewModel.deauthApp(auth.app.appId)
+                } catch (e: CancellationException) {
+                    throw e
+                } catch (e: Exception) {
+                    showLoading = false
+                    onRequestDismiss()
+                    return@launch
+                }
                 PermissionListFragment.clearRelatedCookies(auth.app)
 
                 authViewModel?.onDeAuthorize(auth.app.appId)
@@ -166,10 +176,7 @@ private fun RevokeAlertDialog(
                 onRequestDismiss()
 
                 navController.pop()
-            }, {
-                showLoading = false
-                onRequestDismiss()
-            })
+            }
         },
         dismissText = stringResource(id = R.string.Cancel),
     )

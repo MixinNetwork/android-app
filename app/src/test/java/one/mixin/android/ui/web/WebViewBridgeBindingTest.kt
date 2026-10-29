@@ -79,6 +79,20 @@ class WebViewBridgeBindingTest {
     }
 
     @Test
+    fun detachedMixinRequestsRejectInvalidCallbackNamesWithoutEvaluatingScripts() {
+        val bridge = webView.bridgeBinding.mixinContextInterface
+        val callback = "callback;alert(1)//"
+        webView.evaluateJavascript("sentinel", null)
+        bridge.getAssets(emptyArray(), callback)
+        bridge.verifyPin(callback)
+        bridge.getTipAddress("chain", callback)
+        bridge.tipSign("chain", "message", callback)
+        bridge.signBotSignature(arrayOf("app", "false", "GET", "/", "", callback))
+        idleMainLooper()
+        assertEquals("sentinel", shadowOf(webView).lastEvaluatedJavascript)
+    }
+
+    @Test
     fun retainedJavaInterfacesRouteToNewHostAfterRebind() {
         val oldMixinCalls = mutableListOf<String>()
         val oldWalletCalls = mutableListOf<Long>()

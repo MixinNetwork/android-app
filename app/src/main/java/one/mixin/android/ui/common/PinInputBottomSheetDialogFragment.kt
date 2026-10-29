@@ -22,6 +22,8 @@ import one.mixin.android.widget.PinView
 
 @AndroidEntryPoint
 class PinInputBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "PinInputBottomSheetDialogFragment"
         const val ARGS_BIOMETRIC_INFO = "args_biometric_info"

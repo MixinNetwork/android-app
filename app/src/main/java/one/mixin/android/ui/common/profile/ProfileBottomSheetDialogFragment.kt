@@ -29,7 +29,7 @@ import kotlinx.coroutines.launch
 import one.mixin.android.Constants.Colors.LINK_COLOR
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.MixinResponse
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AccountUpdateRequest
 import one.mixin.android.databinding.FragmentProfileBottomSheetDialogBinding
 import one.mixin.android.event.BadgeEvent
@@ -45,6 +45,7 @@ import one.mixin.android.extension.getCapturedImage
 import one.mixin.android.extension.getOtherPath
 import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.inTransaction
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.openCamera
@@ -68,7 +69,6 @@ import one.mixin.android.ui.setting.member.MixinMemberUpgradeBottomSheetDialogFr
 import one.mixin.android.ui.tip.TipActivity
 import one.mixin.android.ui.tip.TipType
 import one.mixin.android.ui.web.WebActivity
-import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.vo.Account
 import one.mixin.android.vo.App
@@ -460,24 +460,19 @@ class ProfileBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragmen
                 TYPE_BIOGRAPHY -> AccountUpdateRequest(biography = content)
                 else -> AccountUpdateRequest(content, null)
             }
-        bottomViewModel.update(accountUpdateRequest)
-            .autoDispose(stopScope).subscribe(
-                { r: MixinResponse<Account> ->
-                    if (!isAdded) return@subscribe
-                    if (!r.isSuccess) {
-                        ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                        return@subscribe
-                    }
+        launchUntilStop {
+            handleMixinResponse(
+                invokeNetwork = { bottomViewModel.update(accountUpdateRequest) },
+                successBlock = { r ->
+                    if (!isAdded) return@handleMixinResponse
                     r.data?.let { data ->
                         Session.storeAccount(data)
                         bottomViewModel.insertUser(data.toUser())
                         refreshInfo(data)
                     }
                 },
-                { t: Throwable ->
-                    ErrorHandler.handleError(t)
-                },
             )
+        }
     }
 
     private fun setClickedBotId() {

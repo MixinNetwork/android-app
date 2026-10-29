@@ -1,12 +1,14 @@
 package one.mixin.android.util.mlkit.scan.camera.config
 
 import android.content.Context
-import android.util.DisplayMetrics
 import androidx.camera.core.AspectRatio
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.resolutionselector.AspectRatioStrategy
 import androidx.camera.core.resolutionselector.AspectRatioStrategy.FALLBACK_RULE_AUTO
 import androidx.camera.core.resolutionselector.ResolutionSelector
+import one.mixin.android.extension.isCompactWindow
+import one.mixin.android.extension.windowHeight
+import one.mixin.android.extension.windowWidth
 import timber.log.Timber
 import kotlin.math.abs
 
@@ -14,9 +16,16 @@ class AspectRatioCameraConfig(context: Context) : CameraConfig() {
     private val aspectRatio: Int
 
     init {
-        val displayMetrics: DisplayMetrics = context.resources.displayMetrics
-        val width: Int = displayMetrics.widthPixels
-        val height: Int = displayMetrics.heightPixels
+        val width: Int
+        val height: Int
+        if (context.isCompactWindow()) {
+            val displayMetrics = context.resources.displayMetrics
+            width = displayMetrics.widthPixels
+            height = displayMetrics.heightPixels
+        } else {
+            width = context.windowWidth()
+            height = context.windowHeight()
+        }
         aspectRatio = aspectRatio(width.toFloat(), height.toFloat())
         Timber.d("aspectRatio:$aspectRatio")
     }
