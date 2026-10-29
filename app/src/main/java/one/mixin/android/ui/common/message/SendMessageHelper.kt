@@ -73,6 +73,7 @@ import one.mixin.android.vo.isLocation
 import one.mixin.android.vo.isPost
 import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
+import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.isVideo
 import one.mixin.android.vo.toCategory
 import one.mixin.android.vo.toQuoteMessageItem
@@ -211,6 +212,12 @@ class SendMessageHelper
                                 MessageCategory.PLAIN_LIVE,
                                 MessageCategory.SIGNAL_LIVE,
                                 MessageCategory.ENCRYPTED_LIVE,
+                            )
+                        t.isTranscript() ->
+                            encryptCategory.toCategory(
+                                MessageCategory.PLAIN_TRANSCRIPT,
+                                MessageCategory.SIGNAL_TRANSCRIPT,
+                                MessageCategory.ENCRYPTED_TRANSCRIPT,
                             )
                         t.isAppCard() -> MessageCategory.APP_CARD.name
                         else -> throw IllegalArgumentException("Unknown type")
