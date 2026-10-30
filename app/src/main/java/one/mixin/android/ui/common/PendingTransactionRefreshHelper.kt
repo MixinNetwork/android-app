@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -48,8 +49,8 @@ object PendingTransactionRefreshHelper {
         jobManager: MixinJobManager,
         onTransactionStatusUpdated: ((hash: String, newStatus: String) -> Unit)? = null
     ) {
-        try {
-            while (true) {
+        while (true) {
+            try {
                 val pendingRawTransaction = web3ViewModel.getPendingRawTransactions(walletId)
                 if (pendingRawTransaction.isEmpty().not()) {
                     pendingRawTransaction.forEach { transition ->
@@ -86,12 +87,10 @@ object PendingTransactionRefreshHelper {
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
                         if (r.isSuccess && r.data?.state.isTerminalTransactionStatus()) {
                             val rawTransaction = r.data ?: return@forEach
-                            val rawToInsert =
-                                if (rawTransaction.chainId in Constants.Web3UtxoChainIds) {
-                                    rawTransaction.copy(nonce = transition.nonce)
-                                } else {
-                                    rawTransaction
-                                }
+                            val rawToInsert = rawTransaction.copy(
+                                account = transition.account,
+                                nonce = if (rawTransaction.chainId in Constants.Web3UtxoChainIds) transition.nonce else rawTransaction.nonce,
+                            )
                             val utxoRawTransactionHexToDeleteOutputs: String? =
                                 if (transition.chainId in Constants.Web3UtxoChainIds && rawTransaction.state == TransactionStatus.NOT_FOUND.value) {
                                     transition.raw
@@ -120,9 +119,12 @@ object PendingTransactionRefreshHelper {
                 } else {
                     delay(15_000)
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e)
+                delay(5_000)
             }
-        } catch (e: Exception) {
-            Timber.e(e)
         }
     }
 }
