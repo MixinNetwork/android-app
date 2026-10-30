@@ -235,7 +235,7 @@
     <string name="contact_mobile">Мобильный: %1$s</string>
     <string name="contact_mute_title">Отключить уведомления для…</string>
     <string name="contact_favorite_bots_title">Общие боты пользователя %1$s</string>
-    <string name="CONTACTS">КОНТАКТЫ</string>
+    <string name="Contacts">Контакты</string>
     <string name="content_audio">[Аудио]</string>
     <string name="content_contact">[Контакт]</string>
     <string name="content_file">[Файл]</string>

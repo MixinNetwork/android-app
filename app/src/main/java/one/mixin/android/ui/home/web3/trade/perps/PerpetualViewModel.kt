@@ -21,6 +21,8 @@ import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
+import one.mixin.android.RxBus
+import one.mixin.android.event.PerpsTradeCompletedEvent
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.api.DataErrorException
@@ -725,6 +727,7 @@ class PerpetualViewModel @Inject constructor(
                     withContext(Dispatchers.IO) {
                         perpsPositionDao.upsertSuspend(data)
                     }
+                    RxBus.publish(PerpsTradeCompletedEvent)
                     onSuccess(data)
                 } else {
                     onError(response.errorCode, response.errorDescription)

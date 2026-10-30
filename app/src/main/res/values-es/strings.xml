@@ -246,7 +246,7 @@
     <string name="contact_mobile">Móvil: %1$s</string>
     <string name="contact_mute_title">Silenciar notificaciones para…</string>
     <string name="contact_favorite_bots_title">Bots compartidos de %1$s</string>
-    <string name="CONTACTS">CONTACTOS</string>
+    <string name="Contacts">Contactos</string>
     <string name="content_audio">[Audio]</string>
     <string name="content_contact">[Contacto]</string>
     <string name="content_file">[Archivo]</string>

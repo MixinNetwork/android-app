@@ -272,7 +272,7 @@
     <string name="contact_mute_title">알림 음소거…</string>
     <string name="contact_new_group_chat_desc">그룹 채팅 만들기</string>
     <string name="contact_favorite_bots_title">%1$s님이 가장 좋아하는 봇</string>
-    <string name="CONTACTS">연락처</string>
+    <string name="Contacts">연락처</string>
     <string name="content_audio">[오디오]</string>
     <string name="content_contact">[연락처]</string>
     <string name="content_file">[파일]</string>
