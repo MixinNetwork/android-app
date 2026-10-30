@@ -1318,6 +1318,9 @@
     <string name="Make_sure_WiFi">请确保 WiFi 连接</string>
     <string name="connected_dapps">已连接的 app</string>
     <string name="search_placeholder_address">名称, 地址</string>
+    <string name="address_book_search_hint">名称，地址</string>
+    <string name="address_book_no_records">暂无记录</string>
+    <string name="address_book_no_records_found">未找到相关记录</string>
     <string name="search_placeholder_dapp">名称, URL</string>
     <string name="search_placeholder_app">搜索 ID 或 名字</string>
     <string name="search_placeholder_inscription">搜索 ID</string>
@@ -2696,4 +2699,8 @@
     <string name="Select_asset">选择一个资产查看</string>
     <string name="Select_market_item">选择一个行情查看</string>
     <string name="Select_explore_item">选择一项打开</string>
+    <string name="All_Networks">所有网络</string>
+    <string name="Last_Updated">最后更新</string>
+    <string name="Last_Updated_at">最后更新 %1$s</string>
+    <string name="number_of_networks">%1$d 个网络</string>
 </resources>

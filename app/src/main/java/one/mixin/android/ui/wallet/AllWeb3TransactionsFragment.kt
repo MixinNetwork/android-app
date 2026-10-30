@@ -158,7 +158,16 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment(R.layout.fragment_a
             filterAsset.setOnClickListener {
                 selectAsset()
             }
-            filterUser.isVisible = false
+            filterUser.setOnClickListener {
+                filterUser.open()
+                showAddressFilterReset(
+                    onReset = {
+                        filterParams.address = null
+                        loadFilter()
+                    },
+                    onDismiss = { filterUser.close() },
+                )
+            }
             filterReputation.setOnClickListener {
                 val builder = BottomSheet.Builder(requireActivity())
                 val viewBinding = ViewReputationBottomBinding.inflate(
@@ -226,6 +235,8 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment(R.layout.fragment_a
         binding.apply {
             filterType.updateWeb3TokenFilterType(filterParams.tokenFilterType)
             filterAsset.updateWeb3Tokens(R.string.Assets, filterParams.tokenItems)
+            filterUser.isVisible = filterParams.address != null
+            filterParams.address?.let { filterUser.setTitle(it.label.ifBlank { it.destination }) }
             filterTime.setTitle(filterParams.selectTime ?: getString(R.string.Date))
             filterReputation.updateLevel(getString(R.string.Reputation), filterParams.level)
             titleView.setSubTitle(

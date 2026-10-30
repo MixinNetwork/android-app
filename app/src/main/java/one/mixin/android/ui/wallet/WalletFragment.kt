@@ -52,6 +52,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshSafeAccountsJob
 import one.mixin.android.job.RefreshSingleWalletJob
 import one.mixin.android.session.Session
+import one.mixin.android.ui.address.AddressBookBottomSheetDialogFragment
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.LoginVerifyBottomSheetDialogFragment
 import one.mixin.android.ui.common.VerifyBottomSheetDialogFragment
@@ -286,7 +287,17 @@ class WalletFragment : BaseFragment(R.layout.fragment_wallet) {
             compose.setContent {
                 AssetDashboardScreen(
                     onWalletCardClick = ::handleWalletCardClick,
-                    onAddWalletClick = ::handleAddWalletClick
+                    onAddWalletClick = ::handleAddWalletClick,
+                    onAddressBookClick = {
+                        val walletId = when (val destination = selectedWalletDestination) {
+                            is WalletDestination.Classic -> destination.walletId
+                            is WalletDestination.Import -> destination.walletId
+                            is WalletDestination.Watch -> destination.walletId
+                            is WalletDestination.Safe -> destination.walletId
+                            WalletDestination.Privacy, null -> null
+                        }
+                        AddressBookBottomSheetDialogFragment.newInstance(walletId).show(parentFragmentManager, AddressBookBottomSheetDialogFragment.TAG)
+                    },
                 ) {
                     MixinMemberUpgradeBottomSheetDialogFragment.newInstance().showNow(parentFragmentManager, MixinMemberUpgradeBottomSheetDialogFragment.TAG)
                 }

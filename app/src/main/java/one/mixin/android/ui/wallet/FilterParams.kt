@@ -1,8 +1,11 @@
 package one.mixin.android.ui.wallet
 
 import androidx.room3.RoomRawQuery
+import one.mixin.android.Constants
 import one.mixin.android.R
 import one.mixin.android.tip.wc.SortOrder
+import one.mixin.android.util.GsonHelper
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.UserItem
@@ -19,6 +22,7 @@ class FilterParams(
     var recipients: List<Recipient>? = null,
     var startTime: Long? = null,
     var endTime: Long? = null,
+    var address: Address? = null,
 ) {
     override fun toString(): String {
         return "order:${order.name} type:${type.name} tokens:${tokenItems?.map { it.symbol }} users${recipients?.map { it }} startTime:${startTime?.let { Instant.ofEpochMilli(it) } ?: ""} endTime:${endTime?.let { Instant.ofEpochMilli(it + 24 * 60 * 60 * 1000) } ?: ""}"
@@ -47,8 +51,13 @@ class FilterParams(
             }
         }
 
-    fun buildQuery(): RoomRawQuery {
+    fun buildQuery(limit: Int? = null): RoomRawQuery {
         val filters = mutableListOf<String>()
+
+        address?.let {
+            filters.add("t.chain_id = '${it.chainId.replace("'", "''")}'")
+            filters.add("(${it.jsonAddressPredicate("s.deposit", "sender")} OR ${it.jsonAddressPredicate("s.withdrawal", "receiver")})")
+        }
 
         if (type != SnapshotType.all) {
             when(type){
@@ -127,14 +136,48 @@ class FilterParams(
             "WHERE ${filters.joinToString(" AND ")}"
         }
 
-        val orderSql = when (order) {
+        var orderSql = when (order) {
             SortOrder.Recent -> "ORDER BY s.created_at DESC"
             SortOrder.Oldest -> "ORDER BY s.created_at ASC"
             SortOrder.Value -> "ORDER BY abs(s.amount * t.price_usd) DESC"
             SortOrder.Amount -> "ORDER BY s.amount DESC"
             else -> ""
         }
+        if (address != null) {
+            orderSql += when (order) {
+                SortOrder.Recent -> ", s.snapshot_id DESC"
+                SortOrder.Oldest -> ", s.snapshot_id ASC"
+                SortOrder.Value, SortOrder.Amount -> ", s.created_at DESC, s.snapshot_id DESC"
+                else -> "ORDER BY s.created_at DESC, s.snapshot_id DESC"
+            }
+        }
+        limit?.let {
+            require(it >= 0)
+            orderSql += " LIMIT $it"
+        }
 
         return WalletFilterQueryGenerated.snapshots(whereSql, orderSql)
     }
+}
+
+internal fun Address.jsonAddressPredicate(column: String, field: String): String {
+    val ignoreCase = chainId in Constants.Web3EvmChainIds
+    val marker = "\"$field\":"
+    if (tag.isNullOrEmpty()) {
+        val needle = (marker + GsonHelper.customGson.toJson(destination)).replace("'", "''")
+        return if (ignoreCase) {
+            "instr(lower($column), lower('$needle')) > 0"
+        } else {
+            "instr($column, '$needle') > 0"
+        }
+    }
+
+    // Privacy converters have one endpoint; only its destination may ignore ASCII case.
+    val destinationJson = GsonHelper.customGson.toJson(destination).dropLast(1).replace("'", "''")
+    val tagJson = GsonHelper.customGson.toJson(":$tag").drop(1).replace("'", "''")
+    val start = "instr($column, '$marker') + ${marker.length}"
+    val collation = if (ignoreCase) "NOCASE" else "BINARY"
+    return "(instr($column, '$marker') > 0 AND " +
+        "substr($column, $start, length('$destinationJson')) = '$destinationJson' COLLATE $collation AND " +
+        "substr($column, $start + length('$destinationJson'), length('$tagJson')) = '$tagJson' COLLATE BINARY)"
 }

@@ -789,6 +789,9 @@
     <string name="search_hint">資産, 連絡先とメッセージ</string>
     <string name="SEARCH_MESSAGES">メッセージを検索</string>
     <string name="search_placeholder_address">ラベル、アドレス</string>
+    <string name="address_book_search_hint">名前、アドレス</string>
+    <string name="address_book_no_records">記録がありません</string>
+    <string name="address_book_no_records_found">該当する記録が見つかりません</string>
     <string name="search_placeholder_asset">名前、シンボル</string>
     <string name="search_placeholder_number">Mixin ID または電話番号を検索</string>
     <plurals name="search_related_message" tools:ignore="UnusedQuantity">
@@ -1211,4 +1214,8 @@
     <string name="Select_asset">表示する資産を選択してください</string>
     <string name="Select_market_item">表示するマーケットを選択してください</string>
     <string name="Select_explore_item">開く項目を選択してください</string>
+    <string name="All_Networks">すべてのネットワーク</string>
+    <string name="Last_Updated">最終更新</string>
+    <string name="Last_Updated_at">最終更新 %1$s</string>
+    <string name="number_of_networks">%1$d ネットワーク</string>
 </resources>
