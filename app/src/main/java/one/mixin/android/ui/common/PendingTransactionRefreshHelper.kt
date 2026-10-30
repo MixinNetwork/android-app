@@ -2,6 +2,7 @@ package one.mixin.android.ui.common
 
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -48,8 +49,8 @@ object PendingTransactionRefreshHelper {
         jobManager: MixinJobManager,
         onTransactionStatusUpdated: ((hash: String, newStatus: String) -> Unit)? = null
     ) {
-        try {
-            while (true) {
+        while (true) {
+            try {
                 val pendingRawTransaction = web3ViewModel.getPendingRawTransactions(walletId)
                 if (pendingRawTransaction.isEmpty().not()) {
                     pendingRawTransaction.forEach { transition ->
@@ -120,9 +121,12 @@ object PendingTransactionRefreshHelper {
                 } else {
                     delay(15_000)
                 }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e)
+                delay(5_000)
             }
-        } catch (e: Exception) {
-            Timber.e(e)
         }
     }
 }
