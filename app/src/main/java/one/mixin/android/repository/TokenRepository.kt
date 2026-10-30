@@ -1869,7 +1869,7 @@ class TokenRepository
                 ),
             )
             if (pendingTransaction != null) {
-                web3TransactionDao.insert(
+                web3TransactionDao.insertIgnore(
                     pendingTransaction.copy(
                         transactionHash = broadcastTxHash,
                         transactionAt = updatedAt,

@@ -87,12 +87,10 @@ object PendingTransactionRefreshHelper {
                         val r = web3ViewModel.transaction(transition.hash, transition.chainId)
                         if (r.isSuccess && r.data?.state.isTerminalTransactionStatus()) {
                             val rawTransaction = r.data ?: return@forEach
-                            val rawToInsert =
-                                if (rawTransaction.chainId in Constants.Web3UtxoChainIds) {
-                                    rawTransaction.copy(nonce = transition.nonce)
-                                } else {
-                                    rawTransaction
-                                }
+                            val rawToInsert = rawTransaction.copy(
+                                account = transition.account,
+                                nonce = if (rawTransaction.chainId in Constants.Web3UtxoChainIds) transition.nonce else rawTransaction.nonce,
+                            )
                             val utxoRawTransactionHexToDeleteOutputs: String? =
                                 if (transition.chainId in Constants.Web3UtxoChainIds && rawTransaction.state == TransactionStatus.NOT_FOUND.value) {
                                     transition.raw
