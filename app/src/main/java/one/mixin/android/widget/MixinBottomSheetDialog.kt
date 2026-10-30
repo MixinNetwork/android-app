@@ -25,9 +25,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialog
 import kotlinx.coroutines.Job
 import one.mixin.android.R
 import one.mixin.android.extension.backgroundDrawable
+import one.mixin.android.extension.displayMetrics
+import one.mixin.android.extension.enableWideColorGamutIfSupported
 import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.isTablet
-import one.mixin.android.extension.displayMetrics
 import one.mixin.android.util.avoidBottomSheetFolds
 import kotlin.math.abs
 
@@ -55,6 +56,7 @@ class MixinBottomSheetDialog(
 
     override fun setContentView(view: View) {
         super.setContentView(view)
+        window?.enableWideColorGamutIfSupported()
         container = window!!.findViewById(com.google.android.material.R.id.container)
         container.backgroundDrawable = backDrawable
         backDrawable.alpha = 0
@@ -261,6 +263,7 @@ internal class AdaptiveBottomSheetDialog(
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window?.enableWideColorGamutIfSupported()
         originalWindowAnimations = window?.attributes?.windowAnimations ?: 0
         if (centerOnExpandedScreen && context.isExpandedSheetScreen()) {
             window?.setWindowAnimations(R.style.DialogNoAnimation)

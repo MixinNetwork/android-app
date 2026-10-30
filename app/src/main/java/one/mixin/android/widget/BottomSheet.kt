@@ -48,6 +48,7 @@ import com.google.android.material.internal.ViewUtils.doOnApplyWindowInsets
 import one.mixin.android.R
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.displayMetrics
+import one.mixin.android.extension.enableWideColorGamutIfSupported
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.dpToPx
 import one.mixin.android.extension.getSystemWindowBottom
@@ -336,6 +337,7 @@ class BottomSheet(
         }
 
         window?.let { window ->
+            window.enableWideColorGamutIfSupported()
             val params = window.attributes
             params.width = MATCH_PARENT
             params.height = MATCH_PARENT
