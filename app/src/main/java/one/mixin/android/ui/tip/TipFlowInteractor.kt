@@ -281,13 +281,7 @@ class TipFlowInteractor @Inject internal constructor(
     ): Boolean {
         if (!Session.hasSafe()) {
             Timber.i("LoginFlow safe_register_start tip_type=${tipBundle.tipType}")
-            val registerResult: Boolean = try {
-                registerPublicKey(context, tipBundle, pin, tipPriv, onStepChanged, onShowMessage)
-            } catch (e: Exception) {
-                val errorInfo = e.getTipExceptionMsg(context)
-                onStepChanged(RetryRegister(null, errorInfo))
-                false
-            }
+            val registerResult = registerPublicKey(context, tipBundle, pin, tipPriv, onStepChanged, onShowMessage)
             Timber.i("LoginFlow safe_register_result success=$registerResult has_safe=${Session.hasSafe()}")
             if (!registerResult) {
                 // register public key failed, already go to RetryRegister
@@ -495,88 +489,107 @@ class TipFlowInteractor @Inject internal constructor(
         onShowMessage: (String) -> Unit,
     ): Boolean {
         onStepChanged(Processing.Registering)
-        val meResp = accountService.getMeSuspend()
-        if (meResp.isSuccess) {
-            val account = requireNotNull(meResp.data) { "required account can not be null" }
-            Session.storeAccount(account)
-            if (account.hasSafe) {
+        var step = 1
+        try {
+            val meResp = accountService.getMeSuspend()
+            if (meResp.isSuccess) {
+                val account = requireNotNull(meResp.data) { "required account can not be null" }
+                Session.storeAccount(account)
+                if (account.hasSafe) {
+                    if (hasPendingImportMnemonicInMemory()) {
+                        markPendingImportMnemonic(context)
+                    }
+                    if (Session.hasPhone()) {
+                        try {
+                            step = 8
+                            tip.removeLocalMnemonicIfSafeMatches(context, pin, tipPriv)
+                        } catch (e: Exception) {
+                            tipBundle.oldPin = null
+                            onStepChanged(RetryRegister(tipPriv, "${e.getTipExceptionMsg(context)}($step)"))
+                            return false
+                        }
+                    }
+                    return true
+                }
+            } else {
+                tipBundle.oldPin = null
+                val error = requireNotNull(meResp.error) { "error can not be null" }
+                val errorInfo = context.getMixinErrorStringByCode(error.code, error.description)
+                onStepChanged(RetryRegister(tipPriv, "$errorInfo($step)"))
+                return false
+            }
+            step = 2
+            val seed = try {
+                tipPriv ?: tip.getOrRecoverTipPriv(context, pin).getOrThrow()
+            } catch (e: Exception) {
+                tipBundle.oldPin = null
+                val errorInfo = e.getTipExceptionMsg(context)
+                onStepChanged(RetryRegister(null, "$errorInfo($step)"))
+                return false
+            }
+            step = 3
+            val spendSeed = tip.getSpendPriv(context, seed)
+            step = 4
+            val saltBase64 = tip.getEncryptSalt(context, pin, seed, Session.isAnonymous())
+            step = 5
+            val spendKeyPair = newKeyPairFromSeed(spendSeed)
+            val selfAccountId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
+            val edKey = tip.getMnemonicEdKey(context, pin, seed)
+            val pkHex: String = spendKeyPair.publicKey.toHex()
+            step = 6
+            val registerRequest = RegisterRequest(
+                publicKey = pkHex,
+                signature = Session.getRegisterSignature(selfAccountId, spendSeed),
+                pin = getEncryptedTipBody(selfAccountId, pkHex, pin),
+                salt = saltBase64,
+                masterPublicHex = edKey.publicKey.hexString(),
+                masterSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfAccountId.toByteArray()).hexString(),
+            )
+            step = 7
+            val registerResp = utxoService.registerPublicKey(registerRequest)
+            if (registerResp.isSuccess) {
+                val account = requireNotNull(registerResp.data) { "required account can not be null" }
+                Session.storeAccount(account)
                 if (hasPendingImportMnemonicInMemory()) {
                     markPendingImportMnemonic(context)
                 }
                 if (Session.hasPhone()) {
                     try {
-                        tip.removeLocalMnemonicIfSafeMatches(context, pin, tipPriv)
+                        step = 8
+                        tip.removeLocalMnemonicIfSafeMatches(context, pin, seed)
                     } catch (e: Exception) {
                         tipBundle.oldPin = null
-                        onStepChanged(RetryRegister(tipPriv, e.getTipExceptionMsg(context)))
+                        onStepChanged(RetryRegister(seed, "${e.getTipExceptionMsg(context)}($step)"))
                         return false
                     }
                 }
+                step = 9
+                val solAddress: String = getTipAddress(context, pin, SOLANA_CHAIN_ID)
+                step = 10
+                val evmAddress: String = getTipAddress(context, pin, ETHEREUM_CHAIN_ID)
+                step = 11
+                val pearlAddress: String = getTipAddress(context, pin, PEARL_CHAIN_ID)
+                step = 12
+                Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
+                Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
+                Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Pearl.name, pearlAddress)
                 return true
             }
-        } else {
+            if (registerResp.errorCode == ErrorHandler.INVALID_PIN_FORMAT) {
+                tipBundle.oldPin = null
+                onStepChanged(LegacyPIN("${context.getString(R.string.error_legacy_pin)}($step)"))
+                return false
+            }
             tipBundle.oldPin = null
-            val error = requireNotNull(meResp.error) { "error can not be null" }
+            val error = requireNotNull(registerResp.error) { "error can not be null" }
             val errorInfo = context.getMixinErrorStringByCode(error.code, error.description)
-            onStepChanged(RetryRegister(tipPriv, errorInfo))
+            onStepChanged(RetryRegister(tipPriv, "$errorInfo($step)"))
             return false
-        }
-        val seed = try {
-            tipPriv ?: tip.getOrRecoverTipPriv(context, pin).getOrThrow()
         } catch (e: Exception) {
-            tipBundle.oldPin = null
             val errorInfo = e.getTipExceptionMsg(context)
-            onStepChanged(RetryRegister(null, errorInfo))
+            onStepChanged(RetryRegister(null, "$errorInfo($step)"))
             return false
         }
-        val spendSeed = tip.getSpendPriv(context, seed)
-        val saltBase64 = tip.getEncryptSalt(context, pin, seed, Session.isAnonymous())
-        val spendKeyPair = newKeyPairFromSeed(spendSeed)
-        val selfAccountId = requireNotNull(Session.getAccountId()) { "self userId can not be null at this step" }
-        val edKey = tip.getMnemonicEdKey(context, pin, seed)
-        val pkHex: String = spendKeyPair.publicKey.toHex()
-        val registerRequest = RegisterRequest(
-            publicKey = pkHex,
-            signature = Session.getRegisterSignature(selfAccountId, spendSeed),
-            pin = getEncryptedTipBody(selfAccountId, pkHex, pin),
-            salt = saltBase64,
-            masterPublicHex = edKey.publicKey.hexString(),
-            masterSignatureHex = initFromSeedAndSign(edKey.privateKey.toTypedArray().toByteArray(), selfAccountId.toByteArray()).hexString(),
-        )
-        val registerResp = utxoService.registerPublicKey(registerRequest)
-        if (registerResp.isSuccess) {
-            val account = requireNotNull(registerResp.data) { "required account can not be null" }
-            Session.storeAccount(account)
-            if (hasPendingImportMnemonicInMemory()) {
-                markPendingImportMnemonic(context)
-            }
-            if (Session.hasPhone()) {
-                try {
-                    tip.removeLocalMnemonicIfSafeMatches(context, pin, seed)
-                } catch (e: Exception) {
-                    tipBundle.oldPin = null
-                    onStepChanged(RetryRegister(seed, e.getTipExceptionMsg(context)))
-                    return false
-                }
-            }
-            val solAddress: String = getTipAddress(context, pin, SOLANA_CHAIN_ID)
-            val evmAddress: String = getTipAddress(context, pin, ETHEREUM_CHAIN_ID)
-            val pearlAddress: String = getTipAddress(context, pin, PEARL_CHAIN_ID)
-            Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Solana.name, solAddress)
-            Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Ethereum.name, evmAddress)
-            Web3Signer.updateAddress(Web3Signer.JsSignerNetwork.Pearl.name, pearlAddress)
-            return true
-        }
-        if (registerResp.errorCode == ErrorHandler.INVALID_PIN_FORMAT) {
-            tipBundle.oldPin = null
-            onStepChanged(LegacyPIN(context.getString(R.string.error_legacy_pin)))
-            return false
-        }
-        tipBundle.oldPin = null
-        val error = requireNotNull(registerResp.error) { "error can not be null" }
-        val errorInfo = context.getMixinErrorStringByCode(error.code, error.description)
-        onStepChanged(RetryRegister(tipPriv, errorInfo))
-        return false
     }
 
     private suspend fun getEncryptedTipBody(userId: String, pkHex: String, pin: String): String =
