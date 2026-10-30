@@ -62,7 +62,6 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.buildTransaction
 import one.mixin.android.db.web3.vo.isTransferSupported
 import one.mixin.android.db.web3.vo.isWeb3TransferSupported
-import one.mixin.android.event.BadgeEvent
 import one.mixin.android.event.TradeMarketSelectedEvent
 import one.mixin.android.extension.addToList
 import one.mixin.android.extension.alertDialogBuilder
@@ -226,12 +225,10 @@ class TradeFragment : BaseFragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        orderBadge = defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1
         autoFocusAmount = shouldAutoFocusAmount()
         observeTradeMarketSelection()
     }
 
-    private var orderBadge: Boolean by mutableStateOf(false)
     private var autoFocusAmount: Boolean by mutableStateOf(false)
 
     private fun limitOrderBadgeDismissedPrefKey(walletId: String): String {
@@ -240,10 +237,6 @@ class TradeFragment : BaseFragment() {
 
     private fun perpetualBadgeDismissedPrefKey(walletId: String): String {
         return "${Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED}_$walletId"
-    }
-
-    private fun perpetualOrderBadgeDismissedPrefKey(walletId: String): String {
-        return "${Account.PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED}_$walletId"
     }
 
     @FlowPreview
@@ -349,9 +342,6 @@ class TradeFragment : BaseFragment() {
                             val perpetualBadgePrefKey = remember(currentWalletId) {
                                 perpetualBadgeDismissedPrefKey(currentWalletId)
                             }
-                            val perpetualOrderBadgePrefKey = remember(currentWalletId) {
-                                perpetualOrderBadgeDismissedPrefKey(currentWalletId)
-                            }
                             val initialTabIndex = remember(currentWalletId) {
                                 getInitialTabIndex(currentWalletId)
                             }
@@ -361,9 +351,6 @@ class TradeFragment : BaseFragment() {
                             var isPerpetualTabBadgeDismissed by remember(currentWalletId) {
                                 mutableStateOf(defaultSharedPreferences.getBoolean(perpetualBadgePrefKey, false))
                             }
-                            var isPerpetualOrderBadgeDismissed by remember(currentWalletId) {
-                                mutableStateOf(defaultSharedPreferences.getBoolean(perpetualOrderBadgePrefKey, false))
-                            }
 
                             TradePage(
                                 walletId = walletId,
@@ -372,10 +359,8 @@ class TradeFragment : BaseFragment() {
                                 limitFrom = limitFromToken,
                                 limitTo = limitToToken,
                                 inMixin = inMixin(),
-                                orderBadge = orderBadge,
                                 isLimitOrderTabBadgeDismissed = isLimitOrderTabBadgeDismissed,
                                 isPerpetualTabBadgeDismissed = isPerpetualTabBadgeDismissed,
-                                isPerpetualOrderBadgeDismissed = isPerpetualOrderBadgeDismissed,
                                 initialAmount = initialAmount,
                                 lastOrderTime = lastOrderTime,
                                 reviewing = reviewing,
@@ -401,12 +386,6 @@ class TradeFragment : BaseFragment() {
                                     if (!isPerpetualTabBadgeDismissed) {
                                         isPerpetualTabBadgeDismissed = true
                                         defaultSharedPreferences.putBoolean(perpetualBadgePrefKey, true)
-                                    }
-                                },
-                                onDismissPerpetualOrderBadge = {
-                                    if (!isPerpetualOrderBadgeDismissed) {
-                                        isPerpetualOrderBadgeDismissed = true
-                                        defaultSharedPreferences.putBoolean(perpetualOrderBadgePrefKey, true)
                                     }
                                 },
                                 onTabChanged = { index ->
@@ -479,11 +458,6 @@ class TradeFragment : BaseFragment() {
                                         filterPending = filterPending,
                                         spotType = spotType,
                                     )
-                                    if (defaultSharedPreferences.getInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, -1) != 1) {
-                                        defaultSharedPreferences.putInt(Account.PREF_HAS_USED_SWAP_TRANSACTION, 1)
-                                        orderBadge = false
-                                        RxBus.publish(BadgeEvent(Account.PREF_HAS_USED_SWAP_TRANSACTION))
-                                    }
                                     navTo(target, AllOrdersFragment.TAG)
                                 },
                                 onLimitOrderClick = { orderId ->
@@ -559,12 +533,10 @@ class TradeFragment : BaseFragment() {
                                         }
                                     }
                                 },
-                                onShowHelpBottomSheet = { onContactSupport, onTradingGuide ->
+                                onShowMore = { walletName ->
                                     this@apply.hideKeyboard()
-                                    TradeHelpBottomSheetDialogFragment.newInstance().apply {
-                                        this.onContactSupport = onContactSupport
-                                        this.onTradingGuide = onTradingGuide
-                                    }.show(parentFragmentManager, TradeHelpBottomSheetDialogFragment.TAG)
+                                    TradeMoreBottomSheetDialogFragment.newInstance(walletId, walletName)
+                                        .show(parentFragmentManager, TradeMoreBottomSheetDialogFragment.TAG)
                                 },
                             pop = {
                                 navigateUp(navController)

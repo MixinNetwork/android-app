@@ -6,6 +6,7 @@ import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import one.mixin.android.db.WalletDatabase
@@ -38,6 +39,24 @@ class LimitOrderPagingTest {
     @AfterTest
     fun tearDown() {
         database.close()
+    }
+
+    @Test
+    fun tradeMenuCountsAndFiltersMatchEachWalletAndOrderType() = runBlocking {
+        val dao = database.orderDao()
+        val walletId = order().walletId
+        assertEquals(0, dao.observeOrderCount(walletId, "swap").first())
+        dao.insertListSuspend(listOf(
+            order().copy(orderId = "swap", orderType = "swap", state = "done"),
+            order().copy(orderId = "limit", orderType = "limit"),
+            order().copy(orderId = "other-wallet", walletId = "other", orderType = "swap"),
+        ))
+        for (type in listOf("swap", "limit")) {
+            val filter = OrderFilterParams(walletIds = listOf(walletId), orderTypes = listOf(type))
+            val page = load(LimitOrderDataProvider.allOrders(database, filter))
+            assertEquals(listOf(type), page.data.map { it.orderId })
+            assertEquals(page.data.size, dao.observeOrderCount(walletId, type).first())
+        }
     }
 
     @Test

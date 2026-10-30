@@ -801,6 +801,8 @@ class PerpetualViewModel @Inject constructor(
         }
     }
 
+    fun observeActivityCount(): Flow<Int> = perpsOrderDao.observeActivityCount()
+
     fun observeOrders(walletId: String, limit: Int): Flow<List<PerpsOrderItem>> {
         return perpsOrderDao.observeOrders(limit)
     }

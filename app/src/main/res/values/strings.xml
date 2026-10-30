@@ -2337,7 +2337,13 @@
     <string name="Trade_Simple">Swap</string>
     <string name="Trade_Advanced">Limit</string>
     <string name="Trade_Pro">Pro</string>
-    <string name="trade_pro_entry">Professional trading</string>
+    <string name="Trade_Lite" translatable="false">Lite</string>
+    <string name="Trade_Pro_Title" translatable="false">Mixin Perps</string>
+    <string name="Trade_Swap_Orders">Swap Orders</string>
+    <string name="Trade_Limit_Orders">Limit Orders</string>
+    <string name="Trade_Perpetual_Activity">Perpetual Activity</string>
+    <string name="Trade_Pro_Description">Advanced charts, cross margin, and limit orders.</string>
+    <string name="Trade_Now">Trade Now</string>
     <string name="order_state_created">Created</string>
     <string name="order_state_pricing">Pricing</string>
     <string name="order_state_quoting">Quoting</string>

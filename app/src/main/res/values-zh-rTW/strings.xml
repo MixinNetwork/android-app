@@ -2370,7 +2370,11 @@
     <string name="Trade_Simple">閃兌</string>
     <string name="Trade_Advanced">限價</string>
     <string name="Trade_Pro">專業版</string>
-    <string name="trade_pro_entry">專業版交易</string>
+    <string name="Trade_Swap_Orders">閃兌訂單</string>
+    <string name="Trade_Limit_Orders">限價訂單</string>
+    <string name="Trade_Perpetual_Activity">合約記錄</string>
+    <string name="Trade_Pro_Description">專業圖表、全倉保證金及限價訂單。</string>
+    <string name="Trade_Now">立即交易</string>
     <string name="order_state_created">已創建</string>
     <string name="order_state_pricing">定價</string>
     <string name="order_state_quoting">報價中</string>

@@ -2272,7 +2272,11 @@
     <string name="Trade_Simple">스왑</string>
     <string name="Trade_Advanced">지정가</string>
     <string name="Trade_Pro">프로</string>
-    <string name="trade_pro_entry">전문 거래</string>
+    <string name="Trade_Swap_Orders">스왑 주문</string>
+    <string name="Trade_Limit_Orders">지정가 주문</string>
+    <string name="Trade_Perpetual_Activity">무기한 선물 거래 내역</string>
+    <string name="Trade_Pro_Description">고급 차트, 교차 마진 및 지정가 주문.</string>
+    <string name="Trade_Now">지금 거래</string>
     <string name="order_state_created">생성됨</string>
     <string name="order_state_pricing">가격</string>
     <string name="order_state_quoting">인용</string>

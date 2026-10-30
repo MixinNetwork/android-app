@@ -79,6 +79,13 @@ interface PerpsOrderDao : BaseDao<PerpsOrder> {
     """)
     suspend fun getCloseOrderByPositionId(positionId: String): PerpsOrderItem?
 
+    @Query("""
+        SELECT COUNT(*) FROM perps_orders
+        WHERE order_type IN ('open', 'increase_position', 'increase_margin', 'decrease_margin', 'close')
+        AND status != 'processing'
+    """)
+    fun observeActivityCount(): Flow<Int>
+
     @Query("DELETE FROM perps_orders")
     suspend fun deleteAll()
 

@@ -60,8 +60,8 @@ interface OrderDao : BaseDao<Order> {
     )
     suspend fun lastOrderCreatedAt(): String?
 
-    @Query("SELECT COUNT(*) FROM orders WHERE wallet_id = :walletId AND state IN ('pending')")
-    fun getPendingOrderCountByWallet(walletId: String): Flow<Int>
+    @Query("SELECT COUNT(*) FROM orders WHERE wallet_id = :walletId AND order_type = :orderType")
+    fun observeOrderCount(walletId: String, orderType: String): Flow<Int>
 
     @Query("DELETE FROM orders WHERE wallet_id = :walletId")
     suspend fun deleteOrders(walletId: String)
