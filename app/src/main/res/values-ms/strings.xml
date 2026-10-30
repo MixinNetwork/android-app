@@ -888,4 +888,15 @@
     <string name="Select_asset">Pilih aset untuk dilihat</string>
     <string name="Select_market_item">Pilih pasaran untuk dilihat</string>
     <string name="Select_explore_item">Pilih item untuk dibuka</string>
+    <string name="Trade_Simple">Pertukaran</string>
+    <string name="Trade_Advanced">Had</string>
+    <string name="Trade_Pro">Pro</string>
+    <string name="Trade_Swap_Orders">Pesanan Pertukaran</string>
+    <string name="Trade_Limit_Orders">Pesanan Had</string>
+    <string name="Trade_Perpetual_Activity">Aktiviti Kontrak Kekal</string>
+    <string name="Trade_Pro_Description">Carta lanjutan, margin silang dan pesanan had.</string>
+    <string name="Trade_Now">Berdagang Sekarang</string>
+    <string name="Spot_Trade_Guide_Overview_Desc">Mixin menyokong pertukaran dan pesanan had, membolehkan anda berdagang merentas pelbagai rantaian dan aset dengan kecairan terkumpul daripada DEX dan CEX.</string>
+    <string name="Spot_Trade_Guide_Swap_Desc">Pertukaran membolehkan dagangan serta-merta pada harga pasaran terbaik yang tersedia.</string>
+    <string name="Spot_Trade_Guide_Limit_Desc">Pesanan had membolehkan anda menetapkan harga pelaksanaan pilihan anda. Pesanan hanya dilaksanakan apabila pasaran mencapai harga yang anda tetapkan.</string>
 </resources>

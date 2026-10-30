@@ -1206,4 +1206,15 @@
     <string name="Select_asset">Выберите актив для просмотра</string>
     <string name="Select_market_item">Выберите рынок для просмотра</string>
     <string name="Select_explore_item">Выберите элемент, чтобы открыть его</string>
+    <string name="Trade_Simple">Обмен</string>
+    <string name="Trade_Advanced">Лимит</string>
+    <string name="Trade_Pro">Pro</string>
+    <string name="Trade_Swap_Orders">Ордера на обмен</string>
+    <string name="Trade_Limit_Orders">Лимитные ордера</string>
+    <string name="Trade_Perpetual_Activity">История бессрочных контрактов</string>
+    <string name="Trade_Pro_Description">Расширенные графики, кросс-маржа и лимитные ордера.</string>
+    <string name="Trade_Now">Торговать сейчас</string>
+    <string name="Spot_Trade_Guide_Overview_Desc">Mixin поддерживает обмен и лимитные ордера, позволяя торговать различными активами в нескольких сетях с использованием ликвидности, агрегированной из DEX и CEX.</string>
+    <string name="Spot_Trade_Guide_Swap_Desc">Обмен позволяет мгновенно совершать сделки по лучшей доступной рыночной цене.</string>
+    <string name="Spot_Trade_Guide_Limit_Desc">Лимитные ордера позволяют задать желаемую цену исполнения. Ордера исполняются только тогда, когда рыночная цена достигает указанного уровня.</string>
 </resources>
