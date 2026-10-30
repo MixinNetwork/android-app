@@ -1254,6 +1254,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         binding.homeRail.setContent {
             HomeRail(
                 viewModel = homeFilterViewModel,
+                compactLandscape = homeRailModeState.value == HomeRailMode.CompactLandscape,
                 sectionId = currentSectionId.intValue,
                 showWalletBadge = walletBadgeVisible.value,
                 showMoreBadge = moreBadgeVisible.value,
@@ -1435,6 +1436,11 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     private var embeddedSecondaries: List<ActivityStack> = emptyList()
     private var homeRailComposed = false
+    private val homeRailModeState = mutableStateOf(HomeRailMode.None)
+
+    override fun onWindowLayoutModeChanged() {
+        updateRailVisibility()
+    }
     private var homeSearchOpen = false
 
     // Search covers the whole window on large screens, so the rail steps aside while it is open.
@@ -1445,7 +1451,8 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     private fun updateRailVisibility() {
         if (!::binding.isInitialized) return
-        val showRail = shouldShowHomeRail()
+        homeRailModeState.value = homeRailMode()
+        val showRail = homeRailModeState.value != HomeRailMode.None
         binding.homeRail.isVisible = showRail && !homeSearchOpen
         binding.bottomNav.isVisible = !showRail
         if (showRail) {

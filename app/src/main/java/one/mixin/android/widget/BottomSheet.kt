@@ -15,6 +15,7 @@ import android.graphics.Outline
 import android.graphics.Point
 import android.graphics.drawable.ColorDrawable
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.os.Bundle
 import android.util.TypedValue
 import android.view.Gravity
@@ -55,6 +56,8 @@ import one.mixin.android.extension.getSystemWindowLeft
 import one.mixin.android.extension.getSystemWindowRight
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isNotchScreen
+import one.mixin.android.extension.isPhoneLandscape
+import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.isTablet
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.realSize
@@ -80,7 +83,55 @@ class BottomSheet(
         get() = centerOnExpandedScreen && context.isExpandedSheetScreen()
 
     private var cancelable = true
-    private var wasCentered = false
+    private var wasHeightConstrained = false
+    private var originalCutoutMode: Int? = null
+    private var landscapeWindow = false
+    private var hasUsedLandscapeWindow = false
+    private var originalSystemUiVisibility = 0
+    private var placeholder: View? = null
+    private var placeholderBackground: Drawable? = null
+
+    private fun updateLandscapeWindow() {
+        val landscape = context.isPhoneLandscape()
+        if (landscape == landscapeWindow) return
+        landscapeWindow = landscape
+        if (landscape) {
+            hasUsedLandscapeWindow = true
+            originalSystemUiVisibility = container.systemUiVisibility
+            container.systemUiVisibility = originalSystemUiVisibility or View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+        } else {
+            container.systemUiVisibility = originalSystemUiVisibility
+        }
+        window?.let { window ->
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                val params = window.attributes
+                if (originalCutoutMode == null) originalCutoutMode = params.layoutInDisplayCutoutMode
+                params.layoutInDisplayCutoutMode = if (landscape) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_ALWAYS
+                    else WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+                } else originalCutoutMode!!
+                window.attributes = params
+            }
+        }
+        placeholder?.background = if (landscape) null else placeholderBackground
+    }
+
+    internal fun landscapeCustomViewHeight(): Int {
+        val height = container.height.takeIf { it > 0 } ?: context.windowHeight()
+        val insets = landscapeInsets(height)
+        return (height - insets.bottom - if (placeholder == null) insets.top else 0).coerceAtLeast(0)
+    }
+
+    private fun landscapeInsets(height: Int): Insets {
+        val insets = lastInsets?.let {
+            WindowInsetsCompat.toWindowInsetsCompat(it, container).getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout() or WindowInsetsCompat.Type.ime(),
+            )
+        } ?: Insets.NONE
+        // adjustResize may already have removed the keyboard from the dialog's measured height.
+        val resizedHeight = (context.windowHeight() - height).coerceAtLeast(0)
+        return Insets.of(insets.left, insets.top, insets.right, (insets.bottom - resizedHeight).coerceAtLeast(0))
+    }
 
     override fun setCancelable(flag: Boolean) {
         cancelable = flag
@@ -88,7 +139,7 @@ class BottomSheet(
     }
 
     override fun cancel() {
-        if (isCentered && (!cancelable || !dismissClickOutside || bottomSheetListener?.canDismiss() == false)) return
+        if ((isCentered || context.isPhoneLandscape()) && (!cancelable || !dismissClickOutside || bottomSheetListener?.canDismiss() == false)) return
         super.cancel()
     }
 
@@ -174,8 +225,9 @@ class BottomSheet(
             if (ev != null && (ev.action == MotionEvent.ACTION_DOWN || ev.action == MotionEvent.ACTION_MOVE)) {
                 val startX = ev.x.toInt()
                 val startY = ev.y.toInt()
-                if (startY < sheetContainer.top || startX < sheetContainer.left || startX > sheetContainer.right || (isCentered && startY > sheetContainer.bottom)) {
-                    if (dismissClickOutside && (!isCentered || (cancelable && bottomSheetListener?.canDismiss() != false))) {
+                val safeBounds = isCentered || landscapeWindow
+                if (startY < sheetContainer.top || startX < sheetContainer.left || startX > sheetContainer.right || (safeBounds && startY > sheetContainer.bottom)) {
+                    if (dismissClickOutside && (!safeBounds || (cancelable && bottomSheetListener?.canDismiss() != false))) {
                         dismiss()
                     }
                     return true
@@ -190,12 +242,35 @@ class BottomSheet(
         ) {
             var width = MeasureSpec.getSize(widthMeasureSpec)
             var height = MeasureSpec.getSize(heightMeasureSpec)
+            updateLandscapeWindow()
+            if (hasUsedLandscapeWindow) {
+                placeholder?.let { view ->
+                    val insets = lastInsets?.let {
+                        WindowInsetsCompat.toWindowInsetsCompat(it, container).getInsets(systemBars() or WindowInsetsCompat.Type.displayCutout())
+                    } ?: Insets.NONE
+                    val placeholderHeight = insets.top + context.appCompatActionBarHeight()
+                    if (view.layoutParams.height != placeholderHeight) view.updateLayoutParams { this.height = placeholderHeight }
+                }
+            }
             val centered = isCentered
             sheetContainer.clipToOutline = centered
-            if (wasCentered && !centered) {
+            val constrainHeight = centered || landscapeWindow
+            if (wasHeightConstrained && !constrainHeight) {
                 customView?.layoutParams?.height = if (customViewHeight > 0) customViewHeight else WRAP_CONTENT
             }
-            wasCentered = centered
+            wasHeightConstrained = constrainHeight
+            if (landscapeWindow) {
+                setMeasuredDimension(width, height)
+                val insets = landscapeInsets(height)
+                val availableWidth = (width - insets.left - insets.right).coerceAtLeast(0)
+                val sheetWidth = max((availableWidth * 0.6f).toInt(), min(dp(480f), availableWidth))
+                val availableHeight = (height - insets.bottom - if (placeholder == null) insets.top else 0).coerceAtLeast(0)
+                customView?.layoutParams?.let { params ->
+                    params.height = if (customViewHeight > 0) min(customViewHeight, availableHeight) else WRAP_CONTENT
+                }
+                sheetContainer.measure(MeasureSpec.makeMeasureSpec(sheetWidth, MeasureSpec.EXACTLY), MeasureSpec.makeMeasureSpec(availableHeight, AT_MOST))
+                return
+            }
             if (centered) {
                 setMeasuredDimension(width, height)
                 val insets = centeredInsets()
@@ -249,6 +324,13 @@ class BottomSheet(
             right: Int,
             bottom: Int,
         ) {
+            if (landscapeWindow) {
+                val insets = landscapeInsets(bottom - top)
+                val l = insets.left + (right - left - insets.left - insets.right - sheetContainer.measuredWidth) / 2
+                val t = bottom - top - insets.bottom - sheetContainer.measuredHeight
+                sheetContainer.layout(l, t, l + sheetContainer.measuredWidth, t + sheetContainer.measuredHeight)
+                return
+            }
             if (isCentered) {
                 val insets = centeredInsets()
                 val l = insets.left + (right - left - insets.left - insets.right - sheetContainer.measuredWidth) / 2
@@ -488,7 +570,11 @@ class BottomSheet(
     }
 
     fun setCustomView(view: View) {
+        placeholder?.background = placeholderBackground
         customView = view
+        placeholder = view.findViewWithTag("landscape_sheet_placeholder")
+        placeholderBackground = placeholder?.background
+        placeholder?.background = if (context.isPhoneLandscape()) null else placeholderBackground
     }
 
     fun getCustomView() = customView
@@ -569,7 +655,7 @@ class BottomSheet(
         }
 
         fun setCustomView(view: View): Builder {
-            bottomSheet.customView = view
+            bottomSheet.setCustomView(view)
             return this
         }
 
@@ -588,6 +674,7 @@ class BottomSheet(
 }
 
 fun BottomSheet.getMaxCustomViewHeight(): Int {
+    if (context.isPhoneLandscape()) return landscapeCustomViewHeight()
     if (isCentered && availableCustomViewHeight() > 0) return availableCustomViewHeight()
     val isNotchScreen = this.window?.isNotchScreen() ?: false
     val totalHeight =
