@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,6 +42,8 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -77,14 +80,22 @@ internal fun WalletSearchPage(
     val listState = rememberLazyListState()
     LaunchedEffect(state.query, state.selectedTab) { listState.scrollToItem(0) }
     Column(Modifier.fillMaxSize().background(MixinAppTheme.colors.background)) {
-        MarketSearchBar(state.query, onQueryChanged, onCancel, placeholder = stringResource(R.string.search_placeholder_asset))
+        MarketSearchBar(
+            state.query,
+            onQueryChanged,
+            onCancel,
+            placeholder = stringResource(R.string.search_placeholder_asset),
+            placeholderColor = MixinAppTheme.colors.textRemarks,
+        )
         if (hasQuery) {
+            val showSections = !state.isSearching && state.results.isNotEmpty() && state.selectedTab == WalletSearchTab.ALL
             Row(
-                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 12.dp),
+                Modifier.fillMaxWidth().horizontalScroll(rememberScrollState())
+                    .padding(start = 20.dp, top = 20.dp, end = 20.dp, bottom = if (showSections) 0.dp else 12.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 tabs.forEach { tab ->
-                    MarketChip(walletSearchTabLabel(tab), tab == state.selectedTab, { onSelectTab(tab) })
+                    MarketChip(walletSearchTabLabel(tab), tab == state.selectedTab, { onSelectTab(tab) }, height = 38.dp)
                 }
             }
         }
@@ -96,11 +107,11 @@ internal fun WalletSearchPage(
                 if (recentSearches.isNotEmpty()) {
                     item {
                         Row(
-                            Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                            Modifier.fillMaxWidth().padding(start = 20.dp, top = 6.dp, end = 16.dp, bottom = 12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Text(stringResource(R.string.Recent), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, modifier = Modifier.padding(vertical = 16.dp))
+                            Text(stringResource(R.string.Recent), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp, lineHeight = 18.sp)
                             IconButton(onClick = onClearRecent, modifier = Modifier.size(32.dp)) {
                                 Icon(painterResource(R.drawable.ic_market_search_delete), stringResource(R.string.Clear), tint = Color.Unspecified)
                             }
@@ -124,13 +135,19 @@ internal fun WalletSearchPage(
                     item { Box(Modifier.fillMaxWidth().background(MixinAppTheme.colors.background)) { SearchEmptyResult() } }
                 } else if (state.selectedTab == WalletSearchTab.ALL) {
                     tabs.filter { it != WalletSearchTab.ALL }.forEachIndexed { index, tab ->
-                        if (index > 0) item { Spacer(Modifier.height(8.dp)) }
+                        if (index > 0) item { Spacer(Modifier.height(6.dp)) }
                         item {
                             val results = state.results.filter { it.tab == tab }
-                            SearchResultSection(walletSearchTabLabel(tab), walletSearchHasMore(results.size), { onSelectTab(tab) }) {
+                            SearchResultSection(
+                                walletSearchTabLabel(tab),
+                                walletSearchHasMore(results.size),
+                                { onSelectTab(tab) },
+                                titlePadding = PaddingValues(start = 20.dp, top = if (index == 0) 15.dp else 19.dp, end = 20.dp, bottom = 5.dp),
+                            ) {
                                 walletSearchPreview(results, all = true).forEach { result ->
                                     WalletSearchRow(result, quoteColorReversed) { onResultClick(result) }
                                 }
+                                Spacer(Modifier.height(10.dp))
                             }
                         }
                     }
@@ -140,21 +157,23 @@ internal fun WalletSearchPage(
                     }
                 }
                 item {
-                    Spacer(Modifier.height(8.dp))
+                    Spacer(Modifier.height(6.dp))
                     Row(
                         Modifier.fillMaxWidth().background(MixinAppTheme.colors.background).clickable(onClick = onSearchMarkets)
-                            .heightIn(min = 56.dp).padding(horizontal = 20.dp, vertical = 16.dp),
+                            .heightIn(min = 64.dp).padding(horizontal = 20.dp, vertical = 16.dp),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Text(
                             stringResource(R.string.search_query_in_markets, state.query.trim()),
                             color = MixinAppTheme.colors.accent,
-                            fontSize = 14.sp,
+                            fontSize = 16.sp,
+                            lineHeight = 20.sp,
                             modifier = Modifier.weight(1f),
                         )
                         Spacer(Modifier.width(12.dp))
-                        Icon(painterResource(R.drawable.ic_arrow_right), contentDescription = null, tint = MixinAppTheme.colors.textAssist, modifier = Modifier.size(16.dp))
+                        Icon(painterResource(R.drawable.ic_arrow_right), contentDescription = null, tint = MixinAppTheme.colors.textRemarks, modifier = Modifier.size(16.dp))
                     }
+                    Spacer(Modifier.height(20.dp))
                 }
             }
         }
@@ -227,7 +246,7 @@ private fun WalletRecentSearchChip(
             .clip(RoundedCornerShape(21.dp))
             .background(MixinAppTheme.colors.background)
             .clickable(onClick = onClick)
-            .padding(start = 6.dp, top = 5.dp, bottom = 5.dp, end = 10.dp),
+            .padding(start = 6.dp, top = 4.dp, bottom = 4.dp, end = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         WalletSearchIcon(result, 32.dp)
@@ -242,7 +261,8 @@ private fun WalletRecentSearchChip(
                     },
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 14.sp,
-                    lineHeight = 14.sp,
+                    lineHeight = 16.sp,
+                    style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false),
@@ -252,11 +272,13 @@ private fun WalletRecentSearchChip(
                     PerpsLeverageBadge(result.position.leverage)
                 }
             }
+            Spacer(Modifier.height(2.dp))
             Text(
                 walletSearchSubtitle(result, recent = true),
                 color = MixinAppTheme.colors.textAssist,
                 fontSize = 12.sp,
-                lineHeight = 12.sp,
+                lineHeight = 14.sp,
+                style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -268,7 +290,7 @@ private fun WalletRecentSearchChip(
 private fun WalletSearchRow(result: WalletSearchResult, quoteColorReversed: Boolean, onClick: () -> Unit) {
     Row(
         Modifier.fillMaxWidth().background(MixinAppTheme.colors.background).clickable(onClick = onClick)
-            .heightIn(min = 64.dp).padding(horizontal = 20.dp, vertical = 10.dp),
+            .heightIn(min = 70.dp).padding(horizontal = 20.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         WalletSearchIcon(result, 42.dp)
@@ -284,6 +306,7 @@ private fun WalletSearchRow(result: WalletSearchResult, quoteColorReversed: Bool
                     },
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 16.sp,
+                    lineHeight = 20.sp,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f, fill = false),
@@ -300,7 +323,8 @@ private fun WalletSearchRow(result: WalletSearchResult, quoteColorReversed: Bool
                     else -> Unit
                 }
             }
-            Text(walletSearchSubtitle(result), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Spacer(Modifier.height(4.dp))
+            Text(walletSearchSubtitle(result), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 18.sp, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }
     }
 }

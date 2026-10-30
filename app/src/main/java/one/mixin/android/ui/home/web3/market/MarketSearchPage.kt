@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -312,6 +313,7 @@ internal fun MarketSearchBar(
     onQueryChanged: (String) -> Unit,
     onCancel: () -> Unit,
     placeholder: String = stringResource(R.string.Search),
+    placeholderColor: Color = MixinAppTheme.colors.textAssist,
 ) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -374,7 +376,7 @@ internal fun MarketSearchBar(
                         if (textFieldValue.text.isEmpty()) {
                             Text(
                                 text = placeholder,
-                                color = MixinAppTheme.colors.textAssist,
+                                color = placeholderColor,
                                 fontSize = 14.sp,
                             )
                         }
@@ -483,6 +485,7 @@ internal fun SearchResultSection(
     title: String,
     hasMore: Boolean,
     onMore: () -> Unit,
+    titlePadding: PaddingValues = PaddingValues(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 5.dp),
     content: @Composable () -> Unit,
 ) {
     Column(
@@ -491,7 +494,7 @@ internal fun SearchResultSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 5.dp),
+                .padding(titlePadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
