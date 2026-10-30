@@ -6,7 +6,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -34,15 +36,25 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.isActivityEmbedded
+import one.mixin.android.extension.isPhoneLandscape
 import one.mixin.android.vo.ConversationCircleItem
 import one.mixin.android.vo.getCircleColor
 
-// Embedded list panes can be narrower than 600dp; landscape phones keep the bottom nav.
+internal enum class HomeRailMode { None, Full, CompactLandscape }
+
+internal fun Context.homeRailMode(): HomeRailMode = when {
+    shouldShowHomeRail() -> HomeRailMode.Full
+    isPhoneLandscape() -> HomeRailMode.CompactLandscape
+    else -> HomeRailMode.None
+}
+
+// Embedded list panes can be narrower than 600dp.
 internal fun Context.shouldShowHomeRail(): Boolean = isActivityEmbedded() || resources.configuration.smallestScreenWidthDp >= 600
 
 private data class RailFilter(
@@ -69,11 +81,8 @@ fun HomeRail(
     showMoreBadge: Boolean,
     onFilterSelected: (ConversationFilter) -> Unit,
     onSectionSelected: (Int) -> Unit,
+    compactLandscape: Boolean = false,
 ) {
-    val currentFilter by viewModel.filter.collectAsState()
-    val circles by remember { viewModel.observeCircles() }.observeAsState(emptyList<ConversationCircleItem>())
-    val chatsActive = sectionId == R.id.nav_chat
-
     MixinAppTheme {
         val hairline = with(LocalDensity.current) { 1.toDp() }
         val border = MixinAppTheme.colors.borderPrimary
@@ -86,6 +95,29 @@ fun HomeRail(
                     drawRect(border, topLeft = Offset(x, 0f), size = Size(1f, size.height))
                 },
         ) {
+            if (compactLandscape) {
+                BoxWithConstraints(Modifier.fillMaxSize()) {
+                    val availableHeight = maxHeight
+                    Column(
+                        Modifier.fillMaxWidth().verticalScroll(rememberScrollState()).heightIn(min = availableHeight).padding(vertical = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(4.dp, Alignment.CenterVertically),
+                    ) {
+                        RailItem(
+                            iconRes = if (sectionId == R.id.nav_chat) R.drawable.ic_tab_chat_selected else R.drawable.ic_tab_chat_unselected,
+                            contentDescription = stringResource(R.string.Chat_bottom),
+                            selected = sectionId == R.id.nav_chat,
+                            showDot = rememberUnseen(viewModel, ConversationFilter.All),
+                            onClick = { onSectionSelected(R.id.nav_chat) },
+                        )
+                        RailDestinations(sectionId, showWalletBadge, showMoreBadge, onSectionSelected, bottomPadding = 0.dp)
+                    }
+                }
+                return@Box
+            }
+            val currentFilter by viewModel.filter.collectAsState()
+            val circles by remember { viewModel.observeCircles() }.observeAsState(emptyList<ConversationCircleItem>())
+            val chatsActive = sectionId == R.id.nav_chat
             Column(modifier = Modifier.fillMaxSize()) {
                 Column(
                     modifier = Modifier
@@ -143,11 +175,12 @@ private fun RailDestinations(
     showWalletBadge: Boolean,
     showMoreBadge: Boolean,
     onSectionSelected: (Int) -> Unit,
+    bottomPadding: Dp = 8.dp,
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(bottom = 8.dp),
+            .padding(bottom = bottomPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {

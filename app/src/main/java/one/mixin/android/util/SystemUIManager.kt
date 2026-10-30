@@ -8,6 +8,7 @@ import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import one.mixin.android.extension.isCompactWindow
+import one.mixin.android.extension.isPhoneLandscape
 import one.mixin.android.extension.supportsPie
 
 @SuppressLint("InlinedApi")
@@ -47,7 +48,8 @@ object SystemUIManager {
         imePadding: Boolean = false
     ) {
         ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { view, insets ->
-            val compact = window.context.isCompactWindow()
+            val phoneLandscape = window.context.isPhoneLandscape()
+            val compact = window.context.isCompactWindow() && !phoneLandscape
             val statusBarInsets = insets.getInsets(statusBarInsetType(compact))
             val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
             val imeBottom = insets.getInsets(WindowInsetsCompat.Type.ime()).bottom
@@ -58,7 +60,7 @@ object SystemUIManager {
                 if (onlyStatus) 0 else navBarInsets.bottom + if (imePadding) imeBottom else 0,
             )
             view.setBackgroundColor(color)
-            insets
+            if (phoneLandscape) insets.inset(view.paddingLeft, 0, view.paddingRight, 0) else insets
         }
     }
 
@@ -69,7 +71,8 @@ object SystemUIManager {
     ) {
         container.setBackgroundColor(color)
         ViewCompat.setOnApplyWindowInsetsListener(window.decorView) { _, insets ->
-            val compact = window.context.isCompactWindow()
+            val phoneLandscape = window.context.isPhoneLandscape()
+            val compact = window.context.isCompactWindow() && !phoneLandscape
             val statusBarInsets = insets.getInsets(statusBarInsetType(compact))
             val navBarInsets = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
             container.setPadding(
@@ -78,7 +81,10 @@ object SystemUIManager {
                 if (compact) 0 else maxOf(statusBarInsets.right, navBarInsets.right),
                 navBarInsets.bottom,
             )
-            insets
+            if (phoneLandscape) {
+                if (container !== window.decorView) window.decorView.setPadding(0, 0, 0, 0)
+                insets.inset(container.paddingLeft, 0, container.paddingRight, 0)
+            } else insets
         }
     }
 
