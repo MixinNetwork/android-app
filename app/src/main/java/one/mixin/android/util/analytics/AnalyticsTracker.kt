@@ -543,6 +543,7 @@ object AnalyticsTracker {
         const val MORE_MARKET_CAP = MarketDetailSource.MARKETS_LIST
         const val MORE_FAVORITES = MarketDetailSource.MARKETS_LIST
         const val MORE_SEARCH = MarketDetailSource.MARKETS_SEARCH
+        const val WALLET_SEARCH = MarketDetailSource.WALLET_SEARCH
         const val TOKEN_DETAIL = "token_detail"
         const val APP_CARD = "app_card"
         const val SCHEMA = "schema"
@@ -613,6 +614,7 @@ object AnalyticsTracker {
         const val TOKEN_DETAIL = "token_detail"
         const val APP_CARD = "app_card"
         const val SCHEMA = "schema"
+        const val WALLET_SEARCH = "wallet_search"
     }
 
     object MarketWatchlistSource {
@@ -630,6 +632,7 @@ object AnalyticsTracker {
         const val MARKET_BANNER = TradeSource.MARKET_BANNER
         const val WALLET_HOME = TradeSource.WALLET_HOME
         const val MORE_EXPLORE = "more_explore"
+        const val WALLET_SEARCH = MarketDetailSource.WALLET_SEARCH
         const val APP_CARD = TradeSource.APP_CARD
         const val FIRST_GUIDE = SpotGuideSource.FIRST_GUIDE
         const val PERPS_HOME_MENU = "perps_home_menu"
@@ -1125,6 +1128,7 @@ object AnalyticsTracker {
             MarketDetailSource.TOKEN_DETAIL,
             MarketDetailSource.APP_CARD,
             MarketDetailSource.SCHEMA,
+            MarketDetailSource.WALLET_SEARCH,
             -> source
             PerpsSource.SPOT_MARKET_DETAIL -> MarketDetailSource.TOKEN_DETAIL
             else -> MarketDetailSource.MARKETS_LIST

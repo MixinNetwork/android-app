@@ -2787,4 +2787,5 @@
     <string name="Select_asset">Select an asset to view</string>
     <string name="Select_market_item">Select a market to view</string>
     <string name="Select_explore_item">Select an item to open</string>
+    <string name="search_query_in_markets">Search “%1$s” in Markets</string>
 </resources>

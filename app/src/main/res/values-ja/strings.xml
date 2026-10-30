@@ -1219,4 +1219,5 @@
     <string name="Select_asset">表示する資産を選択してください</string>
     <string name="Select_market_item">表示するマーケットを選択してください</string>
     <string name="Select_explore_item">開く項目を選択してください</string>
+    <string name="search_query_in_markets">市場で「%1$s」を検索</string>
 </resources>

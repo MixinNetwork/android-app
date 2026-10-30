@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,6 +33,10 @@ import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,7 +48,9 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -301,13 +308,23 @@ internal fun MarketSearchPage(
 }
 
 @Composable
-private fun MarketSearchBar(
+internal fun MarketSearchBar(
     query: String,
     onQueryChanged: (String) -> Unit,
     onCancel: () -> Unit,
+    placeholder: String = stringResource(R.string.Search),
+    placeholderColor: Color = MixinAppTheme.colors.textAssist,
 ) {
-    val focusRequester = androidx.compose.runtime.remember { FocusRequester() }
+    val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    var textFieldValue by remember {
+        mutableStateOf(TextFieldValue(text = query, selection = TextRange(query.length)))
+    }
+    LaunchedEffect(query) {
+        if (textFieldValue.text != query) {
+            textFieldValue = TextFieldValue(text = query, selection = TextRange(query.length))
+        }
+    }
     LaunchedEffect(Unit) {
         focusRequester.requestFocus()
         keyboardController?.show()
@@ -320,8 +337,13 @@ private fun MarketSearchBar(
         verticalAlignment = Alignment.CenterVertically,
     ) {
         BasicTextField(
-            value = query,
-            onValueChange = onQueryChanged,
+            value = textFieldValue,
+            onValueChange = { updated ->
+                textFieldValue = updated
+                if (updated.text != query) {
+                    onQueryChanged(updated.text)
+                }
+            },
             modifier = Modifier
                 .weight(1f)
                 .height(40.dp)
@@ -351,16 +373,16 @@ private fun MarketSearchBar(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.CenterStart,
                     ) {
-                        if (query.isEmpty()) {
+                        if (textFieldValue.text.isEmpty()) {
                             Text(
-                                text = stringResource(R.string.Search),
-                                color = MixinAppTheme.colors.textAssist,
+                                text = placeholder,
+                                color = placeholderColor,
                                 fontSize = 14.sp,
                             )
                         }
                         innerTextField()
                     }
-                    if (query.isNotEmpty()) {
+                    if (textFieldValue.text.isNotEmpty()) {
                         IconButton(
                             onClick = { onQueryChanged("") },
                             modifier = Modifier.size(24.dp),
@@ -459,10 +481,11 @@ private fun MarketRecentSearchChip(
 }
 
 @Composable
-private fun SearchResultSection(
+internal fun SearchResultSection(
     title: String,
     hasMore: Boolean,
     onMore: () -> Unit,
+    titlePadding: PaddingValues = PaddingValues(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 5.dp),
     content: @Composable () -> Unit,
 ) {
     Column(
@@ -471,7 +494,7 @@ private fun SearchResultSection(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(start = 20.dp, top = 16.dp, end = 20.dp, bottom = 5.dp),
+                .padding(titlePadding),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
@@ -501,7 +524,7 @@ private fun SearchResultSection(
 }
 
 @Composable
-private fun SpotMarketSearchRow(
+internal fun SpotMarketSearchRow(
     market: MarketItem,
     quoteColorReversed: Boolean,
     onClick: () -> Unit,
@@ -519,7 +542,7 @@ private fun SpotMarketSearchRow(
 }
 
 @Composable
-private fun PerpetualMarketSearchRow(
+internal fun PerpetualMarketSearchRow(
     market: PerpsMarket,
     quoteColorReversed: Boolean,
     onClick: () -> Unit,
@@ -629,7 +652,7 @@ private fun MarketSearchRow(
 }
 
 @Composable
-private fun SearchEmptyResult() {
+internal fun SearchEmptyResult() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -652,7 +675,7 @@ private fun marketSearchTabLabel(tab: MarketSearchTab): String =
         MarketSearchTab.PERPETUAL -> stringResource(R.string.Perpetual)
     }
 
-private fun formatSearchSpotPrice(value: String): String =
+internal fun formatSearchSpotPrice(value: String): String =
     runCatching {
         "${Fiats.getSymbol()}${BigDecimal(value).multiply(BigDecimal(Fiats.getRate())).priceFormat()}"
     }.getOrDefault(value)
@@ -665,14 +688,14 @@ private fun formatSearchSpotVolume(value: String): String =
 private fun formatSearchPerpetualVolume(value: String): String =
     runCatching { BigDecimal(value).numberFormatCompact() }.getOrDefault(value)
 
-private fun formatSearchPercent(change: BigDecimal?): String {
+internal fun formatSearchPercent(change: BigDecimal?): String {
     if (change == null) return "--"
     val prefix = if (change > BigDecimal.ZERO) "+" else ""
     return "$prefix${change.numberFormat2()}%"
 }
 
 @Composable
-private fun searchChangeColor(
+internal fun searchChangeColor(
     change: BigDecimal?,
     quoteColorReversed: Boolean,
 ): Color =

@@ -2704,4 +2704,5 @@
     <string name="Select_asset">选择一个资产查看</string>
     <string name="Select_market_item">选择一个行情查看</string>
     <string name="Select_explore_item">选择一项打开</string>
+    <string name="search_query_in_markets">在行情中搜索“%1$s”</string>
 </resources>

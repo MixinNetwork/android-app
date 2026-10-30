@@ -830,4 +830,5 @@
     <string name="Select_asset">Pilih aset untuk dilihat</string>
     <string name="Select_market_item">Pilih pasar untuk dilihat</string>
     <string name="Select_explore_item">Pilih item untuk dibuka</string>
+    <string name="search_query_in_markets">Cari “%1$s” di Pasar</string>
 </resources>

@@ -1214,4 +1214,5 @@
     <string name="Select_asset">Выберите актив для просмотра</string>
     <string name="Select_market_item">Выберите рынок для просмотра</string>
     <string name="Select_explore_item">Выберите элемент, чтобы открыть его</string>
+    <string name="search_query_in_markets">Искать «%1$s» на рынках</string>
 </resources>

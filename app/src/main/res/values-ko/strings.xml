@@ -2748,4 +2748,5 @@
     <string name="Select_asset">자산을 선택해 확인하세요</string>
     <string name="Select_market_item">시장을 선택해 확인하세요</string>
     <string name="Select_explore_item">항목을 선택해 여세요</string>
+    <string name="search_query_in_markets">시장에서 “%1$s” 검색</string>
 </resources>
