@@ -801,6 +801,13 @@
     <string name="perps_include_pnl">Termasuk PnL</string>
     <string name="perps_position_amount">Jumlah Posisi</string>
     <string name="perps_margin_amount">Jumlah Margin</string>
+    <string name="changed_disappearing_message_settings_hint">%1$s mengubah setelan pesan yang hilang. Ketuk untuk membuka setelan pesan yang hilang.</string>
+    <string name="disable_disappearing_message_hint">%1$s menonaktifkan pesan yang hilang. Ketuk untuk membuka setelan pesan yang hilang.</string>
+    <string name="set_disappearing_message_time_to_hint">%1$s menyetel waktu hilangnya pesan ke %2$s. Ketuk untuk membuka setelan pesan yang hilang.</string>
+    <string name="group_disappearing_message_enabled_hint">Waktu hilangnya pesan di grup ini telah disetel ke %1$s. Ketuk untuk mengubahnya atau mempelajari lebih lanjut.</string>
+    <string name="group_disappearing_message_disabled_hint">Pesan yang hilang belum diaktifkan untuk grup ini. Ketuk untuk mengaturnya atau mempelajari lebih lanjut.</string>
+    <string name="chat_disappearing_message_enabled_hint">Waktu hilangnya pesan di obrolan ini telah disetel ke %1$s. Ketuk untuk mengubahnya atau mempelajari lebih lanjut.</string>
+    <string name="chat_disappearing_message_disabled_hint">Pesan yang hilang belum diaktifkan untuk obrolan ini. Ketuk untuk mengaturnya atau mempelajari lebih lanjut.</string>
     <string name="perps_funding_payments">Biaya pendanaan</string>
     <string name="perps_funding_payments_description">Total biaya pendanaan yang Anda terima atau bayarkan sejak membuka posisi ini. Hijau (positif) berarti Anda menerima biaya pendanaan, sedangkan merah (negatif) berarti Anda membayar biaya pendanaan.</string>
     <string name="perps_margin_description">Margin adalah jaminan yang Anda alokasikan ke suatu posisi. Ini mewakili jumlah maksimum yang dapat Anda kehilangan pada transaksi tersebut.</string>

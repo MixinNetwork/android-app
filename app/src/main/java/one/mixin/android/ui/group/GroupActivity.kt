@@ -16,6 +16,7 @@ class GroupActivity : BlazeBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_contact)
+        if (savedInstanceState != null) return
 
         val type = intent.getIntExtra(ARGS_TYPE, 0)
         if (type == CREATE) {

@@ -866,6 +866,13 @@
     <string name="perps_include_pnl">Termasuk PnL</string>
     <string name="perps_position_amount">Jumlah Posisi</string>
     <string name="perps_margin_amount">Jumlah Margin</string>
+    <string name="changed_disappearing_message_settings_hint">%1$s menukar tetapan mesej menghilang. Ketik untuk membuka tetapan mesej menghilang.</string>
+    <string name="disable_disappearing_message_hint">%1$s melumpuhkan mesej menghilang. Ketik untuk membuka tetapan mesej menghilang.</string>
+    <string name="set_disappearing_message_time_to_hint">%1$s menetapkan masa mesej menghilang kepada %2$s. Ketik untuk membuka tetapan mesej menghilang.</string>
+    <string name="group_disappearing_message_enabled_hint">Tempoh mesej menghilang untuk kumpulan ini telah ditetapkan kepada %1$s. Ketik untuk menukarnya atau mengetahui maklumat lanjut.</string>
+    <string name="group_disappearing_message_disabled_hint">Mesej menghilang belum didayakan untuk kumpulan ini. Ketik untuk menetapkannya atau mengetahui maklumat lanjut.</string>
+    <string name="chat_disappearing_message_enabled_hint">Tempoh mesej menghilang untuk sembang ini telah ditetapkan kepada %1$s. Ketik untuk menukarnya atau mengetahui maklumat lanjut.</string>
+    <string name="chat_disappearing_message_disabled_hint">Mesej menghilang belum didayakan untuk sembang ini. Ketik untuk menetapkannya atau mengetahui maklumat lanjut.</string>
     <string name="perps_funding_payments">Bayaran pembiayaan</string>
     <string name="perps_funding_payments_description">Jumlah bayaran pembiayaan yang anda terima atau bayar sejak membuka posisi ini. Hijau (positif) bermaksud anda menerima bayaran pembiayaan, manakala merah (negatif) bermaksud anda membayar bayaran pembiayaan.</string>
     <string name="perps_margin_description">Margin ialah cagaran yang anda peruntukkan kepada suatu posisi. Ia mewakili jumlah maksimum yang boleh anda kehilangan dalam dagangan tersebut.</string>
