@@ -46,6 +46,7 @@ import one.mixin.android.ui.wallet.Web3FilterParams.Companion.FILTER_MASK
 import one.mixin.android.ui.wallet.adapter.Web3TransactionPagedAdapter
 import one.mixin.android.util.viewBinding
 import one.mixin.android.web3.details.Web3TransactionFragment
+import one.mixin.android.web3.details.navigateToWeb3Transaction
 import one.mixin.android.web3.details.openWeb3AssetTransactions
 import one.mixin.android.web3.details.tokenNavigationTarget
 import one.mixin.android.widget.BottomSheet
@@ -67,7 +68,7 @@ class AllWeb3TransactionsFragment : BaseTransactionsFragment(R.layout.fragment_a
                 lifecycleScope.launch {
                     val token = web3ViewModel.web3TokenItemById(filterParams.walletId,transaction.getMainAssetId()) ?: return@launch
                     val wallet = web3ViewModel.findWalletById(filterParams.walletId) ?: return@launch
-                    this@AllWeb3TransactionsFragment.view?.findNavController()?.navigate(
+                    this@AllWeb3TransactionsFragment.view?.findNavController()?.navigateToWeb3Transaction(
                         R.id.action_all_web3_transactions_fragment_to_web3_transaction_fragment,
                         Bundle().apply {
                             putParcelable("args_transaction", transaction)
