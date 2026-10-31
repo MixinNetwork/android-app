@@ -17,6 +17,7 @@ import one.mixin.android.tip.bip44.Bip44Path
 import one.mixin.android.tip.tipPrivToPrivateKey
 import one.mixin.android.util.decodeBase58
 import one.mixin.android.util.encodeToBase58String
+import one.mixin.android.util.reportException
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.js.Web3Signer
 import org.bitcoinj.base.BitcoinNetwork
@@ -38,7 +39,7 @@ object CryptoWalletHelper {
         LITECOIN,
     }
 
-    fun getSecureStorage(context: Context): SharedPreferences? {
+    private fun getSecureStorage(context: Context): SharedPreferences? {
         return runCatching {
             EncryptedSharedPreferences.create(
                 context,
@@ -48,7 +49,8 @@ object CryptoWalletHelper {
                 EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             )
         }.onFailure {
-            context.deleteSharedPreferences(ENCRYPTED_WEB3_KEY)
+            Timber.e(it, "Failed to open web3 secure storage")
+            reportException(it)
         }.getOrNull()
     }
 
@@ -373,7 +375,7 @@ object CryptoWalletHelper {
 
     fun getWeb3Mnemonic(context: Context, spendKey: ByteArray, walletId: String): String? {
         return try {
-            val encryptedPrefs = getSecureStorage(context)
+            val encryptedPrefs = secureStorage(context)
             val encryptedString = encryptedPrefs?.getString(walletId, null) ?: return null
             decryptMnemonicWithSpendKey(spendKey, encryptedString).joinToString(" ")
         } catch (e: Exception) {
@@ -389,7 +391,7 @@ object CryptoWalletHelper {
         chainId: String
     ): ByteArray? {
         return try {
-            val encryptedPrefs = getSecureStorage(context)
+            val encryptedPrefs = secureStorage(context)
             val encryptedString = encryptedPrefs?.getString(walletId, null) ?: return null
             val sha256Digest = MessageDigest.getInstance("SHA-256")
             val aesKeyBytes = sha256Digest.digest(spendKey)
