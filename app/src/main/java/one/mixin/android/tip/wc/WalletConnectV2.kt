@@ -46,6 +46,7 @@ import one.mixin.android.extension.toHex
 import one.mixin.android.util.reportException
 import one.mixin.android.web3.send.BtcTransactionBuilder
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.validateEip712ChainId
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.base.Coin
 import org.bitcoinj.base.ScriptType
@@ -350,7 +351,8 @@ object WalletConnectV2 : WalletConnect() {
                 Method.ETHSignTypedData.name, Method.ETHSignTypedDataV4.name -> {
                     val array = JsonParser.parseString(request.request.params).asJsonArray
                     val address = array[0].toString().trim('"')
-                    val data = array[1].toString().trim('"')
+                    val data = if (array[1].isJsonPrimitive && array[1].asJsonPrimitive.isString) array[1].asString else array[1].toString()
+                    validateEip712ChainId(data, requireNotNull(request.chainId).substringAfter("eip155:"), MixinApplication.appContext.getString(R.string.eip712_invalid_chain_id))
                     if (BuildConfig.DEBUG) Timber.d("$TAG sign typed data: $data")
                     if (localAddress.isNotBlank() && !address.equals(localAddress, true)) {
                         throw IllegalArgumentException("Address unequal")
@@ -623,7 +625,7 @@ object WalletConnectV2 : WalletConnect() {
         sessionRequest: Wallet.Model.SessionRequest,
         signData: WCSignData.V2SignData<WCEthereumSignMessage>,
     ) {
-        approveRequestInternal(signMessage(priv, signData.signMessage), sessionRequest)
+        approveRequestInternal(signMessage(priv, signData.signMessage, requireNotNull(sessionRequest.chainId).substringAfter("eip155:")), sessionRequest)
     }
 
     private suspend fun ethSignTransaction(
