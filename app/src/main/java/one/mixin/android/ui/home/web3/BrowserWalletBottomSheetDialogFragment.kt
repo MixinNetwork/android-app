@@ -401,10 +401,10 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                                 }
                                 solanaTx = tx
                             }
+                        tx.throwIfAnyMaliciousInstruction(Web3Signer.solanaAddress)
                         if (parsedTx == null) {
                             parsedTx = viewModel.simulateWeb3Tx(tx.serialize().base64Encode(), Constants.ChainId.Solana, Web3Signer.solanaAddress, toAddress)
                         }
-                        tx.throwIfAnyMaliciousInstruction()
                     } else if (signMessage.type == JsSignMessage.TYPE_SIGN_IN) {
                         solanaSignInInput = SignInInput.from(signMessage.data ?: "", Web3Signer.address)
                     }
@@ -459,7 +459,9 @@ class BrowserWalletBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                     settleSuccess(hash)
                 } else if (signMessage.type == JsSignMessage.TYPE_RAW_TRANSACTION) {
                     val priv = viewModel.getWeb3Priv(requireContext(), pin, Web3Signer.currentChain.assetId)
-                    val tx = Web3Signer.signSolanaTransaction(priv, requireNotNull(solanaTx) { "required solana tx can not be null" }) {
+                    val transaction = requireNotNull(solanaTx) { "required solana tx can not be null" }
+                    transaction.throwIfAnyMaliciousInstruction(Web3Signer.solanaAddress)
+                    val tx = Web3Signer.signSolanaTransaction(priv, transaction) {
                         val blockhash = rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
                         return@signSolanaTransaction blockhash
                     }
