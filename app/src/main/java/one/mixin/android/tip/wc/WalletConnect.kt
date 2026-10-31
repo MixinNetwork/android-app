@@ -10,6 +10,7 @@ import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.extension.toUri
 import one.mixin.android.session.Session
+import one.mixin.android.tip.wc.internal.WcBitcoinFeeEstimate
 import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WalletConnectException
@@ -92,6 +93,7 @@ abstract class WalletConnect {
             val sessionRequest: Wallet.Model.SessionRequest,
             var tipGas: TipGas? = null,
             var solanaFee: BigDecimal? = null,
+            val bitcoinFee: WcBitcoinFeeEstimate? = null,
         ) : WCSignData<T>(requestId, signMessage)
 
         data class TIPSignData(

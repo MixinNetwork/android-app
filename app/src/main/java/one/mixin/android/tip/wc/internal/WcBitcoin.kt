@@ -40,9 +40,25 @@ data class WcBitcoinSignedTransfer(
 )
 
 data class WcBitcoinFeeEstimate(
-    val feeRate: BigDecimal?,
-    val minFee: String?,
-)
+    val feeRate: BigDecimal,
+    val feeBtc: BigDecimal,
+) {
+    fun permitsFee(finalFeeBtc: BigDecimal): Boolean =
+        feeRate > BigDecimal.ZERO && feeRate <= MAX_FEE_RATE_SAT_PER_VB &&
+            feeBtc > BigDecimal.ZERO && finalFeeBtc > BigDecimal.ZERO && finalFeeBtc <= feeBtc
+
+    companion object {
+        val MAX_FEE_RATE_SAT_PER_VB = BigDecimal("100")
+
+        fun cappedFeeRate(feeRate: BigDecimal, minFeeBtc: BigDecimal?, virtualSize: Int): BigDecimal {
+            require(feeRate > BigDecimal.ZERO && virtualSize > 0)
+            require(minFeeBtc == null || minFeeBtc >= BigDecimal.ZERO)
+            val minimumRate = minFeeBtc?.multiply(BigDecimal("100000000"))
+                ?.divide(BigDecimal(virtualSize), 8, RoundingMode.UP) ?: BigDecimal.ZERO
+            return feeRate.max(minimumRate).min(MAX_FEE_RATE_SAT_PER_VB)
+        }
+    }
+}
 
 data class WcBitcoinSignMessage(
     val account: String,
