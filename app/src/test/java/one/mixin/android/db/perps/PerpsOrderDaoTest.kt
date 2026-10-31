@@ -67,6 +67,7 @@ class PerpsOrderDaoTest {
             ),
         )
         val expected = listOf("09", "07", "05", "04", "03", "02", "01")
+        assertEquals(expected.size, dao.observeActivityCount().first())
         assertEquals(expected, dao.getOrders(20).map { it.orderId })
         assertEquals(expected, dao.observeOrders(20).first().map { it.orderId })
         assertEquals(expected.drop(1), dao.getOrdersByMarket("market").map { it.orderId })

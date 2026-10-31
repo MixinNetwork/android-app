@@ -50,18 +50,21 @@ class AllOrdersFragment : BaseTransactionsFragment(R.layout.fragment_all_orders)
         const val TAG: String = "AllOrdersFragment"
         private const val ARGS_WALLET_IDS: String = "args_wallet_ids"
         private const val ARGS_FILTER_PENDING: String = "args_filter_pending"
+        private const val ARGS_ORDER_TYPE = "args_order_type"
         private const val ARGS_SPOT_TYPE: String = "args_spot_type"
 
         fun newInstanceWithWalletIds(
             walletIds: ArrayList<String>,
             filterPending: Boolean = false,
             spotType: String = AnalyticsTracker.SpotTradeType.SIMPLE,
+            orderType: String? = null,
         ): AllOrdersFragment {
             val f = AllOrdersFragment()
             val args = Bundle()
             args.putStringArrayList(ARGS_WALLET_IDS, walletIds)
             args.putBoolean(ARGS_FILTER_PENDING, filterPending)
             args.putString(ARGS_SPOT_TYPE, spotType)
+            args.putString(ARGS_ORDER_TYPE, orderType)
             f.arguments = args
             return f
         }
@@ -114,6 +117,9 @@ class AllOrdersFragment : BaseTransactionsFragment(R.layout.fragment_all_orders)
             if (ids.isNotEmpty()) {
                 filterParams.walletIds = ids
             }
+        }
+        arguments?.getString(ARGS_ORDER_TYPE)?.takeIf { it == "swap" || it == "limit" }?.let {
+            filterParams.orderTypes = listOf(it)
         }
         val filterPending = arguments?.getBoolean(ARGS_FILTER_PENDING, false) ?: false
         if (filterPending) {

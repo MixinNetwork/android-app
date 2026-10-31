@@ -47,6 +47,7 @@ object Constants {
         const val MARKETPLACE = "https://rune.fan/items/"
         const val SPACE = "https://mixin.space/tx/"
         const val CUSTOMER_SERVICE = "https://mixin.one/support"
+        const val TRADE_PRO = "mixin://apps/af82d6d4-aec8-419a-8f7d-edfecf7a7725?action=open&page=perps-pro"
     }
 
     object Tip {
@@ -131,7 +132,7 @@ object Constants {
 
         const val PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED = "pref_trade_limit_order_badge_dismissed"
         const val PREF_TRADE_PERPETUAL_BADGE_DISMISSED = "pref_trade_perpetual_badge_dismissed"
-        const val PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED = "pref_trade_perpetual_order_badge_dismissed"
+        const val PREF_TRADE_PRO_BADGE_DISMISSED = "pref_trade_pro_badge_dismissed"
         const val PREF_PERPS_ACCEPTED_ASSET_IDS = "pref_perps_accepted_asset_ids"
         const val PREF_PERPS_ACCEPTED_ASSET_IDS_ORDERED = "pref_perps_accepted_asset_ids_ordered"
         const val PREF_PERPS_ACCEPTED_ASSET_IDS_V2 = "pref_perps_accepted_asset_ids_v2"

@@ -4,49 +4,41 @@ package one.mixin.android.ui.home.web3.trade
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.FlowPreview
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
 import one.mixin.android.R
@@ -57,13 +49,13 @@ import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.openUrl
+import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.putBoolean
 import one.mixin.android.session.Session
 import one.mixin.android.ui.components.TabItem
 import one.mixin.android.ui.home.web3.components.OutlinedTab
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.home.web3.trade.perps.PerpetualContent
-import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.util.analytics.AnalyticsTracker
@@ -80,10 +72,8 @@ fun TradePage(
     limitFrom: SwapToken?,
     limitTo: SwapToken?,
     inMixin: Boolean,
-    orderBadge: Boolean,
     isLimitOrderTabBadgeDismissed: Boolean,
     isPerpetualTabBadgeDismissed: Boolean,
-    isPerpetualOrderBadgeDismissed: Boolean,
     initialAmount: String?,
     lastOrderTime: Long?,
     reviewing: Boolean,
@@ -103,14 +93,13 @@ fun TradePage(
     onOrderList: (String, Boolean, String) -> Unit,
     onDismissLimitOrderTabBadge: () -> Unit,
     onDismissPerpetualTabBadge: () -> Unit,
-    onDismissPerpetualOrderBadge: () -> Unit,
     onTabChanged: (Int) -> Unit,
     onSwitchToLimitOrder: (String, SwapToken, SwapToken) -> Unit,
     pop: () -> Unit,
     onLimitOrderClick: (String) -> Unit,
     onShowTradingGuideIfNeeded: (Int) -> Unit,
     onShowTradingGuide: (Int) -> Unit,
-    onShowHelpBottomSheet: (() -> Unit, () -> Unit) -> Unit,
+    onShowMore: (String?) -> Unit,
     onRecommendedMarketClick: (MarketItem) -> Unit,
     onRecommendedMarketViewAllClick: (SwapRecommendedMarketType, Boolean) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
@@ -126,9 +115,7 @@ fun TradePage(
     val focusManager = LocalFocusManager.current
 
     val viewModel = hiltViewModel<SwapViewModel>()
-    val perpsViewModel = hiltViewModel<PerpetualViewModel>()
     var walletDisplayName by remember { mutableStateOf<String?>(null) }
-    var pendingOrderCount by remember { mutableIntStateOf(0) }
     val coroutineScope = rememberCoroutineScope()
 
     val currentWalletId = walletId ?: Session.getAccountId() ?: ""
@@ -137,20 +124,6 @@ fun TradePage(
     } else {
         AnalyticsTracker.TradeWallet.WEB3
     }
-    val pendingCount by viewModel.getPendingOrderCountByWallet(currentWalletId).collectAsStateWithLifecycle(initialValue = 0)
-    val openPerpetualPositions by remember(currentWalletId, walletId) {
-        if (walletId == null && currentWalletId.isNotEmpty()) {
-            perpsViewModel.observeOpenPositions(currentWalletId)
-        } else {
-            flowOf(emptyList())
-        }
-    }.collectAsStateWithLifecycle(initialValue = emptyList())
-    val openPerpetualCount = openPerpetualPositions.size
-
-    LaunchedEffect(pendingCount) {
-        pendingOrderCount = pendingCount
-    }
-
     LaunchedEffect(walletId) {
         if (walletId != null) {
             viewModel.findWeb3WalletById(walletId)?.let {
@@ -277,134 +250,48 @@ fun TradePage(
 
     PageScaffold(
         title = stringResource(id = R.string.Trade),
-        subtitle = {
-            val text = if (walletId == null) {
-                stringResource(id = R.string.Privacy_Wallet)
-            } else {
-                walletDisplayName ?: stringResource(id = R.string.Common_Wallet)
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = text,
-                    fontSize = 12.sp,
-                    lineHeight = 16.sp,
-                    color = MixinAppTheme.colors.textAssist,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-                if (walletId == null) {
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_wallet_privacy),
-                        contentDescription = null,
-                        tint = Color.Unspecified,
-                        modifier = Modifier.size(12.dp)
-                    )
-                }
-            }
-        },
+        titleContent = { TradeTitle() },
+        subtitle = { TradeWalletSubtitle(walletId, walletDisplayName) },
         verticalScrollable = false,
         pop = pop,
         actions = {
-            val isPerpetualOrderEntry = perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex
+            val proBadgeKey = "${Constants.Account.PREF_TRADE_PRO_BADGE_DISMISSED}_$currentWalletId"
+            var isProBadgeDismissed by remember(currentWalletId) {
+                mutableStateOf(context.defaultSharedPreferences.getBoolean(proBadgeKey, false))
+            }
             Box {
                 IconButton(onClick = {
-                    if (isPerpetualOrderEntry) {
-                        if (!isPerpetualOrderBadgeDismissed) {
-                            onDismissPerpetualOrderBadge()
-                        }
-                        onShowAllOpenPositions(AnalyticsTracker.PerpsSource.PERPS_HOME_MENU)
-                    } else {
-                        onOrderList(currentWalletId, false, spotTypeForPage(pagerState.currentPage))
+                    keyboardController?.hide()
+                    focusManager.clearFocus()
+                    if (!isProBadgeDismissed) {
+                        isProBadgeDismissed = true
+                        context.defaultSharedPreferences.putBoolean(proBadgeKey, true)
                     }
+                    AnalyticsTracker.trackTradeMoreMenu(
+                        when (pagerState.currentPage) {
+                            perpetualTabIndex -> "perps"
+                            1 -> "limit"
+                            else -> "swap"
+                        }
+                    )
+                    onShowMore(walletDisplayName)
                 }) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_order),
-                        contentDescription = null,
+                        painter = painterResource(R.drawable.ic_more_horiz_black_24dp),
+                        contentDescription = stringResource(R.string.More),
                         tint = MixinAppTheme.colors.icon,
                     )
                 }
-                if (!isPerpetualOrderEntry && pendingOrderCount > 0) {
+                if (!isProBadgeDismissed) {
                     Box(
                         modifier = Modifier
-                            .offset(x = (-8).dp, y = (8).dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(color = Color(0xFF3D75E3))
-                            .padding(vertical = 2.dp, horizontal = 6.dp)
                             .align(Alignment.TopEnd)
-                    ) {
-                        Text(
-                            text = "${if (pendingOrderCount > 99) "99+" else pendingOrderCount}",
-                            fontSize = 10.sp,
-                            lineHeight = 11.sp,
-                            color = Color.White,
-                        )
-                    }
-                } else if (isPerpetualOrderEntry && openPerpetualCount > 0) {
-                    Box(
-                        modifier = Modifier
-                            .offset(x = (-8).dp, y = (8).dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            .background(color = Color(0xFF3D75E3))
-                            .padding(vertical = 2.dp, horizontal = 6.dp)
-                            .align(Alignment.TopEnd)
-                    ) {
-                        Text(
-                            text = "${if (openPerpetualCount > 99) "99+" else openPerpetualCount}",
-                            fontSize = 10.sp,
-                            lineHeight = 11.sp,
-                            color = Color.White,
-                        )
-                    }
-                } else if (!isPerpetualOrderEntry && orderBadge) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .offset(x = (-12).dp, y = (12).dp)
-                            .background(
-                                color = MixinAppTheme.colors.badgeRed,
-                                shape = CircleShape
-                            )
-                            .align(Alignment.TopEnd)
-                    )
-                } else if (isPerpetualOrderEntry && !isPerpetualOrderBadgeDismissed) {
-                    Box(
-                        modifier = Modifier
-                            .size(8.dp)
-                            .offset(x = (-12).dp, y = (12).dp)
-                            .background(
-                                color = MixinAppTheme.colors.badgeRed,
-                                shape = CircleShape
-                            )
-                            .align(Alignment.TopEnd)
+                            .offset(x = (-6).dp, y = 7.dp)
+                            .size(10.dp)
+                            .background(MixinAppTheme.colors.badgeRed, CircleShape)
+                            .border(1.dp, MixinAppTheme.colors.background, CircleShape),
                     )
                 }
-            }
-            IconButton(onClick = {
-                onShowHelpBottomSheet(
-                    {
-                        val source = when {
-                            perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex ->
-                                AnalyticsTracker.CustomerServiceSource.PERPS_HOME_MENU
-                            pagerState.currentPage == 1 ->
-                                AnalyticsTracker.CustomerServiceSource.TRADE_ADVANCED_HOME_MENU
-                            else ->
-                                AnalyticsTracker.CustomerServiceSource.TRADE_SIMPLE_HOME_MENU
-                        }
-                        context.openUrl(
-                            Constants.HelpLink.CUSTOMER_SERVICE,
-                            source = source,
-                            wallet = AnalyticsTracker.TradeWallet.WEB3,
-                        )
-                    },
-                    { onShowTradingGuide(pagerState.currentPage) }
-                )
-            }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_support),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.icon,
-                )
             }
         },
     ) {

@@ -2270,8 +2270,14 @@
     <string name="limit_price">가격</string>
     <string name="Order_Type">주문 유형</string>
     <string name="Forever">영원히</string>
-    <string name="Trade_Simple">간단함</string>
-    <string name="Trade_Advanced">고급</string>
+    <string name="Trade_Simple">스왑</string>
+    <string name="Trade_Advanced">지정가</string>
+    <string name="Trade_Pro">프로</string>
+    <string name="Trade_Swap_Orders">스왑 주문</string>
+    <string name="Trade_Limit_Orders">지정가 주문</string>
+    <string name="Trade_Perpetual_Activity">무기한 선물 거래 내역</string>
+    <string name="Trade_Pro_Description">고급 차트, 교차 마진 및 지정가 주문.</string>
+    <string name="Trade_Now">지금 거래</string>
     <string name="order_state_created">생성됨</string>
     <string name="order_state_pricing">가격</string>
     <string name="order_state_quoting">인용</string>
@@ -2508,7 +2514,7 @@
     <string name="forget_pin_help_url">https://support.mixin.one/en/article/what-should-i-do-if-i-forget-my-pin-g12pmo/</string>
     <string name="Switch_Account">계정 전환</string>
     <string name="Perpetual_Futures_Guide">영구 선물 가이드</string>
-    <string name="Spot_Trade_Guide_Overview_Desc">Mixin은 단순 및 고급 거래 모드를 모두 지원하므로 DEX 및 CEX에서 집계된 유동성을 사용하여 여러 체인과 자산에 걸쳐 거래할 수 있습니다.</string>
+    <string name="Spot_Trade_Guide_Overview_Desc">Mixin은 스왑과 지정가 거래를 모두 지원하므로 DEX 및 CEX에서 집계된 유동성으로 여러 체인과 자산을 거래할 수 있습니다.</string>
     <string name="Spot_Trade_Guide_Feature_1">유동성 집계: Uniswap, 1inch, Jupiter, MixPay, BigONE 및 기타 DEX 및 CEX의 유동성에 액세스합니다.</string>
     <string name="Spot_Trade_Guide_Feature_2">크로스체인 거래: 비트코인, 이더리움, 솔라나 등에서 자산을 지원합니다.</string>
     <string name="Spot_Trade_Guide_Additional_Notes">참고</string>
@@ -2523,7 +2529,7 @@
     <string name="Trade_Guide_Market_Price">시장 가격</string>
     <string name="Spot_Trade_Guide_Use_Cases">사용 사례</string>
     <string name="Spot_Trade_Guide_Pricing">가격</string>
-    <string name="Spot_Trade_Guide_Swap_Desc">간단 모드를 사용하면 가장 좋은 시장 가격으로 즉시 교환할 수 있습니다.</string>
+    <string name="Spot_Trade_Guide_Swap_Desc">스왑은 가장 좋은 시장 가격으로 즉시 거래할 수 있습니다.</string>
     <string name="Spot_Trade_Guide_Swap_Scenario_1">빠른 실행이 필요한 경우</string>
     <string name="Spot_Trade_Guide_Swap_Scenario_2">주요 쌍 또는 유동성이 높은 시장의 경우</string>
     <string name="Spot_Trade_Guide_Swap_Scenario_3">빠르고 쉬운 교체</string>
@@ -2532,7 +2538,7 @@
     <string name="Spot_Trade_Guide_Swap_Risk">실제 실행 가격은 변동성이 높을 때 공시 가격과 다를 수 있습니다.</string>
     <string name="Spot_Trade_Guide_Limit_Strategy_Buy_Low">낮은 가격으로 구매</string>
     <string name="Spot_Trade_Guide_Limit_Strategy_Sell_High">최고가 매도</string>
-    <string name="Spot_Trade_Guide_Limit_Desc">Advanced는 지정가 주문을 지원하므로 원하는 실행 가격을 설정할 수 있습니다. 주문은 시장이 귀하가 지정한 가격에 도달한 경우에만 실행됩니다.</string>
+    <string name="Spot_Trade_Guide_Limit_Desc">지정가는 원하는 체결 가격을 설정할 수 있습니다. 주문은 시장이 지정한 가격에 도달한 경우에만 체결됩니다.</string>
     <string name="Spot_Trade_Guide_Limit_Scenario_1">전략적 거래용</string>
     <string name="Spot_Trade_Guide_Limit_Scenario_2">정확한 가격은</string>
     <string name="Spot_Trade_Guide_Limit_Scenario_3">대규모 거래의 경우</string>

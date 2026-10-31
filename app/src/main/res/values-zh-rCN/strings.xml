@@ -2261,6 +2261,12 @@
     <string name="Forever">永久</string>
     <string name="Trade_Simple">闪兑</string>
     <string name="Trade_Advanced">限价</string>
+    <string name="Trade_Pro">专业版</string>
+    <string name="Trade_Swap_Orders">闪兑订单</string>
+    <string name="Trade_Limit_Orders">限价订单</string>
+    <string name="Trade_Perpetual_Activity">合约记录</string>
+    <string name="Trade_Pro_Description">专业图表、全仓保证金及限价订单。</string>
+    <string name="Trade_Now">立即交易</string>
     <string name="order_state_created">已创建</string>
     <string name="order_state_pricing">定价中</string>
     <string name="order_state_quoting">报价中</string>
@@ -2487,7 +2493,7 @@
     <string name="forget_pin_help_url">https://support.mixin.one/zh/article/pin-1vb2rc7/</string>
     <string name="Switch_Account">切换账号</string>
     <string name="Perpetual_Futures_Guide">永续合约指南</string>
-    <string name="Spot_Trade_Guide_Overview_Desc">Mixin 交易支持简单闪兑和专业模式，支持多链、多币种交易，并聚合多个 DEX 与 CEX 的流动性。</string>
+    <string name="Spot_Trade_Guide_Overview_Desc">Mixin 交易支持闪兑和限价，支持多链、多币种交易，并聚合多个 DEX 与 CEX 的流动性。</string>
     <string name="Spot_Trade_Guide_Feature_1">最优聚合：接入 Uniswap、 1inch、Jupiter、MixPay、BigONE 等 DEX 和 CEX。</string>
     <string name="Spot_Trade_Guide_Feature_2">跨链交易：支持 Bitcoin、Ethereum、Solana 等多链资产交易。</string>
     <string name="Spot_Trade_Guide_Additional_Notes">补充说明</string>
@@ -2511,7 +2517,7 @@
     <string name="Spot_Trade_Guide_Swap_Risk">市场波动较大时，实际成交价格可能与报价存在差异</string>
     <string name="Spot_Trade_Guide_Limit_Strategy_Buy_Low">低价买入</string>
     <string name="Spot_Trade_Guide_Limit_Strategy_Sell_High">高价卖出</string>
-    <string name="Spot_Trade_Guide_Limit_Desc">专业模式支持限价挂单，用户可自行设定成交价格，达到预期价格时才会成交。</string>
+    <string name="Spot_Trade_Guide_Limit_Desc">限价支持挂单，用户可自行设定成交价格，达到预期价格时才会成交。</string>
     <string name="Spot_Trade_Guide_Limit_Scenario_1">有明确交易策略，如低买高卖</string>
     <string name="Spot_Trade_Guide_Limit_Scenario_2">对成交价格敏感</string>
     <string name="Spot_Trade_Guide_Limit_Scenario_3">适合大额交易</string>

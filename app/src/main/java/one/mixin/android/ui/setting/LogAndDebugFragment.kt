@@ -401,7 +401,7 @@ private fun hiddenDebugSharedPreferenceKeys(accountId: String?): List<String> =
             add("${TradeFragment.PREF_TRADE_SELECTED_TAB_PREFIX}$it")
             add("${Constants.Account.PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED}_$it")
             add("${Constants.Account.PREF_TRADE_PERPETUAL_BADGE_DISMISSED}_$it")
-            add("${Constants.Account.PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED}_$it")
+            add("${Constants.Account.PREF_TRADE_PRO_BADGE_DISMISSED}_$it")
         }
     }
 

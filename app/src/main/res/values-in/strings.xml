@@ -830,4 +830,15 @@
     <string name="Select_asset">Pilih aset untuk dilihat</string>
     <string name="Select_market_item">Pilih pasar untuk dilihat</string>
     <string name="Select_explore_item">Pilih item untuk dibuka</string>
+    <string name="Trade_Simple">Swap</string>
+    <string name="Trade_Advanced">Limit</string>
+    <string name="Trade_Pro">Pro</string>
+    <string name="Trade_Swap_Orders">Order Swap</string>
+    <string name="Trade_Limit_Orders">Order Limit</string>
+    <string name="Trade_Perpetual_Activity">Aktivitas Perpetual</string>
+    <string name="Trade_Pro_Description">Grafik tingkat lanjut, margin silang, dan order limit.</string>
+    <string name="Trade_Now">Trading Sekarang</string>
+    <string name="Spot_Trade_Guide_Overview_Desc">Mixin mendukung swap dan order limit, sehingga Anda dapat memperdagangkan berbagai aset di banyak blockchain dengan likuiditas gabungan dari DEX dan CEX.</string>
+    <string name="Spot_Trade_Guide_Swap_Desc">Swap memungkinkan perdagangan instan dengan harga pasar terbaik yang tersedia.</string>
+    <string name="Spot_Trade_Guide_Limit_Desc">Order limit memungkinkan Anda menetapkan harga eksekusi yang diinginkan. Order hanya dieksekusi saat pasar mencapai harga yang Anda tentukan.</string>
 </resources>
