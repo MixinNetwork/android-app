@@ -8,11 +8,8 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
-import android.content.Intent.CATEGORY_BROWSABLE
-import android.content.Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER
 import android.net.Uri
 import android.graphics.Rect
-import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.ViewTreeObserver
@@ -57,6 +54,7 @@ import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebFragment
+import one.mixin.android.ui.web.prepareForExternalWebLaunch
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.generateConversationId
@@ -538,18 +536,11 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     ): Boolean {
         return try {
             val context = view?.context ?: context ?: return false
-            val intent =
-                Intent.parseUri(url, Intent.URI_INTENT_SCHEME).apply {
-                    action = ACTION_VIEW
-                    addCategory(CATEGORY_BROWSABLE)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                        addFlags(FLAG_ACTIVITY_REQUIRE_NON_BROWSER)
-                    }
-                    if (context !is Activity) {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                }
+            val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
             try {
+                if (!intent.prepareForExternalWebLaunch(context)) {
+                    throw ActivityNotFoundException()
+                }
                 context.startActivity(intent)
                 if (request.isForMainFrame) {
                     dismiss()
