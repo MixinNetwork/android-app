@@ -131,6 +131,12 @@ class ForwardActivity : BlazeBaseActivity() {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        if (intent.component?.className == "one.mixin.messenger.ShareActivity") {
+            intent.removeExtra(ARGS_MESSAGES)
+            intent.removeExtra(ARGS_ACTION)
+            intent.removeExtra(ARGS_COMBINE_MESSAGES)
+            intent.removeExtra(ARGS_TO_CONVERSATION)
+        }
         super.onCreate(savedInstanceState)
         SystemUIManager.setSafePadding(window = window, color = colorFromAttribute(R.attr.bg_white), imePadding = true)
         setContentView(R.layout.activity_contact)

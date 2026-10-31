@@ -97,6 +97,8 @@ import one.mixin.android.util.blurhash.BlurHashEncoder
 import one.mixin.android.util.getChainName
 import one.mixin.android.util.video.VideoEditedInfo
 import one.mixin.android.util.video.VideoTranscodeProfileFactory
+import one.mixin.android.util.isAllowedShareUri
+import one.mixin.android.util.isPrivateAttachmentPath
 import one.mixin.android.vo.ChatHistoryMessageItem
 import one.mixin.android.vo.MessageItem
 import one.mixin.android.vo.absolutePath
@@ -761,12 +763,29 @@ fun Fragment.selectAudio() {
     selectMediaType("audio/*", null, REQUEST_AUDIO)
 }
 
+fun Context.isSafeShareUri(uri: Uri): Boolean {
+    val authority = uri.authority?.substringAfterLast('@')
+    if (!isAllowedShareUri(uri.scheme, authority, packageName, null)) return false
+    return try {
+        val provider = packageManager.resolveContentProvider(requireNotNull(authority), 0)
+        isAllowedShareUri(uri.scheme, authority, packageName, provider?.packageName)
+    } catch (e: Exception) {
+        false
+    }
+}
+
 fun Context.getAttachment(
     local: Uri,
     mimeType: String? = null,
+    fromShare: Boolean = false,
 ): Attachment? {
     var cursor: Cursor? = null
     try {
+        if (fromShare && !isSafeShareUri(local)) return null
+        if (local.scheme == ContentResolver.SCHEME_FILE || local.authority == null) {
+            val path = local.path ?: return null
+            if (isPrivateAttachmentPath(File(path), File(applicationInfo.dataDir))) return null
+        }
         val uri =
             if (local.authority == null) {
                 val path = local.path ?: return null
