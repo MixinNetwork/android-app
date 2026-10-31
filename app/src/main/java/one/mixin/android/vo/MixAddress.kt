@@ -79,7 +79,7 @@ data class MixAddress(
             }
             payload += len.toByte()
             for (x in xinMembers) {
-                payload += (x.publicSpendKey() + x.publicViewkey())
+                payload += (x.publicSpendKey() + x.publicViewKey())
             }
         }
         val data = MixAddressPrefix.toByteArray() + payload
@@ -106,7 +106,7 @@ data class MixAddress(
             }
             payload += len.toByte()
             for (x in xinMembers) {
-                payload += (x.publicSpendKey() + x.publicViewkey())
+                payload += (x.publicSpendKey() + x.publicViewKey())
             }
         }
         return payload
