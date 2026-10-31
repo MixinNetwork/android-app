@@ -1,6 +1,7 @@
 package one.mixin.android.job
 
 import com.birbit.android.jobqueue.Params
+import com.google.gson.JsonParseException
 import one.mixin.android.Constants.DEFAULT_THUMB_IMAGE
 import one.mixin.android.Constants.MAX_THUMB_IMAGE_LENGTH
 import one.mixin.android.RxBus
@@ -23,6 +24,7 @@ import one.mixin.android.util.hyperlink.parseHyperlink
 import one.mixin.android.util.mention.parseMentionData
 import one.mixin.android.util.mention.resolveMentionUsers
 import one.mixin.android.util.reportException
+import one.mixin.android.vo.AttachmentExtra
 import one.mixin.android.vo.Conversation
 import one.mixin.android.vo.ExpiredMessage
 import one.mixin.android.vo.ICategory
@@ -44,6 +46,7 @@ import one.mixin.android.vo.isSticker
 import one.mixin.android.vo.isText
 import one.mixin.android.vo.isTranscript
 import one.mixin.android.vo.toAppCardDataOrNull
+import one.mixin.android.websocket.AttachmentMessagePayload
 import one.mixin.android.websocket.BlazeMessage
 import one.mixin.android.websocket.BlazeMessageParam
 import one.mixin.android.websocket.KrakenParam
@@ -353,6 +356,9 @@ open class SendMessageJob(
         if (message.isLive()) {
             message.content = message.content?.base64Encode()
         }
+        if (resendData != null && message.isAttachment()) {
+            message.content = resendAttachmentContent(message)
+        }
         return if (resendData != null) {
             signalProtocol.encryptSessionMessage(
                 message,
@@ -387,3 +393,32 @@ internal fun outgoingMentionContent(
         category.type == MessageCategory.APP_CARD.name -> content?.toAppCardDataOrNull()?.description
         else -> null
     }
+
+// A sent attachment keeps only its AttachmentExtra as content, so rebuild the
+// payload the receiver expects from the media columns.
+internal fun resendAttachmentContent(message: Message): String {
+    val extra =
+        try {
+            // Content that is not an AttachmentExtra is already the payload.
+            GsonHelper.customGson.fromJson(message.content, AttachmentExtra::class.java)
+        } catch (e: JsonParseException) {
+            null
+        } ?: return message.content!!
+    val payload =
+        AttachmentMessagePayload(
+            message.mediaKey,
+            message.mediaDigest,
+            extra.attachmentId,
+            message.mediaMimeType!!,
+            message.mediaSize!!,
+            message.name,
+            message.mediaWidth,
+            message.mediaHeight,
+            message.thumbImage,
+            message.mediaDuration?.toLong(),
+            message.mediaWaveform,
+            createdAt = extra.createdAt,
+            caption = message.caption,
+        )
+    return GsonHelper.customGson.toJson(payload).base64Encode()
+}
