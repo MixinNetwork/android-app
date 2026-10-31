@@ -1008,6 +1008,7 @@ class WebFragment : BaseFragment() {
                                                 message.callbackId,
                                                 WalletErrorCode.USER_REJECTED_REQUEST,
                                                 "User rejected the request",
+                                                message.chain?.let(Web3Signer::jsNetworkOf) ?: Web3Signer.currentNetwork,
                                             ),
                                         ) {}
                                     }
@@ -2032,15 +2033,22 @@ class WebFragment : BaseFragment() {
         id: Long,
         code: Int,
         message: String,
+        network: String = Web3Signer.currentNetwork,
     ): String =
-        "mixinwallet.${Web3Signer.currentNetwork}.sendError($id, {code: $code, message: ${JSONObject.quote(message)}});"
+        "mixinwallet.$network.sendError($id, {code: $code, message: ${JSONObject.quote(message)}});"
 
     class Web3Interface(
         val onWalletActionSuccessful: (String) -> Unit,
         val onWalletActionError: (Long, Int, String) -> Unit,
-        val onBrowserSign: (JsSignMessage) -> Unit,
+        onBrowserSign: (JsSignMessage) -> Unit,
         val onEmptyAddress: (String) -> Unit,
     ) {
+        // Bind every sign request to the chain selected for it; later bridge calls can switch Web3Signer.currentChain.
+        private val browserSign: (JsSignMessage) -> Unit = { message ->
+            message.chainHex = Web3Signer.currentChain.hexReference
+            onBrowserSign(message)
+        }
+
         @JavascriptInterface
         fun postMessage(json: String) {
             if (BuildConfig.DEBUG) Timber.d("postMessage $json")
@@ -2142,7 +2150,7 @@ class WebFragment : BaseFragment() {
                 DAppMethod.SINGIN -> {
                     val o = obj.getJSONObject("object")
                     val data = o.getJSONObject("data")
-                    onBrowserSign(JsSignMessage(id, JsSignMessage.TYPE_SIGN_IN, data = data.toString()))
+                    browserSign(JsSignMessage(id, JsSignMessage.TYPE_SIGN_IN, data = data.toString()))
                 }
 
                     else -> {
@@ -2172,7 +2180,7 @@ class WebFragment : BaseFragment() {
             callbackId: Long,
             wcEthereumTransaction: WCEthereumTransaction,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = wcEthereumTransaction))
+            browserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TRANSACTION, wcEthereumTransaction = wcEthereumTransaction))
         }
 
         private fun signRawTransaction(
@@ -2180,14 +2188,14 @@ class WebFragment : BaseFragment() {
             raw: String,
             broadcast: Boolean,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web, broadcast = broadcast))
+            browserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_RAW_TRANSACTION, data = raw, solanaTxSource = SolanaTxSource.Web, broadcast = broadcast))
         }
 
         private fun signMessage(
             callbackId: Long,
             data: String,
         ) {
-            onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
+            browserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_MESSAGE, data = data))
         }
 
         private fun signEvmMessage(
@@ -2214,7 +2222,7 @@ class WebFragment : BaseFragment() {
                 if (!address.equals(Web3Signer.address, true)) {
                     throw IllegalArgumentException("Address unequal")
                 }
-                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data.getString("data")))
+                browserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_PERSONAL_MESSAGE, data = data.getString("data")))
             } catch (e: Exception) {
                 onWalletActionError(callbackId, WalletErrorCode.INVALID_PARAMS, "Invalid personal signing request")
             }
@@ -2229,7 +2237,7 @@ class WebFragment : BaseFragment() {
                 if (!address.equals(Web3Signer.address, true)) {
                     throw IllegalArgumentException("Address unequal")
                 }
-                onBrowserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data.getString("raw")))
+                browserSign(JsSignMessage(callbackId, JsSignMessage.TYPE_TYPED_MESSAGE, data = data.getString("raw")))
             } catch (e: Exception) {
                 onWalletActionError(callbackId, WalletErrorCode.INVALID_PARAMS, "Invalid typed-data signing request")
             }
