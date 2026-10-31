@@ -43,6 +43,7 @@ import one.mixin.android.ui.wallet.adapter.SnapshotPagedAdapter
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.AddressItem
 import one.mixin.android.vo.Recipient
 import one.mixin.android.vo.SnapshotItem
@@ -59,12 +60,14 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
         const val ARGS_USER = "args_user"
         const val ARGS_TOKEN = "args_token"
         const val PENDING_TYPE = "pending_type"
+        const val ARGS_ADDRESS = "args_address"
 
-        fun newInstance(user: UserItem? = null, tokenItem: TokenItem? = null, pendingType: Boolean = false): AllTransactionsFragment {
+        fun newInstance(user: UserItem? = null, tokenItem: TokenItem? = null, pendingType: Boolean = false, address: Address? = null): AllTransactionsFragment {
             return AllTransactionsFragment().withArgs {
                 putParcelable(ARGS_USER, user)
                 putParcelable(ARGS_TOKEN, tokenItem)
                 putBoolean(PENDING_TYPE, pendingType)
+                putParcelable(ARGS_ADDRESS, address)
             }
         }
     }
@@ -90,7 +93,8 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
         FilterParams(
             type = type,
             recipients = userItem?.let { listOf(it) },
-            tokenItems = tokenItem?.let { listOf(it) }
+            tokenItems = tokenItem?.let { listOf(it) },
+            address = requireArguments().getParcelableCompat(ARGS_ADDRESS, Address::class.java),
         )
     }
 
@@ -163,7 +167,18 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
                 selectAsset()
             }
             filterUser.setOnClickListener {
-                selectUser()
+                if (filterParams.address == null) {
+                    selectUser()
+                } else {
+                    filterUser.open()
+                    showAddressFilterReset(
+                        onReset = {
+                            filterParams.address = null
+                            loadFilter()
+                        },
+                        onDismiss = { filterUser.close() },
+                    )
+                }
             }
             filterTime.setOnClickListener {
                 datePicker()
@@ -178,6 +193,7 @@ class AllTransactionsFragment : BaseTransactionsFragment(R.layout.fragment_all_t
             filterType.setTitle(filterParams.typeTitle)
             filterAsset.updateTokens(R.string.Assets, filterParams.tokenItems)
             filterUser.updateUsers(R.string.Opponents, filterParams.recipients)
+            filterParams.address?.let { filterUser.setTitle(it.label.ifBlank { it.destination }) }
             filterTime.setTitle(filterParams.selectTime ?: getString(R.string.Date))
             titleView.setSubTitle(
                 getString(R.string.All_Transactions), getString(

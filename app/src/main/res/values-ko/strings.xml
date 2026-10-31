@@ -1338,6 +1338,9 @@
     <string name="Make_sure_WiFi">Wi-Fi가 연결되어 있는지 확인하세요.</string>
     <string name="connected_dapps">연결된 앱</string>
     <string name="search_placeholder_address">라벨, 주소</string>
+    <string name="address_book_search_hint">이름, 주소</string>
+    <string name="address_book_no_records">기록이 없습니다</string>
+    <string name="address_book_no_records_found">일치하는 기록이 없습니다</string>
     <string name="search_placeholder_dapp">이름, URL</string>
     <string name="search_placeholder_app">ID 또는 이름 검색</string>
     <string name="search_placeholder_inscription">검색ID</string>
@@ -2748,4 +2751,8 @@
     <string name="Select_asset">자산을 선택해 확인하세요</string>
     <string name="Select_market_item">시장을 선택해 확인하세요</string>
     <string name="Select_explore_item">항목을 선택해 여세요</string>
+    <string name="All_Networks">모든 네트워크</string>
+    <string name="Last_Updated">마지막 업데이트</string>
+    <string name="Last_Updated_at">마지막 업데이트 %1$s</string>
+    <string name="number_of_networks">네트워크 %1$d개</string>
 </resources>

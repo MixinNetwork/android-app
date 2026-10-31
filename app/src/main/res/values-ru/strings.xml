@@ -1214,4 +1214,8 @@
     <string name="Select_asset">Выберите актив для просмотра</string>
     <string name="Select_market_item">Выберите рынок для просмотра</string>
     <string name="Select_explore_item">Выберите элемент, чтобы открыть его</string>
+    <string name="All_Networks">Все сети</string>
+    <string name="Last_Updated">Последнее обновление</string>
+    <string name="Last_Updated_at">Последнее обновление %1$s</string>
+    <string name="number_of_networks">Сетей: %1$d</string>
 </resources>

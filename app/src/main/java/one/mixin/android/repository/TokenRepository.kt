@@ -12,7 +12,10 @@ import androidx.paging.PagingSource
 import androidx.paging.liveData
 import androidx.room3.RoomRawQuery
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import one.mixin.android.BuildConfig.VERSION_NAME
 import one.mixin.android.Constants
@@ -517,6 +520,10 @@ class TokenRepository
 
         fun addressesFlow(id: String) = addressDao.addressesFlow(id)
 
+        fun allAddressesFlow() = addressDao.allAddressesFlow()
+
+        suspend fun getChains() = chainDao.getChains()
+
         fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
         fun saveAddr(addr: Address) = addressDao.insert(addr)
@@ -594,6 +601,15 @@ class TokenRepository
         fun snapshotsPagingSource(filterParams: FilterParams): PagingSource<Int, SnapshotItem> {
             return safeSnapshotDao.getSnapshots(filterParams.buildQuery())
         }
+
+        @OptIn(ExperimentalCoroutinesApi::class)
+        fun recentAddressTransactions(address: Address): Flow<List<SnapshotItem>> =
+            appDatabase.invalidationTracker.createFlow(
+                "safe_snapshots", "tokens", "users", "inscription_items", "inscription_collections", "addresses",
+            ).mapLatest {
+                safeSnapshotDao.snapshotItems(FilterParams(address = address).buildQuery(limit = 11))
+                    .map { mapSnapshotItem(it) }
+            }.flowOn(Dispatchers.IO)
 
         suspend fun mapSnapshotItem(item: SnapshotItem): SnapshotItem = withContext(Dispatchers.IO) {
             if (!item.withdrawal?.receiver.isNullOrBlank()) {

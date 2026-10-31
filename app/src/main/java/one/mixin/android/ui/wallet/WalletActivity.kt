@@ -13,6 +13,7 @@ import one.mixin.android.extension.getParcelableExtraCompat
 import one.mixin.android.extension.getSerializableExtraCompat
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.session.Session
+import one.mixin.android.ui.address.AddressBookFragment
 import one.mixin.android.ui.address.TransferDestinationInputFragment
 import one.mixin.android.ui.common.BlazeBaseActivity
 import one.mixin.android.ui.common.biometric.BiometricItem
@@ -24,6 +25,7 @@ import one.mixin.android.ui.wallet.fiatmoney.CalculateFragment
 import one.mixin.android.ui.wallet.fiatmoney.FiatMoneyViewModel
 import one.mixin.android.ui.wallet.fiatmoney.RouteProfile
 import one.mixin.android.util.analytics.AnalyticsTracker
+import one.mixin.android.vo.Address
 import one.mixin.android.vo.User
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.safe.TokenItem
@@ -71,6 +73,14 @@ class WalletActivity : BlazeBaseActivity() {
             is Destination.Search -> {
                 navGraph.setStartDestination(R.id.wallet_search_fragment)
                 navController.setGraph(navGraph, null)
+            }
+            is Destination.AddressBookDetail -> {
+                navGraph.setStartDestination(R.id.address_book_fragment)
+                navController.setGraph(navGraph, intent.extras)
+            }
+            is Destination.AddressBookAdd -> {
+                navGraph.setStartDestination(R.id.transfer_destination_input_fragment)
+                navController.setGraph(navGraph, intent.extras)
             }
             is Destination.SearchWeb3 -> {
                 navGraph.setStartDestination(R.id.wallet_search_web3_fragment)
@@ -214,6 +224,8 @@ class WalletActivity : BlazeBaseActivity() {
     sealed class Destination : java.io.Serializable {
         object Transactions : Destination()
         object Search : Destination()
+        object AddressBookDetail : Destination()
+        object AddressBookAdd : Destination()
         data class SearchWeb3(val walletId: String? = null) : Destination()
         object AllTokens : Destination() {
             private fun readResolve(): Any = AllTokens
@@ -299,6 +311,25 @@ class WalletActivity : BlazeBaseActivity() {
                     putExtra(CalculateFragment.ARGS_IS_WEB3, isWeb3)
                     putExtra(CalculateFragment.ARGS_BUY_SOURCE, source)
                     walletId?.let { putExtra(CalculateFragment.ARGS_WALLET_ID_FOR_CALCULATE, it) }
+                },
+            )
+        }
+
+        fun showAddressBookDetail(activity: Activity, address: Address, walletId: String?) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, Destination.AddressBookDetail)
+                    putExtra(AddressBookFragment.ARGS_ADDRESS, address)
+                    putExtra(ARGS_WALLET_ID, walletId)
+                },
+            )
+        }
+
+        fun showAddressBookAdd(activity: Activity, chainId: String) {
+            activity.startActivity(
+                Intent(activity, WalletActivity::class.java).apply {
+                    putExtra(DESTINATION, Destination.AddressBookAdd)
+                    putExtras(requireNotNull(TransferDestinationInputFragment.newInstanceForAddressBook(chainId).arguments))
                 },
             )
         }

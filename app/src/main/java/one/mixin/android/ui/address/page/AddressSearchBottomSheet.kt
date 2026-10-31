@@ -1,6 +1,7 @@
 package one.mixin.android.ui.address.page
 
 import androidx.activity.compose.BackHandler
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,9 +10,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,49 +20,44 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.SpanStyle
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import one.mixin.android.R
 import one.mixin.android.compose.GetActionBarHeight
 import one.mixin.android.compose.GetStatusBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.extension.timeAgoDate
+import one.mixin.android.ui.address.AddressBookCard
+import one.mixin.android.ui.address.AddressBookNetwork
 import one.mixin.android.ui.address.component.SearchTextField
+import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.components.DropdownMenuNoPaddingVeitical
 import one.mixin.android.vo.Address
-import one.mixin.android.vo.displayAddress
+import one.mixin.android.vo.Chain
+import one.mixin.android.widget.components.MixinButton
 
 @Composable
 fun AddressSearchBottomSheet(
     addresses: List<Address>,
+    chainId: String,
+    chain: Chain?,
     onAddressClick: (Address) -> Unit,
     onAddClick: () -> Unit,
     onDeleteAddress: (Address) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    var isDeleteMode by remember { mutableStateOf(false) }
-    var searchText by remember { mutableStateOf("") }
-    val scope = rememberCoroutineScope()
+    var searchText by rememberSaveable { mutableStateOf("") }
     val filteredAddresses = remember(searchText, addresses) {
         if (searchText.isBlank()) {
             addresses
@@ -72,18 +68,7 @@ fun AddressSearchBottomSheet(
             }
         }
     }
-    BackHandler(enabled = true) {
-        if (isDeleteMode) isDeleteMode = false
-        else onDismiss()
-    }
-
-    val actionBarHeight = with(LocalDensity.current) {
-        val attrs = intArrayOf(android.R.attr.actionBarSize)
-        val typedArray = LocalContext.current.obtainStyledAttributes(attrs)
-        val height = typedArray.getDimensionPixelSize(0, 0)
-        typedArray.recycle()
-        height.toDp()
-    }
+    BackHandler(onBack = onDismiss)
 
     Column(
         modifier = Modifier
@@ -91,243 +76,110 @@ fun AddressSearchBottomSheet(
             .height(
                 LocalConfiguration.current.screenHeightDp.dp - GetActionBarHeight() - GetStatusBarHeightValue()
             )
-            .background(
-                MixinAppTheme.colors.background,
-                shape = RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)
-            )
+            .background(MixinAppTheme.colors.background)
+            .imePadding()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 20.dp, vertical = 15.dp),
+                .padding(start = 20.dp, end = 20.dp, top = 16.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             SearchTextField(
                 value = searchText,
                 onValueChange = { searchText = it },
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
+                backgroundColor = MixinAppTheme.colors.backgroundWindow,
+                hint = stringResource(R.string.address_book_search_hint),
             )
-
-            if (searchText.isNotEmpty() || isDeleteMode) {
-                Text(
-                    text = stringResource(R.string.Cancel),
-                    color = MixinAppTheme.colors.textBlue,
-                    fontSize = 14.sp,
-                    modifier = Modifier
-                        .padding(start = 12.dp)
-                        .clickable {
-                            if (searchText.isNotEmpty()) {
-                                searchText = ""
-                            } else if (isDeleteMode) {
-                                isDeleteMode = false
-                            } else {
-                                onDismiss()
-                            }
-                        })
-            }
-        }
-
-        if (addresses.isEmpty()) {
-            Box(
-                contentAlignment = Alignment.Center,
+            Text(
+                text = stringResource(R.string.Cancel),
+                color = MixinAppTheme.colors.textBlue,
+                fontSize = 14.sp,
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .fillMaxHeight()
+                    .clickable(onClick = onDismiss)
+                    .padding(start = 16.dp, top = 10.dp, bottom = 10.dp),
+            )
+        }
+        Row(
+            modifier = Modifier
+                .padding(start = 20.dp, top = 16.dp, bottom = 8.dp)
+                .cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor, cornerRadius = 24.dp)
+                .padding(horizontal = 12.dp, vertical = 7.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            AddressBookNetwork(chainId, chain)
+        }
+        if (filteredAddresses.isEmpty()) {
+            Box(
+                modifier = Modifier.weight(1f).fillMaxWidth(),
+                contentAlignment = Alignment.Center,
             ) {
-                Row(modifier = Modifier.clickable {
-                    onDismiss()
-                    onAddClick()
-                }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_add_blue_24dp),
-                        contentDescription = null,
-                        tint = Color.Unspecified
-                    )
-                    Spacer(modifier = Modifier.width(12.dp))
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Image(painterResource(R.drawable.ic_empty_file), contentDescription = null)
+                    Spacer(Modifier.height(16.dp))
                     Text(
-                        stringResource(R.string.Add_address),
+                        stringResource(if (searchText.isBlank()) R.string.address_book_no_records else R.string.address_book_no_records_found),
+                        color = MixinAppTheme.colors.textAssist,
                         fontSize = 14.sp,
-                        color = MixinAppTheme.colors.textBlue
                     )
                 }
             }
         } else {
             LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                items(filteredAddresses) { address ->
-                    AddressListItem(
-                        address = address,
-                        query = searchText,
-                        isDeleteMode = isDeleteMode,
-                        onDeleteClick = onDeleteAddress,
-                        onAddressClick = {
-                            isDeleteMode = false
-                            onDismiss()
-                            onAddressClick.invoke(address)
-                        },
-                    )
-                }
-            }
-        }
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            var expanded by remember { mutableStateOf(false) }
-            Box {
-                IconButton(onClick = { expanded = true }) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_address_more),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.textPrimary
-                    )
-                }
-                DropdownMenuNoPaddingVeitical (
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false },
-                    modifier = Modifier
-                        .background(
-                            color = MixinAppTheme.colors.background,
-                            shape = RoundedCornerShape(12.dp)
+                items(filteredAddresses, key = { it.addressId }) { address ->
+                    var expanded by remember { mutableStateOf(false) }
+                    Box {
+                        AddressBookCard(
+                            address = address,
+                            chain = chain,
+                            onClick = { onAddressClick(address) },
+                            onLongClick = { expanded = true },
                         )
-                ) {
-                    DropdownMenuItem(
-                        onClick = {
-                            isDeleteMode = !isDeleteMode
-                            expanded = false
-                        },
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp)
-                    ) {
-                        Text(
-                            stringResource(R.string.Delete_address),
-                            color = MixinAppTheme.colors.tipError,
-                        )
-                        Spacer(modifier = Modifier.width(24.dp))
-                        Icon(
-                            painter = painterResource(id = R.drawable.ic_addr_remove),
-                            contentDescription = null,
-                            tint = MixinAppTheme.colors.tipError
-                        )
+                        DropdownMenuNoPaddingVeitical(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.background(
+                                color = MixinAppTheme.colors.background,
+                                shape = RoundedCornerShape(12.dp),
+                            ),
+                        ) {
+                            DropdownMenuItem(
+                                onClick = {
+                                    expanded = false
+                                    onDeleteAddress(address)
+                                },
+                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+                            ) {
+                                Text(
+                                    stringResource(R.string.Delete_address),
+                                    color = MixinAppTheme.colors.tipError,
+                                )
+                                Spacer(Modifier.width(24.dp))
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_addr_remove),
+                                    contentDescription = null,
+                                    tint = MixinAppTheme.colors.tipError,
+                                )
+                            }
+                        }
                     }
                 }
             }
-
-            Spacer(modifier = Modifier.weight(1f))
-
-            IconButton(
-                onClick = {
-                    onDismiss()
-                    onAddClick()
-                }
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_address_add),
-                    contentDescription = null,
-                    tint = MixinAppTheme.colors.textPrimary
-                )
-            }
+        }
+        MixinButton(
+            onClick = onAddClick,
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(top = 16.dp, bottom = 24.dp)
+                .height(42.dp),
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
+        ) {
+            Text(stringResource(R.string.Add_address), fontSize = 14.sp)
         }
     }
-}
-
-@Composable
-private fun AddressListItem(
-    address: Address,
-    query: String,
-    isDeleteMode: Boolean,
-    onDeleteClick: (Address) -> Unit,
-    onAddressClick: (Address) -> Unit,
-) {
-    val context = LocalContext.current
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                onAddressClick.invoke(address)
-            }
-            .padding(horizontal = 20.dp, vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        if (isDeleteMode) {
-            IconButton(
-                onClick = { onDeleteClick(address) }
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_delete_red),
-                    contentDescription = null,
-                    tint = Color.Unspecified,
-                )
-            }
-        }
-        Column(modifier = Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                HighlightedText(
-                    text = address.label,
-                    highlight = query,
-                    style = TextStyle(
-                        fontSize = 16.sp,
-                        color = MixinAppTheme.colors.textPrimary,
-                        lineHeight = 20.sp,
-                    ),
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                    text = address.updatedAt.timeAgoDate(context),
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 12.sp
-                )
-            }
-            Spacer(modifier = Modifier.height(4.dp))
-            HighlightedText(
-                text = address.displayAddress(),
-                highlight = query,
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    color = MixinAppTheme.colors.textAssist
-                )
-            )
-        }
-    }
-}
-
-@Composable
-private fun HighlightedText(
-    text: String,
-    highlight: String,
-    style: TextStyle,
-    modifier: Modifier = Modifier
-) {
-    if (highlight.isBlank()) {
-        Text(text = text, style = style, modifier = modifier)
-        return
-    }
-
-    val annotatedString = buildAnnotatedString {
-        var startIndex = 0
-        var currentIndex = text.indexOf(highlight, ignoreCase = true)
-        while (currentIndex >= 0) {
-            append(text.substring(startIndex, currentIndex))
-            withStyle(SpanStyle(color = MixinAppTheme.colors.textBlue)) {
-                append(text.substring(currentIndex, currentIndex + highlight.length))
-            }
-            startIndex = currentIndex + highlight.length
-            currentIndex = text.indexOf(highlight, startIndex, ignoreCase = true)
-        }
-        if (startIndex < text.length) {
-            append(text.substring(startIndex))
-        }
-    }
-
-    Text(
-        text = annotatedString,
-        style = style,
-        modifier = modifier
-    )
 }

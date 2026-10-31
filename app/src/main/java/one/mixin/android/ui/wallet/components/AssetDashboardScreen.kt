@@ -1,6 +1,8 @@
 package one.mixin.android.ui.wallet.components
 
 import android.content.Context
+import android.view.ContextThemeWrapper
+import android.view.View
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -23,6 +25,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -56,6 +59,7 @@ import one.mixin.android.Constants.Account.PREF_WALLET_CATEGORY_FILTER
 import one.mixin.android.R
 import one.mixin.android.RxBus
 import one.mixin.android.compose.theme.MixinAppTheme
+import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.isImported
 import one.mixin.android.db.web3.vo.isOwner
@@ -65,18 +69,21 @@ import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.WalletCategory
+import one.mixin.android.widget.BottomSheet
 
 const val PREF_NAME = "wallet_info_card"
 const val KEY_HIDE_PRIVACY_WALLET_INFO = "hide_privacy_wallet_info"
 const val KEY_HIDE_COMMON_WALLET_INFO = "hide_common_wallet_info"
 const val KEY_HIDE_SAFE_WALLET_INFO = "hide_safe_wallet_info"
 const val KEY_SAFE_CATEGORY_BADGE_SEEN = "safe_category_badge_seen"
+private const val KEY_ADDRESS_BOOK_BADGE_SEEN = "address_book_badge_seen"
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AssetDashboardScreen(
     onWalletCardClick: (destination: WalletDestination) -> Unit,
     onAddWalletClick: () -> Unit,
+    onAddressBookClick: () -> Unit,
     onUpgradePlan: () -> Unit,
 ) {
     val viewModel: AssetDistributionViewModel = hiltViewModel()
@@ -96,6 +103,7 @@ fun AssetDashboardScreen(
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
     val hasSeenSafeCategoryBadge = remember { mutableStateOf(prefs.getBoolean(KEY_SAFE_CATEGORY_BADGE_SEEN, false)) }
     val addWalletClicked = remember { mutableStateOf(prefs.getBoolean(PREF_HAS_USED_ADD_WALLET, false)) }
+    val hasSeenAddressBookBadge = remember { mutableStateOf(prefs.getBoolean(KEY_ADDRESS_BOOK_BADGE_SEEN, false)) }
     val wallets by viewModel.wallets.collectAsStateWithLifecycle()
     var selectedCategory by remember { mutableStateOf<String?>(prefs.getString(PREF_WALLET_CATEGORY_FILTER, null)) }
     var isWalletInfoCardVisible by remember { mutableStateOf(true) }
@@ -175,6 +183,41 @@ fun AssetDashboardScreen(
                     )
                     }
                 }
+                Box {
+                    IconButton(onClick = {
+                        val menuBinding = ViewWalletTransactionsBottomBinding.bind(
+                            View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.view_wallet_transactions_bottom, null),
+                        )
+                        val bottomSheet = BottomSheet.Builder(context).setCustomView(menuBinding.root).create()
+                        menuBinding.hide.setText(R.string.Address_Book)
+                        menuBinding.hide.setOnClickListener {
+                            bottomSheet.dismiss()
+                            if (!hasSeenAddressBookBadge.value) {
+                                hasSeenAddressBookBadge.value = true
+                                prefs.edit { putBoolean(KEY_ADDRESS_BOOK_BADGE_SEEN, true) }
+                            }
+                            onAddressBookClick()
+                        }
+                        menuBinding.cancel.setOnClickListener { bottomSheet.dismiss() }
+                        bottomSheet.show()
+                    }) {
+                        Box {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_more),
+                                contentDescription = stringResource(R.string.More),
+                                tint = MixinAppTheme.colors.icon,
+                            )
+                            if (!hasSeenAddressBookBadge.value) {
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .size(8.dp)
+                                        .background(color = Color.Red, shape = CircleShape)
+                                )
+                            }
+                        }
+                    }
+                }
             }
             val hasImportedWallets = wallets.any { it.isImported() }
             val hasWatchWallets = wallets.any { it.isWatch() }
@@ -214,7 +257,8 @@ fun AssetDashboardScreen(
             Spacer(modifier = Modifier.height(18.dp))
             Column(
                 modifier = Modifier
-                    .fillMaxSize()
+                    .weight(1f)
+                    .fillMaxWidth()
                     .verticalScroll(rememberScrollState())
             ) {
                 if (showTotalAssetsCard) {

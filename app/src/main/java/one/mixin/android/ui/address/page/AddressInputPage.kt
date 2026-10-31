@@ -1,6 +1,7 @@
 package one.mixin.android.ui.address.page
 
 import one.mixin.android.ui.home.web3.components.PageScaffold
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,6 +33,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
@@ -52,7 +54,6 @@ import one.mixin.android.R
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.openUrl
-import one.mixin.android.ui.address.component.TokenInfoHeader
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
@@ -61,6 +62,9 @@ import one.mixin.android.vo.safe.TokenItem
 fun AddressInputPage(
     token: TokenItem?,
     web3Token: Web3TokenItem?,
+    networkChainId: String? = token?.chainId ?: web3Token?.chainId,
+    networkName: String = token?.chainName ?: web3Token?.chainName.orEmpty(),
+    onNetworkClick: (() -> Unit)? = null,
     contentText: String = "",
     onNext: (String) -> Unit,
     pop: () -> Unit,
@@ -68,7 +72,7 @@ fun AddressInputPage(
     errorInfo: String? = null,
     isLoading: Boolean = false
 ) {
-    var address by remember(contentText) { mutableStateOf(contentText) }
+    var address by remember(contentText, networkChainId) { mutableStateOf(contentText) }
     val focusRequester = remember { FocusRequester() }
     val clipboard = LocalClipboard.current
     val coroutineScope = rememberCoroutineScope()
@@ -79,7 +83,7 @@ fun AddressInputPage(
 
     val context = LocalContext.current
     PageScaffold(
-        title = stringResource(R.string.Address),
+        title = stringResource(R.string.Add_address),
         verticalScrollable = false,
         pop = pop,
         actions = {
@@ -108,7 +112,42 @@ fun AddressInputPage(
                 .padding(horizontal = 20.dp)
         ) {
             Column(modifier = Modifier.imePadding()) {
-                TokenInfoHeader(token = token, web3Token = web3Token)
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 10.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .cardBackground(
+                            Color.Transparent,
+                            MixinAppTheme.colors.borderColor,
+                            cornerRadius = 8.dp,
+                        )
+                        .then(if (onNetworkClick != null) Modifier.clickable(onClick = onNetworkClick) else Modifier)
+                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.network),
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 12.sp,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            text = networkName,
+                            color = MixinAppTheme.colors.textPrimary,
+                            fontSize = 14.sp,
+                        )
+                    }
+                    if (onNetworkClick != null) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_sort_arrow_down),
+                            contentDescription = null,
+                            tint = MixinAppTheme.colors.iconGray,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
+                }
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()

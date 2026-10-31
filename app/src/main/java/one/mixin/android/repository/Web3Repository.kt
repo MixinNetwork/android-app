@@ -7,7 +7,10 @@ import androidx.paging.PagingSource
 import androidx.room3.RoomRawQuery
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.MixinApplication
@@ -27,6 +30,7 @@ import one.mixin.android.crypto.CryptoWalletHelper
 import one.mixin.android.crypto.UtxoKeyGenerator
 import one.mixin.android.db.property.Web3PropertyHelper
 import one.mixin.android.db.OrderDao
+import one.mixin.android.db.WalletDatabase
 import one.mixin.android.db.perps.PerpsMarketDao
 import one.mixin.android.db.web3.Web3AddressDao
 import one.mixin.android.db.web3.Web3ChainDao
@@ -51,6 +55,7 @@ import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.ui.wallet.Web3FilterParams
 import one.mixin.android.ui.wallet.fiatmoney.requestRouteAPI
+import one.mixin.android.vo.Address as WalletAddress
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.vo.route.Order
 import one.mixin.android.vo.safe.toWeb3TokenItem
@@ -81,6 +86,7 @@ constructor(
     val orderDao: OrderDao,
     val perpsMarketDao: PerpsMarketDao,
     val walletOutputDao: WalletOutputDao,
+    private val walletDatabase: WalletDatabase,
 ) {
     suspend fun estimateFee(request: EstimateFeeRequest) = routeService.estimateFee(request)
 
@@ -278,6 +284,15 @@ constructor(
     fun web3TransactionPagingSource(filterParams: Web3FilterParams): PagingSource<Int, Web3TransactionItem> {
         return web3TransactionDao.allTransactions(filterParams.buildQuery())
     }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    fun recentAddressTransactions(address: WalletAddress, walletId: String): Flow<List<Web3TransactionItem>> =
+        walletDatabase.invalidationTracker.createFlow(
+            "transactions", "tokens", "chains", "addresses",
+        ).mapLatest {
+            web3TransactionDao.transactionItems(Web3FilterParams(walletId = walletId, address = address).buildQuery(limit = 11))
+                .map { mapWeb3Transaction(it, walletId) }
+        }.flowOn(Dispatchers.IO)
 
     suspend fun getPendingTransactionItems(walletId: String): List<Web3TransactionItem> =
         web3TransactionDao.getPendingTransactionItems(walletId).map { mapWeb3Transaction(it, walletId) }

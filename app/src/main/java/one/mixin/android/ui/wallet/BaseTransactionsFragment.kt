@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentTransactionFiltersBinding
+import one.mixin.android.databinding.ViewWalletTransactionsBottomBinding
 import one.mixin.android.job.MixinJobManager
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.widget.BottomSheet
@@ -36,6 +37,21 @@ abstract class BaseTransactionsFragment(
     private val filterBinding get() = requireNotNull(_filterBinding)
 
     private var pagingJob: Job? = null
+
+    protected fun showAddressFilterReset(onReset: () -> Unit, onDismiss: () -> Unit) {
+        val binding = ViewWalletTransactionsBottomBinding.bind(
+            View.inflate(ContextThemeWrapper(requireActivity(), R.style.Custom), R.layout.view_wallet_transactions_bottom, null),
+        )
+        val bottomSheet = BottomSheet.Builder(requireActivity()).setCustomView(binding.root).create()
+        binding.hide.setText(R.string.Reset)
+        binding.hide.setOnClickListener {
+            onReset()
+            bottomSheet.dismiss()
+        }
+        binding.cancel.setOnClickListener { bottomSheet.dismiss() }
+        bottomSheet.setOnDismissListener { onDismiss() }
+        bottomSheet.show()
+    }
 
     protected fun showFiltersSheet() {
         filterBinding.apply {

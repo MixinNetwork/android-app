@@ -1354,6 +1354,9 @@
     <string name="Make_sure_WiFi">Make sure Wi-Fi is connected</string>
     <string name="connected_dapps">Connected apps</string>
     <string name="search_placeholder_address">Label, Address</string>
+    <string name="address_book_search_hint">Name, Address</string>
+    <string name="address_book_no_records">No records</string>
+    <string name="address_book_no_records_found">No records found</string>
     <string name="search_placeholder_dapp">Name, URL</string>
     <string name="search_placeholder_app">Search ID or name</string>
     <string name="search_placeholder_inscription">Search ID</string>
@@ -2787,4 +2790,8 @@
     <string name="Select_asset">Select an asset to view</string>
     <string name="Select_market_item">Select a market to view</string>
     <string name="Select_explore_item">Select an item to open</string>
+    <string name="All_Networks">All Networks</string>
+    <string name="Last_Updated">Last Updated</string>
+    <string name="Last_Updated_at">Last Updated %1$s</string>
+    <string name="number_of_networks">%1$d networks</string>
 </resources>

@@ -895,4 +895,8 @@
     <string name="Select_asset">Pilih aset untuk dilihat</string>
     <string name="Select_market_item">Pilih pasaran untuk dilihat</string>
     <string name="Select_explore_item">Pilih item untuk dibuka</string>
+    <string name="All_Networks">Semua Rangkaian</string>
+    <string name="Last_Updated">Terakhir Dikemas Kini</string>
+    <string name="Last_Updated_at">Terakhir Dikemas Kini %1$s</string>
+    <string name="number_of_networks">%1$d rangkaian</string>
 </resources>

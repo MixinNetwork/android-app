@@ -1273,4 +1273,8 @@
     <string name="Select_asset">Seleccione un activo para verlo</string>
     <string name="Select_market_item">Seleccione un mercado para verlo</string>
     <string name="Select_explore_item">Seleccione un elemento para abrirlo</string>
+    <string name="All_Networks">Todas las redes</string>
+    <string name="Last_Updated">Última actualización</string>
+    <string name="Last_Updated_at">Última actualización %1$s</string>
+    <string name="number_of_networks">%1$d redes</string>
 </resources>
