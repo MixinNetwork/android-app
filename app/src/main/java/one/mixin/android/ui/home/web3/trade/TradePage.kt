@@ -4,6 +4,7 @@ package one.mixin.android.ui.home.web3.trade
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -285,9 +286,10 @@ fun TradePage(
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
-                            .offset(x = (-12).dp, y = 12.dp)
-                            .size(8.dp)
-                            .background(MixinAppTheme.colors.badgeRed, CircleShape),
+                            .offset(x = (-6).dp, y = 7.dp)
+                            .size(10.dp)
+                            .background(MixinAppTheme.colors.badgeRed, CircleShape)
+                            .border(1.dp, MixinAppTheme.colors.background, CircleShape),
                     )
                 }
             }
