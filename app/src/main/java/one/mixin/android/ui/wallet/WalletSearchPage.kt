@@ -26,6 +26,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -36,7 +37,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.platform.LocalContext
@@ -100,20 +100,20 @@ internal fun WalletSearchPage(
             }
         }
         LazyColumn(
-            modifier = Modifier.fillMaxSize().background(if (hasQuery) MixinAppTheme.colors.backgroundWindow else MixinAppTheme.colors.background),
+            modifier = Modifier.fillMaxWidth().weight(1f).background(if (hasQuery) MixinAppTheme.colors.backgroundWindow else MixinAppTheme.colors.background),
             state = listState,
         ) {
             if (!hasQuery) {
                 if (recentSearches.isNotEmpty()) {
                     item {
                         Row(
-                            Modifier.fillMaxWidth().padding(start = 20.dp, top = 6.dp, end = 16.dp, bottom = 12.dp),
+                            Modifier.fillMaxWidth().padding(start = 20.dp, top = 12.dp, end = 16.dp, bottom = 12.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Text(stringResource(R.string.Recent), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp, lineHeight = 18.sp)
                             IconButton(onClick = onClearRecent, modifier = Modifier.size(32.dp)) {
-                                Icon(painterResource(R.drawable.ic_market_search_delete), stringResource(R.string.Clear), tint = Color.Unspecified)
+                                Icon(painterResource(R.drawable.ic_market_search_delete), stringResource(R.string.Clear), tint = MixinAppTheme.colors.iconGray)
                             }
                         }
                     }
@@ -156,24 +156,25 @@ internal fun WalletSearchPage(
                         WalletSearchRow(result, quoteColorReversed) { onResultClick(result) }
                     }
                 }
-                item {
-                    Spacer(Modifier.height(6.dp))
-                    Row(
-                        Modifier.fillMaxWidth().background(MixinAppTheme.colors.background).clickable(onClick = onSearchMarkets)
-                            .heightIn(min = 64.dp).padding(horizontal = 20.dp, vertical = 16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(
-                            stringResource(R.string.search_query_in_markets, state.query.trim()),
-                            color = MixinAppTheme.colors.accent,
-                            fontSize = 16.sp,
-                            lineHeight = 20.sp,
-                            modifier = Modifier.weight(1f),
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Icon(painterResource(R.drawable.ic_arrow_right), contentDescription = null, tint = MixinAppTheme.colors.textRemarks, modifier = Modifier.size(16.dp))
+                if (!state.isSearching) {
+                    item {
+                        Spacer(Modifier.fillMaxWidth().height(6.dp).background(MixinAppTheme.colors.backgroundWindow))
+                        Row(
+                            Modifier.fillMaxWidth().background(MixinAppTheme.colors.background).clickable(onClick = onSearchMarkets)
+                                .heightIn(min = 64.dp).padding(horizontal = 20.dp, vertical = 16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Text(
+                                stringResource(R.string.search_query_in_markets, state.query.trim()),
+                                color = MixinAppTheme.colors.accent,
+                                fontSize = 16.sp,
+                                lineHeight = 20.sp,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Icon(painterResource(R.drawable.ic_arrow_right), contentDescription = null, tint = MixinAppTheme.colors.textRemarks, modifier = Modifier.size(16.dp))
+                        }
                     }
-                    Spacer(Modifier.height(20.dp))
                 }
             }
         }
@@ -241,9 +242,9 @@ private fun WalletRecentSearchChip(
             .then(if (maxWidth != null) Modifier.widthIn(max = maxWidth) else Modifier)
             .border(
                 BorderStroke(1.dp, MixinAppTheme.colors.textPrimary.copy(alpha = 0.06f)),
-                RoundedCornerShape(32.dp),
+                CircleShape,
             )
-            .clip(RoundedCornerShape(21.dp))
+            .clip(CircleShape)
             .background(MixinAppTheme.colors.background)
             .clickable(onClick = onClick)
             .padding(start = 6.dp, top = 4.dp, bottom = 4.dp, end = 14.dp),
@@ -276,8 +277,8 @@ private fun WalletRecentSearchChip(
             Text(
                 walletSearchSubtitle(result, recent = true),
                 color = MixinAppTheme.colors.textAssist,
-                fontSize = 12.sp,
-                lineHeight = 14.sp,
+                fontSize = 13.sp,
+                lineHeight = 15.sp,
                 style = TextStyle(platformStyle = PlatformTextStyle(includeFontPadding = false)),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -313,8 +314,9 @@ private fun WalletSearchRow(result: WalletSearchResult, quoteColorReversed: Bool
                 )
                 when (result) {
                     is WalletSearchResult.Position -> {
+                        val color = if (result.position.side.equals("long", true) != quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
                         Spacer(Modifier.width(4.dp))
-                        PerpsLeverageBadge(result.position.leverage)
+                        PerpsLeverageBadge(result.position.leverage, color = color)
                     }
                     is WalletSearchResult.Earn -> result.account.maxApyText?.let {
                         Spacer(Modifier.width(4.dp))
@@ -339,13 +341,13 @@ private fun walletSearchSubtitle(result: WalletSearchResult, recent: Boolean = f
 @Composable
 private fun WalletSearchIcon(result: WalletSearchResult, size: Dp) {
     when (result) {
-        is WalletSearchResult.Asset -> WalletAssetIcon(result.token.iconUrl, result.token.chainIconUrl, result.token.collectionHash, size)
+        is WalletSearchResult.Asset -> WalletAssetIcon(result.token.iconUrl, result.token.chainIconUrl, result.token.collectionHash, size, chainBadgeSize = 13.dp)
         is WalletSearchResult.Position -> MarketIcon(result.position.iconUrl.orEmpty(), size)
         is WalletSearchResult.Earn -> MarketIcon(result.account.iconUrl, size)
         is WalletSearchResult.Collectible -> CoilImage(
             model = result.collectible.iconURL?.takeIf { it.isNotBlank() } ?: result.collectible.contentURL,
             placeholder = R.drawable.ic_avatar_place_holder,
-            modifier = Modifier.size(size).clip(RoundedCornerShape(8.dp)),
+            modifier = Modifier.size(size).clip(RoundedCornerShape(12.dp)),
             contentScale = ContentScale.Crop,
         )
     }
