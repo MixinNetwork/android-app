@@ -236,7 +236,7 @@
     <string name="contact_mobile">手機：%1$s</string>
     <string name="contact_mute_title">靜音通知</string>
     <string name="contact_favorite_bots_title">%1$s分享的機器人</string>
-    <string name="CONTACTS">聯絡人</string>
+    <string name="Contacts">聯絡人</string>
     <string name="content_audio">[語音]</string>
     <string name="content_contact">[聯絡人]</string>
     <string name="content_file">[檔案]</string>
@@ -2497,6 +2497,7 @@
     <string name="Position_Summary">倉位摘要</string>
     <string name="Position_Info">倉位資訊</string>
     <string name="Total_Realized_PnL">總盈虧</string>
+    <string name="perps_realized_pnl_tip">未平倉的合約不計入統計</string>
     <string name="Price_Change">價格變化</string>
     <string name="Time_Info">時間訊息</string>
     <string name="Open_Time">開倉時間</string>

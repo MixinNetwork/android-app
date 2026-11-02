@@ -20,6 +20,7 @@ import android.content.Context.ACTIVITY_SERVICE
 import android.content.ContextWrapper
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -144,6 +145,13 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
 
 fun Context.isScreenWideColorGamut(): Boolean {
     return runCatching { resources.configuration.isScreenWideColorGamut }.getOrDefault(false)
+}
+
+fun android.view.Window.enableWideColorGamutIfSupported() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
+    if (!context.isScreenWideColorGamut()) return
+    if (colorMode == ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT) return
+    colorMode = ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT
 }
 
 inline val Context.layoutInflater: android.view.LayoutInflater

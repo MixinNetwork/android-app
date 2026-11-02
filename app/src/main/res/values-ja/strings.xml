@@ -230,7 +230,7 @@
     <string name="contact_mobile">モバイル: %1$s</string>
     <string name="contact_mute_title">通知をミュート</string>
     <string name="contact_favorite_bots_title">%1$s\のシェアしたミニアプリ</string>
-    <string name="CONTACTS">連絡先</string>
+    <string name="Contacts">連絡先</string>
     <string name="content_audio">[音声メッセージ]</string>
     <string name="content_contact">[連絡先]</string>
     <string name="content_file">[ファイル]</string>
@@ -1219,4 +1219,5 @@
     <string name="Select_asset">表示する資産を選択してください</string>
     <string name="Select_market_item">表示するマーケットを選択してください</string>
     <string name="Select_explore_item">開く項目を選択してください</string>
+    <string name="perps_realized_pnl_tip">未決済のポジションは統計に含まれません。</string>
 </resources>
