@@ -6,6 +6,7 @@ import com.google.gson.GsonBuilder
 import com.google.gson.JsonParser
 import com.reown.android.Core
 import com.reown.android.CoreClient
+import com.reown.android.internal.common.exception.CannotFindSequenceForTopic
 import com.reown.android.internal.common.exception.GenericException
 import com.reown.android.relay.ConnectionType
 import com.reown.walletkit.client.Wallet
@@ -147,6 +148,9 @@ object WalletConnectV2 : WalletConnect() {
 
                 override fun onSessionDelete(sessionDelete: Wallet.Model.SessionDelete) {
                     Timber.d("$TAG onSessionDelete $sessionDelete")
+                    if (sessionDelete is Wallet.Model.SessionDelete.Success) {
+                        RxBus.publish(WCSessionDeleteEvent(sessionDelete.topic))
+                    }
                 }
 
                 override fun onSessionExtend(session: Wallet.Model.Session) {
@@ -504,7 +508,9 @@ object WalletConnectV2 : WalletConnect() {
             )
         WalletKit.respondSessionRequest(result) { error ->
             Timber.d("$TAG rejectSessionRequest error: $error")
-            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+            if (error.throwable !is CannotFindSequenceForTopic) {
+                RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+            }
         }
     }
 
@@ -549,7 +555,9 @@ object WalletConnectV2 : WalletConnect() {
             },
         ) { error ->
             Timber.d("$TAG disconnect error $error")
-            RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+            if (error.throwable !is CannotFindSequenceForTopic) {
+                RxBus.publish(WCErrorEvent(WCError(error.throwable)))
+            }
         }
     }
 
