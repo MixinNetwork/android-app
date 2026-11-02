@@ -113,6 +113,11 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         )
     }
 
+    private var replacedTransactionHash: String? = null
+
+    private val transactionHash: String
+        get() = replacedTransactionHash ?: transaction.transactionHash
+
     private val transactionDetailState by lazy {
         mutableStateOf(
             Web3TransactionDetailState(
@@ -404,7 +409,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             }
             titleView.setWalletNameSubTitleStyle()
             spamLl.isVisible = transaction.isNotVerified()
-            transactionHashTv.text = transaction.transactionHash
+            transactionHashTv.text = transactionHash
             bindMainValue(transactionDetailState.value)
 
             when (currentStatus) {
@@ -552,7 +557,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     private fun refreshPendingTransaction() {
         lifecycleScope.launch {
             try {
-                val remote = web3ViewModel.refreshWeb3Transaction(transaction.address, transaction.transactionHash, transaction.chainId)
+                val remote = web3ViewModel.refreshWeb3Transaction(transaction.address, transactionHash, transaction.chainId)
                 if (remote != null && remote.status != transactionDetailState.value.status) {
                     updateTransactionStatus(remote.status)
                 }
@@ -579,7 +584,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
 
     private suspend fun updateFeeVisibility(status: String) {
         val pendingRawTx: Web3RawTransaction? = if (status == TransactionStatus.PENDING.value) {
-            web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transaction.transactionHash, transaction.chainId)
+            web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transactionHash, transaction.chainId)
         } else {
             null
         }
@@ -596,7 +601,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                     updateStatusBottomMargin()
                     return@apply
                 }
-                val pendingRawTx = web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transaction.transactionHash, transaction.chainId)
+                val pendingRawTx = web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transactionHash, transaction.chainId)
                 val shouldShowActions = pendingRawTx != null
 
                 if (!shouldShowActions) {
@@ -625,7 +630,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 }
                 if (actionRoute == PendingTransactionActionRoute.Utxo) {
                     val hasSignedChange: Boolean =
-                        web3ViewModel.hasUtxoSignedOutputsByTransactionHash(transaction.transactionHash, chainId)
+                        web3ViewModel.hasUtxoSignedOutputsByTransactionHash(transactionHash, chainId)
                     if (shouldHideUtxoPendingActions(chainId, notNullPendingRawTx.raw, hasSignedChange)) {
                         actions.isVisible = false
                         actions.speedUp.setOnClickListener(null)
@@ -700,7 +705,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
         bottomBinding.apply {
             explorer.setOnClickListener {
                 val url =
-                    "${Constants.API.URL}external/explore/${token.chainId}/transactions/${transaction.transactionHash}"
+                    "${Constants.API.URL}external/explore/${token.chainId}/transactions/${transactionHash}"
                 context?.openUrl(url)
                 bottomSheet.dismiss()
             }
@@ -719,8 +724,14 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             jobManager = jobManager,
             refreshJob = refreshJob,
             onTransactionStatusUpdated = { hash, newStatus ->
-                if (hash == transaction.transactionHash) {
+                if (hash == transactionHash) {
                     updateTransactionStatus(newStatus)
+                }
+            },
+            onTransactionHashReplaced = { oldHash, newHash ->
+                if (oldHash == transactionHash) {
+                    replacedTransactionHash = newHash
+                    binding.transactionHashTv.text = newHash
                 }
             }
         )
