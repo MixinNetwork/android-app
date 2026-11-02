@@ -2491,6 +2491,7 @@
     <string name="Position_Summary">Position Summary</string>
     <string name="Position_Info">Position Info</string>
     <string name="Total_Realized_PnL">Total Realized PnL</string>
+    <string name="perps_realized_pnl_tip">Open positions are not included in the statistics.</string>
     <string name="Price_Change">Price Change</string>
     <string name="Time_Info">Time Info</string>
     <string name="Open_Time">Open Time</string>

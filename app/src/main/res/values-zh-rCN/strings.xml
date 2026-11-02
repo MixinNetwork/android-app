@@ -2407,6 +2407,7 @@
     <string name="Position_Summary">持仓概要</string>
     <string name="Position_Info">持仓信息</string>
     <string name="Total_Realized_PnL">总盈亏</string>
+    <string name="perps_realized_pnl_tip">未平仓的合约不计入统计</string>
     <string name="Price_Change">价格变化</string>
     <string name="Time_Info">时间信息</string>
     <string name="Open_Time">开仓时间</string>
