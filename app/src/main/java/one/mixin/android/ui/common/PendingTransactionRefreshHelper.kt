@@ -25,8 +25,7 @@ object PendingTransactionRefreshHelper {
         web3ViewModel: Web3ViewModel,
         jobManager: MixinJobManager,
         refreshJob: Job?,
-        onTransactionStatusUpdated: ((hash: String, newStatus: String) -> Unit)? = null,
-        onTransactionHashReplaced: ((oldHash: String, newHash: String) -> Unit)? = null
+        onTransactionStatusUpdated: ((hash: String, newStatus: String) -> Unit)? = null
     ): Job? {
         refreshJob?.cancel()
         return fragment.lifecycleScope.launch {
@@ -34,8 +33,7 @@ object PendingTransactionRefreshHelper {
                 Web3Signer.currentWalletId,
                 web3ViewModel,
                 jobManager,
-                onTransactionStatusUpdated,
-                onTransactionHashReplaced
+                onTransactionStatusUpdated
             )
         }
     }
@@ -49,8 +47,7 @@ object PendingTransactionRefreshHelper {
         walletId: String,
         web3ViewModel: Web3ViewModel,
         jobManager: MixinJobManager,
-        onTransactionStatusUpdated: ((hash: String, newStatus: String) -> Unit)? = null,
-        onTransactionHashReplaced: ((oldHash: String, newHash: String) -> Unit)? = null
+        onTransactionStatusUpdated: ((hash: String, newStatus: String) -> Unit)? = null
     ) {
         while (true) {
             try {
@@ -72,7 +69,6 @@ object PendingTransactionRefreshHelper {
                                     chainId = transition.chainId,
                                     updatedAt = sponsorTransaction.updatedAt,
                                 )
-                                onTransactionHashReplaced?.invoke(transition.hash, broadcastTxHash)
                                 return@forEach
                             }
                             val gaslessStatus = sponsorTransaction.toPendingStatusOrNull()
