@@ -19,6 +19,7 @@ import one.mixin.android.ui.common.biometric.UtxoException
 import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import org.chromium.net.CronetException
 import retrofit2.HttpException
+import timber.log.Timber
 import java.io.IOException
 import java.net.ConnectException
 import java.net.SocketException
@@ -150,7 +151,10 @@ open class ErrorHandler {
                     }
                 }
 
-                else -> ctx.getString(R.string.error_unknown_with_message, throwable.msg())
+                else -> {
+                    Timber.e(throwable, "Unknown error")
+                    ctx.getString(R.string.error_unknown_with_message, throwable.msg())
+                }
             }
         }
 
