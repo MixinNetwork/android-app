@@ -555,7 +555,7 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     }
 
     private fun refreshPendingTransaction() {
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val remote = web3ViewModel.refreshWeb3Transaction(transaction.address, transactionHash, transaction.chainId)
                 if (remote != null && remote.status != transactionDetailState.value.status) {
