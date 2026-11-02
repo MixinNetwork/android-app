@@ -70,11 +70,11 @@ internal fun NetworkOptionRow(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp),
+            .padding(horizontal = 20.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        NetworkIcon(iconUrl = iconUrl, size = 32.dp)
-        Spacer(modifier = Modifier.width(12.dp))
+        NetworkIcon(iconUrl = iconUrl, size = 42.dp)
+        Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = name,
             modifier = Modifier.weight(1f),

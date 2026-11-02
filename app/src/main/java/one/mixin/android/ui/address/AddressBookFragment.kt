@@ -37,6 +37,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
@@ -195,11 +196,11 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
                     ) {
                         item {
                             Column(
-                                modifier = Modifier.fillMaxWidth().cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor).padding(horizontal = 20.dp, vertical = 12.dp),
-                                verticalArrangement = Arrangement.spacedBy(24.dp),
+                                modifier = Modifier.fillMaxWidth().cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor).padding(horizontal = 16.dp, vertical = 20.dp),
+                                verticalArrangement = Arrangement.spacedBy(20.dp),
                             ) {
                                 AddressBookField(stringResource(R.string.Label), address.label)
-                                AddressBookField(stringResource(R.string.Address), address.destination)
+                                AddressBookField(stringResource(R.string.Address), address.destination, valueLineHeight = 25.sp)
                                 AddressBookField(
                                     stringResource(R.string.network),
                                     addressBookNetworks.firstOrNull { it.chainId == address.chainId }?.name
@@ -283,22 +284,22 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
 @Composable
 internal fun AddressBookNetwork(chainId: String, chain: Chain?) {
     Row(verticalAlignment = Alignment.CenterVertically) {
-        CoilImage(chain?.iconUrl, R.drawable.ic_avatar_place_holder, Modifier.size(16.dp).clip(CircleShape))
+        CoilImage(chain?.iconUrl, R.drawable.ic_avatar_place_holder, Modifier.size(18.dp).clip(CircleShape))
         Spacer(Modifier.width(4.dp))
         Text(
             addressBookNetworks.firstOrNull { it.chainId == chainId }?.name ?: chain?.name ?: stringResource(R.string.Unknown),
             color = MixinAppTheme.colors.textAssist,
-            fontSize = 12.sp,
+            fontSize = 14.sp,
         )
     }
 }
 
 @Composable
-private fun AddressBookField(title: String, value: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Text(title, color = MixinAppTheme.colors.textAssist, fontSize = 14.sp)
+private fun AddressBookField(title: String, value: String, valueLineHeight: TextUnit = 20.sp) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(title.uppercase(), color = MixinAppTheme.colors.textRemarks, fontSize = 14.sp, lineHeight = 16.sp)
         SelectionContainer {
-            Text(value, color = MixinAppTheme.colors.textPrimary, fontSize = 14.sp)
+            Text(value, color = MixinAppTheme.colors.textPrimary, fontSize = 16.sp, lineHeight = valueLineHeight)
         }
     }
 }

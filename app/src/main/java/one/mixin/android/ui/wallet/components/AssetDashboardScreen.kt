@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -159,31 +160,34 @@ fun AssetDashboardScreen(
                         .wrapContentHeight(Alignment.CenterVertically)
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Box {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_add_black_24dp),
-                        contentDescription = null,
-                        tint = MixinAppTheme.colors.icon,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable {
-                                if (!addWalletClicked.value) {
-                                    addWalletClicked.value = true
-                                    prefs.edit { putBoolean(PREF_HAS_USED_ADD_WALLET, true) }
-                                }
-                                onAddWalletClick()
+                Row(
+                    modifier = Modifier.offset(x = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    IconButton(onClick = {
+                        if (!addWalletClicked.value) {
+                            addWalletClicked.value = true
+                            prefs.edit { putBoolean(PREF_HAS_USED_ADD_WALLET, true) }
+                        }
+                        onAddWalletClick()
+                    }) {
+                        Box {
+                            Icon(
+                                painter = painterResource(R.drawable.ic_add_black_24dp),
+                                contentDescription = null,
+                                tint = MixinAppTheme.colors.icon,
+                            )
+                            if (!addWalletClicked.value) {
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.TopEnd)
+                                        .size(6.dp)
+                                        .background(color = Color.Red, shape = CircleShape)
+                                )
                             }
-                    )
-                    if (!addWalletClicked.value) {
-                        Box(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .size(8.dp)
-                                .background(color = Color.Red, shape = CircleShape)
-                    )
+                        }
                     }
-                }
-                Box {
+                    Spacer(modifier = Modifier.width(6.dp))
                     IconButton(onClick = {
                         val menuBinding = ViewWalletTransactionsBottomBinding.bind(
                             View.inflate(ContextThemeWrapper(context, R.style.Custom), R.layout.view_wallet_transactions_bottom, null),
@@ -203,7 +207,7 @@ fun AssetDashboardScreen(
                     }) {
                         Box {
                             Icon(
-                                painter = painterResource(R.drawable.ic_more),
+                                painter = painterResource(R.drawable.ic_more_horiz_black_24dp),
                                 contentDescription = stringResource(R.string.More),
                                 tint = MixinAppTheme.colors.icon,
                             )
@@ -211,7 +215,7 @@ fun AssetDashboardScreen(
                                 Box(
                                     modifier = Modifier
                                         .align(Alignment.TopEnd)
-                                        .size(8.dp)
+                                        .size(6.dp)
                                         .background(color = Color.Red, shape = CircleShape)
                                 )
                             }

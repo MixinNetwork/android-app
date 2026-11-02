@@ -39,7 +39,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -242,19 +241,20 @@ internal fun AddressBookCard(address: Address, chain: Chain?, onClick: () -> Uni
                 address.label,
                 modifier = Modifier.weight(1f),
                 color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.W500,
+                fontSize = 16.sp,
+                lineHeight = 20.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.width(8.dp))
             AddressBookNetwork(address.chainId, chain)
         }
-        Text(address.displayAddress(), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp)
+        Text(address.displayAddress(), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 18.sp)
         Text(
             stringResource(R.string.Last_Updated_at, address.updatedAt.fullDate()),
-            color = MixinAppTheme.colors.textAssist,
-            fontSize = 11.sp,
+            color = MixinAppTheme.colors.textRemarks,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
         )
     }
 }

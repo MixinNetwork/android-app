@@ -719,6 +719,10 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 token = addAddressToken,
                                 web3Token = web3Token,
                                 address = address,
+                                networkName = addressBookNetworks.firstOrNull {
+                                    it.chainId == (addressBookChainId ?: token?.chainId ?: web3Token?.chainId)
+                                }?.name ?: addAddressToken?.chainName ?: web3Token?.chainName.orEmpty(),
+                                networkIconUrl = addAddressToken?.chainIconUrl ?: web3Token?.chainIcon,
                                 contentText = scannedMemo,
                                 errorInfo = errorInfo,
                                 isLoading = isLoading,
@@ -759,6 +763,10 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             LabelInputPage(
                                 token = addAddressToken,
                                 web3Token = web3Token,
+                                networkName = addressBookNetworks.firstOrNull {
+                                    it.chainId == (addressBookChainId ?: token?.chainId ?: web3Token?.chainId)
+                                }?.name ?: addAddressToken?.chainName ?: web3Token?.chainName.orEmpty(),
+                                networkIconUrl = addAddressToken?.chainIconUrl ?: web3Token?.chainIcon,
                                 address = address,
                                 memo = memo,
                                 contentText = scannedLabel,

@@ -123,7 +123,7 @@ fun AddressInputPage(
                             cornerRadius = 8.dp,
                         )
                         .then(if (onNetworkClick != null) Modifier.clickable(onClick = onNetworkClick) else Modifier)
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column(Modifier.weight(1f)) {
@@ -132,19 +132,19 @@ fun AddressInputPage(
                             color = MixinAppTheme.colors.textAssist,
                             fontSize = 12.sp,
                         )
-                        Spacer(Modifier.height(4.dp))
+                        Spacer(Modifier.height(6.dp))
                         Text(
                             text = networkName,
                             color = MixinAppTheme.colors.textPrimary,
-                            fontSize = 14.sp,
+                            fontSize = 16.sp,
+                            lineHeight = 20.sp,
                         )
                     }
                     if (onNetworkClick != null) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_sort_arrow_down),
+                            painter = painterResource(R.drawable.ic_keyboard_arrow_down),
                             contentDescription = null,
                             tint = MixinAppTheme.colors.iconGray,
-                            modifier = Modifier.size(16.dp),
                         )
                     }
                 }
