@@ -34,6 +34,7 @@ import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.db.web3.vo.Web3TransactionItem
 import one.mixin.android.db.web3.vo.Web3Wallet
 import one.mixin.android.db.web3.vo.isGaslessPending
+import one.mixin.android.db.web3.vo.isGaslessSponsorPending
 import one.mixin.android.extension.buildAmountSymbol
 import one.mixin.android.extension.colorFromAttribute
 import one.mixin.android.extension.forEachWithIndex
@@ -552,6 +553,8 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
     private fun refreshPendingTransaction() {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
+                val pendingRawTx = web3ViewModel.getRawTransactionByHashAndChain(wallet.id, transaction.transactionHash, transaction.chainId)
+                if (pendingRawTx?.isGaslessSponsorPending() == true) return@launch
                 val remote = web3ViewModel.refreshWeb3Transaction(transaction.address, transaction.transactionHash, transaction.chainId)
                 if (remote != null && remote.status != transactionDetailState.value.status) {
                     updateTransactionStatus(remote.status)
