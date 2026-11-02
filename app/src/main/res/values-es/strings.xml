@@ -1273,4 +1273,5 @@
     <string name="Select_asset">Seleccione un activo para verlo</string>
     <string name="Select_market_item">Seleccione un mercado para verlo</string>
     <string name="Select_explore_item">Seleccione un elemento para abrirlo</string>
+    <string name="perps_realized_pnl_tip">Las posiciones abiertas no se incluyen en las estadísticas.</string>
 </resources>
