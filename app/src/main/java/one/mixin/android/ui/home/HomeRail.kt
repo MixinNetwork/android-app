@@ -185,18 +185,18 @@ private fun RailDestinations(
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         RailItem(
-            iconRes = if (sectionId == R.id.nav_market) R.drawable.ic_tab_market_selected else R.drawable.ic_tab_market_unselected,
-            contentDescription = stringResource(R.string.Markets),
-            selected = sectionId == R.id.nav_market,
-            showDot = false,
-            onClick = { onSectionSelected(R.id.nav_market) },
-        )
-        RailItem(
             iconRes = if (sectionId == R.id.nav_wallet) R.drawable.ic_tab_wallet_selected else R.drawable.ic_tab_wallet_unselected,
             contentDescription = stringResource(R.string.Wallets),
             selected = sectionId == R.id.nav_wallet,
             showDot = showWalletBadge,
             onClick = { onSectionSelected(R.id.nav_wallet) },
+        )
+        RailItem(
+            iconRes = if (sectionId == R.id.nav_market) R.drawable.ic_tab_market_selected else R.drawable.ic_tab_market_unselected,
+            contentDescription = stringResource(R.string.Markets),
+            selected = sectionId == R.id.nav_market,
+            showDot = false,
+            onClick = { onSectionSelected(R.id.nav_market) },
         )
         RailItem(
             iconRes = if (sectionId == R.id.nav_more) R.drawable.ic_tab_more_selected else R.drawable.ic_tab_more_unselected,
