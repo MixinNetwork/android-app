@@ -1220,4 +1220,11 @@
     <string name="Select_market_item">表示するマーケットを選択してください</string>
     <string name="Select_explore_item">開く項目を選択してください</string>
     <string name="perps_realized_pnl_tip">未決済のポジションは統計に含まれません。</string>
+    <string name="desktop_intro_title">パソコンで Mixin Messenger を使う。</string>
+    <string name="desktop_intro_desc">messenger.mixin.one からデスクトップアプリをダウンロードし、QR コードをスキャンしてリンクします。</string>
+    <string name="Scan_to_Link_Desktop">スキャンしてデスクトップをリンク</string>
+    <string name="desktop_e2ee_tip">個人メッセージとチャット情報は、すべてのデバイスでエンドツーエンド暗号化により保護されています。</string>
+    <string name="desktop_help_step_1">パソコンで messenger.mixin.one を開きます。</string>
+    <string name="desktop_help_step_2">Mixin Messenger デスクトップをダウンロードして開きます。</string>
+    <string name="desktop_help_step_3">Mixin Messenger でその QR コードをスキャンします。</string>
 </resources>

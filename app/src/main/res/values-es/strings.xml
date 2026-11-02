@@ -1274,4 +1274,11 @@
     <string name="Select_market_item">Seleccione un mercado para verlo</string>
     <string name="Select_explore_item">Seleccione un elemento para abrirlo</string>
     <string name="perps_realized_pnl_tip">Las posiciones abiertas no se incluyen en las estadísticas.</string>
+    <string name="desktop_intro_title">Usa Mixin Messenger en tu ordenador.</string>
+    <string name="desktop_intro_desc">Descarga la aplicación de escritorio en messenger.mixin.one y vincúlala escaneando un código QR.</string>
+    <string name="Scan_to_Link_Desktop">Escanear para vincular el escritorio</string>
+    <string name="desktop_e2ee_tip">Tus mensajes personales y la información de tus chats están protegidos con cifrado de extremo a extremo en todos los dispositivos.</string>
+    <string name="desktop_help_step_1">Abre messenger.mixin.one en tu ordenador.</string>
+    <string name="desktop_help_step_2">Descarga y abre Mixin Messenger para escritorio.</string>
+    <string name="desktop_help_step_3">Escanea su código QR con Mixin Messenger.</string>
 </resources>

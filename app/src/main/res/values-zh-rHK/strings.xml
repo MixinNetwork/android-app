@@ -1,4 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="perps_realized_pnl_tip">未平倉的合約不計入統計</string>
+    <string name="desktop_intro_title">在電腦上使用 Mixin Messenger。</string>
+    <string name="desktop_intro_desc">前往 messenger.mixin.one 下載桌面版，並掃描 QR 碼進行連結。</string>
+    <string name="Scan_to_Link_Desktop">掃碼連結桌面版</string>
+    <string name="desktop_e2ee_tip">你的個人訊息和聊天資訊在所有裝置上均受端對端加密保護。</string>
+    <string name="desktop_help_step_1">在電腦上開啟 messenger.mixin.one。</string>
+    <string name="desktop_help_step_2">下載並開啟 Mixin Messenger 桌面版。</string>
+    <string name="desktop_help_step_3">使用 Mixin Messenger 掃描其 QR 碼。</string>
 </resources>
