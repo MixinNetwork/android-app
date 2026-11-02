@@ -45,7 +45,7 @@ class SendMessageJobTest {
     fun resentAttachmentContentCanBeDecodedByTheReceiver() {
         val extra =
             GsonHelper.customGson.toJson(
-                AttachmentExtra(attachmentId = "attachment", messageId = "message", createdAt = "2026-10-31T12:00:00Z"),
+                AttachmentExtra(attachmentId = "attachment", messageId = "message", createdAt = "2026-10-31T12:00:00Z", shareable = false),
             )
         val message =
             MessageBuilder("message", "conversation", "sender", MessageCategory.SIGNAL_IMAGE.name, "read", "2026-10-31T12:00:00Z")
@@ -58,6 +58,7 @@ class SendMessageJobTest {
                 .setMediaDigest(byteArrayOf(3, 4))
                 .setThumbImage("thumb")
                 .setCaption("caption")
+                .setMediaDuration("null")
                 .build()
 
         // The stored content is not a payload: the receiver cannot read it.
@@ -78,6 +79,8 @@ class SendMessageJobTest {
         assertEquals("thumb", payload.thumbnail)
         assertEquals("caption", payload.caption)
         assertEquals("2026-10-31T12:00:00Z", payload.createdAt)
+        assertNull(payload.duration)
+        assertEquals(false, payload.shareable)
     }
 
     @Test

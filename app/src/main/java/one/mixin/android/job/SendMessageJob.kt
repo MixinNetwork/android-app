@@ -415,10 +415,12 @@ internal fun resendAttachmentContent(message: Message): String {
             message.mediaWidth,
             message.mediaHeight,
             message.thumbImage,
-            message.mediaDuration?.toLong(),
+            // Some paths store the string "null" for a missing duration.
+            message.mediaDuration?.toLongOrNull(),
             message.mediaWaveform,
             createdAt = extra.createdAt,
             caption = message.caption,
+            shareable = extra.shareable,
         )
     return GsonHelper.customGson.toJson(payload).base64Encode()
 }
