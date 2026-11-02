@@ -16,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import com.skydoves.balloon.BalloonAnimation
 import com.skydoves.balloon.createBalloon
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
@@ -537,12 +538,28 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
                 assetChangesLl.visibility = View.GONE
             }
             if (currentStatus == TransactionStatus.PENDING.value) {
+                refreshPendingTransaction()
                 lifecycleScope.launch {
                     updateFeeVisibility(currentStatus)
                     if (transaction.chainId != Constants.ChainId.SOLANA_CHAIN_ID) {
                         updateActions(currentStatus)
                     }
                 }
+            }
+        }
+    }
+
+    private fun refreshPendingTransaction() {
+        lifecycleScope.launch {
+            try {
+                val remote = web3ViewModel.refreshWeb3Transaction(transaction.address, transaction.transactionHash, transaction.chainId)
+                if (remote != null && remote.status != transactionDetailState.value.status) {
+                    updateTransactionStatus(remote.status)
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Timber.e(e)
             }
         }
     }
