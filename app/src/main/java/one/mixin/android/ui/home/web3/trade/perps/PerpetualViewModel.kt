@@ -245,7 +245,7 @@ class PerpetualViewModel @Inject constructor(
                     perpsMarketRepository.getAllMarkets()
                 }
                 if (cachedMarkets.isEmpty()) {
-                    onError(error)
+                    onError(ErrorHandler.getErrorMessage(e))
                 }
             }
         }
@@ -280,7 +280,7 @@ class PerpetualViewModel @Inject constructor(
         } catch (e: Exception) {
             val error = "Error refreshing markets: ${e.message}"
             Timber.e(e, error)
-            onError?.invoke(error)
+            onError?.invoke(ErrorHandler.getErrorMessage(e))
         }
     }
 
@@ -309,7 +309,7 @@ class PerpetualViewModel @Inject constructor(
             } catch (e: Exception) {
                 val error = "Error loading market detail: ${e.message}"
                 Timber.e(e, error)
-                onError(error)
+                onError(ErrorHandler.getErrorMessage(e))
             }
         }
     }
@@ -382,7 +382,7 @@ class PerpetualViewModel @Inject constructor(
             } catch (e: Exception) {
                 val error = "Error loading accepted assets: ${e.message}"
                 Timber.e(e, error)
-                onError(error)
+                onError(ErrorHandler.getErrorMessage(e))
             }
         }
     }
@@ -510,7 +510,7 @@ class PerpetualViewModel @Inject constructor(
             } catch (e: Exception) {
                 val error = "Error opening perps order: ${e.message}"
                 Timber.e(e, error)
-                onError(-1, error)
+                onError(-1, ErrorHandler.getErrorMessage(e))
             }
         }
     }
@@ -698,7 +698,7 @@ class PerpetualViewModel @Inject constructor(
             } catch (e: Exception) {
                 val error = "Error increasing perps position: ${e.message}"
                 Timber.e(e, error)
-                onError(-1, error)
+                onError(-1, ErrorHandler.getErrorMessage(e))
             }
         }
     }
@@ -735,7 +735,7 @@ class PerpetualViewModel @Inject constructor(
             } catch (e: Exception) {
                 val error = "Error setting position TP/SL: ${e.message}"
                 Timber.e(e, error)
-                onError(-1, error)
+                onError(-1, ErrorHandler.getErrorMessage(e))
             }
         }
     }
@@ -1102,7 +1102,7 @@ class PerpetualViewModel @Inject constructor(
             } catch (e: Exception) {
                 val error = "Error loading position detail: ${e.message}"
                 Timber.e(e, error)
-                onError(error)
+                onError(ErrorHandler.getErrorMessage(e))
             }
         }
     }
@@ -1158,7 +1158,7 @@ class PerpetualViewModel @Inject constructor(
                     perpsOrderDao.getOrders(limit, offset)
                 }
                 if (cached.isEmpty()) {
-                    onError(error)
+                    onError(ErrorHandler.getErrorMessage(e))
                 }
             }
         }

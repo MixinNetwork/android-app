@@ -79,7 +79,7 @@ fun VerifyPinBeforeImportWalletPage(tip: Tip, mode: WalletSecurityActivity.Mode,
                     next(pinCode)
                 } else {
                     isLoading = false
-                    errorInfo = result.exceptionOrNull()?.message ?: ""
+                    errorInfo = result.exceptionOrNull()?.let { ErrorHandler.getErrorMessage(it) } ?: ""
                     pinCode = ""
                 }
             }.onFailure { t ->

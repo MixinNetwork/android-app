@@ -409,7 +409,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
                     }
                 } catch (e: Exception) {
                     delay(REFRESH_INTERVAL)
-                    showError(e.message)
+                    showError(ErrorHandler.getErrorMessage(e))
                     return@launch
                 }
             }
@@ -489,7 +489,7 @@ class OrderStatusFragment : BaseFragment(R.layout.fragment_order_status) {
     ) {
         lifecycleScope.launch(
             CoroutineExceptionHandler { _, error ->
-                showError(error.message)
+                showError(ErrorHandler.getErrorMessage(error))
             },
         ) {
             val response =

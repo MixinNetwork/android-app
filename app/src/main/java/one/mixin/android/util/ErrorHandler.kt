@@ -109,7 +109,22 @@ open class ErrorHandler {
 
                         is ServerErrorException -> ctx.getString(R.string.error_server_5xx_code, throwable.code)
 
-                        else -> ctx.getString(R.string.Network_error)
+                        else -> {
+                            // cronet-okhttp rethrows ExecutionException(CronetException) as a plain IOException
+                            val causes = generateSequence(throwable.cause) { it.cause }.toList()
+                            val cronet = causes.filterIsInstance<CronetException>().firstOrNull()
+                            if (cronet != null || causes.any { it is ExecutionException }) {
+                                val extra =
+                                    if (cronet is org.chromium.net.NetworkException) {
+                                        "${cronet.errorCode}, ${cronet.cronetInternalErrorCode}"
+                                    } else {
+                                        ""
+                                    }
+                                "${ctx.getString(R.string.error_connection_error)} $extra"
+                            } else {
+                                ctx.getString(R.string.Network_error)
+                            }
+                        }
                     }
 
                 is UtxoException -> {

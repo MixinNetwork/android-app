@@ -24,10 +24,7 @@ import one.mixin.android.Constants
 import one.mixin.android.Constants.INTERVAL_48_HOURS
 import one.mixin.android.R
 import one.mixin.android.RxBus
-import one.mixin.android.api.DataErrorException
-import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ResponseError
-import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.signature.SignatureAction
@@ -53,8 +50,6 @@ import one.mixin.android.extension.visibleDisplayHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.tip.exception.TipNetworkException
-import one.mixin.android.tip.exception.TipNodeException
-import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.PinInputBottomSheetDialogFragment
 import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
@@ -65,10 +60,8 @@ import one.mixin.android.ui.common.biometric.BiometricItem
 import one.mixin.android.ui.common.biometric.NftBiometricItem
 import one.mixin.android.ui.common.biometric.SafeMultisigsBiometricItem
 import one.mixin.android.ui.common.biometric.TransferBiometricItem
-import one.mixin.android.ui.common.biometric.UtxoException
 import one.mixin.android.ui.common.biometric.WithdrawBiometricItem
 import one.mixin.android.ui.common.biometric.displayAddress
-import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import one.mixin.android.ui.common.showUserBottom
 import one.mixin.android.ui.setting.SettingActivity
 import one.mixin.android.ui.wallet.CrossWalletFeeFreeBottomSheetDialogFragment
@@ -79,7 +72,6 @@ import one.mixin.android.util.BiometricUtil
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
-import one.mixin.android.util.msg
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Fiats
@@ -87,12 +79,7 @@ import one.mixin.android.vo.Trace
 import one.mixin.android.vo.UserRelationship
 import one.mixin.android.vo.safe.formatDestination
 import one.mixin.android.widget.BottomSheet
-import org.chromium.net.CronetException
-import java.io.IOException
 import java.math.BigDecimal
-import java.net.SocketTimeoutException
-import java.net.UnknownHostException
-import java.util.concurrent.ExecutionException
 
 @AndroidEntryPoint
 class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
@@ -581,52 +568,8 @@ class TransferBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                 is TipNetworkException -> {
                     handleWithErrorCodeAndDesc(throwable.error)
                 }
-                is IOException ->
-                    when (throwable) {
-                        is SocketTimeoutException -> getString(R.string.error_connection_timeout)
-                        is UnknownHostException -> getString(R.string.No_network_connection)
-                        is NetworkException -> getString(R.string.No_network_connection)
-                        is DataErrorException -> getString(R.string.Data_error)
-                        is CronetException -> {
-                            val extra =
-                                if (throwable is org.chromium.net.NetworkException) {
-                                    val e = throwable
-                                    "${e.errorCode}, ${e.cronetInternalErrorCode}"
-                                } else {
-                                    ""
-                                }
-                            "${getString(R.string.error_connection_error)} $extra"
-                        }
 
-                        is ServerErrorException -> getString(R.string.error_server_5xx_code, throwable.code)
-
-                        else -> getString(R.string.error_unknown_with_message, throwable.msg())
-                    }
-
-                is UtxoException -> {
-                    throwable.getUtxoExceptionMsg(requireContext())
-                }
-
-                is TipNodeException -> {
-                    throwable.getTipExceptionMsg(requireContext())
-                }
-
-                is ExecutionException -> {
-                    if (throwable.cause is CronetException) {
-                        val extra =
-                            if (throwable.cause is org.chromium.net.NetworkException) {
-                                val e = throwable.cause as org.chromium.net.NetworkException
-                                "${e.errorCode}, ${e.cronetInternalErrorCode}"
-                            } else {
-                                ""
-                            }
-                        "${getString(R.string.error_connection_error)} $extra"
-                    } else {
-                        getString(R.string.error_connection_error)
-                    }
-                }
-
-                else -> getString(R.string.error_unknown_with_message, throwable.msg())
+                else -> ErrorHandler.getErrorMessage(throwable)
             }
     }
 
