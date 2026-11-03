@@ -125,13 +125,6 @@ val tweetnaclVersion = rootProject.extra["tweetnaclVersion"] as String
 val sol4kUtilitiesVersion = rootProject.extra["sol4kUtilitiesVersion"] as String
 val desugarJdkLibsVersion = rootProject.extra["desugarJdkLibsVersion"] as String
 val bugsnagVersion = rootProject.extra["bugsnagVersion"] as String
-val sumsubVersion = rootProject.extra["sumsubVersion"] as String
-val checkoutFramesVersion = rootProject.extra["checkoutFramesVersion"] as String
-val checkoutSecureVersion = rootProject.extra["checkoutSecureVersion"] as String
-val checkoutRiskVersion = rootProject.extra["checkoutRiskVersion"] as String
-val playWalletVersion = rootProject.extra["playWalletVersion"] as String
-val playPayVersion = rootProject.extra["playPayVersion"] as String
-val datastoreVersion = rootProject.extra["datastoreVersion"] as String
 val appsFlyerVersion = rootProject.extra["appsFlyerVersion"] as String
 val installReferrerVersion = rootProject.extra["installReferrerVersion"] as String
 val billingVersion = rootProject.extra["billingVersion"] as String
@@ -606,20 +599,6 @@ dependencies {
             strictly(protobufVersion)
         }
     }
-
-    // SumSub
-    implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion")
-    // checkout
-    implementation("com.github.checkout:frames-android:$checkoutFramesVersion")
-    implementation("com.checkout:checkout-sdk-3ds-android:$checkoutSecureVersion")
-    implementation("com.github.checkout:checkout-risk-sdk-android:$checkoutRiskVersion")
-
-    // google play
-    implementation("com.google.android.gms:play-services-wallet:$playWalletVersion")
-    implementation("com.google.android.gms:play-services-pay:$playPayVersion")
-
-    // Jetpack Datastore - Proto Datastore
-    implementation("androidx.datastore:datastore:$datastoreVersion")
 
     // AppsFlyer
     implementation("com.appsflyer:af-android-sdk:$appsFlyerVersion") {
