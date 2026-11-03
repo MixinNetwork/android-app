@@ -201,7 +201,7 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
         this.loggedIn = loggedIn
         binding.apply {
             logoIv.setImageResource(if (loggedIn) R.drawable.ic_desktop_linked else R.drawable.ic_desktop_link)
-            titleTv.setText(if (loggedIn) R.string.Mixin_Messenger_Desktop else R.string.desktop_intro_title)
+            desktopTitleTv.setText(if (loggedIn) R.string.Mixin_Messenger_Desktop else R.string.desktop_intro_title)
             descTv.isVisible = !loggedIn
             scanBtn.isVisible = !loggedIn
             statusTv.isVisible = loggedIn

@@ -1530,6 +1530,7 @@
     <string name="desktop_help_step_2">Download and open Mixin Messenger Desktop.</string>
     <string name="desktop_help_step_3">Scan its QR code with Mixin Messenger.</string>
     <string name="desktop_help_link" translatable="false">messenger.mixin.one</string>
+    <string name="desktop_page_title" translatable="false">Mixin Messenger Desktop</string>
     <string name="Logined">Logged in</string>
     <string name="Transfer_confirmation">Transfer confirmation</string>
     <string name="Withdrawal_confirmation">Withdrawal confirmation</string>

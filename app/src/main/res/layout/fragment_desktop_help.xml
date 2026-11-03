@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:lineHeight="21sp"
-            android:text="@string/desktop_help_step_1"
+            android:id="@+id/step1_tv"
             android:textColor="?attr/text_minor"
             android:textSize="14sp"
             tools:ignore="UnusedAttribute"/>
@@ -40,7 +40,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:lineHeight="21sp"
-            android:text="@string/desktop_help_step_2"
+            android:id="@+id/step2_tv"
             android:textColor="?attr/text_minor"
             android:textSize="14sp"
             tools:ignore="UnusedAttribute"/>
@@ -50,7 +50,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:lineHeight="21sp"
-            android:text="@string/desktop_help_step_3"
+            android:id="@+id/step3_tv"
             android:textColor="?attr/text_minor"
             android:textSize="14sp"
             tools:ignore="UnusedAttribute"/>

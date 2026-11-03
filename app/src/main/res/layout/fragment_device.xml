@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             app:leftIcon="@drawable/ic_close_black"
             app:rightIcon="@drawable/ic_help_outline"
-            app:titleText="@string/Mixin_Messenger_Desktop"/>
+            app:titleText="@string/desktop_page_title"/>
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
@@ -60,7 +60,7 @@
                         android:src="@drawable/ic_desktop_link"/>
 
                     <TextView
-                        android:id="@+id/title_tv"
+                        android:id="@+id/desktop_title_tv"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="20dp"
@@ -109,17 +109,19 @@
                         android:visibility="gone"
                         tools:ignore="UnusedAttribute"/>
 
-                    <Button
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/scan_btn"
                         style="@style/AppTheme.MaterialButton"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="32dp"
                         android:background="@drawable/bg_desktop_primary_btn"
-                        android:drawableStart="@drawable/ic_scan"
-                        android:drawablePadding="10dp"
-                        android:drawableTint="@color/white"
                         android:minHeight="@dimen/btn_min_height"
+                        app:icon="@drawable/ic_scan"
+                        app:iconGravity="textStart"
+                        app:iconPadding="10dp"
+                        app:iconSize="20dp"
+                        app:iconTint="@color/white"
                         android:text="@string/Scan_to_Link_Desktop"
                         android:textAllCaps="false"
                         android:textSize="16sp"

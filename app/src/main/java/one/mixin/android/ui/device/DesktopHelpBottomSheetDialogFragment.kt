@@ -2,6 +2,7 @@ package one.mixin.android.ui.device
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.graphics.Paint
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
 import one.mixin.android.databinding.FragmentDesktopHelpBinding
@@ -31,6 +32,10 @@ class DesktopHelpBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
         contentView = binding.root
         (dialog as BottomSheet).setCustomView(contentView)
 
+        listOf(binding.step1Tv, binding.step2Tv, binding.step3Tv)
+            .zip(listOf(R.string.desktop_help_step_1, R.string.desktop_help_step_2, R.string.desktop_help_step_3))
+            .forEachIndexed { index, (textView, resId) -> textView.text = "${index + 1}. ${getString(resId)}" }
+        binding.linkTv.paintFlags = binding.linkTv.paintFlags or Paint.UNDERLINE_TEXT_FLAG
         binding.linkTv.setOnClickListener {
             requireContext().openUrl("https://${getString(R.string.desktop_help_link)}")
         }
