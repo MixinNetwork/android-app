@@ -92,6 +92,14 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         requireArguments().getString(ARGS_CHAIN_ID)
     }
 
+    private val sourceMode: Boolean by lazy {
+        requireArguments().getBoolean(ARGS_SOURCE_MODE)
+    }
+
+    private val includePrivacyWallet: Boolean by lazy {
+        requireArguments().getBoolean(ARGS_INCLUDE_PRIVACY_WALLET, excludeWalletId != null)
+    }
+
     override fun getTheme() = R.style.AppTheme_Dialog
 
     @OptIn(FlowPreview::class)
@@ -125,12 +133,17 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 wallets = wallets,
                 allWallets = allWallets,
                 excludeWalletId = excludeWalletId,
+                sourceMode = sourceMode,
+                includePrivacyWallet = includePrivacyWallet,
                 onQueryChanged = { query ->
                     lifecycleScope.launch {
                         searchQuery.emit(query)
                     }
                 },
                 onWalletClick = { wallet ->
+                    if (sourceMode && wallet != null && !wallet.canSign()) {
+                        return@WalletListScreen
+                    }
                     if (wallet != null && (wallet.isWatch() || (wallet.isImported() && !wallet.hasLocalPrivateKey))) {
                         NoKeyWarningBottomSheetDialogFragment.newInstance(wallet.toWeb3Wallet()).apply {
                             onConfirm = {
@@ -175,6 +188,8 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
         const val TAG = "WalletListBottomSheetDialogFragment"
         private const val ARGS_EXCLUDE_WALLET_ID = "args_exclude_wallet_id"
         private const val ARGS_CHAIN_ID = "args_chain_id"
+        private const val ARGS_SOURCE_MODE = "args_source_mode"
+        private const val ARGS_INCLUDE_PRIVACY_WALLET = "args_include_privacy_wallet"
 
         fun newInstance(excludeWalletId: String?, chainId: String? = null): WalletListBottomSheetDialogFragment {
             return WalletListBottomSheetDialogFragment().withArgs {
@@ -182,8 +197,20 @@ class WalletListBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
                 putString(ARGS_CHAIN_ID, chainId)
             }
         }
+
+        // Pick a wallet to send from: only wallets that can sign locally are listed
+        fun newSourceInstance(excludeWalletId: String?, chainId: String, includePrivacyWallet: Boolean): WalletListBottomSheetDialogFragment {
+            return WalletListBottomSheetDialogFragment().withArgs {
+                putString(ARGS_EXCLUDE_WALLET_ID, excludeWalletId)
+                putString(ARGS_CHAIN_ID, chainId)
+                putBoolean(ARGS_SOURCE_MODE, true)
+                putBoolean(ARGS_INCLUDE_PRIVACY_WALLET, includePrivacyWallet)
+            }
+        }
     }
 }
+
+private fun WalletItem.canSign(): Boolean = isClassic() || (isImported() && hasLocalPrivateKey)
 
 sealed class WalletListItem {
     object PrivacyWallet : WalletListItem()
@@ -196,6 +223,8 @@ fun WalletListScreen(
     wallets: List<WalletItem>,
     allWallets: List<WalletItem>,
     excludeWalletId: String?,
+    sourceMode: Boolean = false,
+    includePrivacyWallet: Boolean = excludeWalletId != null,
     onQueryChanged: (String) -> Unit,
     onWalletClick: (WalletItem?) -> Unit,
     onCancel: () -> Unit,
@@ -207,11 +236,11 @@ fun WalletListScreen(
     val hideCommonWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_COMMON_WALLET_INFO, false)) }
     val hideSafeWalletInfo = remember { mutableStateOf(prefs.getBoolean(KEY_HIDE_SAFE_WALLET_INFO, false)) }
 
-    val hasAll = remember(allWallets) { allWallets.any { it.isMixinSafe().not() && it.id != excludeWalletId } }
-    val hasSafe = remember(allWallets) { allWallets.any { it.safeChainId == chainId } }
-    val hasImported = remember(wallets) { allWallets.any { it.isImported() && excludeWalletId != it.id} }
+    val hasAll = remember(allWallets) { allWallets.any { it.isMixinSafe().not() && it.id != excludeWalletId && (!sourceMode || it.canSign()) } }
+    val hasSafe = remember(allWallets) { !sourceMode && allWallets.any { it.safeChainId == chainId } }
+    val hasImported = remember(wallets) { allWallets.any { it.isImported() && excludeWalletId != it.id && (!sourceMode || it.hasLocalPrivateKey) } }
     val hasCreated = remember(wallets) { (chainId == Constants.ChainId.SOLANA_CHAIN_ID || chainId in Constants.Web3ChainIds || chainId in Constants.Web3UtxoChainIds) && allWallets.any { it.isClassic() && it.id != excludeWalletId } }
-    val hasWatch = remember(wallets) { allWallets.any { it.isWatch() } }
+    val hasWatch = remember(wallets) { !sourceMode && allWallets.any { it.isWatch() } }
     var selectedCategory by remember(hasAll, hasSafe, hasCreated, hasImported, hasWatch) {
         mutableStateOf(
             when {
@@ -227,10 +256,11 @@ fun WalletListScreen(
 
     val walletItems = remember(wallets, excludeWalletId, query, selectedCategory) {
         buildList {
-            if (excludeWalletId != null && query.isEmpty() && selectedCategory == null) {
+            if (includePrivacyWallet && query.isEmpty() && selectedCategory == null) {
                 add(WalletListItem.PrivacyWallet)
             }
             wallets.forEach { wallet ->
+                if (sourceMode && (wallet.id == excludeWalletId || !wallet.canSign())) return@forEach
                 val shouldShow = when (selectedCategory) {
                     null -> wallet.category != WalletCategory.MIXIN_SAFE.value &&  wallet.category != WalletCategory.WATCH_ADDRESS.value
                     WalletCategory.MIXIN_SAFE.value -> wallet.isMixinSafe()

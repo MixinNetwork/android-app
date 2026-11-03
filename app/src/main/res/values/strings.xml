@@ -2788,4 +2788,7 @@
     <string name="Select_asset">Select an asset to view</string>
     <string name="Select_market_item">Select a market to view</string>
     <string name="Select_explore_item">Select an item to open</string>
+    <string name="transfer_token">Transfer %1$s</string>
+    <string name="transfer_token_description">Transfer from another of your wallets</string>
+    <string name="wallet_changed_try_again">The current wallet has changed. Please try again.</string>
 </resources>

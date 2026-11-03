@@ -1274,4 +1274,7 @@
     <string name="Select_market_item">Seleccione un mercado para verlo</string>
     <string name="Select_explore_item">Seleccione un elemento para abrirlo</string>
     <string name="perps_realized_pnl_tip">Las posiciones abiertas no se incluyen en las estadísticas.</string>
+    <string name="transfer_token">Transferir %1$s</string>
+    <string name="transfer_token_description">Transferir desde otra de tus billeteras</string>
+    <string name="wallet_changed_try_again">La billetera actual ha cambiado. Inténtalo de nuevo.</string>
 </resources>

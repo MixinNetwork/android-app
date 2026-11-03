@@ -2756,4 +2756,7 @@
     <string name="Select_asset">選擇一個資產查看</string>
     <string name="Select_market_item">選擇一個行情查看</string>
     <string name="Select_explore_item">選擇一項打開</string>
+    <string name="transfer_token">劃轉 %1$s</string>
+    <string name="transfer_token_description">從你的其他錢包劃轉</string>
+    <string name="wallet_changed_try_again">目前錢包已變更，請重試。</string>
 </resources>

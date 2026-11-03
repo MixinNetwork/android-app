@@ -1220,4 +1220,7 @@
     <string name="Select_market_item">表示するマーケットを選択してください</string>
     <string name="Select_explore_item">開く項目を選択してください</string>
     <string name="perps_realized_pnl_tip">未決済のポジションは統計に含まれません。</string>
+    <string name="transfer_token">%1$s を振替</string>
+    <string name="transfer_token_description">他の自分のウォレットから振替</string>
+    <string name="wallet_changed_try_again">現在のウォレットが変更されました。もう一度お試しください。</string>
 </resources>
