@@ -291,12 +291,12 @@ fun WalletListScreen(
             },
             isSearching = false,
             onCancel = onCancel,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
+            modifier = Modifier.padding(start = 20.dp, top = 15.dp, end = 20.dp, bottom = 25.dp)
         )
 
         Column(
             modifier = Modifier
-                .padding(top = 8.dp, start = 16.dp, end = 16.dp)
+                .padding(horizontal = 20.dp)
                 .weight(1f)
                 .verticalScroll(rememberScrollState())
         ) {
@@ -408,14 +408,14 @@ fun SearchBar(
             onValueChange = onQueryChanged,
             modifier = Modifier
                 .weight(1f)
-                .height(44.dp)
+                .height(40.dp)
                 .background(
                     color = MixinAppTheme.colors.backgroundWindow, shape = RoundedCornerShape(24.dp)
                 )
-                .padding(horizontal = 12.dp),
+                .padding(horizontal = 20.dp),
             textStyle = TextStyle(
                 color = MixinAppTheme.colors.textPrimary,
-                fontSize = 14.sp
+                fontSize = 16.sp
             ),
             singleLine = true,
             cursorBrush = SolidColor(MixinAppTheme.colors.textBlue),
@@ -426,7 +426,7 @@ fun SearchBar(
                         contentDescription = null,
                         tint = MixinAppTheme.colors.icon
                     )
-                    Spacer(modifier = Modifier.size(6.dp))
+                    Spacer(modifier = Modifier.size(12.dp))
                     Box(
                         modifier = Modifier.weight(1f),
                         contentAlignment = Alignment.CenterStart,
@@ -435,7 +435,7 @@ fun SearchBar(
                             Text(
                                 text = stringResource(id = R.string.search_placeholder_asset),
                                 color = MixinAppTheme.colors.textAssist,
-                                fontSize = 14.sp
+                                fontSize = 16.sp
                             )
                         }
                         innerTextField()
@@ -472,7 +472,7 @@ fun SearchBar(
             fontSize = 16.sp,
             modifier = Modifier
                 .clickable(onClick = onCancel)
-                .padding(start = 16.dp)
+                .padding(start = 10.dp)
         )
     }
 }
