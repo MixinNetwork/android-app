@@ -207,7 +207,7 @@ fun AssetDashboardScreen(
                     }) {
                         Box {
                             Icon(
-                                painter = painterResource(R.drawable.ic_more_horiz_black_24dp),
+                                painter = painterResource(R.drawable.ic_more),
                                 contentDescription = stringResource(R.string.More),
                                 tint = MixinAppTheme.colors.icon,
                             )
