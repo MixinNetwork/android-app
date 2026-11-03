@@ -15,9 +15,9 @@ plugins {
 apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
-val versionMajor = 6
-val versionMinor = 3
-val versionPatch = 6
+val versionMajor = 7
+val versionMinor = 0
+val versionPatch = 0
 val versionBuild = 1
 
 val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
