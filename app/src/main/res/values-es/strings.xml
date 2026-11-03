@@ -1274,4 +1274,7 @@
     <string name="Select_market_item">Seleccione un mercado para verlo</string>
     <string name="Select_explore_item">Seleccione un elemento para abrirlo</string>
     <string name="perps_realized_pnl_tip">Las posiciones abiertas no se incluyen en las estadísticas.</string>
+    <string name="network_fee_description">Las comisiones de red son tarifas de transacción que se pagan a mineros o validadores por procesar y confirmar transacciones en la blockchain.</string>
+    <string name="network_fee_charged_by">La red %1$s cobra las comisiones de red.</string>
+    <string name="network_fee_independent_of_amount">Las comisiones de red no dependen del importe de la transferencia.</string>
 </resources>

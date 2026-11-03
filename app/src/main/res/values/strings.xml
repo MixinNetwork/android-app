@@ -2788,4 +2788,7 @@
     <string name="Select_asset">Select an asset to view</string>
     <string name="Select_market_item">Select a market to view</string>
     <string name="Select_explore_item">Select an item to open</string>
+    <string name="network_fee_description">Network fees are transaction fees paid to miners or validators for processing and confirming transactions on the blockchain.</string>
+    <string name="network_fee_charged_by">Network fees are charged by the %1$s network.</string>
+    <string name="network_fee_independent_of_amount">Network fees are independent of the transfer amount.</string>
 </resources>

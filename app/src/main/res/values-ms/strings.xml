@@ -896,4 +896,7 @@
     <string name="Select_market_item">Pilih pasaran untuk dilihat</string>
     <string name="Select_explore_item">Pilih item untuk dibuka</string>
     <string name="perps_realized_pnl_tip">Posisi yang masih terbuka tidak termasuk dalam statistik.</string>
+    <string name="network_fee_description">Yuran rangkaian ialah yuran transaksi yang dibayar kepada pelombong atau pengesah untuk memproses dan mengesahkan transaksi di rantaian blok.</string>
+    <string name="network_fee_charged_by">Yuran rangkaian dikenakan oleh rangkaian %1$s.</string>
+    <string name="network_fee_independent_of_amount">Yuran rangkaian tidak bergantung pada jumlah pemindahan.</string>
 </resources>

@@ -54,6 +54,7 @@ import one.mixin.android.ui.common.biometric.EmptyUtxoException
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.showBrowserBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.showGasCheckAndBrowserBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.NetworkFeeInfoBottomSheetDialogFragment
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Fiats
@@ -498,6 +499,12 @@ class Web3TransactionFragment : BaseFragment(R.layout.fragment_web3_transaction)
             dateTv.text = transaction.transactionAt.fullDate()
             feeLl.isVisible = shouldShowFee(currentStatus)
             feeTv.text = "${transaction.displayFeeAmount()} ${transaction.displayFeeSymbol() ?: ""}"
+            val showFeeInfo = View.OnClickListener {
+                NetworkFeeInfoBottomSheetDialogFragment.newInstance(token.chainName.orEmpty())
+                    .show(parentFragmentManager, NetworkFeeInfoBottomSheetDialogFragment.TAG)
+            }
+            feeTitleTv.setOnClickListener(showFeeInfo)
+            feeTipIv.setOnClickListener(showFeeInfo)
             statusLl.isVisible = false
             
             networkLl.isVisible = true
