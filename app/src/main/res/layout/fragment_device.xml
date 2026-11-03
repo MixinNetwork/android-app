@@ -153,7 +153,7 @@
 
                     <ImageView
                         android:layout_width="10dp"
-                        android:layout_height="11dp"
+                        android:layout_height="10dp"
                         android:layout_marginTop="3dp"
                         android:layout_marginEnd="4dp"
                         android:contentDescription="@null"
