@@ -200,7 +200,13 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 runCatching { toEntropy(w) }.onFailure { errorInfo = getString(R.string.invalid_mnemonic_phrase) }.getOrNull() ?: return@launch
                 newKeyPairFromMnemonic(mnemonic)
             } else {
-                val entropy = tip.getMnemonicFromEncryptedPreferences(requireContext()) ?: tip.generateEntropyAndStore(requireContext())
+                val entropy = runCatching {
+                    tip.getMnemonicFromEncryptedPreferences(requireContext()) ?: tip.generateEntropyAndStore(requireContext())
+                }.onFailure {
+                    Timber.e(it)
+                    errorInfo = getString(R.string.Save_failure)
+                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                }.getOrNull() ?: return@launch
                 val mnemonic = runCatching {
                     toMnemonic(entropy)
                 }.onFailure {
@@ -209,6 +215,7 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                 val verifiedEntropy  = runCatching { toEntropy(mnemonic.split(" "))}.getOrNull() ?: return@launch
                 if (getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(verifiedEntropy).not()) {
                     errorInfo = getString(R.string.Save_failure) // Save entropy failure
+                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                     return@launch
                 }
                 newKeyPairFromMnemonic(mnemonic)
@@ -444,8 +451,10 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                         landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                         return@launch
                     }
-                    storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, entropy)
-                    if (!getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy)) {
+                    val stored = runCatching {
+                        storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, entropy)
+                    }.onFailure { Timber.e(it) }.isSuccess
+                    if (!stored || !getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy)) {
                         errorInfo = getString(R.string.Save_failure)
                         landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
                         return@launch
