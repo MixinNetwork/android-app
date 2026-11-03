@@ -8,22 +8,25 @@ import org.junit.Test
 
 class WalletHomeBuilderTest {
     @Test
-    fun collectiblesFollowAssetsOnlyInPrivacyWalletsWithCollectibles() {
+    fun collectiblesPrecedeSupportOnlyInPrivacyWalletsWithCollectibles() {
         for (type in WalletHomeType.entries) {
             for (hasCollectibles in listOf(false, true)) {
                 val cards = WalletHomeBuilder.build(
                     walletType = type,
                     hasAssetValue = true,
                     showBanner = false,
-                    showReferral = false,
+                    showReferral = true,
                     hasPositions = false,
-                    hasTopMovers = false,
+                    hasTopMovers = true,
                     hasTransactions = true,
                     hasCollectibles = hasCollectibles,
                 )
                 val expected = mutableListOf(WalletHomeCardType.BALANCE, WalletHomeCardType.TOKENS)
+                expected += WalletHomeCardType.TRANSACTIONS
+                if (type == WalletHomeType.PRIVACY) expected += WalletHomeCardType.TOP_MOVERS
+                expected += WalletHomeCardType.REFERRAL
                 if (type == WalletHomeType.PRIVACY && hasCollectibles) expected += WalletHomeCardType.COLLECTIBLES
-                expected += listOf(WalletHomeCardType.TRANSACTIONS, WalletHomeCardType.SUPPORT)
+                expected += WalletHomeCardType.SUPPORT
                 assertEquals(expected, cards)
             }
         }

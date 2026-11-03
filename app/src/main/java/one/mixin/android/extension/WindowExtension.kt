@@ -1,12 +1,17 @@
 package one.mixin.android.extension
 
 import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Build
 import android.view.WindowInsets
 import android.view.View
 import androidx.recyclerview.widget.RecyclerView
+import androidx.window.WindowSdkExtensions
 import androidx.window.embedding.ActivityEmbeddingController
+import androidx.window.layout.SupportedPosture
+import androidx.window.layout.WindowInfoTracker
 import androidx.window.layout.WindowMetricsCalculator
+import one.mixin.android.ui.common.BaseActivity
 
 fun WindowInsets.getSystemWindowTop(): Int {
     @Suppress("DEPRECATION")
@@ -87,6 +92,23 @@ fun Context.contentWidth(): Int {
 fun Context.isActivityEmbedded(): Boolean = findFragmentActivityOrNull()?.let {
     ActivityEmbeddingController.getInstance(it).isActivityEmbedded(it)
 } ?: false
+
+internal fun Context.isPhoneLandscape(): Boolean {
+    val activity = findFragmentActivityOrNull() ?: return false
+    if (activity.resources.configuration.smallestScreenWidthDp >= 600 || activity.isActivityEmbedded() ||
+        activity.isInMultiWindowMode || activity.isInPictureInPictureMode ||
+        (activity as? BaseActivity)?.hasObservedFold == true
+    ) return false
+    val bounds = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(activity).bounds
+    if (bounds.width() <= bounds.height() || minOf(bounds.width(), bounds.height()) / resources.displayMetrics.density >= 600f) return false
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && activity.packageManager.hasSystemFeature(PackageManager.FEATURE_SENSOR_HINGE_ANGLE)) return false
+    if (WindowSdkExtensions.getInstance().extensionVersion < 6) return false
+    return try {
+        SupportedPosture.TABLETOP !in WindowInfoTracker.getOrCreate(activity).supportedPostures
+    } catch (_: UnsupportedOperationException) {
+        false
+    }
+}
 
 // The current window's short side, so phones in either orientation and a folded cover screen stay compact.
 fun Context.isCompactWindow(): Boolean {

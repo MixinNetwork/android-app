@@ -360,6 +360,13 @@ interface RouteService {
         @Query("limit") limit: Int = 30
     ): MixinResponse<List<Web3Transaction>>
 
+    @GET("transactions/{hash}")
+    suspend fun getWeb3Transaction(
+        @Path("hash") hash: String,
+        @Query("address") address: String,
+        @Query("chain_id") chainId: String? = null,
+    ): MixinResponse<Web3Transaction>
+
     @GET("assets/{id}")
     suspend fun getAssetByAddress(
         @Path("id") id: String,

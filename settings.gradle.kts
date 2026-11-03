@@ -1,5 +1,5 @@
 pluginManagement {
-    val androidGradlePluginVersion = "9.4.1"
+    val androidGradlePluginVersion = "9.5.0"
     val kotlinVersion = "2.4.21"
     val downloadPluginVersion = "5.5.0"
     val secretsGradlePluginVersion = "2.0.1"

@@ -54,7 +54,7 @@
                         android:layout_centerVertical="true"
                         android:gravity="center_horizontal"
                         android:textColor="?attr/text_primary"
-                        app:badgeSize="22dp"
+                        app:badgeSize="20dp"
                         app:maxWidth="280dp"
                         app:textSize="@dimen/bottom_name_text_size" />
 

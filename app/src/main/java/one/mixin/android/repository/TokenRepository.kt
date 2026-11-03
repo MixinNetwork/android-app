@@ -1729,6 +1729,14 @@ class TokenRepository
 
     suspend fun transaction(hash: String, chainId: String) = routeService.transaction(hash,chainId)
 
+    suspend fun refreshWeb3Transaction(address: String, hash: String, chainId: String): Web3Transaction? {
+        val response = routeService.getWeb3Transaction(hash, address, chainId)
+        // Keep the local record when the server has no such transaction (404) or the request fails
+        val remote = response.data?.takeIf { response.isSuccess } ?: return null
+        web3TransactionDao.insertSuspend(remote)
+        return remote
+    }
+
     suspend fun getPendingRawTransactions(walletId: String) = web3RawTransactionDao.getPendingRawTransactions(
         walletId)
 
@@ -1885,7 +1893,7 @@ class TokenRepository
                 ),
             )
             if (pendingTransaction != null) {
-                web3TransactionDao.insert(
+                web3TransactionDao.insertIgnore(
                     pendingTransaction.copy(
                         transactionHash = broadcastTxHash,
                         transactionAt = updatedAt,

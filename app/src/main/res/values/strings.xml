@@ -275,7 +275,7 @@
     <string name="contact_mute_title">Mute notifications for…</string>
     <string name="contact_new_group_chat_desc">Create a group chat</string>
     <string name="contact_favorite_bots_title">%1$s\'s Favorite Bots</string>
-    <string name="CONTACTS">CONTACTS</string>
+    <string name="Contacts">Contacts</string>
     <string name="content_audio">[Audio]</string>
     <string name="content_contact">[Contact]</string>
     <string name="content_file">[File]</string>
@@ -389,13 +389,14 @@
     <string name="Disable_web_debug">Disable web debug</string>
     <string name="Disabled">Disabled</string>
     <string name="disappearing_message">Disappearing Messages</string>
-    <string name="disappearing_message_hint">When enabled, new messages sent and received in this chat will disappear after they have been seen, read the document to **learn more**.</string>
+    <string name="disappearing_message_hint">When enabled, new messages sent and received in this chat will disappear after a certain period of time, read the document to **learn more**.</string>
     <string name="disappearing_message_url">https://support.mixin.one/en/article/how-to-enable-disappearing-messages-2nzaz8</string>
     <string name="disappearing_option_1">30 seconds</string>
     <string name="disappearing_option_2">10 minutes</string>
     <string name="disappearing_option_3">2 hours</string>
     <string name="disappearing_option_4">1 day</string>
     <string name="disappearing_option_5">1 week</string>
+    <string name="disappearing_option_month">1 month</string>
     <string name="DISCARD">DISCARD</string>
     <string name="Dismiss_as_Admin">Dismiss as Admin</string>
     <string name="divide">, </string>
@@ -2493,6 +2494,7 @@
     <string name="Position_Summary">Position Summary</string>
     <string name="Position_Info">Position Info</string>
     <string name="Total_Realized_PnL">Total Realized PnL</string>
+    <string name="perps_realized_pnl_tip">Open positions are not included in the statistics.</string>
     <string name="Price_Change">Price Change</string>
     <string name="Time_Info">Time Info</string>
     <string name="Open_Time">Open Time</string>
@@ -2765,6 +2767,13 @@
     <string name="perps_include_pnl">Include PnL</string>
     <string name="perps_position_amount">Position Amount</string>
     <string name="perps_margin_amount">Margin Amount</string>
+    <string name="changed_disappearing_message_settings_hint">%1$s changed disappearing message settings. Tap to open disappearing message settings.</string>
+    <string name="disable_disappearing_message_hint">%1$s disabled disappearing message. Click to set them up or learn more.</string>
+    <string name="set_disappearing_message_time_to_hint">%1$s set disappearing message time to %2$s, click to change it or get more information.</string>
+    <string name="group_disappearing_message_enabled_hint">This group has set the disappearing message time to %1$s. Click to change it or get more information.</string>
+    <string name="group_disappearing_message_disabled_hint">Disappearing messages haven’t been enabled for this group. Click to set them up or learn more.</string>
+    <string name="chat_disappearing_message_enabled_hint">Disappearing messages are set to %1$s for this chat. Click to change it or get more information.</string>
+    <string name="chat_disappearing_message_disabled_hint">Disappearing messages haven’t been enabled for this chat. Click to set them up or learn more.</string>
     <string name="perps_funding_payments">Funding payments</string>
     <string name="perps_funding_payments_description">The total funding you’ve received or paid since opening this position. Green (positive) means you received funding, while red (negative) means you paid funding.</string>
     <string name="perps_margin_description">Margin is the collateral you allocate to a position. It represents the maximum amount you can lose on that trade.</string>

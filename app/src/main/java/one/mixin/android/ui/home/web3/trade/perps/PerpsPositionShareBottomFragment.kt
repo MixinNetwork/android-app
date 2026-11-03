@@ -56,7 +56,6 @@ import one.mixin.android.repository.ShareCoverRepository
 import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
-import one.mixin.android.ui.common.drawShareCover
 import one.mixin.android.ui.common.drawShareBitmap
 import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.isZeroPercent
@@ -449,7 +448,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         viewLifecycleOwner.lifecycleScope.launch {
             val poster = currentPosterView() ?: return@launch
             if (poster.width == 0 || poster.height == 0) return@launch
-            val bitmap = poster.drawShareCover()
+            val bitmap = poster.drawShareBitmap()
             showLoading(true)
             try {
                 val coverUrl = shareCoverRepository.upload(bitmap)

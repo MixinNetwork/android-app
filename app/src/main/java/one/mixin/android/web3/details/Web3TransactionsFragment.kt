@@ -613,7 +613,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 putParcelable(ARGS_TOKEN, token)
                 putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet?.toWeb3Wallet())
             }
-            findNavController().navigate(
+            findNavController().navigateToWeb3Transaction(
                 R.id.action_web3_transactions_to_web3_transaction,
                 bundle
             )

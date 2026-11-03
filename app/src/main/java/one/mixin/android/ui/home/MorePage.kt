@@ -98,7 +98,7 @@ internal fun MorePage(
                         UserAvatarImage(it, 42.dp)
                         Spacer(Modifier.width(9.dp))
                         Column(Modifier.weight(1f)) {
-                            AndroidView(factory = { context -> NameTextView(context) }, update = { view -> view.setName(it); view.setTextColor(profileNameColor) })
+                            AndroidView(factory = { context -> NameTextView(context).apply { textView.textSize = 16f } }, update = { view -> view.setName(it); view.setTextColor(profileNameColor) })
                             Spacer(Modifier.height(4.dp))
                             Text(stringResource(R.string.contact_mixin_id, it.identityNumber), color = MixinAppTheme.colors.textAssist, fontSize = 12.sp, lineHeight = 14.sp, letterSpacing = 0.sp)
                         }

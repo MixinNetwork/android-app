@@ -49,6 +49,8 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.PerpsTradeCompletedEvent
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -585,6 +587,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             onSuccess = {
                 step = Step.Done
                 AnalyticsTracker.trackPerpsCloseEnd()
+                RxBus.publish(PerpsTradeCompletedEvent)
             },
             onError = { error ->
                 errorInfo = error
