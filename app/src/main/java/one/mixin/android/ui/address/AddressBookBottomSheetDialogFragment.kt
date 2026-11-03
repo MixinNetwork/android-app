@@ -136,7 +136,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         .clickable {
                             requireView().hideKeyboard()
                             NetworkMultiSelectBottomSheetDialogFragment.newInstance(
-                                ArrayList(addressBookNetworks),
+                                ArrayList(addressBookNetworks(chains)),
                                 selectedChainIds,
                             ).apply {
                                 onApply = { selectedChainIds = ArrayList(it) }
@@ -204,7 +204,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     onClick = {
                         requireView().hideKeyboard()
                         AnalyticsTracker.trackAddressBookAddStart()
-                        WalletActivity.showAddressBookAdd(requireActivity(), defaultAddressBookNetwork(selectedChainIds).chainId)
+                        WalletActivity.showAddressBookAdd(requireActivity(), defaultAddressBookNetwork(selectedChainIds, addressBookNetworks(chains)).chainId)
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp, bottom = 24.dp).height(42.dp),
                     contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),

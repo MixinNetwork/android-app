@@ -2,6 +2,7 @@ package one.mixin.android.ui.address
 
 import one.mixin.android.Constants.ChainId
 import one.mixin.android.ui.wallet.network.NetworkOption
+import one.mixin.android.vo.Chain
 
 val addressBookNetworks: List<NetworkOption> = listOf(
     NetworkOption(ChainId.BITCOIN_CHAIN_ID, "Bitcoin"),
@@ -15,6 +16,18 @@ val addressBookNetworks: List<NetworkOption> = listOf(
     NetworkOption(ChainId.Dogecoin, "Dogecoin"),
 )
 
-fun defaultAddressBookNetwork(selectedChainIds: List<String>): NetworkOption =
-    addressBookNetworks.firstOrNull { it.chainId in selectedChainIds }
+// Pinned networks keep the design order; the remaining privacy wallet chains follow by name.
+fun addressBookNetworks(chains: List<Chain>): List<NetworkOption> {
+    val pinnedChainIds = addressBookNetworks.mapTo(HashSet()) { it.chainId }
+    return addressBookNetworks + chains
+        .filter { it.chainId !in pinnedChainIds }
+        .sortedBy { it.name.lowercase() }
+        .map { NetworkOption(it.chainId, it.name) }
+}
+
+fun defaultAddressBookNetwork(
+    selectedChainIds: List<String>,
+    networks: List<NetworkOption> = addressBookNetworks,
+): NetworkOption =
+    networks.firstOrNull { it.chainId in selectedChainIds }
         ?: addressBookNetworks.first { it.chainId == ChainId.ETHEREUM_CHAIN_ID }

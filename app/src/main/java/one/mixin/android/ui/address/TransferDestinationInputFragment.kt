@@ -73,6 +73,7 @@ import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.Chain
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
@@ -105,6 +106,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
 
     private var addressBookChainId by mutableStateOf<String?>(null)
     private var addressBookToken by mutableStateOf<TokenItem?>(null)
+    private var addressBookChains by mutableStateOf<List<Chain>>(emptyList())
     private val addAddressToken: TokenItem?
         get() = if (addressBookChainId != null) addressBookToken else token
 
@@ -208,6 +210,10 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         
         if (addressBookChainId == null) {
             jobManager.addJobInBackground(SyncOutputJob())
+        } else {
+            viewLifecycleOwner.lifecycleScope.launch {
+                addressBookChains = viewModel.getChains()
+            }
         }
         (token?.chainId ?: web3Token?.chainId)?.let {
             jobManager.addJobInBackground(RefreshAddressJob(it))
@@ -612,7 +618,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 token = addAddressToken,
                                 web3Token = web3Token,
                                 networkChainId = addressBookChainId ?: token?.chainId ?: web3Token?.chainId,
-                                networkName = addressBookNetworks.firstOrNull {
+                                networkName = addressBookNetworks(addressBookChains).firstOrNull {
                                     it.chainId == (addressBookChainId ?: token?.chainId ?: web3Token?.chainId)
                                 }?.name ?: token?.chainName ?: web3Token?.chainName.orEmpty(),
                                 onNetworkClick = if (addressBookChainId == null) null else {
@@ -620,7 +626,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                         if (!isLoading) {
                                             requireView().hideKeyboard()
                                             NetworkSelectBottomSheetDialogFragment.newInstance(
-                                                ArrayList(addressBookNetworks),
+                                                ArrayList(addressBookNetworks(addressBookChains)),
                                                 addressBookChainId,
                                             ).apply {
                                                 onNetworkSelected = { network ->
@@ -719,7 +725,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 token = addAddressToken,
                                 web3Token = web3Token,
                                 address = address,
-                                networkName = addressBookNetworks.firstOrNull {
+                                networkName = addressBookNetworks(addressBookChains).firstOrNull {
                                     it.chainId == (addressBookChainId ?: token?.chainId ?: web3Token?.chainId)
                                 }?.name ?: addAddressToken?.chainName ?: web3Token?.chainName.orEmpty(),
                                 networkIconUrl = addAddressToken?.chainIconUrl ?: web3Token?.chainIcon,
@@ -763,7 +769,7 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             LabelInputPage(
                                 token = addAddressToken,
                                 web3Token = web3Token,
-                                networkName = addressBookNetworks.firstOrNull {
+                                networkName = addressBookNetworks(addressBookChains).firstOrNull {
                                     it.chainId == (addressBookChainId ?: token?.chainId ?: web3Token?.chainId)
                                 }?.name ?: addAddressToken?.chainName ?: web3Token?.chainName.orEmpty(),
                                 networkIconUrl = addAddressToken?.chainIconUrl ?: web3Token?.chainIcon,

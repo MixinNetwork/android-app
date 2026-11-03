@@ -1,8 +1,10 @@
 package one.mixin.android.ui.address
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import one.mixin.android.api.response.CashAccount
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.job.MixinJobManager
@@ -35,8 +37,10 @@ class AddressViewModel
     }
 
     fun refreshAddressBook() {
-        addressBookNetworks.forEach { network ->
-            jobManager.addJobInBackground(RefreshAddressJob(network.chainId))
+        viewModelScope.launch {
+            addressBookNetworks(tokenRepository.getChains()).forEach { network ->
+                jobManager.addJobInBackground(RefreshAddressJob(network.chainId))
+            }
         }
     }
 
