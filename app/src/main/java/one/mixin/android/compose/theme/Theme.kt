@@ -1,8 +1,6 @@
 package one.mixin.android.compose.theme
 
-import android.content.pm.ActivityInfo
 import android.os.Build
-import android.view.WindowManager
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.text.selection.LocalTextSelectionColors
@@ -22,7 +20,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalInspectionMode
-import androidx.compose.ui.platform.LocalView
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isScreenWideColorGamut
 import one.mixin.android.util.isCurrChinese
@@ -103,8 +100,10 @@ private fun lightColorPalette(isP3Supported: Boolean) =
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0xFFE5E8EE),
         marketBadgeBackground = Color(0xFFF6F7FA),
-        marketRed = marketRed(isP3Supported),
-        marketGreen = marketGreen(isP3Supported),
+        walletRed = quoteRed(isP3Supported),
+        walletGreen = quoteGreen(isP3Supported),
+        marketRed = quoteRed(isP3Supported),
+        marketGreen = quoteGreen(isP3Supported),
         bgGradientStart = Color(0xFFFFFFFF),
         bgGradientEnd = Color(0xFFE7EFFF),
         borderColor = Color(0xFFE5E8EE),
@@ -138,8 +137,10 @@ private fun darkColorPalette(isP3Supported: Boolean) =
         tipWarningBorder = Color(0xFFE86B67),
         borderPrimary = Color(0x33FFFFFF),
         marketBadgeBackground = Color.White.copy(alpha = 0.12f),
-        marketRed = marketRed(isP3Supported),
-        marketGreen = marketGreen(isP3Supported),
+        walletRed = quoteRed(isP3Supported),
+        walletGreen = quoteGreen(isP3Supported),
+        marketRed = quoteRed(isP3Supported),
+        marketGreen = quoteGreen(isP3Supported),
         bgGradientStart = Color(0xFF2C3136),
         bgGradientEnd = Color(0xFF1C2029),
         borderColor = Color(0xFF6E7073),
@@ -152,7 +153,7 @@ private fun darkColorPalette(isP3Supported: Boolean) =
         borderGray = Color(0xFFD6D6D6),
     )
 
-private fun marketRed(isP3Supported: Boolean) =
+private fun quoteRed(isP3Supported: Boolean) =
     if (isP3Supported) {
         Color(
             colorSpace = ColorSpaces.DisplayP3,
@@ -165,7 +166,7 @@ private fun marketRed(isP3Supported: Boolean) =
         Color(0xFFF55666)
     }
 
-private fun marketGreen(isP3Supported: Boolean) =
+private fun quoteGreen(isP3Supported: Boolean) =
     if (isP3Supported) {
         Color(
             colorSpace = ColorSpaces.DisplayP3,
@@ -189,11 +190,11 @@ fun MixinAppTheme(
     },
     content: @Composable () -> Unit,
 ) {
-    // Compose only draws ColorSpace colors on Q+, and a non wide-gamut window clips P3 instead of showing it.
-    val windowParams = LocalView.current.rootView.layoutParams as? WindowManager.LayoutParams
-    val isP3Supported = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
-        LocalContext.current.isScreenWideColorGamut() &&
-        windowParams?.colorMode == ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT
+    // Same device uses Display P3. sRGB is only the fallback when the screen cannot show it.
+    // Wide color gamut is set on the window before the first draw, so this does not switch it again.
+    val isP3Supported = !LocalInspectionMode.current &&
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q &&
+        LocalContext.current.isScreenWideColorGamut()
     val colors =
         remember(darkTheme, isP3Supported) {
             if (darkTheme) {

@@ -169,7 +169,7 @@
     <string name="contact_mobile">Mudah alih: %1$s</string>
     <string name="contact_mute_title">Senyapkan pemberitahuan untuk…</string>
     <string name="contact_favorite_bots_title">Aplikasi Dikongsi %1$s</string>
-    <string name="CONTACTS">KENALAN</string>
+    <string name="Contacts">Kenalan</string>
     <string name="content_audio">[Audio]</string>
     <string name="content_contact">[Hubungi]</string>
     <string name="content_file">[Fail]</string>
@@ -896,4 +896,5 @@
     <string name="Select_market_item">Pilih pasaran untuk dilihat</string>
     <string name="Select_explore_item">Pilih item untuk dibuka</string>
     <string name="search_query_in_markets">Cari “%1$s” dalam Pasaran</string>
+    <string name="perps_realized_pnl_tip">Posisi yang masih terbuka tidak termasuk dalam statistik.</string>
 </resources>

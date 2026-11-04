@@ -246,7 +246,7 @@
     <string name="contact_mobile">Móvil: %1$s</string>
     <string name="contact_mute_title">Silenciar notificaciones para…</string>
     <string name="contact_favorite_bots_title">Bots compartidos de %1$s</string>
-    <string name="CONTACTS">CONTACTOS</string>
+    <string name="Contacts">Contactos</string>
     <string name="content_audio">[Audio]</string>
     <string name="content_contact">[Contacto]</string>
     <string name="content_file">[Archivo]</string>
@@ -1274,4 +1274,5 @@
     <string name="Select_market_item">Seleccione un mercado para verlo</string>
     <string name="Select_explore_item">Seleccione un elemento para abrirlo</string>
     <string name="search_query_in_markets">Buscar “%1$s” en Mercados</string>
+    <string name="perps_realized_pnl_tip">Las posiciones abiertas no se incluyen en las estadísticas.</string>
 </resources>

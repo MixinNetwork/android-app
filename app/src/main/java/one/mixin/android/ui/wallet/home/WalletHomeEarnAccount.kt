@@ -141,7 +141,7 @@ private fun List<EarnProduct>.selectedEarnProductionId(): String? =
 internal fun earnAccountUsdBalance(
     account: EarnAccountSummary,
     priceUsd: BigDecimal,
-): BigDecimal = decimal(account.totalPrincipal).multiply(priceUsd)
+): BigDecimal = (decimal(account.totalPrincipal) + decimal(account.redeemableEarnings)).multiply(priceUsd)
 
 internal fun annualRateRange(annualRates: List<String>?): String? {
     val rates = annualRates.orEmpty().mapNotNull(::annualRateValue)
