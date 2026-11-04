@@ -115,6 +115,7 @@ import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isMixinUrl
 import one.mixin.android.extension.isNightMode
+import one.mixin.android.extension.isSupportBotPage
 import one.mixin.android.extension.isUUID
 import one.mixin.android.extension.isWebUrl
 import one.mixin.android.extension.loadImage
@@ -658,7 +659,7 @@ class WebFragment : BaseFragment() {
                     _binding?.apply {
                         customViewContainer.isVisible = false
                         webLl.isVisible = true
-                        webControl.isVisible = true
+                        webControl.isVisible = !webClose.isVisible
                         customViewContainer.removeView(customView)
                     }
 
@@ -924,6 +925,13 @@ class WebFragment : BaseFragment() {
         }
     }
 
+    private fun showSupportHeader(binding: FragmentWebBinding) {
+        binding.titleVa.displayedChild = 1
+        binding.webControl.isVisible = false
+        binding.webClose.isVisible = true
+        binding.webClose.setOnClickListener { requireActivity().finish() }
+    }
+
     private fun loadWebView() {
         _binding?.let { binding ->
             binding.pb.isVisible = false
@@ -946,7 +954,11 @@ class WebFragment : BaseFragment() {
                     marginStart = requireContext().dpToPx(10f)
                 }
             }
-            binding.titleVa.isGone = immersive
+            val supportPage = isSupportBotPage(app?.appId, url)
+            if (supportPage) {
+                showSupportHeader(binding)
+            }
+            binding.titleVa.isGone = immersive && !supportPage
 
             webAppInterface =
                 WebAppInterface(
@@ -1826,6 +1838,7 @@ class WebFragment : BaseFragment() {
         }
         titleColor = color
         binding.titleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
+        binding.supportTitleTv.setTextColor(if (dark) Color.WHITE else Color.BLACK)
         binding.titleVa.setBackgroundColor(color)
         binding.webControl.mode = dark
     }
