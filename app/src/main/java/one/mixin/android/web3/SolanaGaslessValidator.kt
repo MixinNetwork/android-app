@@ -28,18 +28,18 @@ fun VersionedTransactionCompat.validateGaslessTransfer(
     require(sponsor != user && user in accounts.take(message.header.numRequireSignatures))
     require(token.chainId == one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID && feeToken.chainId == token.chainId)
 
-    fun units(value: String, asset: Web3TokenItem): Long {
+    fun units(value: String, asset: Web3TokenItem): ULong {
         require(asset.precision in 0..255)
         val decimal = BigDecimal(value)
         require(decimal.signum() >= 0)
         val units = decimal.multiply(BigDecimal.TEN.pow(if (asset.isNativeSolAsset()) 9 else asset.precision)).toBigInteger()
-        require(units.bitLength() <= 63)
-        return units.toLong()
+        require(units.bitLength() <= 64)
+        return units.toLong().toULong()
     }
 
     val transferUnits = units(amount, token)
     val feeUnits = units(feeAmount, feeToken)
-    require(transferUnits > 0)
+    require(transferUnits > 0u)
     var transferred = false
     var paidFee = false
 
@@ -54,11 +54,11 @@ fun VersionedTransactionCompat.validateGaslessTransfer(
         val data = instruction.data
         when (program) {
             Constants.SYSTEM_PROGRAM, Constants.TOKEN_PROGRAM_ID, Constants.TOKEN_2022_PROGRAM_ID -> {
-                fun matches(asset: Web3TokenItem, destination: PublicKey, expected: Long): Boolean {
+                fun matches(asset: Web3TokenItem, destination: PublicKey, expected: ULong): Boolean {
                     if (program == Constants.SYSTEM_PROGRAM) {
                         if (!asset.isNativeSolAsset() || keys != listOf(user, destination) || data.size != 12) return false
                         val buffer = Buffer().write(data)
-                        return buffer.readIntLe() == 2 && buffer.readLongLe() == expected
+                        return buffer.readIntLe() == 2 && buffer.readLongLe().toULong() == expected
                     }
                     if (asset.isNativeSolAsset() || data.isEmpty()) return false
                     val checked = data[0].toInt() == 12
@@ -74,11 +74,11 @@ fun VersionedTransactionCompat.validateGaslessTransfer(
                     if (keys != expectedKeys) return false
                     val buffer = Buffer().write(data)
                     buffer.readByte()
-                    return buffer.readLongLe() == expected && (!checked || buffer.readByte().toUByte().toInt() == asset.precision)
+                    return buffer.readLongLe().toULong() == expected && (!checked || buffer.readByte().toUByte().toInt() == asset.precision)
                 }
                 when {
                     !transferred && matches(token, recipient, transferUnits) -> transferred = true
-                    !paidFee && feeUnits > 0 && matches(feeToken, sponsor, feeUnits) -> paidFee = true
+                    !paidFee && feeUnits > 0u && matches(feeToken, sponsor, feeUnits) -> paidFee = true
                     else -> throw IllegalArgumentException()
                 }
             }

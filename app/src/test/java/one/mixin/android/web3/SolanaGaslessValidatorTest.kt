@@ -127,6 +127,11 @@ class SolanaGaslessValidatorTest {
         assertThrows(IllegalArgumentException::class.java) {
             validate(transaction(solTransfer(recipient, 1)), amount = "18446744074")
         }
+        validate(transaction(solTransfer(recipient, Long.MIN_VALUE)), amount = "9223372036.854775808")
+        validate(transaction(solTransfer(recipient, -1)), amount = "18446744073.709551615")
+        assertThrows(IllegalArgumentException::class.java) {
+            validate(transaction(solTransfer(recipient, 0)), amount = "18446744073.709551616")
+        }
     }
 
     private fun validate(tx: VersionedTransactionCompat, asset: Web3TokenItem = sol, feeAsset: Web3TokenItem = asset, amount: String = "1") {
