@@ -14,6 +14,7 @@ import one.mixin.android.api.response.web3.shouldSign
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.putString
@@ -532,6 +533,27 @@ object Web3Signer {
         }
         tx.sign(holder)
         return tx
+    }
+
+    suspend fun signSolanaGaslessTransfer(
+        priv: ByteArray,
+        rawTransaction: String,
+        fromAddress: String,
+        token: Web3TokenItem,
+        amount: String,
+        recipient: String,
+        feeToken: Web3TokenItem?,
+        feeAmount: String,
+        getBlockhash: suspend () -> String,
+    ): VersionedTransactionCompat {
+        val tx = try {
+            VersionedTransactionCompat.from(rawTransaction).also {
+                GaslessSolanaValidator.validate(it, token, amount, fromAddress, recipient, requireNotNull(feeToken), feeAmount)
+            }
+        } catch (e: IllegalArgumentException) {
+            throw IllegalArgumentException(MixinApplication.appContext.getString(R.string.invalid_gasless_solana_transaction), e)
+        }
+        return signSolanaTransaction(priv, tx, getBlockhash)
     }
 
     fun solanaSignIn(

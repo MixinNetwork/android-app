@@ -1,4 +1,4 @@
-package one.mixin.android.web3
+package one.mixin.android.web3.js
 
 import okio.Buffer
 import one.mixin.android.db.web3.vo.Web3TokenItem
@@ -12,7 +12,7 @@ import org.sol4kt.MessageHeader
 import org.sol4kt.VersionedTransactionCompat
 import org.sol4kt.instruction.CompiledInstruction
 
-class SolanaGaslessValidatorTest {
+class GaslessSolanaValidatorTest {
     private val sponsor = key(1)
     private val user = key(2)
     private val recipient = key(3)
@@ -135,7 +135,7 @@ class SolanaGaslessValidatorTest {
     }
 
     private fun validate(tx: VersionedTransactionCompat, asset: Web3TokenItem = sol, feeAsset: Web3TokenItem = asset, amount: String = "1") {
-        tx.validateGaslessTransfer(asset, amount, user.toBase58(), recipient.toBase58(), feeAsset, "0.01")
+        GaslessSolanaValidator.validate(tx, asset, amount, user.toBase58(), recipient.toBase58(), feeAsset, "0.01")
     }
 
     private fun rejects(tx: VersionedTransactionCompat, asset: Web3TokenItem = sol) {

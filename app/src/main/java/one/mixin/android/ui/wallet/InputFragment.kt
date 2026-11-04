@@ -108,7 +108,6 @@ import one.mixin.android.web3.hasSolBalanceAfterFeeAndRent
 import one.mixin.android.web3.isNativeSolAsset
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
-import one.mixin.android.web3.validateGaslessTransfer
 import one.mixin.android.web3.nativeSolSpendableBalance
 import one.mixin.android.web3.send.BtcTransactionBuilder
 import one.mixin.android.web3.send.InsufficientBtcBalanceException
@@ -117,7 +116,6 @@ import one.mixin.android.web3.solanaTransferAmountRange
 import one.mixin.android.widget.Keyboard
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
-import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -2516,17 +2514,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     ) {
         val rawPayload = payload.takeIf { it.isJsonPrimitive }?.asString
             ?: throw IllegalStateException("Gasless payload is not a Solana base64 transaction")
-        val tx = try {
-            val feeToken = if (feeAssetId == token.assetId) token else {
-                requireNotNull(web3ViewModel.web3TokenItemById(token.walletId, feeAssetId))
-            }
-            VersionedTransactionCompat.from(rawPayload).also {
-                it.validateGaslessTransfer(token, amount, fromAddress, toAddress, feeToken, feeAmount)
-            }
-        } catch (e: IllegalArgumentException) {
-            throw IllegalArgumentException(getString(R.string.invalid_gasless_solana_transaction), e)
-        }
-        val signedTx = Web3Signer.signSolanaTransaction(privateKey, tx) {
+        val feeToken = if (feeAssetId == token.assetId) token else web3ViewModel.web3TokenItemById(token.walletId, feeAssetId)
+        val signedTx = Web3Signer.signSolanaGaslessTransfer(privateKey, rawPayload, fromAddress, token, amount, toAddress, feeToken, feeAmount) {
             rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
         }
         if (!signedTx.allSignerSigned()) {
