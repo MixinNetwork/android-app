@@ -57,6 +57,8 @@ import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.RxBus
+import one.mixin.android.event.PerpsTradeCompletedEvent
 import one.mixin.android.R
 import one.mixin.android.api.DataErrorException
 import one.mixin.android.api.response.perps.PerpsMarket
@@ -624,6 +626,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 context?.updatePinCheck()
                 step = Step.Done
                 trackPositionSuccess()
+                RxBus.publish(PerpsTradeCompletedEvent)
             }
         } catch (e: Exception) {
             handleException(e)
@@ -692,6 +695,7 @@ class PerpsConfirmBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
                 context?.updatePinCheck()
                 step = Step.Done
                 trackPositionSuccess()
+                RxBus.publish(PerpsTradeCompletedEvent)
             } else {
                 errorInfo = paymentResponse.errorDescription
                 step = Step.Error

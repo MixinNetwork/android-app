@@ -1236,12 +1236,16 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         }
         val ethPayload = GsonHelper.customGson.fromJson(payload, EthGaslessTxPayload::class.java)
             ?: throw IllegalStateException("Failed to parse gasless EVM payload")
-        val userOpSignature = Web3Signer.signEthMessage(
+        val (userOpSignature, eip7702AuthSignature) = Web3Signer.signEvmGaslessTransfer(
             priv = privateKey,
-            message = ethPayload.signing.userOperation.message,
-            type = JsSignMessage.TYPE_GASLESS_TRANSFER,
+            payload = ethPayload,
+            fromAddress = fromAddress,
+            token = token,
+            amount = amount,
+            recipient = toAddress,
+            feeToken = if (feeAssetId == token.assetId) token else web3ViewModel.web3TokenItemById(token.walletId, feeAssetId),
+            feeAmount = feeAmount,
         )
-        val eip7702AuthSignature = Web3Signer.signEip7702Auth(privateKey, ethPayload.signing.eip7702Auth)
         val response = web3ViewModel.submitGaslessTx(
             SubmitGaslessTxRequest(
                 chainId = chainId,
