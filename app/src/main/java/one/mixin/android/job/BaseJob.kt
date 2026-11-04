@@ -12,6 +12,7 @@ import one.mixin.android.Constants
 import one.mixin.android.api.ClientErrorException
 import one.mixin.android.api.ExpiredTokenException
 import one.mixin.android.api.LocalJobException
+import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.NetworkException
 import one.mixin.android.api.ServerErrorException
 import one.mixin.android.api.WebSocketException
@@ -97,6 +98,7 @@ import one.mixin.android.tip.Tip
 import one.mixin.android.util.reportException
 import one.mixin.android.vo.LinkState
 import one.mixin.android.websocket.ChatWebSocket
+import timber.log.Timber
 import java.io.IOException
 import java.math.BigDecimal
 import java.net.SocketTimeoutException
@@ -588,4 +590,13 @@ abstract class BaseJob(params: Params) : Job(params) {
         const val PRIORITY_LOWER = 3
         const val PRIORITY_LOWEST = 0
     }
+}
+
+// Automatic background jobs are not user initiated: record failures instead of toasting them.
+internal val logJobError: suspend (MixinResponse<*>) -> Unit = {
+    Timber.e("Job request failed ${it.errorCode} ${it.errorDescription}")
+}
+
+internal val logJobException: suspend (Throwable) -> Unit = {
+    Timber.e(it, "Job request failed")
 }

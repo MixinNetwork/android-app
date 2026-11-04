@@ -51,7 +51,6 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getMixinErrorStringByCode
-import one.mixin.android.util.msg
 import one.mixin.android.vo.Scope
 import timber.log.Timber
 import java.net.SocketTimeoutException
@@ -207,10 +206,7 @@ class AuthBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
                             )
                         is NetworkException -> requireContext().getString(R.string.No_network_connection)
                         is DataErrorException -> requireContext().getString(R.string.Data_error)
-                        else ->
-                            requireContext().getString(
-                                R.string.error_unknown_with_message,
-                                e.msg())
+                        else -> ErrorHandler.getErrorMessage(e)
                     }
             }
         }

@@ -19,6 +19,7 @@ import one.mixin.android.ui.common.biometric.UtxoException
 import one.mixin.android.ui.common.biometric.getUtxoExceptionMsg
 import org.chromium.net.CronetException
 import retrofit2.HttpException
+import timber.log.Timber
 import java.io.IOException
 import java.net.ConnectException
 import java.net.SocketException
@@ -109,7 +110,22 @@ open class ErrorHandler {
 
                         is ServerErrorException -> ctx.getString(R.string.error_server_5xx_code, throwable.code)
 
-                        else -> ctx.getString(R.string.Network_error)
+                        else -> {
+                            // cronet-okhttp rethrows ExecutionException(CronetException) as a plain IOException
+                            val causes = generateSequence(throwable.cause) { it.cause }.toList()
+                            val cronet = causes.filterIsInstance<CronetException>().firstOrNull()
+                            if (cronet != null || causes.any { it is ExecutionException }) {
+                                val extra =
+                                    if (cronet is org.chromium.net.NetworkException) {
+                                        "${cronet.errorCode}, ${cronet.cronetInternalErrorCode}"
+                                    } else {
+                                        ""
+                                    }
+                                "${ctx.getString(R.string.error_connection_error)} $extra"
+                            } else {
+                                ctx.getString(R.string.Network_error)
+                            }
+                        }
                     }
 
                 is UtxoException -> {
@@ -135,7 +151,10 @@ open class ErrorHandler {
                     }
                 }
 
-                else -> ctx.getString(R.string.error_unknown_with_message, throwable.msg())
+                else -> {
+                    Timber.e(throwable, "Unknown error")
+                    ctx.getString(R.string.error_unknown_with_message, throwable.msg())
+                }
             }
         }
 
