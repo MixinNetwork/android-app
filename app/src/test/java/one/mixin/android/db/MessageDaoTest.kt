@@ -16,7 +16,8 @@ import kotlin.test.assertNull
 import kotlin.test.assertIs
 import kotlin.test.assertTrue
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.cancelAndJoin
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeout
 import kotlinx.coroutines.yield
@@ -104,23 +105,30 @@ class MessageDaoTest {
     fun rawWritesNotifyInvalidationTracker() = runBlocking {
         val conversationId = "invalidation-conversation"
         database.conversationDao().insert(conversation(conversationId))
+        val started = CompletableDeferred<Unit>()
         val invalidation = CompletableDeferred<Unit>()
         val observer =
-            RoomDatabaseCompat.observeInvalidation(this, database, "conversations") {
-                invalidation.complete(Unit)
+            launch {
+                database.invalidationTracker.createFlow("conversations", emitInitialState = true).collect {
+                    if (!started.complete(Unit)) {
+                        invalidation.complete(Unit)
+                    }
+                }
             }
-        database.invalidationTracker.createFlow("conversations").first()
-        yield()
-        assertFalse(invalidation.isCompleted)
+        try {
+            withTimeout(5_000) { started.await() }
+            assertFalse(invalidation.isCompleted)
 
-        RoomDatabaseCompat.execute(
-            database,
-            "UPDATE conversations SET name = ? WHERE conversation_id = ?",
-            arrayOf("Updated", conversationId),
-        )
+            RoomDatabaseCompat.execute(
+                database,
+                "UPDATE conversations SET name = ? WHERE conversation_id = ?",
+                arrayOf("Updated", conversationId),
+            )
 
-        withTimeout(5_000) { invalidation.await() }
-        observer.cancel()
+            withTimeout(5_000) { invalidation.await() }
+        } finally {
+            observer.cancelAndJoin()
+        }
     }
 
     @Test

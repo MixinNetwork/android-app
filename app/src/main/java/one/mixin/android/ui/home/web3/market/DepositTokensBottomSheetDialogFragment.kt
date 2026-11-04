@@ -26,6 +26,8 @@ import java.math.BigDecimal
 
 @AndroidEntryPoint
 class DepositTokensBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "DepositTokensBottomSheetDialogFragment"
         private const val ASSETS = "assets"

@@ -421,9 +421,9 @@ internal fun MarketRecommendationCard(
         if (change == null) {
             MixinAppTheme.colors.textAssist
         } else if (change >= BigDecimal.ZERO) {
-            if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+            if (quoteColorReversed) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.marketGreen
         } else {
-            if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+            if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
         }
     Row(
         modifier =
@@ -549,15 +549,15 @@ internal fun MarketChangeColumn(
         if (change == null) {
             MixinAppTheme.colors.textAssist
         } else if (isRising) {
-            if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+            if (quoteColorReversed) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.marketGreen
         } else {
-            if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+            if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
         }
     val sparklineColor =
         if (isRising) {
-            if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+            if (quoteColorReversed) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.marketGreen
         } else {
-            if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+            if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
         }
     if (sparkline.isNullOrBlank()) {
         Box(

@@ -1,6 +1,5 @@
 package one.mixin.android.api.service
 
-import io.reactivex.Observable
 import one.mixin.android.api.MixinResponse
 import one.mixin.android.api.request.ConversationCircleRequest
 import one.mixin.android.api.request.RelationshipRequest
@@ -26,11 +25,6 @@ interface UserService {
     ): Call<MixinResponse<User>>
 
     @GET("search/{query}")
-    fun search(
-        @Path("query") query: String,
-    ): Observable<MixinResponse<User>>
-
-    @GET("search/{query}")
     suspend fun searchSuspend(
         @Path("query") query: String,
     ): MixinResponse<User>
@@ -46,7 +40,7 @@ interface UserService {
     ): MixinResponse<User>
 
     @GET("blocking_users")
-    fun blockingUsers(): Observable<MixinResponse<List<User>>>
+    suspend fun blockingUsers(): MixinResponse<List<User>>
 
     @POST("sessions/fetch")
     fun fetchSessions(

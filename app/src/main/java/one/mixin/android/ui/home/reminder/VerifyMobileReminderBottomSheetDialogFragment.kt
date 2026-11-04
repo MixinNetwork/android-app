@@ -24,11 +24,13 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.navTo
+import one.mixin.android.extension.addFragment
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putLong
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.common.showOnTask
+import one.mixin.android.ui.common.taskActivity
 import one.mixin.android.ui.common.VerifyFragment
 import one.mixin.android.ui.setting.AddPhoneBeforeFragment
 import one.mixin.android.util.SystemUIManager
@@ -37,6 +39,8 @@ import java.time.Instant
 
 @AndroidEntryPoint
 class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     companion object {
         const val TAG: String = "VerifyMobileReminderBottomSheetDialogFragment"
@@ -70,7 +74,7 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
                     false
                 } else {
                     isShowing = true
-                    fragment.show(fragmentManager, TAG)
+                    fragment.showOnTask(fragmentManager, TAG)
                     true
                 }
             } catch (_: Exception) {
@@ -183,9 +187,9 @@ class VerifyMobileReminderBottomSheetDialogFragment : MixinComposeBottomSheetDia
                 action = {
                     dismissAllowingStateLoss()
                     if (phoneNumber.isNullOrBlank()) {
-                        navTo(AddPhoneBeforeFragment.newInstance(addPhoneSource), AddPhoneBeforeFragment.TAG)
+                        taskActivity()?.addFragment(this@VerifyMobileReminderBottomSheetDialogFragment, AddPhoneBeforeFragment.newInstance(addPhoneSource), AddPhoneBeforeFragment.TAG)
                     } else {
-                        navTo(VerifyFragment.newInstance(VerifyFragment.FROM_PHONE, phoneNumber, addPhoneSource), VerifyFragment.TAG)
+                        taskActivity()?.addFragment(this@VerifyMobileReminderBottomSheetDialogFragment, VerifyFragment.newInstance(VerifyFragment.FROM_PHONE, phoneNumber, addPhoneSource), VerifyFragment.TAG)
                     }
                 },
                 dismiss = {

@@ -73,25 +73,29 @@ class FriendsNoBotFragment : BaseFriendsFragment<FriendsViewHolder>(), FriendsLi
                 )
             dialog.setCancelable(false)
             dialog.show()
-            handleMixinResponse(
-                invokeNetwork = { viewModel.createEmergency(buildEmergencyRequest(user)) },
-                successBlock = { response ->
-                    navTo(
-                        VerificationEmergencyFragment.newInstance(
-                            user,
-                            pin,
-                            (response.data as VerificationResponse).id,
-                            FROM_CONTACT,
-                        ),
-                        VerificationEmergencyFragment.TAG,
-                    )
-                },
-                exceptionBlock = {
-                    dialog.dismiss()
-                    return@handleMixinResponse false
-                },
-                doAfterNetworkSuccess = { dialog.dismiss() },
-            )
+            try {
+                handleMixinResponse(
+                    invokeNetwork = { viewModel.createEmergency(buildEmergencyRequest(user)) },
+                    successBlock = { response ->
+                        navTo(
+                            VerificationEmergencyFragment.newInstance(
+                                user,
+                                pin,
+                                (response.data as VerificationResponse).id,
+                                FROM_CONTACT,
+                            ),
+                            VerificationEmergencyFragment.TAG,
+                        )
+                    },
+                    exceptionBlock = {
+                        dialog.dismiss()
+                        return@handleMixinResponse false
+                    },
+                    doAfterNetworkSuccess = { dialog.dismiss() },
+                )
+            } finally {
+                dialog.dismiss()
+            }
         }
 
     private fun buildEmergencyRequest(user: User) =

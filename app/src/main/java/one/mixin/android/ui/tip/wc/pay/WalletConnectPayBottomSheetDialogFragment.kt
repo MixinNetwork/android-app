@@ -72,6 +72,8 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class WalletConnectPayBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "WalletConnectPayBottomSheetDialogFragment"
         private const val ARGS_PAYMENT_LINK = "args_payment_link"

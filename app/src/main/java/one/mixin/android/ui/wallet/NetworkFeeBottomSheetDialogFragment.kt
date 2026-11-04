@@ -25,6 +25,8 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class NetworkFeeBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "NetworkFeeBottomSheetDialogFragment"
         private const val ARGS_FEES = "args_fees"

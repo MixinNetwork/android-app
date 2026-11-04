@@ -15,6 +15,8 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class WithdrawalSuspendedBottomSheet : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "WithdrawalSuspendedBottomSheet"
 

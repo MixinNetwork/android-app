@@ -25,6 +25,7 @@ import one.mixin.android.extension.dp
 import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.contentWidth
 import one.mixin.android.ui.conversation.ConversationViewModel
 import one.mixin.android.ui.conversation.StickerFragment.Companion.COLUMN
 import one.mixin.android.ui.conversation.StickerFragment.Companion.PADDING
@@ -33,6 +34,7 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.StickerAlbum
 import one.mixin.android.vo.StickerAlbumAdded
 import one.mixin.android.widget.MixinBottomSheetDialog
+import one.mixin.android.widget.isExpandedSheetScreen
 import kotlin.math.roundToInt
 
 @AndroidEntryPoint
@@ -104,7 +106,7 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
         dialog.setContentView(contentView)
         val params = (contentView.parent as View).layoutParams as CoordinatorLayout.LayoutParams
         val behavior = params.behavior as BottomSheetBehavior<*>
-        val peekHeight = requireContext().realSize().x + 80.dp + 48.dp
+        val peekHeight = (if (requireContext().isExpandedSheetScreen()) requireContext().contentWidth() else requireContext().realSize().x) + 80.dp + 48.dp
         behavior.peekHeight = peekHeight
         binding.root.doOnPreDraw { root ->
             val defaultPadding: Int = 20.dp
@@ -169,7 +171,7 @@ class StickerAlbumBottomSheetFragment : BottomSheetDialogFragment() {
                     stickerRv.layoutManager = GridLayoutManager(context, COLUMN)
                     stickerRv.addItemDecoration(StickerSpacingItemDecoration(COLUMN, padding, true))
                     stickerAdapter.size =
-                        (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN
+                        ((if (requireContext().isExpandedSheetScreen()) requireContext().contentWidth() else requireContext().realSize().x) - (COLUMN + 1) * padding) / COLUMN
                     stickerRv.adapter = stickerAdapter
                     stickerAdapter.submitList(stickers)
                 }

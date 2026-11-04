@@ -87,6 +87,8 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.PerpsTradeCompletedEvent
 import one.mixin.android.api.request.perps.AdjustMarginRequest
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.api.response.perps.PerpsPosition
@@ -98,7 +100,6 @@ import one.mixin.android.extension.getParcelableCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -112,10 +113,13 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 
 @AndroidEntryPoint
 class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "PerpsMarginBottomSheetDialogFragment"
         private const val ARGS_POSITION = "args_position"
@@ -139,7 +143,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
     override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun getBottomSheetHeight(view: View): Int =
-        requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
 
     @Suppress("DEPRECATION")
     override fun onStart() {
@@ -303,6 +307,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                             ).show(parentFragmentManager, PerpsConfirmBottomSheetDialogFragment.TAG)
                         } else {
                             AnalyticsTracker.trackPerpsReduceMarginEnd()
+                            RxBus.publish(PerpsTradeCompletedEvent)
                             toast(R.string.perps_margin_submitted)
                             viewModel.refreshSinglePosition(currentPosition.positionId, currentPosition.walletId)
                             viewModel.refreshOrders(currentPosition.walletId)
@@ -376,6 +381,12 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 onGuide = { tab ->
                     PerpetualGuideBottomSheetDialogFragment.newInstance(tab)
                         .show(parentFragmentManager, PerpetualGuideBottomSheetDialogFragment.TAG)
+                },
+                onMarginTipClick = {
+                    PerpsInfoBottomSheetDialogFragment.newInstance(
+                        R.string.Margin,
+                        R.string.perps_margin_description,
+                    ).show(parentFragmentManager, PerpsInfoBottomSheetDialogFragment.TAG)
                 },
             ) {
                 if (increase) {
@@ -498,6 +509,7 @@ private fun PerpsMarginContent(
     onCancel: () -> Unit,
     onSubmit: () -> Unit,
     onGuide: (Int) -> Unit,
+    onMarginTipClick: () -> Unit = {},
     inputContent: @Composable () -> Unit,
 ) {
     val actionTitle = stringResource(if (increase) R.string.Add else R.string.perps_reduce_action)
@@ -568,6 +580,7 @@ private fun PerpsMarginContent(
                     title = stringResource(R.string.Margin),
                     valueColor = MixinAppTheme.colors.textPrimary,
                     value = if (totalMargin != null) "$currentMarginText → ${formatPerpsMarginAmount(totalMargin)}" else currentMarginText,
+                    onTipClick = onMarginTipClick,
                 )
                 Spacer(Modifier.height(16.dp))
                 PerpsAddInfoRow(

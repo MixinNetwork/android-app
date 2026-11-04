@@ -88,6 +88,8 @@ import javax.inject.Inject
 @AndroidEntryPoint
 @SuppressLint("InflateParams")
 class OldTransferFragment() : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "OldTransferFragment"
         const val ASSET_PREFERENCE = "TRANSFER_ASSET"
@@ -157,7 +159,7 @@ class OldTransferFragment() : MixinBottomSheetDialogFragment() {
     }
 
     private val assetsBottomSheet: BottomSheet by lazy {
-        val builder = BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = false)
+        val builder = BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = false, centerOnExpandedScreen = true)
         val bottomSheet = builder.create()
         builder.setCustomView(assetsViewBinding.root)
         bottomSheet.setOnDismissListener {

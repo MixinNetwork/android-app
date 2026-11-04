@@ -3,8 +3,6 @@ package one.mixin.android.ui.landing
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import one.mixin.android.api.request.AccountUpdateRequest
@@ -32,6 +30,5 @@ internal constructor(
             userRepository.insertUser(user)
         }
 
-    fun update(request: AccountUpdateRequest) =
-        accountRepository.update(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+    suspend fun update(request: AccountUpdateRequest) = accountRepository.update(request)
 }

@@ -377,6 +377,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
     private fun filter(s: String) =
         lifecycleScope.launch {
             if (s.isBlank() && currentChain == null && !isStockMode) {
+                binding.pb.isVisible = false
                 val visibleTokens = defaultTokens(tokens)
                 adapter.tokens = visibleTokens.sortByKeywordAndBalance()
                 adapter.isSearch = false

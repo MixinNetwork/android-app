@@ -150,6 +150,9 @@
     <string name="Bot_not_found">Bot not found</string>
     <string name="BOTS">BOTS</string>
     <string name="bots_title">Bots</string>
+    <string name="All_chats">All chats</string>
+    <string name="Groups">Groups</string>
+    <string name="Strangers">Strangers</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s is not on your contact list. Make sure the recipient you chose is correct. If you transfer to the wrong person, your assets will be lost!</string>
     <string name="Call">Call</string>
     <string name="Call_declined">Call declined</string>
@@ -272,7 +275,7 @@
     <string name="contact_mute_title">Mute notifications for…</string>
     <string name="contact_new_group_chat_desc">Create a group chat</string>
     <string name="contact_favorite_bots_title">%1$s\'s Favorite Bots</string>
-    <string name="CONTACTS">CONTACTS</string>
+    <string name="Contacts">Contacts</string>
     <string name="content_audio">[Audio]</string>
     <string name="content_contact">[Contact]</string>
     <string name="content_file">[File]</string>
@@ -386,13 +389,14 @@
     <string name="Disable_web_debug">Disable web debug</string>
     <string name="Disabled">Disabled</string>
     <string name="disappearing_message">Disappearing Messages</string>
-    <string name="disappearing_message_hint">When enabled, new messages sent and received in this chat will disappear after they have been seen, read the document to **learn more**.</string>
+    <string name="disappearing_message_hint">When enabled, new messages sent and received in this chat will disappear after a certain period of time, read the document to **learn more**.</string>
     <string name="disappearing_message_url">https://support.mixin.one/en/article/how-to-enable-disappearing-messages-2nzaz8</string>
     <string name="disappearing_option_1">30 seconds</string>
     <string name="disappearing_option_2">10 minutes</string>
     <string name="disappearing_option_3">2 hours</string>
     <string name="disappearing_option_4">1 day</string>
     <string name="disappearing_option_5">1 week</string>
+    <string name="disappearing_option_month">1 month</string>
     <string name="DISCARD">DISCARD</string>
     <string name="Dismiss_as_Admin">Dismiss as Admin</string>
     <string name="divide">, </string>
@@ -505,6 +509,7 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">ERROR 10655: Cannot add to the position.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">ERROR 10655: Amount exceeds the %1$s limit. Reduce the amount or leverage.</string>
     <string name="error_perps_invalid_leader_position">ERROR 10656: The leader position is invalid. Please select another position to copy.</string>
+    <string name="error_perps_order_conflict">ERROR 10657: The order details conflict or the order is no longer payable. Please check its status.</string>
     <string name="error_phone_verification_code_expired">ERROR 20114: Expired phone verification code</string>
     <string name="error_phone_verification_code_invalid">ERROR 20113: Invalid phone verification code</string>
     <string name="error_pin_check_too_many_request">You have tried more than 5 times, please wait at least 24 hours to try again.</string>
@@ -1734,6 +1739,8 @@
     <string name="View_on_Marketplace">View on Marketplace</string>
     <string name="View_on_Explorer">View on Explorer</string>
     <string name="malicious_instruction_token_set_authority">This transaction changes the owner of your SPL tokens. This allows the new owner to transfer the tokens without your permission.</string>
+    <string name="malicious_instruction_token_approve">This transaction allows another account to transfer your SPL tokens without your permission.</string>
+    <string name="malicious_instruction_system_assign">This transaction assigns your Solana account to another program. This may cause you to lose control of the account.</string>
     <string name="Assets">Assets</string>
     <string name="ASSET">ASSET</string>
     <string name="Recipients">Recipients</string>
@@ -2091,6 +2098,7 @@
     <string name="Total_Balance">Total Balance</string>
     <string name="total_balance_tip">Hidden assets are not included in the statistics.</string>
     <string name="Reset_TpSl_Guide">Reset hidden preferences</string>
+    <string name="Reset_More_Badges">Reset More badges</string>
     <string name="Reset_Wallet_Home_Banners">Reset wallet home banners</string>
     <string name="Delete_Web3_Transactions">Delete Web3 Transaction Data</string>
     <string name="Delete_Web3_Transactions_Confirmation">Are you sure you want to delete all Web3 transaction data? This action cannot be undone. The data will be re-synchronized after deletion.</string>
@@ -2385,8 +2393,7 @@
     <string name="Price_Up_Loss">Price rise %1$s%% → Loss -%2$s %3$s</string>
     <string name="Max_Profit">Max Profit %1$s</string>
     <string name="Max_Loss">Max Loss %1$s</string>
-    <string name="price_change_take_profit">Price %1$s → Max Profit %2$s</string>
-    <string name="price_change_stop_loss">Price %1$s → Max Loss %2$s</string>
+    <string name="price_change_tpsl">Price %1$s → Estimate Profit %2$s</string>
     <string name="example_amount">Amount</string>
     <string name="example_scene1_decreasing">Scenario 1: Price Falls</string>
     <string name="example_scene1_increasing">Scenario 1: Price Rises</string>
@@ -2485,6 +2492,7 @@
     <string name="Position_Summary">Position Summary</string>
     <string name="Position_Info">Position Info</string>
     <string name="Total_Realized_PnL">Total Realized PnL</string>
+    <string name="perps_realized_pnl_tip">Open positions are not included in the statistics.</string>
     <string name="Price_Change">Price Change</string>
     <string name="Time_Info">Time Info</string>
     <string name="Open_Time">Open Time</string>
@@ -2703,6 +2711,9 @@
     <string name="wallet_home_privacy_wallet_reason_2">Avoid transfer errors caused by complex wallet addresses.</string>
     <string name="wallet_home_privacy_wallet_reason_3">Block malicious apps from gaining unsafe permissions.</string>
     <string name="no_tokens">No Tokens</string>
+    <string name="new_chat">New Chat</string>
+    <string name="contacts_title">Contacts</string>
+    <string name="contacts_search_hint">Mixin ID, Name, Phone number</string>
     <string name="perps_adjust">Adjust</string>
     <string name="perps_adjust_title">Adjust Margin or Position</string>
     <string name="perps_add_margin">Add Margin</string>
@@ -2754,4 +2765,28 @@
     <string name="perps_include_pnl">Include PnL</string>
     <string name="perps_position_amount">Position Amount</string>
     <string name="perps_margin_amount">Margin Amount</string>
+    <string name="changed_disappearing_message_settings_hint">%1$s changed disappearing message settings. Tap to open disappearing message settings.</string>
+    <string name="disable_disappearing_message_hint">%1$s disabled disappearing message. Click to set them up or learn more.</string>
+    <string name="set_disappearing_message_time_to_hint">%1$s set disappearing message time to %2$s, click to change it or get more information.</string>
+    <string name="group_disappearing_message_enabled_hint">This group has set the disappearing message time to %1$s. Click to change it or get more information.</string>
+    <string name="group_disappearing_message_disabled_hint">Disappearing messages haven’t been enabled for this group. Click to set them up or learn more.</string>
+    <string name="chat_disappearing_message_enabled_hint">Disappearing messages are set to %1$s for this chat. Click to change it or get more information.</string>
+    <string name="chat_disappearing_message_disabled_hint">Disappearing messages haven’t been enabled for this chat. Click to set them up or learn more.</string>
+    <string name="perps_funding_payments">Funding payments</string>
+    <string name="perps_funding_payments_description">The total funding you’ve received or paid since opening this position. Green (positive) means you received funding, while red (negative) means you paid funding.</string>
+    <string name="perps_margin_description">Margin is the collateral you allocate to a position. It represents the maximum amount you can lose on that trade.</string>
+    <string name="perps_liquidation_price_down_description">Going down %1$s will trigger liquidation.</string>
+    <string name="perps_liquidation_price_up_description">Going up %1$s will trigger liquidation.</string>
+    <string name="Details">Details</string>
+    <string name="perps_tpsl_requires_amount_leverage">Please set the amount and leverage before configuring Take Profit and Stop Loss.</string>
+    <string name="perps_estimated_profit">Estimate Profit %1$s</string>
+    <string name="invalid_gasless_transaction">Invalid gasless transaction. Please try again.</string>
+    <string name="eip712_invalid_chain_id">The typed message chain ID is invalid or does not match the signing network.</string>
+    <string name="invalid_solana_sign_in">Invalid Solana sign-in request.</string>
+    <string name="bitcoin_fee_confirmation_required">Bitcoin fee could not be confirmed or has increased. Please request the transfer again and confirm the updated fee.</string>
+    <string name="invalid_gasless_solana_transaction">The sponsored transaction does not match the requested transfer.</string>
+    <string name="Select_conversation">Select a conversation to start chatting</string>
+    <string name="Select_asset">Select an asset to view</string>
+    <string name="Select_market_item">Select a market to view</string>
+    <string name="Select_explore_item">Select an item to open</string>
 </resources>

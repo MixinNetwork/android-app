@@ -4,9 +4,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import one.mixin.android.api.MixinResponse
@@ -32,11 +29,8 @@ internal constructor(
     private val _mnemonicPhraseState = MutableLiveData<MnemonicPhraseState>(MnemonicPhraseState.Creating)
     val mnemonicPhraseState: LiveData<MnemonicPhraseState> get() = _mnemonicPhraseState
 
-    fun loginVerification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
-        landingAccountRepository.verificationObserver(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
-
-    fun verification(request: VerificationRequest): Observable<MixinResponse<VerificationResponse>> =
-        landingAccountRepository.verificationObserver(request).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+    suspend fun verification(request: VerificationRequest): MixinResponse<VerificationResponse> =
+        landingAccountRepository.verification(request)
 
     suspend fun create(
         id: String,
@@ -62,14 +56,14 @@ internal constructor(
             ),
         )
 
-    fun deactiveVerification(
+    suspend fun deactiveVerification(
         id: String,
         code: String,
-    ): Observable<MixinResponse<VerificationResponse>> =
+    ): MixinResponse<VerificationResponse> =
         landingAccountRepository.deactiveVerification(
             id,
             DeactivateVerificationRequest(VerificationPurpose.DEACTIVATED.name, code),
-        ).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        )
 
     suspend fun anonymousRequest(
         publicKeyHex: String,

@@ -12,7 +12,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.components.AlertFrequencyBottom
@@ -20,9 +19,12 @@ import one.mixin.android.ui.wallet.alert.components.AlertTypeBottom
 import one.mixin.android.ui.wallet.alert.vo.AlertFrequency
 import one.mixin.android.ui.wallet.alert.vo.AlertType
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.bottomSheetHeight
 
 @AndroidEntryPoint
 class AlertSelectionBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "AlertSelectionBottomSheetDialogFragment"
         private const val ARGS_MODE = "args_mode"
@@ -97,7 +99,7 @@ class AlertSelectionBottomSheetDialogFragment : MixinComposeBottomSheetDialogFra
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     override fun showError(error: String) {

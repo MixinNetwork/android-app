@@ -108,7 +108,7 @@ class SearchMessageFragment : BaseFragment(R.layout.fragment_search_message) {
                 searchMessageItem.userId,
             )
         } else {
-            binding.titleView.titleTv.setTextOnly(searchMessageItem.conversationName)
+            binding.titleView.titleTv.setGroupName(searchMessageItem.conversationName)
             binding.titleView.avatarIv.setGroup(searchMessageItem.conversationAvatarUrl)
         }
 

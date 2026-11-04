@@ -36,6 +36,8 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.vo.Card
 import one.mixin.android.vo.cardIcon
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.AdaptiveBottomSheetDialog
+import one.mixin.android.widget.isExpandedSheetScreen
 import one.mixin.android.widget.MixinBottomSheetDialog
 
 @AndroidEntryPoint
@@ -72,7 +74,23 @@ class SelectCardBottomSheetDialogFragment : BottomSheetDialogFragment() {
 
     override fun getTheme() = R.style.MixinBottomSheet
 
+    override fun dismiss() {
+        val adaptiveDialog = dialog as? AdaptiveBottomSheetDialog
+        if (adaptiveDialog?.isCentered == true) adaptiveDialog.dismiss() else super.dismiss()
+    }
+
+    override fun dismissAllowingStateLoss() {
+        val adaptiveDialog = dialog as? AdaptiveBottomSheetDialog
+        if (adaptiveDialog?.isCentered == true) adaptiveDialog.dismiss() else super.dismissAllowingStateLoss()
+    }
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
+        if (requireContext().isExpandedSheetScreen()) {
+            return AdaptiveBottomSheetDialog(requireContext(), theme, centerOnExpandedScreen = true).apply {
+                window?.addFlags(android.view.WindowManager.LayoutParams.FLAG_DIM_BEHIND)
+                window?.setDimAmount(MixinBottomSheetDialog.BACK_DRAWABLE_ALPHA / 255f)
+            }
+        }
         return MixinBottomSheetDialog(requireContext(), theme, true).apply {
             dismissWithAnimation = true
         }

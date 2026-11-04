@@ -1,5 +1,6 @@
 package one.mixin.android.ui.home.web3.market
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
@@ -22,10 +23,6 @@ import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.GridItemSpan
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items as gridItems
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
@@ -110,48 +107,49 @@ fun MarketPage(
             selected = state.selectedTopTab,
             onSelect = onSelectTopTab,
         )
-        Spacer(modifier = Modifier.height(16.dp))
-        if (state.banners.isNotEmpty()) {
-            key(state.selectedTopTab) {
-                BannerPager(
-                    banners = state.banners,
-                    onBannerClick = onBannerClick,
-                    onActionClick = onBannerActionClick,
-                    onBannerClose = onBannerClose,
-                    bordered = true,
-                    horizontalPadding = 12.dp,
+        MarketContent(
+            state = state,
+            onFavorite = onFavorite,
+            onAddRecommendations = onAddRecommendations,
+            onEntryClick = onEntryClick,
+            header = {
+                if (state.banners.isNotEmpty() || state.selectedTopTab == MarketTopTab.INDICATOR) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
+                if (state.banners.isNotEmpty()) {
+                    key(state.selectedTopTab) {
+                        BannerPager(
+                            banners = state.banners,
+                            onBannerClick = onBannerClick,
+                            onActionClick = onBannerActionClick,
+                            onBannerClose = onBannerClose,
+                            bordered = true,
+                            horizontalPadding = 12.dp,
+                        )
+                    }
+                    if (state.selectedTopTab == MarketTopTab.INDICATOR) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                }
+            },
+        ) {
+            if (state.selectedTopTab != MarketTopTab.INDICATOR) {
+                SubTabs(
+                    topTab = state.selectedTopTab,
+                    selected = state.selectedSubTab,
+                    onSelect = onSelectSubTab,
                 )
+                if (!state.isShowingRecommendations && state.entries.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    MarketListHeader(
+                        period = state.effectivePriceChangePeriod,
+                        showMarketCap = state.showsMarketCapColumn,
+                        sortState = state.sortState,
+                        onSort = onSort,
+                        onShowDisplaySettings = onShowDisplaySettings,
+                    )
+                }
             }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        if (state.selectedTopTab != MarketTopTab.INDICATOR) {
-            SubTabs(
-                topTab = state.selectedTopTab,
-                selected = state.selectedSubTab,
-                onSelect = onSelectSubTab,
-            )
-            if (!state.isShowingRecommendations && state.entries.isNotEmpty()) {
-                Spacer(modifier = Modifier.height(8.dp))
-                MarketListHeader(
-                    period = state.effectivePriceChangePeriod,
-                    showMarketCap = state.showsMarketCapColumn,
-                    sortState = state.sortState,
-                    onSort = onSort,
-                    onShowDisplaySettings = onShowDisplaySettings,
-                )
-            }
-            MarketList(
-                state = state,
-                onFavorite = onFavorite,
-                onAddRecommendations = onAddRecommendations,
-                onEntryClick = onEntryClick,
-            )
-        } else {
-            IndicatorPage(
-                indicator = state.indicator,
-                quoteColorReversed = state.displaySettings.quoteColorReversed,
-                isLoading = state.isLoading,
-            )
         }
     }
 
@@ -382,61 +380,91 @@ private fun MarketListHeader(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun MarketList(
+private fun MarketContent(
     state: MarketPageUiState,
     onFavorite: (MarketListEntry, (Boolean) -> Unit) -> Unit,
     onAddRecommendations: (List<MarketListEntry>) -> Unit,
     onEntryClick: (MarketListEntry) -> Unit,
+    header: @Composable () -> Unit,
+    filters: @Composable () -> Unit,
 ) {
     val listState = rememberLazyListState()
     LaunchedEffect(state.selectedTopTab, state.selectedSubTab, state.sortState) {
         listState.scrollToItem(0)
     }
-    when {
-        state.showsMarketLoading -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                CircularProgressIndicator(color = MixinAppTheme.colors.accent)
+    LazyColumn(
+        state = listState,
+        modifier = Modifier.fillMaxSize(),
+    ) {
+        item(key = "header") {
+            Column { header() }
+        }
+        if (state.selectedTopTab != MarketTopTab.INDICATOR) {
+            stickyHeader(key = "filters") {
+                Column(modifier = Modifier.fillMaxWidth().background(MixinAppTheme.colors.background).padding(top = 16.dp)) {
+                    filters()
+                }
             }
         }
-
-        state.isShowingRecommendations -> {
-            MarketRecommendations(
-                entries = state.entries,
-                isAdding = state.isAddingRecommendations,
-                quoteColorReversed = state.displaySettings.quoteColorReversed,
-                onAdd = onAddRecommendations,
-            )
-        }
-
-        state.entries.isEmpty() && state.hasLoadedLocalData -> {
-            Box(
-                modifier = Modifier.fillMaxSize(),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text =
-                        stringResource(
-                            when {
-                                state.hasError -> R.string.Network_error
-                                state.selectedTopTab == MarketTopTab.WATCHLIST -> R.string.watchlist_empty
-                                else -> R.string.No_Markets
-                            },
-                        ),
-                    color = MixinAppTheme.colors.textAssist,
-                    fontSize = 14.sp,
-                )
+        when {
+            state.selectedTopTab == MarketTopTab.INDICATOR -> {
+                item(key = "indicator") {
+                    IndicatorPage(
+                        indicator = state.indicator,
+                        quoteColorReversed = state.displaySettings.quoteColorReversed,
+                        isLoading = state.isLoading,
+                        emptyModifier = Modifier.fillParentMaxHeight(),
+                    )
+                }
             }
-        }
 
-        else -> {
-            LazyColumn(
-                state = listState,
-                modifier = Modifier.fillMaxSize(),
-            ) {
+            state.showsMarketLoading -> {
+                item(key = "loading") {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().fillParentMaxHeight(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        CircularProgressIndicator(color = MixinAppTheme.colors.accent)
+                    }
+                }
+            }
+
+            state.isShowingRecommendations -> {
+                item(key = "recommendations") {
+                    MarketRecommendations(
+                        entries = state.entries,
+                        isAdding = state.isAddingRecommendations,
+                        quoteColorReversed = state.displaySettings.quoteColorReversed,
+                        onAdd = onAddRecommendations,
+                    )
+                }
+            }
+
+            state.entries.isEmpty() && state.hasLoadedLocalData -> {
+                item(key = "empty") {
+                    Box(
+                        modifier = Modifier.fillMaxWidth().fillParentMaxHeight(),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Text(
+                            text =
+                                stringResource(
+                                    when {
+                                        state.hasError -> R.string.Network_error
+                                        state.selectedTopTab == MarketTopTab.WATCHLIST -> R.string.watchlist_empty
+                                        else -> R.string.No_Markets
+                                    },
+                                ),
+                            color = MixinAppTheme.colors.textAssist,
+                            fontSize = 14.sp,
+                        )
+                    }
+                }
+            }
+
+            else -> {
                 items(
                     items = state.entries,
                     key = MarketListEntry::stableId,
@@ -464,59 +492,63 @@ private fun MarketRecommendations(
     val recommendations = entries.take(8)
     val recommendationIds = recommendations.map(MarketListEntry::stableId)
     var selectedIds by remember(recommendationIds) { mutableStateOf(recommendationIds.toSet()) }
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(2),
-        modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 20.dp),
-        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 20.dp, top = 12.dp, bottom = 20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        gridItems(
-            items = recommendations,
-            key = MarketListEntry::stableId,
-        ) { entry ->
-            val selected = entry.stableId in selectedIds
-            MarketRecommendationCard(
-                entry = entry,
-                selected = selected,
-                quoteColorReversed = quoteColorReversed,
-                perpetualBadgeStyle = PerpetualMarketBadgeStyle.LEVERAGE,
-                onSelect = {
-                    selectedIds =
-                        if (selected) {
-                            selectedIds - entry.stableId
-                        } else {
-                            selectedIds + entry.stableId
+        recommendations.chunked(2).forEach { row ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                row.forEach { entry ->
+                    key(entry.stableId) {
+                        Box(modifier = Modifier.weight(1f)) {
+                            val selected = entry.stableId in selectedIds
+                            MarketRecommendationCard(
+                                entry = entry,
+                                selected = selected,
+                                quoteColorReversed = quoteColorReversed,
+                                perpetualBadgeStyle = PerpetualMarketBadgeStyle.LEVERAGE,
+                                onSelect = {
+                                    selectedIds =
+                                        if (selected) {
+                                            selectedIds - entry.stableId
+                                        } else {
+                                            selectedIds + entry.stableId
+                                        }
+                                },
+                            )
                         }
-                },
-            )
+                    }
+                }
+                if (row.size == 1) Spacer(modifier = Modifier.weight(1f))
+            }
         }
-        item(span = { GridItemSpan(maxLineSpan) }) {
-            Box(
+        Box(
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(top = 20.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            MixinButton(
+                onClick = { onAdd(recommendations.filter { it.stableId in selectedIds }) },
+                backgroundColor = MixinAppTheme.colors.accent,
+                contentColor = Color.White,
+                enabled = selectedIds.isNotEmpty() && !isAdding,
+                disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
+                disabledContentColor = MixinAppTheme.colors.textAssist,
                 modifier =
                     Modifier
-                        .fillMaxWidth()
-                        .padding(top = 20.dp),
-                contentAlignment = Alignment.Center,
+                        .wrapContentWidth()
+                        .height(42.dp),
             ) {
-                MixinButton(
-                    onClick = { onAdd(recommendations.filter { it.stableId in selectedIds }) },
-                    backgroundColor = MixinAppTheme.colors.accent,
-                    contentColor = Color.White,
-                    enabled = selectedIds.isNotEmpty() && !isAdding,
-                    disabledBackgroundColor = MixinAppTheme.colors.backgroundGray,
-                    disabledContentColor = MixinAppTheme.colors.textAssist,
-                    modifier =
-                        Modifier
-                            .wrapContentWidth()
-                            .height(42.dp),
-                ) {
-                    Text(
-                        text = stringResource(R.string.Add_to_Watchlist),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.W400,
-                    )
-                }
+                Text(
+                    text = stringResource(R.string.Add_to_Watchlist),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W400,
+                )
             }
         }
     }
@@ -649,11 +681,12 @@ private fun IndicatorPage(
     indicator: GlobalMarket?,
     quoteColorReversed: Boolean,
     isLoading: Boolean,
+    emptyModifier: Modifier,
 ) {
     when {
         indicator == null && isLoading -> {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = emptyModifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
                 CircularProgressIndicator(color = MixinAppTheme.colors.accent)
@@ -662,7 +695,7 @@ private fun IndicatorPage(
 
         indicator == null -> {
             Box(
-                modifier = Modifier.fillMaxSize(),
+                modifier = emptyModifier.fillMaxWidth(),
                 contentAlignment = Alignment.Center,
             ) {
                 Text(
@@ -699,15 +732,12 @@ private fun MarketOverviewCard(
         shape = RoundedCornerShape(8.dp),
         color = MixinAppTheme.colors.background,
         border = androidx.compose.foundation.BorderStroke(1.dp, MixinAppTheme.colors.borderPrimary),
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(126.dp),
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
             modifier =
                 Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 20.dp),
         ) {
             IndicatorMetric(
@@ -742,9 +772,9 @@ private fun IndicatorMetric(
         if (change == null) {
             MixinAppTheme.colors.textAssist
         } else if (change >= BigDecimal.ZERO) {
-            if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+            if (quoteColorReversed) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.marketGreen
         } else {
-            if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+            if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
         }
     Column(
         modifier = modifier,
@@ -784,15 +814,12 @@ private fun BitcoinDominanceCard(indicator: GlobalMarket) {
         shape = RoundedCornerShape(8.dp),
         color = MixinAppTheme.colors.background,
         border = androidx.compose.foundation.BorderStroke(1.dp, MixinAppTheme.colors.borderPrimary),
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .height(150.dp),
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
             modifier =
                 Modifier
-                    .fillMaxSize()
+                    .fillMaxWidth()
                     .padding(horizontal = 20.dp, vertical = 20.dp),
         ) {
             Text(

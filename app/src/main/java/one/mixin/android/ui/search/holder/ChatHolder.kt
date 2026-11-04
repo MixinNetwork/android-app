@@ -18,7 +18,7 @@ class ChatHolder(val binding: ItemSearchChatBinding) : NormalHolder(binding.root
             binding.searchAvatarIv.setInfo(chat.fullName, chat.avatarUrl, chat.userId)
             binding.searchName.setName(chat)
         } else {
-            binding.searchName.setTextOnly(chat.groupName)
+            binding.searchName.setGroupName(chat.groupName)
             binding.searchName.highLight(target)
             binding.searchAvatarIv.setInfo(chat.groupName, chat.groupIconUrl, chat.conversationId)
         }

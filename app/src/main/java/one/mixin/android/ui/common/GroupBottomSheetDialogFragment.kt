@@ -183,6 +183,16 @@ class GroupBottomSheetDialogFragment : MixinScrollableBottomSheetDialogFragment(
             }
             dismiss()
         }
+        binding.avatar.setOnClickListener {
+            if (!isAdded || !::conversation.isInitialized) return@setOnClickListener
+
+            val icon = conversation.iconUrl
+            if (icon.isNullOrBlank() || !icon.isWebUrl()) {
+                return@setOnClickListener
+            }
+            AvatarActivity.show(requireActivity(), icon, binding.avatar)
+            dismiss()
+        }
         setDetailsTv(binding.detailTv, binding.scrollView, conversationId)
         bottomViewModel.getConversationById(conversationId).observe(
             this,

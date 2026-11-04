@@ -12,12 +12,14 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.bottomSheetHeight
 
 @AndroidEntryPoint
 class TradeHelpBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "TradeHelpBottomSheetDialogFragment"
 
@@ -70,7 +72,7 @@ class TradeHelpBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     override fun showError(error: String) {

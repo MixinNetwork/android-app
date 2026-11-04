@@ -14,6 +14,8 @@ import one.mixin.android.widget.BottomSheet
 import timber.log.Timber
 
 abstract class MixinBottomSheetDialogFragment : DialogFragment() {
+    protected open val centerOnExpandedScreen = false
+
     protected lateinit var contentView: View
     protected val stopScope = scope(Lifecycle.Event.ON_STOP)
     protected val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
@@ -23,7 +25,7 @@ abstract class MixinBottomSheetDialogFragment : DialogFragment() {
     override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun onCreateDialog(savedInstanceState: Bundle?): BottomSheet {
-        return BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = true)
+        return BottomSheet.Builder(requireActivity(), needFocus = true, softInputResize = true, centerOnExpandedScreen = centerOnExpandedScreen)
             .create()
     }
 

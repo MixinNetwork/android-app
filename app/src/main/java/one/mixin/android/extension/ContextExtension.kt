@@ -20,6 +20,7 @@ import android.content.Context.ACTIVITY_SERVICE
 import android.content.ContextWrapper
 import android.content.DialogInterface
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
 import android.content.res.Configuration
@@ -80,14 +81,15 @@ import kotlinx.coroutines.launch
 import com.google.android.gms.common.ConnectionResult
 import com.google.android.gms.common.GoogleApiAvailabilityLight
 import com.google.android.gms.common.GooglePlayServicesUtil
-import com.google.firebase.installations.FirebaseInstallations
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
+import one.mixin.android.Constants.DEVICE_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
 import one.mixin.android.db.web3.vo.Web3Chain
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.receiver.ShareBroadcastReceiver
+import one.mixin.android.session.Session
 import one.mixin.android.ui.call.CallActivity
 import one.mixin.android.util.Attachment
 import one.mixin.android.util.RomUtil
@@ -147,6 +149,13 @@ fun Context.booleanFromAttribute(attribute: Int): Boolean {
 
 fun Context.isScreenWideColorGamut(): Boolean {
     return runCatching { resources.configuration.isScreenWideColorGamut }.getOrDefault(false)
+}
+
+fun android.view.Window.enableWideColorGamutIfSupported() {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
+    if (!context.isScreenWideColorGamut()) return
+    if (colorMode == ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT) return
+    colorMode = ActivityInfo.COLOR_MODE_WIDE_COLOR_GAMUT
 }
 
 inline val Context.layoutInflater: android.view.LayoutInflater
@@ -490,12 +499,18 @@ fun Context.getUriForFile(file: File): Uri {
     return FileProvider.getUriForFile(this, authority, file)
 }
 
+fun Context.isCompactMessageWindow(): Boolean = isCompactWindow() && !isActivityEmbedded()
+
+fun Context.messageAreaWidth(): Int = if (isCompactMessageWindow()) realSize().x else contentWidth()
+
 fun Context.maxItemWidth(): Int {
-    return realSize().x * 4 / 5
+    if (isCompactMessageWindow()) return realSize().x * 4 / 5
+    return min(contentWidth() * 4 / 5, 600.dp)
 }
 
 fun Context.maxCardWidth(): Int {
-    return min(340.dp ,max(240.dp, realSize().x * 3 / 4))
+    if (isCompactMessageWindow()) return min(340.dp, max(240.dp, realSize().x * 3 / 4))
+    return min(contentWidth() * 4 / 5, min(340.dp, max(240.dp, contentWidth() * 3 / 4)))
 }
 
 // fragment
@@ -1339,20 +1354,39 @@ fun Activity.showPipPermissionNotification(
     notificationManager.notify(CallActivity.ID_PIP_PERMISSION, builder.build())
 }
 
+private const val FALLBACK_DEVICE_ID = "fallback_device_id"
+
+@Volatile
+private var fallbackDeviceId: String? = null
+
+// Old builds hashed the all-zero Android ID returned by MIUI, so many devices share this id
+private val sharedZeroDeviceId = UUID.nameUUIDFromBytes("0000000000000000".toByteArray()).toString()
+
+fun isSharedDeviceId(deviceId: String?) = deviceId == sharedZeroDeviceId
+
 @SuppressLint("HardwareIds")
 fun getStringDeviceId(resolver: ContentResolver): String {
-    var deviceId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
-    if (deviceId == null || deviceId == "9774d56d682e549c") {
-        deviceId = getFirebaseInstallationIdIfReady() ?: Build.FINGERPRINT
+    val androidId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
+    // MIUI returns all zeros when the user blocks access to the Android ID
+    if (androidId == null || androidId == "9774d56d682e549c" || androidId.all { it == '0' }) {
+        return getFallbackDeviceId()
     }
-    return UUID.nameUUIDFromBytes(deviceId.toByteArray()).toString()
+    return UUID.nameUUIDFromBytes(androidId.toByteArray()).toString()
 }
 
-private fun getFirebaseInstallationIdIfReady(): String? {
-    val task = FirebaseInstallations.getInstance().id
-    if (!task.isComplete) return null
-    task.exception?.let { Timber.w(it, "Firebase installation id unavailable for device id") }
-    return if (task.isSuccessful) task.result else null
+@Synchronized
+private fun getFallbackDeviceId(): String {
+    fallbackDeviceId?.let { return it }
+    val context = MixinApplication.appContext
+    val preferences = context.getSharedPreferences("device_identity", Context.MODE_PRIVATE)
+    val deviceId =
+        preferences.getString(FALLBACK_DEVICE_ID, null)
+            // Keep the id of an existing session so MainActivity does not treat it as another device
+            ?: (if (Session.checkToken()) context.defaultSharedPreferences.getString(DEVICE_ID, null)?.takeUnless { isSharedDeviceId(it) } else null)
+            ?: UUID.randomUUID().toString()
+    preferences.putString(FALLBACK_DEVICE_ID, deviceId)
+    fallbackDeviceId = deviceId
+    return deviceId
 }
 
 fun Context.getStringDeviceId(): String {

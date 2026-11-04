@@ -74,6 +74,9 @@ data class PerpsPosition(
     @SerializedName("updated_at")
     @ColumnInfo(name = "updated_at")
     val updatedAt: String,
+    @SerializedName("funding_amount")
+    @ColumnInfo(name = "funding_amount")
+    val fundingAmount: String? = null,
     @SerializedName("estimated_close_fee")
     @ColumnInfo(name = "estimated_close_fee", defaultValue = "''")
     val estimatedCloseFee: String? = "",

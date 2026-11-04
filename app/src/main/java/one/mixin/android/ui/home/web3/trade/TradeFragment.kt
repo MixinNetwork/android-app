@@ -1321,7 +1321,14 @@ class TradeFragment : BaseFragment() {
     }
 
     private suspend fun initFromTo() {
-        if (!inMixin()) {
+        if (inMixin()) {
+            swapViewModel.checkAndSyncTokens(
+                listOfNotNull(
+                    arguments?.getString(ARGS_INPUT),
+                    arguments?.getString(ARGS_OUTPUT),
+                ).distinct(),
+            )
+        } else {
             web3tokens = web3tokens?.filter { it.isTransferSupported() }
         }
         var swappable = web3tokens ?: tokenItems

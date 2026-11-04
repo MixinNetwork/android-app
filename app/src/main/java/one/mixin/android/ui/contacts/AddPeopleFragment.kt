@@ -8,11 +8,12 @@ import android.view.View.GONE
 import android.view.View.VISIBLE
 import androidx.fragment.app.viewModels
 import com.google.i18n.phonenumbers.PhoneNumberUtil
-import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.R
+import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentAddPeopleBinding
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.viewDestroyed
@@ -68,12 +69,12 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
             searchTv.setOnClickListener {
                 searchAnimator.displayedChild = POS_PROGRESS
                 searchTv.isEnabled = false
-                contactsViewModel.search(searchEt.text.toString()).autoDispose(stopScope).subscribe(
-                    { r ->
-                        searchAnimator.displayedChild = POS_SEARCH
-                        searchTv.isEnabled = true
-                        when {
-                            r.isSuccess ->
+                val query = searchEt.text.toString()
+                viewLifecycleOwner.launchUntilStop {
+                    try {
+                        handleMixinResponse(
+                            invokeNetwork = { contactsViewModel.search(query) },
+                            successBlock = { r ->
                                 r.data?.let { data ->
                                     if (data.userId == Session.getAccountId()) {
                                         ProfileBottomSheetDialogFragment.newInstance().showNow(
@@ -85,16 +86,21 @@ class AddPeopleFragment : BaseFragment(R.layout.fragment_add_people) {
                                         showUserBottom(parentFragmentManager, data)
                                     }
                                 }
-                            r.errorCode == ErrorHandler.NOT_FOUND -> toast(R.string.User_not_found)
-                            else -> ErrorHandler.handleMixinError(r.errorCode, r.errorDescription)
-                        }
-                    },
-                    { t: Throwable ->
+                            },
+                            failureBlock = { r ->
+                                if (r.errorCode == ErrorHandler.NOT_FOUND) {
+                                    toast(R.string.User_not_found)
+                                    true
+                                } else {
+                                    false
+                                }
+                            },
+                        )
+                    } finally {
                         searchAnimator.displayedChild = POS_SEARCH
                         searchTv.isEnabled = true
-                        ErrorHandler.handleError(t)
-                    },
-                )
+                    }
+                }
             }
         }
     }

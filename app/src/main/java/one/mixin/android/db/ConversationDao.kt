@@ -17,6 +17,11 @@ import one.mixin.android.vo.ParticipantSessionMinimal
 @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
 interface ConversationDao : BaseDao<Conversation> {
     companion object {
+        const val FILTER_CONTACTS = "c.category = 'CONTACT' AND ou.relationship = 'FRIEND' AND ou.app_id IS NULL"
+        const val FILTER_GROUPS = "c.category = 'GROUP'"
+        const val FILTER_BOTS = "c.category = 'CONTACT' AND ou.app_id IS NOT NULL"
+        const val FILTER_STRANGERS = "c.category = 'CONTACT' AND ou.relationship = 'STRANGER' AND ou.app_id IS NULL"
+
         const val PREFIX_CONVERSATION_ITEM =
             """
             SELECT c.conversation_id AS conversationId, c.icon_url AS groupIconUrl, c.category AS category,
@@ -29,7 +34,7 @@ interface ConversationDao : BaseDao<Conversation> {
             mu.full_name AS senderFullName,
             pu.full_name AS participantFullName, pu.user_id AS participantUserId,
             (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) as mentionCount,  
-            mm.mentions AS mentions, ou.membership AS membership
+            mm.mentions AS mentions, ou.membership AS membership, c.expire_in AS expireIn
             FROM conversations c
             INNER JOIN users ou ON ou.user_id = c.owner_id
             LEFT JOIN messages m ON c.last_message_id = m.id
@@ -69,9 +74,6 @@ interface ConversationDao : BaseDao<Conversation> {
         """,
     )
     suspend fun successConversationList(): List<ConversationMinimal>
-
-    @Query("SELECT DISTINCT c.conversation_id FROM conversations c WHERE c.owner_id = :recipientId and c.category = 'CONTACT'")
-    suspend fun getConversationIdIfExistsSync(recipientId: String): String?
 
     @Query("SELECT c.* FROM conversations c WHERE c.conversation_id = :conversationId")
     fun getConversationById(conversationId: String): LiveData<Conversation?>
@@ -168,8 +170,23 @@ interface ConversationDao : BaseDao<Conversation> {
     )
     fun hasUnreadMessage(circleId: String): LiveData<Int?>
 
-    @Query("SELECT * FROM conversations WHERE owner_id =:ownerId AND category = 'CONTACT'")
-    fun findContactConversationByOwnerId(ownerId: String): Conversation?
+    @Query("SELECT count(1) FROM conversations c WHERE c.category IN ('CONTACT', 'GROUP') AND c.unseen_message_count > 0")
+    fun observeUnseenCount(): LiveData<Int>
+
+    @Query("SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE $FILTER_CONTACTS AND c.unseen_message_count > 0")
+    fun observeContactsUnseenCount(): LiveData<Int>
+
+    @Query("SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE $FILTER_GROUPS AND c.unseen_message_count > 0")
+    fun observeGroupsUnseenCount(): LiveData<Int>
+
+    @Query("SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE $FILTER_BOTS AND c.unseen_message_count > 0")
+    fun observeBotsUnseenCount(): LiveData<Int>
+
+    @Query("SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE $FILTER_STRANGERS AND c.unseen_message_count > 0")
+    fun observeStrangersUnseenCount(): LiveData<Int>
+
+    @Query("SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE c.category IS NOT NULL AND c.unseen_message_count > 0 AND c.conversation_id IN (SELECT conversation_id FROM circle_conversations WHERE circle_id = :circleId)")
+    fun observeCircleUnseenCount(circleId: String): LiveData<Int>
 
     // Update SQL
     @Query("UPDATE conversations SET code_url = :codeUrl WHERE conversation_id = :conversationId")

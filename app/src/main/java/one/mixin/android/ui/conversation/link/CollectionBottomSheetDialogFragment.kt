@@ -15,7 +15,6 @@ import one.mixin.android.api.response.PaymentStatus
 import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
@@ -26,6 +25,7 @@ import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.bottomSheetHeight
 
 @AndroidEntryPoint
 class CollectionBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -154,7 +154,7 @@ class CollectionBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     override fun showError(error: String) {

@@ -1,5 +1,6 @@
 package one.mixin.android.web3.details
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -48,6 +49,7 @@ fun AssetChangeItem(
     isUnlimited: Boolean = false,
     isApproval: Boolean = false,
     status: String? = null,
+    onClick: (() -> Unit)? = null,
 ) {
     val amountValue = if (isUnlimited) {
         stringResource(R.string.unlimited).replaceFirstChar { it.uppercase() }
@@ -80,6 +82,7 @@ fun AssetChangeItem(
         horizontalArrangement = Arrangement.SpaceBetween,
     ) {
         Row(
+            modifier = if (onClick == null) Modifier else Modifier.clickable(onClick = onClick),
             verticalAlignment = Alignment.CenterVertically,
         ) {
             CoilImage(
@@ -120,6 +123,7 @@ fun AssetChangesList(
     fetchToken: suspend (String) -> Web3TokenItem?,
     approvals: List<AssetChange>? = null,
     status: String,
+    onTokenClick: (Web3TokenItem) -> Unit = {},
 ) {
     val scope = rememberCoroutineScope()
     val assetIds = remember(senders, receivers, approvals) {
@@ -155,6 +159,7 @@ fun AssetChangesList(
                     isReceive = false,
                     isUnlimited = approval.type == "unlimited",
                     isApproval = true,
+                    onClick = token?.let { clicked -> { onTokenClick(clicked) } },
                 )
                 if (index < approvals.size - 1) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -173,7 +178,8 @@ fun AssetChangesList(
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
                     fiatValue = receiver.amount.toFiatValue(token),
-                    isReceive = true
+                    isReceive = true,
+                    onClick = token?.let { clicked -> { onTokenClick(clicked) } },
                 )
                 if (index < receivers.size - 1) {
                     Spacer(modifier = Modifier.height(4.dp))
@@ -192,7 +198,8 @@ fun AssetChangesList(
                     symbol = token?.symbol ?: "",
                     iconUrl = token?.iconUrl,
                     fiatValue = sender.amount.toFiatValue(token),
-                    isReceive = false
+                    isReceive = false,
+                    onClick = token?.let { clicked -> { onTokenClick(clicked) } },
                 )
                 if (index < senders.size - 1) {
                     Spacer(modifier = Modifier.height(4.dp))

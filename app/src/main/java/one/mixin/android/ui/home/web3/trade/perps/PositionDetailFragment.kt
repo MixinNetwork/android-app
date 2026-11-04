@@ -18,6 +18,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import one.mixin.android.Constants
+import one.mixin.android.R
 import one.mixin.android.api.response.perps.PerpsOrder
 import one.mixin.android.api.response.perps.PerpsOrderItem
 import one.mixin.android.api.response.perps.PerpsPosition
@@ -205,6 +206,12 @@ class PositionDetailFragment : BaseFragment() {
                                 },
                                 onFeeTipClick = {
                                     showTradingFeeGuide()
+                                },
+                                onMarginTipClick = {
+                                    PerpsInfoBottomSheetDialogFragment.newInstance(
+                                        R.string.Margin,
+                                        R.string.perps_margin_description,
+                                    ).show(parentFragmentManager, PerpsInfoBottomSheetDialogFragment.TAG)
                                 },
                                 onSupport = {
                                     context?.openUrl(

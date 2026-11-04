@@ -5,9 +5,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -542,9 +539,7 @@ class Web3ViewModel @Inject constructor(
             return@withContext rpc.isBlockhashValid(blockhash) ?: false
         }
 
-    fun update(request: AccountUpdateRequest): Observable<MixinResponse<Account>> =
-        accountRepository.update(request).subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
+    suspend fun update(request: AccountUpdateRequest): MixinResponse<Account> = accountRepository.update(request)
 
     fun insertUser(user: User) =
         viewModelScope.launch(Dispatchers.IO) {
@@ -659,6 +654,9 @@ class Web3ViewModel @Inject constructor(
     fun getPendingTransactionCount(walletId: String): LiveData<Int> = tokenRepository.getPendingTransactionCount(walletId)
 
     suspend fun transaction(hash: String, chainId: String) = tokenRepository.transaction(hash, chainId)
+
+    suspend fun refreshWeb3Transaction(address: String, hash: String, chainId: String) =
+        tokenRepository.refreshWeb3Transaction(address, hash, chainId)
 
     suspend fun replaceGaslessPendingTransactionHash(
         walletId: String,

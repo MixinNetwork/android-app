@@ -16,12 +16,14 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import one.mixin.android.Constants
 import one.mixin.android.R
+import one.mixin.android.RxBus
 import one.mixin.android.databinding.FragmentLogDebugBinding
 import one.mixin.android.databinding.ViewCaptchaPreviewBottomBinding
 import one.mixin.android.db.DatabaseMonitor
 import one.mixin.android.db.property.PropertyHelper.deleteKeyValue
 import one.mixin.android.db.property.PropertyHelper.findValueByKey
 import one.mixin.android.db.property.PropertyHelper.updateKeyValue
+import one.mixin.android.event.BadgeEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.indeterminateProgressDialog
@@ -33,6 +35,7 @@ import one.mixin.android.job.MixinJobManager
 import one.mixin.android.job.RefreshWeb3TransactionsJob
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.BaseFragment
+import one.mixin.android.ui.home.ExploreFragment.Companion.PREF_BOT_CLICKED_IDS
 import one.mixin.android.ui.home.reminder.RecoveryReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.ReminderBottomSheetDialogFragment
 import one.mixin.android.ui.home.reminder.VerifyMobileReminderBottomSheetDialogFragment
@@ -150,6 +153,12 @@ class LogAndDebugFragment : BaseFragment(R.layout.fragment_log_debug) {
                 resetTpslGuide.setOnClickListener {
                     resetHiddenDebugSharedPreferences()
                     toast(R.string.Reset_TpSl_Guide)
+                }
+
+                resetMoreBadges.setOnClickListener {
+                    defaultSharedPreferences.edit().remove(PREF_BOT_CLICKED_IDS).apply()
+                    RxBus.publish(BadgeEvent(PREF_BOT_CLICKED_IDS))
+                    toast(R.string.Reset_More_Badges)
                 }
 
                 resetWalletHomeBanners.setOnClickListener {

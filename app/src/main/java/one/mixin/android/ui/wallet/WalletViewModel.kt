@@ -52,6 +52,7 @@ import one.mixin.android.repository.TokenRepository
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.repository.Web3Repository
 import one.mixin.android.tip.TipBody
+import one.mixin.android.tip.wc.SortOrder
 import one.mixin.android.ui.home.web3.widget.MarketSort
 import one.mixin.android.ui.oldwallet.AssetRepository
 import one.mixin.android.util.SINGLE_DB_THREAD
@@ -111,6 +112,8 @@ internal constructor(
         tokenRepository.walletHomeAssetItemsNotHiddenLimit(limit)
 
     fun walletHomeTokenSummary() = tokenRepository.walletHomeTokenSummary()
+
+    fun collectibles() = tokenRepository.collectibles(SortOrder.Recent)
 
     suspend fun cashAccount(): MixinResponse<CashAccount> =
         withContext(Dispatchers.IO) {

@@ -214,3 +214,13 @@ internal fun formatPerpsReductionSize(
     }
     return "$currentText → $remainingText ($value)"
 }
+
+internal fun liquidationDistancePercent(liquidationPrice: String?, markPrice: String?): String? {
+    val liquidation = liquidationPrice?.toBigDecimalOrNull() ?: return null
+    val mark = markPrice?.toBigDecimalOrNull() ?: return null
+    if (liquidation <= BigDecimal.ZERO || mark <= BigDecimal.ZERO) return null
+    return liquidation.subtract(mark).abs()
+        .multiply(BigDecimal(100))
+        .divide(mark, 2, RoundingMode.HALF_UP)
+        .toPlainString() + "%"
+}

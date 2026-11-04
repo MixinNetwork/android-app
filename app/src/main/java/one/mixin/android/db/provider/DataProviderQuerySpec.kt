@@ -136,7 +136,7 @@ private const val OBSERVE_CONVERSATIONS_BY_CIRCLE_PREFIX_SQL =
     mu.full_name AS senderFullName,
     pu.full_name AS participantFullName, pu.user_id AS participantUserId,
     (SELECT count(1) FROM message_mentions me WHERE me.conversation_id = c.conversation_id AND me.has_read = 0) AS mentionCount,
-    mm.mentions AS mentions, ou.membership AS membership
+    mm.mentions AS mentions, ou.membership AS membership, c.expire_in AS expireIn
     FROM circle_conversations cc
     INNER JOIN conversations c ON cc.conversation_id = c.conversation_id
     INNER JOIN circles ci ON ci.circle_id = cc.circle_id
@@ -224,6 +224,18 @@ interface DataProviderQuerySpec {
         converter = "convertToConversationItems",
     )
     fun observeConversations(database: MixinDatabase): PagingSource<Int, ConversationItem>
+
+    @GeneratedLimitOffsetPagingSourceQuery(
+        countSql = "SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE {{predicate}}",
+        offsetSql = "SELECT c.rowid FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE {{predicate}} ORDER BY c.pin_time DESC, c.last_message_created_at DESC LIMIT ? OFFSET ?",
+        querySql = OBSERVE_CONVERSATIONS_QUERY_SQL,
+        tables = ["message_mentions", "conversations", "users"],
+        converter = "convertToConversationItems",
+    )
+    fun observeConversationsByCategory(
+        predicate: String,
+        database: MixinDatabase,
+    ): PagingSource<Int, ConversationItem>
 
     @GeneratedLimitOffsetPagingSourceQuery(
         countSql = OBSERVE_CONVERSATIONS_BY_CIRCLE_COUNT_SQL,

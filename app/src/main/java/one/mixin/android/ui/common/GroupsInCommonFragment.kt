@@ -86,7 +86,7 @@ class GroupHolder(val binding: ItemGroupsInCommonBinding) : RecyclerView.ViewHol
     ) {
         binding.apply {
             icon.setGroup(item.groupIconUrl)
-            name.text = item.groupName
+            name.setGroupName(item.groupName)
             memberCount.text = root.context.resources.getQuantityString(R.plurals.title_participants, item.memberCount, item.memberCount)
             root.setOnClickListener { onItemClick(item) }
         }

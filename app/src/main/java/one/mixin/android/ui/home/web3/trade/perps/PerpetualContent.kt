@@ -607,7 +607,6 @@ fun PerpetualContent(
                 shape = RoundedCornerShape(24.dp),
                 backgroundColor = fallingColor,
                 contentColor = Color.White,
-                enabled = markets.isNotEmpty(),
             ) {
                 Text(
                     fontSize = 16.sp,

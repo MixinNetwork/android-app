@@ -199,6 +199,18 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                     }
                 }
                 transactionsRv.listener = this@Web3TransactionsFragment
+                transactionsRv.onTokenClick = { transaction ->
+                    val target = transaction.tokenNavigationTarget()
+                    if (target != null && target.assetId != token.assetId) {
+                        lifecycleScope.launch {
+                            openWeb3AssetTransactions(
+                                web3ViewModel = web3ViewModel,
+                                walletId = token.walletId,
+                                assetId = target.assetId,
+                            )
+                        }
+                    }
+                }
                 bottomCard.post {
                     bottomCard.isVisible = true
                     val remainingHeight =
@@ -601,7 +613,7 @@ class Web3TransactionsFragment : BaseFragment(R.layout.fragment_web3_transaction
                 putParcelable(ARGS_TOKEN, token)
                 putParcelable(Web3TransactionFragment.ARGS_WALLET, wallet?.toWeb3Wallet())
             }
-            findNavController().navigate(
+            findNavController().navigateToWeb3Transaction(
                 R.id.action_web3_transactions_to_web3_transaction,
                 bundle
             )

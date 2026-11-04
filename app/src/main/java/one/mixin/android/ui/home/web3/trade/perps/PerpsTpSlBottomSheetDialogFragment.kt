@@ -84,11 +84,11 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -99,6 +99,8 @@ private const val PREF_TPSL_INPUT_TYPE = "pref_perps_tpsl_input_type"
 
 @AndroidEntryPoint
 class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     enum class Mode { TAKE_PROFIT, STOP_LOSS }
 
@@ -216,7 +218,7 @@ class PerpsTpSlBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     @Composable
@@ -322,25 +324,6 @@ private fun PerpsTpSlContent(
             feeReferencePrice = feeReferencePrice,
         )
     }
-    val conversionBasis = remember(
-        entryPrice,
-        latestCurrentPrice,
-        marginAmount,
-        positionQuantity,
-        leverage,
-        estimatedCloseFee,
-        feeReferencePrice,
-    ) {
-        resolveTpSlConversionBasis(
-            entryPrice = entryPrice,
-            currentPrice = latestCurrentPrice,
-            marginAmount = marginAmount,
-            positionQuantity = positionQuantity,
-            leverage = leverage,
-            estimatedCloseFee = estimatedCloseFee,
-            feeReferencePrice = feeReferencePrice,
-        )
-    }
     val liquidationBound = remember(liquidationPrice, entryPrice, latestCurrentPrice, leverage, isLong) {
         resolveTpSlLiquidationBound(
             serverLiquidationPrice = liquidationPrice,
@@ -350,13 +333,21 @@ private fun PerpsTpSlContent(
             isLong = isLong,
         )
     }
-    val hasEntryPrice = entryPriceValue != null
     val storedInputType = remember(preferences) {
         preferences.getString(PREF_TPSL_INPUT_TYPE, null)
             ?.let { stored -> InputType.values().firstOrNull { it.name == stored } }
     }
     val normalizedInitialPrice = remember(initialPrice, safePriceScale) {
         normalizePriceInput(initialPrice, safePriceScale)
+    }
+    val isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT
+    var isProfitPnl by rememberSaveable(initialPrice, mode.name) {
+        mutableStateOf(
+            normalizedInitialPrice.toBigDecimalOrNull()
+                ?.let { pnlBasis?.pnlAt(it, isLong)?.signedPnl }
+                ?.let { it >= BigDecimal.ZERO }
+                ?: isTakeProfit
+        )
     }
     val defaultInputType = remember(initialPrice, storedInputType) {
         storedInputType ?: if (initialPrice.isBlank()) InputType.PNL else InputType.PRICE
@@ -373,32 +364,43 @@ private fun PerpsTpSlContent(
                 normalizePercentInput(
                     derivePercentMagnitudeInput(
                         priceInput = normalizedInitialPrice,
-                        calculationBasis = conversionBasis,
+                        calculationBasis = pnlBasis,
                         isLong = isLong,
-                        mode = mode,
                     )
                 )
             )
         )
     }
 
-    val priceInput = priceFieldValue.text
     val percentMagnitudeInput = percentFieldValue.text
-    val isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT
+    val priceInput = if (inputType == InputType.PNL) {
+        percentToPriceInput(
+            percentMagnitudeInput = percentMagnitudeInput,
+            calculationBasis = pnlBasis,
+            isLong = isLong,
+            isProfit = isProfitPnl,
+            priceScale = safePriceScale,
+        )
+    } else {
+        priceFieldValue.text
+    }
     val priceErrorText = validateTpSlPrice(
         rawValue = priceInput,
         currentPrice = validationCurrentPrice,
         liquidationBound = liquidationBound,
         isLong = isLong,
         isTakeProfit = isTakeProfit,
+        calculationBasis = pnlBasis,
+        priceScale = safePriceScale,
     )
     val percentErrorText = validateTpSlPercent(
         rawValue = percentMagnitudeInput,
         currentPrice = validationCurrentPrice,
-        calculationBasis = conversionBasis,
+        calculationBasis = pnlBasis,
         liquidationBound = liquidationBound,
         isLong = isLong,
         mode = mode,
+        isProfit = isProfitPnl,
         priceScale = safePriceScale,
     )
     val errorText = if (inputType == InputType.PNL) percentErrorText else priceErrorText
@@ -468,21 +470,19 @@ private fun PerpsTpSlContent(
         mutableStateOf(System.currentTimeMillis() >= preferences.getTpSlGuideHideUntil(guideType))
     }
 
-    LaunchedEffect(latestCurrentPrice, inputType, hasEntryPrice, percentMagnitudeInput, conversionBasis, isLong, mode) {
-        if (hasEntryPrice || inputType != InputType.PNL) return@LaunchedEffect
-        val recalculatedPrice = percentToPriceInput(
-            percentMagnitudeInput = percentMagnitudeInput,
-            calculationBasis = conversionBasis,
-            isLong = isLong,
-            mode = mode,
-            priceScale = safePriceScale,
-        )
-        if (priceFieldValue.text != recalculatedPrice) {
-            priceFieldValue = textFieldValueAtEnd(recalculatedPrice)
-        }
-    }
-
     fun selectInputType(newType: InputType) {
+        if (newType == inputType) return
+        if (newType == InputType.PRICE) {
+            priceFieldValue = textFieldValueAtEnd(priceInput)
+        } else {
+            percentFieldValue = textFieldValueAtEnd(
+                normalizePercentInput(derivePercentMagnitudeInput(priceInput, pnlBasis, isLong))
+            )
+            isProfitPnl = priceInput.toBigDecimalOrNull()
+                ?.let { pnlBasis?.pnlAt(it, isLong)?.signedPnl }
+                ?.let { it >= BigDecimal.ZERO }
+                ?: isTakeProfit
+        }
         inputType = newType
         preferences.putString(PREF_TPSL_INPUT_TYPE, newType.name)
     }
@@ -604,6 +604,7 @@ private fun PerpsTpSlContent(
                             modifier = Modifier.clickable {
                                 percentFieldValue = textFieldValueAtEnd("")
                                 priceFieldValue = textFieldValueAtEnd("")
+                                isProfitPnl = isTakeProfit
                             },
                         )
                     }
@@ -623,6 +624,7 @@ private fun PerpsTpSlContent(
                     TpSlInputField(
                         inputType = inputType,
                         mode = mode,
+                        isProfit = isProfitPnl,
                         percentFieldValue = percentFieldValue,
                         priceFieldValue = priceFieldValue,
                         focusRequester = inputFocusRequester,
@@ -635,9 +637,9 @@ private fun PerpsTpSlContent(
                             priceFieldValue = textFieldValueAtEnd(
                                 percentToPriceInput(
                                     percentMagnitudeInput = normalized,
-                                    calculationBasis = conversionBasis,
+                                    calculationBasis = pnlBasis,
                                     isLong = isLong,
-                                    mode = mode,
+                                    isProfit = isProfitPnl,
                                     priceScale = safePriceScale,
                                 )
                             )
@@ -652,12 +654,15 @@ private fun PerpsTpSlContent(
                                 normalizePercentInput(
                                     derivePercentMagnitudeInput(
                                         priceInput = normalized,
-                                        calculationBasis = conversionBasis,
+                                        calculationBasis = pnlBasis,
                                         isLong = isLong,
-                                        mode = mode,
                                     )
                                 )
                             )
+                            isProfitPnl = normalized.toBigDecimalOrNull()
+                                ?.let { pnlBasis?.pnlAt(it, isLong)?.signedPnl }
+                                ?.let { it >= BigDecimal.ZERO }
+                                ?: isTakeProfit
                         },
                         priceScale = safePriceScale,
                     )
@@ -675,15 +680,16 @@ private fun PerpsTpSlContent(
                         TpSlQuickChip(
                             modifier = Modifier.wrapContentSize(),
                             text = "${if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) "+" else "-"}$option%",
-                            selected = activePercentText == option,
+                            selected = activePercentText == option && isProfitPnl == isTakeProfit,
                             onClick = {
+                                isProfitPnl = isTakeProfit
                                 percentFieldValue = textFieldValueAtEnd(option)
                                 priceFieldValue = textFieldValueAtEnd(
                                     percentToPriceInput(
                                         percentMagnitudeInput = option,
-                                        calculationBasis = conversionBasis,
+                                        calculationBasis = pnlBasis,
                                         isLong = isLong,
-                                        mode = mode,
+                                        isProfit = isProfitPnl,
                                         priceScale = safePriceScale,
                                     )
                                 )
@@ -694,62 +700,32 @@ private fun PerpsTpSlContent(
 
                 Spacer(modifier = Modifier.height(10.dp))
 
-                val pnlPreview = calculateTpSlPnlPreview(
-                    priceInput = priceInput,
-                    calculationBasis = pnlBasis,
-                    isLong = isLong,
-                    mode = mode,
-                )
+                val pnlPreview = priceInput.toBigDecimalOrNull()?.let { pnlBasis?.pnlAt(it, isLong) }
                 val quoteColorReversed = context.defaultSharedPreferences
                     .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
                 val profitColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
                 val lossColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
                 if (errorText == null && pnlPreview != null) {
-                    val pnlAmountText = formatTpSlPnlAmount(pnlPreview.amount)
-                    if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
-                        val profitAmountText = if (pnlAmountText.startsWith("<")) {
-                            pnlAmountText
-                        } else {
-                            "+$pnlAmountText"
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                        ) {
-                            Text(
-                                text = "${stringResource(R.string.Max_Profit, "").trimEnd()} ",
-                                fontSize = 13.sp,
-                                color = MixinAppTheme.colors.textAssist,
-                            )
-                            Text(
-                                text = "$profitAmountText (${formatPerpsSignedPercent(pnlPreview.percent, withSign = false)})",
-                                fontSize = 13.sp,
-                                color = profitColor,
-                            )
-                        }
-                    } else {
-                        val lossAmountText = if (pnlAmountText.startsWith("<")) {
-                            pnlAmountText
-                        } else {
-                            "-$pnlAmountText"
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 16.dp),
-                        ) {
-                            Text(
-                                text = "${stringResource(R.string.Max_Loss, "").trimEnd()} ",
-                                fontSize = 13.sp,
-                                color = MixinAppTheme.colors.textAssist,
-                            )
-                            Text(
-                                text = lossAmountText,
-                                fontSize = 13.sp,
-                                color = lossColor,
-                            )
-                        }
+                    val pnlText = "${formatPerpsSignedRawUsdDecimal(pnlPreview.signedPnl)} (${formatPerpsSignedPercent(pnlPreview.signedRoiPercent, withSign = false)})"
+                    val estimateText = stringResource(R.string.perps_estimated_profit, pnlText)
+                    val pnlColor = when {
+                        pnlPreview.signedPnl > BigDecimal.ZERO -> profitColor
+                        pnlPreview.signedPnl < BigDecimal.ZERO -> lossColor
+                        else -> MixinAppTheme.colors.textAssist
                     }
+                    Text(
+                        text = buildAnnotatedString {
+                            append(estimateText)
+                            val valueStart = estimateText.indexOf(pnlText)
+                            if (valueStart >= 0) {
+                                addStyle(SpanStyle(color = pnlColor), valueStart, valueStart + pnlText.length)
+                            }
+                        },
+                        fontSize = 13.sp,
+                        color = MixinAppTheme.colors.textAssist,
+                        modifier = Modifier.padding(horizontal = 16.dp),
+                    )
                 } else {
                     Text(
                         text = stringResource(R.string.auto_close_description),
@@ -826,16 +802,7 @@ private fun PerpsTpSlContent(
             MixinButton(
                 onClick = {
                     if (errorText == null) {
-                        val value = when (inputType) {
-                            InputType.PNL -> percentToPriceInput(
-                                percentMagnitudeInput = percentMagnitudeInput.trim(),
-                                calculationBasis = conversionBasis,
-                                isLong = isLong,
-                                mode = mode,
-                                priceScale = safePriceScale,
-                            )
-                            InputType.PRICE -> normalizePriceInput(priceInput.trim(), safePriceScale)
-                        }.takeIf { it.isNotEmpty() }
+                        val value = priceInput.trim().takeIf { it.isNotEmpty() }
                         onApply(value)
                     }
                 },
@@ -931,6 +898,7 @@ private fun TpSlQuickChip(
 private fun TpSlInputField(
     inputType: InputType,
     mode: PerpsTpSlBottomSheetDialogFragment.Mode,
+    isProfit: Boolean = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
     percentFieldValue: TextFieldValue,
     priceFieldValue: TextFieldValue,
     onPercentFieldValueChange: (TextFieldValue) -> Unit,
@@ -952,7 +920,7 @@ private fun TpSlInputField(
             ) {
                 if (percentFieldValue.text.isNotBlank()) {
                     Text(
-                        text = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) "+" else "-",
+                        text = if (isProfit) "+" else "-",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.W600,
                         color = MixinAppTheme.colors.textPrimary,
@@ -1130,44 +1098,11 @@ private fun normalizePercentInput(value: String): String {
     }
 }
 
-private fun formatTpSlPnlAmount(value: BigDecimal): String {
-    val absValue = value.abs()
-    return if (absValue > BigDecimal.ZERO && absValue <= BigDecimal("0.01")) {
-        "<$PERPS_USD_SYMBOL" + "0.01"
-    } else {
-        formatPerpsRawUsdDecimal(absValue)
-    }
-}
-
-private data class TpSlPnlPreview(
-    val percent: BigDecimal,
-    val amount: BigDecimal,
-)
-
-private fun calculateTpSlPnlPreview(
-    priceInput: String,
-    calculationBasis: TpSlCalculationBasis?,
-    isLong: Boolean,
-    mode: PerpsTpSlBottomSheetDialogFragment.Mode,
-): TpSlPnlPreview? {
-    val basis = calculationBasis ?: return null
-    val targetPrice = priceInput.toBigDecimalOrNull() ?: return null
-    val result = basis.pnlAt(targetPrice, isLong) ?: return null
-    if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT && result.signedPnl <= BigDecimal.ZERO) return null
-    if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS && result.signedPnl >= BigDecimal.ZERO) return null
-    if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.STOP_LOSS && result.signedPnl.abs() > basis.margin) return null
-
-    return TpSlPnlPreview(
-        percent = result.signedRoiPercent.abs(),
-        amount = result.signedPnl.abs(),
-    )
-}
-
 private fun percentToPriceInput(
     percentMagnitudeInput: String,
     calculationBasis: TpSlCalculationBasis?,
     isLong: Boolean,
-    mode: PerpsTpSlBottomSheetDialogFragment.Mode,
+    isProfit: Boolean,
     priceScale: Int,
 ): String {
     val basis = calculationBasis ?: return ""
@@ -1175,7 +1110,7 @@ private fun percentToPriceInput(
         basis = basis,
         percentMagnitudeInput = percentMagnitudeInput,
         isLong = isLong,
-        isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
+        isTakeProfit = isProfit,
         priceScale = priceScale,
     )
 }
@@ -1184,17 +1119,10 @@ private fun derivePercentMagnitudeInput(
     priceInput: String,
     calculationBasis: TpSlCalculationBasis?,
     isLong: Boolean,
-    mode: PerpsTpSlBottomSheetDialogFragment.Mode,
 ): String {
     val basis = calculationBasis ?: return ""
     val targetPrice = priceInput.toBigDecimalOrNull() ?: return ""
     val result = basis.pnlAt(targetPrice, isLong) ?: return ""
-    val correctDirection = if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
-        result.signedPnl > BigDecimal.ZERO
-    } else {
-        result.signedPnl < BigDecimal.ZERO
-    }
-    if (!correctDirection) return ""
     return result.signedRoiPercent.abs().setScale(2, RoundingMode.HALF_UP).stripTrailingZeros().toPlainString()
 }
 
@@ -1204,6 +1132,8 @@ internal fun validateTpSlPrice(
     liquidationBound: BigDecimal?,
     isLong: Boolean,
     isTakeProfit: Boolean,
+    calculationBasis: TpSlCalculationBasis?,
+    priceScale: Int,
 ): String? {
     val trimmed = rawValue.trim()
     if (trimmed.isEmpty()) {
@@ -1217,12 +1147,14 @@ internal fun validateTpSlPrice(
     if (currentPrice <= BigDecimal.ZERO) {
         return null
     }
+    val takeProfitBound = (calculationBasis?.takeProfitPriceBound(currentPrice, isLong) ?: currentPrice)
+        .setScale(priceScale.coerceAtLeast(0), if (isLong) RoundingMode.DOWN else RoundingMode.UP)
     return when {
         isLong && isTakeProfit -> {
-            if (price <= currentPrice) {
+            if (price <= takeProfitBound) {
                 MixinApplicationHolder.getString(
                     R.string.the_price_must_higher_than,
-                    "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
+                    "$PERPS_USD_SYMBOL${takeProfitBound.stripTrailingZeros().toPlainString()}",
                 )
             } else null
         }
@@ -1241,9 +1173,9 @@ internal fun validateTpSlPrice(
         }
         !isLong && isTakeProfit -> {
             when {
-                price >= currentPrice -> MixinApplicationHolder.getString(
+                price >= takeProfitBound -> MixinApplicationHolder.getString(
                     R.string.the_price_must_lower_than,
-                    "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
+                    "$PERPS_USD_SYMBOL${takeProfitBound.stripTrailingZeros().toPlainString()}",
                 )
                 else -> null
             }
@@ -1272,6 +1204,7 @@ private fun validateTpSlPercent(
     liquidationBound: BigDecimal?,
     isLong: Boolean,
     mode: PerpsTpSlBottomSheetDialogFragment.Mode,
+    isProfit: Boolean,
     priceScale: Int,
 ): String? {
     val trimmed = rawValue.trim()
@@ -1288,7 +1221,7 @@ private fun validateTpSlPercent(
         percentMagnitudeInput = trimmed,
         calculationBasis = basis,
         isLong = isLong,
-        mode = mode,
+        isProfit = isProfit,
         priceScale = priceScale,
     )
     if (derivedPrice.isBlank()) {
@@ -1303,6 +1236,8 @@ private fun validateTpSlPercent(
         liquidationBound = liquidationBound,
         isLong = isLong,
         isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
+        calculationBasis = basis,
+        priceScale = priceScale,
     )
 }
 

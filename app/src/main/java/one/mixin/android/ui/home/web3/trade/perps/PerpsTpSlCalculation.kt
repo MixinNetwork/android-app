@@ -19,11 +19,28 @@ internal data class TpSlCalculationBasis(
         val signedPnl = pricePnl
             .subtract(entryPrice.multiply(absoluteQuantity).multiply(feeRate))
             .subtract(targetPrice.multiply(absoluteQuantity).multiply(feeRate))
-        if (signedPnl.compareTo(BigDecimal.ZERO) == 0) return null
         val signedRoiPercent = signedPnl
             .multiply(BigDecimal(100))
             .divide(margin, TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
         return TpSlPnlResult(signedPnl = signedPnl, signedRoiPercent = signedRoiPercent)
+    }
+
+    fun priceAtPnl(netPnl: BigDecimal, isLong: Boolean): BigDecimal? {
+        val denominator = absoluteQuantity.multiply(
+            if (isLong) BigDecimal.ONE.subtract(feeRate) else BigDecimal.ONE.add(feeRate)
+        )
+        if (denominator.signum() <= 0) return null
+        val numerator = if (isLong) {
+            netPnl.add(absoluteQuantity.multiply(entryPrice).multiply(BigDecimal.ONE.add(feeRate)))
+        } else {
+            absoluteQuantity.multiply(entryPrice).multiply(BigDecimal.ONE.subtract(feeRate)).subtract(netPnl)
+        }
+        return numerator.divide(denominator, TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
+    }
+
+    fun takeProfitPriceBound(currentPrice: BigDecimal, isLong: Boolean): BigDecimal? {
+        val breakEvenPrice = priceAtPnl(BigDecimal.ZERO, isLong) ?: return null
+        return if (isLong) currentPrice.max(breakEvenPrice) else currentPrice.min(breakEvenPrice)
     }
 
     fun zeroPriceRoiPercentCeiling(isLong: Boolean): BigDecimal {
@@ -39,26 +56,6 @@ internal data class TpSlCalculationBasis(
 internal data class TpSlPnlResult(
     val signedPnl: BigDecimal,
     val signedRoiPercent: BigDecimal,
-)
-
-internal fun resolveTpSlConversionBasis(
-    entryPrice: String,
-    currentPrice: String,
-    marginAmount: String,
-    positionQuantity: String?,
-    leverage: Int,
-    estimatedCloseFee: String? = null,
-    feeReferencePrice: String? = null,
-): TpSlCalculationBasis? = resolveTpSlCalculationBasis(
-    entryPrice = entryPrice,
-    currentPrice = currentPrice,
-    marginAmount = if (positionQuantity == null &&
-        (marginAmount.isBlank() || marginAmount.toBigDecimalOrNull()?.signum() == 0)
-    ) "1" else marginAmount,
-    positionQuantity = positionQuantity,
-    leverage = leverage,
-    estimatedCloseFee = estimatedCloseFee,
-    feeReferencePrice = feeReferencePrice,
 )
 
 internal fun resolveTpSlCalculationBasis(
@@ -124,20 +121,17 @@ internal fun targetPriceForRoiPercent(
         .divide(BigDecimal(100), TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
         .let { if (isTakeProfit) it else it.negate() }
     val netPnl = signedRoi.multiply(basis.margin)
-    val quantity = basis.absoluteQuantity
-    val entry = basis.entryPrice
-    val feeRate = basis.feeRate
-    val targetPrice = if (isLong) {
-        val denominator = BigDecimal.ONE.subtract(feeRate)
-        if (denominator.signum() <= 0) return ""
-        netPnl.add(quantity.multiply(entry).multiply(BigDecimal.ONE.add(feeRate)))
-            .divide(quantity.multiply(denominator), TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
-    } else {
-        quantity.multiply(entry).multiply(BigDecimal.ONE.subtract(feeRate)).subtract(netPnl)
-            .divide(quantity.multiply(BigDecimal.ONE.add(feeRate)), TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
-    }
+    val targetPrice = basis.priceAtPnl(netPnl, isLong) ?: return ""
     if (targetPrice <= BigDecimal.ZERO) return ""
-    return formatPerpsPriceInput(targetPrice, priceScale)
+    val safeScale = priceScale.coerceAtLeast(0)
+    var roundedPrice = targetPrice.setScale(safeScale, RoundingMode.HALF_UP)
+    if (roundedPrice <= BigDecimal.ZERO) return ""
+    if (isTakeProfit && basis.pnlAt(roundedPrice, isLong)?.signedPnl?.signum() != 1) {
+        val tick = BigDecimal.ONE.movePointLeft(safeScale)
+        roundedPrice = if (isLong) roundedPrice.add(tick) else roundedPrice.subtract(tick)
+    }
+    if (roundedPrice <= BigDecimal.ZERO) return ""
+    return formatPerpsPriceInput(roundedPrice, safeScale)
 }
 
 internal fun resolveTpSlLiquidationBound(
