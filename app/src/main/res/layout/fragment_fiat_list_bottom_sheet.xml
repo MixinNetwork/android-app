@@ -8,6 +8,7 @@
 
     <View
         android:id="@+id/ph"
+        android:tag="landscape_sheet_placeholder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#22000000" />
