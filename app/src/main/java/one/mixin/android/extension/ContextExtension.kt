@@ -1356,6 +1356,11 @@ private const val FALLBACK_DEVICE_ID = "fallback_device_id"
 @Volatile
 private var fallbackDeviceId: String? = null
 
+// Old builds hashed the all-zero Android ID returned by MIUI, so many devices share this id
+private val sharedZeroDeviceId = UUID.nameUUIDFromBytes("0000000000000000".toByteArray()).toString()
+
+fun isSharedDeviceId(deviceId: String?) = deviceId == sharedZeroDeviceId
+
 @SuppressLint("HardwareIds")
 fun getStringDeviceId(resolver: ContentResolver): String {
     val androidId = Settings.Secure.getString(resolver, Settings.Secure.ANDROID_ID)
@@ -1374,7 +1379,7 @@ private fun getFallbackDeviceId(): String {
     val deviceId =
         preferences.getString(FALLBACK_DEVICE_ID, null)
             // Keep the id of an existing session so MainActivity does not treat it as another device
-            ?: (if (Session.checkToken()) context.defaultSharedPreferences.getString(DEVICE_ID, null) else null)
+            ?: (if (Session.checkToken()) context.defaultSharedPreferences.getString(DEVICE_ID, null)?.takeUnless { isSharedDeviceId(it) } else null)
             ?: UUID.randomUUID().toString()
     preferences.putString(FALLBACK_DEVICE_ID, deviceId)
     fallbackDeviceId = deviceId
