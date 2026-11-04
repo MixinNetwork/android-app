@@ -26,7 +26,6 @@ import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -72,12 +71,13 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
     override val centerOnExpandedScreen = true
 
     private val viewModel by viewModels<AddressViewModel>()
+    private val walletId by lazy { arguments?.getString(WalletActivity.ARGS_WALLET_ID) }
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
     override fun onViewCreated(view: View, savedInstanceState: android.os.Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        viewModel.refreshAddressBook()
+        viewModel.refreshAddressBook(walletId)
     }
 
     override fun getBottomSheetHeight(view: View): Int =
@@ -90,17 +90,27 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         MixinAppTheme {
             val addressFlow = remember { viewModel.allAddressesFlow() }
             val addresses by addressFlow.collectAsStateWithLifecycle(initialValue = null)
-            var chains by remember { mutableStateOf<List<Chain>>(emptyList()) }
+            val addressBookState by viewModel.addressBookState.collectAsStateWithLifecycle()
+            val chains = addressBookState?.chains.orEmpty()
+            // Common wallets only show the networks they support, the privacy wallet shows all
+            val walletChainIds = addressBookState?.walletChainIds
+            val networks = remember(addressBookState) {
+                if (addressBookState == null) emptyList() else addressBookNetworks(chains, walletChainIds)
+            }
+            val networkChainIds = remember(networks) { networks.mapTo(HashSet()) { it.chainId } }
             var query by rememberSaveable { mutableStateOf("") }
             var selectedChainIds by rememberSaveable { mutableStateOf(arrayListOf<String>()) }
-            LaunchedEffect(addresses) {
-                chains = viewModel.getChains()
-            }
-            val filteredAddresses = remember(addresses, selectedChainIds, query) {
-                addresses?.filter { address ->
-                    (selectedChainIds.isEmpty() || address.chainId in selectedChainIds) &&
-                        (query.isBlank() || address.label.contains(query, ignoreCase = true) ||
-                            address.displayAddress().contains(query, ignoreCase = true))
+            val filteredAddresses = remember(addresses, addressBookState, selectedChainIds, query) {
+                val keyword = query.trim()
+                if (addressBookState == null) {
+                    null
+                } else {
+                    addresses?.filter { address ->
+                        address.chainId in networkChainIds &&
+                            (selectedChainIds.isEmpty() || address.chainId in selectedChainIds) &&
+                            (keyword.isEmpty() || address.label.contains(keyword, ignoreCase = true) ||
+                                address.displayAddress().contains(keyword, ignoreCase = true))
+                    }
                 }
             }
             Column(
@@ -136,7 +146,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         .clickable {
                             requireView().hideKeyboard()
                             NetworkMultiSelectBottomSheetDialogFragment.newInstance(
-                                ArrayList(addressBookNetworks(chains)),
+                                ArrayList(networks),
                                 selectedChainIds,
                             ).apply {
                                 onApply = { selectedChainIds = ArrayList(it) }
@@ -195,7 +205,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         items(filteredAddresses, key = { it.addressId }) { address ->
                             AddressBookCard(address, chains.firstOrNull { it.chainId == address.chainId }, onClick = {
                                 requireView().hideKeyboard()
-                                WalletActivity.showAddressBookDetail(requireActivity(), address, arguments?.getString(WalletActivity.ARGS_WALLET_ID))
+                                WalletActivity.showAddressBookDetail(requireActivity(), address, walletId)
                             })
                         }
                     }
@@ -204,10 +214,11 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     onClick = {
                         requireView().hideKeyboard()
                         AnalyticsTracker.trackAddressBookAddStart()
-                        WalletActivity.showAddressBookAdd(requireActivity(), defaultAddressBookNetwork(selectedChainIds, addressBookNetworks(chains)).chainId)
+                        WalletActivity.showAddressBookAdd(requireActivity(), defaultAddressBookNetwork(selectedChainIds, networks).chainId, walletId)
                     },
                     modifier = Modifier.align(Alignment.CenterHorizontally).padding(top = 16.dp, bottom = 24.dp).height(42.dp),
                     contentPadding = PaddingValues(horizontal = 24.dp, vertical = 0.dp),
+                    enabled = networks.isNotEmpty(),
                 ) {
                     Text(stringResource(R.string.Add_address), fontSize = 14.sp)
                 }

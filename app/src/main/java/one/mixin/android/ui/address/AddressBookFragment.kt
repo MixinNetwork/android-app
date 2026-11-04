@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
@@ -196,7 +197,7 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
                     ) {
                         item {
                             Column(
-                                modifier = Modifier.fillMaxWidth().cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor).padding(horizontal = 16.dp, vertical = 20.dp),
+                                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor).padding(horizontal = 16.dp, vertical = 20.dp),
                                 verticalArrangement = Arrangement.spacedBy(20.dp),
                             ) {
                                 AddressBookField(stringResource(R.string.Label), address.label)
@@ -213,8 +214,9 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
                             }
                         }
                         item {
+                            // Clip like the wallet home cards so the header ripple and the transaction rows keep the 8dp corners
                             Column(
-                                modifier = Modifier.fillMaxWidth().cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
+                                modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(8.dp)).cardBackground(MixinAppTheme.colors.background, MixinAppTheme.colors.borderColor),
                             ) {
                                 SectionCard(
                                     title = stringResource(R.string.Transactions),

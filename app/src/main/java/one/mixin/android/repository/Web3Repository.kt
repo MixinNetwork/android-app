@@ -426,6 +426,13 @@ constructor(
 
     suspend fun getAddresses(walletId: String) = web3AddressDao.getAddressesByWalletId(walletId)
 
+    suspend fun getOrSyncAddresses(walletId: String): List<Web3Address> {
+        val addresses = getAddresses(walletId)
+        if (addresses.isNotEmpty()) return addresses
+        syncWalletAddressesFromRoute(walletId)
+        return getAddresses(walletId)
+    }
+
     suspend fun getAddressesGroupedByDestination(walletId: String) = web3AddressDao.getAddressesGroupedByDestination(walletId)
 
     suspend fun findWalletById(walletId: String) =

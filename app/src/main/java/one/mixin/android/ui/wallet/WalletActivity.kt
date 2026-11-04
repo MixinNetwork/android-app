@@ -325,11 +325,11 @@ class WalletActivity : BlazeBaseActivity() {
             )
         }
 
-        fun showAddressBookAdd(activity: Activity, chainId: String) {
+        fun showAddressBookAdd(activity: Activity, chainId: String, walletId: String?) {
             activity.startActivity(
                 Intent(activity, WalletActivity::class.java).apply {
                     putExtra(DESTINATION, Destination.AddressBookAdd)
-                    putExtras(requireNotNull(TransferDestinationInputFragment.newInstanceForAddressBook(chainId).arguments))
+                    putExtras(requireNotNull(TransferDestinationInputFragment.newInstanceForAddressBook(chainId, walletId).arguments))
                 },
             )
         }

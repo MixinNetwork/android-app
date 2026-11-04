@@ -45,6 +45,7 @@ import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.components.DropdownMenuNoPaddingVeitical
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Chain
+import one.mixin.android.vo.displayAddress
 import one.mixin.android.widget.components.MixinButton
 
 @Composable
@@ -59,12 +60,13 @@ fun AddressSearchBottomSheet(
 ) {
     var searchText by rememberSaveable { mutableStateOf("") }
     val filteredAddresses = remember(searchText, addresses) {
-        if (searchText.isBlank()) {
+        val keyword = searchText.trim()
+        if (keyword.isEmpty()) {
             addresses
         } else {
             addresses.filter { address ->
-                address.label.contains(searchText, ignoreCase = true) ||
-                    address.destination.contains(searchText, ignoreCase = true)
+                address.label.contains(keyword, ignoreCase = true) ||
+                    address.displayAddress().contains(keyword, ignoreCase = true)
             }
         }
     }

@@ -524,6 +524,15 @@ class TokenRepository
 
         suspend fun getChains() = chainDao.getChains()
 
+        // The chains table is only fully populated by RefreshTokensJob, fetch all chains here for the address book
+        suspend fun refreshChains() {
+            val response = tokenService.getChains()
+            val chains = response.data
+            if (response.isSuccess && !chains.isNullOrEmpty()) {
+                chainDao.insertListSuspend(chains)
+            }
+        }
+
         fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 
         fun saveAddr(addr: Address) = addressDao.insert(addr)
