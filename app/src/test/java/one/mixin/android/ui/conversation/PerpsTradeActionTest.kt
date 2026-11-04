@@ -167,6 +167,19 @@ class PerpsTradeActionTest {
     }
 
     @Test
+    fun directPerpsOpenParsesOrderId() {
+        val base = "https://mixin.one/trade?type=perps&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&action=open&side=long&leverage=10&margin=10"
+
+        assertEquals(
+            "019ba6bb-5c00-7b20-8eab-b1e7ab19aa2e",
+            "$base&order_id=019ba6bb-5c00-7b20-8eab-b1e7ab19aa2e".toPerpsTradeAction()?.openPosition?.orderId,
+        )
+        assertNull("$base".toPerpsTradeAction()?.openPosition?.orderId)
+        assertNull("$base&order_id=".toPerpsTradeAction())
+        assertNull("$base&order_id=invalid".toPerpsTradeAction())
+    }
+
+    @Test
     fun directPerpsOpenAcceptsOptionalValues() {
         val action = "mixin://mixin.one/trade?type=perpetual&market=e015f42e-b0ff-38e7-87b1-7e8d46fea119&action=OPEN&side=LONG"
 
