@@ -248,6 +248,7 @@ class WebFragment : BaseFragment() {
         requireArguments().getString(CONVERSATION_ID)
     }
     private var app: App? = null
+    private var supportPage = false
     private val appCard: AppCardData? by lazy {
         requireArguments().getParcelableCompat(ARGS_APP_CARD, AppCardData::class.java)
     }
@@ -447,6 +448,10 @@ class WebFragment : BaseFragment() {
         )
 
         app = requireArguments().getParcelableCompat(ARGS_APP, App::class.java)
+        supportPage = isSupportBotPage(app?.appId, url)
+        if (supportPage) {
+            showSupportHeader()
+        }
 
         initView()
 
@@ -659,7 +664,7 @@ class WebFragment : BaseFragment() {
                     _binding?.apply {
                         customViewContainer.isVisible = false
                         webLl.isVisible = true
-                        webControl.isVisible = !webClose.isVisible
+                        webControl.isVisible = !webClose.isVisible && !supportPage
                         customViewContainer.removeView(customView)
                     }
 
@@ -925,11 +930,14 @@ class WebFragment : BaseFragment() {
         }
     }
 
-    private fun showSupportHeader(binding: FragmentWebBinding) {
-        binding.titleVa.displayedChild = 1
+    private fun showSupportHeader() {
+        binding.containerView.setBackgroundResource(R.drawable.bg_upper_round)
+        binding.titleVa.background = null
+        binding.titleVa.displayedChild = 2
         binding.webControl.isVisible = false
-        binding.webClose.isVisible = true
-        binding.webClose.setOnClickListener { requireActivity().finish() }
+        binding.webClose.isVisible = false
+        binding.supportTitle.setSubTitle(getString(R.string.mixin_support), getString(R.string.real_people_real_support))
+        binding.supportTitle.rightIv.setOnClickListener { requireActivity().finish() }
     }
 
     private fun loadWebView() {
@@ -953,10 +961,6 @@ class WebFragment : BaseFragment() {
                 binding.titleTv.updateLayoutParams<ViewGroup.MarginLayoutParams> {
                     marginStart = requireContext().dpToPx(10f)
                 }
-            }
-            val supportPage = isSupportBotPage(app?.appId, url)
-            if (supportPage) {
-                showSupportHeader(binding)
             }
             binding.titleVa.isGone = immersive && !supportPage
 
@@ -1830,7 +1834,7 @@ class WebFragment : BaseFragment() {
         dark: Boolean,
         color: Int,
     ) {
-        if (viewDestroyed()) return
+        if (viewDestroyed() || supportPage) return
 
         requireActivity().window?.let {
             it.decorView.findViewById<ViewGroup>(R.id.container).setBackgroundColor(color)
