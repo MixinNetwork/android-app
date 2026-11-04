@@ -136,6 +136,7 @@ private fun LifecycleOwner.observeFolds(activity: Activity, view: View, onChange
             try {
                 WindowInfoTracker.getOrCreate(activity).windowLayoutInfo(activity).collect { info ->
                     features = info.displayFeatures.filterIsInstance<FoldingFeature>()
+                    if (features.isNotEmpty()) (activity as? one.mixin.android.ui.common.BaseActivity)?.onFoldObserved()
                     update()
                 }
             } finally {

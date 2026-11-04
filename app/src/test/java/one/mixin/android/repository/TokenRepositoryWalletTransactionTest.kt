@@ -155,6 +155,23 @@ class TokenRepositoryWalletTransactionTest {
     }
 
     @Test
+    fun replacementPreservesSyncedTransaction() = runBlocking<Unit> {
+        insertSigned()
+        val synced = assertNotNull(transaction("signed")).copy(
+            transactionHash = "broadcast",
+            status = "success",
+            blockNumber = 123,
+            fee = "0.02",
+        )
+        wallet.web3TransactionDao().insertList(listOf(synced))
+        repository.replaceGaslessPendingTransactionHash("wallet", "signed", "broadcast", chain, updatedAt)
+        assertNull(raw("signed"))
+        assertNull(transaction("signed"))
+        assertEquals("sender", assertNotNull(raw("broadcast")).account)
+        assertEquals(synced, transaction("broadcast"))
+    }
+
+    @Test
     fun replacementWithoutTransactionMovesOnlyRawRow() = runBlocking<Unit> {
         wallet.web3RawTransactionDao().insertSuspend(rawRecord("signed"))
         repository.replaceGaslessPendingTransactionHash("wallet", "signed", "broadcast", chain, updatedAt)

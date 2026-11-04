@@ -9,11 +9,12 @@ import one.mixin.android.Constants.ChainId.BITCOIN_CHAIN_ID
 import one.mixin.android.Constants.ChainId.SOLANA_CHAIN_ID
 import one.mixin.android.MixinApplication
 import one.mixin.android.R
-import one.mixin.android.api.response.web3.EIP7702SignRequest
-import one.mixin.android.api.response.web3.shouldSign
+import one.mixin.android.api.response.web3.EthGaslessTxPayload
 import one.mixin.android.db.property.PropertyHelper
 import one.mixin.android.db.web3.vo.WalletItem
 import one.mixin.android.db.web3.vo.Web3Address
+import one.mixin.android.db.web3.vo.Web3TokenItem
+import one.mixin.android.db.web3.vo.isNativeEvmAsset
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.hexStringToByteArray
 import one.mixin.android.extension.putString
@@ -84,7 +85,6 @@ object Web3Signer {
     }
 
     private const val TAG = "Web3Signer"
-    private const val GASLESS_EIP7702_AUTHORIZED_ADDRESS = "0xe6cae83bde06e4c305530e199d7217f42808555b"
     private val walletSelectionMutex = Mutex()
 
     private val sp by lazy {
@@ -550,23 +550,47 @@ object Web3Signer {
         return GsonHelper.customGson.toJson(signInOutput).toHex()
     }
 
-    fun signEip7702Auth(
+    fun signEvmGaslessTransfer(
         priv: ByteArray,
-        eip7702Auth: EIP7702SignRequest?,
-    ): String? {
-        return eip7702Auth
-            ?.takeIf { it.shouldSign }
-            ?.let { auth ->
-                val message = requireNotNull(auth.message) { "Missing EIP-7702 auth message" }
-                if (!auth.address.equals(GASLESS_EIP7702_AUTHORIZED_ADDRESS, ignoreCase = true)) {
-                    throw IllegalArgumentException("Unsupported EIP-7702 auth target")
-                }
-                signEthMessage(
-                    priv = priv,
-                    message = message,
-                    type = JsSignMessage.TYPE_GASLESS_TRANSFER,
-                )
+        payload: EthGaslessTxPayload,
+        fromAddress: String,
+        token: Web3TokenItem,
+        amount: String,
+        recipient: String,
+        feeToken: Web3TokenItem?,
+        feeAmount: String,
+    ): Pair<String, String?> {
+        val (userOperationDigest, authorizationDigest) = try {
+            val chain = requireNotNull(evmChainList.firstOrNull { it.assetId == token.chainId })
+            requireNotNull(feeToken)
+            require(feeToken.chainId == token.chainId)
+            fun units(value: String, asset: Web3TokenItem): BigInteger {
+                val precision = if (asset.isNativeEvmAsset()) 18 else asset.precision
+                require(precision in 0..255)
+                val units = value.toBigDecimal().movePointRight(precision).stripTrailingZeros()
+                require(units.scale() <= 0)
+                return units.toBigIntegerExact()
             }
+            GaslessEvmValidator.validate(
+                payload,
+                fromAddress,
+                chain.chainReference.toBigInteger(),
+                token.assetKey.takeUnless { token.isNativeEvmAsset() },
+                units(amount, token),
+                recipient,
+                feeToken.assetKey.takeUnless { feeToken.isNativeEvmAsset() },
+                units(feeAmount, feeToken),
+            )
+        } catch (e: IllegalArgumentException) {
+            throw IllegalArgumentException(MixinApplication.appContext.getString(R.string.invalid_gasless_transaction), e)
+        } catch (e: ArithmeticException) {
+            throw IllegalArgumentException(MixinApplication.appContext.getString(R.string.invalid_gasless_transaction), e)
+        }
+        val userOpSignature = signEthMessage(priv, userOperationDigest, JsSignMessage.TYPE_GASLESS_TRANSFER)
+        val authorizationSignature = authorizationDigest?.let {
+            signEthMessage(priv, it, JsSignMessage.TYPE_GASLESS_TRANSFER)
+        }
+        return userOpSignature to authorizationSignature
     }
 
     private fun throwError(
