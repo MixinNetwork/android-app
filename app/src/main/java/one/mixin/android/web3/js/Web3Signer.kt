@@ -46,6 +46,7 @@ import org.sol4kt.SignInInput
 import org.sol4kt.SignInOutput
 import org.sol4kt.VersionedTransactionCompat
 import org.sol4kt.exception.MaliciousInstructionException
+import org.sol4kt.requireNotTransactionMessage
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -83,6 +84,9 @@ object Web3Signer {
         data object Pearl : JsSignerNetwork("pearl")
         data object Litecoin : JsSignerNetwork("litecoin")
     }
+
+    fun jsNetworkOf(chain: Chain): String =
+        if (chain == Chain.Solana) JsSignerNetwork.Solana.name else JsSignerNetwork.Ethereum.name
 
     private const val TAG = "Web3Signer"
     private val walletSelectionMutex = Mutex()
@@ -435,8 +439,9 @@ object Web3Signer {
         priv: ByteArray,
         message: String,
         type: Int,
+        chain: Chain = currentChain,
     ): String {
-        return if (currentChain == Chain.Solana) {
+        return if (chain == Chain.Solana) {
             signSolanaMessage(priv, message)
         } else {
             signEthMessage(priv, message, type)
@@ -514,6 +519,7 @@ object Web3Signer {
         message: ByteArray,
     ): String {
         val keyPair = Keypair.fromSecretKey(secret)
+        requireNotTransactionMessage(message, keyPair.publicKey)
         val sig = keyPair.sign(message)
         return sig.toHex()
     }

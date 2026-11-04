@@ -57,6 +57,7 @@ import org.bitcoinj.script.Script
 import org.bitcoinj.script.ScriptBuilder
 import org.sol4k.Keypair
 import org.sol4kt.VersionedTransactionCompat
+import org.sol4kt.requireNotTransactionMessage
 import org.web3j.crypto.Credentials
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.RawTransaction
@@ -461,7 +462,11 @@ object WalletConnectV2 : WalletConnect() {
             return signMessage
         } else if (signMessage is WcSolanaMessage) {
             val holder = Keypair.fromSecretKey(priv)
+            if (signMessage.pubkey != holder.publicKey.toBase58()) {
+                throw IllegalArgumentException("Solana message pubkey does not match the wallet")
+            }
             val message = signMessage.message.decodeBase58()
+            requireNotTransactionMessage(message, holder.publicKey)
             val sig = holder.sign(message).encodeToBase58String()
             val wcSig = WcSignature(signMessage.pubkey, sig)
             approveRequestInternal(gson.toJson(wcSig), sessionRequest)
