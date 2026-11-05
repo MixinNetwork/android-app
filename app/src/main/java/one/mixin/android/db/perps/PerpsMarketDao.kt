@@ -59,20 +59,13 @@ interface PerpsMarketDao : BaseDao<PerpsMarket> {
     @Query("SELECT * FROM markets WHERE market_id = :marketId")
     suspend fun getMarket(marketId: String): PerpsMarket?
 
-    @Query(
-        """
-        SELECT * FROM markets
-        WHERE CAST(volume AS REAL) > 0
-            AND (
-                display_symbol LIKE '%' || :query || '%'
-            OR token_symbol LIKE '%' || :query || '%'
-            OR quote_symbol LIKE '%' || :query || '%'
-            OR tags LIKE '%' || :query || '%'
-            )
-        ORDER BY CAST(volume AS REAL) DESC
-        """
-    )
-    suspend fun searchMarkets(query: String): List<PerpsMarket>
+    suspend fun searchMarkets(query: String): List<PerpsMarket> =
+        getAllMarkets().filter { market ->
+            market.displaySymbol.contains(query, ignoreCase = true) ||
+                market.tokenSymbol.contains(query, ignoreCase = true) ||
+                market.quoteSymbol.contains(query, ignoreCase = true) ||
+                market.tags.any { tag -> tag.contains(query, ignoreCase = true) }
+        }
 
     @Query("DELETE FROM markets")
     suspend fun deleteAll()
