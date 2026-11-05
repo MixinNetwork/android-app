@@ -8,7 +8,6 @@ buildscript {
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://maven.sumsub.com/repository/maven-public/") }
     }
     dependencies {
         classpath("com.android.tools.build.jetifier:jetifier-processor:$jetifierVersion")
@@ -139,13 +138,6 @@ extra.set("tweetnaclVersion", "0.1.6")
 extra.set("sol4kUtilitiesVersion", "0.1.0")
 extra.set("desugarJdkLibsVersion", "2.1.5")
 extra.set("bugsnagVersion", "6.26.1")
-extra.set("sumsubVersion", "1.44.1")
-extra.set("checkoutFramesVersion", "4.2.3")
-extra.set("checkoutSecureVersion", "3.2.6")
-extra.set("checkoutRiskVersion", "1.0.6")
-extra.set("playWalletVersion", "20.0.0")
-extra.set("playPayVersion", "16.5.0")
-extra.set("datastoreVersion", "1.3.0")
 extra.set("appsFlyerVersion", "7.0.4")
 extra.set("installReferrerVersion", "2.2")
 extra.set("billingVersion", "8.3.0")
@@ -155,19 +147,11 @@ allprojects {
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://maven.sumsub.com/repository/maven-public/") }
         maven {
             url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
             name = "OSS-Sonatype"
         }
         maven { url = uri("https://artifacts.consensys.net/public/maven/maven/") }
         maven { url = uri("https://maven.fpregistry.io/releases") }
-        maven {
-            url = uri("https://maven.pkg.github.com/checkout/checkout-3ds-sdk-android")
-            credentials {
-                username = project.findProperty("GITHUB_ID") as String? ?: System.getenv("GITHUB_ID") ?: ""
-                password = project.findProperty("GITHUB_PACKAGES_TOKEN") as String? ?: System.getenv("GITHUB_PACKAGES_TOKEN") ?: ""
-            }
-        }
     }
 }

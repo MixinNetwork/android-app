@@ -1,10 +1,6 @@
 package one.mixin.android
 
 import android.graphics.Color
-import com.checkout.base.model.CardScheme
-import com.checkout.base.model.Environment
-import com.checkout.risk.RiskEnvironment
-import com.google.android.gms.wallet.WalletConstants
 import okhttp3.Dns
 import one.mixin.android.Constants.ChainId.Arc
 import one.mixin.android.Constants.ChainId.Arbitrum
@@ -553,25 +549,6 @@ object Constants {
     const val TEAM_BOT_NAME = ""
 
     object RouteConfig {
-        const val PAN_ONLY = "pan_only"
-        const val CRYPTOGRAM_3DS = "cryptogram_3ds"
-
-        val SUPPORTED_METHODS =
-            listOf(
-                "PAN_ONLY",
-                "CRYPTOGRAM_3DS",
-            )
-
-        val SUPPORTED_NETWORKS =
-            listOf(
-                "VISA",
-                "MASTERCARD",
-                "AMEX",
-                "JCB",
-            )
-
-        val SUPPORTED_CARD_SCHEME = listOf(CardScheme.VISA, CardScheme.MASTERCARD, CardScheme.AMERICAN_EXPRESS, CardScheme.JCB)
-
         const val ROUTE_BOT_USER_ID = "61cb8dd4-16b1-4744-ba0c-7b2d2e52fc59"
         const val REFERRAL_BOT_USER_ID = "b35af74d-cca6-400c-a62b-5a7e659de91e"
         const val SAFE_BOT_USER_ID = "b5418449-9ed6-4979-a690-82690949c542"
@@ -579,16 +556,5 @@ object Constants {
         const val ROUTE_BOT_URL = "https://api.route.mixin.one"
 
         const val REFERRAL_API_URL = "https://api.reward.mixin.one"
-        const val GOOGLE_PAY = "googlepay"
-
-        const val PAYMENTS_ENVIRONMENT = WalletConstants.ENVIRONMENT_PRODUCTION
-
-        const val PAYMENTS_GATEWAY = "checkoutltd"
-
-        val CHECKOUT_ENVIRONMENT: Environment = Environment.PRODUCTION
-
-        val RISK_ENVIRONMENT = RiskEnvironment.PRODUCTION
-
-        val ENVIRONMENT_3DS = com.checkout.threeds.Environment.PRODUCTION
     }
 }
