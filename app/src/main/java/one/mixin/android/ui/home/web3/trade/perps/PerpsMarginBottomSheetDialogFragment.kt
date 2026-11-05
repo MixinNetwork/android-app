@@ -172,6 +172,7 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         var loading by remember { mutableStateOf(false) }
         var error by remember { mutableStateOf<String?>(null) }
         var availableMargin by remember(currentPosition.margin, currentPosition.quantity) { mutableStateOf<BigDecimal?>(null) }
+        var maximumReductionError by remember(currentPosition.margin, currentPosition.quantity) { mutableStateOf<String?>(null) }
         fun changeAmount(value: String) {
             if (!loading) {
                 amount = value
@@ -179,7 +180,9 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                 error = null
             }
         }
-        val amountValue = if (increase) marginAdjustmentAmount(amount) else reduceMarginAmount(currentPosition.margin, amount, inputIsPercentage)
+        val marginValue = currentPosition.margin?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO }
+        val maximumReduction = marginValue?.let { margin -> availableMargin?.min(margin) }
+        val amountValue = if (increase) marginAdjustmentAmount(amount) else reduceMarginAmount(maximumReduction?.toPlainString(), amount, inputIsPercentage)
         val normalizedAmount = amountValue?.stripTrailingZeros()?.toPlainString().orEmpty()
         val liquidationState = remember(currentPosition.positionId, normalizedAmount, increase) { LiquidationPriceState() }
         val remoteLiquidationPrice = liquidationState.price
@@ -187,17 +190,15 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         var liquidationError by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf<String?>(null) }
         var liquidationPriceLimit by remember(normalizedAmount, increase, currentPosition.updatedAt) { mutableStateOf<LiquidationPriceLimit?>(null) }
         val totalMargin = marginAfterAdjustment(currentPosition.margin, normalizedAmount, increase, availableMargin)
-        val marginValue = currentPosition.margin?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO }
-        val maximumReduction = marginValue?.let { margin -> availableMargin?.min(margin) ?: margin }
         val exceedsReductionLimit = !increase && (
             (amountValue != null && maximumReduction != null && amountValue > maximumReduction) ||
                 (inputIsPercentage && (amount.toBigDecimalOrNull() ?: BigDecimal.ZERO) > BigDecimal(100))
             )
-        val percentage = marginReductionPercentage(currentPosition.margin, amountValue)
+        val percentage = marginReductionPercentage(maximumReduction?.toPlainString(), amountValue)
         val reduceInput = when {
             reduceByPercent == inputIsPercentage -> amount
             reduceByPercent -> percentage?.setScale(0, RoundingMode.HALF_UP)?.toPlainString().orEmpty()
-            else -> amountValue?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
+            else -> amountValue?.stripTrailingZeros()?.toPlainString().orEmpty()
         }
         val tokenBalance = perpsMarginTokenBalance(selectedToken)
         val insufficientBalance = increase && amountValue != null && tokenBalance != null && amountValue > tokenBalance
@@ -208,8 +209,27 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
             if (increase) {
                 selectedToken?.assetId in acceptedAssets && tokenBalance != null && !insufficientBalance
             } else {
-                availableMargin?.let { amountValue != null && amountValue <= it } ?: true
+                maximumReduction != null && amountValue != null && amountValue <= maximumReduction
             }
+
+        LaunchedEffect(increase, currentPosition.positionId, currentPosition.margin, currentPosition.quantity) {
+            if (increase) return@LaunchedEffect
+            val margin = marginValue ?: run {
+                maximumReductionError = getString(R.string.Data_error)
+                return@LaunchedEffect
+            }
+            maximumReductionError = null
+            availableMargin = requestMaximumMarginReduction(
+                margin = margin,
+                onFailure = { maximumReductionError = it ?: getString(R.string.Data_error) },
+            ) {
+                viewModel.estimateLiquidationPrice(
+                    amount = margin.stripTrailingZeros().toPlainString(),
+                    positionId = currentPosition.positionId,
+                    action = "decrease_margin",
+                )
+            }
+        }
 
         LaunchedEffect(normalizedAmount, increase, currentPosition.updatedAt, exceedsReductionLimit) {
             liquidationError = null
@@ -345,11 +365,11 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
         }
         MixinAppTheme {
             val reductionLimitError = if (exceedsReductionLimit && maximumReduction != null) {
-                val limit = formatPerpsMarginLimit(currentPosition.margin, maximumReduction, reduceByPercent)
+                val limit = formatPerpsMarginLimit(maximumReduction, reduceByPercent)
                 stringResource(R.string.max_removable, limit)
             } else null
             val errorText = if (insufficientBalance) stringResource(R.string.insufficient_balance) else
-                error ?: liquidationPriceLimit?.errorMessage(requireContext(), selectedToken?.symbol.orEmpty()) ?: liquidationError
+                error ?: maximumReductionError ?: liquidationPriceLimit?.errorMessage(requireContext(), selectedToken?.symbol.orEmpty()) ?: liquidationError
             val onSubmit = {
                 if (increase) {
                     submit(normalizedAmount)
@@ -467,22 +487,24 @@ class PerpsMarginBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         isPercentage = reduceByPercent,
                         amount = amountValue,
                         percentage = percentage,
-                        margin = marginValue,
+                        margin = maximumReduction,
                         errorText = reductionLimitError ?: errorText,
-                        enabled = !loading,
+                        enabled = !loading && maximumReduction != null && maximumReduction > BigDecimal.ZERO,
                         onInputChanged = ::changeAmount,
                         onApplyReductionLimit = maximumReduction?.takeIf { reductionLimitError != null }?.let { maximum ->
                             {
-                                if (reduceByPercent && !canFillMarginReductionAsPercentage(currentPosition.margin, maximum)) {
-                                    reduceByPercent = false
-                                }
-                                changeAmount(maximumMarginReductionInput(currentPosition.margin, maximum, reduceByPercent))
+                                changeAmount(if (reduceByPercent) "100" else maximum.stripTrailingZeros().toPlainString())
                             }
                         },
                         onToggleMode = {
-                            amount = amountValue?.let { formatMarginAdjustmentInput(it, false) }.orEmpty()
-                            inputIsPercentage = false
                             reduceByPercent = !reduceByPercent
+                            error = null
+                        },
+                        decimalPlaces = if (reduceByPercent) 0 else TRADE_INPUT_MAX_DECIMAL_PLACES,
+                        exactAmount = true,
+                        onPercentageSelected = {
+                            amount = it.toPlainString()
+                            inputIsPercentage = true
                             error = null
                         },
                     )
@@ -672,6 +694,7 @@ internal fun PerpsReductionInput(
     decimalPlaces: Int = if (isPercentage) 0 else 2,
     onPercentageSelected: ((BigDecimal) -> Unit)? = null,
     autoFocus: Boolean = true,
+    exactAmount: Boolean = false,
 ) {
     var textFieldValue by remember(isPercentage) { mutableStateOf(TextFieldValue(input, TextRange(input.length))) }
     LaunchedEffect(input) {
@@ -771,7 +794,11 @@ internal fun PerpsReductionInput(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = if (isPercentage) formatPerpsMarginAmount(amount) else "${percentage?.setScale(0, RoundingMode.HALF_UP)?.toPlainString() ?: "0"}%",
+                text = if (isPercentage) {
+                    if (exactAmount) formatPerpsExactUsdDecimal(amount) else formatPerpsMarginAmount(amount)
+                } else {
+                    "${percentage?.setScale(0, RoundingMode.HALF_UP)?.toPlainString() ?: "0"}%"
+                },
                 color = MixinAppTheme.colors.textRemarks,
                 fontSize = 16.sp,
                 lineHeight = 20.sp,

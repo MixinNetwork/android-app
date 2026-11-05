@@ -15,13 +15,11 @@ internal fun perpsMarginTokenBalance(token: TokenItem?): BigDecimal? = token?.ba
 internal fun formatPerpsMarginAmount(value: BigDecimal?): String =
     if (value == null || value.setScale(2, RoundingMode.HALF_UP).signum() == 0) "${PERPS_USD_SYMBOL}0" else formatPerpsPrice(value, 2)
 
-internal fun formatPerpsMarginLimit(currentMargin: String?, availableMargin: BigDecimal, isPercentage: Boolean): String {
+internal fun formatPerpsMarginLimit(availableMargin: BigDecimal, isPercentage: Boolean): String {
     if (isPercentage) {
-        val percentage = marginReductionPercentage(currentMargin, availableMargin) ?: BigDecimal.ZERO
-        return "${percentage.setScale(2, RoundingMode.DOWN).numberFormat8()}%"
+        return if (availableMargin > BigDecimal.ZERO) "100%" else "0%"
     }
-    val amount = if (availableMargin < BigDecimal("0.01")) availableMargin else availableMargin.setScale(2, RoundingMode.DOWN)
-    return "$PERPS_USD_SYMBOL${amount.numberFormat8()}"
+    return "$PERPS_USD_SYMBOL${availableMargin.setScale(TRADE_INPUT_MAX_DECIMAL_PLACES, RoundingMode.DOWN).numberFormat8()}"
 }
 
 internal fun marginLiquidationLossPercent(entryPrice: String, liquidationPrice: String?): BigDecimal? {
@@ -38,17 +36,6 @@ internal fun snapMarginReductionPercentage(value: Float): Int {
 
 internal fun formatMarginAdjustmentInput(value: BigDecimal, isPercentage: Boolean): String =
     value.setScale(if (isPercentage) 0 else 2, RoundingMode.DOWN).stripTrailingZeros().toPlainString()
-
-internal fun maximumMarginReductionInput(currentMargin: String?, maximumReduction: BigDecimal, isPercentage: Boolean): String =
-    if (!isPercentage && maximumReduction < BigDecimal("0.01")) maximumReduction.stripTrailingZeros().toPlainString() else formatMarginAdjustmentInput(
-        if (isPercentage) marginReductionPercentage(currentMargin, maximumReduction) ?: BigDecimal.ZERO else maximumReduction,
-        isPercentage,
-    )
-
-internal fun canFillMarginReductionAsPercentage(currentMargin: String?, maximumReduction: BigDecimal): Boolean {
-    val percentage = marginReductionPercentage(currentMargin, maximumReduction) ?: return false
-    return percentage.stripTrailingZeros().scale() <= 0
-}
 
 internal fun marginAdjustmentAmount(amount: String): BigDecimal? {
     if (amount.length > 40 || amount.any { it !in '0'..'9' && it != '.' } || amount.count { it == '.' } > 1 ||
