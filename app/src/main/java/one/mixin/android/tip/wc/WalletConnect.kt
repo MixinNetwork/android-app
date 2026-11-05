@@ -14,6 +14,7 @@ import one.mixin.android.tip.wc.internal.TipGas
 import one.mixin.android.tip.wc.internal.WCEthereumSignMessage
 import one.mixin.android.tip.wc.internal.WalletConnectException
 import one.mixin.android.web3.hashEip712Message
+import one.mixin.android.web3.validateEip712ChainId
 import org.web3j.crypto.ECKeyPair
 import org.web3j.crypto.Sign
 import org.web3j.protocol.core.Response
@@ -117,10 +118,14 @@ abstract class WalletConnect {
     fun signMessage(
         priv: ByteArray,
         message: WCEthereumSignMessage,
+        expectedChainReference: String? = null,
     ): String {
         val keyPair = ECKeyPair.create(priv)
         val signature =
             if (message.type == WCEthereumSignMessage.WCSignType.TYPED_MESSAGE) {
+                expectedChainReference?.let {
+                    validateEip712ChainId(message.data, it, MixinApplication.appContext.getString(R.string.eip712_invalid_chain_id))
+                }
                 Sign.signMessage(hashEip712Message(message.data), keyPair, false)
             } else {
                 Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message.data), keyPair)
