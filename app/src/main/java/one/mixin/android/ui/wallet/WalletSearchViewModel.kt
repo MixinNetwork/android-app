@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import android.app.Application
+import android.content.SharedPreferences
 import android.os.CancellationSignal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -25,7 +26,6 @@ import one.mixin.android.extension.escapeSql
 import one.mixin.android.extension.getStringList
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.remove
 import one.mixin.android.repository.PerpsMarketRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.session.Session
@@ -37,6 +37,13 @@ import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
 import timber.log.Timber
 import javax.inject.Inject
+
+internal fun SharedPreferences.walletSearchSharedHistory(key: String): List<String> =
+    if (getBoolean("${PREF_WALLET_SEARCH_RECENT}_cleared", false)) emptyList() else getStringList(key).orEmpty()
+
+internal fun SharedPreferences.clearWalletSearchHistory() {
+    edit().remove(PREF_WALLET_SEARCH_RECENT).putBoolean("${PREF_WALLET_SEARCH_RECENT}_cleared", true).apply()
+}
 
 @HiltViewModel
 internal class WalletSearchViewModel @Inject constructor(
@@ -96,8 +103,8 @@ internal class WalletSearchViewModel @Inject constructor(
         recentJob = viewModelScope.launch {
             val resolved = withContext(Dispatchers.IO) {
                 val searches = readRecentSearches()
-                val send = preferences.getStringList(PREF_WALLET_SEND).orEmpty()
-                val receive = preferences.getStringList(PREF_WALLET_RECEIVE).orEmpty()
+                val send = preferences.walletSearchSharedHistory(PREF_WALLET_SEND)
+                val receive = preferences.walletSearchSharedHistory(PREF_WALLET_RECEIVE)
                 val assetIds = searches.filter { it.type == RecentSearchType.ASSET }.mapNotNull { it.primaryKey } + send + receive
                 val assets = tokenRepository.findAssetsByIds(assetIds.distinct()).associateBy { it.assetId }
                 val positions = positionDao.getOpenPositions(Session.getAccountId().orEmpty()).associateBy { it.positionId }
@@ -133,7 +140,7 @@ internal class WalletSearchViewModel @Inject constructor(
 
     fun clearRecentSearches() {
         recentJob?.cancel()
-        preferences.remove(PREF_WALLET_SEARCH_RECENT)
+        preferences.clearWalletSearchHistory()
         _recentSearches.value = emptyList()
     }
 
