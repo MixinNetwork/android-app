@@ -297,8 +297,8 @@ class SwapViewModel
 
     suspend fun getAddresses(walletId: String) = web3Repository.getAddresses(walletId)
 
-    fun observeOrderCount(walletId: String, orderType: String): Flow<Int> =
-        walletDatabase.orderDao().observeOrderCount(walletId, orderType)
+    fun observePendingLimitOrderCount(walletId: String): Flow<Int> =
+        walletDatabase.orderDao().observePendingLimitOrderCount(walletId)
 
     suspend fun refreshPendingOrders(): Boolean = withContext(Dispatchers.IO) {
         try {
