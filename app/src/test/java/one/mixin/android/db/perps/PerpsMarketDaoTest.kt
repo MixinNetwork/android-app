@@ -109,6 +109,27 @@ class PerpsMarketDaoTest {
         }
 
     @Test
+    fun searchMarketsMatchesTagsAndPreservesVolumeFilteringAndOrder() =
+        runBlocking {
+            val tags = listOf("sandisk", "\u95ea\u8fea")
+            database.perpsMarketDao().upsertList(
+                listOf(
+                    market("lower-volume", volume = "9", score = 0).copy(tags = tags),
+                    market("higher-volume", volume = "100", score = 0).copy(tags = tags),
+                    market("zero-volume", volume = "0", score = 0).copy(tags = tags),
+                    market("no-tags", volume = "200", score = 0),
+                ),
+            )
+
+            for (query in listOf("\u95ea\u8fea", "\u95ea", "SanDisk", "disk")) {
+                assertEquals(
+                    listOf("higher-volume", "lower-volume"),
+                    database.perpsMarketDao().searchMarkets(query).map(PerpsMarket::marketId),
+                )
+            }
+        }
+
+    @Test
     fun upsertedRefreshedMarketsBecomeSearchableWithoutClearingDatabase() =
         runBlocking {
             database.perpsMarketDao().upsertList(

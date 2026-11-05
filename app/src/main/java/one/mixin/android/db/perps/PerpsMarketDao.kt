@@ -67,6 +67,7 @@ interface PerpsMarketDao : BaseDao<PerpsMarket> {
                 display_symbol LIKE '%' || :query || '%'
             OR token_symbol LIKE '%' || :query || '%'
             OR quote_symbol LIKE '%' || :query || '%'
+            OR tags LIKE '%' || :query || '%'
             )
         ORDER BY CAST(volume AS REAL) DESC
         """
