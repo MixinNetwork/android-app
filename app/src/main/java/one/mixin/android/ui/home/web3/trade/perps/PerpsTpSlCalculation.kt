@@ -9,7 +9,7 @@ internal data class TpSlCalculationBasis(
     val entryPrice: BigDecimal,
     val margin: BigDecimal,
     val absoluteQuantity: BigDecimal,
-    val feeRate: BigDecimal = BigDecimal.ZERO,
+    val feeRate: BigDecimal,
 ) {
     fun pnlAt(targetPrice: BigDecimal, isLong: Boolean): TpSlPnlResult? {
         if (targetPrice <= BigDecimal.ZERO) return null
@@ -64,8 +64,7 @@ internal fun resolveTpSlCalculationBasis(
     marginAmount: String,
     positionQuantity: String?,
     leverage: Int,
-    estimatedCloseFee: String? = null,
-    feeReferencePrice: String? = null,
+    feeRate: String? = null,
 ): TpSlCalculationBasis? {
     val margin = marginAmount.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null
     val parsedEntry = entryPrice.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO }
@@ -83,30 +82,8 @@ internal fun resolveTpSlCalculationBasis(
     } else {
         positionQuantity.toBigDecimalOrNull()?.abs()?.takeIf { it > BigDecimal.ZERO } ?: return null
     }
-    val feeRate = if (positionQuantity == null) {
-        BigDecimal.ZERO
-    } else {
-        perpsTpSlFeeRate(
-            estimatedCloseFee = estimatedCloseFee,
-            referencePrice = feeReferencePrice ?: currentPrice,
-            absoluteQuantity = absoluteQuantity,
-        )
-    }
-    return TpSlCalculationBasis(entry, margin, absoluteQuantity, feeRate)
-}
-
-private fun perpsTpSlFeeRate(
-    estimatedCloseFee: String?,
-    referencePrice: String?,
-    absoluteQuantity: BigDecimal,
-): BigDecimal {
-    val fee = estimatedCloseFee?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return BigDecimal.ZERO
-    val reference = referencePrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return BigDecimal.ZERO
-    val notional = reference.multiply(absoluteQuantity)
-    if (notional.signum() <= 0) return BigDecimal.ZERO
-    val rate = fee.divide(notional, TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
-    if (rate.signum() <= 0 || rate >= BigDecimal.ONE) return BigDecimal.ZERO
-    return rate
+    val parsedFeeRate = feeRate?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO && it < BigDecimal.ONE } ?: return null
+    return TpSlCalculationBasis(entry, margin, absoluteQuantity, parsedFeeRate)
 }
 
 internal fun targetPriceForRoiPercent(

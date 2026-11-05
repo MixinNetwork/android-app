@@ -34,9 +34,9 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     }
 
     @Query("""
-        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale 
-        FROM positions p 
-        LEFT JOIN markets m ON m.market_id = p.market_id 
+        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale, m.fee_rate
+        FROM positions p
+        LEFT JOIN markets m ON m.market_id = p.market_id
         WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening' or p.state = 'adding')
         ORDER BY p.created_at DESC
     """)
@@ -44,7 +44,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
 
     @Query(
         """
-        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
+        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale, m.fee_rate
         FROM positions p
         LEFT JOIN markets m ON m.market_id = p.market_id
         WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening' or p.state = 'adding')
@@ -54,7 +54,7 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     fun observeOpenPositions(walletId: String): Flow<List<PerpsPositionItem>>
 
     @Query("""
-        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
+        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale, m.fee_rate
         FROM positions p
         LEFT JOIN markets m ON m.market_id = p.market_id
         WHERE p.wallet_id = :walletId AND (p.state = 'open' or p.state = 'opening' or p.state = 'adding')
@@ -63,15 +63,15 @@ interface PerpsPositionDao : BaseDao<PerpsPosition> {
     fun getOpenPositionsPaged(walletId: String): PagingSource<Int, PerpsPositionItem>
 
     @Query("""
-        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale 
-        FROM positions p 
-        LEFT JOIN markets m ON m.market_id = p.market_id 
+        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale, m.fee_rate
+        FROM positions p
+        LEFT JOIN markets m ON m.market_id = p.market_id
         WHERE p.position_id = :positionId
     """)
     suspend fun getPosition(positionId: String): PerpsPositionItem?
 
     @Query("""
-        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale
+        SELECT p.*, m.display_symbol, m.icon_url, m.token_symbol, m.price_scale, m.fee_rate
         FROM positions p
         LEFT JOIN markets m ON m.market_id = p.market_id
         WHERE p.position_id = :positionId

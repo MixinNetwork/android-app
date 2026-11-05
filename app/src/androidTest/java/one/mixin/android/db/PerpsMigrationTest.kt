@@ -267,6 +267,22 @@ class PerpsMigrationTest {
         }
     }
 
+    @Test
+    fun migrate_12_13_addsUnknownMarketFeeRate() {
+        migrationTestHelper.createDatabase(Constants.DataBase.PERPS_DB_NAME, 12).apply {
+            insertMarket()
+            close()
+        }
+        val db = migrationTestHelper.runMigrationsAndValidate(
+            Constants.DataBase.PERPS_DB_NAME, 13, true, PerpsDatabase.MIGRATION_12_13,
+        )
+        assertColumn(db, "markets", "fee_rate", "''")
+        db.query("SELECT fee_rate FROM markets WHERE market_id = 'market-1'").use { cursor ->
+            assertTrue(cursor.moveToFirst())
+            assertEquals("", cursor.getString(0))
+        }
+    }
+
     private fun assertColumn(
         db: SQLiteConnection,
         table: String,

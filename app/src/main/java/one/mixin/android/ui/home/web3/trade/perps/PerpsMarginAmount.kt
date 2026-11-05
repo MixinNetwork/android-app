@@ -91,27 +91,30 @@ internal fun perpsCloseMarginAmount(margin: String?, unrealizedPnl: String?): Bi
     return marginValue + pnl
 }
 
+internal fun perpsCloseFee(quantity: String?, markPrice: String?, feeRate: String?): BigDecimal? {
+    val q = quantity?.toBigDecimalOrNull()?.abs()?.takeIf { it > BigDecimal.ZERO } ?: return null
+    val price = markPrice?.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return null
+    val rate = feeRate?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO && it < BigDecimal.ONE } ?: return null
+    return q * price * rate
+}
+
 internal fun estimatedPerpsCloseReturn(margin: String?, unrealizedPnl: String?, estimatedCloseFee: String?): BigDecimal? {
     val marginValue = margin?.toBigDecimalOrNull() ?: return null
     val pnl = unrealizedPnl?.toBigDecimalOrNull() ?: return null
-    val fee = if (estimatedCloseFee.isNullOrBlank()) {
-        BigDecimal.ZERO
-    } else {
-        estimatedCloseFee.toBigDecimalOrNull() ?: return null
-    }
+    val fee = estimatedCloseFee?.toBigDecimalOrNull() ?: return null
     return (marginValue + pnl - fee).max(BigDecimal.ZERO)
 }
 
 internal fun estimatedPerpsBatchCloseReturn(positions: List<PerpsPositionItem>): BigDecimal? {
     return positions.fold(BigDecimal.ZERO) { total, position ->
-        position.estimatedCloseFee?.toBigDecimalOrNull() ?: return null
-        total + (estimatedPerpsCloseReturn(position.margin, position.unrealizedPnl, position.estimatedCloseFee) ?: return null)
+        val fee = perpsCloseFee(position.quantity, position.markPrice, position.feeRate) ?: return null
+        total + (estimatedPerpsCloseReturn(position.margin, position.unrealizedPnl, fee.toPlainString()) ?: return null)
     }
 }
 
 internal fun estimatedPerpsBatchCloseFee(positions: List<PerpsPositionItem>): BigDecimal? {
     return positions.fold(BigDecimal.ZERO) { total, position ->
-        total + (position.estimatedCloseFee?.toBigDecimalOrNull() ?: return null)
+        total + (perpsCloseFee(position.quantity, position.markPrice, position.feeRate) ?: return null)
     }
 }
 

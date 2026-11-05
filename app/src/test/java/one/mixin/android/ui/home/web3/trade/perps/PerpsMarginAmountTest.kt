@@ -57,11 +57,11 @@ class PerpsMarginAmountTest {
 
     @Test
     fun batchCloseSumsEachReturnAfterFeesAndKeepsUnknownTotalsUnknown() {
-        val first = PerpsPositionItem("p1", "market", "long", "1", "100", 10, margin = "10", unrealizedPnl = "2", estimatedCloseFee = "0.5")
-        val second = first.copy(positionId = "p2", unrealizedPnl = "-12", estimatedCloseFee = "1")
-        assertEquals(BigDecimal("11.5"), estimatedPerpsBatchCloseReturn(listOf(first, second)))
-        assertEquals(BigDecimal("1.5"), estimatedPerpsBatchCloseFee(listOf(first, second)))
-        val unknown = second.copy(estimatedCloseFee = "")
+        val first = PerpsPositionItem("p1", "market", "long", "1", "100", 10, margin = "10", unrealizedPnl = "2", markPrice = "100", feeRate = "0.005")
+        val second = first.copy(positionId = "p2", unrealizedPnl = "-12", feeRate = "0.01")
+        assertEquals(BigDecimal("11.5"), estimatedPerpsBatchCloseReturn(listOf(first, second))?.stripTrailingZeros())
+        assertEquals(BigDecimal("1.5"), estimatedPerpsBatchCloseFee(listOf(first, second))?.stripTrailingZeros())
+        val unknown = second.copy(feeRate = "")
         assertNull(estimatedPerpsBatchCloseReturn(listOf(first, unknown)))
         assertNull(estimatedPerpsBatchCloseFee(listOf(first, unknown)))
         assertEquals(BigDecimal("5.75"), perpsReductionValue(estimatedPerpsCloseReturn("10", "2", "0.5")?.toPlainString(), "0.5", "1")?.stripTrailingZeros())
@@ -74,12 +74,12 @@ class PerpsMarginAmountTest {
         assertEquals(BigDecimal.ZERO, estimatedPerpsCloseReturn("10", "-12", "0.5"))
         assertEquals(BigDecimal("12"), estimatedPerpsCloseReturn("10", "2", "0"))
         for (fee in listOf(null, "")) {
-            assertEquals(BigDecimal("12"), estimatedPerpsCloseReturn("10", "2", fee))
-            assertEquals(BigDecimal.ZERO, estimatedPerpsCloseReturn("10", "-12", fee))
+            assertNull(estimatedPerpsCloseReturn("10", "2", fee))
+            assertNull(estimatedPerpsCloseReturn("10", "-12", fee))
         }
         assertNull(estimatedPerpsCloseReturn("10", "2", "invalid"))
         assertEquals(
-            BigDecimal("6"),
+            null,
             perpsReductionValue(estimatedPerpsCloseReturn("10", "2", null)?.toPlainString(), "0.5", "-1")?.stripTrailingZeros(),
         )
     }
