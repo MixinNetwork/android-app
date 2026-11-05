@@ -24,18 +24,13 @@ import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.DepositEntryRequest
 import one.mixin.android.api.request.GhostKeyRequest
-import one.mixin.android.api.request.OrderRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.RampWebUrlRequest
-import one.mixin.android.api.request.RouteInstrumentRequest
-import one.mixin.android.api.request.RoutePriceRequest
 import one.mixin.android.api.request.RouteTickerRequest
-import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransactionRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.RampWebUrlResponse
-import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.TransactionResponse
 import one.mixin.android.api.response.WithdrawalResponse
@@ -115,14 +110,12 @@ import one.mixin.android.util.ErrorHandler.Companion.FORBIDDEN
 import one.mixin.android.util.ErrorHandler.Companion.NOT_FOUND
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.AddressItem
-import one.mixin.android.vo.Card
 import one.mixin.android.vo.Chain
 import one.mixin.android.vo.InscriptionCollection
 import one.mixin.android.vo.InscriptionItem
 import one.mixin.android.vo.MessageCategory
 import one.mixin.android.vo.MessageStatus
 import one.mixin.android.vo.PriceAndChange
-import one.mixin.android.vo.SafeBox
 import one.mixin.android.vo.SnapshotItem
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.UtxoItem
@@ -135,7 +128,6 @@ import one.mixin.android.vo.market.MarketCoin
 import one.mixin.android.vo.market.MarketFavored
 import one.mixin.android.vo.market.MarketItem
 import one.mixin.android.vo.market.MarketRefreshResult
-import one.mixin.android.vo.route.RoutePaymentRequest
 import one.mixin.android.vo.route.OrderItem
 import one.mixin.android.vo.safe.DepositEntry
 import one.mixin.android.vo.safe.Output
@@ -154,9 +146,7 @@ import one.mixin.android.vo.safe.UnifiedAssetItem
 import one.mixin.android.vo.safe.toAssetItem
 import one.mixin.android.vo.safe.toPriceAndChange
 import one.mixin.android.vo.sumsub.ProfileResponse
-import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.web3.js.Web3Signer
-import retrofit2.Call
 import retrofit2.Response
 import timber.log.Timber
 import java.math.BigDecimal
@@ -210,7 +200,6 @@ class TokenRepository
         private val walletOutputDao: WalletOutputDao,
         private val web3WalletDao: Web3WalletDao,
         private val jobManager: MixinJobManager,
-        private val safeBoxStoreManager: SafeBoxStoreManager,
         private val web3AddressDao: Web3AddressDao,
     ) {
         fun assets() = tokenService.assets()
@@ -847,59 +836,9 @@ class TokenRepository
                 },
             )
 
-        suspend fun token(): MixinResponse<RouteTokenResponse> = routeService.sumsubToken()
-
-        fun callSumsubToken(): Call<MixinResponse<RouteTokenResponse>> = routeService.callSumsubToken()
-
         suspend fun profile(): MixinResponse<ProfileResponse> = routeService.profile(VERSION_NAME)
 
-        suspend fun payment(
-            id: String,
-            paymentRequestst: RoutePaymentRequest,
-        ): MixinResponse<RouteOrderResponse> = routeService.order(id, paymentRequestst)
-
-        suspend fun orders(): MixinResponse<List<RouteOrderResponse>> = routeService.payments()
-
         fun walletOrders(): Flow<List<OrderItem>> = orderDao.orders()
-
-        suspend fun createOrder(createSession: OrderRequest): MixinResponse<RouteOrderResponse> =
-            routeService.createOrder(createSession)
-
-        suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
-
-        suspend fun createInstrument(createInstrument: RouteInstrumentRequest): MixinResponse<Card> =
-            routeService.createInstrument(createInstrument)
-
-        suspend fun getOrder(orderId: String): MixinResponse<RouteOrderResponse> =
-            routeService.getOrder(orderId)
-
-        fun cards(): Flow<SafeBox?> = safeBoxStoreManager.current().data
-
-        suspend fun addCard(card: Card) {
-            safeBoxStoreManager.current().updateData { box ->
-                val list = box.cards.toMutableList()
-                list.add(card)
-                SafeBox(list)
-            }
-        }
-
-        suspend fun removeCard(index: Int) {
-            safeBoxStoreManager.current().updateData { box ->
-                val list = box.cards.toMutableList()
-                list.removeAt(index)
-                SafeBox(list)
-            }
-        }
-
-        suspend fun initSafeBox(cards: List<Card>) {
-            safeBoxStoreManager.current().updateData { _ ->
-                SafeBox(cards)
-            }
-        }
-
-        suspend fun instruments(): MixinResponse<List<Card>> = routeService.instruments()
-
-        suspend fun deleteInstruments(id: String): MixinResponse<Void> = routeService.deleteInstruments(id)
 
         suspend fun transactionRequest(transactionRequests: List<TransactionRequest>) = utxoService.transactionRequest(transactionRequests)
 
@@ -1071,11 +1010,6 @@ class TokenRepository
         )
 
         suspend fun findTokensExtra(asset: String) = tokensExtraDao.findByAssetId(asset)
-
-        suspend fun updatePrice(
-            orderId: String,
-            price: String,
-        ) = routeService.updateOrderPrice(orderId, RoutePriceRequest(price))
 
         fun collectibles(sortOrder: SortOrder): LiveData<List<SafeCollectible>> = outputDao.collectibles(sortOrder.name)
 
@@ -1713,6 +1647,14 @@ class TokenRepository
 
     suspend fun transaction(hash: String, chainId: String) = routeService.transaction(hash,chainId)
 
+    suspend fun refreshWeb3Transaction(address: String, hash: String, chainId: String): Web3Transaction? {
+        val response = routeService.getWeb3Transaction(hash, address, chainId)
+        // Keep the local record when the server has no such transaction (404) or the request fails
+        val remote = response.data?.takeIf { response.isSuccess } ?: return null
+        web3TransactionDao.insertSuspend(remote)
+        return remote
+    }
+
     suspend fun getPendingRawTransactions(walletId: String) = web3RawTransactionDao.getPendingRawTransactions(
         walletId)
 
@@ -1869,7 +1811,7 @@ class TokenRepository
                 ),
             )
             if (pendingTransaction != null) {
-                web3TransactionDao.insert(
+                web3TransactionDao.insertIgnore(
                     pendingTransaction.copy(
                         transactionHash = broadcastTxHash,
                         transactionAt = updatedAt,

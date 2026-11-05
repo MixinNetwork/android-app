@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet.home
 
+import com.google.gson.annotations.SerializedName
 import one.mixin.android.api.response.perps.PerpsPositionItem
 import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.R
@@ -129,15 +130,21 @@ enum class WalletHomeWatchKind {
 }
 
 data class WalletHomeImportKeyAction(
+    @SerializedName("kind")
     val kind: WalletHomeImportKeyKind,
+) {
+    val buttonTextRes: Int get() = kind.buttonTextRes
+    val descriptionRes: Int get() = kind.descriptionRes
+    val learnMoreUrlRes: Int get() = kind.learnMoreUrlRes
+}
+
+enum class WalletHomeImportKeyKind(
     val buttonTextRes: Int,
     val descriptionRes: Int,
     val learnMoreUrlRes: Int,
-)
-
-enum class WalletHomeImportKeyKind {
-    MNEMONIC_PHRASE,
-    PRIVATE_KEY,
+) {
+    MNEMONIC_PHRASE(R.string.import_mnemonic_phrase, R.string.Import_Mnemonic_Phrase_Desc, R.string.import_mnemonic_phrase_url),
+    PRIVATE_KEY(R.string.import_private_key, R.string.Import_Private_Key_Desc, R.string.import_private_key_url),
 }
 
 fun List<PendingDisplay>.toWalletHomePendingIndicator(): WalletHomePendingIndicator? {
@@ -208,18 +215,8 @@ fun walletHomeImportKeyAction(
 ): WalletHomeImportKeyAction? {
     if (hasLocalPrivateKey) return null
     return when (category) {
-        WalletCategory.IMPORTED_MNEMONIC.value -> WalletHomeImportKeyAction(
-            kind = WalletHomeImportKeyKind.MNEMONIC_PHRASE,
-            buttonTextRes = R.string.import_mnemonic_phrase,
-            descriptionRes = R.string.Import_Mnemonic_Phrase_Desc,
-            learnMoreUrlRes = R.string.import_mnemonic_phrase_url,
-        )
-        WalletCategory.IMPORTED_PRIVATE_KEY.value -> WalletHomeImportKeyAction(
-            kind = WalletHomeImportKeyKind.PRIVATE_KEY,
-            buttonTextRes = R.string.import_private_key,
-            descriptionRes = R.string.Import_Private_Key_Desc,
-            learnMoreUrlRes = R.string.import_private_key_url,
-        )
+        WalletCategory.IMPORTED_MNEMONIC.value -> WalletHomeImportKeyAction(WalletHomeImportKeyKind.MNEMONIC_PHRASE)
+        WalletCategory.IMPORTED_PRIVATE_KEY.value -> WalletHomeImportKeyAction(WalletHomeImportKeyKind.PRIVATE_KEY)
         else -> null
     }
 }

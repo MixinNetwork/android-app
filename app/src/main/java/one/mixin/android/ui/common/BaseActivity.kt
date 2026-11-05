@@ -1,6 +1,7 @@
 package one.mixin.android.ui.common
 
 import android.annotation.SuppressLint
+import android.content.res.Configuration
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
@@ -25,6 +26,22 @@ open class BaseActivity : AppCompatActivity() {
     lateinit var lastLang: String
     var lastThemeId: Int = defaultThemeId
     protected var skipSystemUi: Boolean = false
+    internal var hasObservedFold = false
+        private set
+
+    internal fun onFoldObserved() {
+        if (hasObservedFold) return
+        hasObservedFold = true
+        androidx.core.view.ViewCompat.requestApplyInsets(window.decorView)
+        onWindowLayoutModeChanged()
+    }
+
+    protected open fun onWindowLayoutModeChanged() {}
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        androidx.core.view.ViewCompat.requestApplyInsets(window.decorView)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

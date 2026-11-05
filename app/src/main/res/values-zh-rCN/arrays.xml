@@ -34,6 +34,12 @@
     <plurals name="time_interval_unit_week" tools:ignore="UnusedQuantity">
         <item quantity="other">周</item>
     </plurals>
+    <plurals name="time_interval_unit_month" tools:ignore="UnusedQuantity">
+        <item quantity="other">个月</item>
+    </plurals>
+    <plurals name="time_interval_unit_year" tools:ignore="UnusedQuantity">
+        <item quantity="other">年</item>
+    </plurals>
 
     <array name="database">
         <item>Mixin 数据库</item>
