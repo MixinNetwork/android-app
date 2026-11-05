@@ -8,11 +8,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
@@ -26,6 +28,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -41,17 +45,18 @@ import one.mixin.android.widget.components.MixinButton
 fun TradeMoreBottomSheet(
     walletId: String?,
     walletName: String?,
-    swapCount: Int,
-    limitCount: Int,
-    activityCount: Int,
+    pendingSwapCount: Int,
+    pendingLimitCount: Int,
     onOrders: (String) -> Unit,
     onActivity: () -> Unit,
     onTradePro: () -> Unit,
     onDismiss: () -> Unit,
 ) {
+    val topInset = with(LocalDensity.current) { WindowInsets.safeDrawing.getTop(this).toDp() }
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .height(LocalConfiguration.current.screenHeightDp.dp - topInset - 56.dp)
             .background(MixinAppTheme.colors.background),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
@@ -84,15 +89,23 @@ fun TradeMoreBottomSheet(
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             TradeMoreGroup {
-                TradeMoreRow(stringResource(R.string.Trade_Swap_Orders), swapCount) { onOrders("swap") }
-                TradeMoreRow(stringResource(R.string.Trade_Limit_Orders), limitCount) { onOrders("limit") }
+                TradeMoreRow(
+                    title = stringResource(R.string.Trade_Swap_Orders),
+                    trailingText = if (pendingSwapCount > 0) "$pendingSwapCount ${stringResource(R.string.State_Pending)}" else null,
+                ) { onOrders("swap") }
+                TradeMoreRow(
+                    title = stringResource(R.string.Trade_Limit_Orders),
+                    trailingText = if (pendingLimitCount > 0) "$pendingLimitCount ${stringResource(R.string.State_Pending)}" else null,
+                ) { onOrders("limit") }
             }
-            Spacer(Modifier.height(10.dp))
-            TradeMoreGroup {
-                TradeMoreRow(stringResource(R.string.Trade_Perpetual_Activity), activityCount, onActivity)
+            if (walletId == null) {
+                Spacer(Modifier.height(10.dp))
+                TradeMoreGroup {
+                    TradeMoreRow(stringResource(R.string.Trade_Perpetual_Activity), onClick = onActivity)
+                }
+                Spacer(Modifier.height(36.dp))
+                TradeProPromo(onTradePro)
             }
-            Spacer(Modifier.height(36.dp))
-            TradeProPromo(onTradePro)
         }
     }
 }
@@ -110,7 +123,7 @@ private fun TradeMoreGroup(content: @Composable () -> Unit) {
 }
 
 @Composable
-private fun TradeMoreRow(title: String, count: Int, onClick: () -> Unit) {
+private fun TradeMoreRow(title: String, trailingText: String? = null, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -127,12 +140,14 @@ private fun TradeMoreRow(title: String, count: Int, onClick: () -> Unit) {
             lineHeight = 20.sp,
         )
         Spacer(Modifier.width(8.dp))
-        Text(
-            count.toString(),
-            color = MixinAppTheme.colors.textRemarks,
-            fontSize = 14.sp,
-            lineHeight = 18.sp,
-        )
+        if (trailingText != null) {
+            Text(
+                trailingText,
+                color = MixinAppTheme.colors.textRemarks,
+                fontSize = 14.sp,
+                lineHeight = 18.sp,
+            )
+        }
         Icon(
             painterResource(R.drawable.ic_wallet_arrow_right),
             contentDescription = null,

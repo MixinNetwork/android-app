@@ -23,7 +23,6 @@ import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.home.web3.trade.perps.AllPositionsFragment
-import one.mixin.android.ui.home.web3.trade.perps.PerpetualViewModel
 import one.mixin.android.ui.home.web3.trade.perps.navigateToPerpsRoute
 import one.mixin.android.ui.wallet.AllOrdersFragment
 import one.mixin.android.util.SystemUIManager
@@ -48,7 +47,6 @@ class TradeMoreBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
     }
 
     private val swapViewModel by viewModels<SwapViewModel>()
-    private val perpsViewModel by viewModels<PerpetualViewModel>()
 
     override fun getTheme() = R.style.AppTheme_Dialog
 
@@ -79,20 +77,18 @@ class TradeMoreBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
     override fun ComposeContent() {
         val walletId = arguments?.getString(ARGS_WALLET_ID)
         val currentWalletId = walletId ?: Session.getAccountId().orEmpty()
-        val swapCount by remember(currentWalletId) {
-            swapViewModel.observeOrderCount(currentWalletId, "swap")
+        val pendingSwapCount by remember(currentWalletId) {
+            swapViewModel.observePendingOrderCount(currentWalletId, "swap")
         }.collectAsStateWithLifecycle(0)
-        val limitCount by remember(currentWalletId) {
-            swapViewModel.observeOrderCount(currentWalletId, "limit")
+        val pendingLimitCount by remember(currentWalletId) {
+            swapViewModel.observePendingOrderCount(currentWalletId, "limit")
         }.collectAsStateWithLifecycle(0)
-        val activityCount by remember { perpsViewModel.observeActivityCount() }.collectAsStateWithLifecycle(0)
         MixinAppTheme {
             TradeMoreBottomSheet(
                 walletId = walletId,
                 walletName = arguments?.getString(ARGS_WALLET_NAME),
-                swapCount = swapCount,
-                limitCount = limitCount,
-                activityCount = activityCount,
+                pendingSwapCount = pendingSwapCount,
+                pendingLimitCount = pendingLimitCount,
                 onOrders = { orderType ->
                     val target = AllOrdersFragment.newInstanceWithWalletIds(
                         walletIds = arrayListOf(currentWalletId),
