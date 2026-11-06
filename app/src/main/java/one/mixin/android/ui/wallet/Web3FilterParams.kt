@@ -3,6 +3,8 @@ package one.mixin.android.ui.wallet
 import android.os.Parcelable
 import androidx.room3.RoomRawQuery
 import kotlinx.parcelize.Parcelize
+import one.mixin.android.Constants
+import one.mixin.android.vo.Address
 import one.mixin.android.db.web3.vo.TransactionStatus
 import one.mixin.android.db.web3.vo.Web3TokenItem
 import one.mixin.android.tip.wc.SortOrder
@@ -18,7 +20,8 @@ class Web3FilterParams(
     var startTime: Long? = null,
     var endTime: Long? = null,
     var level: Int = 0b00,
-    var walletId: String
+    var walletId: String,
+    var address: Address? = null,
 ) : Parcelable {
     companion object {
         const val FILTER_MASK = 0b11
@@ -53,8 +56,9 @@ class Web3FilterParams(
         return formatter.format(Instant.ofEpochMilli(timestamp))
     }
 
-    fun buildQuery(): RoomRawQuery {
+    fun buildQuery(limit: Int? = null): RoomRawQuery {
         val filters = mutableListOf<String>()
+        val walletIdSql = walletId.replace("'", "''")
 
         tokenItems?.let {
             if (it.isNotEmpty()) {
@@ -63,8 +67,21 @@ class Web3FilterParams(
             }
         }
 
-        walletId.let {
-            filters.add("w.address IN (SELECT destination FROM addresses WHERE wallet_id = '$it')")
+        val selectedAddress = address
+        if (selectedAddress == null) {
+            filters.add("w.address IN (SELECT destination FROM addresses WHERE wallet_id = '$walletIdSql')")
+        } else {
+            filters.add("w.chain_id = '${selectedAddress.chainId.replace("'", "''")}'")
+            val collation = if (selectedAddress.chainId in Constants.Web3EvmChainIds) "NOCASE" else "BINARY"
+            filters.add("EXISTS (SELECT 1 FROM addresses a WHERE a.wallet_id = '$walletIdSql' AND a.chain_id = w.chain_id AND a.destination = w.address COLLATE $collation)")
+            if (!selectedAddress.tag.isNullOrEmpty()) {
+                filters.add("0")
+            } else {
+                val endpoints = listOf("w.senders", "w.receivers", "w.approvals").flatMap { column ->
+                    listOf("from", "to").map { field -> selectedAddress.jsonAddressPredicate(column, field) }
+                }
+                filters.add("(${endpoints.joinToString(" OR ")})")
+            }
         }
 
         tokenFilterType.let {
@@ -99,12 +116,23 @@ class Web3FilterParams(
             "WHERE ${filters.joinToString(" AND ")}"
         }
 
-        val orderSql = when (order) {
+        var orderSql = when (order) {
             SortOrder.Recent -> "ORDER BY w.transaction_at DESC"
             SortOrder.Oldest -> "ORDER BY w.transaction_at ASC"
             else -> ""
         }
+        if (selectedAddress != null) {
+            orderSql += when (order) {
+                SortOrder.Recent -> ", w.transaction_hash DESC, w.address DESC"
+                SortOrder.Oldest -> ", w.transaction_hash ASC, w.address ASC"
+                else -> "ORDER BY w.transaction_at DESC, w.transaction_hash DESC, w.address DESC"
+            }
+        }
+        limit?.let {
+            require(it >= 0)
+            orderSql += " LIMIT $it"
+        }
 
-        return WalletFilterQueryGenerated.web3Transactions(whereSql, orderSql, walletId)
+        return WalletFilterQueryGenerated.web3Transactions(whereSql, orderSql, walletIdSql)
     }
 }

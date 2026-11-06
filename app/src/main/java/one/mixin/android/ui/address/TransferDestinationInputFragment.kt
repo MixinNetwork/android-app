@@ -24,6 +24,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.navigation.navArgument
 import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,6 +62,7 @@ import one.mixin.android.ui.wallet.InputFragment
 import one.mixin.android.ui.wallet.TransactionsFragment.Companion.ARGS_ASSET
 import one.mixin.android.ui.wallet.TransferContactBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.WalletListBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.network.NetworkSelectBottomSheetDialogFragment
 import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
 import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
@@ -71,6 +73,7 @@ import one.mixin.android.util.isIcapAddress
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.Address
+import one.mixin.android.vo.Chain
 import one.mixin.android.vo.WithdrawalMemoPossibility
 import one.mixin.android.vo.safe.TokenItem
 import timber.log.Timber
@@ -84,6 +87,17 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         const val ARGS_CHAIN_TOKEN = "args_chain_token"
         const val ARGS_ADDRESS = "args_address"
         const val ARGS_WALLET = "args_wallet"
+        private const val ARGS_ADDRESS_BOOK_CHAIN_ID = "args_address_book_chain_id"
+        private const val ARGS_ADDRESS_BOOK_WALLET_ID = "args_address_book_wallet_id"
+        private const val STATE_ADDRESS_BOOK_TOKEN = "state_address_book_token"
+
+        // walletId limits the switchable networks to the chains of a common wallet, null for the privacy wallet
+        fun newInstanceForAddressBook(chainId: String, walletId: String?) = TransferDestinationInputFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARGS_ADDRESS_BOOK_CHAIN_ID, chainId)
+                putString(ARGS_ADDRESS_BOOK_WALLET_ID, walletId)
+            }
+        }
     }
 
     private val token: TokenItem? by lazy {
@@ -92,6 +106,13 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             TokenItem::class.java
         )
     }
+
+    private var addressBookChainId by mutableStateOf<String?>(null)
+    private var addressBookToken by mutableStateOf<TokenItem?>(null)
+    private var addressBookChains by mutableStateOf<List<Chain>>(emptyList())
+    private var addressBookWalletChainIds by mutableStateOf<Set<String>?>(emptySet())
+    private val addAddressToken: TokenItem?
+        get() = if (addressBookChainId != null) addressBookToken else token
 
     private val address by lazy {
         requireArguments().getString(ARGS_ADDRESS)
@@ -170,6 +191,8 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
+        addressBookChainId = requireArguments().getString(ARGS_ADDRESS_BOOK_CHAIN_ID)
+        addressBookToken = savedInstanceState?.getParcelableCompat(STATE_ADDRESS_BOOK_TOKEN, TokenItem::class.java) ?: addressBookToken
         
         web3Token = initialWeb3Token
         chainToken = initialChainToken
@@ -189,7 +212,19 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             }
         }
         
-        jobManager.addJobInBackground(SyncOutputJob())
+        if (addressBookChainId == null) {
+            jobManager.addJobInBackground(SyncOutputJob())
+        } else {
+            viewLifecycleOwner.lifecycleScope.launch {
+                addressBookWalletChainIds = viewModel.walletChainIds(requireArguments().getString(ARGS_ADDRESS_BOOK_WALLET_ID))
+                addressBookChains = viewModel.getChains()
+                val networks = addressBookNetworks(addressBookChains, addressBookWalletChainIds)
+                if (networks.isNotEmpty() && networks.none { it.chainId == addressBookChainId }) {
+                    addressBookChainId = defaultAddressBookNetwork(emptyList(), networks).chainId
+                    addressBookToken = null
+                }
+            }
+        }
         (token?.chainId ?: web3Token?.chainId)?.let {
             jobManager.addJobInBackground(RefreshAddressJob(it))
         }
@@ -199,7 +234,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = "${TransferDestination.Initial.name}?address=false",
+                        startDestination = if (addressBookChainId != null) {
+                            TransferDestination.Address.name
+                        } else {
+                            "${TransferDestination.Initial.name}?address=false"
+                        },
                         enterTransition = {
                             slideIntoContainer(
                                 AnimatedContentTransitionScope.SlideDirection.Left,
@@ -586,8 +625,35 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                         }
                         composable(TransferDestination.Address.name) {
                             AddressInputPage(
-                                token = token,
+                                token = addAddressToken,
                                 web3Token = web3Token,
+                                networkChainId = addressBookChainId ?: token?.chainId ?: web3Token?.chainId,
+                                networkName = addressBookNetworks(addressBookChains, addressBookWalletChainIds).firstOrNull {
+                                    it.chainId == (addressBookChainId ?: token?.chainId ?: web3Token?.chainId)
+                                }?.name ?: token?.chainName ?: web3Token?.chainName.orEmpty(),
+                                onNetworkClick = if (addressBookChainId == null) null else {
+                                    {
+                                        if (!isLoading) {
+                                            requireView().hideKeyboard()
+                                            NetworkSelectBottomSheetDialogFragment.newInstance(
+                                                ArrayList(addressBookNetworks(addressBookChains, addressBookWalletChainIds)),
+                                                addressBookChainId,
+                                            ).apply {
+                                                onNetworkSelected = { network ->
+                                                    if (network.chainId != addressBookChainId) {
+                                                        addressBookChainId = network.chainId
+                                                        this@TransferDestinationInputFragment.requireArguments().putString(ARGS_ADDRESS_BOOK_CHAIN_ID, network.chainId)
+                                                        addressBookToken = null
+                                                        scannedAddress = ""
+                                                        scannedMemo = ""
+                                                        scannedLabel = ""
+                                                        errorInfo = null
+                                                    }
+                                                }
+                                            }.show(parentFragmentManager, NetworkSelectBottomSheetDialogFragment.TAG)
+                                        }
+                                    }
+                                },
                                 contentText = scannedAddress,
                                 errorInfo = errorInfo,
                                 isLoading = isLoading,
@@ -595,14 +661,15 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                     errorInfo = null
                                     requireView().hideKeyboard()
                                     validateAndNavigateToInput(
-                                        assetId = token?.assetId ?: web3Token?.assetId ?: "",
-                                        chainId = token?.chainId ?: web3Token?.chainId ?: "",
+                                        assetId = addressBookChainId ?: token?.assetId ?: web3Token?.assetId ?: "",
+                                        chainId = addressBookChainId ?: token?.chainId ?: web3Token?.chainId ?: "",
                                         destination = address,
-                                        asset = token,
+                                        asset = addAddressToken,
+                                        resolveNativeAsset = addressBookChainId != null,
                                         web3Token = web3Token
                                     ) {
                                         errorInfo = null
-                                        if (token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || token?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE) {
+                                        if (addAddressToken?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSITIVE || addAddressToken?.withdrawalMemoPossibility == WithdrawalMemoPossibility.POSSIBLE) {
                                             navController.navigate("${TransferDestination.Memo.name}?address=$address")
                                         } else {
                                             navController.navigate("${TransferDestination.Label.name}?address=$address")
@@ -612,7 +679,16 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 onScan = { startQrScan(ScanType.ADDRESS) },
                                 pop = {
                                     errorInfo = null
-                                    navController.popBackStack()
+                                    if (addressBookChainId != null) {
+                                        val fragmentNavController = findNavController()
+                                        if (fragmentNavController.previousBackStackEntry == null) {
+                                            requireActivity().finish()
+                                        } else {
+                                            fragmentNavController.popBackStack()
+                                        }
+                                    } else {
+                                        navController.popBackStack()
+                                    }
                                 }
                             )
                         }
@@ -656,18 +732,24 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                         ) { backStackEntry ->
                             val address = backStackEntry.arguments?.getString("address") ?: ""
                             MemoInputPage(
-                                token = token,
+                                token = addAddressToken,
                                 web3Token = web3Token,
                                 address = address,
+                                networkName = addressBookNetworks(addressBookChains, addressBookWalletChainIds).firstOrNull {
+                                    it.chainId == (addressBookChainId ?: token?.chainId ?: web3Token?.chainId)
+                                }?.name ?: addAddressToken?.chainName ?: web3Token?.chainName.orEmpty(),
+                                networkIconUrl = addAddressToken?.chainIconUrl ?: web3Token?.chainIcon,
                                 contentText = scannedMemo,
+                                errorInfo = errorInfo,
+                                isLoading = isLoading,
                                 onNext = { memo ->
                                     errorInfo = null
                                     AnalyticsTracker.trackAddressBookAddMemo("memo")
                                     validateAndNavigateToInput(
-                                        assetId = token?.assetId ?: web3Token?.assetId ?: "",
-                                        chainId = token?.chainId ?: web3Token?.chainId ?: "",
+                                        assetId = addAddressToken?.assetId ?: web3Token?.assetId ?: "",
+                                        chainId = addAddressToken?.chainId ?: web3Token?.chainId ?: "",
                                         destination = address,
-                                        asset = token,
+                                        asset = addAddressToken,
                                         web3Token = web3Token,
                                         tag = memo
                                     ) {
@@ -695,8 +777,12 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                             val address = backStackEntry.arguments?.getString("address") ?: ""
                             val memo = backStackEntry.arguments?.getString("memo")
                             LabelInputPage(
-                                token = token,
+                                token = addAddressToken,
                                 web3Token = web3Token,
+                                networkName = addressBookNetworks(addressBookChains, addressBookWalletChainIds).firstOrNull {
+                                    it.chainId == (addressBookChainId ?: token?.chainId ?: web3Token?.chainId)
+                                }?.name ?: addAddressToken?.chainName ?: web3Token?.chainName.orEmpty(),
+                                networkIconUrl = addAddressToken?.chainIconUrl ?: web3Token?.chainIcon,
                                 address = address,
                                 memo = memo,
                                 contentText = scannedLabel,
@@ -704,13 +790,13 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                                 onComplete = { label ->
                                     errorInfo = null
                                     AnalyticsTracker.trackAddressBookAddLabel()
-                                    if (token == null && web3Token != null) {
+                                    if (addAddressToken == null && web3Token != null) {
                                         this@TransferDestinationInputFragment.lifecycleScope.launch {
                                             val t = web3ViewModel.syncAsset(web3Token!!.assetId) ?: return@launch
                                             handleLabelComplete(t, address, memo, label, navController)
                                         }
-                                    } else if (token != null) {
-                                        handleLabelComplete(token!!, address, memo, label, navController)
+                                    } else if (addAddressToken != null) {
+                                        handleLabelComplete(addAddressToken!!, address, memo, label, navController)
                                     } else {
                                         toast(R.string.Data_error)
                                     }
@@ -725,6 +811,11 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                 }
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putParcelable(STATE_ADDRESS_BOOK_TOKEN, addressBookToken)
+        super.onSaveInstanceState(outState)
     }
 
     private fun startQrScan(scanType: ScanType) {
@@ -795,12 +886,22 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
         web3Token: Web3TokenItem? = null,
         chainToken: Web3TokenItem? = null,
         asset: TokenItem? = null,
+        resolveNativeAsset: Boolean = false,
         callback: (() -> Unit)? = null,
     ) {
         requireView().hideKeyboard()
-        lifecycleScope.launch {
+        viewLifecycleOwner.lifecycleScope.launch {
             isLoading = true
             try {
+                if (resolveNativeAsset) {
+                    addressBookToken = withContext(Dispatchers.IO) {
+                        viewModel.findOrSyncAsset(chainId)
+                    }
+                    if (addressBookToken == null) {
+                        errorInfo = getString(R.string.Data_error)
+                        return@launch
+                    }
+                }
                 if (assetId.isNotEmpty() && destination.isNotEmpty()) {
                     val response = viewModel.validateExternalAddress(assetId, chainId, destination, tag)
                     val des = response.data?.destination
@@ -840,6 +941,8 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
                         errorInfo = requireContext().getMixinErrorStringByCode(response.errorCode, response.errorDescription)
                     }
                 }
+            } catch (e: CancellationException) {
+                throw e
             } catch (e: Exception) {
                 errorInfo = ErrorHandler.getErrorMessage(e)
             } finally {
@@ -926,10 +1029,19 @@ class TransferDestinationInputFragment() : BaseFragment(R.layout.fragment_addres
             object : TransferBottomSheetDialogFragment.Callback() {
                 override fun onDismiss(success: Boolean) {
                     if (success) {
-                        navController.popBackStack(
-                            TransferDestination.Initial.name,
-                            inclusive = false
-                        )
+                        if (addressBookChainId != null) {
+                            val fragmentNavController = findNavController()
+                            if (fragmentNavController.previousBackStackEntry == null) {
+                                requireActivity().finish()
+                            } else {
+                                fragmentNavController.popBackStack()
+                            }
+                        } else {
+                            navController.popBackStack(
+                                TransferDestination.Initial.name,
+                                inclusive = false
+                            )
+                        }
                     }
                 }
             },

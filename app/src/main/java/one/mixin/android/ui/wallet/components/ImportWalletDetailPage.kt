@@ -4,6 +4,7 @@ package one.mixin.android.ui.wallet.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,10 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.OutlinedTextField
@@ -59,11 +56,14 @@ import one.mixin.android.crypto.isEvmPrivateKeyValid
 import one.mixin.android.crypto.isSolanaAddressValid
 import one.mixin.android.crypto.isSolanaHexPrivateKeyValid
 import one.mixin.android.crypto.isSolanaPrivateKeyValid
+import one.mixin.android.extension.findFragmentActivityOrNull
 import one.mixin.android.extension.openUrl
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.components.PageScaffold
 import one.mixin.android.ui.wallet.WalletSecurityActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
+import one.mixin.android.ui.wallet.network.NetworkOption
+import one.mixin.android.ui.wallet.network.NetworkSelectBottomSheetDialogFragment
 import one.mixin.android.util.encodeToBase58String
 import org.bitcoinj.base.BitcoinNetwork
 import org.bitcoinj.crypto.DumpedPrivateKey
@@ -73,7 +73,6 @@ import org.web3j.utils.Numeric
 import timber.log.Timber
 import java.math.BigInteger
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun ImportWalletDetailPage(
     mode: WalletSecurityActivity.Mode,
@@ -107,7 +106,6 @@ fun ImportWalletDetailPage(
         "Arc" to Constants.ChainId.Arc,
         "Solana" to Constants.ChainId.SOLANA_CHAIN_ID
     )
-    var expanded by remember { mutableStateOf(false) }
     val initialNetworkName = remember(chainId) {
         if (chainId == null) null
         else networks.entries.find { it.value == chainId }?.key
@@ -317,14 +315,7 @@ fun ImportWalletDetailPage(
                     Spacer(modifier = Modifier.height(16.dp))
                 }
 
-                ExposedDropdownMenuBox(
-                    expanded = expanded,
-                    onExpandedChange = {
-                        if (chainId == null) {
-                            expanded = !expanded
-                        }
-                    },
-                ) {
+                Box(modifier = Modifier.fillMaxWidth()) {
                     TextField(
                         readOnly = true,
                         value = selectedNetworkName,
@@ -358,22 +349,28 @@ fun ImportWalletDetailPage(
                                 shape = RoundedCornerShape(8.dp)
                             )
                     )
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = {
-                            expanded = false
-                        },
-                    ) {
-                        networks.keys.forEach { networkName ->
-                            DropdownMenuItem(
-                                onClick = {
-                                    selectedNetworkName = networkName
-                                    expanded = false
+                    if (chainId == null) {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clip(RoundedCornerShape(8.dp))
+                                .clickable {
+                                    val fragmentManager = context.findFragmentActivityOrNull()?.supportFragmentManager
+                                        ?: return@clickable
+                                    if (fragmentManager.findFragmentByTag(NetworkSelectBottomSheetDialogFragment.TAG) != null) {
+                                        return@clickable
+                                    }
+                                    val options = ArrayList(networks.map { (name, id) -> NetworkOption(id, name) })
+                                    NetworkSelectBottomSheetDialogFragment.newInstance(
+                                        options,
+                                        networks[selectedNetworkName],
+                                    ).apply {
+                                        onNetworkSelected = { option ->
+                                            selectedNetworkName = option.name
+                                        }
+                                    }.showNow(fragmentManager, NetworkSelectBottomSheetDialogFragment.TAG)
                                 }
-                            ) {
-                                Text(text = networkName, color = MixinAppTheme.colors.textPrimary)
-                            }
-                        }
+                        )
                     }
                 }
 
