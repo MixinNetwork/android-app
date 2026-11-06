@@ -568,6 +568,7 @@ class WebFragment : BaseFragment() {
 
         webView.webViewClient =
             WebViewClientImpl(
+                webView.webViewClient as? SignInWebViewClient,
                 object : WebViewClientImpl.OnPageFinishedListener {
                     override fun onPageFinished() {
                         reloadTheme()
@@ -1357,7 +1358,7 @@ class WebFragment : BaseFragment() {
         webView.removeJavascriptInterface("MixinContext")
         webView.removeJavascriptInterface("mixin")
         webView.webChromeClient = null
-        webView.webViewClient = object : WebViewClient() {}
+        webView.webViewClient = SignInWebViewClient(webView.webViewClient as? SignInWebViewClient)
 
         return WebClip(
             currentUrl,
@@ -1836,6 +1837,7 @@ class WebFragment : BaseFragment() {
 
     @Suppress("DEPRECATION")
     class WebViewClientImpl(
+        previousClient: SignInWebViewClient?,
         private val onPageFinishedListener: OnPageFinishedListener,
         val conversationId: String?,
         private val context: Context,
@@ -1847,8 +1849,7 @@ class WebFragment : BaseFragment() {
         private val onFinished: (url: String?) -> Unit,
         private val onWebpageLoaded: (title: String?, url: String?) -> Unit,
         private val onReceivedError: (request: Int?, description: String?, failingUrl: String?) -> Unit,
-    ) : WebViewClient() {
-        private var signInPageUrl: String? = null
+    ) : SignInWebViewClient(previousClient) {
         private var redirect = false
         private var loadingError = false
         private val jsInjectorClient by lazy {
@@ -1859,15 +1860,12 @@ class WebFragment : BaseFragment() {
             fragment.activity?.finish()
         }
 
-        fun getSignInPageUrl(view: WebView): String? = signInPageUrl?.takeIf { it == view.url }
-
         override fun onPageStarted(
             view: WebView?,
             url: String?,
             favicon: Bitmap?,
         ) {
             super.onPageStarted(view, url, favicon)
-            signInPageUrl = null
             view ?: return
             view.clearCache(true)
             Timber.e("onPageStarted ${Web3Signer.currentChain.name}")
@@ -1887,7 +1885,6 @@ class WebFragment : BaseFragment() {
         ) {
             super.onPageFinished(view, url)
             if (!redirect && !loadingError) {
-                signInPageUrl = url?.takeIf { it == view?.url }
                 onWebpageLoaded.invoke(view?.title, url)
             }
             onPageFinishedListener.onPageFinished()
@@ -1903,7 +1900,6 @@ class WebFragment : BaseFragment() {
             failingUrl: String?,
         ) {
             super.onReceivedError(view, errorCode, description, failingUrl)
-            signInPageUrl = null
             onReceivedError(errorCode, description, failingUrl)
             loadingError = true
         }
@@ -1914,8 +1910,7 @@ class WebFragment : BaseFragment() {
             handler: SslErrorHandler?,
             error: SslError?,
         ) {
-            signInPageUrl = null
-            loadingError = true
+            super.onReceivedSslError(view, handler, error)
             error?.let { e ->
                 reportException(Exception("$e ${view?.url}"))
             }
@@ -1979,7 +1974,7 @@ class WebFragment : BaseFragment() {
                 extraHeaders[Mixin_Conversation_ID_HEADER] = it
             }
             if (url.isWebUrl()) {
-                signInPageUrl = null
+                invalidateSignInPage()
                 view.loadUrl(url, extraHeaders)
                 return true
             } else {
@@ -2005,7 +2000,7 @@ class WebFragment : BaseFragment() {
                     } catch (e: ActivityNotFoundException) {
                         val fallbackUrl = intent.extras?.getString("browser_fallback_url")
                         if (fallbackUrl != null && isFallbackUrlValid(fallbackUrl)) {
-                            signInPageUrl = null
+                            invalidateSignInPage()
                             view.loadUrl(fallbackUrl, extraHeaders)
                         } else {
                             throw e
@@ -2015,7 +2010,7 @@ class WebFragment : BaseFragment() {
                     if (e is ActivityNotFoundException) {
                         // do nothing
                     } else {
-                        signInPageUrl = null
+                        invalidateSignInPage()
                         view.loadUrl(url, extraHeaders)
                     }
                 }
