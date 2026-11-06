@@ -272,8 +272,26 @@ object AnalyticsTracker {
         logEvent("asset_send_preview")
     }
 
-    fun trackAssetSendEnd() {
-        logEvent("asset_send_end")
+    fun trackAssetSendEnd(
+        wallet: String,
+        destination: String,
+        assetSymbol: String? = null,
+        amountValue: BigDecimal? = null,
+        price: String? = null,
+    ) {
+        logEvent("asset_send_end") {
+            putString("wallet", wallet)
+            putString("destination", destination)
+            assetSymbol?.let { putString("asset_symbol", it) }
+            amountValue?.let { putString("asset_level", getAssetLevel(it, price)) }
+        }
+    }
+
+    object AssetSendDestination {
+        const val USER = "user"
+        const val MULTISIG = "multisig"
+        const val MAINNET = "mainnet"
+        const val WITHDRAWAL = "withdrawal"
     }
 
     object AssetSendRecipientType {
@@ -968,9 +986,10 @@ object AnalyticsTracker {
         }
     }
 
-    fun trackSpotEnd(wallet: String, amountValue: BigDecimal, price: String?) {
+    fun trackSpotEnd(wallet: String, assetSymbol: String, amountValue: BigDecimal, price: String?) {
         logEvent("trade_spot_end") {
             putString("wallet", wallet)
+            putString("asset_symbol", assetSymbol)
             putString("asset_level", getAssetLevel(amountValue, price))
         }
     }
