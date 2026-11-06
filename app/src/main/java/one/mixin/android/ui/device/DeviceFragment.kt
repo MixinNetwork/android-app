@@ -208,7 +208,7 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
             scanBtn.isVisible = !loggedIn
             statusTv.isVisible = loggedIn
             logoutBtn.isVisible = loggedIn
-            platformTv.isVisible = false
+            platformTv.isVisible = loggedIn
         }
         if (loggedIn) {
             loadPlatform()
@@ -237,7 +237,6 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
                 )
             if (!loggedIn || platform.isNullOrBlank()) return@launch
             binding.platformTv.text = platform
-            binding.platformTv.isVisible = true
         }
     }
 
