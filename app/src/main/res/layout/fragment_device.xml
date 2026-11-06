@@ -109,7 +109,7 @@
                         android:visibility="gone"
                         tools:ignore="UnusedAttribute"/>
 
-                    <com.google.android.material.button.MaterialButton
+                    <Button
                         android:id="@+id/scan_btn"
                         style="@style/AppTheme.MaterialButton"
                         android:layout_width="match_parent"
@@ -117,11 +117,9 @@
                         android:layout_marginTop="32dp"
                         android:background="@drawable/bg_desktop_primary_btn"
                         android:minHeight="@dimen/btn_min_height"
-                        app:icon="@drawable/ic_scan"
-                        app:iconGravity="textStart"
-                        app:iconPadding="10dp"
-                        app:iconSize="20dp"
-                        app:iconTint="@color/white"
+                        android:drawableStart="@drawable/ic_desktop_scan"
+                        android:drawablePadding="10dp"
+                        android:drawableTint="@color/white"
                         android:text="@string/Scan_to_Link_Desktop"
                         android:textAllCaps="false"
                         android:textSize="16sp"

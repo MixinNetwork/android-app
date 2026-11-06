@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.ActivityResultRegistry
 import androidx.annotation.VisibleForTesting
+import androidx.core.view.doOnLayout
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -121,9 +122,10 @@ class DeviceFragment() : MixinBottomSheetDialogFragment() {
         binding.titleView.leftIb.setOnClickListener { dismiss() }
         binding.titleView.rightIb.setOnClickListener { showHelp() }
         binding.scanBtn.apply {
-            compoundDrawablesRelative[0]?.let { icon ->
-                icon.setBounds(0, 0, 20.dp, 20.dp)
-                setCompoundDrawablesRelative(icon, null, null, null)
+            doOnLayout {
+                val contentWidth = paint.measureText(text.toString()) + compoundDrawablePadding + 20.dp
+                val horizontalPadding = ((width - contentWidth) / 2).toInt().coerceAtLeast(0)
+                setPaddingRelative(horizontalPadding, paddingTop, horizontalPadding, paddingBottom)
             }
             setOnClickListener {
                 RxPermissions(requireActivity())
