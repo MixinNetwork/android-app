@@ -34,6 +34,27 @@ class SolanaMaliciousInstructionTest {
     }
 
     @Test
+    fun blocksTokenMultisigSigners() {
+        for (version in MessageCompat.MessageVersion.entries) {
+            for (program in tokenPrograms) {
+                for ((opcode, ownerIndex) in listOf(6 to 1, 4 to 2, 13 to 3)) {
+                    val error = if (opcode == 6) R.string.malicious_instruction_token_set_authority else R.string.malicious_instruction_token_approve
+                    for (signerPosition in 1..3) {
+                        val accounts = MutableList(ownerIndex + 4) { 1 }
+                        accounts[ownerIndex + signerPosition] = 0
+                        assertEquals(error, transaction(program, byteArrayOf(opcode.toByte()), accounts, version).maliciousInstructionError(user.toBase58()))
+                        accounts[ownerIndex] = 255
+                        assertEquals(error, transaction(program, byteArrayOf(opcode.toByte()), accounts, version).maliciousInstructionError(user.toBase58()))
+                        accounts[ownerIndex + signerPosition] = 1
+                        accounts[0] = 0
+                        assertNull(transaction(program, byteArrayOf(opcode.toByte()), accounts, version).maliciousInstructionError(user.toBase58()))
+                    }
+                }
+            }
+        }
+    }
+
+    @Test
     fun blocksSystemAssignmentsOnlyForAssignedUser() {
         for (opcode in listOf(1, 10)) {
             val data = byteArrayOf(opcode.toByte(), 0, 0, 0)
