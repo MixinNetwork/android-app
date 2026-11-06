@@ -2674,4 +2674,7 @@
     <string name="Select_asset">选择一个资产查看</string>
     <string name="Select_market_item">选择一个行情查看</string>
     <string name="Select_explore_item">选择一项打开</string>
+    <string name="network_fee_description">网络费是区块链处理交易时产生的手续费，用于支付矿工或验证节点处理和确认交易的费用。</string>
+    <string name="network_fee_charged_by">网络费由 %1$s 网络收取</string>
+    <string name="network_fee_independent_of_amount">网络费与转账金额无关</string>
 </resources>

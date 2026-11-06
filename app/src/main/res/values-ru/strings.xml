@@ -1221,4 +1221,7 @@
     <string name="Select_market_item">Выберите рынок для просмотра</string>
     <string name="Select_explore_item">Выберите элемент, чтобы открыть его</string>
     <string name="perps_realized_pnl_tip">Открытые позиции не учитываются в статистике.</string>
+    <string name="network_fee_description">Сетевая комиссия — это плата майнерам или валидаторам за обработку и подтверждение транзакций в блокчейне.</string>
+    <string name="network_fee_charged_by">Сетевую комиссию взимает сеть %1$s.</string>
+    <string name="network_fee_independent_of_amount">Сетевая комиссия не зависит от суммы перевода.</string>
 </resources>

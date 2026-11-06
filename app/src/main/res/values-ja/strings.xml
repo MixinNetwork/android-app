@@ -1226,4 +1226,7 @@
     <string name="Select_market_item">表示するマーケットを選択してください</string>
     <string name="Select_explore_item">開く項目を選択してください</string>
     <string name="perps_realized_pnl_tip">未決済のポジションは統計に含まれません。</string>
+    <string name="network_fee_description">ネットワーク手数料は、ブロックチェーン上で取引を処理・承認するマイナーまたはバリデーターに支払われる手数料です。</string>
+    <string name="network_fee_charged_by">ネットワーク手数料は %1$s ネットワークによって徴収されます。</string>
+    <string name="network_fee_independent_of_amount">ネットワーク手数料は送金額に関係ありません。</string>
 </resources>

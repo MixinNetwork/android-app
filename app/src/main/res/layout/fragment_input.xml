@@ -158,6 +158,24 @@
                         android:includeFontPadding="false"
                         tools:text="Title" />
 
+                    <ImageView
+                        android:id="@+id/fee_tip_iv"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_centerVertical="true"
+                        android:layout_marginStart="-2dp"
+                        android:layout_marginTop="-6dp"
+                        android:layout_marginBottom="-6dp"
+                        android:layout_toEndOf="@id/title_text_view"
+                        android:background="@drawable/mixin_ripple_small"
+                        android:contentDescription="@string/Network_Fee"
+                        android:padding="7.5dp"
+                        android:scaleType="fitCenter"
+                        android:src="@drawable/ic_tip"
+                        android:visibility="gone"
+                        app:tint="?attr/text_assist"
+                        tools:visibility="visible" />
+
                     <LinearLayout
                         android:id="@+id/info_linear_layout"
                         android:layout_width="wrap_content"
@@ -181,7 +199,7 @@
                             android:id="@+id/fee_tv"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginEnd="8dp"
+                            android:layout_marginEnd="4dp"
                             android:gravity="center_vertical"
                             android:includeFontPadding="false"
                             android:textColor="@color/white"
@@ -218,7 +236,7 @@
                             android:id="@+id/icon_image_view"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
+                            android:layout_marginStart="4dp"
                             android:visibility="gone"
                             tools:src="@drawable/ic_arrow_down_info" />
 

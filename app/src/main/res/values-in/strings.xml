@@ -837,4 +837,7 @@
     <string name="Select_market_item">Pilih pasar untuk dilihat</string>
     <string name="Select_explore_item">Pilih item untuk dibuka</string>
     <string name="perps_realized_pnl_tip">Posisi yang masih terbuka tidak termasuk dalam statistik.</string>
+    <string name="network_fee_description">Biaya jaringan adalah biaya transaksi yang dibayarkan kepada penambang atau validator untuk memproses dan mengonfirmasi transaksi di blockchain.</string>
+    <string name="network_fee_charged_by">Biaya jaringan dikenakan oleh jaringan %1$s.</string>
+    <string name="network_fee_independent_of_amount">Biaya jaringan tidak bergantung pada jumlah transfer.</string>
 </resources>
