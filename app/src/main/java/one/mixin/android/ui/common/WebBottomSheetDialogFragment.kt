@@ -57,6 +57,7 @@ import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment
 import one.mixin.android.ui.conversation.web.PermissionBottomSheetDialogFragment.Companion.PERMISSION_VIDEO
 import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.ui.web.WebFragment
+import one.mixin.android.ui.web.WebOriginPermissionGrants
 import one.mixin.android.util.rxpermission.RxPermissions
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.generateConversationId
@@ -109,7 +110,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
     private var bottomSheet: BottomSheet? = null
     private var lastVisibleHeight = 0
     private var lastHandledUrl: Pair<String, Long>? = null
-    private var lastGrantedUri: String? = null
+    private val originPermissionGrants = WebOriginPermissionGrants()
     private var uploadMessage: ValueCallback<Array<Uri>>? = null
     private var imageUri: Uri? = null
     private lateinit var fileChooser: ActivityResultLauncher<Intent>
@@ -275,13 +276,13 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     promptTypes.add(PERMISSION_VIDEO)
                 }
                 else -> {
-                    lastGrantedUri = null
+                    originPermissionGrants.clear()
                     request.deny()
                     return
                 }
             }
         }
-        if (lastGrantedUri == request.origin.toString()) {
+        if (originPermissionGrants.covers(request.origin.toString(), request.resources)) {
             request.grant(request.resources)
             return
         }
@@ -293,7 +294,7 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
             *promptTypes.toIntArray(),
         )
             .setCancelAction {
-                lastGrantedUri = null
+                originPermissionGrants.clear()
                 request.deny()
             }.setGrantedAction {
                 RxPermissions(requireActivity())
@@ -302,16 +303,16 @@ class WebBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
                     .subscribe(
                         { granted ->
                             if (granted) {
-                                lastGrantedUri = request.origin.toString()
+                                originPermissionGrants.grant(request.origin.toString(), request.resources)
                                 request.grant(request.resources)
                             } else {
-                                lastGrantedUri = null
+                                originPermissionGrants.clear()
                                 request.deny()
                                 context?.openPermissionSetting()
                             }
                         },
                         {
-                            lastGrantedUri = null
+                            originPermissionGrants.clear()
                             request.deny()
                         },
                     )
