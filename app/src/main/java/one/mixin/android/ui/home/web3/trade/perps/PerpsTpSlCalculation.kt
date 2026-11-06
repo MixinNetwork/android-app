@@ -38,11 +38,6 @@ internal data class TpSlCalculationBasis(
         return numerator.divide(denominator, TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
     }
 
-    fun takeProfitPriceBound(currentPrice: BigDecimal, isLong: Boolean): BigDecimal? {
-        val breakEvenPrice = priceAtPnl(BigDecimal.ZERO, isLong) ?: return null
-        return if (isLong) currentPrice.max(breakEvenPrice) else currentPrice.min(breakEvenPrice)
-    }
-
     fun zeroPriceRoiPercentCeiling(isLong: Boolean): BigDecimal {
         val openFee = entryPrice.multiply(absoluteQuantity).multiply(feeRate)
         val pricePnlAtZero = entryPrice.multiply(absoluteQuantity)
@@ -90,23 +85,18 @@ internal fun targetPriceForRoiPercent(
     basis: TpSlCalculationBasis,
     percentMagnitudeInput: String,
     isLong: Boolean,
-    isTakeProfit: Boolean,
+    isProfit: Boolean,
     priceScale: Int,
 ): String {
     val magnitude = percentMagnitudeInput.toBigDecimalOrNull()?.takeIf { it > BigDecimal.ZERO } ?: return ""
     val signedRoi = magnitude
         .divide(BigDecimal(100), TP_SL_CALCULATION_SCALE, RoundingMode.HALF_UP)
-        .let { if (isTakeProfit) it else it.negate() }
+        .let { if (isProfit) it else it.negate() }
     val netPnl = signedRoi.multiply(basis.margin)
     val targetPrice = basis.priceAtPnl(netPnl, isLong) ?: return ""
     if (targetPrice <= BigDecimal.ZERO) return ""
     val safeScale = priceScale.coerceAtLeast(0)
-    var roundedPrice = targetPrice.setScale(safeScale, RoundingMode.HALF_UP)
-    if (roundedPrice <= BigDecimal.ZERO) return ""
-    if (isTakeProfit && basis.pnlAt(roundedPrice, isLong)?.signedPnl?.signum() != 1) {
-        val tick = BigDecimal.ONE.movePointLeft(safeScale)
-        roundedPrice = if (isLong) roundedPrice.add(tick) else roundedPrice.subtract(tick)
-    }
+    val roundedPrice = targetPrice.setScale(safeScale, RoundingMode.HALF_UP)
     if (roundedPrice <= BigDecimal.ZERO) return ""
     return formatPerpsPriceInput(roundedPrice, safeScale)
 }

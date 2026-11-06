@@ -385,7 +385,6 @@ private fun PerpsTpSlContent(
         isLong = isLong,
         isTakeProfit = isTakeProfit,
         calculationBasis = pnlBasis,
-        priceScale = safePriceScale,
     )
     val percentErrorText = validateTpSlPercent(
         rawValue = percentMagnitudeInput,
@@ -1104,7 +1103,7 @@ private fun percentToPriceInput(
         basis = basis,
         percentMagnitudeInput = percentMagnitudeInput,
         isLong = isLong,
-        isTakeProfit = isProfit,
+        isProfit = isProfit,
         priceScale = priceScale,
     )
 }
@@ -1127,7 +1126,6 @@ internal fun validateTpSlPrice(
     isLong: Boolean,
     isTakeProfit: Boolean,
     calculationBasis: TpSlCalculationBasis?,
-    priceScale: Int,
 ): String? {
     val trimmed = rawValue.trim()
     if (trimmed.isEmpty()) {
@@ -1142,14 +1140,12 @@ internal fun validateTpSlPrice(
     if (currentPrice <= BigDecimal.ZERO) {
         return null
     }
-    val takeProfitBound = (calculationBasis.takeProfitPriceBound(currentPrice, isLong) ?: currentPrice)
-        .setScale(priceScale.coerceAtLeast(0), if (isLong) RoundingMode.DOWN else RoundingMode.UP)
     return when {
         isLong && isTakeProfit -> {
-            if (price <= takeProfitBound) {
+            if (price <= currentPrice) {
                 MixinApplicationHolder.getString(
                     R.string.the_price_must_higher_than,
-                    "$PERPS_USD_SYMBOL${takeProfitBound.stripTrailingZeros().toPlainString()}",
+                    "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
             } else null
         }
@@ -1168,9 +1164,9 @@ internal fun validateTpSlPrice(
         }
         !isLong && isTakeProfit -> {
             when {
-                price >= takeProfitBound -> MixinApplicationHolder.getString(
+                price >= currentPrice -> MixinApplicationHolder.getString(
                     R.string.the_price_must_lower_than,
-                    "$PERPS_USD_SYMBOL${takeProfitBound.stripTrailingZeros().toPlainString()}",
+                    "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
                 )
                 else -> null
             }
@@ -1232,7 +1228,6 @@ private fun validateTpSlPercent(
         isLong = isLong,
         isTakeProfit = mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT,
         calculationBasis = basis,
-        priceScale = priceScale,
     )
 }
 
