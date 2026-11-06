@@ -291,6 +291,10 @@ fun OpenPositionPage(
             showTpSlRequirements = true
             return
         }
+        if (isLiquidationLoading) return
+        val liquidationPrice = remoteLiquidationPrice?.takeIf {
+            it.toBigDecimalOrNull()?.let { price -> price >= BigDecimal.ZERO } == true
+        } ?: return
         val activity = context as? FragmentActivity ?: return
         PerpsTpSlBottomSheetDialogFragment.newInstance(
             mode = mode,
@@ -308,6 +312,8 @@ fun OpenPositionPage(
             entryPrice = null,
             marketId = currentMarket.marketId,
             priceScale = currentMarket.priceScale,
+            feeRate = currentMarket.feeRate,
+            liquidationPrice = liquidationPrice,
         ).setOnApply { value ->
             if (mode == PerpsTpSlBottomSheetDialogFragment.Mode.TAKE_PROFIT) {
                 takeProfitPrice = value.orEmpty()
@@ -808,6 +814,7 @@ fun OpenPositionPage(
                                         stopLossPrice = stopLossPrice.takeIf { it.isNotBlank() },
                                         liquidationPrice = displayLiquidationPrice,
                                         priceScale = m.priceScale,
+                                        feeRate = m.feeRate,
                                         payUrl = response.paymentUrl
                                     ).setOnDone {
                                             onOpenSuccess(m.marketId)

@@ -25,6 +25,24 @@ import java.math.BigDecimal
 
 class LiquidationPriceRequestTest {
     @Test
+    fun maximumMarginReductionUsesServerLimitAndDoesNotGuessOnFailure() = runBlocking {
+        val margin = BigDecimal("19.44")
+        var error: String? = null
+        suspend fun maximum(result: LiquidationPriceResult) =
+            requestMaximumMarginReduction(margin, onFailure = { error = it ?: "missing limit" }) { result }
+
+        assertEquals(BigDecimal("0.13"), maximum(LiquidationPriceResult.MarginExceeded(BigDecimal("0.13"))))
+        assertEquals(BigDecimal("0.12999999"), maximum(LiquidationPriceResult.MarginExceeded(BigDecimal("0.129999999"))))
+        assertEquals(BigDecimal.ZERO, maximum(LiquidationPriceResult.MarginExceeded(BigDecimal.ZERO)))
+        assertEquals(margin, maximum(LiquidationPriceResult.MarginExceeded(BigDecimal("20"))))
+        assertEquals(margin, maximum(LiquidationPriceResult.Success("100")))
+        assertNull(maximum(LiquidationPriceResult.MarginExceeded(null)))
+        assertEquals("missing limit", error)
+        assertNull(maximum(LiquidationPriceResult.Failure("network error")))
+        assertEquals("network error", error)
+    }
+
+    @Test
     fun refreshShowsLoadingOnlyUntilItHasAPrice() = runBlocking {
         val state = LiquidationPriceState()
         val initialPrice = CompletableDeferred<String?>()

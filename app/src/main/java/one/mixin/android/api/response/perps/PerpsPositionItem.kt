@@ -84,6 +84,9 @@ data class PerpsPositionItem(
     @ColumnInfo(name = "price_scale")
     @SerializedName("priceScale")
     val priceScale: Int = 2,
+    @SerializedName("fee_rate")
+    @ColumnInfo(name = "fee_rate")
+    val feeRate: String? = null,
     @SerializedName("funding_amount")
     @ColumnInfo(name = "funding_amount")
     val fundingAmount: String? = null,
