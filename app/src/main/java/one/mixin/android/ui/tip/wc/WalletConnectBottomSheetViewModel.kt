@@ -6,6 +6,8 @@ import com.reown.walletkit.client.Wallet
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import one.mixin.android.MixinApplication
+import one.mixin.android.R
 import one.mixin.android.api.request.web3.EstimateFeeRequest
 import one.mixin.android.api.request.web3.Web3RawTransactionRequest
 import one.mixin.android.api.response.web3.WalletOutput
@@ -18,11 +20,14 @@ import one.mixin.android.tip.wc.WalletConnectV2
 import one.mixin.android.tip.wc.internal.Chain
 import one.mixin.android.tip.wc.internal.Method
 import one.mixin.android.tip.wc.internal.WcBitcoinFeeEstimate
+import one.mixin.android.tip.wc.internal.WcBitcoinSendTransfer
 import one.mixin.android.tip.wc.internal.WcBitcoinSignedTransfer
 import one.mixin.android.web3.js.Web3Signer
+import one.mixin.android.web3.send.BtcTransactionBuilder
 import org.sol4kt.VersionedTransactionCompat
 import org.web3j.crypto.Hash
 import timber.log.Timber
+import java.math.BigDecimal
 import javax.inject.Inject
 
 @HiltViewModel
@@ -83,24 +88,40 @@ class WalletConnectBottomSheetViewModel
                 web3Repository.outputsByAddress(address, assetId)
             }
 
-        suspend fun estimateBitcoinFee(rawTx: String): WcBitcoinFeeEstimate? =
+        suspend fun estimateBitcoinFee(request: WcBitcoinSendTransfer, address: String): WcBitcoinFeeEstimate =
             withContext(Dispatchers.IO) {
-                val response =
-                    web3Repository.estimateFee(
-                        EstimateFeeRequest(
-                            chainId = Chain.Bitcoin.assetId,
-                            rawTransaction = rawTx,
-                            data = null,
-                        ),
-                    )
-                if (response.isSuccess && response.data != null) {
-                    WcBitcoinFeeEstimate(
-                        feeRate = response.data!!.feeRate?.toBigDecimalOrNull(),
-                        minFee = response.data!!.minFee,
-                    )
-                } else {
-                    null
+                val localUtxos = outputsByAddress(address, Chain.Bitcoin.assetId)
+                val initial = BtcTransactionBuilder.buildSendTransaction(
+                    fromAddress = address,
+                    toAddress = request.recipientAddress,
+                    amountBtc = request.amountBtc(),
+                    localUtxos = localUtxos,
+                    feeRate = BigDecimal.ONE,
+                )
+                val response = web3Repository.estimateFee(
+                    EstimateFeeRequest(
+                        chainId = Chain.Bitcoin.assetId,
+                        rawTransaction = initial.rawHex,
+                        data = null,
+                    ),
+                )
+                val estimate = response.data
+                check(response.isSuccess && estimate != null) {
+                    MixinApplication.appContext.getString(R.string.bitcoin_fee_confirmation_required)
                 }
+                val feeRate = WcBitcoinFeeEstimate.cappedFeeRate(
+                    estimate.feeRate?.toBigDecimal() ?: BigDecimal.ONE,
+                    estimate.minFee?.toBigDecimal(),
+                    initial.virtualSize,
+                )
+                val built = BtcTransactionBuilder.buildSendTransaction(
+                    fromAddress = address,
+                    toAddress = request.recipientAddress,
+                    amountBtc = request.amountBtc(),
+                    localUtxos = localUtxos,
+                    feeRate = feeRate,
+                )
+                WcBitcoinFeeEstimate(feeRate, built.feeBtc)
             }
 
         suspend fun sendTransaction(
