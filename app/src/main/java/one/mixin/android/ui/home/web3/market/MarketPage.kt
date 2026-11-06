@@ -1121,6 +1121,7 @@ private fun subTabLabel(tab: MarketSubTab): String =
         when (tab) {
             MarketSubTab.FAVORITE -> R.string.Watchlist
             MarketSubTab.TRENDING -> R.string.Trending
+            MarketSubTab.STOCKS -> R.string.Stocks
             MarketSubTab.TOP_GAINERS -> R.string.top_gainers
             MarketSubTab.TOP_LOSERS -> R.string.top_losers
             MarketSubTab.ALL -> R.string.All
