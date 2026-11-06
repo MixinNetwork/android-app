@@ -240,6 +240,16 @@ class PerpsTpSlCalculationTest {
     }
 
     @Test
+    fun openingPreviewDeductsBothFeesWithoutRoundingPriceChangeFirst() {
+        val basis = resolveTpSlCalculationBasis("100", "100", "100", null, 10, "0.001")!!
+        assertResult(basis.pnlAt(BigDecimal("105"), true), pnl = "47.95", roiPercent = "47.95")
+        assertResult(basis.pnlAt(BigDecimal("95"), true), pnl = "-51.95", roiPercent = "-51.95")
+        assertResult(basis.pnlAt(BigDecimal("95"), false), pnl = "48.05", roiPercent = "48.05")
+        assertResult(basis.pnlAt(BigDecimal("105"), false), pnl = "-52.05", roiPercent = "-52.05")
+        assertResult(basis.pnlAt(BigDecimal("100.234"), true), pnl = "0.33766", roiPercent = "0.33766")
+    }
+
+    @Test
     fun invalidTargetDoesNotProducePnlAndBreakEvenKeepsZero() {
         val basis = existingBasis(quantity = "10", margin = "200")!!
 

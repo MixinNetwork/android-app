@@ -1142,10 +1142,11 @@ internal fun validateTpSlPrice(
     }
     return when {
         isLong && isTakeProfit -> {
-            if (price <= currentPrice) {
+            val bound = if (price <= calculationBasis.entryPrice) calculationBasis.entryPrice else currentPrice
+            if (price <= bound) {
                 MixinApplicationHolder.getString(
                     R.string.the_price_must_higher_than,
-                    "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
+                    "$PERPS_USD_SYMBOL${bound.stripTrailingZeros().toPlainString()}",
                 )
             } else null
         }
@@ -1163,13 +1164,13 @@ internal fun validateTpSlPrice(
             }
         }
         !isLong && isTakeProfit -> {
-            when {
-                price >= currentPrice -> MixinApplicationHolder.getString(
+            val bound = if (price >= calculationBasis.entryPrice) calculationBasis.entryPrice else currentPrice
+            if (price >= bound) {
+                MixinApplicationHolder.getString(
                     R.string.the_price_must_lower_than,
-                    "$PERPS_USD_SYMBOL${currentPrice.stripTrailingZeros().toPlainString()}",
+                    "$PERPS_USD_SYMBOL${bound.stripTrailingZeros().toPlainString()}",
                 )
-                else -> null
-            }
+            } else null
         }
         else -> {
             // !isLong && !isTakeProfit (short stop loss)
