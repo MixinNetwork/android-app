@@ -1161,6 +1161,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     {
                         it?.let { intent ->
                             this.startActivity(intent)
+                            MixinApplication.get().checkAndShowAppAuth(this)
                         }
                     },
                     {
