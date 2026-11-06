@@ -101,6 +101,17 @@ interface OutputDao : BaseDao<Output> {
 
     @Query(
         """
+        SELECT DISTINCT i.collection_hash, i.inscription_hash, ic.name, i.sequence, i.content_type, i.content_url, t.icon_url FROM outputs o
+        INNER JOIN inscription_items i ON i.inscription_hash = o.inscription_hash
+        INNER JOIN inscription_collections ic ON ic.collection_hash = i.collection_hash
+        INNER JOIN tokens t ON t.collection_hash = i.collection_hash
+        WHERE (o.state = 'unspent' OR o.state = 'pending') AND i.inscription_hash IN (:hashes)
+        """,
+    )
+    suspend fun findCollectiblesByHashes(hashes: List<String>): List<SafeCollectible>
+
+    @Query(
+        """
         SELECT ic.collection_hash, ic.name, ic.icon_url, ic.description, count(i.inscription_hash) AS inscription_count 
         FROM outputs o
         INNER JOIN inscription_items i ON i.inscription_hash = o.inscription_hash

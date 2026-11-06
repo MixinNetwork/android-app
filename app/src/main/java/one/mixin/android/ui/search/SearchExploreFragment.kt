@@ -292,7 +292,7 @@ class SearchExploreFragment : BaseFragment(R.layout.fragment_search_explore) {
                                 }
                             }
                         }
-                        RecentSearchType.POSITION -> Unit
+                        RecentSearchType.POSITION, RecentSearchType.COLLECTIBLE, RecentSearchType.EARN -> Unit
                         RecentSearchType.PERPETUAL -> {
                             lifecycleScope.launch {
                                 val marketId = search.primaryKey ?: return@launch

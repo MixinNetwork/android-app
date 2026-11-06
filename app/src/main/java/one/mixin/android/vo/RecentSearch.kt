@@ -26,6 +26,8 @@ enum class RecentSearchType(val value: String) {
     DAPP("dapp"),
     ASSET("asset"),
     POSITION("position"),
+    COLLECTIBLE("collectible"),
+    EARN("earn"),
     MARKET("market"),
     PERPETUAL("perpetual"),
     BOT("bot"),

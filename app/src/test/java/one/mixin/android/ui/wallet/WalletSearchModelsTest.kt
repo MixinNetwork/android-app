@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import com.google.gson.Gson
 import one.mixin.android.vo.RecentSearch
 import one.mixin.android.vo.RecentSearchType
 import org.junit.Assert.assertEquals
@@ -15,6 +16,31 @@ class WalletSearchModelsTest {
         val updated = searches.addWalletRecentSearch(asset("a"))
         assertEquals(listOf("a", "a", "b"), updated.map { it.primaryKey })
         assertEquals(listOf(RecentSearchType.ASSET, RecentSearchType.POSITION, RecentSearchType.ASSET), updated.map { it.type })
+    }
+
+    @Test
+    fun collectibleRecentSurvivesReloadAndDeduplicatesWithoutReplacingAnAsset() {
+        val collectible = RecentSearch(RecentSearchType.COLLECTIBLE, primaryKey = "same")
+        val searches = listOf(asset("same"), collectible).addWalletRecentSearch(collectible)
+        val gson = Gson()
+        val restored = gson.fromJson(gson.toJson(searches), Array<RecentSearch>::class.java).toList()
+            .mergeWalletRecentSearches(emptyList(), emptyList())
+        assertEquals(listOf(RecentSearchType.COLLECTIBLE, RecentSearchType.ASSET), restored.map { it.type })
+        assertEquals(listOf("same", "same"), restored.map { it.primaryKey })
+        assertEquals(listOf(RecentSearchType.ASSET), restored.mergeWalletRecentSearches(emptyList(), emptyList()) {
+            it.type != RecentSearchType.COLLECTIBLE
+        }.map { it.type })
+    }
+
+    @Test
+    fun earnRecentRemainsSeparateFromTheSameAssetAfterReload() {
+        val earn = RecentSearch(RecentSearchType.EARN, primaryKey = "btc")
+        val searches = listOf(asset("btc"), earn, position("p")).addWalletRecentSearch(earn)
+        val gson = Gson()
+        val restored = gson.fromJson(gson.toJson(searches), Array<RecentSearch>::class.java).toList()
+            .mergeWalletRecentSearches(emptyList(), emptyList())
+        assertEquals(listOf(RecentSearchType.EARN, RecentSearchType.ASSET, RecentSearchType.POSITION), restored.map { it.type })
+        assertEquals(listOf("btc", "btc", "p"), restored.map { it.primaryKey })
     }
 
     @Test

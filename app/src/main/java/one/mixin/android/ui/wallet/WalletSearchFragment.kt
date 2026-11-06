@@ -98,13 +98,17 @@ class WalletSearchFragment : BaseFragment() {
                 }
             }
             is WalletSearchResult.Earn -> {
+                viewModel.saveRecentSearch(result)
                 val earn = Uri.parse("${Constants.Scheme.APPS}/${Constants.MIXIN_EARN_USER_ID}")
                     .buildUpon()
                     .appendQueryParameter("action", "open")
                 result.account.productionId?.takeIf { it.isNotBlank() }?.let { earn.appendQueryParameter("production", it) }
                 earn.build().toString().openAsUrlOrWeb(requireActivity(), null, parentFragmentManager, viewLifecycleOwner.lifecycleScope)
             }
-            is WalletSearchResult.Collectible -> InscriptionActivity.show(requireContext(), result.collectible.inscriptionHash)
+            is WalletSearchResult.Collectible -> {
+                viewModel.saveRecentSearch(result)
+                InscriptionActivity.show(requireContext(), result.collectible.inscriptionHash)
+            }
         }
     }
 

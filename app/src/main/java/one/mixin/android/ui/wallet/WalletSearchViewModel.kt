@@ -29,6 +29,7 @@ import one.mixin.android.extension.putString
 import one.mixin.android.repository.PerpsMarketRepository
 import one.mixin.android.repository.TokenRepository
 import one.mixin.android.session.Session
+import one.mixin.android.ui.wallet.home.WalletHomeEarnAccount
 import one.mixin.android.ui.wallet.home.WalletHomeType
 import one.mixin.android.ui.wallet.home.getWalletHomeCacheState
 import one.mixin.android.ui.wallet.home.walletHomeCacheKey
@@ -108,16 +109,24 @@ internal class WalletSearchViewModel @Inject constructor(
                 val assetIds = searches.filter { it.type == RecentSearchType.ASSET }.mapNotNull { it.primaryKey } + send + receive
                 val assets = tokenRepository.findAssetsByIds(assetIds.distinct()).associateBy { it.assetId }
                 val positions = positionDao.getOpenPositions(Session.getAccountId().orEmpty()).associateBy { it.positionId }
+                val collectibleHashes = searches.filter { it.type == RecentSearchType.COLLECTIBLE }.mapNotNull { it.primaryKey }
+                val collectibles = tokenRepository.findCollectiblesByHashes(collectibleHashes).associateBy { it.inscriptionHash }
+                val earnAccounts = preferences.getWalletHomeCacheState(walletHomeCacheKey(WalletHomeType.PRIVACY, Session.getAccountId().orEmpty()))
+                    ?.earnAccounts.orEmpty().associateBy { it.assetId }
                 searches.mergeWalletRecentSearches(send, receive) {
                     when (it.type) {
                         RecentSearchType.ASSET -> it.primaryKey in assets
                         RecentSearchType.POSITION -> it.primaryKey in positions
+                        RecentSearchType.COLLECTIBLE -> it.primaryKey in collectibles
+                        RecentSearchType.EARN -> it.primaryKey in earnAccounts
                         else -> false
                     }
                 }.mapNotNull {
                     when (it.type) {
                         RecentSearchType.ASSET -> assets[it.primaryKey]?.let { token -> WalletSearchResult.Asset(token) }
                         RecentSearchType.POSITION -> positions[it.primaryKey]?.let { position -> positionResult(position) }
+                        RecentSearchType.COLLECTIBLE -> collectibles[it.primaryKey]?.let { collectible -> WalletSearchResult.Collectible(collectible) }
+                        RecentSearchType.EARN -> earnAccounts[it.primaryKey]?.let { account -> earnResult(account) }
                         else -> null
                     }
                 }
@@ -130,7 +139,8 @@ internal class WalletSearchViewModel @Inject constructor(
         val search = when (result) {
             is WalletSearchResult.Asset -> RecentSearch(RecentSearchType.ASSET, primaryKey = result.token.assetId)
             is WalletSearchResult.Position -> RecentSearch(RecentSearchType.POSITION, primaryKey = result.position.positionId)
-            else -> return
+            is WalletSearchResult.Collectible -> RecentSearch(RecentSearchType.COLLECTIBLE, primaryKey = result.collectible.inscriptionHash)
+            is WalletSearchResult.Earn -> RecentSearch(RecentSearchType.EARN, primaryKey = result.account.assetId)
         }
         val searches = readRecentSearches().addWalletRecentSearch(search)
         preferences.putString(PREF_WALLET_SEARCH_RECENT, GsonHelper.customGson.toJson(searches))
@@ -162,6 +172,14 @@ internal class WalletSearchViewModel @Inject constructor(
         return WalletSearchResult.Position(position, name?.takeIf { it.isNotBlank() } ?: symbol)
     }
 
+    private suspend fun earnResult(account: WalletHomeEarnAccount): WalletSearchResult.Earn {
+        val price = tokenRepository.findAssetItemById(account.assetId)?.priceUsd?.toBigDecimalOrNull()
+        val amount = walletSearchEarnAmount(account.balanceUsd, price)?.let {
+            "${it.numberFormat8()} ${account.assetSymbol}"
+        } ?: account.balanceAmountText
+        return WalletSearchResult.Earn(account, amount)
+    }
+
     private suspend fun searchLocal(query: String): List<WalletSearchResult> {
         val escaped = query.escapeSql()
         val assets = sortQueryAsset(query, tokenRepository.fuzzySearchAssetIgnoreAmount(escaped), emptyList())
@@ -172,13 +190,7 @@ internal class WalletSearchViewModel @Inject constructor(
         val earn = preferences.getWalletHomeCacheState(walletHomeCacheKey(WalletHomeType.PRIVACY, Session.getAccountId().orEmpty()))
             ?.earnAccounts.orEmpty()
             .filter { it.assetSymbol.contains(query, true) }
-            .map { account ->
-                val price = tokenRepository.findAssetItemById(account.assetId)?.priceUsd?.toBigDecimalOrNull()
-                val amount = walletSearchEarnAmount(account.balanceUsd, price)?.let {
-                    "${it.numberFormat8()} ${account.assetSymbol}"
-                } ?: account.balanceAmountText
-                WalletSearchResult.Earn(account, amount)
-            }
+            .map { account -> earnResult(account) }
         val signal = CancellationSignal()
         val collectibles = try {
             tokenRepository.fuzzyInscription(escaped, signal).map { WalletSearchResult.Collectible(it) }

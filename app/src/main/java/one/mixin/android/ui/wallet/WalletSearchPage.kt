@@ -258,7 +258,8 @@ private fun WalletRecentSearchChip(
                     when (result) {
                         is WalletSearchResult.Asset -> result.token.name
                         is WalletSearchResult.Position -> result.tokenName
-                        else -> ""
+                        is WalletSearchResult.Collectible -> result.collectible.name
+                        is WalletSearchResult.Earn -> result.account.assetSymbol
                     },
                     color = MixinAppTheme.colors.textPrimary,
                     fontSize = 14.sp,
@@ -270,7 +271,15 @@ private fun WalletRecentSearchChip(
                 )
                 if (result is WalletSearchResult.Position) {
                     Spacer(Modifier.width(3.dp))
-                    PerpsLeverageBadge(result.position.leverage)
+                    val quoteColorReversed = LocalContext.current.defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+                    val color = if (result.position.side.equals("long", true) != quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
+                    PerpsLeverageBadge(result.position.leverage, color = color)
+                } else if (result is WalletSearchResult.Earn) {
+                    result.account.maxApyText?.let {
+                        val quoteColorReversed = LocalContext.current.defaultSharedPreferences.getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
+                        Spacer(Modifier.width(4.dp))
+                        AccountApy(stringResource(R.string.cash_account_apy, it), quoteColorReversed)
+                    }
                 }
             }
             Spacer(Modifier.height(2.dp))
