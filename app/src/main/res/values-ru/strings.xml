@@ -1221,4 +1221,7 @@
     <string name="Select_market_item">Выберите рынок для просмотра</string>
     <string name="Select_explore_item">Выберите элемент, чтобы открыть его</string>
     <string name="perps_realized_pnl_tip">Открытые позиции не учитываются в статистике.</string>
+    <string name="transfer_token">Перевести %1$s</string>
+    <string name="transfer_token_description">Перевод из другого вашего кошелька</string>
+    <string name="wallet_changed_try_again">Текущий кошелёк изменился. Попробуйте снова.</string>
 </resources>
