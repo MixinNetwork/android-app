@@ -122,7 +122,11 @@ class CurrentUserScopeManager
             if (isSameScope) {
                 return
             }
-            closeScopeLocked()
+            // On first entry the shared database instances may already be open for this account by direct
+            // getDatabase callers; closing them here would break their in-flight queries.
+            if (currentUserId != null) {
+                closeScopeLocked()
+            }
             MixinDatabase.migrateRelatedDatabaseFilesIfNeeded(appContext, account)
             val scopedMixinDatabase = MixinDatabase.getDatabase(appContext, account.identityNumber)
             val scopedPendingDatabase =
