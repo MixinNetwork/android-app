@@ -1221,4 +1221,11 @@
     <string name="Select_market_item">Выберите рынок для просмотра</string>
     <string name="Select_explore_item">Выберите элемент, чтобы открыть его</string>
     <string name="perps_realized_pnl_tip">Открытые позиции не учитываются в статистике.</string>
+    <string name="desktop_intro_title">Используйте Mixin Messenger на компьютере.</string>
+    <string name="desktop_intro_desc">Скачайте приложение для компьютера на messenger.mixin.one и подключите его, отсканировав QR-код.</string>
+    <string name="Scan_to_Link_Desktop">Сканировать для подключения компьютера</string>
+    <string name="desktop_e2ee_tip">Ваши личные сообщения и данные чатов защищены сквозным шифрованием на всех устройствах.</string>
+    <string name="desktop_help_step_1">Откройте messenger.mixin.one на компьютере.</string>
+    <string name="desktop_help_step_2">Скачайте и запустите Mixin Messenger для компьютера.</string>
+    <string name="desktop_help_step_3">Отсканируйте его QR-код в Mixin Messenger.</string>
 </resources>

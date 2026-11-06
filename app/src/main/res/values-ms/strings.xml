@@ -902,4 +902,11 @@
     <string name="Select_market_item">Pilih pasaran untuk dilihat</string>
     <string name="Select_explore_item">Pilih item untuk dibuka</string>
     <string name="perps_realized_pnl_tip">Posisi yang masih terbuka tidak termasuk dalam statistik.</string>
+    <string name="desktop_intro_title">Gunakan Mixin Messenger pada desktop.</string>
+    <string name="desktop_intro_desc">Muat turun aplikasi desktop di messenger.mixin.one dan pautkannya dengan mengimbas kod QR.</string>
+    <string name="Scan_to_Link_Desktop">Imbas untuk Memautkan Desktop</string>
+    <string name="desktop_e2ee_tip">Mesej peribadi dan maklumat sembang anda dilindungi penyulitan hujung ke hujung pada semua peranti.</string>
+    <string name="desktop_help_step_1">Buka messenger.mixin.one pada komputer anda.</string>
+    <string name="desktop_help_step_2">Muat turun dan buka Mixin Messenger Desktop.</string>
+    <string name="desktop_help_step_3">Imbas kod QRnya dengan Mixin Messenger.</string>
 </resources>

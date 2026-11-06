@@ -1593,6 +1593,13 @@
     <string name="buy_crypto_with_cash">用現金購買加密貨幣</string>
     <string name="trade_native_tokens">交易數千種原生代幣</string>
     <string name="link_desktop_description">透過二維碼連結Mixin桌面</string>
+    <string name="desktop_intro_title">在電腦上使用 Mixin Messenger。</string>
+    <string name="desktop_intro_desc">前往 messenger.mixin.one 下載桌面版，並掃描 QR 碼進行連結。</string>
+    <string name="Scan_to_Link_Desktop">掃碼連結桌面版</string>
+    <string name="desktop_e2ee_tip">你的個人訊息和聊天資訊在所有裝置上均受端對端加密保護。</string>
+    <string name="desktop_help_step_1">在電腦上開啟 messenger.mixin.one。</string>
+    <string name="desktop_help_step_2">下載並開啟 Mixin Messenger 桌面版。</string>
+    <string name="desktop_help_step_3">使用 Mixin Messenger 掃描其 QR 碼。</string>
     <string name="Logined">已登入</string>
     <string name="Transfer_confirmation">轉帳確認</string>
     <string name="Withdrawal_confirmation">提款確認</string>

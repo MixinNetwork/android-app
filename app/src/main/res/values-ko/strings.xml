@@ -1466,6 +1466,13 @@
     <string name="buy_crypto_with_cash">현금으로 암호화폐 구매</string>
     <string name="trade_native_tokens">수천 개의 기본 토큰을 거래하세요</string>
     <string name="link_desktop_description">QR 코드로 데스크톱 Mixin 연결</string>
+    <string name="desktop_intro_title">데스크톱에서 Mixin Messenger 사용하기.</string>
+    <string name="desktop_intro_desc">messenger.mixin.one에서 데스크톱 앱을 다운로드하고 QR 코드를 스캔하여 연결하세요.</string>
+    <string name="Scan_to_Link_Desktop">스캔하여 데스크톱 연결</string>
+    <string name="desktop_e2ee_tip">개인 메시지와 채팅 정보는 모든 기기에서 종단 간 암호화로 보호됩니다.</string>
+    <string name="desktop_help_step_1">컴퓨터에서 messenger.mixin.one을 엽니다.</string>
+    <string name="desktop_help_step_2">Mixin Messenger 데스크톱을 다운로드하고 실행합니다.</string>
+    <string name="desktop_help_step_3">Mixin Messenger로 해당 QR 코드를 스캔합니다.</string>
     <string name="Logined">로그인됨</string>
     <string name="Transfer_confirmation">이체 확인</string>
     <string name="Withdrawal_confirmation">출금 확인</string>
