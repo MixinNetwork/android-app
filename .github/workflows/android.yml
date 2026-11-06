@@ -75,6 +75,7 @@ jobs:
         cat > "$RUNNER_TEMP/test-diagnostics.gradle" <<'GRADLE'
         allprojects {
           tasks.withType(Test).configureEach {
+            systemProperty 'robolectric.dependency.repo.url', 'https://repo.maven.apache.org/maven2'
             testLogging {
               events 'started', 'failed', 'skipped'
               exceptionFormat 'full'
