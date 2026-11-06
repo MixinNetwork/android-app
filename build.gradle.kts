@@ -140,7 +140,7 @@ extra.set("desugarJdkLibsVersion", "2.1.5")
 extra.set("bugsnagVersion", "6.26.1")
 extra.set("appsFlyerVersion", "7.0.4")
 extra.set("installReferrerVersion", "2.2")
-extra.set("billingVersion", "8.3.0")
+extra.set("billingVersion", "9.1.0")
 
 allprojects {
     repositories {
