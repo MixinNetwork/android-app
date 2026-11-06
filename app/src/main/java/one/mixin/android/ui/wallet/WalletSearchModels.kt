@@ -75,7 +75,7 @@ internal fun List<RecentSearch>.mergeWalletRecentSearches(
     available: (RecentSearch) -> Boolean = { true },
 ): List<RecentSearch> =
     (this + (send + receive).map { RecentSearch(RecentSearchType.ASSET, primaryKey = it) })
-        .filter { (it.type == RecentSearchType.ASSET || it.type == RecentSearchType.POSITION || it.type == RecentSearchType.COLLECTIBLE || it.type == RecentSearchType.EARN) && !it.primaryKey.isNullOrBlank() }
+        .filter { (it.type == RecentSearchType.ASSET || it.type == RecentSearchType.COLLECTIBLE || it.type == RecentSearchType.EARN) && !it.primaryKey.isNullOrBlank() }
         .distinctBy { it.type to it.primaryKey }
         .filter(available)
         .take(MAX_WALLET_RECENT_SEARCHES)

@@ -108,7 +108,6 @@ internal class WalletSearchViewModel @Inject constructor(
                 val receive = preferences.walletSearchSharedHistory(PREF_WALLET_RECEIVE)
                 val assetIds = searches.filter { it.type == RecentSearchType.ASSET }.mapNotNull { it.primaryKey } + send + receive
                 val assets = tokenRepository.findAssetsByIds(assetIds.distinct()).associateBy { it.assetId }
-                val positions = positionDao.getOpenPositions(Session.getAccountId().orEmpty()).associateBy { it.positionId }
                 val collectibleHashes = searches.filter { it.type == RecentSearchType.COLLECTIBLE }.mapNotNull { it.primaryKey }
                 val collectibles = tokenRepository.findCollectiblesByHashes(collectibleHashes).associateBy { it.inscriptionHash }
                 val earnAccounts = preferences.getWalletHomeCacheState(walletHomeCacheKey(WalletHomeType.PRIVACY, Session.getAccountId().orEmpty()))
@@ -116,7 +115,6 @@ internal class WalletSearchViewModel @Inject constructor(
                 searches.mergeWalletRecentSearches(send, receive) {
                     when (it.type) {
                         RecentSearchType.ASSET -> it.primaryKey in assets
-                        RecentSearchType.POSITION -> it.primaryKey in positions
                         RecentSearchType.COLLECTIBLE -> it.primaryKey in collectibles
                         RecentSearchType.EARN -> it.primaryKey in earnAccounts
                         else -> false
@@ -124,7 +122,6 @@ internal class WalletSearchViewModel @Inject constructor(
                 }.mapNotNull {
                     when (it.type) {
                         RecentSearchType.ASSET -> assets[it.primaryKey]?.let { token -> WalletSearchResult.Asset(token) }
-                        RecentSearchType.POSITION -> positions[it.primaryKey]?.let { position -> positionResult(position) }
                         RecentSearchType.COLLECTIBLE -> collectibles[it.primaryKey]?.let { collectible -> WalletSearchResult.Collectible(collectible) }
                         RecentSearchType.EARN -> earnAccounts[it.primaryKey]?.let { account -> earnResult(account) }
                         else -> null
@@ -138,7 +135,7 @@ internal class WalletSearchViewModel @Inject constructor(
     fun saveRecentSearch(result: WalletSearchResult) {
         val search = when (result) {
             is WalletSearchResult.Asset -> RecentSearch(RecentSearchType.ASSET, primaryKey = result.token.assetId)
-            is WalletSearchResult.Position -> RecentSearch(RecentSearchType.POSITION, primaryKey = result.position.positionId)
+            is WalletSearchResult.Position -> return
             is WalletSearchResult.Collectible -> RecentSearch(RecentSearchType.COLLECTIBLE, primaryKey = result.collectible.inscriptionHash)
             is WalletSearchResult.Earn -> RecentSearch(RecentSearchType.EARN, primaryKey = result.account.assetId)
         }

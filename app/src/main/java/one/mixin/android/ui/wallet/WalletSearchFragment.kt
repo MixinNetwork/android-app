@@ -83,7 +83,6 @@ class WalletSearchFragment : BaseFragment() {
         when (result) {
             is WalletSearchResult.Asset -> openAsset(result.token.assetId, result.token)
             is WalletSearchResult.Position -> {
-                viewModel.saveRecentSearch(result)
                 viewLifecycleOwner.lifecycleScope.launch {
                     val position = result.position
                     val market = viewModel.findPerpetualMarket(position.marketId)

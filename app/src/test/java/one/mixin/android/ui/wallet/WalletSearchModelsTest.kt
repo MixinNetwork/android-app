@@ -12,10 +12,10 @@ import java.math.BigDecimal
 class WalletSearchModelsTest {
     @Test
     fun recentTapMovesToFrontAndDeduplicatesByTypeAndId() {
-        val searches = listOf(asset("a"), position("a"), asset("b"), asset("a"))
+        val searches = listOf(asset("a"), collectible("a"), asset("b"), asset("a"))
         val updated = searches.addWalletRecentSearch(asset("a"))
         assertEquals(listOf("a", "a", "b"), updated.map { it.primaryKey })
-        assertEquals(listOf(RecentSearchType.ASSET, RecentSearchType.POSITION, RecentSearchType.ASSET), updated.map { it.type })
+        assertEquals(listOf(RecentSearchType.ASSET, RecentSearchType.COLLECTIBLE, RecentSearchType.ASSET), updated.map { it.type })
     }
 
     @Test
@@ -35,33 +35,40 @@ class WalletSearchModelsTest {
     @Test
     fun earnRecentRemainsSeparateFromTheSameAssetAfterReload() {
         val earn = RecentSearch(RecentSearchType.EARN, primaryKey = "btc")
-        val searches = listOf(asset("btc"), earn, position("p")).addWalletRecentSearch(earn)
+        val searches = listOf(asset("btc"), earn, collectible("p")).addWalletRecentSearch(earn)
         val gson = Gson()
         val restored = gson.fromJson(gson.toJson(searches), Array<RecentSearch>::class.java).toList()
             .mergeWalletRecentSearches(emptyList(), emptyList())
-        assertEquals(listOf(RecentSearchType.EARN, RecentSearchType.ASSET, RecentSearchType.POSITION), restored.map { it.type })
+        assertEquals(listOf(RecentSearchType.EARN, RecentSearchType.ASSET, RecentSearchType.COLLECTIBLE), restored.map { it.type })
         assertEquals(listOf("btc", "btc", "p"), restored.map { it.primaryKey })
     }
 
     @Test
+    fun positionsAreNotAddedToRecentSearches() {
+        val searches = listOf(asset("btc"))
+            .addWalletRecentSearch(RecentSearch(RecentSearchType.POSITION, primaryKey = "position"))
+        assertEquals(listOf("btc"), searches.map { it.primaryKey })
+    }
+
+    @Test
     fun recentLimitKeepsSixNewestItems() {
-        val searches = (1..8).map { asset(it.toString()) }.addWalletRecentSearch(position("new"))
+        val searches = (1..8).map { asset(it.toString()) }.addWalletRecentSearch(collectible("new"))
         assertEquals(listOf("new", "1", "2", "3", "4", "5"), searches.map { it.primaryKey })
     }
 
     @Test
     fun mergeAppendsSendBeforeReceiveWithoutReplacingMixedRecentOrder() {
-        val searches = listOf(position("p"), asset("a")).mergeWalletRecentSearches(
+        val searches = listOf(collectible("p"), asset("a")).mergeWalletRecentSearches(
             send = listOf("a", "b", "c"),
             receive = listOf("b", "d", "e", "f"),
         )
         assertEquals(listOf("p", "a", "b", "c", "d", "e"), searches.map { it.primaryKey })
-        assertEquals(RecentSearchType.POSITION, searches.first().type)
+        assertEquals(RecentSearchType.COLLECTIBLE, searches.first().type)
     }
 
     @Test
-    fun missingAssetsAndClosedPositionsAreRemovedBeforeFillingSixSlots() {
-        val searches = listOf(asset("missing"), position("closed"), position("open"), asset("zero-balance"))
+    fun missingAssetsAndUnavailableCollectiblesAreRemovedBeforeFillingSixSlots() {
+        val searches = listOf(asset("missing"), collectible("closed"), collectible("open"), asset("zero-balance"))
             .mergeWalletRecentSearches(listOf("missing", "a", "b", "c"), listOf("d", "e")) {
                 it.primaryKey !in setOf("missing", "closed")
             }
@@ -70,7 +77,7 @@ class WalletSearchModelsTest {
 
     @Test
     fun malformedAndUnrelatedRecentEntriesDoNotConsumeSlots() {
-        val searches = listOf(asset(""), RecentSearch(RecentSearchType.MARKET, primaryKey = "market"), position("p"))
+        val searches = listOf(asset(""), RecentSearch(RecentSearchType.MARKET, primaryKey = "market"), collectible("p"))
             .mergeWalletRecentSearches(emptyList(), listOf("a"))
         assertEquals(listOf("p", "a"), searches.map { it.primaryKey })
     }
@@ -167,5 +174,5 @@ class WalletSearchModelsTest {
     }
 
     private fun asset(id: String) = RecentSearch(RecentSearchType.ASSET, primaryKey = id)
-    private fun position(id: String) = RecentSearch(RecentSearchType.POSITION, primaryKey = id)
+    private fun collectible(id: String) = RecentSearch(RecentSearchType.COLLECTIBLE, primaryKey = id)
 }
