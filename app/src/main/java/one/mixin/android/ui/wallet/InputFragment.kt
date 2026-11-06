@@ -116,7 +116,6 @@ import one.mixin.android.web3.solanaTransferAmountRange
 import one.mixin.android.widget.Keyboard
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
-import org.sol4kt.VersionedTransactionCompat
 import timber.log.Timber
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -2515,8 +2514,8 @@ class InputFragment : BaseFragment(R.layout.fragment_input), OnReceiveSelectionC
     ) {
         val rawPayload = payload.takeIf { it.isJsonPrimitive }?.asString
             ?: throw IllegalStateException("Gasless payload is not a Solana base64 transaction")
-        val tx = VersionedTransactionCompat.from(rawPayload)
-        val signedTx = Web3Signer.signSolanaTransaction(privateKey, tx) {
+        val feeToken = if (feeAssetId == token.assetId) token else web3ViewModel.web3TokenItemById(token.walletId, feeAssetId)
+        val signedTx = Web3Signer.signSolanaGaslessTransfer(privateKey, rawPayload, fromAddress, token, amount, toAddress, feeToken, feeAmount) {
             rpc.getLatestBlockhash() ?: throw IllegalArgumentException("failed to get blockhash")
         }
         if (!signedTx.allSignerSigned()) {
