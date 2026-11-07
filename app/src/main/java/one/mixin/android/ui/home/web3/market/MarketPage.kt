@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -51,6 +52,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.PlatformTextStyle
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -312,6 +314,7 @@ internal fun MarketChip(
     text: String,
     selected: Boolean,
     onClick: () -> Unit,
+    height: Dp? = null,
 ) {
     Surface(
         color =
@@ -335,7 +338,9 @@ internal fun MarketChip(
         Text(
             text = text,
             fontSize = 14.sp,
-            modifier = Modifier.padding(horizontal = 14.dp, vertical = 7.dp),
+            modifier = Modifier
+                .then(if (height != null) Modifier.height(height).wrapContentHeight() else Modifier.padding(vertical = 7.dp))
+                .padding(horizontal = 14.dp),
         )
     }
 }

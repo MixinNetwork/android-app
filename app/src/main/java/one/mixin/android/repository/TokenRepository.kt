@@ -1017,6 +1017,8 @@ class TokenRepository
 
         fun collectiblesByHash(collectionHash: String): LiveData<List<SafeCollectible>> = outputDao.collectiblesByHash(collectionHash)
 
+        suspend fun findCollectiblesByHashes(hashes: List<String>): List<SafeCollectible> = outputDao.findCollectiblesByHashes(hashes)
+
         fun collections(sortOrder: SortOrder): LiveData<List<SafeCollection>> = outputDao.collections(sortOrder.name)
 
         fun collectionByHash(hash: String): LiveData<SafeCollection?> = outputDao.collectionByHash(hash)

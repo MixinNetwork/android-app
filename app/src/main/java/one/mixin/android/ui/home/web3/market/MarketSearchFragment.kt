@@ -29,9 +29,28 @@ import one.mixin.android.vo.market.MarketItem
 class MarketSearchFragment : BaseFragment() {
     companion object {
         const val TAG = "MarketSearchFragment"
+        const val ARGS_QUERY = "args_query"
+        const val ARGS_MARKET_SOURCE = "args_market_source"
+        const val ARGS_PERPS_SOURCE = "args_perps_source"
     }
 
     private val marketSearchViewModel by viewModels<MarketSearchViewModel>()
+
+    private val marketSource: String
+        get() = arguments?.getString(ARGS_MARKET_SOURCE) ?: AnalyticsTracker.MarketSource.MORE_SEARCH
+
+    private val perpsSource: String
+        get() = arguments?.getString(ARGS_PERPS_SOURCE) ?: AnalyticsTracker.PerpsSource.MORE_EXPLORE
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (savedInstanceState == null) {
+            val query = arguments?.getString(ARGS_QUERY)
+            if (!query.isNullOrBlank()) {
+                marketSearchViewModel.updateQuery(query)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -101,7 +120,7 @@ class MarketSearchFragment : BaseFragment() {
             requireActivity(),
             market,
             Destination.Market,
-            AnalyticsTracker.MarketSource.MORE_SEARCH,
+            marketSource,
         )
     }
 
@@ -121,7 +140,7 @@ class MarketSearchFragment : BaseFragment() {
             marketSymbol = market.displaySymbol,
             marketDisplaySymbol = market.displaySymbol,
             marketTokenSymbol = market.tokenSymbol,
-            source = AnalyticsTracker.PerpsSource.MORE_EXPLORE,
+            source = perpsSource,
         )
     }
 
