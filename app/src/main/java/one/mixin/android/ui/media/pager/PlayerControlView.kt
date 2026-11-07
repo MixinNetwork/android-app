@@ -23,7 +23,6 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ViewPlayerControlBinding
 import one.mixin.android.extension.dp
 import one.mixin.android.extension.isLandscape
-import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.widget.PlayView2.Companion.STATUS_IDLE
 import one.mixin.android.widget.PlayView2.Companion.STATUS_PLAYING
 import java.util.Formatter
@@ -48,8 +47,6 @@ import kotlin.math.min
     private var timeBarMinUpdateIntervalMs = DEFAULT_TIME_BAR_MIN_UPDATE_INTERVAL_MS
     private var attachedToWindow = false
     private var hideAtMs = C.TIME_UNSET
-
-    private val statusBarHeight = context.statusBarHeight()
 
     private val updateProgressAction =
         Runnable {
@@ -95,7 +92,7 @@ import kotlin.math.min
     private val positionView by lazy { binding.exoPosition }
     private val timeBar by lazy { binding.exoProgress }
     private val liveView by lazy { binding.liveTv }
-    val bottomLayout by lazy { binding.bottomLl }
+    private val bottomLayout by lazy { binding.bottomLl }
     val fullscreenIv by lazy { binding.fullscreenIv }
     val pipView by lazy { binding.pipIv }
     val closeIv by lazy { binding.closeIv }
@@ -104,22 +101,22 @@ import kotlin.math.min
         playView.setOnClickListener(componentListener)
         timeBar.addListener(componentListener)
         ViewCompat.setOnApplyWindowInsetsListener(this) { _: View?, insets: WindowInsetsCompat ->
-            insets.getInsets(WindowInsetsCompat.Type.systemBars()).let { systemInserts ->
+            insets.getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout()).let { safeInsets ->
                 if (context.isLandscape()) {
-                    binding.topFl.setPadding(systemInserts.left, 0, systemInserts.right, 0)
+                    binding.topFl.setPadding(safeInsets.left, safeInsets.top, safeInsets.right, 0)
                     binding.bottomLl.setPadding(
-                        12.dp + systemInserts.left,
+                        12.dp + safeInsets.left,
                         12.dp,
-                        12.dp + systemInserts.right,
-                        24.dp,
+                        12.dp + safeInsets.right,
+                        24.dp + safeInsets.bottom,
                     )
                 } else {
-                    binding.topFl.setPadding(0, 24.dp + systemInserts.top, 0, 0)
+                    binding.topFl.setPadding(safeInsets.left, 24.dp + safeInsets.top, safeInsets.right, 0)
                     binding.bottomLl.setPadding(
-                        12.dp,
+                        12.dp + safeInsets.left,
                         24.dp,
-                        12.dp,
-                        24.dp + systemInserts.bottom,
+                        12.dp + safeInsets.right,
+                        24.dp + safeInsets.bottom,
                     )
                 }
                 WindowInsetsCompat.CONSUMED
@@ -127,13 +124,9 @@ import kotlin.math.min
         }
     }
 
-    override fun onFinishInflate() {
-        super.onFinishInflate()
-        topLayout.setPadding(0, statusBarHeight, 0, 0)
-    }
-
     public override fun onAttachedToWindow() {
         super.onAttachedToWindow()
+        ViewCompat.requestApplyInsets(this)
         attachedToWindow = true
         player?.addListener(componentListener)
         if (hideAtMs != C.TIME_UNSET) {
@@ -188,10 +181,8 @@ import kotlin.math.min
     fun switchFullscreen(fullscreen: Boolean) {
         if (fullscreen) {
             fullscreenIv.setImageResource(R.drawable.ic_fullscreen_exit)
-            topLayout.setPadding(0, 0, 0, 0)
         } else {
             fullscreenIv.setImageResource(R.drawable.ic_fullscreen)
-            topLayout.setPadding(0, statusBarHeight, 0, 0)
         }
     }
 
