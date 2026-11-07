@@ -3277,7 +3277,7 @@ class ConversationFragment() :
                 }.setActionTextColor(ContextCompat.getColor(requireContext(), R.color.wallet_blue)).apply {
                     (view.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)).setTextColor(ContextCompat.getColor(requireContext(), R.color.white))
                 }.apply {
-                    snackBar?.config(binding.barLayout.context)
+                    config(binding.barLayout.context)
                 }
         snackBar?.show()
     }
