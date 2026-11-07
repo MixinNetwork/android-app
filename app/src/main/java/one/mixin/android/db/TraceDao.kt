@@ -15,7 +15,7 @@ interface TraceDao : BaseDao<Trace> {
     @Query(
         """
         SELECT * FROM traces 
-        WHERE (opponent_id = :opponentId OR (destination = :destination AND tag = :tag))
+        WHERE (opponent_id = :opponentId OR (destination = :destination AND tag IS :tag))
         AND amount = CAST(:amount AS REAL) AND asset_id = :assetId
         ORDER BY created_at DESC
         LIMIT 1
@@ -29,6 +29,6 @@ interface TraceDao : BaseDao<Trace> {
         assetId: String,
     ): Trace?
 
-    @Query(" DELETE FROM traces WHERE created_at <= date('now', '-6 hours')")
+    @Query("DELETE FROM traces WHERE julianday(created_at) <= julianday('now', '-6 hours')")
     suspend fun deletePreviousTraces()
 }
