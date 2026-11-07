@@ -237,6 +237,8 @@ private fun WalletRecentSearchChip(
     maxWidth: Dp? = null,
     onClick: () -> Unit,
 ) {
+    val isCollectible = result is WalletSearchResult.Collectible ||
+        (result is WalletSearchResult.Asset && !result.token.collectionHash.isNullOrEmpty())
     Row(
         Modifier
             .then(if (maxWidth != null) Modifier.widthIn(max = maxWidth) else Modifier)
@@ -247,11 +249,26 @@ private fun WalletRecentSearchChip(
             .clip(CircleShape)
             .background(MixinAppTheme.colors.background)
             .clickable(onClick = onClick)
-            .padding(start = 6.dp, top = 4.dp, bottom = 4.dp, end = 14.dp),
+            .padding(start = if (isCollectible) 7.dp else 6.dp, top = 4.dp, bottom = 4.dp, end = 14.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        WalletSearchIcon(result, 32.dp)
-        Spacer(Modifier.width(4.dp))
+        if (isCollectible) {
+            Box(Modifier.width(30.dp).height(32.dp), contentAlignment = Alignment.Center) {
+                CoilImage(
+                    model = when (result) {
+                        is WalletSearchResult.Asset -> result.token.iconUrl
+                        is WalletSearchResult.Collectible -> result.collectible.iconURL?.takeIf { it.isNotBlank() } ?: result.collectible.contentURL
+                        else -> null
+                    },
+                    placeholder = R.drawable.ic_avatar_place_holder,
+                    modifier = Modifier.size(30.dp).clip(RoundedCornerShape(8.dp)),
+                    contentScale = ContentScale.Crop,
+                )
+            }
+        } else {
+            WalletSearchIcon(result, 32.dp)
+        }
+        Spacer(Modifier.width(if (isCollectible) 5.dp else 4.dp))
         Column {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
