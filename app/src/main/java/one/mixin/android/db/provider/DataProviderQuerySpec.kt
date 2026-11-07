@@ -118,11 +118,11 @@ private const val OBSERVE_CONVERSATIONS_COUNT_SQL =
     "SELECT count(1) FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE c.category IS NOT NULL"
 
 private const val OBSERVE_CONVERSATIONS_OFFSET_SQL =
-    "SELECT c.rowid FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id ORDER BY c.pin_time DESC, c.last_message_created_at DESC LIMIT ? OFFSET ?"
+    "SELECT c.rowid FROM conversations c INNER JOIN users ou ON ou.user_id = c.owner_id WHERE c.category IS NOT NULL ORDER BY c.pin_time DESC, c.last_message_created_at DESC LIMIT ? OFFSET ?"
 
 private const val OBSERVE_CONVERSATIONS_QUERY_SQL =
     ConversationDao.PREFIX_CONVERSATION_ITEM +
-        " WHERE c.rowid IN ({{ids}}) ORDER BY c.pin_time DESC, c.last_message_created_at DESC"
+        " WHERE c.category IS NOT NULL AND c.rowid IN ({{ids}}) ORDER BY c.pin_time DESC, c.last_message_created_at DESC"
 
 private const val OBSERVE_CONVERSATIONS_BY_CIRCLE_PREFIX_SQL =
     """
