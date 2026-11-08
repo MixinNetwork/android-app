@@ -182,7 +182,7 @@ internal class WalletSearchViewModel @Inject constructor(
         val assets = sortQueryAsset(query, tokenRepository.fuzzySearchAssetIgnoreAmount(escaped), emptyList())
             .map { WalletSearchResult.Asset(it) }
         val positions = positionDao.getOpenPositions(Session.getAccountId().orEmpty())
-            .filter { it.tokenSymbol.orEmpty().contains(query, true) || it.displaySymbol.orEmpty().contains(query, true) }
+            .filter { it.tokenSymbol.orEmpty().contains(query, true) }
             .map { positionResult(it) }
         val earn = preferences.getWalletHomeCacheState(walletHomeCacheKey(WalletHomeType.PRIVACY, Session.getAccountId().orEmpty()))
             ?.earnAccounts.orEmpty()
