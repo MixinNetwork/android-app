@@ -1,9 +1,11 @@
 package one.mixin.android.ui.wallet.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -17,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -31,6 +34,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -43,6 +47,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
 import one.mixin.android.R
 import one.mixin.android.api.response.AssetView
 import one.mixin.android.compose.CoilImage
@@ -52,6 +57,7 @@ import one.mixin.android.crypto.CryptoWallet
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import java.math.BigDecimal
+import java.math.RoundingMode
 import java.text.NumberFormat
 
 enum class FetchWalletState {
@@ -561,30 +567,52 @@ fun WalletItem(
                 }
             } else {
                 val totalValue = wallet.totalValue
-                wallet.assets.take(2).forEach { asset ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        CoilImage(
-                            model = asset.iconUrl,
-                            placeholder = R.drawable.ic_avatar_place_holder,
-                            modifier = Modifier.size(18.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        if (totalValue > BigDecimal.ZERO) {
-                            val percentage = (asset.value / totalValue) * BigDecimal(100)
+                val assets = wallet.assets
+                // Matches iOS: the last column takes the remainder so the shown percentages add up to 100%.
+                val columns = if (assets.size <= 3) assets.map { listOf(it) } else assets.take(2).map { listOf(it) } + listOf(assets.drop(2))
+                val percentages = if (totalValue > BigDecimal.ZERO) {
+                    val leading = columns.dropLast(1).map { column ->
+                        column.first().value.divide(totalValue, 2, RoundingMode.HALF_UP)
+                    }
+                    leading + (BigDecimal.ONE - leading.fold(BigDecimal.ZERO, BigDecimal::add))
+                } else {
+                    null
+                }
+                val percentFormat = NumberFormat.getPercentInstance()
+                columns.forEachIndexed { index, column ->
+                    Row(
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        val icons = column.take(3)
+                        Box(modifier = Modifier.width((18 + 12 * (icons.size - 1)).dp)) {
+                            icons.forEachIndexed { iconIndex, asset ->
+                                CoilImage(
+                                    model = asset.iconUrl,
+                                    placeholder = R.drawable.ic_avatar_place_holder,
+                                    modifier = Modifier
+                                        .offset(x = (12 * iconIndex).dp)
+                                        .zIndex(iconIndex.toFloat())
+                                        .size(18.dp)
+                                        .border(1.dp, MixinAppTheme.colors.background, CircleShape)
+                                        .clip(CircleShape)
+                                )
+                            }
+                        }
+                        if (percentages != null) {
+                            Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = "${
-                                    NumberFormat.getPercentInstance()
-                                        .format(percentage.toDouble() / 100)
-                                }",
+                                text = percentFormat.format(percentages[index].max(BigDecimal.ZERO)),
                                 fontSize = 12.sp,
                                 color = MixinAppTheme.colors.textMinor
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
+                }
+                repeat(3 - columns.size) {
+                    Spacer(modifier = Modifier.weight(1f))
                 }
             }
-            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }
