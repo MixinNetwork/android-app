@@ -26,7 +26,7 @@
             android:layout_height="wrap_content"
             app:leftIcon="@drawable/ic_close_black"
             app:rightIcon="@drawable/ic_help_outline"
-            app:titleText="@string/desktop_page_title"/>
+            app:titleText="@string/Mixin_Messenger_Desktop"/>
 
         <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
