@@ -56,7 +56,7 @@ class ConversationListViewModel
         private val jobManager: MixinJobManager,
         private val cleanMessageHelper: CleanMessageHelper,
     ) : ViewModel() {
-        fun observeConversations(circleId: String?): LiveData<PagingData<ConversationItem>> =
+        fun observeConversations(filter: ConversationFilter): LiveData<PagingData<ConversationItem>> =
             Pager(
                 config =
                     PagingConfig(
@@ -64,7 +64,7 @@ class ConversationListViewModel
                         prefetchDistance = CONVERSATION_PAGE_SIZE * 2,
                         enablePlaceholders = true,
                     ),
-                pagingSourceFactory = { messageRepository.observeConversations(circleId) },
+                pagingSourceFactory = { messageRepository.observeConversations(filter) },
             ).flow.cachedIn(viewModelScope).asLiveData()
 
         suspend fun createGroupConversation(conversationId: String) {

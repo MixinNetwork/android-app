@@ -6,6 +6,7 @@ import android.util.TypedValue
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -24,6 +25,7 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -51,6 +53,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.boundsInParent
@@ -113,6 +116,7 @@ import org.threeten.bp.Instant
 import java.math.BigDecimal
 import java.util.Locale
 import kotlin.math.roundToInt
+import one.mixin.android.widget.isExpandedSheetScreen
 
 private const val DEFAULT_TIME_FRAME_INDEX = 2
 private const val CLOSED_POSITION_PREVIEW_LIMIT = 100
@@ -220,8 +224,8 @@ fun PerpsMarketDetailPage(
     }
     val quoteColorReversed = context.defaultSharedPreferences
         .getBoolean(Constants.Account.PREF_QUOTE_COLOR, false)
-    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.marketRed else MixinAppTheme.colors.marketGreen
-    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.marketGreen else MixinAppTheme.colors.marketRed
+    val risingColor = if (quoteColorReversed) MixinAppTheme.colors.walletRed else MixinAppTheme.colors.walletGreen
+    val fallingColor = if (quoteColorReversed) MixinAppTheme.colors.walletGreen else MixinAppTheme.colors.walletRed
 
     LaunchedEffect(marketId) {
         viewModel.refreshFavoriteMarkets()
@@ -600,16 +604,33 @@ fun PerpsMarketDetailPage(
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
-            if (market != null && hasLoadedOpenPositions) {
-                Column(
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .background(MixinAppTheme.colors.background)
-                        .padding(horizontal = 16.dp)
-                        .padding(bottom = 20.dp, top = 20.dp)
-                ) {
-                    if (currentPosition != null) {
+            val bottomActionsReady = market != null && hasLoadedOpenPositions
+            val bottomActionAlpha = remember { Animatable(0f) }
+            LaunchedEffect(bottomActionsReady) {
+                if (bottomActionsReady) {
+                    bottomActionAlpha.animateTo(1f, tween(durationMillis = 200))
+                } else {
+                    bottomActionAlpha.snapTo(0f)
+                }
+            }
+            Column(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .background(MixinAppTheme.colors.background)
+                    .padding(horizontal = 16.dp)
+                    .padding(bottom = 20.dp, top = 20.dp)
+            ) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    PerpsBottomActionPlaceholder()
+                    if (bottomActionsReady) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .graphicsLayer { alpha = bottomActionAlpha.value }
+                                .background(MixinAppTheme.colors.background),
+                        ) {
+                if (currentPosition != null) {
                         val isOpen = currentPosition.state == PerpsPosition.STATE_OPEN
                         val isAdding = currentPosition.state == PerpsPosition.STATE_ADDING
                         val isPending = currentPosition.state == PerpsPosition.STATE_OPENING || isAdding
@@ -759,6 +780,25 @@ fun PerpsMarketDetailPage(
                     }
                 }
             }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PerpsBottomActionPlaceholder() {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        repeat(2) {
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .height(48.dp)
+                    .background(MixinAppTheme.colors.backgroundWindow, RoundedCornerShape(32.dp)),
+            )
         }
     }
 }
@@ -1150,6 +1190,13 @@ private fun TimeFrameSelector(
     val density = LocalDensity.current
     val scrollState = rememberScrollState()
     var viewportWidth by remember { mutableIntStateOf(0) }
+    // Large screens share the track evenly; phones keep content-sized options.
+    val expanded = LocalContext.current.isExpandedSheetScreen()
+    val itemMinWidth = if (expanded && viewportWidth > 0 && labels.isNotEmpty()) {
+        with(density) { ((viewportWidth - 6.dp.toPx() - (labels.size - 1) * 1.dp.toPx()) / labels.size).coerceAtLeast(0f).toDp() }
+    } else {
+        0.dp
+    }
     val itemBounds = remember(labels.size) { mutableStateListOf<Rect?>().apply { repeat(labels.size) { add(null) } } }
     val indicatorX = remember { Animatable(0f) }
     val indicatorWidth = remember { Animatable(0f) }
@@ -1207,6 +1254,7 @@ private fun TimeFrameSelector(
                     Box(
                         modifier = Modifier
                             .onPlaced { itemBounds[index] = it.boundsInParent() }
+                            .widthIn(min = itemMinWidth)
                             .height(36.dp)
                             .clickable(
                                 interactionSource = remember { MutableInteractionSource() },

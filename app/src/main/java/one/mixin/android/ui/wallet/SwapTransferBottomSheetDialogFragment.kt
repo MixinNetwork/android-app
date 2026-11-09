@@ -94,7 +94,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.notNullWithElse
 import one.mixin.android.extension.nowInUtc
 import one.mixin.android.extension.putLong
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.stripAmountZero
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.extension.withArgs
@@ -139,6 +138,7 @@ import one.mixin.android.web3.Rpc
 import one.mixin.android.web3.js.JsSignMessage
 import one.mixin.android.web3.js.Web3Signer
 import one.mixin.android.web3.send.UtxoTransactionSigner
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 import org.sol4k.Base58
 import org.sol4k.Constants.SIGNATURE_LENGTH
@@ -154,6 +154,8 @@ import kotlin.time.Duration.Companion.seconds
 
 @AndroidEntryPoint
 class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     companion object {
         const val TAG = "SwapTransferBottomSheetDialogFragment"
@@ -593,7 +595,7 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
 
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
 
@@ -1234,12 +1236,16 @@ class SwapTransferBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragm
         }
         val ethPayload = GsonHelper.customGson.fromJson(payload, EthGaslessTxPayload::class.java)
             ?: throw IllegalStateException("Failed to parse gasless EVM payload")
-        val userOpSignature = Web3Signer.signEthMessage(
+        val (userOpSignature, eip7702AuthSignature) = Web3Signer.signEvmGaslessTransfer(
             priv = privateKey,
-            message = ethPayload.signing.userOperation.message,
-            type = JsSignMessage.TYPE_GASLESS_TRANSFER,
+            payload = ethPayload,
+            fromAddress = fromAddress,
+            token = token,
+            amount = amount,
+            recipient = toAddress,
+            feeToken = if (feeAssetId == token.assetId) token else web3ViewModel.web3TokenItemById(token.walletId, feeAssetId),
+            feeAmount = feeAmount,
         )
-        val eip7702AuthSignature = Web3Signer.signEip7702Auth(privateKey, ethPayload.signing.eip7702Auth)
         val response = web3ViewModel.submitGaslessTx(
             SubmitGaslessTxRequest(
                 chainId = chainId,

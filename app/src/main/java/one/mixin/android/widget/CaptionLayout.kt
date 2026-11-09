@@ -5,7 +5,8 @@ import android.util.AttributeSet
 import android.view.ViewGroup
 import androidx.core.view.isVisible
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.isCompactMessageWindow
+import one.mixin.android.extension.messageAreaWidth
 import timber.log.Timber
 
 class CaptionLayout : ViewGroup {
@@ -19,9 +20,8 @@ class CaptionLayout : ViewGroup {
         defStyleAttr
     )
 
-    private val minWidth by lazy {
-        (context.realSize().x * 0.5).toInt()
-    }
+    private val minWidth: Int by lazy { (context.messageAreaWidth() * 0.5).toInt() }
+    private val compactWindow by lazy { context.isCompactMessageWindow() }
 
     private val offset by lazy {
         4.dp
@@ -45,6 +45,7 @@ class CaptionLayout : ViewGroup {
         val secondView = getChildAt(1)
         val thirdView = getChildAt(2)
 
+        val minWidth = if (compactWindow) minWidth else minOf(minWidth, MeasureSpec.getSize(widthMeasureSpec))
         if (ratio != 0f) {
             measureChild(
                 secondView,

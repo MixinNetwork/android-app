@@ -28,6 +28,8 @@ import one.mixin.android.widget.components.MixinButton
 
 @AndroidEntryPoint
 class PerpsInfoBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "PerpsInfoBottomSheetDialogFragment"
         private const val ARGS_TITLE = "args_title"

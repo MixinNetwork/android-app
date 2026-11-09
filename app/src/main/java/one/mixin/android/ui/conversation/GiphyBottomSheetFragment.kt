@@ -20,6 +20,7 @@ import one.mixin.android.extension.hideKeyboard
 import one.mixin.android.extension.launchUntilStop
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.contentWidth
 import one.mixin.android.extension.toast
 import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.ui.common.recyclerview.FooterListAdapter
@@ -31,6 +32,7 @@ import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.giphy.Gif
 import one.mixin.android.vo.giphy.Image
 import one.mixin.android.widget.BottomSheet
+import one.mixin.android.widget.isExpandedSheetScreen
 import retrofit2.HttpException
 import timber.log.Timber
 
@@ -53,7 +55,7 @@ class GiphyBottomSheetFragment : MixinBottomSheetDialogFragment() {
 
     private val adapter: GiphyAdapter by lazy {
         GiphyAdapter(
-            (requireContext().realSize().x - (COLUMN + 1) * padding) / COLUMN,
+            ((if (requireContext().isExpandedSheetScreen()) requireContext().contentWidth() else requireContext().realSize().x) - (COLUMN + 1) * padding) / COLUMN,
             object : GifListener {
                 override fun onGifClick(
                     image: Image,

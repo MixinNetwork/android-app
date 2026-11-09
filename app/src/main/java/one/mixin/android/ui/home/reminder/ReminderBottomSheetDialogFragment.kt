@@ -27,11 +27,14 @@ import one.mixin.android.extension.putLong
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.common.taskActivity
 import one.mixin.android.ui.home.MainActivity
 import one.mixin.android.util.SystemUIManager
 
 @AndroidEntryPoint
 class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "ReminderBottomSheetDialogFragment"
         private const val PREF_NOTIFICATION_ON = "pref_notification_on"
@@ -150,7 +153,7 @@ class ReminderBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
                         title = R.string.New_Update_Available,
                         actionStr = R.string.Update_Now,
                         action = {
-                            Session.getAccount()?.system?.messenger?.let { it -> (requireActivity() as? MainActivity)?.showUpdate(it.releaseUrl) }
+                            Session.getAccount()?.system?.messenger?.let { it -> (taskActivity() as? MainActivity)?.showUpdate(it.releaseUrl) }
                             dismissAllowingStateLoss()
                         },
                         dismiss = {

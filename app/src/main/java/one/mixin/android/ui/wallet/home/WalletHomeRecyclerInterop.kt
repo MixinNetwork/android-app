@@ -177,6 +177,7 @@ fun PrivacyTransactionRecycler(
 fun Web3TransactionRecycler(
     transactions: List<Web3TransactionItem>,
     onClick: (Int) -> Unit,
+    onTokenClick: (Int) -> Unit = {},
     modifier: Modifier = Modifier,
     itemSpacing: Dp = 20.dp,
     contentHorizontalPadding: Dp = 16.dp,
@@ -184,6 +185,7 @@ fun Web3TransactionRecycler(
     val spacing = with(LocalDensity.current) { itemSpacing.roundToPx() }
     val contentHorizontalPaddingPx = with(LocalDensity.current) { contentHorizontalPadding.roundToPx() }
     val currentOnClick = rememberUpdatedState(onClick)
+    val currentOnTokenClick = rememberUpdatedState(onTokenClick)
     AndroidView(
         modifier = modifier,
         factory = { context ->
@@ -200,6 +202,7 @@ fun Web3TransactionRecycler(
         update = { recyclerView ->
             (recyclerView.adapter as Web3TransactionListAdapter).apply {
                 updateOnClick { currentOnClick.value(it) }
+                updateOnTokenClick { currentOnTokenClick.value(it) }
                 submitList(transactions)
             }
         },
@@ -251,6 +254,7 @@ private class Web3TransactionListAdapter(
 ) : RecyclerView.Adapter<Web3TransactionHolder>() {
     private var items: List<Web3TransactionItem> = emptyList()
     private var onClick: (Int) -> Unit = {}
+    private var onTokenClick: (Int) -> Unit = {}
 
     fun submitList(newItems: List<Web3TransactionItem>) {
         items = newItems
@@ -261,12 +265,17 @@ private class Web3TransactionListAdapter(
         this.onClick = onClick
     }
 
+    fun updateOnTokenClick(onTokenClick: (Int) -> Unit) {
+        this.onTokenClick = onTokenClick
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): Web3TransactionHolder {
         val binding = ItemWeb3TransactionsBinding.inflate(LayoutInflater.from(parent.context), parent, false)
         return Web3TransactionHolder(binding, compact, compactAvatarStartMargin)
     }
 
     override fun onBindViewHolder(holder: Web3TransactionHolder, position: Int) {
+        holder.onTokenClick = { onTokenClick(position) }
         holder.bind(items[position])
         holder.itemView.setOnClickListener { onClick(position) }
     }

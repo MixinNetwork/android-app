@@ -49,6 +49,8 @@ import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 import one.mixin.android.R
+import one.mixin.android.RxBus
+import one.mixin.android.event.PerpsTradeCompletedEvent
 import one.mixin.android.api.response.perps.PerpsPosition
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.theme.MixinAppTheme
@@ -56,7 +58,6 @@ import one.mixin.android.extension.booleanFromAttribute
 import one.mixin.android.extension.composeDp
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.isNightMode
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
@@ -70,12 +71,15 @@ import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.User
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 import timber.log.Timber
 import java.math.BigDecimal
 
 @AndroidEntryPoint
 class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     companion object {
         const val TAG = "PerpsCloseBottomSheetDialogFragment"
@@ -521,7 +525,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     private var onDoneAction: (() -> Unit)? = null
@@ -583,6 +587,7 @@ class PerpsCloseBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragmen
             onSuccess = {
                 step = Step.Done
                 AnalyticsTracker.trackPerpsCloseEnd()
+                RxBus.publish(PerpsTradeCompletedEvent)
             },
             onError = { error ->
                 errorInfo = error

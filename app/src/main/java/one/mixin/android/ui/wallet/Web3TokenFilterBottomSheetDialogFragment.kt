@@ -11,6 +11,8 @@ import one.mixin.android.ui.common.MixinBottomSheetDialogFragment
 import one.mixin.android.util.viewBinding
 
 class Web3TokenFilterBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
 
     companion object {
         const val TAG = "Web3TokenFilterBottomSheetDialogFragment"

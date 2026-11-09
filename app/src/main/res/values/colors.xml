@@ -15,12 +15,15 @@
     <color name="textRemarks">#B3B3B3</color>
     <color name="textSubtitle">#B3B3B3</color>
     <color name="text_quote_purple">#FFAA71FA</color>
+    <color name="disappearing_message_background">#EDD6FF</color>
+    <color name="disappearing_message_disabled_background">#F6F7FA</color>
 
     <color name="textTranscript">#663B3C3E</color>
     <color name="textTranscriptNight">#858f9c</color>
     <color name="textTranscriptNightOther">#828589</color>
 
     <color name="colorIcon">#FF000000</color>
+    <color name="more_icon">#2F3032</color>
     <color name="colorIconGoogleBlack">#3C4043</color>
     <color name="colorIconWhite">#FFFFFF</color>
     <color name="colorIconGray">#D2D4DA</color>

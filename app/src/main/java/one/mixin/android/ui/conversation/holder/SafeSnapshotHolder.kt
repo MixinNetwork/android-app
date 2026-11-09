@@ -8,7 +8,7 @@ import one.mixin.android.R
 import one.mixin.android.databinding.ItemChatSafeSnapshotBinding
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.numberFormat8
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.messageAreaWidth
 import one.mixin.android.ui.conversation.adapter.MessageAdapter
 import one.mixin.android.ui.conversation.holder.base.BaseViewHolder
 import one.mixin.android.vo.MessageItem
@@ -16,7 +16,7 @@ import one.mixin.android.widget.CoilRoundedHexagonTransformation
 
 class SafeSnapshotHolder constructor(val binding: ItemChatSafeSnapshotBinding) : BaseViewHolder(binding.root) {
     init {
-        binding.chatLayout.layoutParams.width = (itemView.context.realSize().x * 0.6).toInt()
+        binding.chatLayout.layoutParams.width = (itemView.context.messageAreaWidth() * 0.6).toInt()
     }
 
     private var onItemListener: MessageAdapter.OnItemListener? = null
