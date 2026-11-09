@@ -2762,5 +2762,5 @@
     <string name="All_Networks">All Networks</string>
     <string name="Last_Updated">Last Updated</string>
     <string name="Last_Updated_at">Last Updated: %1$s</string>
-    <string name="number_of_networks">%1$d networks</string>
+    <string name="number_of_networks">%1$d Networks</string>
 </resources>
