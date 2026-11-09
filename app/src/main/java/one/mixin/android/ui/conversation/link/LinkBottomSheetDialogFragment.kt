@@ -3,6 +3,7 @@ package one.mixin.android.ui.conversation.link
 import android.annotation.SuppressLint
 import android.app.Dialog
 import android.content.Intent
+import android.os.Bundle
 import android.net.Uri
 import android.view.Gravity
 import android.view.View
@@ -120,6 +121,8 @@ import one.mixin.android.ui.web.WebActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.SystemUIManager
+import one.mixin.android.widget.FoldAwareBottomSheetDialog
+import one.mixin.android.widget.isExpandedSheetScreen
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeSource
 import one.mixin.android.util.analytics.AnalyticsTracker.TradeWallet
@@ -177,6 +180,13 @@ class LinkBottomSheetDialogFragment : SchemeBottomSheet() {
     private var authOrPay = false
 
     override fun getTheme() = R.style.AppTheme_Dialog
+
+    override fun onCreateDialog(savedInstanceState: Bundle?): Dialog =
+        if (requireContext().isExpandedSheetScreen()) {
+            FoldAwareBottomSheetDialog(requireContext(), theme)
+        } else {
+            super.onCreateDialog(savedInstanceState)
+        }
 
     private val oldLinkViewModel by viewModels<BottomSheetViewModel>()
 

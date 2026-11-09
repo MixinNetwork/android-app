@@ -50,14 +50,12 @@ import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.loadImage
 import one.mixin.android.extension.priceFormat
 import one.mixin.android.extension.roundTopOrBottom
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.ShareCoverRepository
 import one.mixin.android.repository.ReferralRepository
 import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
-import one.mixin.android.ui.common.drawShareCover
 import one.mixin.android.ui.common.drawShareBitmap
 import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.isZeroPercent
@@ -69,6 +67,7 @@ import one.mixin.android.vo.ActionButtonData
 import one.mixin.android.vo.AppCardData
 import one.mixin.android.vo.ForwardMessage
 import one.mixin.android.vo.ShareCategory
+import one.mixin.android.widget.bottomSheetHeight
 import java.io.File
 import java.io.FileOutputStream
 import java.math.BigDecimal
@@ -78,6 +77,8 @@ import kotlin.math.absoluteValue
 
 @AndroidEntryPoint
 class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "PerpsPositionShareBottomFragment"
         private const val ARGS_POSITION = "args_position"
@@ -193,7 +194,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     override fun showError(error: String) {
@@ -447,7 +448,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         viewLifecycleOwner.lifecycleScope.launch {
             val poster = currentPosterView() ?: return@launch
             if (poster.width == 0 || poster.height == 0) return@launch
-            val bitmap = poster.drawShareCover()
+            val bitmap = poster.drawShareBitmap()
             showLoading(true)
             try {
                 val coverUrl = shareCoverRepository.upload(bitmap)

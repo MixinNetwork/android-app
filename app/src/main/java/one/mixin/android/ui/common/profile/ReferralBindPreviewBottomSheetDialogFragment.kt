@@ -48,7 +48,6 @@ import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getSafeAreaInsetsBottom
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.openUrl
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.UserBottomSheetDialogFragment
@@ -62,6 +61,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.vo.User
+import one.mixin.android.widget.bottomSheetHeight
 
 @AndroidEntryPoint
 class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
@@ -307,7 +307,7 @@ class ReferralBindPreviewBottomSheetDialogFragment : MixinComposeBottomSheetDial
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop() - view.getSafeAreaInsetsBottom()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop() - view.getSafeAreaInsetsBottom()
     }
 
     override fun onDismiss(dialog: android.content.DialogInterface) {

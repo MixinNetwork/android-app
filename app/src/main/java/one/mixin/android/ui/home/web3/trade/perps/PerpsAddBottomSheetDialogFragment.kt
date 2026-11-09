@@ -85,7 +85,6 @@ import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.numberFormat8
 import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putString
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.session.Session
@@ -109,6 +108,7 @@ import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.safe.TokenItem
+import one.mixin.android.widget.bottomSheetHeight
 import one.mixin.android.widget.components.MixinButton
 import java.math.BigDecimal
 import java.math.RoundingMode
@@ -117,6 +117,8 @@ private const val PERPS_ADD_REFRESH_INTERVAL_MS = 3_000L
 
 @AndroidEntryPoint
 class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "PerpsAddBottomSheetDialogFragment"
         private const val ARGS_POSITION = "args_position"
@@ -189,7 +191,7 @@ class PerpsAddBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment(
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     @Composable

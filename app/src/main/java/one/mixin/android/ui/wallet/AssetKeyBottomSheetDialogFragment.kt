@@ -14,6 +14,8 @@ import one.mixin.android.widget.BottomSheet
 
 @AndroidEntryPoint
 class AssetKeyBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "AssetKeyBottomSheetDialogFragment"
 

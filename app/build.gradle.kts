@@ -15,10 +15,10 @@ plugins {
 apply(plugin = "com.google.gms.google-services")
 apply(plugin = "com.google.firebase.crashlytics")
 
-val versionMajor = 6
-val versionMinor = 3
-val versionPatch = 6
-val versionBuild = 1
+val versionMajor = 7
+val versionMinor = 0
+val versionPatch = 1
+val versionBuild = 0
 
 val androidNdkVersion = rootProject.extra["androidNdkVersion"] as String
 val jetifierVersion = rootProject.extra["jetifierVersion"] as String
@@ -125,13 +125,6 @@ val tweetnaclVersion = rootProject.extra["tweetnaclVersion"] as String
 val sol4kUtilitiesVersion = rootProject.extra["sol4kUtilitiesVersion"] as String
 val desugarJdkLibsVersion = rootProject.extra["desugarJdkLibsVersion"] as String
 val bugsnagVersion = rootProject.extra["bugsnagVersion"] as String
-val sumsubVersion = rootProject.extra["sumsubVersion"] as String
-val checkoutFramesVersion = rootProject.extra["checkoutFramesVersion"] as String
-val checkoutSecureVersion = rootProject.extra["checkoutSecureVersion"] as String
-val checkoutRiskVersion = rootProject.extra["checkoutRiskVersion"] as String
-val playWalletVersion = rootProject.extra["playWalletVersion"] as String
-val playPayVersion = rootProject.extra["playPayVersion"] as String
-val datastoreVersion = rootProject.extra["datastoreVersion"] as String
 val appsFlyerVersion = rootProject.extra["appsFlyerVersion"] as String
 val installReferrerVersion = rootProject.extra["installReferrerVersion"] as String
 val billingVersion = rootProject.extra["billingVersion"] as String
@@ -297,7 +290,7 @@ android {
 
     testOptions {
         unitTests {
-            isIncludeAndroidResources = false
+            isIncludeAndroidResources = true
             isReturnDefaultValues = true
         }
     }
@@ -331,6 +324,13 @@ android {
 }
 
 androidComponents {
+    onVariants { variant ->
+        variant.hostTests.values.forEach { test ->
+            test.manifestPlaceholders.putAll(
+                mapOf("GOOGLE_MAP_KEY" to "unit-test", "BUGSNAG_KEY" to "unit-test"),
+            )
+        }
+    }
     onVariants(selector().withBuildType("release")) { variant ->
         val variantName = variant.name.replaceFirstChar { it.uppercaseChar() }
         tasks.matching { it.name == "assemble$variantName" || it.name == "bundle$variantName" }.configureEach {
@@ -354,6 +354,7 @@ dependencies {
     implementation(fileTree(mapOf("include" to listOf("*.aar"), "dir" to "libs")))
     implementation("androidx.fragment:fragment-ktx:$fragmentVersion")
     implementation("androidx.activity:activity-ktx:$activityVersion")
+    implementation("androidx.window:window:1.5.0")
     implementation("androidx.appcompat:appcompat:$appcompatVersion")
     implementation("androidx.legacy:legacy-support-v4:$supportLibVersion")
     implementation("com.google.android.material:material:$mdcVersion")
@@ -598,20 +599,6 @@ dependencies {
             strictly(protobufVersion)
         }
     }
-
-    // SumSub
-    implementation("com.sumsub.sns:idensic-mobile-sdk:$sumsubVersion")
-    // checkout
-    implementation("com.github.checkout:frames-android:$checkoutFramesVersion")
-    implementation("com.checkout:checkout-sdk-3ds-android:$checkoutSecureVersion")
-    implementation("com.github.checkout:checkout-risk-sdk-android:$checkoutRiskVersion")
-
-    // google play
-    implementation("com.google.android.gms:play-services-wallet:$playWalletVersion")
-    implementation("com.google.android.gms:play-services-pay:$playPayVersion")
-
-    // Jetpack Datastore - Proto Datastore
-    implementation("androidx.datastore:datastore:$datastoreVersion")
 
     // AppsFlyer
     implementation("com.appsflyer:af-android-sdk:$appsFlyerVersion") {

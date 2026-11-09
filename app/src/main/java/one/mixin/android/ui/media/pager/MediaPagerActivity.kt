@@ -69,6 +69,7 @@ import one.mixin.android.extension.isLandscape
 import one.mixin.android.extension.openAsUrlOrQrScan
 import one.mixin.android.extension.openPermissionSetting
 import one.mixin.android.extension.realSize
+import one.mixin.android.extension.windowWidth
 import one.mixin.android.extension.shareMedia
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.supportsPie
@@ -647,7 +648,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 videoAspectRatioLayout,
                 View.TRANSLATION_X,
                 rect.x - videoAspectRatioLayout.x -
-                    this.realSize().x * (1f - scale) / 2,
+                    windowWidth() * (1f - scale) / 2,
             ),
             ObjectAnimator.ofFloat(
                 videoAspectRatioLayout,

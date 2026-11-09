@@ -2,8 +2,15 @@ package one.mixin.android.ui.wallet
 
 import android.annotation.SuppressLint
 import android.app.Dialog
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
+import android.graphics.drawable.GradientDrawable
 import android.view.Gravity
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.RelativeLayout
+import androidx.core.view.isVisible
+import androidx.core.view.updateLayoutParams
 import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.DialogFragment
@@ -17,15 +24,19 @@ import one.mixin.android.api.ResponseError
 import one.mixin.android.api.handleMixinResponse
 import one.mixin.android.databinding.FragmentPinCheckBinding
 import one.mixin.android.extension.clickVibrate
+import one.mixin.android.extension.colorFromAttribute
+import one.mixin.android.extension.dp
 import one.mixin.android.extension.realSize
 import one.mixin.android.extension.tickVibrate
 import one.mixin.android.extension.updatePinCheck
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.getTipExceptionMsg
 import one.mixin.android.tip.isTipNodeException
+import one.mixin.android.ui.common.TaskDialogActivity
 import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.util.viewBinding
+import one.mixin.android.widget.isExpandedSheetScreen
 import one.mixin.android.widget.Keyboard
 import one.mixin.android.widget.PinView
 
@@ -73,11 +84,30 @@ class PinCheckDialogFragment : DialogFragment() {
                     }
                 },
             )
-            gotItTv.setOnClickListener { activity?.finish() }
+            gotItTv.setOnClickListener { if (activity is TaskDialogActivity) activity?.finishAffinity() else activity?.finish() }
             keyboard.apply {
                 initPinKeys(requireContext())
                 setOnClickKeyboardListener(mKeyboardListener)
                 animate().translationY(0f).start()
+            }
+            if (requireContext().isExpandedSheetScreen()) {
+                // One compact card: the PIN box spans the card and the keyboard follows it directly.
+                root.background =
+                    GradientDrawable().apply {
+                        setColor(requireContext().colorFromAttribute(R.attr.bg_window))
+                        cornerRadius = 24.dp.toFloat()
+                    }
+                root.clipToOutline = true
+                topLl.updateLayoutParams<RelativeLayout.LayoutParams> {
+                    marginStart = 0
+                    marginEnd = 0
+                }
+                keyboard.updateLayoutParams<RelativeLayout.LayoutParams> {
+                    removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                    addRule(RelativeLayout.BELOW, R.id.top_ll)
+                }
+                keyboard.animate().cancel()
+                keyboard.translationY = 0f
             }
         }
     }
@@ -140,6 +170,10 @@ class PinCheckDialogFragment : DialogFragment() {
                     ErrorHandler.TOO_MANY_REQUEST -> {
                         pinVa.displayedChild = POS_TIP
                         tipVa.showNext()
+                        if (requireContext().isExpandedSheetScreen()) {
+                            keyboard.isVisible = false
+                            return@launch
+                        }
                         val transY = root.height / 2 - topLl.translationY * 2
                         topLl.animate()?.translationY(transY)?.start()
                         keyboard.animate()?.translationY(keyboard.height.toFloat())?.start()
@@ -155,9 +189,16 @@ class PinCheckDialogFragment : DialogFragment() {
     override fun onStart() {
         super.onStart()
         val displaySize = requireContext().realSize()
-        dialog?.window?.setLayout(displaySize.x, MATCH_PARENT)
-        dialog?.window?.setBackgroundDrawableResource(R.drawable.bg_transparent_dialog)
-        dialog?.window?.setGravity(Gravity.BOTTOM)
+        if (requireContext().isExpandedSheetScreen()) {
+            dialog?.window?.setLayout(minOf(displaySize.x, 420.dp), WRAP_CONTENT)
+            dialog?.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+            dialog?.window?.setGravity(Gravity.CENTER)
+            return
+        } else {
+            dialog?.window?.setLayout(displaySize.x, MATCH_PARENT)
+            dialog?.window?.setBackgroundDrawableResource(R.drawable.bg_transparent_dialog)
+            dialog?.window?.setGravity(Gravity.BOTTOM)
+        }
 
         // reset top layout position
         binding.apply {

@@ -13,7 +13,7 @@ import one.mixin.android.Constants.ARGS_CONVERSATION_ID
 import one.mixin.android.R
 import one.mixin.android.databinding.LayoutRecyclerViewBinding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.realSize
+import one.mixin.android.extension.messageAreaWidth
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.common.recyclerview.StickyRecyclerHeadersDecorationForGrid
@@ -67,7 +67,7 @@ class MediaFragment : BaseFragment(R.layout.layout_recycler_view) {
         savedInstanceState: Bundle?,
     ) {
         super.onViewCreated(view, savedInstanceState)
-        adapter.size = (requireContext().realSize().x - (COLUMN - 1) * padding) / COLUMN
+        adapter.size = (requireContext().messageAreaWidth() - (COLUMN - 1) * padding) / COLUMN
         val lm = GridLayoutManager(requireContext(), COLUMN)
         lm.spanSizeLookup =
             object : GridLayoutManager.SpanSizeLookup() {

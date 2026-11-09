@@ -35,7 +35,7 @@ import one.mixin.android.extension.numberFormat
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.openAsUrlOrWeb
 import one.mixin.android.extension.priceFormat
-import one.mixin.android.extension.screenHeight
+import one.mixin.android.extension.windowHeight
 import one.mixin.android.extension.setQuoteText
 import one.mixin.android.extension.statusBarHeight
 import one.mixin.android.extension.viewDestroyed
@@ -354,7 +354,7 @@ class TransactionsFragment : BaseFragment(R.layout.fragment_transactions), OnSna
         if (!isAdded) return
         binding.bottomCard.post {
             val earnCardHeight = if (binding.earnCard.isVisible) binding.earnCard.height + 12.dp else 0
-            val remainingHeight = requireContext().screenHeight() -
+            val remainingHeight = requireContext().windowHeight() -
                 requireContext().statusBarHeight() -
                 requireContext().navigationBarHeight() -
                 binding.titleView.height -

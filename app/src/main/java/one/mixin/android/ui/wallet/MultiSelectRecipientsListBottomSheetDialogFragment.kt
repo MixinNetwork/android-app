@@ -41,6 +41,8 @@ import java.util.concurrent.TimeUnit
 @SuppressLint("NotifyDataSetChanged")
 @AndroidEntryPoint
 class MultiSelectRecipientsListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "MultiSelectRecipientsListBottomSheetDialogFragment"
         const val POS_USER_RV = 0

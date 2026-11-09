@@ -54,4 +54,8 @@
     <dimen name="list_header_height">30dp</dimen>
     <dimen name="list_normal_height">60dp</dimen>
     <dimen name="margin_start">16dp</dimen>
+    <dimen name="adaptive_sheet_max_width">640dp</dimen>
+    <dimen name="centered_sheet_margin">24dp</dimen>
+    <dimen name="centered_sheet_max_width">560dp</dimen>
+    <dimen name="centered_sheet_corner_radius">16dp</dimen>
 </resources>

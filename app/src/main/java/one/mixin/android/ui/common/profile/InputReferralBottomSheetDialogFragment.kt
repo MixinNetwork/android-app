@@ -44,7 +44,6 @@ import one.mixin.android.R
 import one.mixin.android.api.response.referral.ReferralCodeInfo
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.screenHeight
 import one.mixin.android.ui.common.BottomSheetViewModel
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.compose.MaterialInputField
@@ -53,6 +52,7 @@ import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.ErrorHandler.Companion.errorHandler
 import one.mixin.android.util.SystemUIManager
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.widget.bottomSheetHeight
 
 private sealed class UiState {
     object Initial : UiState()
@@ -255,7 +255,7 @@ class InputReferralBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     }
 
     override fun getBottomSheetHeight(view: View): Int {
-        return requireContext().screenHeight() - view.getSafeAreaInsetsTop()
+        return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
 
     override fun showError(error: String) {

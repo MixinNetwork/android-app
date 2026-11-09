@@ -11,8 +11,6 @@ import android.content.ClipData
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.ACTION_VIEW
-import android.content.Intent.CATEGORY_BROWSABLE
-import android.content.Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER
 import android.content.pm.ActivityInfo
 import android.graphics.Bitmap
 import android.graphics.Canvas
@@ -1124,6 +1122,7 @@ class WebFragment : BaseFragment() {
         chainId: String,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
         if (!WalletConnect.isEnabled()) return
         val isValid = chainId.isUUID()
@@ -1154,7 +1153,7 @@ class WebFragment : BaseFragment() {
                             ""
                         }
                     lifecycleScope.launch {
-                        webView.evaluateJavascript("$callbackFunction('$address')") {}
+                        webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(address)})") {}
                     }
                 },
             )
@@ -1165,6 +1164,7 @@ class WebFragment : BaseFragment() {
         ids: Array<String>,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
@@ -1203,11 +1203,12 @@ class WebFragment : BaseFragment() {
                 } else {
                     "[]"
                 }
-            webView.evaluateJavascript("$callbackFunction('$result')") {}
+            webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(result)})") {}
         }
     }
 
     private fun botSign(appId: String, reloadPublicKey: Boolean, method: String, path: String, body: String, callbackFunction: String) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
 
         if (appId != app?.appId) {
@@ -1235,11 +1236,12 @@ class WebFragment : BaseFragment() {
                 return@launch
             }
             val (ts, signature) = getBotSignature(publicKey, method, path, body)
-            webView.evaluateJavascript("$callbackFunction('$ts', '$signature')") {}
+            webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(ts.toString())}, ${JSONObject.quote(signature)})") {}
         }
     }
 
     private fun verifyPin(callbackFunction: String) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
 
         lifecycleScope.launch {
@@ -1270,6 +1272,7 @@ class WebFragment : BaseFragment() {
         message: String,
         callbackFunction: String,
     ) {
+        if (!isValidJavaScriptCallback(callbackFunction)) return
         if (viewDestroyed()) return
         if (!WalletConnect.isEnabled()) return
 
@@ -1291,7 +1294,7 @@ class WebFragment : BaseFragment() {
                         val priv = requireNotNull(CryptoWalletHelper.getWeb3PrivateKey(requireContext(), it, chainId))
                         val sig = TipSignSpec.Ecdsa.Secp256k1.sign(priv, message.toByteArray())
                         lifecycleScope.launch {
-                            webView.evaluateJavascript("$callbackFunction('$sig')") {}
+                            webView.evaluateJavascript("$callbackFunction(${JSONObject.quote(sig)})") {}
                         }
                     }
                 },
@@ -1968,19 +1971,11 @@ class WebFragment : BaseFragment() {
             } else {
                 try {
                     val context = view.context
-                    // https://developer.android.com/training/package-visibility/use-cases#let-non-browser-apps-handle-urls
-                    val intent =
-                        Intent.parseUri(url, Intent.URI_INTENT_SCHEME).apply {
-                            action = ACTION_VIEW
-                            addCategory(CATEGORY_BROWSABLE)
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                                flags = FLAG_ACTIVITY_REQUIRE_NON_BROWSER
-                            }
-                        }
-                    if (context !is Activity) {
-                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
+                    val intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME)
                     try {
+                        if (!intent.prepareForExternalWebLaunch(context)) {
+                            throw ActivityNotFoundException()
+                        }
                         context.startActivity(intent)
                         if (request.isForMainFrame) {
                             closeWebContainer()
@@ -2052,6 +2047,7 @@ class WebFragment : BaseFragment() {
             try {
                 val method = DAppMethod.fromValue(obj.getString("name"))
                 val network = obj.getString("network")
+                if (!isValidJavaScriptCallback(network)) return
                 if (network == Web3Signer.JsSignerNetwork.Solana.name) {
                     Web3Signer.useSolana()
                 } else {

@@ -5,7 +5,8 @@ import android.view.View
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import one.mixin.android.extension.getSafeAreaInsetsTop
-import one.mixin.android.extension.screenHeight
+import one.mixin.android.widget.bottomSheetHeight
+import one.mixin.android.widget.isExpandedSheetScreen
 
 internal fun Context.resolveBottomSheetPeekHeight(
     view: View,
@@ -13,9 +14,10 @@ internal fun Context.resolveBottomSheetPeekHeight(
     includeBottomInset: Boolean = true,
 ): Int {
     if (contentHeight <= 0) return 0
-    if (!includeBottomInset) return contentHeight
+    val expanded = isExpandedSheetScreen()
+    if (!includeBottomInset) return if (expanded) contentHeight.coerceAtMost(bottomSheetHeight()) else contentHeight
 
-    val screenHeight = screenHeight()
+    val screenHeight = bottomSheetHeight()
     val topInset = view.getSafeAreaInsetsTop()
     val fullHeight = screenHeight - topInset
     val sheetView = view.parent as? View
@@ -35,5 +37,5 @@ internal fun Context.resolveBottomSheetPeekHeight(
             0
         }
 
-    return (contentHeight + bottomInset).coerceAtMost(screenHeight)
+    return (contentHeight + bottomInset).coerceAtMost(if (expanded) availableHeight.coerceAtLeast(0) else screenHeight)
 }

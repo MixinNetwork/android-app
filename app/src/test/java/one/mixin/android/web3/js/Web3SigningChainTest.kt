@@ -72,6 +72,17 @@ class Web3SigningChainTest {
     }
 
     @Test
+    fun typedMessageValidatesAgainstCapturedChainAfterSwitch() {
+        val data = """{"types":{"EIP712Domain":[{"name":"chainId","type":"uint256"}],"Message":[{"name":"value","type":"string"}]},"primaryType":"Message","domain":{"chainId":42161},"message":{"value":"hello"}}"""
+        Web3Signer.switchChain(SwitchChain(Chain.Base.hexReference)).getOrThrow()
+
+        assertTrue(Web3Signer.signMessage(secret, data, JsSignMessage.TYPE_TYPED_MESSAGE, Chain.Arbitrum).isNotEmpty())
+        assertThrows(IllegalArgumentException::class.java) {
+            Web3Signer.signMessage(secret, data, JsSignMessage.TYPE_TYPED_MESSAGE, Chain.Base)
+        }
+    }
+
+    @Test
     fun previewKeepsRequestChainWhileNonceLookupIsSuspended() = runBlocking {
         val requestChain = Chain.Arbitrum
         val nonce = CompletableDeferred<BigInteger>()

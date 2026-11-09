@@ -41,6 +41,8 @@ import one.mixin.android.widget.components.MixinButton
 import one.mixin.android.extension.dp as dip
 
 class LightningAddressBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment() {
+    override val centerOnExpandedScreen = true
+
     companion object {
         const val TAG = "LightningAddressBottomSheetDialogFragment"
 

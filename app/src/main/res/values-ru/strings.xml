@@ -122,6 +122,9 @@
     <string name="Bot_not_found">Бот не найден</string>
     <string name="BOTS">БОТЫ</string>
     <string name="bots_title">Боты</string>
+    <string name="All_chats">Все чаты</string>
+    <string name="Groups">Группы</string>
+    <string name="Strangers">Незнакомцы</string>
     <string name="bottom_transfer_stranger_tip">Mixin ID %1$s отсутствует в вашем списке контактов. Убедитесь, что вы выбрали правильного получателя. Если вы передадите не тому человеку, ваши активы будут потеряны!</string>
     <string name="Call">Вызов</string>
     <string name="Call_declined">Вызов отклонен</string>
@@ -232,7 +235,7 @@
     <string name="contact_mobile">Мобильный: %1$s</string>
     <string name="contact_mute_title">Отключить уведомления для…</string>
     <string name="contact_favorite_bots_title">Общие боты пользователя %1$s</string>
-    <string name="CONTACTS">КОНТАКТЫ</string>
+    <string name="Contacts">Контакты</string>
     <string name="content_audio">[Аудио]</string>
     <string name="content_contact">[Контакт]</string>
     <string name="content_file">[Файл]</string>
@@ -316,12 +319,13 @@
     <string name="Disable_web_debug">Отключить веб-отладку</string>
     <string name="Disabled">Отключенный</string>
     <string name="disappearing_message">Исчезающие сообщения</string>
-    <string name="disappearing_message_hint">Если эта функция включена, отправленные и полученные новые сообщения в этом чате исчезнут после того, как они будут просмотрены. Прочтите документ, чтобы **узнать больше**</string>
+    <string name="disappearing_message_hint">Если эта функция включена, отправленные и полученные новые сообщения в этом чате исчезнут через определённый период времени. Прочтите документ, чтобы **узнать больше**</string>
     <string name="disappearing_option_1">30 секунд</string>
     <string name="disappearing_option_2">10 минут</string>
     <string name="disappearing_option_3">2 часа</string>
     <string name="disappearing_option_4">1 день</string>
     <string name="disappearing_option_5">1 неделя</string>
+    <string name="disappearing_option_month">1 месяц</string>
     <string name="DISCARD">ОТКАЗАТЬСЯ</string>
     <string name="Dismiss_as_Admin">Закрыть как администратор</string>
     <string name="divide">, </string>
@@ -1084,6 +1088,12 @@
     <string name="safe_members">Участники Mixin Safe</string>
     <string name="membership_benefit_safe_members">%1$d участников на один Mixin Safe, всего %2$d участников.</string>
     <string name="membership_elite_description">Управляйте крупными активами в Mixin Safe вместе с семьей, друзьями или коллегами, чтобы снизить риски кражи, ошибок и хранения.</string>
+    <string name="membership_benefit_mixin_card_platinum">Бесплатная кредитная карта Visa Platinum</string>
+    <string name="membership_benefit_mixin_card_signature">Бесплатная кредитная карта Visa Signature</string>
+    <string name="free_inheritance_service">Бесплатная служба наследования</string>
+    <string name="membership_benefit_free_inheritance_service">Воспользуйтесь службой наследования бесплатно.</string>
+    <string name="membership_renew_option_card_desc">Используйте Google Pay, кредитную или дебетовую карту, чтобы продлить план.</string>
+    <string name="membership_renew_option_crypto_desc">Используйте USDT, USDC или другую криптовалюту, чтобы продлить план.</string>
     <string name="mnemonic_login_security_title">Безопасно ли импортировать данные в Mixin?</string>
     <string name="mobile_number_description">Это номер мобильного телефона, привязанный к вашему аккаунту</string>
     <string name="hours_count_short">%1$dh</string>
@@ -1163,6 +1173,7 @@
     <string name="error_perps_position_size_exceeds_leverage_limit_add">ОШИБКА 10655: Сумма открытия позиции превышает максимальный лимит %1$s. Уменьшите сумму.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_cannot_add">ОШИБКА 10655: Невозможно увеличить позицию.</string>
     <string name="error_perps_position_size_exceeds_leverage_limit_value">ОШИБКА 10655: Сумма открытия позиции превышает максимальный лимит %1$s. Уменьшите сумму или кредитное плечо.</string>
+    <string name="error_perps_order_conflict">ОШИБКА 10657: Данные ордера не совпадают или ордер больше нельзя оплатить. Проверьте его статус.</string>
     <string name="single_transaction_should_be_less_than">Максимальная сумма %1$s %2$s</string>
     <string name="Candle_Open">Открытие</string>
     <string name="Candle_Close">Закрытие</string>
@@ -1180,6 +1191,13 @@
     <string name="perps_include_pnl">Включая PnL</string>
     <string name="perps_position_amount">Размер позиции</string>
     <string name="perps_margin_amount">Сумма маржи</string>
+    <string name="changed_disappearing_message_settings_hint">%1$s: настройки исчезающих сообщений изменены. Нажмите, чтобы открыть настройки исчезающих сообщений.</string>
+    <string name="disable_disappearing_message_hint">%1$s: исчезающие сообщения отключены. Нажмите, чтобы открыть настройки исчезающих сообщений.</string>
+    <string name="set_disappearing_message_time_to_hint">%1$s: время исчезновения сообщений установлено на %2$s. Нажмите, чтобы открыть настройки исчезающих сообщений.</string>
+    <string name="group_disappearing_message_enabled_hint">В этой группе время исчезновения сообщений установлено на %1$s. Нажмите, чтобы изменить его или узнать больше.</string>
+    <string name="group_disappearing_message_disabled_hint">В этой группе исчезающие сообщения не включены. Нажмите, чтобы настроить их или узнать больше.</string>
+    <string name="chat_disappearing_message_enabled_hint">В этом чате время исчезновения сообщений установлено на %1$s. Нажмите, чтобы изменить его или узнать больше.</string>
+    <string name="chat_disappearing_message_disabled_hint">В этом чате исчезающие сообщения не включены. Нажмите, чтобы настроить их или узнать больше.</string>
     <string name="perps_funding_payments">Платежи по финансированию</string>
     <string name="perps_funding_payments_description">Общая сумма финансирования, которую вы получили или уплатили с момента открытия этой позиции. Зелёный цвет (положительное значение) означает, что вы получили финансирование, а красный (отрицательное значение) — что вы его уплатили.</string>
     <string name="perps_margin_description">Маржа — это залог, который вы выделяете на позицию. Она представляет максимальную сумму, которую вы можете потерять в этой сделке.</string>
@@ -1191,4 +1209,16 @@
     <string name="perps_share_card_max_leverage">📈 Максимальное плечо: %1$dx</string>
     <string name="perps_share_card_volume">💰 Объём за 24 ч: %1$s</string>
     <string name="price_change_tpsl">Цена %1$s → Ожидаемая прибыль %2$s</string>
+    <string name="invalid_gasless_transaction">Недействительная транзакция без газа. Повторите попытку.</string>
+    <string name="eip712_invalid_chain_id">Идентификатор сети в типизированном сообщении недействителен или не совпадает с сетью подписи.</string>
+    <string name="invalid_solana_sign_in">Недействительный запрос на вход через Solana.</string>
+    <string name="malicious_instruction_token_approve">Эта транзакция позволяет другому аккаунту переводить ваши токены SPL без вашего разрешения.</string>
+    <string name="malicious_instruction_system_assign">Эта транзакция передаёт ваш аккаунт Solana другой программе. Вы можете потерять контроль над аккаунтом.</string>
+    <string name="bitcoin_fee_confirmation_required">Не удалось подтвердить комиссию Bitcoin, или она выросла. Запросите перевод заново и подтвердите новую комиссию.</string>
+    <string name="invalid_gasless_solana_transaction">Спонсируемая транзакция не соответствует запрошенному переводу.</string>
+    <string name="Select_conversation">Выберите беседу, чтобы начать чат</string>
+    <string name="Select_asset">Выберите актив для просмотра</string>
+    <string name="Select_market_item">Выберите рынок для просмотра</string>
+    <string name="Select_explore_item">Выберите элемент, чтобы открыть его</string>
+    <string name="perps_realized_pnl_tip">Открытые позиции не учитываются в статистике.</string>
 </resources>
