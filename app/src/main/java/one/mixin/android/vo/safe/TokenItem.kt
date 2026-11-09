@@ -87,7 +87,8 @@ data class TokenItem(
             ),
             balance = balance,
             price = priceUsd,
-            collectionHash = collectionHash
+            collectionHash = collectionHash,
+            level = level,
         )
     }
 

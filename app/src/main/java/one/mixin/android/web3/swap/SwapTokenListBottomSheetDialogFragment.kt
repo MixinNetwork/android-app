@@ -490,7 +490,7 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                             }
                             )
                             )?.let {
-                            return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash, level = it.level, isWeb3 = it.isWeb3)
+                            return@map ra.copy(price = it.price, balance = it.balance, collectionHash = it.collectionHash, level = ra.level ?: it.level, isWeb3 = it.isWeb3)
                         }
                     return@map ra
                 }

@@ -3,6 +3,7 @@ package one.mixin.android.web3.swap
 import one.mixin.android.Constants
 import one.mixin.android.api.response.web3.SwapChain
 import one.mixin.android.api.response.web3.SwapToken
+import one.mixin.android.api.response.web3.sortByKeywordAndBalance
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -107,6 +108,17 @@ class SwapTokenSearchFilterTest {
         )
 
         assertEquals(listOf("xlayer", "pearl"), result.map { it.assetId })
+    }
+
+    @Test
+    fun searchSortsExactSymbolThenValueThenLevel() {
+        val exact = token("exact", "chain").copy(symbol = "USDT", level = 10)
+        val owned = token("owned", "chain").copy(symbol = "USDTX", balance = "2", price = "10", level = 10)
+        val good = token("good", "chain").copy(symbol = "USDTX", level = 12)
+        val unknown = token("unknown", "chain").copy(symbol = "USDTX", level = 10)
+
+        assertEquals(listOf(exact, owned, good, unknown), listOf(unknown, good, owned, exact).sortByKeywordAndBalance("usdt"))
+        assertEquals(listOf(owned, good, exact, unknown), listOf(unknown, exact, good, owned).sortByKeywordAndBalance())
     }
 
     private fun token(assetId: String, chainId: String) =
