@@ -24,6 +24,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
+import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -43,7 +44,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import one.mixin.android.R
 import one.mixin.android.compose.CoilImage
 import one.mixin.android.compose.GetActionBarHeight
@@ -53,12 +59,17 @@ import one.mixin.android.extension.appCompatActionBarHeight
 import one.mixin.android.extension.fullDate
 import one.mixin.android.extension.getSafeAreaInsetsTop
 import one.mixin.android.extension.hideKeyboard
+import one.mixin.android.extension.toast
 import one.mixin.android.extension.withArgs
 import one.mixin.android.ui.address.component.SearchTextField
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
+import one.mixin.android.ui.common.biometric.AddressManageBiometricItem
 import one.mixin.android.ui.wallet.WalletActivity
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.network.NetworkMultiSelectBottomSheetDialogFragment
+import one.mixin.android.ui.wallet.components.DropdownMenuNoPaddingVeitical
+import one.mixin.android.ui.wallet.transfer.TransferBottomSheetDialogFragment
+import one.mixin.android.util.ErrorHandler
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Chain
@@ -156,7 +167,7 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     if (selectedChainIds.size == 1) {
-                        AddressBookNetwork(selectedChainIds.first(), chains.firstOrNull { it.chainId == selectedChainIds.first() })
+                        AddressBookNetwork(selectedChainIds.first(), chains.firstOrNull { it.chainId == selectedChainIds.first() }, MixinAppTheme.colors.textPrimary)
                     } else {
                         if (selectedChainIds.size > 1) {
                             Row(horizontalArrangement = Arrangement.spacedBy((-4).dp)) {
@@ -203,9 +214,32 @@ class AddressBookBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragme
                         verticalArrangement = Arrangement.spacedBy(10.dp),
                     ) {
                         items(filteredAddresses, key = { it.addressId }) { address ->
-                            AddressBookCard(address, chains.firstOrNull { it.chainId == address.chainId }, onClick = {
+                            AddressBookCardWithDelete(address, chains.firstOrNull { it.chainId == address.chainId }, onClick = {
                                 requireView().hideKeyboard()
                                 WalletActivity.showAddressBookDetail(requireActivity(), address, walletId)
+                            }, onDelete = {
+                                viewLifecycleOwner.lifecycleScope.launch {
+                                    try {
+                                        val asset = withContext(Dispatchers.IO) { viewModel.findOrSyncAsset(address.assetId) }
+                                        if (asset == null) {
+                                            toast(R.string.Data_error)
+                                            return@launch
+                                        }
+                                        TransferBottomSheetDialogFragment.newInstance(
+                                            AddressManageBiometricItem(
+                                                asset = asset,
+                                                addressId = address.addressId,
+                                                label = address.label,
+                                                destination = address.destination,
+                                                tag = address.tag,
+                                                type = TransferBottomSheetDialogFragment.DELETE,
+                                            ),
+                                        ).showNow(parentFragmentManager, TransferBottomSheetDialogFragment.TAG)
+                                    } catch (error: Exception) {
+                                        if (error is CancellationException) throw error
+                                        ErrorHandler.handleError(error)
+                                    }
+                                }
                             })
                         }
                     }
@@ -267,5 +301,27 @@ internal fun AddressBookCard(address: Address, chain: Chain?, onClick: () -> Uni
             fontSize = 12.sp,
             lineHeight = 16.sp,
         )
+    }
+}
+
+@Composable
+internal fun AddressBookCardWithDelete(address: Address, chain: Chain?, onClick: () -> Unit, onDelete: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    Box {
+        AddressBookCard(address, chain, onClick = onClick, onLongClick = { expanded = true })
+        DropdownMenuNoPaddingVeitical(
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+            modifier = Modifier.background(MixinAppTheme.colors.background, RoundedCornerShape(12.dp)),
+        ) {
+            DropdownMenuItem(
+                onClick = { expanded = false; onDelete() },
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
+            ) {
+                Text(stringResource(R.string.Delete_address), color = MixinAppTheme.colors.tipError)
+                Spacer(Modifier.width(24.dp))
+                Icon(painterResource(R.drawable.ic_addr_remove), contentDescription = null, tint = MixinAppTheme.colors.tipError)
+            }
+        }
     }
 }

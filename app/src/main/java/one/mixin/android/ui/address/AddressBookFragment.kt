@@ -35,6 +35,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ViewCompositionStrategy
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -284,13 +285,13 @@ class AddressBookFragment : BaseFragment(R.layout.fragment_address_input) {
 }
 
 @Composable
-internal fun AddressBookNetwork(chainId: String, chain: Chain?) {
+internal fun AddressBookNetwork(chainId: String, chain: Chain?, textColor: Color = MixinAppTheme.colors.textAssist) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         CoilImage(chain?.iconUrl, R.drawable.ic_avatar_place_holder, Modifier.size(18.dp).clip(CircleShape))
         Spacer(Modifier.width(4.dp))
         Text(
             addressBookNetworks.firstOrNull { it.chainId == chainId }?.name ?: chain?.name ?: stringResource(R.string.Unknown),
-            color = MixinAppTheme.colors.textAssist,
+            color = textColor,
             fontSize = 14.sp,
         )
     }

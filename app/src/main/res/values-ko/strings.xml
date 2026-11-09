@@ -2721,6 +2721,6 @@
     <string name="Select_explore_item">항목을 선택해 여세요</string>
     <string name="All_Networks">모든 네트워크</string>
     <string name="Last_Updated">마지막 업데이트</string>
-    <string name="Last_Updated_at">마지막 업데이트 %1$s</string>
+    <string name="Last_Updated_at">마지막 업데이트: %1$s</string>
     <string name="number_of_networks">네트워크 %1$d개</string>
 </resources>

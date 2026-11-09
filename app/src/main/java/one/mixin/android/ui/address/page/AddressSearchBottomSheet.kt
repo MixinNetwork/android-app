@@ -18,8 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,11 +36,10 @@ import one.mixin.android.R
 import one.mixin.android.compose.GetActionBarHeight
 import one.mixin.android.compose.GetStatusBarHeightValue
 import one.mixin.android.compose.theme.MixinAppTheme
-import one.mixin.android.ui.address.AddressBookCard
+import one.mixin.android.ui.address.AddressBookCardWithDelete
 import one.mixin.android.ui.address.AddressBookNetwork
 import one.mixin.android.ui.address.component.SearchTextField
 import one.mixin.android.ui.wallet.alert.components.cardBackground
-import one.mixin.android.ui.wallet.components.DropdownMenuNoPaddingVeitical
 import one.mixin.android.vo.Address
 import one.mixin.android.vo.Chain
 import one.mixin.android.vo.displayAddress
@@ -134,42 +131,12 @@ fun AddressSearchBottomSheet(
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
                 items(filteredAddresses, key = { it.addressId }) { address ->
-                    var expanded by remember { mutableStateOf(false) }
-                    Box {
-                        AddressBookCard(
-                            address = address,
-                            chain = chain,
-                            onClick = { onAddressClick(address) },
-                            onLongClick = { expanded = true },
-                        )
-                        DropdownMenuNoPaddingVeitical(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.background(
-                                color = MixinAppTheme.colors.background,
-                                shape = RoundedCornerShape(12.dp),
-                            ),
-                        ) {
-                            DropdownMenuItem(
-                                onClick = {
-                                    expanded = false
-                                    onDeleteAddress(address)
-                                },
-                                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 0.dp),
-                            ) {
-                                Text(
-                                    stringResource(R.string.Delete_address),
-                                    color = MixinAppTheme.colors.tipError,
-                                )
-                                Spacer(Modifier.width(24.dp))
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_addr_remove),
-                                    contentDescription = null,
-                                    tint = MixinAppTheme.colors.tipError,
-                                )
-                            }
-                        }
-                    }
+                    AddressBookCardWithDelete(
+                        address = address,
+                        chain = chain,
+                        onClick = { onAddressClick(address) },
+                        onDelete = { onDeleteAddress(address) },
+                    )
                 }
             }
         }

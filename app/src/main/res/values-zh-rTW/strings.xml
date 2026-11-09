@@ -2728,6 +2728,6 @@
     <string name="Select_explore_item">選擇一項打開</string>
     <string name="All_Networks">所有網路</string>
     <string name="Last_Updated">最後更新</string>
-    <string name="Last_Updated_at">最後更新 %1$s</string>
+    <string name="Last_Updated_at">最後更新： %1$s</string>
     <string name="number_of_networks">%1$d 個網路</string>
 </resources>

@@ -251,7 +251,7 @@ internal fun AddressInfoRows(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 8.dp, vertical = 10.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.network), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp)

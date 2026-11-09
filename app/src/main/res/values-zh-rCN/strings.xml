@@ -2679,6 +2679,6 @@
     <string name="Select_explore_item">选择一项打开</string>
     <string name="All_Networks">所有网络</string>
     <string name="Last_Updated">最后更新</string>
-    <string name="Last_Updated_at">最后更新 %1$s</string>
+    <string name="Last_Updated_at">最后更新： %1$s</string>
     <string name="number_of_networks">%1$d 个网络</string>
 </resources>
