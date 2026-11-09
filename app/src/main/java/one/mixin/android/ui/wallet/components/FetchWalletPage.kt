@@ -584,8 +584,30 @@ fun WalletItem(
                         modifier = Modifier.weight(1f),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        val icons = column.take(3)
-                        Box(modifier = Modifier.width((18 + 12 * (icons.size - 1)).dp)) {
+                        val hasMore = column.size > 3
+                        val icons = if (hasMore) column.take(2) else column
+                        val slotCount = icons.size + if (hasMore) 1 else 0
+                        Box(modifier = Modifier.width((18 + 12 * (slotCount - 1)).dp)) {
+                            if (hasMore) {
+                                Box(
+                                    contentAlignment = Alignment.Center,
+                                    modifier = Modifier
+                                        .offset(x = (12 * icons.size).dp)
+                                        .zIndex(icons.size.toFloat())
+                                        .size(18.dp)
+                                        .border(1.dp, MixinAppTheme.colors.background, CircleShape)
+                                        .clip(CircleShape)
+                                        .background(MixinAppTheme.colors.backgroundWindow)
+                                ) {
+                                    Text(
+                                        text = "+${minOf(99, column.size - 2)}",
+                                        color = MixinAppTheme.colors.textPrimary,
+                                        fontSize = 8.sp,
+                                        lineHeight = 8.sp,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
                             icons.forEachIndexed { iconIndex, asset ->
                                 CoilImage(
                                     model = asset.iconUrl,
