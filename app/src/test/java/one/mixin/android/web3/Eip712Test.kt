@@ -49,6 +49,30 @@ class Eip712Test {
         """.trimIndent()
 
     @Test
+    fun acceptsMatchingChainIdRepresentations() {
+        listOf("42161", "42161.0", "4.2161e4", "\"42161\"", "\"0xa4b1\"", "\"0xA4B1\"").forEach { chainId ->
+            validateEip712ChainId("""{"domain":{"chainId":$chainId}}""", "42161", "Invalid chain ID")
+        }
+        validateEip712ChainId("""{"domain":{"chainId":"18446744073709551615"}}""", "18446744073709551615", "Invalid chain ID")
+    }
+
+    @Test
+    fun acceptsMissingChainId() {
+        validateEip712ChainId("""{"domain":{"name":"Example"}}""", "1", "Invalid chain ID")
+        validateEip712ChainId("{}", "1", "Invalid chain ID")
+    }
+
+    @Test
+    fun rejectsMismatchedOrInvalidChainId() {
+        listOf("1", "\"1\"", "\"0x1\"", "null", "true", "[]", "{}", "1.5", "-1", "\"\"", "\"0x\"", "\"0xzz\"", "\"1.0\"").forEach { chainId ->
+            val error = assertThrows(IllegalArgumentException::class.java) {
+                validateEip712ChainId("""{"domain":{"chainId":$chainId}}""", "42161", "Invalid chain ID")
+            }
+            assertEquals("Invalid chain ID", error.message)
+        }
+    }
+
+    @Test
     fun walletConnectIgnoresTopLevelMetadataAndPreservesMessageNonce() {
         val expectedHash = StructuredDataEncoder(typedData).hashStructuredData()
         val extended = JsonParser.parseString(typedData).asJsonObject.apply {
