@@ -8,7 +8,6 @@ buildscript {
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://maven.sumsub.com/repository/maven-public/") }
     }
     dependencies {
         classpath("com.android.tools.build.jetifier:jetifier-processor:$jetifierVersion")
@@ -61,7 +60,7 @@ extra.set("constraintLayoutComposeVersion", "1.1.2")
 extra.set("supportLibVersion", "1.0.0")
 extra.set("recyclerViewVersion", "1.4.0")
 extra.set("browserVersion", "1.10.0")
-extra.set("biometricVersion", "1.4.0-alpha07")
+extra.set("biometricVersion", "1.4.0-beta01")
 extra.set("mdcVersion", "1.14.0")
 extra.set("exifinterfaceVersion", "1.4.2")
 extra.set("preferenceVersion", "1.2.1")
@@ -81,7 +80,7 @@ extra.set("rxAndroidVersion", "2.1.1")
 extra.set("rxbindingVersion", "3.1.0")
 extra.set("retrofitVersion", "3.0.0")
 extra.set("coroutineAdapterVersion", "0.9.2")
-extra.set("libphonenumberVersion", "9.0.42")
+extra.set("libphonenumberVersion", "9.0.43")
 extra.set("coroutinesVersion", "1.11.0")
 extra.set("mlkitBarcodeVersion", "17.3.0")
 extra.set("zxingVersion", "3.5.4")
@@ -114,7 +113,7 @@ extra.set("mockitoVersion", "5.24.0")
 extra.set("androidxJunitVersion", "1.3.0")
 extra.set("robolectricVersion", "4.17")
 extra.set("gsonVersion", "2.15.0")
-extra.set("serializationVersion", "1.11.0")
+extra.set("serializationVersion", "1.12.0")
 extra.set("autodisposeVersion", "1.4.1")
 extra.set("bitcoinPaymentUriVersion", "1.0.3")
 extra.set("startupVersion", "1.2.0")
@@ -131,7 +130,7 @@ extra.set("kotsonVersion", "2.5.0")
 extra.set("lottieComposeVersion", "6.7.1")
 extra.set("composeBomVersion", "2026.09.00")
 extra.set("reownBomVersion", "1.6.17")
-extra.set("playServicesMapsVersion", "20.0.0")
+extra.set("playServicesMapsVersion", "20.1.0")
 extra.set("playServicesLocationVersion", "21.4.0")
 extra.set("firebaseBomVersion", "34.19.0")
 extra.set("webpDecoderVersion", "2.7.4.16.0")
@@ -139,13 +138,6 @@ extra.set("tweetnaclVersion", "0.1.6")
 extra.set("sol4kUtilitiesVersion", "0.1.0")
 extra.set("desugarJdkLibsVersion", "2.1.5")
 extra.set("bugsnagVersion", "6.26.1")
-extra.set("sumsubVersion", "1.44.1")
-extra.set("checkoutFramesVersion", "4.2.3")
-extra.set("checkoutSecureVersion", "3.2.6")
-extra.set("checkoutRiskVersion", "1.0.6")
-extra.set("playWalletVersion", "20.0.0")
-extra.set("playPayVersion", "16.5.0")
-extra.set("datastoreVersion", "1.3.0")
 extra.set("appsFlyerVersion", "7.0.4")
 extra.set("installReferrerVersion", "2.2")
 extra.set("billingVersion", "8.3.0")
@@ -155,19 +147,11 @@ allprojects {
         google()
         mavenCentral()
         maven { url = uri("https://jitpack.io") }
-        maven { url = uri("https://maven.sumsub.com/repository/maven-public/") }
         maven {
             url = uri("https://oss.sonatype.org/content/repositories/snapshots/")
             name = "OSS-Sonatype"
         }
         maven { url = uri("https://artifacts.consensys.net/public/maven/maven/") }
         maven { url = uri("https://maven.fpregistry.io/releases") }
-        maven {
-            url = uri("https://maven.pkg.github.com/checkout/checkout-3ds-sdk-android")
-            credentials {
-                username = project.findProperty("GITHUB_ID") as String? ?: System.getenv("GITHUB_ID") ?: ""
-                password = project.findProperty("GITHUB_PACKAGES_TOKEN") as String? ?: System.getenv("GITHUB_PACKAGES_TOKEN") ?: ""
-            }
-        }
     }
 }

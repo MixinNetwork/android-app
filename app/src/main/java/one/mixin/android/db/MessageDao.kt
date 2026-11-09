@@ -742,7 +742,7 @@ interface MessageDao : BaseDao<Message> {
         content: String,
     )
 
-    @Query("UPDATE messages SET quote_content = NULL WHERE conversation_id = :conversationId AND id = :quoteMessageId")
+    @Query("UPDATE messages SET quote_content = NULL WHERE conversation_id = :conversationId AND quote_message_id = :quoteMessageId")
     fun updateQuoteContentNullByQuoteMessageId(
         conversationId: String,
         quoteMessageId: String,
@@ -762,7 +762,7 @@ interface MessageDao : BaseDao<Message> {
         UPDATE messages SET category = 'MESSAGE_RECALL', content = NULL, media_url = NULL, media_mime_type = NULL, media_size = NULL, 
         media_duration = NULL, media_width = NULL, media_height = NULL, media_hash = NULL, thumb_image = NULL, media_key = NULL, 
         media_digest = NUll, media_status = NULL, `action` = NULL, participant_id = :participantId, snapshot_id = NULL, hyperlink = NULL, name = NULL, 
-        album_id = NULL, sticker_id = NULL, shared_user_id = NULL, media_waveform = NULL, quote_message_id = NULL, quote_content = NULL WHERE id = :id
+        album_id = NULL, sticker_id = NULL, shared_user_id = NULL, media_waveform = NULL, quote_message_id = NULL, quote_content = NULL, caption = NULL WHERE id = :id
         """,
     )
     fun recallMessage(
@@ -925,7 +925,7 @@ interface MessageDao : BaseDao<Message> {
     @Query("UPDATE messages SET thumb_image = 'K0OWvn_3fQ~qj[fQfQfQfQ' WHERE LENGTH(thumb_image) > 5120")
     fun cleanupBigThumb()
 
-    @Query("SELECT category AS type, id AS messageId, media_url AS mediaUrl FROM messages WHERE id IN (:ids) AND ((media_url IS NOT NULL AND media_status = 'DONE') OR category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT'))")
+    @Query("SELECT category AS type, id AS messageId, media_url AS mediaUrl FROM messages WHERE id IN (:ids) AND ((media_url IS NOT NULL AND media_status = 'DONE') OR category IN ('SIGNAL_TRANSCRIPT', 'PLAIN_TRANSCRIPT', 'ENCRYPTED_TRANSCRIPT'))")
     fun getMessagesForDeletion(ids: List<String>): List<MediaMessageMinimal>
 
     @Query("SELECT count(1) FROM messages WHERE id IN (:ids)")

@@ -604,6 +604,7 @@ class PerpetualViewModel @Inject constructor(
                     leverage = leverage,
                     walletId = accountId,
                     leaderPositionId = leaderPositionId,
+                    orderId = action.orderId,
                 ),
             )
             if (response.paymentUrl.isNullOrBlank()) throw DataErrorException()

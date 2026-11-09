@@ -32,6 +32,7 @@ import one.mixin.android.util.encodeToBase58String
 import one.mixin.android.vo.WalletCategory
 import one.mixin.android.web3.Web3Exception
 import one.mixin.android.web3.hashEip712Message
+import one.mixin.android.web3.validateEip712ChainId
 import org.bitcoinj.base.Coin
 import org.bitcoinj.core.Transaction
 import org.bitcoinj.core.TransactionInput
@@ -436,7 +437,7 @@ object Web3Signer {
         message: String,
         type: Int,
     ): String {
-        return if (currentChain == Chain.Solana) {
+        return if (currentChain == Chain.Solana && type != JsSignMessage.TYPE_TYPED_MESSAGE) {
             signSolanaMessage(priv, message)
         } else {
             signEthMessage(priv, message, type)
@@ -454,6 +455,7 @@ object Web3Signer {
                 JsSignMessage.TYPE_GASLESS_TRANSFER ->
                     Sign.signMessage(Numeric.hexStringToByteArray(message), keyPair, false)
                 JsSignMessage.TYPE_TYPED_MESSAGE -> {
+                    validateEip712ChainId(message, currentChain.chainReference, MixinApplication.appContext.getString(R.string.eip712_invalid_chain_id))
                     Sign.signMessage(hashEip712Message(message), keyPair, false)
                 }
                 else -> Sign.signPrefixedMessage(Numeric.hexStringToByteArray(message), keyPair)
