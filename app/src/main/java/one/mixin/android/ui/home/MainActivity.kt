@@ -104,6 +104,7 @@ import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isExternalTransferUrl
 import one.mixin.android.extension.isLightningUrl
 import one.mixin.android.extension.isPlayStoreInstalled
+import one.mixin.android.extension.isSharedDeviceId
 import one.mixin.android.extension.openExternalUrl
 import one.mixin.android.extension.openMarket
 import one.mixin.android.extension.putBoolean
@@ -316,6 +317,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
         var deviceId = defaultSharedPreferences.getString(DEVICE_ID, null)
         if (deviceId == null) {
+            deviceId = this.getStringDeviceId()
+            defaultSharedPreferences.putString(DEVICE_ID, deviceId)
+        } else if (isSharedDeviceId(deviceId)) {
+            // Replace the shared id without signing out
             deviceId = this.getStringDeviceId()
             defaultSharedPreferences.putString(DEVICE_ID, deviceId)
         } else if (deviceId != this.getStringDeviceId()) {
