@@ -262,7 +262,7 @@ internal fun AddressInfoRows(
         }
         Row(verticalAlignment = Alignment.Top) {
             Text(stringResource(R.string.Address), color = MixinAppTheme.colors.textAssist, fontSize = 14.sp, lineHeight = 17.sp)
-            Spacer(modifier = Modifier.width(10.dp))
+            Spacer(modifier = Modifier.width(68.dp))
             Text(address, modifier = Modifier.weight(1f), color = MixinAppTheme.colors.textMinor, fontSize = 14.sp, lineHeight = 17.sp, textAlign = TextAlign.End)
         }
         if (memo.isNullOrBlank().not()) {
