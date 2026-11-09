@@ -571,10 +571,12 @@ fun WalletItem(
                 // Matches iOS: the last column takes the remainder so the shown percentages add up to 100%.
                 val columns = if (assets.size <= 3) assets.map { listOf(it) } else assets.take(2).map { listOf(it) } + listOf(assets.drop(2))
                 val percentages = if (totalValue > BigDecimal.ZERO) {
+                    var remaining = BigDecimal.ONE
                     val leading = columns.dropLast(1).map { column ->
-                        column.first().value.divide(totalValue, 2, RoundingMode.HALF_UP)
+                        // Cap each rounded share so rounding up can never push the total past 100%.
+                        column.first().value.divide(totalValue, 2, RoundingMode.HALF_UP).min(remaining).also { remaining -= it }
                     }
-                    leading + (BigDecimal.ONE - leading.fold(BigDecimal.ZERO, BigDecimal::add))
+                    leading + remaining
                 } else {
                     null
                 }
@@ -624,7 +626,7 @@ fun WalletItem(
                         if (percentages != null) {
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
-                                text = percentFormat.format(percentages[index].max(BigDecimal.ZERO)),
+                                text = percentFormat.format(percentages[index]),
                                 fontSize = 12.sp,
                                 color = MixinAppTheme.colors.textMinor
                             )
