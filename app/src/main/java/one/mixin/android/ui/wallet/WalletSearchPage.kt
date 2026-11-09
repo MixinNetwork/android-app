@@ -1,6 +1,7 @@
 package one.mixin.android.ui.wallet
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -58,7 +59,6 @@ import one.mixin.android.extension.numberFormat8
 import one.mixin.android.ui.home.web3.market.MarketChip
 import one.mixin.android.ui.home.web3.market.MarketIcon
 import one.mixin.android.ui.home.web3.market.MarketSearchBar
-import one.mixin.android.ui.home.web3.market.SearchEmptyResult
 import one.mixin.android.ui.home.web3.market.SearchResultSection
 import one.mixin.android.ui.home.web3.trade.perps.PerpsLeverageBadge
 import one.mixin.android.ui.wallet.home.components.AccountApy
@@ -132,7 +132,17 @@ internal fun WalletSearchPage(
                         }
                     }
                 } else if (state.results.isEmpty()) {
-                    item { Box(Modifier.fillMaxWidth().background(MixinAppTheme.colors.background)) { SearchEmptyResult() } }
+                    item {
+                        Column(
+                            modifier = Modifier.fillMaxWidth().height(292.dp).background(MixinAppTheme.colors.background).padding(bottom = 12.dp),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                        ) {
+                            Image(painterResource(R.drawable.ic_empty_file), contentDescription = null)
+                            Spacer(Modifier.height(12.dp))
+                            Text(stringResource(R.string.NO_RESULTS), color = MixinAppTheme.colors.textRemarks, fontSize = 14.sp)
+                        }
+                    }
                 } else if (state.selectedTab == WalletSearchTab.ALL) {
                     tabs.filter { it != WalletSearchTab.ALL }.forEachIndexed { index, tab ->
                         if (index > 0) item { Spacer(Modifier.height(6.dp)) }
