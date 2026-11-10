@@ -119,7 +119,7 @@ import kotlin.math.min
                         24.dp + safeInsets.bottom,
                     )
                 }
-                WindowInsetsCompat.CONSUMED
+                insets
             }
         }
     }
