@@ -216,9 +216,9 @@ class CallBottomSheetDialogFragment : BottomSheetDialogFragment() {
             if (bottomLayoutPaddingBottom == 0) bottomLayoutPaddingBottom = defaultPadding
             binding.root.setPadding(0, rootPaddingTop, 0, rootPaddingBottom)
             binding.bottomLayout.setPadding(
-                0,
+                binding.bottomLayout.paddingLeft,
                 bottomLayoutPaddingTop,
-                0,
+                binding.bottomLayout.paddingRight,
                 bottomLayoutPaddingBottom + safeAreaBottomInset,
             )
             applyFoldLayout()
