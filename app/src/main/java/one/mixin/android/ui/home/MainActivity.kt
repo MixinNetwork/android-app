@@ -12,15 +12,23 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentSender
 import android.content.res.Configuration
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
+import android.graphics.RenderEffect
+import android.graphics.Shader
 import android.os.Build
 import android.os.Bundle
 import android.os.PowerManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.core.content.getSystemService
 import androidx.core.view.isVisible
+import androidx.core.view.marginBottom
+import androidx.core.view.updatePadding
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -102,7 +110,9 @@ import one.mixin.android.extension.getStringDeviceId
 import one.mixin.android.extension.inTransaction
 import one.mixin.android.extension.indeterminateProgressDialog
 import one.mixin.android.extension.isExternalTransferUrl
+import one.mixin.android.extension.isGlassBottomNavigationEnabled
 import one.mixin.android.extension.isLightningUrl
+import one.mixin.android.extension.isNightMode
 import one.mixin.android.extension.isPlayStoreInstalled
 import one.mixin.android.extension.isSharedDeviceId
 import one.mixin.android.extension.openExternalUrl
@@ -112,6 +122,7 @@ import one.mixin.android.extension.putInt
 import one.mixin.android.extension.putLong
 import one.mixin.android.extension.putString
 import one.mixin.android.extension.remove
+import one.mixin.android.extension.supportsS
 import one.mixin.android.extension.toast
 import one.mixin.android.job.AttachmentMigrationJob
 import one.mixin.android.job.BackupJob
@@ -306,6 +317,49 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     }
 
     private lateinit var binding: ActivityMainBinding
+
+    private var isBottomNavigationGlassEnabled: Boolean = false
+        set(value) {
+            if (field == value) return
+            field = value
+            if (::binding.isInitialized) updateBottomNavigationStyle()
+        }
+
+    var homeContentInset by mutableIntStateOf(0)
+        private set
+
+    override fun onResume() {
+        super.onResume()
+        if (!::binding.isInitialized) return
+        isBottomNavigationGlassEnabled = isGlassBottomNavigationEnabled()
+    }
+
+    private fun updateBottomNavigationStyle() {
+        val nightMode = isNightMode()
+        val glassBackground = if (nightMode) R.drawable.bg_bottom_navigation_glass_night else R.drawable.bg_bottom_navigation_glass
+        binding.bottomNav.apply {
+            itemIconTintList = null
+            isItemActiveIndicatorEnabled = false
+            itemBackgroundResource = if (nightMode) R.drawable.bg_bottom_navigation_item_night else R.drawable.bg_bottom_navigation_item
+            setBackgroundResource(if (isBottomNavigationGlassEnabled) glassBackground else R.drawable.bg_bottom_navigation)
+        }
+        binding.bottomNavBackdrop.setBackgroundResource(glassBackground)
+        binding.bottomNavBackdrop.source = binding.rootView
+        updateBottomNavigationLayout()
+        supportsS({
+            binding.bottomNavBackdrop.blurEffect =
+                if (isBottomNavigationGlassEnabled) {
+                    val radius = resources.getDimension(R.dimen.home_navigation_glass_blur_radius)
+                    val saturation = ColorMatrix().apply { setSaturation(1.15f) }
+                    RenderEffect.createColorFilterEffect(
+                        ColorMatrixColorFilter(saturation),
+                        RenderEffect.createBlurEffect(radius, radius, Shader.TileMode.CLAMP),
+                    )
+                } else {
+                    null
+                }
+        })
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val restoreState = if (Session.checkToken()) savedInstanceState else null
@@ -632,7 +686,10 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        if (::binding.isInitialized) updateRailVisibility()
+        if (::binding.isInitialized) {
+            updateRailVisibility()
+            updateBottomNavigationStyle()
+        }
     }
 
     override fun onDestroy() {
@@ -1226,10 +1283,19 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     }
 
     private fun initBottomNav() {
+        updateBottomNavigationStyle()
         binding.apply {
             bottomNav.setOnApplyWindowInsetsListener(null)
-            bottomNav.setPadding(0,0,0,0)
-            bottomNav.itemIconTintList = null
+            bottomNav.setPadding(0, 0, 0, 0)
+            bottomNav.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+                updateBottomNavigationLayout()
+            }
+            // The backdrop re-records the root view's children by reference, so their content updates
+            // without invalidating it every frame. Only layout changes (fragment switches) need a re-record.
+            rootView.viewTreeObserver.addOnGlobalLayoutListener {
+                if (bottomNavBackdrop.isVisible) bottomNavBackdrop.invalidate()
+            }
+            supportFragmentManager.addOnBackStackChangedListener { updateBottomNavigationLayout() }
             bottomNav.menu.findItem(lastBottomNavItemId).isChecked = true
 
             bottomNav.setOnItemSelectedListener {
@@ -1460,6 +1526,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         val showRail = homeRailModeState.value != HomeRailMode.None
         binding.homeRail.isVisible = showRail && !homeSearchOpen
         binding.bottomNav.isVisible = !showRail
+        updateBottomNavigationLayout()
         if (showRail) {
             if (!homeRailComposed) {
                 homeRailComposed = true
@@ -1469,6 +1536,21 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
             binding.homeRail.disposeComposition()
             homeRailComposed = false
         }
+    }
+
+    private fun updateBottomNavigationLayout() {
+        // Pages pushed onto the tabs are not inset-aware, so they keep the content above the navigation.
+        val overlayContent = supportFragmentManager.backStackEntryCount == 0
+        binding.bottomNavBackdrop.isVisible = isBottomNavigationGlassEnabled && overlayContent && binding.bottomNav.isVisible
+        val bottomInset = if (binding.bottomNav.isVisible) {
+            val navHeight = binding.bottomNav.height.takeIf { it > 0 }
+                ?: resources.getDimensionPixelSize(R.dimen.home_navigation_height)
+            navHeight + binding.bottomNav.marginBottom + resources.getDimensionPixelSize(R.dimen.padding8)
+        } else {
+            0
+        }
+        homeContentInset = if (overlayContent) bottomInset else 0
+        binding.rootView.updatePadding(bottom = if (overlayContent) 0 else bottomInset)
     }
 
     private fun observeEmbeddedSplits() {

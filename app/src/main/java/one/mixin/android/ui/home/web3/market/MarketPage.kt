@@ -63,6 +63,7 @@ import one.mixin.android.ui.wallet.home.components.BannerPager
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.numberFormat2
 import one.mixin.android.extension.numberFormatCompact
+import one.mixin.android.ui.home.homeNavigationInset
 import one.mixin.android.ui.wallet.components.AssetDistribution
 import one.mixin.android.ui.wallet.components.MultiColorProgressBar
 import one.mixin.android.widget.components.MixinButton
@@ -397,6 +398,7 @@ private fun MarketContent(
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(bottom = homeNavigationInset()),
     ) {
         item(key = "header") {
             Column { header() }

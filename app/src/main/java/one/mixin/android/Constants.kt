@@ -92,6 +92,7 @@ object Constants {
         const val PREF_APP_ENTER_BACKGROUND = "pref_app_enter_background"
         const val PREF_DEVICE_SDK = "pref_device_sdk"
         const val PREF_TEXT_SIZE = "pref_text_size"
+        const val PREF_GLASS_BOTTOM_NAV = "pref_glass_bottom_nav"
         const val PREF_ATTACHMENT = "pref_attachment"
         const val PREF_CLEANUP_THUMB = "pref_cleanup_thumb"
         const val PREF_CLEANUP_QUOTE_CONTENT = "pref_cleanup_quote_content"

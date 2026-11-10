@@ -63,6 +63,7 @@ import one.mixin.android.db.web3.vo.isWatch
 import one.mixin.android.event.WalletRefreshedEvent
 import one.mixin.android.extension.openUrl
 import one.mixin.android.session.Session
+import one.mixin.android.ui.home.homeNavigationInset
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.vo.WalletCategory
 
@@ -216,6 +217,7 @@ fun AssetDashboardScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .verticalScroll(rememberScrollState())
+                    .padding(bottom = homeNavigationInset())
             ) {
                 if (showTotalAssetsCard) {
                     TotalAssetsCard(selectedCategory = selectedCategory)
