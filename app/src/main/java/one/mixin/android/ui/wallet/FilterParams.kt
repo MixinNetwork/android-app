@@ -53,6 +53,7 @@ class FilterParams(
 
     fun buildQuery(limit: Int? = null): RoomRawQuery {
         val filters = mutableListOf<String>()
+        val addressArgs = mutableListOf<String>()
 
         address?.let {
             filters.add("t.chain_id = '${it.chainId.replace("'", "''")}'")
@@ -106,8 +107,15 @@ class FilterParams(
                 item as? AddressItem
             }
             val addressSql = if (addresses.isNotEmpty()) {
-                 addresses.joinToString(" OR ") { item ->
-                    "s.withdrawal LIKE '%${item.displayAddress()}%' OR s.deposit LIKE '%${item.displayAddress()}%'"
+                addresses.joinToString(" OR ") { item ->
+                    val address = item.displayAddress()
+                        .replace("\\", "\\\\")
+                        .replace("%", "\\%")
+                        .replace("_", "\\_")
+                    val pattern = "%$address%"
+                    addressArgs.add(pattern)
+                    addressArgs.add(pattern)
+                    "s.withdrawal LIKE ? ESCAPE '\\' OR s.deposit LIKE ? ESCAPE '\\'"
                 }
             } else {
                 null
@@ -140,7 +148,7 @@ class FilterParams(
             SortOrder.Recent -> "ORDER BY s.created_at DESC"
             SortOrder.Oldest -> "ORDER BY s.created_at ASC"
             SortOrder.Value -> "ORDER BY abs(s.amount * t.price_usd) DESC"
-            SortOrder.Amount -> "ORDER BY s.amount DESC"
+            SortOrder.Amount -> "ORDER BY abs(s.amount) DESC"
             else -> ""
         }
         if (address != null) {
@@ -156,7 +164,12 @@ class FilterParams(
             orderSql += " LIMIT $it"
         }
 
-        return WalletFilterQueryGenerated.snapshots(whereSql, orderSql)
+        val query = WalletFilterQueryGenerated.snapshots(whereSql, orderSql)
+        return RoomRawQuery(query.sql) { statement ->
+            addressArgs.forEachIndexed { index, address ->
+                statement.bindText(index + 1, address)
+            }
+        }
     }
 }
 

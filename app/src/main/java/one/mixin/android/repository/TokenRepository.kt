@@ -1923,7 +1923,7 @@ class TokenRepository
 
     suspend fun rampWebUrl(request: RampWebUrlRequest): MixinResponse<RampWebUrlResponse> = routeService.rampWebUrl(request)
 
-    suspend fun getAddressById(chainId: String) = addressDao.getAddressById(chainId)
+    suspend fun getAddressByChainId(chainId: String) = addressDao.getAddressByChainId(chainId)
 
     suspend fun findTopUsdBalanceAsset(excludeId: String) =
         tokenDao.findTopUsdBalanceAsset(Constants.usdIds, excludeId)
