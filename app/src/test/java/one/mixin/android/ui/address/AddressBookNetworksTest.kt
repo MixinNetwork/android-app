@@ -39,8 +39,8 @@ class AddressBookNetworksTest {
             Chain("avax", "Avalanche X-Chain", "AVAX", "", 1),
         )
         val networks = addressBookNetworks(chains)
-        assertEquals(addressBookNetworks, networks.take(addressBookNetworks.size))
-        assertEquals(listOf("avax", "ton"), networks.drop(addressBookNetworks.size).map { it.chainId })
+        assertEquals(listOf(ChainId.ETHEREUM_CHAIN_ID, "avax", "ton"), networks.map { it.chainId })
+        assertEquals("Ethereum", networks.first().name)
     }
 
     @Test
@@ -115,9 +115,22 @@ class AddressBookNetworksTest {
     }
 
     @Test
-    fun privacyNetworksDoNotIncludeWeb3OnlyFallbacks() {
-        val networks = addressBookNetworks(emptyList())
-        assertEquals(addressBookNetworks, networks)
+    fun privacyNetworksAreEmptyWhenChainsAreEmpty() {
+        assertEquals(emptyList<Any>(), addressBookNetworks(emptyList()))
+    }
+
+    @Test
+    fun privacyNetworksKeepUnpinnedChainsOutsideCommonWalletSupport() {
+        val chains = listOf(
+            Chain("ton", "TON", "TON", "", 1),
+            Chain(ChainId.BITCOIN_CHAIN_ID, "Server Bitcoin", "BTC", "", 1),
+            Chain("avax", "Avalanche X-Chain", "AVAX", "", 1),
+        )
+        val networks = addressBookNetworks(chains, null)
+        assertEquals(listOf(ChainId.BITCOIN_CHAIN_ID, "avax", "ton"), networks.map { it.chainId })
+        assertEquals("Bitcoin", networks.first().name)
+        val supported = addressBookWalletChainIds(WalletCategory.CLASSIC.value, emptySet())
+        assertEquals(emptyList<Any>(), addressBookNetworks(chains, supported).filter { it.chainId == "ton" || it.chainId == "avax" })
     }
 
     @Test

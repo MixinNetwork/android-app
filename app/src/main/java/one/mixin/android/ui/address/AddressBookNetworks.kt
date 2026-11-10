@@ -43,7 +43,13 @@ fun addressBookNetworks(chains: List<Chain>, supportedChainIds: Set<String>? = n
     val walletNetworks = if (supportedChainIds == null) emptyList() else {
         evmChainList.map { NetworkOption(it.assetId, it.name) } + NetworkOption(ChainId.PEARL_CHAIN_ID, "Pearl")
     }
-    val networks = addressBookNetworks + (chains.map { NetworkOption(it.chainId, it.name) } + walletNetworks)
+    val pinnedNetworks = if (supportedChainIds == null) {
+        val chainIds = chains.mapTo(HashSet()) { it.chainId }
+        addressBookNetworks.filter { it.chainId in chainIds }
+    } else {
+        addressBookNetworks
+    }
+    val networks = pinnedNetworks + (chains.map { NetworkOption(it.chainId, it.name) } + walletNetworks)
         .distinctBy { it.chainId }
         .filter { it.chainId !in pinnedChainIds }
         .sortedBy { it.name.lowercase() }
