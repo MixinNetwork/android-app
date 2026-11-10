@@ -52,6 +52,11 @@ class SystemHolderTest {
     private class NoticeResources(base: Resources) : Resources(base.assets, base.displayMetrics, base.configuration) {
         override fun getText(id: Int): CharSequence = when (id) {
             R.string.You -> "self"
+            R.string.set_disappearing_message_time_to_learn_hint -> "enabled-learn(%1\$s,%2\$s)"
+            R.string.disable_disappearing_message_learn_hint -> "disabled-learn(%1\$s)"
+            R.string.changed_disappearing_message_settings_learn_hint -> "changed-learn(%1\$s)"
+            R.string.group_disappearing_message_enabled_learn_hint -> "group-enabled-learn(%1\$s)"
+            R.string.group_disappearing_message_disabled_learn_hint -> "group-disabled-learn"
             R.string.set_disappearing_message_time_to_hint -> "enabled(%1\$s,%2\$s)"
             R.string.disable_disappearing_message_hint -> "disabled(%1\$s)"
             R.string.changed_disappearing_message_settings_hint -> "changed(%1\$s)"
@@ -137,34 +142,34 @@ class SystemHolderTest {
 
     @Test
     fun enabledDisabledAndLegacyNoticesShowActorAndMatchingState() {
-        holder.bind(message("86400", "me"), false, false, listener)
+        holder.bind(message("86400", "me"), false, false, true, listener)
         assertEquals("enabled(self,1 day-unit)", holder.binding.chatInfo.text.toString())
         assertEquals(ContextCompat.getColor(context, R.color.disappearing_message_background), holder.binding.chatInfo.backgroundTintList?.defaultColor)
         assertEquals(Int.MAX_VALUE, holder.binding.chatInfo.maxLines)
         assertNull(holder.binding.chatInfo.ellipsize)
 
-        holder.bind(message("5184000").copy(userFullName = "Crossle"), false, false, listener)
+        holder.bind(message("5184000").copy(userFullName = "Crossle"), false, false, true, listener)
         assertEquals("enabled(Crossle,2 month-unit)", holder.binding.chatInfo.text.toString())
 
-        holder.bind(message("0"), false, false, listener)
+        holder.bind(message("0"), false, false, true, listener)
         assertEquals("disabled(Alice)", holder.binding.chatInfo.text.toString())
         assertEquals(ContextCompat.getColor(context, R.color.disappearing_message_disabled_background), holder.binding.chatInfo.backgroundTintList?.defaultColor)
 
-        holder.bind(message(null), false, false, listener)
+        holder.bind(message(null), false, false, true, listener)
         assertEquals("changed(Alice)", holder.binding.chatInfo.text.toString())
     }
 
     @Test
     fun textAndRowOpenSettingsButSelectionModeStillSelects() {
         val message = message("604800")
-        holder.bind(message, false, false, listener)
+        holder.bind(message, false, false, true, listener)
         holder.binding.chatInfo.performClick()
         holder.itemView.performClick()
         holder.binding.chatInfo.performLongClick()
         assertEquals(2, openedSettings)
         assertEquals(1, longPressed)
 
-        holder.bind(message, true, false, listener)
+        holder.bind(message, true, false, true, listener)
         holder.binding.chatInfo.performClick()
         holder.itemView.performClick()
         holder.binding.chatInfo.performLongClick()
@@ -175,15 +180,15 @@ class SystemHolderTest {
 
     @Test
     fun recycledNoticesClearLinksAndDoNotKeepSettingsClicks() {
-        holder.bind(message(null).copy(actionName = "UNSUPPORTED"), false, false, listener)
+        holder.bind(message(null).copy(actionName = "UNSUPPORTED"), false, false, true, listener)
         assertNotNull(holder.binding.chatInfo.movementMethod)
 
-        holder.bind(message("2592000"), false, false, listener)
+        holder.bind(message("2592000"), false, false, true, listener)
         assertNull(holder.binding.chatInfo.movementMethod)
         holder.binding.chatInfo.performClick()
         assertEquals(1, openedSettings)
 
-        holder.bind(message(null).copy(actionName = SystemConversationAction.CREATE.name), false, false, listener)
+        holder.bind(message(null).copy(actionName = SystemConversationAction.CREATE.name), false, false, true, listener)
         assertFalse(holder.binding.chatInfo.isClickable)
         assertFalse(holder.binding.chatInfo.isLongClickable)
         assertEquals(2, holder.binding.chatInfo.maxLines)
@@ -202,7 +207,7 @@ class SystemHolderTest {
         val secretHolder = SecretHolder(ItemChatSecretBinding.bind(root))
         val notice = secretHolder.binding.disappearingInfo
 
-        secretHolder.bind(86400L, true, true, false, listener)
+        secretHolder.bind(86400L, true, true, true, false, listener)
         assertEquals(View.VISIBLE, secretHolder.binding.chatInfo.visibility)
         assertEquals(View.VISIBLE, notice.visibility)
         assertEquals("group-enabled(1 day-unit)", notice.text.toString())
@@ -210,22 +215,41 @@ class SystemHolderTest {
         notice.performClick()
         assertEquals(1, openedSettings)
 
-        secretHolder.bind(1209600L, true, true, false, listener)
+        secretHolder.bind(1209600L, true, true, true, false, listener)
         assertEquals("group-enabled(2 week-unit)", notice.text.toString())
-        secretHolder.bind(2592000L, true, true, false, listener)
+        secretHolder.bind(2592000L, true, true, true, false, listener)
         assertEquals("group-enabled(1 month-unit)", notice.text.toString())
 
-        secretHolder.bind(0L, true, true, false, listener)
+        secretHolder.bind(0L, true, true, true, false, listener)
         assertEquals("group-disabled", notice.text.toString())
         assertEquals(Color.GRAY, notice.backgroundTintList?.defaultColor)
         notice.performClick()
         assertEquals(2, openedSettings)
 
-        secretHolder.bind(86400L, true, true, true, listener)
+        secretHolder.bind(86400L, true, true, true, true, listener)
         notice.performClick()
         assertEquals(2, openedSettings)
         secretHolder.binding.chatInfo.performClick()
         assertEquals("https://example.com/encryption", openedUrl)
+    }
+
+    @Test
+    fun groupMemberNoticesOfferOnlyHelp() {
+        holder.bind(message("86400"), false, false, false, listener)
+        assertEquals("enabled-learn(Alice,1 day-unit)", holder.binding.chatInfo.text.toString())
+        holder.bind(message("0"), false, false, false, listener)
+        assertEquals("disabled-learn(Alice)", holder.binding.chatInfo.text.toString())
+        holder.bind(message(null), false, false, false, listener)
+        assertEquals("changed-learn(Alice)", holder.binding.chatInfo.text.toString())
+
+        val root = LinearLayout(context)
+        root.addView(TextView(context).apply { id = R.id.chat_info })
+        root.addView(TextView(context).apply { id = R.id.disappearing_info })
+        val secretHolder = SecretHolder(ItemChatSecretBinding.bind(root))
+        secretHolder.bind(86400L, true, true, false, false, listener)
+        assertEquals("group-enabled-learn(1 day-unit)", secretHolder.binding.disappearingInfo.text.toString())
+        secretHolder.bind(0L, true, true, false, false, listener)
+        assertEquals("group-disabled-learn", secretHolder.binding.disappearingInfo.text.toString())
     }
 
     @Test
@@ -236,11 +260,11 @@ class SystemHolderTest {
         val secretHolder = SecretHolder(ItemChatSecretBinding.bind(root))
         val notice = secretHolder.binding.disappearingInfo
 
-        secretHolder.bind(0L, true, false, false, listener)
+        secretHolder.bind(0L, true, false, true, false, listener)
         assertEquals(View.VISIBLE, secretHolder.binding.chatInfo.visibility)
         assertEquals("chat-disabled", notice.text.toString())
 
-        secretHolder.bind(0L, false, false, false, listener)
+        secretHolder.bind(0L, false, false, true, false, listener)
         assertEquals(View.GONE, secretHolder.binding.chatInfo.visibility)
         assertFalse(secretHolder.binding.chatInfo.isClickable)
         secretHolder.binding.chatInfo.performClick()
@@ -251,7 +275,7 @@ class SystemHolderTest {
         notice.performClick()
         assertEquals(1, openedSettings)
 
-        secretHolder.bind(2592000L, false, false, false, listener)
+        secretHolder.bind(2592000L, false, false, true, false, listener)
         assertEquals("chat-enabled(1 month-unit)", notice.text.toString())
         assertEquals(Color.MAGENTA, notice.backgroundTintList?.defaultColor)
         assertEquals(View.GONE, secretHolder.binding.chatInfo.visibility)

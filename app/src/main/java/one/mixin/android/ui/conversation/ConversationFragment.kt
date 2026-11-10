@@ -716,11 +716,21 @@ class ConversationFragment() :
             }
 
             override fun onDisappearingMessagesClick() {
-                activity?.addFragment(
-                    this@ConversationFragment,
-                    DisappearingFragment.newInstance(conversationId, recipient?.userId),
-                    DisappearingFragment.TAG,
-                )
+                viewLifecycleOwner.lifecycleScope.launch {
+                    val canEdit = !isGroup || withContext(Dispatchers.IO) {
+                        val role = Session.getAccountId()?.let { chatViewModel.findParticipantById(conversationId, it)?.role }
+                        role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
+                    }
+                    if (canEdit) {
+                        activity?.addFragment(
+                            this@ConversationFragment,
+                            DisappearingFragment.newInstance(conversationId, recipient?.userId),
+                            DisappearingFragment.TAG,
+                        )
+                    } else {
+                        getString(R.string.disappearing_message_url).openAsUrlOrWeb(requireContext(), conversationId, parentFragmentManager, lifecycleScope)
+                    }
+                }
             }
 
             override fun onInscriptionClick(
@@ -2023,6 +2033,13 @@ class ConversationFragment() :
                     keyword = keyword,
                 )
             binding.messageRv.adapter = messageAdapter
+            if (isGroup) {
+                Session.getAccountId()?.let { accountId ->
+                    chatViewModel.observeParticipantRole(conversationId, accountId).observe(viewLifecycleOwner) { role ->
+                        messageAdapter.canEditDisappearingMessages = role == ParticipantRole.OWNER.name || role == ParticipantRole.ADMIN.name
+                    }
+                }
+            }
             chatViewModel.observeConversation(conversationId).observe(viewLifecycleOwner) { conversation ->
                 val expireIn = conversation?.expireIn ?: 0L
                 binding.actionBar.setExpireIconVisible(expireIn > 0L)

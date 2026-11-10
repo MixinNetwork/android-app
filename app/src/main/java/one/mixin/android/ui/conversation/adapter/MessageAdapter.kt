@@ -128,6 +128,13 @@ class MessageAdapter(
     private val isSecret: Boolean = true,
     var keyword: String? = null,
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>(), MixinStickyRecyclerHeadersAdapter<TimeHolder> {
+    var canEditDisappearingMessages: Boolean = !isGroup
+        set(value) {
+            if (field == value) return
+            field = value
+            notifyDataSetChanged()
+        }
+
     var expireIn: Long = 0L
         set(value) {
             if (field == value) return
@@ -415,6 +422,7 @@ class MessageAdapter(
                         it,
                         selectSet.size > 0,
                         isSelect(position),
+                        canEditDisappearingMessages,
                         onItemListener,
                     )
                 }
@@ -592,6 +600,7 @@ class MessageAdapter(
                         expireIn,
                         isSecret,
                         isGroup,
+                        canEditDisappearingMessages,
                         selectSet.size > 0,
                         onItemListener,
                     )

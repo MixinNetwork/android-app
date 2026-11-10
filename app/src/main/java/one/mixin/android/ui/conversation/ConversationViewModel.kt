@@ -387,6 +387,9 @@ class ConversationViewModel
             jobManager.addJobInBackground(UpdateRelationshipJob(request))
         }
 
+        fun observeParticipantRole(conversationId: String, userId: String) =
+            conversationRepository.observeParticipantRole(conversationId, userId)
+
         fun observeParticipantsCount(conversationId: String) =
             conversationRepository.observeParticipantsCount(conversationId)
 

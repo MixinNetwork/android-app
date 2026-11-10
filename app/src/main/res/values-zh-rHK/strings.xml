@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="perps_realized_pnl_tip">未平倉的合約不計入統計</string>
+    <string name="group_disappearing_message_enabled_learn_hint">本群已將限時訊息時長設為 %1$s。點擊了解更多。</string>
+    <string name="group_disappearing_message_disabled_learn_hint">本群尚未啟用限時訊息。點擊了解更多。</string>
+    <string name="changed_disappearing_message_settings_learn_hint">%1$s修改了限時訊息設定。點擊了解更多。</string>
+    <string name="disable_disappearing_message_learn_hint">%1$s關閉了限時訊息。點擊了解更多。</string>
+    <string name="set_disappearing_message_time_to_learn_hint">%1$s將限時訊息設定為 %2$s。點擊了解更多。</string>
 </resources>

@@ -25,6 +25,7 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
         messageItem: MessageItem,
         hasSelect: Boolean,
         isSelect: Boolean,
+        canEdit: Boolean,
         onItemListener: MessageAdapter.OnItemListener,
     ) {
         val id = meId
@@ -168,19 +169,19 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                     when {
                         timeInterval == null -> { // Messages received in the old version
                             String.format(
-                                getText(R.string.changed_disappearing_message_settings_hint),
+                                getText(if (canEdit) R.string.changed_disappearing_message_settings_hint else R.string.changed_disappearing_message_settings_learn_hint),
                                 name,
                             )
                         }
                         timeInterval <= 0 -> {
                             String.format(
-                                getText(R.string.disable_disappearing_message_hint),
+                                getText(if (canEdit) R.string.disable_disappearing_message_hint else R.string.disable_disappearing_message_learn_hint),
                                 name,
                             )
                         }
                         else -> {
                             String.format(
-                                getText(R.string.set_disappearing_message_time_to_hint),
+                                getText(if (canEdit) R.string.set_disappearing_message_time_to_hint else R.string.set_disappearing_message_time_to_learn_hint),
                                 name,
                                 toTimeInterval(timeInterval),
                             )
