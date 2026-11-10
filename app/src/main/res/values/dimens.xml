@@ -3,10 +3,12 @@
     <dimen name="activity_horizontal_margin">16dp</dimen>
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="home_navigation_height">62dp</dimen>
-    <dimen name="home_navigation_collapsed_height">55dp</dimen>
-    <dimen name="home_navigation_corner_radius">31dp</dimen>
-    <dimen name="home_navigation_item_corner_radius">27dp</dimen>
+    <dimen name="home_navigation_collapsed_height">48dp</dimen>
+    <dimen name="home_navigation_corner_radius">999dp</dimen>
+    <dimen name="home_navigation_item_corner_radius">999dp</dimen>
+    <dimen name="home_navigation_item_inset">4dp</dimen>
     <dimen name="home_navigation_glass_blur_radius">30dp</dimen>
+    <dimen name="home_navigation_elevation">12dp</dimen>
     <dimen name="photo_size">90dp</dimen>
     <dimen name="min_keyboard_size">50dp</dimen>
     <dimen name="min_custom_keyboard_size">110dp</dimen>

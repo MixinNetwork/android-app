@@ -21,7 +21,6 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewConfiguration
-import android.view.ViewGroup
 import android.os.PowerManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -30,10 +29,8 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.getSystemService
-import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import androidx.core.view.marginBottom
-import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.fragment.app.DialogFragment
@@ -73,7 +70,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
-import kotlin.math.roundToInt
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
@@ -1550,9 +1546,11 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         // Pages pushed onto the tabs are not inset-aware, so they keep the content above the navigation.
         val overlayContent = supportFragmentManager.backStackEntryCount == 0
         binding.bottomNavBackdrop.isVisible = isBottomNavigationGlassEnabled && overlayContent && binding.bottomNav.isVisible
+        bottomNavExpandedHeight = binding.bottomNav.homeNavigationExpandedHeight()
+        applyBottomNavigationCollapse(bottomNavCollapseProgress)
         if (!overlayContent || !binding.bottomNav.isVisible) setBottomNavigationCollapsed(false, animate = false)
         val bottomInset = if (binding.bottomNav.isVisible) {
-            resources.getDimensionPixelSize(R.dimen.home_navigation_height) + binding.bottomNav.marginBottom + resources.getDimensionPixelSize(R.dimen.padding8)
+            bottomNavExpandedHeight + binding.bottomNav.marginBottom + resources.getDimensionPixelSize(R.dimen.padding8)
         } else {
             0
         }
@@ -1562,6 +1560,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     private var bottomNavCollapsed = false
     private var bottomNavCollapseProgress = 0f
+    private var bottomNavExpandedHeight = 0
     private var bottomNavCollapseAnimator: ValueAnimator? = null
     private var homeScrollDistance = 0
 
@@ -1596,26 +1595,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
 
     private fun applyBottomNavigationCollapse(progress: Float) {
         bottomNavCollapseProgress = progress
-        val nav = binding.bottomNav
-        val expandedHeight = resources.getDimensionPixelSize(R.dimen.home_navigation_height)
-        val collapsedHeight = resources.getDimensionPixelSize(R.dimen.home_navigation_collapsed_height)
-        val margin = resources.getDimensionPixelSize(R.dimen.margin20)
-        val expandedWidth = (nav.parent as View).width - margin * 2
-        val horizontalMargin = margin + (expandedWidth * (1 - BOTTOM_NAV_COLLAPSED_WIDTH_RATIO) / 2 * progress).roundToInt()
-        nav.updateLayoutParams<ViewGroup.MarginLayoutParams> {
-            height = (expandedHeight + (collapsedHeight - expandedHeight) * progress).roundToInt()
-            marginStart = horizontalMargin
-            marginEnd = horizontalMargin
-        }
-        nav.menu.forEach { item ->
-            val itemView = nav.findViewById<View>(item.itemId) ?: return@forEach
-            val content = itemView.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_content_container) ?: return@forEach
-            val icon = itemView.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_icon_container) ?: return@forEach
-            val iconCenter = content.top + icon.top + icon.height / 2f
-            content.translationY = (collapsedHeight / 2f - iconCenter) * progress
-            itemView.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_labels_group)?.alpha =
-                (1f - progress * 2f).coerceAtLeast(0f)
-        }
+        binding.bottomNav.applyHomeNavigationCollapse(progress, bottomNavExpandedHeight)
     }
 
     private fun observeEmbeddedSplits() {
@@ -1792,7 +1772,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         private const val WALLET_DESTINATION = "wallet_destination"
         const val WALLET_CONNECT = "wallet_connect"
         private const val KEY_LAST_BOTTOM_NAV = "last_bottom_nav_item_id"
-        private const val BOTTOM_NAV_COLLAPSED_WIDTH_RATIO = 0.86f
         private const val EXTRA_EMBEDDING_RELAYOUT = "embedding_relayout"
 
         fun showWallet(
