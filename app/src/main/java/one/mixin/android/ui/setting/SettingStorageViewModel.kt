@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
@@ -84,7 +85,8 @@ class SettingStorageViewModel
         suspend fun clear(
             conversationId: String,
             types: Collection<String>,
-        ) = withContext(Dispatchers.IO) {
+        ) = withContext(Dispatchers.IO + NonCancellable) {
+            // Must finish once started, otherwise files and message rows can get out of sync.
             types.forEach { type ->
                 when (type) {
                     IMAGE -> clearMedia(conversationId, type, MessageCategory.SIGNAL_IMAGE.name, MessageCategory.PLAIN_IMAGE.name, MessageCategory.ENCRYPTED_IMAGE.name)
@@ -109,12 +111,13 @@ class SettingStorageViewModel
             plainCategory: String,
             encryptedCategory: String,
         ) {
-            MixinApplication.appContext.getStorageTypePath(type)?.let { File(it, conversationId) }?.deleteRecursively()
             val list = conversationRepository.getMediaByConversationIdAndCategory(conversationId, signalCategory, plainCategory, encryptedCategory)
-            if (list.isEmpty()) return
-            withContext(SINGLE_DB_THREAD) {
-                cleanMessageHelper.deleteMessageMinimals(conversationId, list)
+            if (list.isNotEmpty()) {
+                withContext(SINGLE_DB_THREAD) {
+                    cleanMessageHelper.deleteMessageMinimals(conversationId, list)
+                }
             }
+            MixinApplication.appContext.getStorageTypePath(type)?.let { File(it, conversationId) }?.deleteRecursively()
         }
 
         private fun Long.toKb() = (this + 1023) / 1024
