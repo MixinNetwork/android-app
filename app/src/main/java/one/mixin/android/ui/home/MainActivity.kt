@@ -9,6 +9,7 @@ import android.app.ActivityManager
 import android.app.Dialog
 import android.app.NotificationManager
 import android.content.Context
+import android.animation.ValueAnimator
 import android.content.Intent
 import android.content.IntentSender
 import android.content.res.Configuration
@@ -18,6 +19,9 @@ import android.graphics.RenderEffect
 import android.graphics.Shader
 import android.os.Build
 import android.os.Bundle
+import android.view.View
+import android.view.ViewConfiguration
+import android.view.ViewGroup
 import android.os.PowerManager
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -26,9 +30,12 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.core.content.getSystemService
+import androidx.core.view.forEach
 import androidx.core.view.isVisible
 import androidx.core.view.marginBottom
+import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
+import androidx.interpolator.view.animation.FastOutSlowInInterpolator
 import androidx.fragment.app.DialogFragment
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
@@ -65,6 +72,8 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
+import kotlin.math.abs
+import kotlin.math.roundToInt
 import one.mixin.android.BuildConfig
 import one.mixin.android.Constants
 import one.mixin.android.Constants.APP_VERSION
@@ -687,6 +696,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         if (::binding.isInitialized) {
+            setBottomNavigationCollapsed(false, animate = false)
             updateRailVisibility()
             updateBottomNavigationStyle()
         }
@@ -1287,9 +1297,6 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         binding.apply {
             bottomNav.setOnApplyWindowInsetsListener(null)
             bottomNav.setPadding(0, 0, 0, 0)
-            bottomNav.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
-                updateBottomNavigationLayout()
-            }
             // The backdrop re-records the root view's children by reference, so their content updates
             // without invalidating it every frame. Only layout changes (fragment switches) need a re-record.
             rootView.viewTreeObserver.addOnGlobalLayoutListener {
@@ -1303,6 +1310,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
                     isRestoringBottomNavSelection = false
                     return@setOnItemSelectedListener true
                 }
+                setBottomNavigationCollapsed(false)
                 handleNavigationItemSelected(it.itemId)
                 return@setOnItemSelectedListener it.itemId in listOf(R.id.nav_chat, R.id.nav_wallet, R.id.nav_more, R.id.nav_market)
             }
@@ -1542,15 +1550,72 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         // Pages pushed onto the tabs are not inset-aware, so they keep the content above the navigation.
         val overlayContent = supportFragmentManager.backStackEntryCount == 0
         binding.bottomNavBackdrop.isVisible = isBottomNavigationGlassEnabled && overlayContent && binding.bottomNav.isVisible
+        if (!overlayContent || !binding.bottomNav.isVisible) setBottomNavigationCollapsed(false, animate = false)
         val bottomInset = if (binding.bottomNav.isVisible) {
-            val navHeight = binding.bottomNav.height.takeIf { it > 0 }
-                ?: resources.getDimensionPixelSize(R.dimen.home_navigation_height)
-            navHeight + binding.bottomNav.marginBottom + resources.getDimensionPixelSize(R.dimen.padding8)
+            resources.getDimensionPixelSize(R.dimen.home_navigation_height) + binding.bottomNav.marginBottom + resources.getDimensionPixelSize(R.dimen.padding8)
         } else {
             0
         }
         homeContentInset = if (overlayContent) bottomInset else 0
         binding.rootView.updatePadding(bottom = if (overlayContent) 0 else bottomInset)
+    }
+
+    private var bottomNavCollapsed = false
+    private var bottomNavCollapseProgress = 0f
+    private var bottomNavCollapseAnimator: ValueAnimator? = null
+    private var homeScrollDistance = 0
+
+    fun onHomeContentScrolled(dy: Int) {
+        if (dy == 0) return
+        if ((dy > 0) != (homeScrollDistance > 0)) homeScrollDistance = 0
+        homeScrollDistance += dy
+        if (abs(homeScrollDistance) >= ViewConfiguration.get(this).scaledTouchSlop) {
+            setBottomNavigationCollapsed(homeScrollDistance > 0)
+        }
+    }
+
+    fun setBottomNavigationCollapsed(collapsed: Boolean, animate: Boolean = true) {
+        if (!::binding.isInitialized) return
+        val target = collapsed && binding.bottomNav.isVisible && supportFragmentManager.backStackEntryCount == 0
+        if (target == bottomNavCollapsed) return
+        bottomNavCollapsed = target
+        homeScrollDistance = 0
+        bottomNavCollapseAnimator?.cancel()
+        val end = if (target) 1f else 0f
+        if (!animate) {
+            applyBottomNavigationCollapse(end)
+            return
+        }
+        bottomNavCollapseAnimator = ValueAnimator.ofFloat(bottomNavCollapseProgress, end).apply {
+            duration = 250
+            interpolator = FastOutSlowInInterpolator()
+            addUpdateListener { applyBottomNavigationCollapse(it.animatedValue as Float) }
+            start()
+        }
+    }
+
+    private fun applyBottomNavigationCollapse(progress: Float) {
+        bottomNavCollapseProgress = progress
+        val nav = binding.bottomNav
+        val expandedHeight = resources.getDimensionPixelSize(R.dimen.home_navigation_height)
+        val collapsedHeight = resources.getDimensionPixelSize(R.dimen.home_navigation_collapsed_height)
+        val margin = resources.getDimensionPixelSize(R.dimen.margin20)
+        val expandedWidth = (nav.parent as View).width - margin * 2
+        val horizontalMargin = margin + (expandedWidth * (1 - BOTTOM_NAV_COLLAPSED_WIDTH_RATIO) / 2 * progress).roundToInt()
+        nav.updateLayoutParams<ViewGroup.MarginLayoutParams> {
+            height = (expandedHeight + (collapsedHeight - expandedHeight) * progress).roundToInt()
+            marginStart = horizontalMargin
+            marginEnd = horizontalMargin
+        }
+        nav.menu.forEach { item ->
+            val itemView = nav.findViewById<View>(item.itemId) ?: return@forEach
+            val content = itemView.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_content_container) ?: return@forEach
+            val icon = itemView.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_icon_container) ?: return@forEach
+            val iconCenter = content.top + icon.top + icon.height / 2f
+            content.translationY = (collapsedHeight / 2f - iconCenter) * progress
+            itemView.findViewById<View>(com.google.android.material.R.id.navigation_bar_item_labels_group)?.alpha =
+                (1f - progress * 2f).coerceAtLeast(0f)
+        }
     }
 
     private fun observeEmbeddedSplits() {
@@ -1727,6 +1792,7 @@ class MainActivity : BlazeBaseActivity(), WalletMissingBtcAddressFragment.Callba
         private const val WALLET_DESTINATION = "wallet_destination"
         const val WALLET_CONNECT = "wallet_connect"
         private const val KEY_LAST_BOTTOM_NAV = "last_bottom_nav_item_id"
+        private const val BOTTOM_NAV_COLLAPSED_WIDTH_RATIO = 0.86f
         private const val EXTRA_EMBEDDING_RELAYOUT = "embedding_relayout"
 
         fun showWallet(

@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.ui.home.homeNavigationInset
+import one.mixin.android.ui.home.homeNavigationScroll
 import one.mixin.android.ui.wallet.home.components.BannerPager
 import one.mixin.android.ui.wallet.home.components.ImportSafetyFooter
 import one.mixin.android.ui.wallet.home.components.SupportCard
@@ -35,6 +36,7 @@ fun WalletHomePage(
             modifier = Modifier
                 .fillMaxSize()
                 .background(MixinAppTheme.colors.background)
+                .homeNavigationScroll()
                 .verticalScroll(rememberScrollState())
                 .padding(bottom = homeNavigationInset()),
         ) {

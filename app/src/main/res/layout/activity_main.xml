@@ -42,7 +42,7 @@
             android:id="@+id/bottom_nav"
             android:layout_width="0dp"
             android:layout_height="@dimen/home_navigation_height"
-            android:layout_marginHorizontal="@dimen/margin16"
+            android:layout_marginHorizontal="@dimen/margin20"
             android:layout_marginBottom="@dimen/padding8"
             android:background="@drawable/bg_bottom_navigation"
             android:clipToOutline="true"

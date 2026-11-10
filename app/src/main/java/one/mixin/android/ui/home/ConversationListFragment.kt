@@ -228,6 +228,15 @@ class ConversationListFragment : LinkFragment() {
                     binding.messageRv.updatePadding(bottom = inset)
                 }
             }
+            binding.messageRv.addOnScrollListener(object : RecyclerView.OnScrollListener() {
+                override fun onScrolled(recyclerView: RecyclerView, dx: Int, dy: Int) {
+                    if (!recyclerView.canScrollVertically(-1)) {
+                        mainActivity.setBottomNavigationCollapsed(false)
+                    } else {
+                        mainActivity.onHomeContentScrolled(dy)
+                    }
+                }
+            })
         }
         binding.messageRv.adapter = messageAdapter
         observeMessageAdapterLoadState()
