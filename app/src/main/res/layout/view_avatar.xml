@@ -8,8 +8,9 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center"
-        android:textColor="@color/white"
-        android:textSize="@dimen/avatar_text_size" />
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textColor="@color/white" />
 
     <one.mixin.android.widget.CircleImageView
         android:id="@+id/avatar_simple"
