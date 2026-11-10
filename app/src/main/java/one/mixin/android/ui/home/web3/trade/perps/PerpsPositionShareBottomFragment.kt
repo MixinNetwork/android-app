@@ -85,6 +85,8 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         private const val ARGS_CLOSE_ORDER = "args_close_order"
         private const val ARGS_CLOSE_LEVERAGE = "args_close_leverage"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
+        private const val POSTER_SIDE = 335
+        private const val POSTER_MIN_SLOT = 200
 
         fun newInstance(position: PerpsPositionItem) = PerpsPositionShareBottomFragment().withArgs {
             putParcelable(ARGS_POSITION, position)
@@ -122,6 +124,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     private var isLoading = false
     private var currentDisplayMetric = ShareDisplayMetric.PNL
     private var currentPosterStyle = SharePosterStyle.CLASSIC
+    private var posterSlot = 0
     private lateinit var shareData: ShareCardData
     private lateinit var posterAdapter: PosterAdapter
 
@@ -302,9 +305,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         SharePosterStyle.values().forEachIndexed { index, style ->
             (recyclerView.findViewHolderForAdapterPosition(index) as? PosterViewHolder)?.bind(style)
         }
-        binding.posterPager.post {
-            updatePosterPagerHeight()
-        }
+        binding.posterPager.post { updatePosterSlot() }
     }
 
     private fun bindMixinContact() {
@@ -382,8 +383,11 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
             offscreenPageLimit = 1
             clipToPadding = false
             clipChildren = false
-            setPadding(28.dp, 0, 28.dp, 0)
-            (getChildAt(0) as? RecyclerView)?.clipToPadding = false
+            // Padding lives on the inner RecyclerView so touches on the peeking pages still reach it.
+            (getChildAt(0) as? RecyclerView)?.apply {
+                clipToPadding = false
+                setPadding(28.dp, 0, 28.dp, 0)
+            }
             setPageTransformer { page, position ->
                 val factor = (1f - position.absoluteValue).coerceIn(0f, 1f)
                 page.alpha = 0.6f + factor * 0.4f
@@ -395,38 +399,44 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
                 object : ViewPager2.OnPageChangeCallback() {
                     override fun onPageSelected(position: Int) {
                         updatePosterStyle(SharePosterStyle.values()[position])
-                        binding.posterPager.post { updatePosterPagerHeight(force = true) }
                     }
                 },
             )
-            doOnPreDraw {
-                updatePosterPagerHeight(force = true)
-            }
+            doOnPreDraw { updatePosterSlot() }
+        }
+        binding.root.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            binding.posterPager.post { updatePosterSlot() }
         }
     }
 
     override fun onResume() {
         super.onResume()
-        binding.posterPager.post { updatePosterPagerHeight(force = true) }
+        binding.posterPager.post { updatePosterSlot() }
     }
 
-    private fun updatePosterPagerHeight(force: Boolean = false) {
-        val recyclerView = binding.posterPager.getChildAt(0) as? RecyclerView ?: return
-        val itemView = recyclerView.findViewHolderForAdapterPosition(binding.posterPager.currentItem)?.itemView ?: return
-        val width = itemView.width.takeIf { it > 0 }
-            ?: (binding.posterPager.width - binding.posterPager.paddingStart - binding.posterPager.paddingEnd).takeIf { it > 0 }
-            ?: return
-        itemView.measure(
-            View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
-            View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
-        )
-        val measuredHeight = itemView.measuredHeight.takeIf { it > 0 } ?: return
-        if (!force && binding.posterPager.layoutParams.height == measuredHeight && binding.posterContainer.layoutParams.height == measuredHeight) return
-        binding.posterPager.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = measuredHeight
+    // The poster keeps its 1:1 design size and is scaled into a square slot that fits the sheet.
+    private fun updatePosterSlot() {
+        if (view == null) return
+        val pager = binding.posterPager
+        val recyclerView = pager.getChildAt(0) as? RecyclerView ?: return
+        if (pager.width == 0) return
+        val sheet = binding.root.parent as? View ?: return
+        val coordinator = sheet.parent as? View ?: return
+        val pageMax = pager.width - 2 * 28.dp
+        val maxHeight = behavior?.maxHeight?.takeIf { it > 0 } ?: Int.MAX_VALUE
+        val cap = minOf(coordinator.height, maxHeight) - sheet.paddingTop - sheet.paddingBottom
+        val other = binding.scroll.top + binding.scrollContent.height - binding.posterContainer.height
+        val slot = (cap - other).coerceIn(minOf(POSTER_MIN_SLOT.dp, pageMax), pageMax)
+        if (slot != posterSlot) {
+            posterSlot = slot
+            pager.updateLayoutParams<ViewGroup.LayoutParams> { height = slot }
+            binding.posterContainer.updateLayoutParams<ViewGroup.LayoutParams> { height = slot }
+            val padding = (pager.width - slot) / 2
+            recyclerView.setPadding(padding, 0, padding, 0)
+            recyclerView.scrollToPosition(pager.currentItem)
         }
-        binding.posterContainer.updateLayoutParams<ViewGroup.LayoutParams> {
-            height = measuredHeight
+        for (i in 0 until recyclerView.childCount) {
+            (recyclerView.getChildViewHolder(recyclerView.getChildAt(i)) as? PosterViewHolder)?.applySlotScale()
         }
     }
 
@@ -446,7 +456,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
 
     private fun shareToMixinContact() {
         viewLifecycleOwner.lifecycleScope.launch {
-            val poster = currentPosterView() ?: return@launch
+            val poster = currentPosterHolder()?.itemBinding?.topCard ?: return@launch
             if (poster.width == 0 || poster.height == 0) return@launch
             val bitmap = poster.drawShareBitmap()
             showLoading(true)
@@ -533,11 +543,11 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         return file
     }
 
-    private fun createShareBitmap(): Bitmap = currentPosterView()?.drawShareBitmap() ?: binding.posterPager.drawShareBitmap()
+    private fun createShareBitmap(): Bitmap = currentPosterHolder()?.itemBinding?.topCard?.drawShareBitmap() ?: binding.posterPager.drawShareBitmap()
 
-    private fun currentPosterView(): View? {
+    private fun currentPosterHolder(): PosterViewHolder? {
         val recyclerView = binding.posterPager.getChildAt(0) as? RecyclerView ?: return null
-        return recyclerView.findViewHolderForAdapterPosition(binding.posterPager.currentItem)?.itemView
+        return recyclerView.findViewHolderForAdapterPosition(binding.posterPager.currentItem) as? PosterViewHolder
     }
 
     private fun saveBitmapToFile(file: File, bitmap: Bitmap) {
@@ -632,7 +642,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
     }
 
     private inner class PosterViewHolder(
-        private val itemBinding: ItemPerpsPositionSharePosterBinding,
+        val itemBinding: ItemPerpsPositionSharePosterBinding,
     ) : RecyclerView.ViewHolder(itemBinding.root) {
         fun bind(style: SharePosterStyle) {
             val data = shareData
@@ -655,6 +665,50 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
             itemBinding.latestLabelTv.text = data.latestLabel
             itemBinding.latestValueTv.text = formatFiat(data.latestPrice)
             bindPosterFooter(itemBinding)
+            fitPosterSide()
+            applySlotScale()
+        }
+
+        // Grow the square until the price section fits; large font scales need more room.
+        private fun fitPosterSide() {
+            val topCard = itemBinding.topCard
+            val priceSection = itemBinding.priceSection
+            val bottomMargin = (priceSection.layoutParams as ViewGroup.MarginLayoutParams).bottomMargin
+            fun overflow(side: Int): Int {
+                topCard.measure(
+                    View.MeasureSpec.makeMeasureSpec(side, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(side, View.MeasureSpec.EXACTLY),
+                )
+                topCard.layout(0, 0, side, side)
+                return priceSection.bottom + bottomMargin - itemBinding.cardContent.height
+            }
+            val base = POSTER_SIDE.dp
+            var low = base
+            var high = base
+            for (i in 0 until 3) {
+                val overflow = overflow(high)
+                if (overflow <= 0) break
+                low = high
+                high += overflow
+            }
+            // Tags may stop wrapping once the card grows, so search back for the smallest side that fits.
+            if (high > base && overflow(high) <= 0) {
+                while (high - low > 2.dp) {
+                    val mid = (low + high) / 2
+                    if (overflow(mid) <= 0) high = mid else low = mid
+                }
+            }
+            topCard.updateLayoutParams<ViewGroup.LayoutParams> {
+                width = high
+                height = high
+            }
+        }
+
+        fun applySlotScale() {
+            if (posterSlot <= 0) return
+            val scale = posterSlot.toFloat() / itemBinding.topCard.layoutParams.width
+            itemBinding.topCard.scaleX = scale
+            itemBinding.topCard.scaleY = scale
         }
 
         private fun bindPosterFooter(itemBinding: ItemPerpsPositionSharePosterBinding) {
