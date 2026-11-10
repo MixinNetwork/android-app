@@ -33,6 +33,7 @@ import one.mixin.android.extension.md5
 import one.mixin.android.extension.saveGroupAvatar
 import one.mixin.android.vo.User
 import one.mixin.android.widget.AvatarView
+import one.mixin.android.widget.drawAvatarText
 import java.io.File
 
 class GenerateAvatarJob(
@@ -101,10 +102,11 @@ class GenerateAvatarJob(
         canvas: Canvas,
         bitmaps: List<Bitmap>,
     ) {
-        val textSizeLarge = applicationContext.resources.getDimension(R.dimen.group_avatar_text_size)
-        val textSizeMedium = applicationContext.resources.getDimension(R.dimen.group_avatar_text_medium)
-        val textSizeSmall = applicationContext.resources.getDimension(R.dimen.group_avatar_text_small)
-        val textOffset = 5f.dp.toFloat()
+        // Bitmap text uses pixel proportions, independent of display density and font scale.
+        val textSizeLarge = size * 0.4f
+        val textSizeMedium = size * 0.33f
+        val textSizeSmall = size * 0.26f
+        val textOffset = size * 0.06f
         val dividerOffset = 0.5f.dp.toFloat()
         val paint = Paint(Paint.ANTI_ALIAS_FLAG)
         val textPaint =
@@ -148,11 +150,7 @@ class GenerateAvatarJob(
                 if (texts[0] != null) {
                     textPaint.textSize = textSizeLarge
                     val t = texts[0].toString()
-                    val bounds = Rect()
-                    textPaint.getTextBounds(t, 0, t.length, bounds)
-                    val x = (size - bounds.width()) / 2f
-                    val y = size / 2f + bounds.height() / 2f
-                    canvas.drawText(t, x, y, textPaint)
+                    canvas.drawAvatarText(t, textPaint, size / 2f, size / 2f, size.toFloat(), size.toFloat())
                 }
             }
             2 -> {
@@ -197,16 +195,7 @@ class GenerateAvatarJob(
                     if (texts[i] != null) {
                         textPaint.textSize = textSizeMedium
                         val t = texts[i].toString()
-                        val bounds = Rect()
-                        textPaint.getTextBounds(t, 0, t.length, bounds)
-                        val x =
-                            if (i == 0) {
-                                (size / 2f - bounds.width()) / 2
-                            } else {
-                                size / 2f + (size / 4f - bounds.width() / 2)
-                            }
-                        val y = size / 2f + bounds.height() / 2f
-                        canvas.drawText(t, x, y, textPaint)
+                        canvas.drawAvatarText(t, textPaint, size / 4f + i * size / 2f, size / 2f, size / 2f, size.toFloat())
                     }
 
                     canvas.drawRect(verticalDividerRectF, verticalDividerPaint)
@@ -269,21 +258,15 @@ class GenerateAvatarJob(
                                 textSizeSmall
                             }
                         val t = texts[i].toString()
-                        val bounds = Rect()
-                        textPaint.getTextBounds(t, 0, t.length, bounds)
-                        val x =
-                            if (i == 0) {
-                                (size / 2f - bounds.width()) / 2
-                            } else {
-                                size / 2f + size / 4f - bounds.width() / 2 - textOffset
-                            }
-                        val y =
-                            when (i) {
-                                0 -> size / 2f + bounds.height() / 2f
-                                1 -> size / 4f + bounds.height() / 2f + textOffset
-                                else -> size / 2f + size / 4f + bounds.height() / 2f - textOffset
-                            }
-                        canvas.drawText(t, x, y, textPaint)
+                        val centerX = if (i == 0) size / 4f else size * 3f / 4f - textOffset
+                        val centerY = when (i) {
+                            0 -> size / 2f
+                            1 -> size / 4f + textOffset
+                            else -> size * 3f / 4f - textOffset
+                        }
+                        val textWidth = if (i == 0) size / 2f else size / 2f - 2 * textOffset
+                        val textHeight = if (i == 0) size.toFloat() else size / 2f - 2 * textOffset
+                        canvas.drawAvatarText(t, textPaint, centerX, centerY, textWidth, textHeight)
                     }
 
                     canvas.drawRect(verticalDividerRectF, verticalDividerPaint)
@@ -326,21 +309,9 @@ class GenerateAvatarJob(
                     if (texts[i] != null) {
                         textPaint.textSize = textSizeSmall
                         val t = texts[i].toString()
-                        val bounds = Rect()
-                        textPaint.getTextBounds(t, 0, t.length, bounds)
-                        val x =
-                            if (i % 2 == 0) {
-                                size / 4f - bounds.width() / 2 + textOffset
-                            } else {
-                                size / 2f + size / 4f - bounds.width() / 2 - textOffset
-                            }
-                        val y =
-                            if (i < 2) {
-                                size / 4f + bounds.width() / 2 + textOffset
-                            } else {
-                                size / 2f + size / 4f + bounds.height() / 2f - textOffset
-                            }
-                        canvas.drawText(t, x, y, textPaint)
+                        val centerX = if (i % 2 == 0) size / 4f + textOffset else size * 3f / 4f - textOffset
+                        val centerY = if (i < 2) size / 4f + textOffset else size * 3f / 4f - textOffset
+                        canvas.drawAvatarText(t, textPaint, centerX, centerY, size / 2f - 2 * textOffset, size / 2f - 2 * textOffset)
                     }
 
                     canvas.drawRect(verticalDividerRectF, verticalDividerPaint)
@@ -404,7 +375,7 @@ class GenerateAvatarJob(
         val color =
             try {
                 val num = userId.getColorCode(CodeType.Avatar(avatarArray.size))
-                avatarArray[num]
+                avatarArray.getOrElse(num) { avatarArray[0] }
             } catch (e: Exception) {
                 -1
             }
