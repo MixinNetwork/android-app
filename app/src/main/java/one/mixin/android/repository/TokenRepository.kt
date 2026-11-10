@@ -664,7 +664,7 @@ class TokenRepository
                 tokenItemList.forEach {
                     val exists = localTokens[it.assetId]
                     if (exists != null) {
-                        updates.add(it.toSearchUpdate(exists.primitiveAssetId))
+                        updates.add(it.toSearchUpdate(exists.primitiveAssetId, exists.level))
                     }
                 }
 
@@ -681,8 +681,9 @@ class TokenRepository
                             chainName = local.chainName,
                             withdrawalMemoPossibility = local.withdrawalMemoPossibility,
                             primitiveAssetId = remote.primitiveAssetId ?: local.primitiveAssetId,
+                            level = remote.level ?: local.level,
                         )
-                    } ?: remote
+                    } ?: remote.copy(level = remote.level ?: Constants.AssetLevel.VERIFIED)
                 }
                 return if (web3) {
                     (result + localLike

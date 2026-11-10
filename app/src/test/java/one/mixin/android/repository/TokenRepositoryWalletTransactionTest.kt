@@ -5,6 +5,7 @@ import androidx.room3.Room
 import androidx.sqlite.driver.AndroidSQLiteDriver
 import androidx.test.core.app.ApplicationProvider
 import com.birbit.android.jobqueue.config.Configuration
+import one.mixin.android.util.GsonHelper
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -91,7 +92,7 @@ class TokenRepositoryWalletTransactionTest {
         RoomDatabaseCompat.execute(main, "INSERT INTO chains(chain_id, name, symbol, icon_url, threshold, withdrawal_memo_possibility) VALUES ('chain', 'Chain', 'CH', 'icon', 1, 'possible')")
         RoomDatabaseCompat.execute(main, "INSERT INTO tokens(asset_id, kernel_asset_id, symbol, name, icon_url, price_btc, price_usd, chain_id, change_usd, change_btc, confirmations, asset_key, dust, precision) VALUES ('asset', 'kernel', 'OLD', 'Old', '', '0', '1', 'chain', '0', '0', 1, '', '0', 8)")
         RoomDatabaseCompat.execute(main, "INSERT INTO tokens_extra(asset_id, kernel_asset_id, hidden, balance, updated_at) VALUES ('asset', 'kernel', 1, '2', '')")
-        val remote = Token("asset", "kernel", "NEW", "New", "new-icon", "0", "5", "chain", "0", "0", 1, "", "0", null, 8)
+        val remote = Token("asset", "kernel", "NEW", "New", "new-icon", "0", "5", "chain", "0", "0", 1, "", "0", null, 8, level = 12)
         val response = MixinResponse<List<Token>>().apply { data = listOf(remote) }
         val service = Proxy.newProxyInstance(TokenService::class.java.classLoader, arrayOf(TokenService::class.java)) { _, method, _ ->
             if (method.name == "queryAssets") response else error("Unexpected network call: ${method.name}")
@@ -102,6 +103,13 @@ class TokenRepositoryWalletTransactionTest {
         assertEquals("NEW", result.symbol)
         assertEquals("New", result.name)
         assertEquals("5", result.priceUsd)
+        assertEquals(12, result.level)
+        assertEquals(12, main.tokenDao().findAssetItemById("asset")?.level)
+        val missingLevel = GsonHelper.customGson.fromJson(GsonHelper.customGson.toJson(remote).replace(",\"level\":12", ""), Token::class.java)
+        assertNull(missingLevel.level)
+        response.data = listOf(missingLevel)
+        assertEquals(12, repository(tokenService = service).queryAsset(null, "NEW").single().level)
+        assertEquals(12, main.tokenDao().findAssetItemById("asset")?.level)
         assertEquals("2", result.balance)
         assertEquals(true, result.hidden)
         assertEquals("Chain", result.chainName)
