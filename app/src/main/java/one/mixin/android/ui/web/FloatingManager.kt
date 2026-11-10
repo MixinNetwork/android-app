@@ -145,6 +145,8 @@ data class WebClip(
     val conversationId: String?,
     @SerializedName("shareable")
     val shareable: Boolean?,
+    @SerializedName("injectable")
+    val injectable: Boolean,
     @Transient val webView: MixinWebView?,
     @Transient val isFinished: Boolean = false,
 )
