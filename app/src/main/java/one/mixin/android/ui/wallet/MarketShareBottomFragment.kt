@@ -171,7 +171,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         setupMarketChart()
         binding.marketCover.doOnLayout { cover ->
             binding.marketChartContainer.updateLayoutParams {
-                height = (binding.marketChartContainer.height + cover.width - cover.height).coerceAtLeast(96.dp)
+                height = (binding.marketChartContainer.height + cover.width - cover.height).coerceAtLeast(48.dp)
             }
         }
         bindMixinContact()

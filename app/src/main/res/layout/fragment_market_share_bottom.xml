@@ -357,11 +357,8 @@
                 android:src="@drawable/ic_watch_arrow" />
         </LinearLayout>
     </LinearLayout>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        </LinearLayout>
+    </ScrollView>
 
     <LinearLayout
         android:id="@+id/bottom"
@@ -442,6 +439,4 @@
                 android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
-        </LinearLayout>
-    </ScrollView>
 </LinearLayout>
