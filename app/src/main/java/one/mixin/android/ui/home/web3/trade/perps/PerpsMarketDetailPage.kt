@@ -62,6 +62,7 @@ import androidx.compose.ui.layout.onPlaced
 import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.PlatformTextStyle
@@ -1404,17 +1405,20 @@ private fun OpenPositionCard(
             )
             if (!position.leaderPositionId.isNullOrBlank()) {
                 Spacer(modifier = Modifier.width(8.dp))
+                val copyingColor = colorResource(R.color.text_quote_orange)
                 Text(
                     text = stringResource(R.string.perps_copy_trade),
-                    color = MixinAppTheme.colors.accent,
+                    color = copyingColor,
                     fontSize = 12.sp,
+                    lineHeight = 14.sp,
+                    fontWeight = FontWeight.W500,
                     modifier = Modifier
                         .clip(RoundedCornerShape(4.dp))
-                        .background(MixinAppTheme.colors.accent.copy(alpha = 0.1f))
+                        .background(copyingColor.copy(alpha = 0.1f))
                         .clickable {
                             UrlInterpreterActivity.show(context, Uri.parse("mixin://users/44bef2fb-0d9d-44b1-bb1f-fef747f0d4ee?action=open&page=follow&position_id=${position.positionId}"))
                         }
-                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                        .padding(horizontal = 3.dp, vertical = 1.dp),
                 )
             }
             Spacer(modifier = Modifier.weight(1f))

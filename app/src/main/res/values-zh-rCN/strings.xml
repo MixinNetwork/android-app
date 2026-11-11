@@ -2674,7 +2674,7 @@
     <string name="Select_asset">选择一个资产查看</string>
     <string name="Select_market_item">选择一个行情查看</string>
     <string name="Select_explore_item">选择一项打开</string>
-    <string name="perps_copy_trade">跟单</string>
+    <string name="perps_copy_trade">跟单中</string>
     <string name="perps_publish_copy_trade">发布跟单</string>
     <string name="perps_publish_copy_trade_desc">获得跟单者 10% 的收益分润</string>
 </resources>
