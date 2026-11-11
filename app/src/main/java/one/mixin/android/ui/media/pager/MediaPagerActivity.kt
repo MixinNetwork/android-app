@@ -12,6 +12,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
@@ -26,6 +27,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
+import android.webkit.MimeTypeMap
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.viewModels
@@ -464,7 +466,16 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     null
                 } else {
                     loader.withDiskCacheFile(result) { cachedFile ->
-                        val destination = createAppCardCoverCacheFile()
+                        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                        BitmapFactory.decodeFile(cachedFile.absolutePath, options)
+                        val suffix =
+                            when (options.outMimeType) {
+                                MimeType.PNG.toString() -> ".png"
+                                MimeType.GIF.toString() -> ".gif"
+                                MimeType.WEBP.toString() -> ".webp"
+                                else -> ".jpg"
+                            }
+                        val destination = createAppCardCoverCacheFile(suffix)
                         try {
                             cachedFile.copy(destination)
                             destination
@@ -482,12 +493,12 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         return Uri.parse(path).toFile()
     }
 
-    private fun createAppCardCoverCacheFile(): File {
+    private fun createAppCardCoverCacheFile(suffix: String): File {
         val directory = File(getImageCachePath(), APP_CARD_COVER_CACHE_DIR)
         directory.mkdirs()
         val expiration = System.currentTimeMillis() - APP_CARD_COVER_CACHE_MAX_AGE
         directory.listFiles()?.filter { it.lastModified() < expiration }?.forEach { it.delete() }
-        return File.createTempFile("cover-", ".cache", directory)
+        return File.createTempFile("cover-", suffix, directory)
     }
 
     private fun save(item: MessageItem) {
@@ -499,9 +510,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                 }
                 return@launch
             }
+            val mimeType = item.mediaMimeType ?: MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension)
             val outFile =
                 when {
-                    item.mediaMimeType.equals(
+                    mimeType.equals(
                         MimeType.GIF.toString(),
                         true,
                     ) ->
@@ -510,7 +522,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                                 false,
                             )
 
-                    item.mediaMimeType.equals(MimeType.PNG.toString()) ->
+                    mimeType.equals(MimeType.PNG.toString()) ->
                         this@MediaPagerActivity.getPublicPicturePath()
                             .createPngTemp(
                                 false,
