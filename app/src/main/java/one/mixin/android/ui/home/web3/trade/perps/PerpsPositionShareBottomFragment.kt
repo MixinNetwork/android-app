@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import androidx.compose.runtime.Composable
 import androidx.core.content.FileProvider
 import androidx.core.content.ContextCompat
+import androidx.core.view.doOnLayout
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
@@ -429,14 +430,16 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         val other = binding.scroll.top + binding.scrollContent.height - binding.posterContainer.height +
             binding.root.height - binding.scroll.bottom
         val slot = (cap - other).coerceIn(minOf(POSTER_MIN_SLOT.dp, pageMax), pageMax)
-        if (slot != posterSlot) {
+        val padding = (pager.width - slot) / 2
+        if (slot != posterSlot || padding != recyclerView.paddingLeft) {
             posterSlot = slot
             pager.updateLayoutParams<ViewGroup.LayoutParams> { height = slot }
             binding.posterContainer.updateLayoutParams<ViewGroup.LayoutParams> { height = slot }
-            val padding = (pager.width - slot) / 2
             recyclerView.setPadding(padding, 0, padding, 0)
             recyclerView.scrollToPosition(pager.currentItem)
         }
+        // Re-centering does not scroll, so rerun the page transformer once the pages are laid out.
+        recyclerView.doOnLayout { pager.requestTransform() }
         for (i in 0 until recyclerView.childCount) {
             (recyclerView.getChildViewHolder(recyclerView.getChildAt(i)) as? PosterViewHolder)?.applySlotScale()
         }
