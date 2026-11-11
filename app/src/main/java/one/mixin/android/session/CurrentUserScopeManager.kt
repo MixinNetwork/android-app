@@ -60,6 +60,13 @@ class CurrentUserScopeManager
             }
         }
 
+        fun exitIfCurrent(userId: String?) {
+            synchronized(lock) {
+                if (currentUserId != userId || Session.getAccount() != null) return
+                closeScopeLocked()
+            }
+        }
+
         fun getMixinDatabase(): MixinDatabase {
             synchronized(lock) {
                 val account = requireAccount("MixinDatabase")

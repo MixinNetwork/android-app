@@ -344,6 +344,7 @@ open class MixinApplication :
 
         if (force || isOnline.compareAndSet(true, false)) {
             val sessionId = Session.getSessionId()
+            val userId = Session.getAccountId()
             val identityNumber = Session.getAccount()?.identityNumber
             stopRealtimeServices()
             clearLocalAuthState()
@@ -362,10 +363,8 @@ open class MixinApplication :
                     }
                     if (destroyed == null) Timber.w("closeAndClear: activities still alive after timeout")
                 }
-                // A re-login during teardown already owns the new scope; only close when no account is signed in.
-                if (Session.getAccount() == null) {
-                    resolveCurrentUserScopeManager(this@MixinApplication).exit("closeAndClear")
-                }
+                // Closes only the scope of the account being logged out; a re-login that already entered its own scope is kept.
+                resolveCurrentUserScopeManager(this@MixinApplication).exitIfCurrent(userId)
                 withContext(Dispatchers.Main) {
                     val entryPoint =
                         EntryPointAccessors.fromApplication(
