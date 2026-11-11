@@ -21,6 +21,8 @@ data class WalletHomeEarnAccount(
     val earningsUsd: BigDecimal,
     @SerializedName("maxApy")
     val maxApy: BigDecimal?,
+    @SerializedName("productionId")
+    val productionId: String? = null,
 ) {
     val balanceAmountText: String
         get() = usdBalanceAmountText(balanceUsd)
@@ -59,19 +61,7 @@ internal fun List<EarnProduct>.toWalletEarnDetails(
     val products = filter { it.assetId == assetId }
     if (products.isEmpty()) return null
     val productionIds = products.map { it.productionId }.toSet()
-    val selectedProductionId = products
-        .groupBy { it.productionId }
-        .maxWithOrNull(
-            compareBy<Map.Entry<String, List<EarnProduct>>> { (_, productionProducts) ->
-                productionProducts.fold(BigDecimal.ZERO) { total, product ->
-                    total + decimal(product.account.totalPrincipal)
-                }
-            }.thenBy { (_, productionProducts) ->
-                maxAnnualRateValue(productionProducts.flatMap { it.annualRates })
-            },
-        )
-        ?.key
-        ?: return null
+    val selectedProductionId = products.selectedEarnProductionId() ?: return null
 
     val totalPrincipal = products.fold(BigDecimal.ZERO) { total, product ->
         total + decimal(product.account.totalPrincipal)
@@ -122,6 +112,7 @@ internal fun List<EarnProduct>.toWalletHomeEarnAccounts(
             },
             maxApy = maxAnnualRateValue(products.flatMap { it.annualRates })
                 .takeIf { it > BigDecimal.ZERO },
+            productionId = products.selectedEarnProductionId(),
         )
     }
 
@@ -133,6 +124,19 @@ internal fun List<WalletHomeEarnAccount>.summary(): WalletHomeEarnAccount {
         maxApy = mapNotNull { it.maxApy }.maxOrNull(),
     )
 }
+
+private fun List<EarnProduct>.selectedEarnProductionId(): String? =
+    groupBy { it.productionId }
+        .maxWithOrNull(
+            compareBy<Map.Entry<String, List<EarnProduct>>> { (_, productionProducts) ->
+                productionProducts.fold(BigDecimal.ZERO) { total, product ->
+                    total + decimal(product.account.totalPrincipal)
+                }
+            }.thenBy { (_, productionProducts) ->
+                maxAnnualRateValue(productionProducts.flatMap { it.annualRates })
+            },
+        )
+        ?.key
 
 internal fun earnAccountUsdBalance(
     account: EarnAccountSummary,
