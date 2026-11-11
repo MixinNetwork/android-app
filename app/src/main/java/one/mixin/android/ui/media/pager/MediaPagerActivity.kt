@@ -12,6 +12,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
@@ -470,14 +471,23 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                         BitmapFactory.decodeFile(cachedFile.absolutePath, options)
                         val suffix =
                             when (options.outMimeType) {
-                                MimeType.PNG.toString() -> ".png"
+                                MimeType.JPEG.toString() -> ".jpg"
                                 MimeType.GIF.toString() -> ".gif"
-                                MimeType.WEBP.toString() -> ".webp"
-                                else -> ".jpg"
+                                else -> ".png"
                             }
                         val destination = createAppCardCoverCacheFile(suffix)
                         try {
-                            cachedFile.copy(destination)
+                            if (options.outMimeType == MimeType.JPEG.toString() ||
+                                options.outMimeType == MimeType.GIF.toString() ||
+                                options.outMimeType == MimeType.PNG.toString()
+                            ) {
+                                cachedFile.copy(destination)
+                            } else {
+                                // Formats like WebP are not accepted as image messages, re-encode to PNG
+                                val bitmap = requireNotNull(BitmapFactory.decodeFile(cachedFile.absolutePath))
+                                destination.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+                                bitmap.recycle()
+                            }
                             destination
                         } catch (e: Exception) {
                             destination.delete()
