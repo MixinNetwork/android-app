@@ -425,7 +425,9 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         val pageMax = pager.width - 2 * 28.dp
         val maxHeight = behavior?.maxHeight?.takeIf { it > 0 } ?: Int.MAX_VALUE
         val cap = minOf(coordinator.height, maxHeight) - sheet.paddingTop - sheet.paddingBottom
-        val other = binding.scroll.top + binding.scrollContent.height - binding.posterContainer.height
+        // The action row stays below the scroll view, so count it with the header.
+        val other = binding.scroll.top + binding.scrollContent.height - binding.posterContainer.height +
+            binding.root.height - binding.scroll.bottom
         val slot = (cap - other).coerceIn(minOf(POSTER_MIN_SLOT.dp, pageMax), pageMax)
         if (slot != posterSlot) {
             posterSlot = slot
