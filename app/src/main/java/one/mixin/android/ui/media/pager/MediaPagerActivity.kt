@@ -12,6 +12,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.graphics.drawable.ColorDrawable
@@ -26,6 +28,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
+import android.webkit.MimeTypeMap
 import android.widget.ImageView
 import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.viewModels
@@ -60,6 +63,7 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createPngTemp
+import one.mixin.android.extension.createWebpTemp
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getParcelableExtraCompat
@@ -437,7 +441,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
         binding.shareImage.setOnClickListener {
             lifecycleScope.launch {
-                val file = withContext(Dispatchers.IO) { resolveLocalFile(item) }
+                val file = withContext(Dispatchers.IO) { resolveLocalFile(item, reencodeUnsupported = true) }
                 if (file != null && file.exists()) {
                     shareMedia(false, Uri.fromFile(file).toString())
                 } else {
@@ -454,7 +458,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         bottomSheet.show()
     }
 
-    private suspend fun resolveLocalFile(item: MessageItem): File? {
+    private suspend fun resolveLocalFile(
+        item: MessageItem,
+        reencodeUnsupported: Boolean,
+    ): File? {
         val coverUrl = item.appCardMediaCoverUrl()
         if (coverUrl != null) {
             return try {
@@ -464,9 +471,25 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     null
                 } else {
                     loader.withDiskCacheFile(result) { cachedFile ->
-                        val destination = createAppCardCoverCacheFile()
+                        val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                        BitmapFactory.decodeFile(cachedFile.absolutePath, options)
+                        val suffix =
+                            when {
+                                options.outMimeType == MimeType.JPEG.toString() -> ".jpg"
+                                options.outMimeType == MimeType.GIF.toString() -> ".gif"
+                                options.outMimeType == MimeType.WEBP.toString() && !reencodeUnsupported -> ".webp"
+                                else -> ".png"
+                            }
+                        val destination = createAppCardCoverCacheFile(suffix)
                         try {
-                            cachedFile.copy(destination)
+                            if (suffix != ".png" || options.outMimeType == MimeType.PNG.toString()) {
+                                cachedFile.copy(destination)
+                            } else {
+                                // Formats like WebP are not accepted as image messages, re-encode to PNG
+                                val bitmap = requireNotNull(BitmapFactory.decodeFile(cachedFile.absolutePath))
+                                destination.outputStream().use { bitmap.compress(Bitmap.CompressFormat.PNG, 100, it) }
+                                bitmap.recycle()
+                            }
                             destination
                         } catch (e: Exception) {
                             destination.delete()
@@ -482,26 +505,27 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         return Uri.parse(path).toFile()
     }
 
-    private fun createAppCardCoverCacheFile(): File {
+    private fun createAppCardCoverCacheFile(suffix: String): File {
         val directory = File(getImageCachePath(), APP_CARD_COVER_CACHE_DIR)
         directory.mkdirs()
         val expiration = System.currentTimeMillis() - APP_CARD_COVER_CACHE_MAX_AGE
         directory.listFiles()?.filter { it.lastModified() < expiration }?.forEach { it.delete() }
-        return File.createTempFile("cover-", ".cache", directory)
+        return File.createTempFile("cover-", suffix, directory)
     }
 
     private fun save(item: MessageItem) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val file = resolveLocalFile(item)
+            val file = resolveLocalFile(item, reencodeUnsupported = false)
             if (file == null || !file.exists()) {
                 withContext(Dispatchers.Main) {
                     toast(R.string.Save_failure)
                 }
                 return@launch
             }
+            val mimeType = item.mediaMimeType ?: MimeTypeMap.getSingleton().getMimeTypeFromExtension(file.extension)
             val outFile =
                 when {
-                    item.mediaMimeType.equals(
+                    mimeType.equals(
                         MimeType.GIF.toString(),
                         true,
                     ) ->
@@ -510,9 +534,15 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                                 false,
                             )
 
-                    item.mediaMimeType.equals(MimeType.PNG.toString()) ->
+                    mimeType.equals(MimeType.PNG.toString()) ->
                         this@MediaPagerActivity.getPublicPicturePath()
                             .createPngTemp(
+                                false,
+                            )
+
+                    mimeType.equals(MimeType.WEBP.toString()) ->
+                        this@MediaPagerActivity.getPublicPicturePath()
+                            .createWebpTemp(
                                 false,
                             )
 

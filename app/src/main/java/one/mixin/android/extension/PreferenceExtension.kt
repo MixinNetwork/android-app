@@ -5,6 +5,7 @@ package one.mixin.android.extension
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.content.SharedPreferences
+import android.os.Build
 import androidx.fragment.app.Fragment
 import androidx.preference.PreferenceManager
 import com.github.salomonbrys.kotson.gsonTypeToken
@@ -15,6 +16,7 @@ import one.mixin.android.Constants.INTERVAL_10_MINS
 import one.mixin.android.crypto.PrivacyPreference.getPrefPinInterval
 import one.mixin.android.crypto.PrivacyPreference.putPrefPinInterval
 import one.mixin.android.util.GsonHelper
+import one.mixin.android.util.isHighPerformanceDevice
 import java.lang.reflect.Type
 
 inline val Fragment.defaultSharedPreferences: SharedPreferences
@@ -22,6 +24,16 @@ inline val Fragment.defaultSharedPreferences: SharedPreferences
 
 inline val Context.defaultSharedPreferences: SharedPreferences
     get() = PreferenceManager.getDefaultSharedPreferences(this)
+
+fun Context.isGlassBottomNavigationEnabled(): Boolean {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return false
+    val preferences = defaultSharedPreferences
+    return if (preferences.contains(Constants.Account.PREF_GLASS_BOTTOM_NAV)) {
+        preferences.getBoolean(Constants.Account.PREF_GLASS_BOTTOM_NAV, false)
+    } else {
+        isHighPerformanceDevice(this)
+    }
+}
 
 inline val Context.scamPreferences: SharedPreferences
     get() = this.sharedPreferences("scam_preferences")

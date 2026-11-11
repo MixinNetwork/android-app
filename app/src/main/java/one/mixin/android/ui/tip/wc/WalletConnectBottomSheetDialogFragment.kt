@@ -13,11 +13,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.fragment.app.FragmentActivity
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.gson.GsonBuilder
 import com.reown.walletkit.client.Wallet
+import com.uber.autodispose.android.lifecycle.scope
+import com.uber.autodispose.autoDispose
 import dagger.hilt.android.AndroidEntryPoint
+import io.reactivex.android.schedulers.AndroidSchedulers
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -41,6 +45,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.tip.Tip
 import one.mixin.android.tip.exception.TipNetworkException
 import one.mixin.android.tip.wc.WCChangeEvent
+import one.mixin.android.tip.wc.WCSessionDeleteEvent
 import one.mixin.android.tip.wc.WalletConnect
 import one.mixin.android.tip.wc.WalletConnect.RequestType
 import one.mixin.android.tip.wc.WalletConnectTIP
@@ -121,6 +126,7 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
     private val viewModel by viewModels<WalletConnectBottomSheetViewModel>()
 
     private val solanaErrorHandler = SolanaErrorHandler()
+    private val destroyScope = scope(Lifecycle.Event.ON_DESTROY)
 
     private var processCompleted = false
 
@@ -207,6 +213,16 @@ class WalletConnectBottomSheetDialogFragment : MixinComposeBottomSheetDialogFrag
                 RequestType.Pay -> Step.Done
             }
         checkV2ChainAndParseSignData()
+        RxBus.listen(WCSessionDeleteEvent::class.java)
+            .observeOn(AndroidSchedulers.mainThread())
+            .autoDispose(destroyScope)
+            .subscribe { event ->
+                if (version == WalletConnect.Version.V2 && requestType == RequestType.SessionRequest && event.topic == topic && step == Step.Sign) {
+                    Timber.d("$TAG session deleted, dismiss topic=$topic")
+                    (parentFragmentManager.findFragmentByTag(PinInputBottomSheetDialogFragment.TAG) as? PinInputBottomSheetDialogFragment)?.dismissAllowingStateLoss()
+                    dismiss()
+                }
+            }
     }
 
     override fun getBottomSheetHeight(view: View): Int {
