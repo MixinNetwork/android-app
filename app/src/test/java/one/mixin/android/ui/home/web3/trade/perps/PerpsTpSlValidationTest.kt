@@ -19,20 +19,25 @@ class PerpsTpSlValidationTest {
     }
 
     @Test
-    fun takeProfitMustPassBothEntryAndCurrentPrice() {
+    fun takeProfitValidatesCurrentPrice() {
         val basis = resolveTpSlCalculationBasis("100", "100", "100", "10", 10, "0.001")!!
         for ((isLong, currentPrice, invalidPrice) in listOf(
-            Triple(true, "90", "95"),
-            Triple(true, "90", "100"),
+            Triple(true, "90", "89"),
+            Triple(true, "90", "90"),
             Triple(true, "110", "105"),
             Triple(true, "110", "110"),
-            Triple(false, "110", "105"),
-            Triple(false, "110", "100"),
+            Triple(false, "110", "111"),
+            Triple(false, "110", "110"),
             Triple(false, "90", "95"),
             Triple(false, "90", "90"),
         )) {
             assertNotNull(validateTpSlPrice(invalidPrice, BigDecimal(currentPrice), null, isLong, true, basis))
         }
+        assertNull(validateTpSlPrice("95", BigDecimal("90"), null, true, true, basis))
+        assertNull(validateTpSlPrice("100", BigDecimal("90"), null, true, true, basis))
+        assertNull(validateTpSlPrice("105", BigDecimal("110"), null, false, true, basis))
+        assertNull(validateTpSlPrice("100", BigDecimal("110"), null, false, true, basis))
+        assertNotNull(validateTpSlPrice("0", BigDecimal("110"), null, false, true, basis))
         assertNull(validateTpSlPrice("100.1", BigDecimal("90"), null, true, true, basis))
         assertNull(validateTpSlPrice("99.9", BigDecimal("110"), null, false, true, basis))
     }
