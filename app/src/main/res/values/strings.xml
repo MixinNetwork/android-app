@@ -586,6 +586,7 @@
     <string name="Get_a_new_wallet">Get a new wallet</string>
     <string name="GIF">GIF</string>
     <string name="giphy_api_rate_limit_exceeded">GIPHY API rate limit exceeded</string>
+    <string name="Glass_navigation_bar">Glass navigation bar</string>
     <string name="Go">Go</string>
     <string name="Go_settings">Go settings</string>
     <string name="Got_it">Got it</string>
@@ -1971,7 +1972,7 @@
     <string name="ssl_cert_invalid">Invalid SSL Certificate. This site may be unsafe.</string>
     <string name="mixin_support">Mixin Support</string>
     <string name="mixin_dial_code" translatable="false">+XIN</string>
-    <string name="ask_me_anything">Ask me anything</string>
+    <string name="real_people_real_support">Real People. Real Support.</string>
     <string name="help_link">https://support.mixin.one/en/category/mixin-messenger-epr6vk</string>
     <string name="url_perps_take_profit">https://support.mixin.one/en/article/how-to-set-take-profit-and-stop-loss-1eoepxc/#1-take-profit</string>
     <string name="url_perps_stop_loss">https://support.mixin.one/en/article/how-to-set-take-profit-and-stop-loss-1eoepxc/#1-stop-loss</string>
