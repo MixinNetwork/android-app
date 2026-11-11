@@ -35,9 +35,9 @@ interface TokenDao : BaseDao<Token> {
             LEFT JOIN tokens_extra ae ON ae.asset_id = a1.asset_id 
            """
         const val POSTFIX =
-            " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
+            " ORDER BY COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(a1.level, 11) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC"
         const val POSTFIX_ASSET_ITEM =
-            " ORDER BY (CASE WHEN a1.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, c.name ASC"
+            " ORDER BY (CASE WHEN a1.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, COALESCE(ae.balance * a1.price_usd, 0) DESC, COALESCE(a1.level, 11) DESC, COALESCE(cast(ae.balance AS REAL), 0) DESC, cast(a1.price_usd AS REAL) DESC, a1.name ASC, c.name ASC"
         const val NOT_PRIMITIVE_ASSET = "(a1.primitive_asset_id IS NULL OR a1.primitive_asset_id = '')"
         const val POSTFIX_ASSET_ITEM_NOT_HIDDEN =
             " WHERE (ae.hidden IS NULL OR NOT ae.hidden) AND $NOT_PRIMITIVE_ASSET $POSTFIX_ASSET_ITEM"

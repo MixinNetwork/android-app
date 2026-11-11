@@ -21,7 +21,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
         """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
         WHERE t.wallet_id = :walletId 
-        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
+        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, t.level DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
     """
     )
     fun web3TokenItems(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
@@ -30,7 +30,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
         """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
         WHERE t.wallet_id = :walletId AND t.level >= :level
-        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
+        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, t.level DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
     """
     )
     fun web3TokenItems(walletId: String, level:Int, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
@@ -49,7 +49,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
         LEFT JOIN chains c ON c.chain_id = t.chain_id 
         LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
         WHERE t.wallet_id = :walletId AND (te.hidden != 1 OR te.hidden IS NULL) 
-        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
+        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, t.level DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
     """)
     fun web3TokenItemsExcludeHidden(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
 
@@ -58,7 +58,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
         LEFT JOIN chains c ON c.chain_id = t.chain_id
         LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
         WHERE t.wallet_id = :walletId AND (te.hidden != 1 OR te.hidden IS NULL)
-        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
+        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, t.level DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
         LIMIT :limit
     """)
     fun walletHomeWeb3TokenPreview(
@@ -90,7 +90,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
         LEFT JOIN chains c ON c.chain_id = t.chain_id
         LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
         WHERE t.wallet_id = :walletId AND (te.hidden != 1 OR te.hidden IS NULL)
-        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
+        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, t.level DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
         LIMIT 3
     """)
     fun topWeb3TokenItems(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
@@ -100,7 +100,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
         LEFT JOIN chains c ON c.chain_id = t.chain_id 
         LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
         WHERE t.wallet_id = :walletId AND t.amount > 0 AND (te.hidden != 1 OR te.hidden IS NULL) 
-        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
+        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, t.level DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
     """)
     fun web3TokenItemsExcludeHiddenWithBalance(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
 
@@ -109,7 +109,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
     fun web3TokenItemsExcludeHiddenRaw(query: RoomRawQuery): List<Web3TokenItem>
 
     @SuppressWarnings(RoomWarnings.QUERY_MISMATCH)
-    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE te.hidden = 1 AND (:walletId IS NULL OR t.wallet_id = :walletId) ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC""")
+    @Query("""SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id WHERE te.hidden = 1 AND (:walletId IS NULL OR t.wallet_id = :walletId) ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, t.level DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC""")
     fun hiddenAssetItems(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
 
     @Query("SELECT * FROM tokens WHERE amount * price_usd > 0 AND wallet_id = :walletId ORDER BY amount * price_usd")
@@ -189,7 +189,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
         LEFT JOIN chains c ON c.chain_id = t.chain_id LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
         WHERE t.wallet_id IN (:walletIds) 
         GROUP BY t.asset_id
-        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
+        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, t.level DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
     """
     )
     fun web3TokenItemsByWalletIds(walletIds: List<String>, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
@@ -199,7 +199,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
         LEFT JOIN chains c ON c.chain_id = t.chain_id 
         LEFT JOIN tokens_extra te ON te.asset_id = t.asset_id AND te.wallet_id = t.wallet_id
         GROUP BY t.asset_id
-        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
+        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, t.level DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
     """
     )
     fun web3TokenItemsAll(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
@@ -214,7 +214,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
             SELECT DISTINCT receive_asset_id FROM orders
         )
         GROUP BY t.asset_id
-        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
+        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, t.level DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
     """
     )
     fun web3TokenItemsFromAllOrders(defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
@@ -229,7 +229,7 @@ interface Web3TokenDao : BaseDao<Web3Token> {
             SELECT DISTINCT receive_asset_id FROM orders WHERE wallet_id IN (:walletIds)
         )
         GROUP BY t.asset_id
-        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
+        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, t.level DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
     """
     )
     fun web3TokenItemsFromOrdersByWalletIds(walletIds: List<String>, defaultIconUrl: String = Constants.DEFAULT_ICON_URL): LiveData<List<Web3TokenItem>>
