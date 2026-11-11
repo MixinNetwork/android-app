@@ -31,6 +31,8 @@ import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.home.web3.Web3ViewModel
 import one.mixin.android.ui.home.web3.adapter.SearchWeb3Adapter
 import one.mixin.android.ui.home.web3.adapter.Web3SearchCallback
+import one.mixin.android.util.assetListComparator
+import java.math.BigDecimal
 import java.util.concurrent.TimeUnit
 
 @AndroidEntryPoint
@@ -138,9 +140,7 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             }
             val tokens = withContext(Dispatchers.IO) {
                 val allTokens = viewModel.web3TokensExcludeHidden(walletId!!).value ?: emptyList()
-                allTokens.sortedByDescending {
-                    runCatching { it.balance.toBigDecimal() * it.priceUsd.toBigDecimal() }.getOrDefault(0.toBigDecimal())
-                }
+                allTokens.sortByQuery("")
             }
             
 
@@ -190,24 +190,22 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                     token.name.contains(query, ignoreCase = true) ||
                         token.symbol.contains(query, ignoreCase = true) ||
                         token.chainName?.contains(query, ignoreCase = true) == true
-                } ?: emptyList()
+                }?.sortByQuery(query) ?: emptyList()
             }
 
             searchAdapter.submitList(localTokens)
-            
-            if (localTokens.isEmpty()) {
-                isSearchingRemote = true
-                searchRemote(query)
-            } else {
+            if (localTokens.isNotEmpty()) {
                 binding.rvVa.displayedChild = POS_SEARCH
             }
+            isSearchingRemote = true
+            searchRemote(query)
         }
     }
     
     private suspend fun searchRemote(query: String) {
         if (query.length < 2) {
             binding.pb.isVisible = false
-            binding.rvVa.displayedChild = POS_EMPTY
+            if (searchAdapter.currentList.isEmpty()) binding.rvVa.displayedChild = POS_EMPTY
             return
         }
         
@@ -224,8 +222,9 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                     (it.chainId in Constants.Web3EvmChainIds || it.chainId == Constants.ChainId.SOLANA_CHAIN_ID || it.chainId in Constants.Web3UtxoChainIds) &&
                         (it.chainId != Constants.ChainId.Litecoin || hasLitecoinAddress)
                 }
-                val remoteWeb3Tokens = filteredTokens.map { tokenItem ->
+                val remoteWeb3Tokens = filteredTokens.mapNotNull { tokenItem ->
                     val t = viewModel.web3TokenItemById(walletId!!, tokenItem.assetId)
+                    if (t != null && t.hidden == true && t.level < Constants.AssetLevel.UNKNOWN) return@mapNotNull null
                     val c = viewModel.web3TokenItemById(walletId!!, tokenItem.chainId)
                     Web3TokenItem(
                         walletId = walletId!!,
@@ -243,23 +242,23 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         chainIcon = tokenItem.chainIconUrl ?: t?.chainIcon ?: c?.iconUrl,
                         chainName = tokenItem.chainName ?: c?.name,
                         chainSymbol = tokenItem.chainSymbol ?: c?.chainSymbol,
-                        hidden = false,
-                        level = tokenItem.level ?: Constants.AssetLevel.UNKNOWN
+                        hidden = t?.hidden ?: false,
+                        level = tokenItem.level ?: t?.level ?: Constants.AssetLevel.UNKNOWN
                     )
                 }
                 val currentList = searchAdapter.currentList
 
-                val combinedList = currentList + remoteWeb3Tokens.filter { remote ->
-                    currentList.none { it.assetId == remote.assetId }
-                }
+                val combinedList = (remoteWeb3Tokens + currentList.filter { local ->
+                    remoteWeb3Tokens.none { it.assetId == local.assetId }
+                }).sortByQuery(query)
 
                 searchAdapter.submitList(combinedList)
                 binding.rvVa.displayedChild = POS_SEARCH
-            } else if (isSearchingRemote) {
+            } else if (isSearchingRemote && searchAdapter.currentList.isEmpty()) {
                 binding.rvVa.displayedChild = POS_EMPTY
             }
         } catch (e: Exception) {
-            if (isSearchingRemote) {
+            if (isSearchingRemote && searchAdapter.currentList.isEmpty()) {
                 if (isAdded) {
                     binding.rvVa.displayedChild = POS_EMPTY
                 }
@@ -270,6 +269,19 @@ class WalletSearchWeb3Fragment : BaseFragment() {
             }
         }
     }
+
+    private fun List<Web3TokenItem>.sortByQuery(query: String) =
+        sortedWith(
+            assetListComparator(
+                query = query,
+                symbol = { it.symbol },
+                balance = { it.balance.toBigDecimalOrNull() ?: BigDecimal.ZERO },
+                price = { it.priceUsd.toBigDecimalOrNull() ?: BigDecimal.ZERO },
+                level = { it.level },
+                name = { it.name },
+                chainName = { it.chainName.orEmpty() },
+            ),
+        )
 
     private val callback =
         object : Web3SearchCallback {

@@ -1,5 +1,6 @@
 package one.mixin.android.ui.wallet
 
+import one.mixin.android.Constants
 import one.mixin.android.util.assetListComparator
 import one.mixin.android.vo.safe.TokenItem
 import java.math.BigDecimal
@@ -10,7 +11,10 @@ fun sortQueryAsset(
     remoteAssets: List<TokenItem>,
 ): List<TokenItem> =
     (remoteAssets + localAssets.orEmpty().filterNot { local -> remoteAssets.any { it.assetId == local.assetId } })
-        .filter { it.primitiveAssetId.isNullOrEmpty() }
+        .filter {
+            it.primitiveAssetId.isNullOrEmpty() &&
+                ((it.level ?: Constants.AssetLevel.VERIFIED) >= Constants.AssetLevel.UNKNOWN || it.hidden != true)
+        }
         .sortedWith(
             assetListComparator(
                 query = query,

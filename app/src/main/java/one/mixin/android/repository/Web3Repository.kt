@@ -203,16 +203,15 @@ constructor(
 
     fun topWeb3TokenItems(walletId: String) = web3TokenDao.topWeb3TokenItems(walletId)
 
-    fun web3TokensExcludeHiddenRaw(walletId: String, defaultIconUrl: String = Constants.DEFAULT_ICON_URL) = web3TokenDao.web3TokenItemsExcludeHiddenRaw(
+    fun web3TokensExcludeHiddenRaw(walletId: String) = web3TokenDao.web3TokenItemsExcludeHiddenRaw(
         RoomRawQuery(
             """SELECT t.*, c.icon_url as chain_icon_url, c.name as chain_name, c.symbol as chain_symbol, te.hidden FROM tokens t
         LEFT JOIN chains c ON c.chain_id = t.chain_id 
         LEFT JOIN tokens_extra te ON te.wallet_id = t.wallet_id AND te.asset_id = t.asset_id
         WHERE t.wallet_id = :walletId AND (te.hidden != 1 OR te.hidden IS NULL) 
-        ORDER BY (CASE WHEN t.icon_url = :defaultIconUrl THEN 1 ELSE 0 END) ASC, t.amount * t.price_usd DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
+        ORDER BY t.amount * t.price_usd DESC, t.level DESC, cast(t.amount AS REAL) DESC, cast(t.price_usd AS REAL) DESC, t.name ASC, c.name ASC, t.rowid ASC
         """, onBindStatement = {
                 it.bindText(1, walletId)
-                it.bindText(2, defaultIconUrl)
             })
     )
 

@@ -475,6 +475,12 @@ class SwapTokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
                     } else {
                         this
                     }
+                }?.filterNot { ra ->
+                    if (inMixin) {
+                        swapViewModel.findToken(ra.assetId)?.let { it.hidden == true && (it.level ?: Constants.AssetLevel.VERIFIED) < Constants.AssetLevel.UNKNOWN }
+                    } else {
+                        swapViewModel.web3TokenItemById(ra.walletId ?: "", ra.assetId)?.let { it.hidden == true && it.level < Constants.AssetLevel.UNKNOWN }
+                    } == true
                 }?.map { ra ->
                     (localTokens.find { swapToken -> swapToken.assetId == ra.assetId && swapToken.chain.chainId == ra.chain.chainId } ?: (
                             if (inMixin) {

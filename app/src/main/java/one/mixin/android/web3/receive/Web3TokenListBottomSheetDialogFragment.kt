@@ -410,10 +410,10 @@ class Web3TokenListBottomSheetDialogFragment : MixinBottomSheetDialogFragment() 
         val remoteAssets = fuzzyResults.filter {
             isWeb3TransferSupported(it.chainId) &&
                 (it.chainId != Constants.ChainId.Litecoin || hasLitecoinAddress)
-        }.map { item ->
+        }.mapNotNull { item ->
             bottomViewModel.web3TokenItemById(walletId ?: "", item.assetId).let { local ->
-                if (local != null && (local.level >= 10 || local.hidden == false)) {
-                    local
+                if (local != null) {
+                    local.takeIf { it.level >= Constants.AssetLevel.UNKNOWN || it.hidden != true }
                 } else {
                     Web3TokenItem(
                         walletId = walletId ?: "",
