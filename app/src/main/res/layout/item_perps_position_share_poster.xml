@@ -53,11 +53,11 @@
                 android:includeFontPadding="false"
                 android:maxLines="1"
                 android:textColor="@color/white"
-                android:textSize="32sp"
+                android:textSize="32dp"
                 android:textStyle="bold"
-                app:autoSizeMaxTextSize="32sp"
-                app:autoSizeMinTextSize="16sp"
-                app:autoSizeStepGranularity="1sp"
+                app:autoSizeMaxTextSize="32dp"
+                app:autoSizeMinTextSize="16dp"
+                app:autoSizeStepGranularity="1dp"
                 app:autoSizeTextType="uniform"
                 app:layout_constraintEnd_toStartOf="@id/trend_image"
                 app:layout_constraintHorizontal_bias="0"
@@ -108,7 +108,7 @@
                 android:textColor="@color/white"
                 android:paddingTop="3dp"
                 android:paddingBottom="3dp"
-                android:textSize="12sp"
+                android:textSize="12dp"
                 tools:text="做多 ETH" />
 
             <TextView
@@ -123,7 +123,7 @@
                 android:paddingTop="3dp"
                 android:paddingBottom="3dp"
                 android:textColor="@color/white"
-                android:textSize="12sp"
+                android:textSize="12dp"
                 tools:text="40x" />
 
             <LinearLayout
@@ -144,7 +144,7 @@
                     android:includeFontPadding="false"
                     android:text="@string/Entry_Price"
                     android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="12dp" />
 
                 <TextView
                     android:id="@+id/entry_value_tv"
@@ -153,7 +153,7 @@
                     android:layout_marginTop="2dp"
                     android:includeFontPadding="false"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="14dp"
                     android:textFontWeight="600"
                     tools:text="$45,328.6" />
 
@@ -165,7 +165,7 @@
                     android:includeFontPadding="false"
                     android:text="@string/perps_current_price"
                     android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="12dp" />
 
                 <TextView
                     android:id="@+id/latest_value_tv"
@@ -174,7 +174,7 @@
                     android:layout_marginTop="2dp"
                     android:includeFontPadding="false"
                     android:textColor="@color/white"
-                    android:textSize="14sp"
+                    android:textSize="14dp"
                     android:textFontWeight="600"
                     android:layout_marginBottom="8dp"
                     tools:text="$3,412.23" />
@@ -225,7 +225,7 @@
                     android:includeFontPadding="false"
                     android:text="@string/Mixin"
                     android:textColor="@color/white"
-                    android:textSize="16sp"
+                    android:textSize="16dp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -237,7 +237,7 @@
                     android:includeFontPadding="false"
                     android:text="@string/share_desc"
                     android:textColor="@color/white"
-                    android:textSize="12sp" />
+                    android:textSize="12dp" />
             </LinearLayout>
 
             <FrameLayout

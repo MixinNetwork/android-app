@@ -16,7 +16,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.unit.Density
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.doOnPreDraw
@@ -356,54 +359,57 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         isChartContentSet = true
 
         binding.marketChart.setContent {
-            val perps = perpsMarket
-            if (perps != null) {
-                MixinAppTheme {
-                    CandleChart(
-                        marketId = perps.marketId,
-                        timeFrame = selectedType,
-                        marketPrice = perps.last,
-                        priceScale = perps.priceScale,
-                        interactive = false,
+            // The poster ignores the system font size, matching its XML text.
+            CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, 1f)) {
+                val perps = perpsMarket
+                if (perps != null) {
+                    MixinAppTheme {
+                        CandleChart(
+                            marketId = perps.marketId,
+                            timeFrame = selectedType,
+                            marketPrice = perps.last,
+                            priceScale = perps.priceScale,
+                            interactive = false,
+                            onLoading = { loading ->
+                                isChartLoading = loading
+                                updateLoadingState()
+                            },
+                        )
+                    }
+                } else {
+                    Market(
+                        selectedType,
+                        chartAssetId,
+                        dataChange = { percentageChange ->
+                            val displayChange = if (selectedType == "1D") {
+                                marketItem.priceChangePercentage24H.toFloatOrNull()
+                            } else {
+                                percentageChange
+                            }
+                            bindRiseText(displayChange)
+                        },
+                        onHighlightChange = { price, percentageChange ->
+                            if (price == null) {
+                                binding.priceValue.text = formatMarketPrice(marketItem.currentPrice)
+                                val displayChange = if (selectedType == "1D") {
+                                    marketItem.priceChangePercentage24H.toFloatOrNull()
+                                } else {
+                                    percentageChange
+                                }
+                                bindRiseText(displayChange)
+                            } else {
+                                binding.priceValue.text = formatMarketPrice(price)
+                                bindRiseText(percentageChange)
+                            }
+                        },
                         onLoading = { loading ->
                             isChartLoading = loading
                             updateLoadingState()
                         },
+                        interactive = false,
                     )
                 }
-                return@setContent
             }
-            Market(
-                selectedType,
-                chartAssetId,
-                dataChange = { percentageChange ->
-                    val displayChange = if (selectedType == "1D") {
-                        marketItem.priceChangePercentage24H.toFloatOrNull()
-                    } else {
-                        percentageChange
-                    }
-                    bindRiseText(displayChange)
-                },
-                onHighlightChange = { price, percentageChange ->
-                    if (price == null) {
-                        binding.priceValue.text = formatMarketPrice(marketItem.currentPrice)
-                        val displayChange = if (selectedType == "1D") {
-                            marketItem.priceChangePercentage24H.toFloatOrNull()
-                        } else {
-                            percentageChange
-                        }
-                        bindRiseText(displayChange)
-                    } else {
-                        binding.priceValue.text = formatMarketPrice(price)
-                        bindRiseText(percentageChange)
-                    }
-                },
-                onLoading = { loading ->
-                    isChartLoading = loading
-                    updateLoadingState()
-                },
-                interactive = false,
-            )
         }
     }
 
