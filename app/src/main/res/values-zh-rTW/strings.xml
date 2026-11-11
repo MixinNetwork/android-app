@@ -2028,9 +2028,9 @@
     <string name="Check_Backup">檢查備份</string>
     <string name="Send_Collectible">傳送藏品</string>
     <string name="ssl_cert_invalid">SSL 憑證無效。該網站可能不安全。</string>
-    <string name="mixin_support">Mixin 支持</string>
+    <string name="mixin_support">Mixin 客服</string>
     <string name="mixin_dial_code" translatable="false">+XIN</string>
-    <string name="ask_me_anything">有什麼問題可以問我</string>
+    <string name="real_people_real_support">真人客服，隨時為您服務。</string>
     <string name="help_link">https://support.mixin.one/en/category/mixin-messenger-epr6vk</string>
     <string name="url_perps_take_profit">https://support.mixin.one/en/article/how-to-set-take-profit-and-stop-loss-1eoepxc/#1-take-profit</string>
     <string name="url_perps_stop_loss">https://support.mixin.one/en/article/how-to-set-take-profit-and-stop-loss-1eoepxc/#1-stop-loss</string>
