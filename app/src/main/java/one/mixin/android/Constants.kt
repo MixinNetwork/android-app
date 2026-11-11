@@ -43,6 +43,7 @@ object Constants {
         const val MARKETPLACE = "https://rune.fan/items/"
         const val SPACE = "https://mixin.space/tx/"
         const val CUSTOMER_SERVICE = "https://mixin.one/support"
+        const val TRADE_PRO = "mixin://apps/af82d6d4-aec8-419a-8f7d-edfecf7a7725?action=open&page=perps-pro"
         const val SAFE_RENEW_PLAN = "mixin://apps/b5418449-9ed6-4979-a690-82690949c542?action=open&modal=plan&plan=renew"
     }
 
@@ -92,6 +93,7 @@ object Constants {
         const val PREF_APP_ENTER_BACKGROUND = "pref_app_enter_background"
         const val PREF_DEVICE_SDK = "pref_device_sdk"
         const val PREF_TEXT_SIZE = "pref_text_size"
+        const val PREF_GLASS_BOTTOM_NAV = "pref_glass_bottom_nav"
         const val PREF_ATTACHMENT = "pref_attachment"
         const val PREF_CLEANUP_THUMB = "pref_cleanup_thumb"
         const val PREF_CLEANUP_QUOTE_CONTENT = "pref_cleanup_quote_content"
@@ -128,7 +130,7 @@ object Constants {
 
         const val PREF_TRADE_LIMIT_ORDER_BADGE_DISMISSED = "pref_trade_limit_order_badge_dismissed"
         const val PREF_TRADE_PERPETUAL_BADGE_DISMISSED = "pref_trade_perpetual_badge_dismissed"
-        const val PREF_TRADE_PERPETUAL_ORDER_BADGE_DISMISSED = "pref_trade_perpetual_order_badge_dismissed"
+        const val PREF_TRADE_PRO_BADGE_DISMISSED = "pref_trade_pro_badge_dismissed"
         const val PREF_PERPS_ACCEPTED_ASSET_IDS = "pref_perps_accepted_asset_ids"
         const val PREF_PERPS_ACCEPTED_ASSET_IDS_ORDERED = "pref_perps_accepted_asset_ids_ordered"
         const val PREF_PERPS_ACCEPTED_ASSET_IDS_V2 = "pref_perps_accepted_asset_ids_v2"

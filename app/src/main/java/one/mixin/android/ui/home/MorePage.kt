@@ -89,8 +89,8 @@ internal fun MorePage(
     MixinAppTheme {
         val profileNameColor = MixinAppTheme.colors.textMinor.toArgb()
         LazyColumn(
-            modifier = Modifier.fillMaxSize().background(MixinAppTheme.colors.background),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 16.dp),
+            modifier = Modifier.fillMaxSize().homeNavigationScroll().background(MixinAppTheme.colors.background),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(start = 16.dp, end = 16.dp, top = 10.dp, bottom = 16.dp + homeNavigationInset()),
         ) {
             user?.let {
                 item {
