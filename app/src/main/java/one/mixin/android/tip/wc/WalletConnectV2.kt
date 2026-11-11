@@ -717,6 +717,7 @@ object WalletConnectV2 : WalletConnect() {
                 amountBtc = amountBtc,
                 localUtxos = localUtxos,
                 feeRate = feeRate,
+                minFeeBtc = confirmedFee.minFeeBtc,
             )
         require(confirmedFee.permitsFee(built.feeBtc)) { feeError }
         val signed = signBitcoinTransaction(built.rawHex, key, localUtxos)

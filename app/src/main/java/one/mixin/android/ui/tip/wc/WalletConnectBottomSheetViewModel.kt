@@ -109,19 +109,21 @@ class WalletConnectBottomSheetViewModel
                 check(response.isSuccess && estimate != null) {
                     MixinApplication.appContext.getString(R.string.bitcoin_fee_confirmation_required)
                 }
-                val feeRate = WcBitcoinFeeEstimate.cappedFeeRate(
-                    estimate.feeRate?.toBigDecimal() ?: BigDecimal.ONE,
-                    estimate.minFee?.toBigDecimal(),
-                    initial.virtualSize,
-                )
+                val feeRate = WcBitcoinFeeEstimate.cappedFeeRate(estimate.feeRate?.toBigDecimal() ?: BigDecimal.ONE)
+                val minFeeBtc = estimate.minFee?.toBigDecimalOrNull()
                 val built = BtcTransactionBuilder.buildSendTransaction(
                     fromAddress = address,
                     toAddress = request.recipientAddress,
                     amountBtc = request.amountBtc(),
                     localUtxos = localUtxos,
                     feeRate = feeRate,
+                    minFeeBtc = minFeeBtc,
                 )
-                WcBitcoinFeeEstimate(feeRate, built.feeBtc)
+                val fee = WcBitcoinFeeEstimate(feeRate, built.feeBtc, minFeeBtc)
+                check(fee.permitsFee(built.feeBtc)) {
+                    MixinApplication.appContext.getString(R.string.bitcoin_fee_confirmation_required)
+                }
+                fee
             }
 
         suspend fun sendTransaction(

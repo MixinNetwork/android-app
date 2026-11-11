@@ -8,31 +8,19 @@ import kotlin.test.assertTrue
 
 class WcBitcoinFeeEstimateTest {
     @Test
-    fun capsServerRateAndMinimumFee() {
-        assertEquals(BigDecimal("10"), WcBitcoinFeeEstimate.cappedFeeRate(BigDecimal.TEN, null, 100))
-        assertEquals(BigDecimal("100"), WcBitcoinFeeEstimate.cappedFeeRate(BigDecimal("1000"), null, 100))
-        assertEquals(BigDecimal("100"), WcBitcoinFeeEstimate.cappedFeeRate(BigDecimal.ONE, BigDecimal.ONE, 100))
-        assertEquals(0, BigDecimal("20").compareTo(WcBitcoinFeeEstimate.cappedFeeRate(BigDecimal.ONE, BigDecimal("0.00002"), 100)))
+    fun capsServerFeeRate() {
+        assertEquals(0, BigDecimal("10").compareTo(WcBitcoinFeeEstimate.cappedFeeRate(BigDecimal.TEN)))
+        assertEquals(0, BigDecimal("100").compareTo(WcBitcoinFeeEstimate.cappedFeeRate(BigDecimal("1000"))))
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun rejectsNonPositiveRate() {
-        WcBitcoinFeeEstimate.cappedFeeRate(BigDecimal.ZERO, null, 100)
-    }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun rejectsNegativeMinimumFee() {
-        WcBitcoinFeeEstimate.cappedFeeRate(BigDecimal.ONE, BigDecimal("-1"), 100)
-    }
-
-    @Test(expected = IllegalArgumentException::class)
-    fun rejectsInvalidVirtualSize() {
-        WcBitcoinFeeEstimate.cappedFeeRate(BigDecimal.ONE, null, 0)
+        WcBitcoinFeeEstimate.cappedFeeRate(BigDecimal.ZERO)
     }
 
     @Test
     fun rejectsIncreasedOrInvalidFinalFee() {
-        val confirmed = WcBitcoinFeeEstimate(BigDecimal.TEN, BigDecimal("0.00001"))
+        val confirmed = WcBitcoinFeeEstimate(BigDecimal.TEN, BigDecimal("0.00001"), null)
         assertTrue(confirmed.permitsFee(BigDecimal("0.00001000")))
         assertTrue(confirmed.permitsFee(BigDecimal("0.00000999")))
         assertFalse(confirmed.permitsFee(BigDecimal("0.00001001")))
@@ -41,5 +29,12 @@ class WcBitcoinFeeEstimateTest {
         assertFalse(confirmed.copy(feeRate = BigDecimal("101")).permitsFee(confirmed.feeBtc))
         assertFalse(confirmed.copy(feeRate = BigDecimal.ZERO).permitsFee(confirmed.feeBtc))
         assertFalse(confirmed.copy(feeBtc = BigDecimal.ZERO).permitsFee(confirmed.feeBtc))
+    }
+
+    @Test
+    fun rejectsFeeBelowServerMinimum() {
+        val confirmed = WcBitcoinFeeEstimate(BigDecimal.TEN, BigDecimal("0.00001"), BigDecimal("0.000005"))
+        assertFalse(confirmed.permitsFee(BigDecimal("0.000004")))
+        assertTrue(confirmed.permitsFee(BigDecimal("0.000005")))
     }
 }
