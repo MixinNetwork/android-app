@@ -265,4 +265,6 @@
     <color name="text_blue">#0D94FC</color>
     <color name="home_navigation_shadow_ambient">#0A000000</color>
     <color name="home_navigation_shadow_spot">#0A000000</color>
+    <color name="home_navigation_glass_shadow_ambient">#FF000000</color>
+    <color name="home_navigation_glass_shadow_spot">#60000000</color>
 </resources>
