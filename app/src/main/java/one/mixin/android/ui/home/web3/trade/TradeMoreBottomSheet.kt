@@ -50,6 +50,8 @@ fun TradeMoreBottomSheet(
     onOrders: (String) -> Unit,
     onActivity: () -> Unit,
     onTradePro: () -> Unit,
+    onTradingGuide: () -> Unit,
+    onContactSupport: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val topInset = with(LocalDensity.current) { WindowInsets.safeDrawing.getTop(this).toDp() }
@@ -97,6 +99,11 @@ fun TradeMoreBottomSheet(
                     title = stringResource(R.string.Trade_Limit_Orders),
                     trailingText = if (pendingLimitCount > 0) "$pendingLimitCount ${stringResource(R.string.State_Pending)}" else null,
                 ) { onOrders("limit") }
+            }
+            Spacer(Modifier.height(10.dp))
+            TradeMoreGroup {
+                TradeMoreRow(stringResource(R.string.Trading_Guide), onClick = onTradingGuide)
+                TradeMoreRow(stringResource(R.string.Contact_Support), onClick = onContactSupport)
             }
             if (walletId == null) {
                 Spacer(Modifier.height(10.dp))

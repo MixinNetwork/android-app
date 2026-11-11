@@ -50,6 +50,7 @@ import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapToken
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.extension.defaultSharedPreferences
+import one.mixin.android.extension.openUrl
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.session.Session
 import one.mixin.android.ui.components.TabItem
@@ -99,7 +100,7 @@ fun TradePage(
     onLimitOrderClick: (String) -> Unit,
     onShowTradingGuideIfNeeded: (Int) -> Unit,
     onShowTradingGuide: (Int) -> Unit,
-    onShowMore: (String?) -> Unit,
+    onShowMore: (String?, () -> Unit, () -> Unit) -> Unit,
     onRecommendedMarketClick: (MarketItem) -> Unit,
     onRecommendedMarketViewAllClick: (SwapRecommendedMarketType, Boolean) -> Unit,
     onShowMarketList: (Boolean) -> Unit,
@@ -263,7 +264,7 @@ fun TradePage(
                 IconButton(onClick = {
                     keyboardController?.hide()
                     focusManager.clearFocus()
-                    if (!isProBadgeDismissed) {
+                    if (walletId == null && !isProBadgeDismissed) {
                         isProBadgeDismissed = true
                         context.defaultSharedPreferences.putBoolean(proBadgeKey, true)
                     }
@@ -274,7 +275,25 @@ fun TradePage(
                             else -> "swap"
                         }
                     )
-                    onShowMore(walletDisplayName)
+                    onShowMore(
+                        walletDisplayName,
+                        { onShowTradingGuide(pagerState.currentPage) },
+                        {
+                            val source = when {
+                                perpetualTabIndex != null && pagerState.currentPage == perpetualTabIndex ->
+                                    AnalyticsTracker.CustomerServiceSource.PERPS_HOME_MENU
+                                pagerState.currentPage == 1 ->
+                                    AnalyticsTracker.CustomerServiceSource.TRADE_ADVANCED_HOME_MENU
+                                else ->
+                                    AnalyticsTracker.CustomerServiceSource.TRADE_SIMPLE_HOME_MENU
+                            }
+                            context.openUrl(
+                                Constants.HelpLink.CUSTOMER_SERVICE,
+                                source = source,
+                                wallet = AnalyticsTracker.TradeWallet.WEB3,
+                            )
+                        },
+                    )
                 }) {
                     Icon(
                         painter = painterResource(R.drawable.ic_more_horiz_black_24dp),
@@ -282,7 +301,7 @@ fun TradePage(
                         tint = MixinAppTheme.colors.icon,
                     )
                 }
-                if (!isProBadgeDismissed) {
+                if (walletId == null && !isProBadgeDismissed) {
                     Box(
                         modifier = Modifier
                             .align(Alignment.TopEnd)

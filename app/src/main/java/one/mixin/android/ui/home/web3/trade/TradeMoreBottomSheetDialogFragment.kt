@@ -48,6 +48,9 @@ class TradeMoreBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
 
     private val swapViewModel by viewModels<SwapViewModel>()
 
+    var onTradingGuideClick: (() -> Unit)? = null
+    var onContactSupportClick: (() -> Unit)? = null
+
     override fun getTheme() = R.style.AppTheme_Dialog
 
     @SuppressLint("RestrictedApi")
@@ -118,6 +121,14 @@ class TradeMoreBottomSheetDialogFragment : MixinComposeBottomSheetDialogFragment
                     Constants.HelpLink.TRADE_PRO.openAsUrlOrWeb(
                         activity, null, activity.supportFragmentManager, activity.lifecycleScope,
                     )
+                },
+                onTradingGuide = {
+                    dismiss()
+                    onTradingGuideClick?.invoke()
+                },
+                onContactSupport = {
+                    dismiss()
+                    onContactSupportClick?.invoke()
                 },
                 onDismiss = { dismiss() },
             )

@@ -533,10 +533,12 @@ class TradeFragment : BaseFragment() {
                                         }
                                     }
                                 },
-                                onShowMore = { walletName ->
+                                onShowMore = { walletName, openGuide, openSupport ->
                                     this@apply.hideKeyboard()
-                                    TradeMoreBottomSheetDialogFragment.newInstance(walletId, walletName)
-                                        .show(parentFragmentManager, TradeMoreBottomSheetDialogFragment.TAG)
+                                    TradeMoreBottomSheetDialogFragment.newInstance(walletId, walletName).apply {
+                                        onTradingGuideClick = openGuide
+                                        onContactSupportClick = openSupport
+                                    }.show(parentFragmentManager, TradeMoreBottomSheetDialogFragment.TAG)
                                 },
                             pop = {
                                 navigateUp(navController)
