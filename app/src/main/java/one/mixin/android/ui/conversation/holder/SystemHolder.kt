@@ -1,7 +1,6 @@
 package one.mixin.android.ui.conversation.holder
 
 import android.content.Context
-import android.content.res.ColorStateList
 import android.graphics.Color
 import android.text.TextUtils
 import androidx.core.content.ContextCompat
@@ -37,21 +36,23 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
         binding.chatInfo.isLongClickable = false
         binding.chatInfo.maxLines = if (isDisappearing) Int.MAX_VALUE else 2
         binding.chatInfo.ellipsize = if (isDisappearing) null else TextUtils.TruncateAt.END
-        binding.chatInfo.backgroundTintList = if (isDisappearing) {
-            ColorStateList.valueOf(
-                ContextCompat.getColor(
-                    context,
-                    if ((messageItem.content?.toLongOrNull() ?: 0L) > 0L) {
-                        R.color.disappearing_message_background
-                    } else if (isNightMode) {
-                        R.color.bgGrayNight
-                    } else {
-                        R.color.disappearing_message_disabled_background
-                    },
-                ),
+        binding.chatInfo.apply {
+            val start = paddingStart
+            val top = paddingTop
+            val end = paddingEnd
+            val bottom = paddingBottom
+            setBackgroundResource(
+                if (!isDisappearing) {
+                    R.drawable.chat_bubble_info
+                } else if ((messageItem.content?.toLongOrNull() ?: 0L) > 0L) {
+                    R.drawable.chat_bubble_disappearing
+                } else if (isNightMode) {
+                    R.drawable.chat_bubble_disappearing_off_night
+                } else {
+                    R.drawable.chat_bubble_disappearing_off
+                },
             )
-        } else {
-            null
+            setPaddingRelative(start, top, end, bottom)
         }
         binding.chatInfo.setTextColor(
             ContextCompat.getColor(

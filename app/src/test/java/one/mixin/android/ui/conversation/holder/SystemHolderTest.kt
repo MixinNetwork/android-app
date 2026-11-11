@@ -8,7 +8,6 @@ import android.view.View
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.content.ContextCompat
 import androidx.test.core.app.ApplicationProvider
 import com.google.gson.Gson
 import one.mixin.android.MixinApplication
@@ -28,6 +27,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
+import org.robolectric.Shadows.shadowOf
 import org.robolectric.annotation.Config
 import org.robolectric.util.ReflectionHelpers
 import kotlin.test.assertEquals
@@ -87,8 +87,6 @@ class SystemHolderTest {
             if (id == R.array.name_colors) intArrayOf(Color.BLACK) else super.getIntArray(id)
 
         override fun getColor(id: Int, theme: Theme?): Int = when (id) {
-            R.color.disappearing_message_background -> Color.MAGENTA
-            R.color.disappearing_message_disabled_background, R.color.bgGrayNight -> Color.GRAY
             R.color.textPrimary -> Color.BLACK
             R.color.textPrimaryNight -> Color.WHITE
             R.color.colorBlue -> Color.BLUE
@@ -144,7 +142,7 @@ class SystemHolderTest {
     fun enabledDisabledAndLegacyNoticesShowActorAndMatchingState() {
         holder.bind(message("86400", "me"), false, false, true, listener)
         assertEquals("enabled(self,1 day-unit)", holder.binding.chatInfo.text.toString())
-        assertEquals(ContextCompat.getColor(context, R.color.disappearing_message_background), holder.binding.chatInfo.backgroundTintList?.defaultColor)
+        assertEquals(R.drawable.chat_bubble_disappearing, shadowOf(holder.binding.chatInfo.background).createdFromResId)
         assertEquals(Int.MAX_VALUE, holder.binding.chatInfo.maxLines)
         assertNull(holder.binding.chatInfo.ellipsize)
 
@@ -153,7 +151,7 @@ class SystemHolderTest {
 
         holder.bind(message("0"), false, false, true, listener)
         assertEquals("disabled(Alice)", holder.binding.chatInfo.text.toString())
-        assertEquals(ContextCompat.getColor(context, R.color.disappearing_message_disabled_background), holder.binding.chatInfo.backgroundTintList?.defaultColor)
+        assertEquals(R.drawable.chat_bubble_disappearing_off, shadowOf(holder.binding.chatInfo.background).createdFromResId)
 
         holder.bind(message(null), false, false, true, listener)
         assertEquals("changed(Alice)", holder.binding.chatInfo.text.toString())
@@ -193,7 +191,7 @@ class SystemHolderTest {
         assertFalse(holder.binding.chatInfo.isLongClickable)
         assertEquals(2, holder.binding.chatInfo.maxLines)
         assertEquals(TextUtils.TruncateAt.END, holder.binding.chatInfo.ellipsize)
-        assertNull(holder.binding.chatInfo.backgroundTintList)
+        assertEquals(R.drawable.chat_bubble_info, shadowOf(holder.binding.chatInfo.background).createdFromResId)
         holder.binding.chatInfo.performClick()
         holder.itemView.performClick()
         assertEquals(1, openedSettings)
@@ -211,7 +209,7 @@ class SystemHolderTest {
         assertEquals(View.VISIBLE, secretHolder.binding.chatInfo.visibility)
         assertEquals(View.VISIBLE, notice.visibility)
         assertEquals("group-enabled(1 day-unit)", notice.text.toString())
-        assertEquals(Color.MAGENTA, notice.backgroundTintList?.defaultColor)
+        assertEquals(R.drawable.chat_bubble_disappearing, shadowOf(notice.background).createdFromResId)
         notice.performClick()
         assertEquals(1, openedSettings)
 
@@ -222,7 +220,7 @@ class SystemHolderTest {
 
         secretHolder.bind(0L, true, true, true, false, listener)
         assertEquals("group-disabled", notice.text.toString())
-        assertEquals(Color.GRAY, notice.backgroundTintList?.defaultColor)
+        assertEquals(R.drawable.chat_bubble_disappearing_off, shadowOf(notice.background).createdFromResId)
         notice.performClick()
         assertEquals(2, openedSettings)
 
@@ -271,13 +269,13 @@ class SystemHolderTest {
         assertNull(openedUrl)
         assertEquals(View.VISIBLE, notice.visibility)
         assertEquals("chat-disabled", notice.text.toString())
-        assertEquals(Color.GRAY, notice.backgroundTintList?.defaultColor)
+        assertEquals(R.drawable.chat_bubble_disappearing_off, shadowOf(notice.background).createdFromResId)
         notice.performClick()
         assertEquals(1, openedSettings)
 
         secretHolder.bind(2592000L, false, false, true, false, listener)
         assertEquals("chat-enabled(1 month-unit)", notice.text.toString())
-        assertEquals(Color.MAGENTA, notice.backgroundTintList?.defaultColor)
+        assertEquals(R.drawable.chat_bubble_disappearing, shadowOf(notice.background).createdFromResId)
         assertEquals(View.GONE, secretHolder.binding.chatInfo.visibility)
         notice.performClick()
         assertEquals(2, openedSettings)
