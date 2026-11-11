@@ -22,6 +22,7 @@ import one.mixin.android.vo.absolutePath
 import one.mixin.android.vo.isTranscript
 import java.io.File
 import javax.inject.Inject
+import timber.log.Timber
 
 class CleanMessageHelper
     @Inject
@@ -75,7 +76,8 @@ class CleanMessageHelper
             val context = MixinApplication.appContext
             messageItems.forEach { item ->
                 item.absolutePath(context, conversationId, item.mediaUrl)?.takeIf { it.isNotBlank() }?.getFilePath()?.let {
-                    File(it).delete()
+                    val file = File(it)
+                    if (!file.delete() && file.exists()) Timber.e("Failed to delete ${file.absolutePath}")
                 }
             }
             deleteMessages(conversationId, messageItems.map { it.messageId })
