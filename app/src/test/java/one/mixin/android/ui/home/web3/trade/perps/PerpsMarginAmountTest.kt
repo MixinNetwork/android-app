@@ -11,6 +11,25 @@ import kotlin.test.assertTrue
 
 class PerpsMarginAmountTest {
     @Test
+    fun serverReductionLimitUsesExactDecimalsAndKeepsLegacyFallback() {
+        val maximum = requireNotNull(maximumMarginReduction("100", "12.34567891", null))
+        assertEquals(BigDecimal("12.34567891"), maximum)
+        assertEquals(maximum, reduceMarginAmount(maximum.toPlainString(), "100", true))
+        assertEquals(BigDecimal("3.08641972"), reduceMarginAmount(maximum.toPlainString(), "25", true))
+        assertNull(marginAfterAdjustment("100", "12.34567892", false, maximum))
+        assertEquals(BigDecimal("87.65432109"), marginAfterAdjustment("100", "12.34567891", false, maximum))
+        assertEquals(BigDecimal.ZERO, maximumMarginReduction("100", "0", null))
+        assertNull(reduceMarginAmount("0", "100", true))
+        for (missing in listOf(null, "", "invalid", "-1")) {
+            assertEquals(BigDecimal("100"), maximumMarginReduction("100", missing, null))
+            assertEquals(BigDecimal("10"), maximumMarginReduction("100", missing, BigDecimal.TEN))
+        }
+        assertEquals(BigDecimal.TEN, maximumMarginReduction("100", "12.34567891", BigDecimal.TEN))
+        assertEquals(BigDecimal("100"), maximumMarginReduction("100", "101", null))
+        assertEquals(BigDecimal("0.00000001"), maximumMarginReduction("100", "0.00000001", null))
+    }
+
+    @Test
     fun reductionPreviewIncludesPnlInMargin() {
         assertEquals(BigDecimal("5.43"), estimatedPerpsCloseReturn("5.39", "0.06", "0.02"))
         assertEquals(BigDecimal("5.45"), perpsCloseMarginAmount("5.39", "0.06"))

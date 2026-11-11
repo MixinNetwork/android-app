@@ -5,6 +5,7 @@ import android.content.ClipData
 import android.graphics.Bitmap
 import android.graphics.Typeface
 import android.media.MediaScannerConnection
+import android.net.Uri
 import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
@@ -61,6 +62,7 @@ import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
 import one.mixin.android.ui.common.share.ShareMessageBottomSheetDialogFragment
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.ActionButtonData
@@ -151,6 +153,14 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         bindMixinContact()
 
         binding.apply {
+            publishCopyTradeDesc.text = highlightPercent(getString(R.string.perps_publish_copy_trade_desc), "10%", R.color.text_quote_orange)
+            publishCopyTrade.isVisible = position != null && position?.leaderPositionId == null
+            publishCopyTrade.setOnClickListener {
+                position?.let { current ->
+                    UrlInterpreterActivity.show(requireContext(), Uri.parse("mixin://users/44bef2fb-0d9d-44b1-bb1f-fef747f0d4ee?action=open&page=lead-create&position_id=${current.positionId}"))
+                    dismiss()
+                }
+            }
             close.setOnClickListener { dismiss() }
             share.setOnClickListener {
                 if (!isLoading) shareToSystem()
@@ -316,13 +326,13 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
         }
     }
 
-    private fun highlightPercent(text: String, percent: String): CharSequence {
+    private fun highlightPercent(text: String, percent: String, color: Int = R.color.text_quote_purple): CharSequence {
         val start = text.indexOf(percent)
         if (start < 0) return text
         return SpannableString(text).apply {
             val end = start + percent.length
             setSpan(
-                ForegroundColorSpan(ContextCompat.getColor(requireContext(), R.color.text_quote_purple)),
+                ForegroundColorSpan(ContextCompat.getColor(requireContext(), color)),
                 start,
                 end,
                 Spanned.SPAN_EXCLUSIVE_EXCLUSIVE,

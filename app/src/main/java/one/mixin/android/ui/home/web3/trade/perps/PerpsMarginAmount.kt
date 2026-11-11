@@ -70,6 +70,12 @@ internal fun availableMarginFromError(extra: JsonElement?): BigDecimal? {
     return value.asString.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO }
 }
 
+internal fun maximumMarginReduction(currentMargin: String?, maxDecreaseMargin: String?, availableMargin: BigDecimal?): BigDecimal? {
+    val margin = currentMargin?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO } ?: return null
+    val maximum = maxDecreaseMargin?.toBigDecimalOrNull()?.takeIf { it >= BigDecimal.ZERO }?.min(margin) ?: margin
+    return availableMargin?.min(maximum) ?: maximum
+}
+
 internal fun reduceMarginAmount(currentMargin: String?, input: String, isPercentage: Boolean): BigDecimal? {
     if (isPercentage && '.' in input) return null
     val value = marginAdjustmentAmount(input) ?: return null

@@ -42,6 +42,7 @@ class AppSchemeTest {
         }
         for (scheme in listOf(Constants.Scheme.USERS, Constants.Scheme.HTTPS_USERS)) {
             assertFalse(Uri.parse("$scheme/${Constants.MIXIN_CASH_USER_ID}?page=add-cash-ban").shouldOpenAppHome())
+            assertTrue(Uri.parse("$scheme/${Constants.MIXIN_CASH_USER_ID}?action=open&page=follow&position_id=123").shouldOpenAppHome())
         }
     }
 }

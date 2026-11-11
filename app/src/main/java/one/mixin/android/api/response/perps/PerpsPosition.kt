@@ -77,9 +77,15 @@ data class PerpsPosition(
     @SerializedName("funding_amount")
     @ColumnInfo(name = "funding_amount")
     val fundingAmount: String? = null,
+    @SerializedName("leader_position_id")
+    @ColumnInfo(name = "leader_position_id")
+    val leaderPositionId: String? = null,
     @SerializedName("estimated_close_fee")
     @ColumnInfo(name = "estimated_close_fee", defaultValue = "''")
     val estimatedCloseFee: String? = "",
+    @SerializedName("max_decrease_margin")
+    @ColumnInfo(name = "max_decrease_margin")
+    val maxDecreaseMargin: String? = null,
 ) : Parcelable {
     companion object {
         const val STATE_OPEN = "open"

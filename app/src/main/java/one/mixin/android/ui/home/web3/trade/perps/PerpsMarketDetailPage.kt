@@ -1,6 +1,7 @@
 package one.mixin.android.ui.home.web3.trade.perps
 
 import android.content.SharedPreferences
+import android.net.Uri
 import android.text.Layout
 import android.util.TypedValue
 import androidx.compose.animation.core.Animatable
@@ -109,6 +110,7 @@ import one.mixin.android.ui.wallet.MarketDescriptionTextView
 import one.mixin.android.ui.wallet.alert.components.cardBackground
 import one.mixin.android.ui.wallet.selectLocalizedMarketDescription
 import one.mixin.android.ui.wallet.MarketShareBottomFragment
+import one.mixin.android.ui.url.UrlInterpreterActivity
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
 import one.mixin.android.widget.components.MixinButton
@@ -1400,6 +1402,21 @@ private fun OpenPositionCard(
                 fontWeight = FontWeight.W400,
                 color = MixinAppTheme.colors.textMinor
             )
+            if (!position.leaderPositionId.isNullOrBlank()) {
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = stringResource(R.string.perps_copy_trade),
+                    color = MixinAppTheme.colors.accent,
+                    fontSize = 12.sp,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(MixinAppTheme.colors.accent.copy(alpha = 0.1f))
+                        .clickable {
+                            UrlInterpreterActivity.show(context, Uri.parse("mixin://users/44bef2fb-0d9d-44b1-bb1f-fef747f0d4ee?action=open&page=follow&position_id=${position.positionId}"))
+                        }
+                        .padding(horizontal = 6.dp, vertical = 3.dp),
+                )
+            }
             Spacer(modifier = Modifier.weight(1f))
             Icon(
                 painter = painterResource(id = R.drawable.ic_share_arrow),
