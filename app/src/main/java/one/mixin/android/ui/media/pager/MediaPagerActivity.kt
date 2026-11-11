@@ -63,6 +63,7 @@ import one.mixin.android.extension.copyFromInputStream
 import one.mixin.android.extension.createGifTemp
 import one.mixin.android.extension.createImageTemp
 import one.mixin.android.extension.createPngTemp
+import one.mixin.android.extension.createWebpTemp
 import one.mixin.android.extension.fadeOut
 import one.mixin.android.extension.getImageCachePath
 import one.mixin.android.extension.getParcelableExtraCompat
@@ -440,7 +441,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         }
         binding.shareImage.setOnClickListener {
             lifecycleScope.launch {
-                val file = withContext(Dispatchers.IO) { resolveLocalFile(item) }
+                val file = withContext(Dispatchers.IO) { resolveLocalFile(item, reencodeUnsupported = true) }
                 if (file != null && file.exists()) {
                     shareMedia(false, Uri.fromFile(file).toString())
                 } else {
@@ -457,7 +458,10 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
         bottomSheet.show()
     }
 
-    private suspend fun resolveLocalFile(item: MessageItem): File? {
+    private suspend fun resolveLocalFile(
+        item: MessageItem,
+        reencodeUnsupported: Boolean,
+    ): File? {
         val coverUrl = item.appCardMediaCoverUrl()
         if (coverUrl != null) {
             return try {
@@ -470,17 +474,15 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                         val options = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                         BitmapFactory.decodeFile(cachedFile.absolutePath, options)
                         val suffix =
-                            when (options.outMimeType) {
-                                MimeType.JPEG.toString() -> ".jpg"
-                                MimeType.GIF.toString() -> ".gif"
+                            when {
+                                options.outMimeType == MimeType.JPEG.toString() -> ".jpg"
+                                options.outMimeType == MimeType.GIF.toString() -> ".gif"
+                                options.outMimeType == MimeType.WEBP.toString() && !reencodeUnsupported -> ".webp"
                                 else -> ".png"
                             }
                         val destination = createAppCardCoverCacheFile(suffix)
                         try {
-                            if (options.outMimeType == MimeType.JPEG.toString() ||
-                                options.outMimeType == MimeType.GIF.toString() ||
-                                options.outMimeType == MimeType.PNG.toString()
-                            ) {
+                            if (suffix != ".png" || options.outMimeType == MimeType.PNG.toString()) {
                                 cachedFile.copy(destination)
                             } else {
                                 // Formats like WebP are not accepted as image messages, re-encode to PNG
@@ -513,7 +515,7 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
 
     private fun save(item: MessageItem) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val file = resolveLocalFile(item)
+            val file = resolveLocalFile(item, reencodeUnsupported = false)
             if (file == null || !file.exists()) {
                 withContext(Dispatchers.Main) {
                     toast(R.string.Save_failure)
@@ -535,6 +537,12 @@ class MediaPagerActivity : BaseActivity(), DismissFrameLayout.OnDismissListener,
                     mimeType.equals(MimeType.PNG.toString()) ->
                         this@MediaPagerActivity.getPublicPicturePath()
                             .createPngTemp(
+                                false,
+                            )
+
+                    mimeType.equals(MimeType.WEBP.toString()) ->
+                        this@MediaPagerActivity.getPublicPicturePath()
+                            .createWebpTemp(
                                 false,
                             )
 
