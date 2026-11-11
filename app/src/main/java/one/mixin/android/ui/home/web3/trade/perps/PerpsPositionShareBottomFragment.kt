@@ -154,7 +154,7 @@ class PerpsPositionShareBottomFragment : MixinComposeBottomSheetDialogFragment()
 
         binding.apply {
             publishCopyTradeDesc.text = highlightPercent(getString(R.string.perps_publish_copy_trade_desc), "10%", R.color.text_quote_orange)
-            publishCopyTrade.isVisible = position != null && position?.leaderPositionId == null
+            publishCopyTrade.isVisible = position != null && position?.leaderPositionId.isNullOrBlank() == true
             publishCopyTrade.setOnClickListener {
                 position?.let { current ->
                     UrlInterpreterActivity.show(requireContext(), Uri.parse("mixin://users/44bef2fb-0d9d-44b1-bb1f-fef747f0d4ee?action=open&page=lead-create&position_id=${current.positionId}"))
