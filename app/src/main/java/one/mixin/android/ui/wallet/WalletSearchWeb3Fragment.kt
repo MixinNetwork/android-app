@@ -198,14 +198,14 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                 binding.rvVa.displayedChild = POS_SEARCH
             }
             isSearchingRemote = true
-            searchRemote(query)
+            searchRemote(query, localTokens)
         }
     }
     
-    private suspend fun searchRemote(query: String) {
+    private suspend fun searchRemote(query: String, localTokens: List<Web3TokenItem>) {
         if (query.length < 2) {
             binding.pb.isVisible = false
-            if (searchAdapter.currentList.isEmpty()) binding.rvVa.displayedChild = POS_EMPTY
+            if (localTokens.isEmpty()) binding.rvVa.displayedChild = POS_EMPTY
             return
         }
         
@@ -246,19 +246,17 @@ class WalletSearchWeb3Fragment : BaseFragment() {
                         level = tokenItem.level ?: t?.level ?: Constants.AssetLevel.UNKNOWN
                     )
                 }
-                val currentList = searchAdapter.currentList
-
-                val combinedList = (remoteWeb3Tokens + currentList.filter { local ->
+                val combinedList = (remoteWeb3Tokens + localTokens.filter { local ->
                     remoteWeb3Tokens.none { it.assetId == local.assetId }
                 }).sortByQuery(query)
 
                 searchAdapter.submitList(combinedList)
                 binding.rvVa.displayedChild = POS_SEARCH
-            } else if (isSearchingRemote && searchAdapter.currentList.isEmpty()) {
+            } else if (isSearchingRemote && localTokens.isEmpty()) {
                 binding.rvVa.displayedChild = POS_EMPTY
             }
         } catch (e: Exception) {
-            if (isSearchingRemote && searchAdapter.currentList.isEmpty()) {
+            if (isSearchingRemote && localTokens.isEmpty()) {
                 if (isAdded) {
                     binding.rvVa.displayedChild = POS_EMPTY
                 }

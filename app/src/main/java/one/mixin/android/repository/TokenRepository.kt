@@ -527,11 +527,7 @@ class TokenRepository
         fun walletHomeTokenSummary() = tokenDao.walletHomeTokenSummary()
 
         fun assetItemsNotHiddenRaw() = tokenDao.assetItemsNotHiddenRaw(
-            RoomRawQuery(
-            "$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN", onBindStatement = {
-                    it.bindText(1, Constants.DEFAULT_ICON_URL)
-                }
-        ))
+            RoomRawQuery("$PREFIX_ASSET_ITEM $POSTFIX_ASSET_ITEM_NOT_HIDDEN"))
 
         fun assetItems() = tokenDao.assetItems()
 
