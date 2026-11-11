@@ -169,19 +169,19 @@ class SystemHolder constructor(val binding: ItemChatSystemBinding) : BaseViewHol
                     when {
                         timeInterval == null -> { // Messages received in the old version
                             String.format(
-                                getText(if (canEdit) R.string.changed_disappearing_message_settings_hint else R.string.changed_disappearing_message_settings_learn_hint),
+                                getText(if (canEdit) R.string.changed_disappearing_message_settings_editable else R.string.changed_disappearing_message_settings_read_only),
                                 name,
                             )
                         }
                         timeInterval <= 0 -> {
                             String.format(
-                                getText(if (canEdit) R.string.disable_disappearing_message_hint else R.string.disable_disappearing_message_learn_hint),
+                                getText(if (canEdit) R.string.disable_disappearing_message_editable else R.string.disable_disappearing_message_read_only),
                                 name,
                             )
                         }
                         else -> {
                             String.format(
-                                getText(if (canEdit) R.string.set_disappearing_message_time_to_hint else R.string.set_disappearing_message_time_to_learn_hint),
+                                getText(if (canEdit) R.string.set_disappearing_message_time_to_editable else R.string.set_disappearing_message_time_to_read_only),
                                 name,
                                 toTimeInterval(timeInterval),
                             )
