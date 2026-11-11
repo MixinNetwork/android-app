@@ -323,7 +323,7 @@ fun storeValueInEncryptedPreferences(context: Context, alias: String, entropy: B
         )
     }.onFailure {
         context.deleteSharedPreferences(ENCRYPTED_MNEMONIC)
-    }.getOrThrow()  // Unable to create when logging in, it crashes directly
+    }.getOrThrow()  // Rethrown so the login caller can report it and stop instead of continuing without the mnemonic
     val encodedKey = entropy.toHex()
     encryptedPrefs.edit(commit = true) { putString(alias, encodedKey) }
 }

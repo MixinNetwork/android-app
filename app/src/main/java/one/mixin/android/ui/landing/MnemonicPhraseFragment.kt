@@ -53,6 +53,7 @@ import one.mixin.android.extension.withArgs
 import one.mixin.android.repository.UserRepository
 import one.mixin.android.session.Session
 import one.mixin.android.session.initializeAccountSession
+import one.mixin.android.session.resolveCurrentUserScopeManager
 import one.mixin.android.tip.Tip
 import one.mixin.android.ui.common.BaseFragment
 import one.mixin.android.ui.landing.components.MnemonicPhrasePage
@@ -63,6 +64,7 @@ import one.mixin.android.util.ErrorHandler.Companion.NEED_CAPTCHA
 import one.mixin.android.util.GsonHelper
 import one.mixin.android.util.analytics.AnalyticsTracker
 import one.mixin.android.util.getMixinErrorStringByCode
+import one.mixin.android.util.reportException
 import one.mixin.android.util.viewBinding
 import one.mixin.android.vo.toUser
 import one.mixin.android.widget.CaptchaView
@@ -167,6 +169,16 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
         ViewCompat.requestApplyInsets(rootView)
     }
 
+    private fun failWith(message: String) {
+        errorInfo = message
+        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+    }
+
+    private fun rollbackAccountSession() {
+        Session.clearAccount()
+        resolveCurrentUserScopeManager(requireContext().applicationContext).exit("mnemonicStoreFailed")
+    }
+
     private fun anonymousRequest(words: List<String>? = null) {
         lifecycleScope.launch {
             errorInfo = null
@@ -178,44 +190,43 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                         toMnemonicWithChecksum(sourceWords)
                     }
                 }.onFailure {
-                    errorInfo = getString(R.string.invalid_mnemonic_phrase)
+                    failWith(getString(R.string.invalid_mnemonic_phrase))
                 }.getOrNull() ?: return@launch
-                val w = completedWords.let {
-                    when (completedWords.size) {
-                        13 -> {
-                            completedWords.subList(0, 12)
-                        }
-
-                        25 -> {
-                            completedWords.subList(0, 24)
-                        }
-
-                        else -> {
-                            errorInfo = getString(R.string.invalid_mnemonic_phrase)
-                            throw IllegalArgumentException("Invalid mnemonic")
-                        }
+                val w = when (completedWords.size) {
+                    13 -> completedWords.subList(0, 12)
+                    25 -> completedWords.subList(0, 24)
+                    else -> {
+                        failWith(getString(R.string.invalid_mnemonic_phrase))
+                        return@launch
                     }
                 }
                 val mnemonic = w.joinToString(" ")
-                runCatching { toEntropy(w) }.onFailure { errorInfo = getString(R.string.invalid_mnemonic_phrase) }.getOrNull() ?: return@launch
+                runCatching { toEntropy(w) }.onFailure { failWith(getString(R.string.invalid_mnemonic_phrase)) }.getOrNull() ?: return@launch
                 newKeyPairFromMnemonic(mnemonic)
             } else {
                 val entropy = runCatching {
                     tip.getMnemonicFromEncryptedPreferences(requireContext()) ?: tip.generateEntropyAndStore(requireContext())
                 }.onFailure {
                     Timber.e(it)
-                    errorInfo = getString(R.string.Save_failure)
-                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                    reportException(it)
+                    failWith(getString(R.string.Save_failure))
                 }.getOrNull() ?: return@launch
                 val mnemonic = runCatching {
                     toMnemonic(entropy)
                 }.onFailure {
-                    errorInfo = getString(R.string.invalid_mnemonic_phrase)
+                    failWith(getString(R.string.invalid_mnemonic_phrase))
                 }.getOrNull() ?: return@launch
-                val verifiedEntropy  = runCatching { toEntropy(mnemonic.split(" "))}.getOrNull() ?: return@launch
-                if (getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(verifiedEntropy).not()) {
-                    errorInfo = getString(R.string.Save_failure) // Save entropy failure
-                    landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                val verifiedEntropy = runCatching { toEntropy(mnemonic.split(" ")) }
+                    .onFailure { failWith(getString(R.string.Save_failure)) }
+                    .getOrNull() ?: return@launch
+                val verified = runCatching {
+                    getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(verifiedEntropy)
+                }.onFailure {
+                    Timber.e(it)
+                    reportException(it)
+                }.getOrDefault(false)
+                if (!verified) {
+                    failWith(getString(R.string.Save_failure))
                     return@launch
                 }
                 newKeyPairFromMnemonic(mnemonic)
@@ -447,16 +458,20 @@ class MnemonicPhraseFragment : BaseFragment(R.layout.fragment_compose) {
                     val loginWords = words.orEmpty().dropLast(1)
                     val entropy = runCatching { toEntropy(loginWords) }.getOrNull()
                     if (entropy == null) {
-                        errorInfo = getString(R.string.invalid_mnemonic_phrase)
-                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                        rollbackAccountSession()
+                        failWith(getString(R.string.invalid_mnemonic_phrase))
                         return@launch
                     }
                     val stored = runCatching {
                         storeValueInEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC, entropy)
-                    }.onFailure { Timber.e(it) }.isSuccess
-                    if (!stored || !getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy)) {
-                        errorInfo = getString(R.string.Save_failure)
-                        landingViewModel.updateMnemonicPhraseState(MnemonicPhraseState.Failure)
+                        getValueFromEncryptedPreferences(requireContext(), Constants.Tip.MNEMONIC).contentEquals(entropy)
+                    }.onFailure {
+                        Timber.e(it)
+                        reportException(it)
+                    }.getOrDefault(false)
+                    if (!stored) {
+                        rollbackAccountSession()
+                        failWith(getString(R.string.Save_failure))
                         return@launch
                     }
                 }

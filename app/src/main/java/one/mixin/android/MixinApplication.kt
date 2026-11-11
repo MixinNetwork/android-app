@@ -353,11 +353,16 @@ open class MixinApplication :
                 clearData(sessionId, identityNumber)
                 withContext(Dispatchers.Main) {
                     LandingActivity.show(this@MixinApplication)
-                    // Close databases only after the cleared task is destroyed, so old view models stop querying first.
-                    withTimeoutOrNull(CLOSE_SCOPE_TIMEOUT_MILLIS) {
+                    // CLEAR_TASK misses backgrounded, singleInstance and intoExisting activities, so finish them explicitly.
+                    createdActivities.filter { it !is LandingActivity }.forEach { it.finish() }
+                    // Close databases only after every other activity is destroyed, so old view models stop querying first.
+                    val destroyed = withTimeoutOrNull(CLOSE_SCOPE_TIMEOUT_MILLIS) {
                         while (createdActivities.any { it !is LandingActivity }) delay(50)
+                        true
                     }
+                    if (destroyed == null) Timber.w("closeAndClear: activities still alive after timeout")
                 }
+                // A re-login during teardown already owns the new scope; only close when no account is signed in.
                 if (Session.getAccount() == null) {
                     resolveCurrentUserScopeManager(this@MixinApplication).exit("closeAndClear")
                 }
