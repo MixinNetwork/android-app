@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -61,6 +60,7 @@ import one.mixin.android.ui.home.web3.market.MarketIcon
 import one.mixin.android.ui.home.web3.market.MarketSearchBar
 import one.mixin.android.ui.home.web3.market.SearchResultSection
 import one.mixin.android.ui.home.web3.trade.perps.PerpsLeverageBadge
+import one.mixin.android.ui.wallet.home.WalletAssetIcon
 import one.mixin.android.ui.wallet.home.components.AccountApy
 
 @Composable
@@ -372,30 +372,13 @@ private fun walletSearchSubtitle(result: WalletSearchResult, recent: Boolean = f
 @Composable
 private fun WalletSearchIcon(result: WalletSearchResult, size: Dp) {
     when (result) {
-        is WalletSearchResult.Asset -> Box(modifier = Modifier.size(size)) {
-            CoilImage(
-                model = result.token.iconUrl,
-                placeholder = R.drawable.ic_avatar_place_holder,
-                modifier = Modifier
-                    .size(size)
-                    .clip(CircleShape),
-                contentScale = ContentScale.Crop,
-            )
-            if (result.token.collectionHash.isNullOrEmpty() && !result.token.chainIconUrl.isNullOrBlank()) {
-                CoilImage(
-                    model = result.token.chainIconUrl,
-                    placeholder = R.drawable.ic_avatar_place_holder,
-                    modifier = Modifier
-                        .size(13.dp)
-                        .align(Alignment.BottomStart)
-                        .offset(x = (-1).dp, y = 1.dp)
-                        .clip(CircleShape)
-                        .background(MixinAppTheme.colors.background)
-                        .border(1.dp, MixinAppTheme.colors.background, CircleShape),
-                    contentScale = ContentScale.Crop,
-                )
-            }
-        }
+        is WalletSearchResult.Asset -> WalletAssetIcon(
+            iconUrl = result.token.iconUrl,
+            chainIconUrl = result.token.chainIconUrl,
+            collectionHash = result.token.collectionHash,
+            size = size,
+            chainBadgeSize = 13.dp,
+        )
         is WalletSearchResult.Position -> MarketIcon(result.position.iconUrl.orEmpty(), size)
         is WalletSearchResult.Earn -> MarketIcon(result.account.iconUrl, size)
         is WalletSearchResult.Collectible -> CoilImage(
