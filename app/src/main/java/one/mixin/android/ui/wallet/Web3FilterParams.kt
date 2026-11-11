@@ -73,7 +73,12 @@ class Web3FilterParams(
         } else {
             filters.add("w.chain_id = '${selectedAddress.chainId.replace("'", "''")}'")
             val collation = if (selectedAddress.chainId in Constants.Web3EvmChainIds) "NOCASE" else "BINARY"
-            filters.add("EXISTS (SELECT 1 FROM addresses a WHERE a.wallet_id = '$walletIdSql' AND a.chain_id = w.chain_id AND a.destination = w.address COLLATE $collation)")
+            val ownerChain = if (selectedAddress.chainId in Constants.Web3EvmChainIds) {
+                "a.chain_id IN (${Constants.Web3EvmChainIds.joinToString(", ") { "'$it'" }})"
+            } else {
+                "a.chain_id = w.chain_id"
+            }
+            filters.add("EXISTS (SELECT 1 FROM addresses a WHERE a.wallet_id = '$walletIdSql' AND $ownerChain AND a.destination = w.address COLLATE $collation)")
             if (!selectedAddress.tag.isNullOrEmpty()) {
                 filters.add("0")
             } else {

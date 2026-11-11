@@ -148,6 +148,17 @@ class AddressTransactionsTest {
     }
 
     @Test
+    fun evmHistoryUsesSharedWalletAddressAcrossChains() = runBlocking {
+        wallet.web3TransactionDao().insertSuspend(
+            transaction("base").copy(chainId = Constants.ChainId.Base),
+            transaction("other-owner").copy(chainId = Constants.ChainId.Base, address = "other-owner"),
+            transaction("ethereum"),
+        )
+        val filter = address.copy(chainId = Constants.ChainId.Base)
+        assertEquals(listOf("base"), web3(Web3FilterParams(walletId = "wallet-a", address = filter)).map { it.transactionHash })
+    }
+
+    @Test
     fun privacyAndWeb3RemainSeparateEvenWithEqualIdentifiers() = runBlocking {
         main.safeSnapshotDao().insertSuspend(snapshot("same-hash", "0xabcd"), snapshot("privacy-only", "0xabcd"))
         wallet.web3TransactionDao().insertSuspend(transaction("same-hash"), transaction("web3-only"))
