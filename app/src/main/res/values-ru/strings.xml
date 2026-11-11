@@ -1221,4 +1221,8 @@
     <string name="Select_market_item">Выберите рынок для просмотра</string>
     <string name="Select_explore_item">Выберите элемент, чтобы открыть его</string>
     <string name="perps_realized_pnl_tip">Открытые позиции не учитываются в статистике.</string>
+    <string name="perps_copy_trade">Копирование</string>
+    <string name="perps_publish_copy_trade">Опубликовать копи-трейд</string>
+    <string name="perps_publish_copy_trade_desc">Получайте 10% прибыли от копировщиков</string>
+    <string name="perps_no_reducible_margin">Нет маржи, доступной для уменьшения</string>
 </resources>

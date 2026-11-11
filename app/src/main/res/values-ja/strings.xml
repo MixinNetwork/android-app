@@ -1226,4 +1226,8 @@
     <string name="Select_market_item">表示するマーケットを選択してください</string>
     <string name="Select_explore_item">開く項目を選択してください</string>
     <string name="perps_realized_pnl_tip">未決済のポジションは統計に含まれません。</string>
+    <string name="perps_copy_trade">コピー中</string>
+    <string name="perps_publish_copy_trade">コピートレードを公開</string>
+    <string name="perps_publish_copy_trade_desc">コピーした人の利益の 10% を獲得</string>
+    <string name="perps_no_reducible_margin">減らせる証拠金がありません</string>
 </resources>

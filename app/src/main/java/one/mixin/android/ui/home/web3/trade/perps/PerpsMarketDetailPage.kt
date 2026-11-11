@@ -181,11 +181,17 @@ fun PerpsMarketDetailPage(
             when (action) {
                 PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
                 PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_MARGIN -> {
-                    PerpsMarginBottomSheetDialogFragment.newInstance(
-                        position,
-                        increase = action == PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
-                        source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADJUST,
-                    ).show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
+                    if (action == PerpsAdjustBottomSheetDialogFragment.ACTION_REDUCE_MARGIN &&
+                        position.maxDecreaseMargin?.toBigDecimalOrNull()?.signum() == 0
+                    ) {
+                        toast(R.string.perps_no_reducible_margin)
+                    } else {
+                        PerpsMarginBottomSheetDialogFragment.newInstance(
+                            position,
+                            increase = action == PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_MARGIN,
+                            source = AnalyticsTracker.PerpsSource.PERPS_MARKET_DETAIL_ADJUST,
+                        ).show(activity.supportFragmentManager, PerpsMarginBottomSheetDialogFragment.TAG)
+                    }
                 }
                 PerpsAdjustBottomSheetDialogFragment.ACTION_ADD_POSITION -> {
                     isAddingProcessing = true

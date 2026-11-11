@@ -2716,4 +2716,8 @@
     <string name="Select_asset">자산을 선택해 확인하세요</string>
     <string name="Select_market_item">시장을 선택해 확인하세요</string>
     <string name="Select_explore_item">항목을 선택해 여세요</string>
+    <string name="perps_copy_trade">카피 중</string>
+    <string name="perps_publish_copy_trade">카피 트레이드 게시</string>
+    <string name="perps_publish_copy_trade_desc">카피 트레이더 수익의 10%를 받으세요</string>
+    <string name="perps_no_reducible_margin">감소 가능한 증거금이 없습니다</string>
 </resources>

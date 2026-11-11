@@ -902,4 +902,8 @@
     <string name="Select_market_item">Pilih pasaran untuk dilihat</string>
     <string name="Select_explore_item">Pilih item untuk dibuka</string>
     <string name="perps_realized_pnl_tip">Posisi yang masih terbuka tidak termasuk dalam statistik.</string>
+    <string name="perps_copy_trade">Menyalin</string>
+    <string name="perps_publish_copy_trade">Terbitkan Copy Trade</string>
+    <string name="perps_publish_copy_trade_desc">Dapatkan 10% perkongsian keuntungan daripada penyalin</string>
+    <string name="perps_no_reducible_margin">Tiada margin yang boleh dikurangkan</string>
 </resources>

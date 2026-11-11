@@ -1280,4 +1280,8 @@
     <string name="Select_market_item">Seleccione un mercado para verlo</string>
     <string name="Select_explore_item">Seleccione un elemento para abrirlo</string>
     <string name="perps_realized_pnl_tip">Las posiciones abiertas no se incluyen en las estadísticas.</string>
+    <string name="perps_copy_trade">Copiando</string>
+    <string name="perps_publish_copy_trade">Publicar copy trading</string>
+    <string name="perps_publish_copy_trade_desc">Gana el 10% de las ganancias de tus copiadores</string>
+    <string name="perps_no_reducible_margin">No hay margen disponible para reducir</string>
 </resources>

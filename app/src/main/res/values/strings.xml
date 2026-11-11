@@ -2759,4 +2759,5 @@
     <string name="perps_copy_trade">Copying</string>
     <string name="perps_publish_copy_trade">Publish Copy Trade</string>
     <string name="perps_publish_copy_trade_desc">Earn 10% profit share from copiers</string>
+    <string name="perps_no_reducible_margin">No margin available to reduce</string>
 </resources>
