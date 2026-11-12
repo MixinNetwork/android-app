@@ -9,6 +9,10 @@ const val INTERVAL_MINUTE = 60L
 const val INTERVAL_HOUR = 3_600L
 const val INTERVAL_DAY = 86_400L
 const val INTERVAL_WEEK = 604_800L
+
+// A 1:1 chat can be opened before its conversation row exists. Until then, show
+// disappearing messages as this interval, which is the previous new-chat default.
+const val DEFAULT_NEW_CHAT_EXPIRE_IN = INTERVAL_WEEK
 const val INTERVAL_MONTH = 2_592_000L
 const val INTERVAL_YEAR = 31_536_000L
 
