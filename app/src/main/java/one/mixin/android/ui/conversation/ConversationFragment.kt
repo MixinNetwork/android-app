@@ -1522,7 +1522,13 @@ class ConversationFragment() :
     }
 
     private fun initView() {
-        binding.inputLayout.backgroundImage = WallpaperManager.getWallpaper(requireContext())
+        viewLifecycleOwner.lifecycleScope.launch {
+            val context = requireContext()
+            val wallpaper = withContext(Dispatchers.IO) {
+                WallpaperManager.getWallpaper(context)
+            }
+            binding.inputLayout.backgroundImage = wallpaper
+        }
         binding.chatControl.callback = chatControlCallback
         binding.chatControl.activity = requireActivity()
         binding.chatControl.inputLayout = binding.inputLayout
