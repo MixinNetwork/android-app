@@ -9,13 +9,11 @@ import one.mixin.android.api.request.AddressRequest
 import one.mixin.android.api.request.LimitOrderRequest
 import one.mixin.android.api.request.Pin
 import one.mixin.android.api.request.RouteTickerRequest
-import one.mixin.android.api.request.RouteTokenRequest
 import one.mixin.android.api.request.TransferRequest
 import one.mixin.android.api.request.WithdrawalRequest
 import one.mixin.android.api.request.web3.StakeRequest
 import one.mixin.android.api.request.web3.SwapRequest
 import one.mixin.android.api.response.CreateLimitOrderResponse
-import one.mixin.android.api.response.RouteOrderResponse
 import one.mixin.android.api.response.RouteTickerResponse
 import one.mixin.android.api.response.web3.QuoteResult
 import one.mixin.android.api.response.web3.SwapResponse
@@ -40,7 +38,6 @@ import one.mixin.android.vo.PriceAndChange
 import one.mixin.android.vo.Snapshot
 import one.mixin.android.vo.Trace
 import one.mixin.android.vo.route.Order
-import one.mixin.android.vo.sumsub.RouteTokenResponse
 import one.mixin.android.vo.toAssetItem
 import one.mixin.android.vo.toPriceAndChange
 import javax.inject.Inject
@@ -364,14 +361,6 @@ class AssetRepository
                 }
             },
         )
-
-    suspend fun token(): MixinResponse<RouteTokenResponse> = routeService.sumsubToken()
-
-    // suspend fun payment(traceRequest: RoutePaymentRequest): MixinResponse<RoutePaymentResponse> = routeService.payment(traceRequest)
-
-    suspend fun order(paymentId: String): MixinResponse<RouteOrderResponse> = routeService.order(paymentId)
-
-    suspend fun token(tokenRequest: RouteTokenRequest) = routeService.token(tokenRequest)
 
     fun observeAddress(addressId: String) = addressDao.observeById(addressId)
 

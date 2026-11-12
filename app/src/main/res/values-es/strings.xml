@@ -1147,6 +1147,12 @@
     <string name="safe_members">Miembros de Mixin Safe</string>
     <string name="membership_benefit_safe_members">%1$d miembros por Mixin Safe, %2$d miembros en total.</string>
     <string name="membership_elite_description">Administra grandes patrimonios en Mixin Safe con familiares, amigos o colegas para evitar robos, accidentes y riesgos de custodia.</string>
+    <string name="membership_benefit_mixin_card_platinum">Tarjeta de crédito Visa Platinum gratuita</string>
+    <string name="membership_benefit_mixin_card_signature">Tarjeta de crédito Visa Signature gratuita</string>
+    <string name="free_inheritance_service">Servicio de herencia gratuito</string>
+    <string name="membership_benefit_free_inheritance_service">Utilice el servicio de herencia de forma gratuita.</string>
+    <string name="membership_renew_option_card_desc">Utilice Google Pay, tarjeta de crédito o débito para renovar su plan.</string>
+    <string name="membership_renew_option_crypto_desc">Utilice USDT, USDC u otras criptomonedas para renovar su plan.</string>
     <string name="mnemonic_login_security_title">¿Es seguro importar a Mixin?</string>
     <string name="mobile_number_description">Este es el número de teléfono vinculado a tu cuenta</string>
     <string name="hours_count_short">%1$dh</string>
@@ -1273,8 +1279,21 @@
     <string name="Select_asset">Seleccione un activo para verlo</string>
     <string name="Select_market_item">Seleccione un mercado para verlo</string>
     <string name="Select_explore_item">Seleccione un elemento para abrirlo</string>
+    <string name="Trade_Simple">Intercambio</string>
+    <string name="Trade_Advanced">Límite</string>
+    <string name="Trade_Pro">Pro</string>
+    <string name="Trade_Swap_Orders">Órdenes de intercambio</string>
+    <string name="Trade_Limit_Orders">Órdenes limitadas</string>
+    <string name="Trade_Perpetual_Activity">Actividad de perpetuos</string>
+    <string name="Trade_Pro_Description">Gráficos avanzados, margen cruzado y órdenes limitadas.</string>
+    <string name="Trade_Now">Operar ahora</string>
+    <string name="Spot_Trade_Guide_Overview_Desc">Mixin admite intercambios y órdenes limitadas, lo que te permite operar con múltiples cadenas y activos con liquidez agregada de DEX y CEX.</string>
+    <string name="Spot_Trade_Guide_Swap_Desc">El intercambio permite operar al instante al mejor precio de mercado disponible.</string>
+    <string name="Spot_Trade_Guide_Limit_Desc">Las órdenes limitadas te permiten establecer el precio de ejecución que prefieras. Solo se ejecutan cuando el mercado alcanza el precio especificado.</string>
     <string name="perps_realized_pnl_tip">Las posiciones abiertas no se incluyen en las estadísticas.</string>
     <string name="transfer_token">Transferir %1$s</string>
     <string name="transfer_token_description">Transferir desde otra de tus billeteras</string>
     <string name="wallet_changed_try_again">La billetera actual ha cambiado. Inténtalo de nuevo.</string>
+    <string name="mixin_support">Soporte de Mixin</string>
+    <string name="real_people_real_support">Personas reales. Soporte real.</string>
 </resources>

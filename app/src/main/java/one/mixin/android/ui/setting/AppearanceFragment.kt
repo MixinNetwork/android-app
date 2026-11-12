@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.appcompat.widget.ListPopupWindow
 import androidx.core.content.ContextCompat
 import androidx.core.os.LocaleListCompat
+import androidx.core.view.isVisible
 import androidx.fragment.app.viewModels
 import dagger.hilt.android.AndroidEntryPoint
 import one.mixin.android.Constants
@@ -20,6 +21,7 @@ import one.mixin.android.event.QuoteColorEvent
 import one.mixin.android.extension.alertDialogBuilder
 import one.mixin.android.extension.defaultSharedPreferences
 import one.mixin.android.extension.dpToPx
+import one.mixin.android.extension.isGlassBottomNavigationEnabled
 import one.mixin.android.extension.navTo
 import one.mixin.android.extension.putBoolean
 import one.mixin.android.extension.putInt
@@ -64,6 +66,14 @@ class AppearanceFragment : BaseFragment(R.layout.fragment_appearance) {
         binding.apply {
             titleView.leftIb.setOnClickListener {
                 activity?.onBackPressedDispatcher?.onBackPressed()
+            }
+            glassBottomNavRl.isVisible = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+            glassBottomNavSc.isChecked = requireContext().isGlassBottomNavigationEnabled()
+            glassBottomNavSc.setOnCheckedChangeListener { _, checked ->
+                defaultSharedPreferences.putBoolean(Constants.Account.PREF_GLASS_BOTTOM_NAV, checked)
+            }
+            glassBottomNavRl.setOnClickListener {
+                glassBottomNavSc.toggle()
             }
             nightModeTv.setText(R.string.Theme)
             val currentId =

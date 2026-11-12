@@ -866,6 +866,12 @@
     <string name="perps_include_pnl">Termasuk PnL</string>
     <string name="perps_position_amount">Jumlah Posisi</string>
     <string name="perps_margin_amount">Jumlah Margin</string>
+    <string name="membership_benefit_mixin_card_platinum">Kad kredit Visa Platinum percuma</string>
+    <string name="membership_benefit_mixin_card_signature">Kad kredit Visa Signature percuma</string>
+    <string name="free_inheritance_service">Perkhidmatan Pewarisan Percuma</string>
+    <string name="membership_benefit_free_inheritance_service">Gunakan perkhidmatan pewarisan secara percuma.</string>
+    <string name="membership_renew_option_card_desc">Gunakan Google Pay, kad kredit atau debit untuk memperbaharui pelan anda.</string>
+    <string name="membership_renew_option_crypto_desc">Gunakan USDT, USDC atau kripto lain untuk memperbaharui pelan anda.</string>
     <string name="changed_disappearing_message_settings_hint">%1$s menukar tetapan mesej menghilang. Ketik untuk membuka tetapan mesej menghilang.</string>
     <string name="disable_disappearing_message_hint">%1$s melumpuhkan mesej menghilang. Ketik untuk membuka tetapan mesej menghilang.</string>
     <string name="set_disappearing_message_time_to_hint">%1$s menetapkan masa mesej menghilang kepada %2$s. Ketik untuk membuka tetapan mesej menghilang.</string>
@@ -895,8 +901,21 @@
     <string name="Select_asset">Pilih aset untuk dilihat</string>
     <string name="Select_market_item">Pilih pasaran untuk dilihat</string>
     <string name="Select_explore_item">Pilih item untuk dibuka</string>
+    <string name="Trade_Simple">Pertukaran</string>
+    <string name="Trade_Advanced">Had</string>
+    <string name="Trade_Pro">Pro</string>
+    <string name="Trade_Swap_Orders">Pesanan Pertukaran</string>
+    <string name="Trade_Limit_Orders">Pesanan Had</string>
+    <string name="Trade_Perpetual_Activity">Aktiviti Kontrak Kekal</string>
+    <string name="Trade_Pro_Description">Carta lanjutan, margin silang dan pesanan had.</string>
+    <string name="Trade_Now">Berdagang Sekarang</string>
+    <string name="Spot_Trade_Guide_Overview_Desc">Mixin menyokong pertukaran dan pesanan had, membolehkan anda berdagang merentas pelbagai rantaian dan aset dengan kecairan terkumpul daripada DEX dan CEX.</string>
+    <string name="Spot_Trade_Guide_Swap_Desc">Pertukaran membolehkan dagangan serta-merta pada harga pasaran terbaik yang tersedia.</string>
+    <string name="Spot_Trade_Guide_Limit_Desc">Pesanan had membolehkan anda menetapkan harga pelaksanaan pilihan anda. Pesanan hanya dilaksanakan apabila pasaran mencapai harga yang anda tetapkan.</string>
     <string name="perps_realized_pnl_tip">Posisi yang masih terbuka tidak termasuk dalam statistik.</string>
     <string name="transfer_token">Pindah %1$s</string>
     <string name="transfer_token_description">Pindah dari dompet anda yang lain</string>
     <string name="wallet_changed_try_again">Dompet semasa telah berubah. Sila cuba lagi.</string>
+    <string name="mixin_support">Sokongan Mixin</string>
+    <string name="real_people_real_support">Orang Sebenar. Sokongan Sebenar.</string>
 </resources>

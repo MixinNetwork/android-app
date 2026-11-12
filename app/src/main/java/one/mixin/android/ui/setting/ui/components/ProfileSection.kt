@@ -23,7 +23,7 @@ import one.mixin.android.vo.Plan
 
 @Composable
 fun ProfileSection(plan: Plan) {
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .cardBackground(
@@ -31,30 +31,42 @@ fun ProfileSection(plan: Plan) {
                 borderColor = MixinAppTheme.colors.borderColor
             )
             .padding(vertical = 24.dp, horizontal = 20.dp),
-        verticalAlignment = Alignment.CenterVertically
     ) {
-        MembershipIcon(
-            plan,
-            modifier = Modifier.size(24.dp)
-        )
-
-        Spacer(modifier = Modifier.width(12.dp))
-
-        Column {
-            Text(
-                text = stringResource(R.string.Profile_Badge),
-                fontSize = 16.sp,
-                fontWeight = FontWeight.W500,
-                color = MixinAppTheme.colors.textPrimary
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            MembershipIcon(
+                plan,
+                modifier = Modifier.size(24.dp)
             )
 
-            Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.width(12.dp))
 
-            Text(
-                text = stringResource(R.string.Profile_Badge_description),
-                fontSize = 14.sp,
-                color = MixinAppTheme.colors.textAssist
-            )
+            Column {
+                Text(
+                    text = stringResource(R.string.Profile_Badge),
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.W500,
+                    color = MixinAppTheme.colors.textPrimary
+                )
+
+                Spacer(modifier = Modifier.height(4.dp))
+
+                Text(
+                    text = stringResource(R.string.Profile_Badge_description),
+                    fontSize = 14.sp,
+                    color = MixinAppTheme.colors.textAssist
+                )
+            }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        MemberRow(
+            title = stringResource(R.string.member_title_mixin_card),
+            text = stringResource(
+                if (plan == Plan.ADVANCE) R.string.membership_benefit_mixin_card_platinum
+                else R.string.membership_benefit_mixin_card_signature
+            ),
+            iconRes = R.drawable.ic_interests_card
+        )
     }
 }
