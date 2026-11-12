@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,6 +40,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -128,7 +128,7 @@ internal fun MorePage(
                 Column(Modifier.moreCard()) {
                     MoreSectionHeader(stringResource(R.string.contacts_title), contacts.size, onContacts)
                     contacts.take(3).forEach { contact ->
-                        Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable { onContact(contact) }.padding(horizontal = 16.dp, vertical = 8.dp).height(50.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).clickable { onContact(contact) }.padding(horizontal = 16.dp, vertical = 8.dp).height(50.dp), verticalAlignment = Alignment.CenterVertically) {
                             UserAvatarImage(contact, 42.dp)
                             Spacer(Modifier.width(14.dp))
                             Column(Modifier.weight(1f)) {
@@ -143,9 +143,10 @@ internal fun MorePage(
                             stringResource(R.string.view_all),
                             color = MixinAppTheme.colors.accent,
                             fontSize = 14.sp,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                                 .clickable(onClick = onContacts)
-                                .padding(top = 18.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
+                                .padding(top = 18.dp, bottom = 20.dp),
                         )
                     }
                 }
@@ -165,9 +166,10 @@ internal fun MorePage(
                             stringResource(R.string.view_all),
                             color = MixinAppTheme.colors.accent,
                             fontSize = 14.sp,
-                            modifier = Modifier.align(Alignment.CenterHorizontally)
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.fillMaxWidth()
                                 .clickable(onClick = onBots)
-                                .padding(top = 18.dp, bottom = 20.dp, start = 16.dp, end = 16.dp),
+                                .padding(top = 18.dp, bottom = 20.dp),
                         )
                     }
                 }
@@ -246,7 +248,7 @@ private fun MoreArrow() {
 
 @Composable
 private fun BotRow(app: ExploreApp, external: Boolean = false, avatarSize: Dp = 50.dp, showLink: Boolean = external, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable(onClick = onClick).padding(vertical = 8.dp).height(50.dp).padding(start = if (external) 16.dp else 20.dp, end = if (external) 8.dp else 40.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).clickable(onClick = onClick).padding(vertical = 8.dp).height(50.dp).padding(start = if (external) 16.dp else 20.dp, end = if (external) 8.dp else 40.dp), verticalAlignment = Alignment.CenterVertically) {
         CoilImage(app.iconUrl, R.drawable.ic_avatar_place_holder, Modifier.size(avatarSize).clip(CircleShape))
         Spacer(Modifier.width(if (external) 14.dp else 16.dp))
         Column(Modifier.weight(1f)) {
@@ -277,7 +279,7 @@ internal fun BotsPage(favorites: List<ExploreApp>, apps: List<ExploreApp>, onBac
                     item { ContactSectionHeader(stringResource(R.string.Favorite)) }
                     items(filteredFavorites, key = { "favorite:${it.appId}" }) { app -> BotRow(app) { onFavoriteClick(app) } }
                     item {
-                        Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable(onClick = onEdit).padding(vertical = 8.dp).height(50.dp).padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).clickable(onClick = onEdit).padding(vertical = 8.dp).height(50.dp).padding(horizontal = 20.dp), verticalAlignment = Alignment.CenterVertically) {
                             Icon(painterResource(R.drawable.ic_favorite_edit), null, tint = Color.Unspecified, modifier = Modifier.size(50.dp))
                             Spacer(Modifier.width(16.dp))
                             Column {

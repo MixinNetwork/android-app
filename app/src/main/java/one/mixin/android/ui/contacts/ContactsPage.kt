@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -109,7 +108,7 @@ internal fun ContactsPage(
                             ContactSectionHeader(initial)
                         }
                         items(users, key = { it.userId }) { user ->
-                            Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable { onContact(user) }.padding(vertical = 8.dp).height(50.dp).padding(start = 20.dp, end = 40.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).clickable { onContact(user) }.padding(vertical = 8.dp).height(50.dp).padding(start = 20.dp, end = 40.dp), verticalAlignment = Alignment.CenterVertically) {
                                 UserAvatarImage(user, 50.dp)
                                 Spacer(Modifier.width(16.dp))
                                 Column(Modifier.weight(1f)) {
@@ -189,7 +188,7 @@ internal fun ContactPageHeader(title: String, onBack: () -> Unit, close: Boolean
 
 @Composable
 private fun ContactAction(icon: Int, title: Int, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).offset(y = (-8).dp).clickable(onClick = onClick).padding(vertical = 8.dp).height(50.dp).padding(start = 20.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().padding(bottom = 4.dp).clickable(onClick = onClick).padding(vertical = 8.dp).height(50.dp).padding(start = 20.dp, end = 16.dp), verticalAlignment = Alignment.CenterVertically) {
         Icon(painterResource(icon), null, tint = Color.Unspecified, modifier = Modifier.size(50.dp))
         Spacer(Modifier.width(16.dp))
         Text(stringResource(title), color = MixinAppTheme.colors.accent, fontSize = 16.sp, lineHeight = 20.sp, letterSpacing = 0.sp, modifier = Modifier.weight(1f))
