@@ -1220,6 +1220,17 @@
     <string name="Select_asset">Выберите актив для просмотра</string>
     <string name="Select_market_item">Выберите рынок для просмотра</string>
     <string name="Select_explore_item">Выберите элемент, чтобы открыть его</string>
+    <string name="Trade_Simple">Обмен</string>
+    <string name="Trade_Advanced">Лимит</string>
+    <string name="Trade_Pro">Pro</string>
+    <string name="Trade_Swap_Orders">Ордера на обмен</string>
+    <string name="Trade_Limit_Orders">Лимитные ордера</string>
+    <string name="Trade_Perpetual_Activity">История бессрочных контрактов</string>
+    <string name="Trade_Pro_Description">Расширенные графики, кросс-маржа и лимитные ордера.</string>
+    <string name="Trade_Now">Торговать сейчас</string>
+    <string name="Spot_Trade_Guide_Overview_Desc">Mixin поддерживает обмен и лимитные ордера, позволяя торговать различными активами в нескольких сетях с использованием ликвидности, агрегированной из DEX и CEX.</string>
+    <string name="Spot_Trade_Guide_Swap_Desc">Обмен позволяет мгновенно совершать сделки по лучшей доступной рыночной цене.</string>
+    <string name="Spot_Trade_Guide_Limit_Desc">Лимитные ордера позволяют задать желаемую цену исполнения. Ордера исполняются только тогда, когда рыночная цена достигает указанного уровня.</string>
     <string name="perps_realized_pnl_tip">Открытые позиции не учитываются в статистике.</string>
     <string name="desktop_intro_title">Используйте Mixin Messenger на компьютере.</string>
     <string name="desktop_intro_desc">Скачайте приложение для компьютера на messenger.mixin.one и подключите его, отсканировав QR-код.</string>
@@ -1228,4 +1239,6 @@
     <string name="desktop_help_step_1">Откройте messenger.mixin.one на компьютере.</string>
     <string name="desktop_help_step_2">Скачайте и запустите Mixin Messenger для компьютера.</string>
     <string name="desktop_help_step_3">Отсканируйте его QR-код в Mixin Messenger.</string>
+    <string name="mixin_support">Поддержка Mixin</string>
+    <string name="real_people_real_support">Живые люди. Настоящая поддержка.</string>
 </resources>
