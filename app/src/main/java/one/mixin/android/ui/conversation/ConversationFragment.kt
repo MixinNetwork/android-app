@@ -37,6 +37,7 @@ import android.view.View.VISIBLE
 import android.view.ViewConfiguration
 import android.view.ViewGroup
 import android.view.WindowManager
+import android.view.animation.PathInterpolator
 import android.widget.PopupWindow
 import android.widget.TextView
 import androidx.activity.result.ActivityResultLauncher
@@ -284,6 +285,7 @@ import one.mixin.android.widget.ChatControlView
 import one.mixin.android.widget.CircleProgress.Companion.STATUS_PLAY
 import one.mixin.android.widget.ContentEditText
 import one.mixin.android.widget.DraggableRecyclerView
+import one.mixin.android.widget.GroupCallEdgeDrawable
 import one.mixin.android.widget.LinearSmoothScrollerCustom
 import one.mixin.android.widget.MixinHeadersDecoration
 import one.mixin.android.widget.buildBottomSheetView
@@ -1787,7 +1789,9 @@ class ConversationFragment() :
         binding.tapJoinView.root.apply {
             val container = parent as View
             val touchSlop = ViewConfiguration.get(context).scaledTouchSlop
-            val location = IntArray(2)
+            val edgeDrawable = GroupCallEdgeDrawable(this)
+            val snapInterpolator = PathInterpolator(0.22f, 1f, 0.36f, 1f)
+            var dockedLeft: Boolean? = false
             var downX = 0f
             var downY = 0f
             var startX = 0f
@@ -1796,19 +1800,51 @@ class ConversationFragment() :
 
             fun constrainPosition() {
                 if (!isLaidOut) return
-                container.getLocationInWindow(location)
                 val maxX = (container.width - width).coerceAtLeast(0).toFloat()
-                val maxY = minOf(container.height, rootView.height / 2 - location[1]) - height
+                val inputTop = if (binding.chatControl.isVisible) binding.chatControl.top else binding.bottomLayout.top
+                val maxY = minOf(container.height, binding.rootView.top + inputTop) - height
                 val minY = minOf(10.dp, maxY.coerceAtLeast(0)).toFloat()
-                x = x.coerceIn(0f, maxX)
+                x = dockedLeft?.let { if (it) 0f else maxX } ?: x.coerceIn(0f, maxX)
                 y = y.coerceIn(minY, maxY.coerceAtLeast(0).toFloat())
+                edgeDrawable.update()
             }
 
+            fun snapToEdge() {
+                constrainPosition()
+                val maxX = (container.width - width).coerceAtLeast(0).toFloat()
+                val toLeft = x < maxX / 2f
+                animate()
+                    .x(if (toLeft) 0f else maxX)
+                    .setDuration(250L)
+                    .setInterpolator(snapInterpolator)
+                    .setUpdateListener { edgeDrawable.update() }
+                    .withEndAction {
+                        dockedLeft = toLeft
+                        constrainPosition()
+                    }
+                    .start()
+            }
+
+            container.overlay.add(edgeDrawable)
+            addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(view: View) {
+                    container.overlay.add(edgeDrawable)
+                    constrainPosition()
+                }
+
+                override fun onViewDetachedFromWindow(view: View) {
+                    animate().cancel()
+                    container.overlay.remove(edgeDrawable)
+                }
+            })
             addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> constrainPosition() }
             container.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> constrainPosition() }
+            binding.chatControl.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> constrainPosition() }
+            binding.bottomLayout.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ -> constrainPosition() }
             setOnTouchListener { view, event ->
                 when (event.actionMasked) {
                     MotionEvent.ACTION_DOWN -> {
+                        animate().cancel()
                         downX = event.rawX
                         downY = event.rawY
                         startX = x
@@ -1821,6 +1857,7 @@ class ConversationFragment() :
                         val dy = event.rawY - downY
                         if (!dragging && (abs(dx) > touchSlop || abs(dy) > touchSlop)) {
                             dragging = true
+                            dockedLeft = null
                         }
                         if (dragging) {
                             x = startX + dx
@@ -1830,10 +1867,12 @@ class ConversationFragment() :
                     }
                     MotionEvent.ACTION_UP -> {
                         parent.requestDisallowInterceptTouchEvent(false)
+                        if (dockedLeft == null) snapToEdge()
                         if (!dragging) view.performClick()
                     }
                     MotionEvent.ACTION_CANCEL -> {
                         parent.requestDisallowInterceptTouchEvent(false)
+                        if (dockedLeft == null) snapToEdge()
                     }
                 }
                 true
