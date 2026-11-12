@@ -125,12 +125,12 @@
                                         android:maxLines="1"
                                         android:ellipsize="end"
                                         app:autoSizeTextType="uniform"
-                                        app:autoSizeMinTextSize="8sp"
-                                        app:autoSizeMaxTextSize="14sp"
-                                        app:autoSizeStepGranularity="1sp"
+                                        app:autoSizeMinTextSize="8dp"
+                                        app:autoSizeMaxTextSize="14dp"
+                                        app:autoSizeStepGranularity="1dp"
                                         android:includeFontPadding="false"
                                         android:textColor="?attr/text_minor"
-                                        android:textSize="14sp"
+                                        android:textSize="14dp"
                                         tools:text="BTC" />
 
                                     <TextView
@@ -146,7 +146,7 @@
                                         android:paddingBottom="1dp"
                                         android:textColor="?attr/text_assist"
                                         android:textFontWeight="500"
-                                        android:textSize="12sp"
+                                        android:textSize="12dp"
                                         tools:targetApi="p"
                                         tools:text="#1" />
                                 </LinearLayout>
@@ -166,9 +166,9 @@
                                 android:maxLines="1"
                                 android:ellipsize="end"
                                 app:autoSizeTextType="uniform"
-                                app:autoSizeMinTextSize="12sp"
-                                app:autoSizeMaxTextSize="22sp"
-                                app:autoSizeStepGranularity="1sp"
+                                app:autoSizeMinTextSize="12dp"
+                                app:autoSizeMaxTextSize="22dp"
+                                app:autoSizeStepGranularity="1dp"
                                 android:layout_height="wrap_content"
                                 android:layout_below="@id/asset_title"
                                 android:layout_marginTop="8dp"
@@ -176,7 +176,7 @@
                                 android:text="@string/NA"
                                 android:textColor="?attr/text_minor"
                                 android:textFontWeight="600"
-                                android:textSize="22sp"
+                                android:textSize="22dp"
                                 tools:targetApi="p" />
 
                             <TextView
@@ -194,7 +194,7 @@
                                 android:text="0.00%"
                                 android:textColor="?attr/bg_white"
                                 android:textFontWeight="600"
-                                android:textSize="14sp"
+                                android:textSize="14dp"
                                 tools:targetApi="p" />
                         </RelativeLayout>
 
@@ -221,9 +221,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_share_market_gradient"
-                    android:paddingStart="12dp"
+                    android:paddingStart="20dp"
                     android:paddingTop="12dp"
-                    android:paddingEnd="12dp"
+                    android:paddingEnd="20dp"
                     android:paddingBottom="12dp">
 
                     <LinearLayout
@@ -241,7 +241,7 @@
                             android:includeFontPadding="false"
                             android:text="@string/Mixin"
                             android:textColor="@color/white"
-                            android:textSize="16sp"
+                            android:textSize="16dp"
                             android:textStyle="bold" />
 
                         <TextView
@@ -253,7 +253,7 @@
                             android:includeFontPadding="false"
                             android:text="@string/share_desc"
                             android:textColor="@color/white"
-                            android:textSize="12sp" />
+                            android:textSize="12dp" />
                     </LinearLayout>
 
                     <FrameLayout
@@ -357,11 +357,8 @@
                 android:src="@drawable/ic_watch_arrow" />
         </LinearLayout>
     </LinearLayout>
-
-    <Space
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1" />
+        </LinearLayout>
+    </ScrollView>
 
     <LinearLayout
         android:id="@+id/bottom"
@@ -442,6 +439,4 @@
                 android:textSize="12sp" />
         </LinearLayout>
     </LinearLayout>
-        </LinearLayout>
-    </ScrollView>
 </LinearLayout>

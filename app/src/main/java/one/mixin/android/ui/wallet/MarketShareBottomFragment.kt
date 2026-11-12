@@ -10,14 +10,19 @@ import android.text.SpannableString
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import android.text.style.StyleSpan
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.compose.ui.unit.Density
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
-import androidx.core.view.doOnLayout
+import androidx.core.view.doOnPreDraw
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.core.view.doOnAttach
@@ -41,7 +46,6 @@ import one.mixin.android.api.response.perps.PerpsMarket
 import one.mixin.android.compose.theme.MixinAppTheme
 import one.mixin.android.databinding.FragmentMarketShareBottomBinding
 import one.mixin.android.extension.dp
-import one.mixin.android.extension.colorAttr
 import one.mixin.android.extension.generateQRCode
 import one.mixin.android.extension.getClipboardManager
 import one.mixin.android.extension.getParcelableCompat
@@ -62,7 +66,6 @@ import one.mixin.android.session.Session
 import one.mixin.android.ui.common.MixinComposeBottomSheetDialogFragment
 import one.mixin.android.ui.common.applyReferralTitleTypeface
 import one.mixin.android.ui.common.buildReferralDescription
-import one.mixin.android.ui.common.drawShareCover
 import one.mixin.android.ui.common.drawShareBitmap
 import one.mixin.android.ui.common.isZeroPercent
 import one.mixin.android.ui.common.roundQrBackground
@@ -96,6 +99,9 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         private const val ARGS_TYPE = "type"
         private const val ARGS_PERPS_MARKET = "perps_market"
         private const val SHARE_QR_URL = "https://mixin.one/mm"
+        private const val POSTER_SIDE = 335
+        private const val POSTER_MIN_SLOT = 200
+        private const val POSTER_MIN_CHART = 96
 
         fun newInstance(
             marketItem: MarketItem,
@@ -169,10 +175,9 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         selectedType = arguments?.getString(ARGS_TYPE) ?: "1D"
         bindMarketCard()
         setupMarketChart()
-        binding.marketCover.doOnLayout { cover ->
-            binding.marketChartContainer.updateLayoutParams {
-                height = (binding.marketChartContainer.height + cover.width - cover.height).coerceAtLeast(96.dp)
-            }
+        binding.content.doOnPreDraw { updatePosterSlot() }
+        binding.root.addOnLayoutChangeListener { _, _, _, _, _, _, _, _, _ ->
+            binding.content.post { updatePosterSlot() }
         }
         bindMixinContact()
 
@@ -232,6 +237,80 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        binding.content.post { updatePosterSlot() }
+    }
+
+    // The poster keeps its 1:1 design size and is scaled into a square slot that fits the sheet.
+    private fun updatePosterSlot() {
+        if (view == null) return
+        val content = binding.content
+        if (content.width == 0) return
+        val sheet = binding.root.parent as? View ?: return
+        val coordinator = sheet.parent as? View ?: return
+        val side = fitPosterSide()
+        val container = binding.shareCardContainer
+        val pageMax = content.width - content.paddingStart - content.paddingEnd
+        val maxHeight = behavior?.maxHeight?.takeIf { it > 0 } ?: Int.MAX_VALUE
+        val cap = minOf(coordinator.height, maxHeight) - sheet.paddingTop - sheet.paddingBottom
+        // The action row stays below the scroll view, so count it with the header.
+        val other = binding.scroll.top + binding.scroll.getChildAt(0).height - container.height +
+            binding.root.height - binding.scroll.bottom
+        val slot = (cap - other).coerceIn(minOf(POSTER_MIN_SLOT.dp, pageMax), pageMax)
+        if (container.layoutParams.width != slot || container.layoutParams.height != slot) {
+            container.updateLayoutParams<LinearLayout.LayoutParams> {
+                width = slot
+                height = slot
+                gravity = Gravity.CENTER_HORIZONTAL
+            }
+        }
+        val poster = binding.llMarketShare
+        val scale = slot.toFloat() / side
+        poster.pivotX = if (container.layoutDirection == View.LAYOUT_DIRECTION_RTL) side.toFloat() else 0f
+        poster.pivotY = 0f
+        poster.scaleX = scale
+        poster.scaleY = scale
+    }
+
+    // Grows the square when large fonts leave the chart less than its minimum height.
+    private fun fitPosterSide(): Int {
+        val poster = binding.llMarketShare
+        val chartParams = binding.marketChartContainer.layoutParams
+        val currentChart = chartParams.height
+        fun restHeight(side: Int): Int {
+            chartParams.height = 0
+            poster.measure(
+                View.MeasureSpec.makeMeasureSpec(side, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+            )
+            return poster.measuredHeight
+        }
+        var side = POSTER_SIDE.dp
+        for (i in 0 until 3) {
+            val shortage = POSTER_MIN_CHART.dp - (side - restHeight(side))
+            if (shortage <= 0) break
+            side += shortage
+        }
+        val chart = (side - restHeight(side)).coerceAtLeast(POSTER_MIN_CHART.dp)
+        chartParams.height = chart
+        if (currentChart != chart || poster.layoutParams.width != side || poster.layoutParams.height != side) {
+            poster.updateLayoutParams<ViewGroup.LayoutParams> {
+                width = side
+                height = side
+            }
+            binding.marketChartContainer.requestLayout()
+        } else {
+            // Restore the measured state the probe above replaced.
+            poster.measure(
+                View.MeasureSpec.makeMeasureSpec(side, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(side, View.MeasureSpec.EXACTLY),
+            )
+            poster.layout(poster.left, poster.top, poster.left + side, poster.top + side)
+        }
+        return side
+    }
+
     override fun getBottomSheetHeight(view: View): Int {
         return requireContext().bottomSheetHeight() - view.getSafeAreaInsetsTop()
     }
@@ -280,54 +359,57 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         isChartContentSet = true
 
         binding.marketChart.setContent {
-            val perps = perpsMarket
-            if (perps != null) {
-                MixinAppTheme {
-                    CandleChart(
-                        marketId = perps.marketId,
-                        timeFrame = selectedType,
-                        marketPrice = perps.last,
-                        priceScale = perps.priceScale,
-                        interactive = false,
+            // The poster ignores the system font size, matching its XML text.
+            CompositionLocalProvider(LocalDensity provides Density(LocalDensity.current.density, 1f)) {
+                val perps = perpsMarket
+                if (perps != null) {
+                    MixinAppTheme {
+                        CandleChart(
+                            marketId = perps.marketId,
+                            timeFrame = selectedType,
+                            marketPrice = perps.last,
+                            priceScale = perps.priceScale,
+                            interactive = false,
+                            onLoading = { loading ->
+                                isChartLoading = loading
+                                updateLoadingState()
+                            },
+                        )
+                    }
+                } else {
+                    Market(
+                        selectedType,
+                        chartAssetId,
+                        dataChange = { percentageChange ->
+                            val displayChange = if (selectedType == "1D") {
+                                marketItem.priceChangePercentage24H.toFloatOrNull()
+                            } else {
+                                percentageChange
+                            }
+                            bindRiseText(displayChange)
+                        },
+                        onHighlightChange = { price, percentageChange ->
+                            if (price == null) {
+                                binding.priceValue.text = formatMarketPrice(marketItem.currentPrice)
+                                val displayChange = if (selectedType == "1D") {
+                                    marketItem.priceChangePercentage24H.toFloatOrNull()
+                                } else {
+                                    percentageChange
+                                }
+                                bindRiseText(displayChange)
+                            } else {
+                                binding.priceValue.text = formatMarketPrice(price)
+                                bindRiseText(percentageChange)
+                            }
+                        },
                         onLoading = { loading ->
                             isChartLoading = loading
                             updateLoadingState()
                         },
+                        interactive = false,
                     )
                 }
-                return@setContent
             }
-            Market(
-                selectedType,
-                chartAssetId,
-                dataChange = { percentageChange ->
-                    val displayChange = if (selectedType == "1D") {
-                        marketItem.priceChangePercentage24H.toFloatOrNull()
-                    } else {
-                        percentageChange
-                    }
-                    bindRiseText(displayChange)
-                },
-                onHighlightChange = { price, percentageChange ->
-                    if (price == null) {
-                        binding.priceValue.text = formatMarketPrice(marketItem.currentPrice)
-                        val displayChange = if (selectedType == "1D") {
-                            marketItem.priceChangePercentage24H.toFloatOrNull()
-                        } else {
-                            percentageChange
-                        }
-                        bindRiseText(displayChange)
-                    } else {
-                        binding.priceValue.text = formatMarketPrice(price)
-                        bindRiseText(percentageChange)
-                    }
-                },
-                onLoading = { loading ->
-                    isChartLoading = loading
-                    updateLoadingState()
-                },
-                interactive = false,
-            )
         }
     }
 
@@ -430,14 +512,8 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
 
     private fun shareToMixinContact() {
         viewLifecycleOwner.lifecycleScope.launch {
-            if (binding.marketCover.width == 0 || binding.marketCover.height == 0) return@launch
-            val background = binding.marketCover.background
-            val bitmap = try {
-                binding.marketCover.setBackgroundColor(requireContext().colorAttr(R.attr.bg_white))
-                binding.marketCover.drawShareCover()
-            } finally {
-                binding.marketCover.background = background
-            }
+            if (binding.llMarketShare.width == 0 || binding.llMarketShare.height == 0) return@launch
+            val bitmap = createShareBitmap()
             isUploading = true
             showLoading(true)
             try {
