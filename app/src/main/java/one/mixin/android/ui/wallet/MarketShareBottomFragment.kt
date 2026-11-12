@@ -267,7 +267,7 @@ class MarketShareBottomFragment : MixinComposeBottomSheetDialogFragment() {
         }
         val poster = binding.llMarketShare
         val scale = slot.toFloat() / side
-        poster.pivotX = 0f
+        poster.pivotX = if (container.layoutDirection == View.LAYOUT_DIRECTION_RTL) side.toFloat() else 0f
         poster.pivotY = 0f
         poster.scaleX = scale
         poster.scaleY = scale
