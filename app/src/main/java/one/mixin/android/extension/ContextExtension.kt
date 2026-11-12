@@ -1316,10 +1316,10 @@ fun Context.openMarket() {
 }
 
 @Suppress("DEPRECATION") // Deprecated for third party Services.
-fun <T> Context.isServiceRunning(service: Class<T>) =
+fun Context.isServiceRunning(vararg services: Class<*>) =
     (getSystemService(ACTIVITY_SERVICE) as ActivityManager)
         .getRunningServices(Integer.MAX_VALUE)
-        .any { it.service.className == service.name }
+        .any { running -> services.any { it.name == running.service.className } }
 
 fun Activity.showPipPermissionNotification(
     targetActivity: Class<*>,
