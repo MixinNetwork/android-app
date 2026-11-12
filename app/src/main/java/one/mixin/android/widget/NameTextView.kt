@@ -175,19 +175,18 @@ class NameTextView : LinearLayoutCompat {
         this.textView.text = user.fullName
         if (user.isProsperity()) {
             iconView.isVisible = true
-            iconView.setImageDrawable(
-                RLottieDrawable(
-                    R.raw.prosperity,
-                    "prosperity",
-                    badgeSize,
-                    badgeSize,
-                ).apply {
-                    setAllowDecodeSingleFrame(true)
-                    setAutoRepeat(1)
-                    setAutoRepeatCount(Int.MAX_VALUE)
-                    start()
-                },
-            )
+            val drawable = iconView.drawable as? RLottieDrawable ?: RLottieDrawable(
+                R.raw.prosperity,
+                "prosperity",
+                badgeSize,
+                badgeSize,
+            ).apply {
+                setAllowDecodeSingleFrame(true)
+                setAutoRepeat(1)
+                setAutoRepeatCount(Int.MAX_VALUE)
+            }
+            iconView.setImageDrawable(drawable)
+            drawable.start()
         } else {
             val badge = getBadge(user)
             if (badge != null) {
